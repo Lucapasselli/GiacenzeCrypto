@@ -41,7 +41,7 @@
                       <EmptySpace min="-2" pref="170" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Component id="CDC" pref="959" max="32767" attributes="0"/>
+                      <Component id="CDC" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -502,7 +502,10 @@
                                       <Component id="CDC_FiatWallet_Label_GiacenzaIniziale" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="CDC_FiatWallet_Text_GiacenzaIniziale" min="-2" pref="142" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Label_PeriodoRiferimento" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Text_PeriodoRiferimento" min="-2" pref="204" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
@@ -556,18 +559,9 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="CDC_FiatWallet_Text_PrimaData" min="-2" pref="145" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="CDC_FiatWallet_Label_PeriodoRiferimento" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="CDC_FiatWallet_Text_PeriodoRiferimento" min="-2" pref="204" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" attributes="0">
-                                              <Component id="CDC_FiatWallet_Label_UltimaData" min="-2" pref="196" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="CDC_FiatWallet_Text_UltimaData" min="-2" pref="149" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
+                                      <Component id="CDC_FiatWallet_Label_UltimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Text_UltimaData" min="-2" pref="149" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace min="0" pref="68" max="32767" attributes="0"/>

@@ -69,7 +69,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.00 Beta");
+            this.setTitle("Giacenze_Crypto.com 1.01 Beta");
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
 

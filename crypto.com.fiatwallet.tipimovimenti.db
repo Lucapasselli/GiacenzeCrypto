@@ -1,0 +1,6 @@
+crypto_viban;+;default;Vendita Crypto
+viban_card_top_up;-;default;TopUp Carta
+viban_deposit;+;default;Bonifico in Ingresso
+viban_purchase;-;default;Acquisto Crypto
+viban_withdrawal;-;default;Bonifico su Conto Corrente
+viban_test;+;Personalizzato;viban_test

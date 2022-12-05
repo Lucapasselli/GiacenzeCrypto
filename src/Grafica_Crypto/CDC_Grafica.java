@@ -1,0 +1,2072 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package Grafica_Crypto;
+
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import giacenze_crypto.com.Gestione_Errori;
+import java.awt.Color;
+import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+/**
+ *
+ * @author luca.passelli
+ */
+public class CDC_Grafica extends javax.swing.JFrame {
+
+    /**
+     * Creates new form com
+     */
+    static Map<String, String> CDC_FiatWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    //static Map<String, String> CDC_MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
+    static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
+    static String CDC_FileDatiDB="crypto.com.dati.db";
+    static public String CDC_FiatWallet_FileTipiMovimentiDB="crypto.com.fiatwallet.tipimovimenti.db";
+    static String CDC_DataIniziale="";
+    static String CDC_DataFinale="";
+    static String CDC_FiatWallet_SaldoIniziale="0";
+    static String CDC_CardWallet_SaldoIniziale="0";
+    static String CDC_FiatWallet_DataSaldoIniziale="";
+    static String CDC_CardWallet_DataSaldoIniziale="";
+    static boolean CDC_FiatWallet_ConsideroValoreMassimoGiornaliero=false;
+    static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
+    static List<String>[] CDC_CardWallet_ListaSaldi;
+    static public List<String>[] CDC_FiatWallet_ListaSaldi;
+    
+    //static String Appoggio="";
+    
+    
+    public CDC_Grafica() {
+       
+    try {
+        
+            this.setTitle("Giacenze_Crypto.com 1.00 Beta");
+            File fiatwallet=new File (CDC_FiatWallet_FileDB);
+            if (!fiatwallet.exists()) fiatwallet.createNewFile();
+
+            File cardwallet=new File (CDC_CardWallet_FileDB);
+            if (!cardwallet.exists()) cardwallet.createNewFile();
+            
+            File filedati=new File (CDC_FileDatiDB);
+            if (!filedati.exists()) filedati.createNewFile();
+            
+            
+            File cryptowallet=new File ("crypto.com.cryptowallet.db");
+            if (!cryptowallet.exists()) cryptowallet.createNewFile();
+            
+            UIManager.setLookAndFeel( new FlatIntelliJLaf() );
+        
+        initComponents();
+        this.CDC_FiatWallet_Label_Errore1.setVisible(false);
+        this.CDC_FiatWallet_Label_Errore2.setVisible(false);
+        this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
+        
+        CDC_LeggiFileDatiDB();
+        CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB); 
+        CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
+        //CDC_LeggiFileDatiDB();
+
+        CDC_AggiornaGui();
+       /* Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Rome"),Locale.ITALY);
+        long today = calendar.getTimeInMillis();
+        Date currentDate = new Date(today);
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        Date d = f.parse(f.format(currentDate));
+        System.out.println(f.format(currentDate)+"aa");
+        //m1 = d.getTime();
+        this.CDC_DataChooser_Iniziale.setDate(d);*/
+}  catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
+        }
+        
+         
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        CDC = new javax.swing.JTabbedPane();
+        CDC_CardWallet_Pannello = new javax.swing.JPanel();
+        CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
+        CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
+        CDC_CardWallet_Text_PrimaData = new javax.swing.JTextField();
+        CDC_CardWallet_Label_UltimaData = new javax.swing.JLabel();
+        CDC_CardWallet_Text_UltimaData = new javax.swing.JTextField();
+        CDC_CardWallet_Label_GiacenzaIniziale = new javax.swing.JLabel();
+        CDC_CardWallet_Text_GiacenzaIniziale = new javax.swing.JTextField();
+        CDC_CardWallet_Checkbox_ConsideraValoreMaggiore = new javax.swing.JCheckBox();
+        jSeparator2 = new javax.swing.JSeparator();
+        CDC_CardWallet_Text_PeriodoRiferimento = new javax.swing.JTextField();
+        CDC_CardWallet_Label_PeriodoRiferimento = new javax.swing.JLabel();
+        CDC_CardWallet_Label_GiacenzaMedia = new javax.swing.JLabel();
+        CDC_CardWallet_Text_GiacenzaMedia = new javax.swing.JTextField();
+        CDC_CardWallet_Label_Spese = new javax.swing.JLabel();
+        CDC_CardWallet_Label_Entrate = new javax.swing.JLabel();
+        CDC_CardWallet_Text_Entrate = new javax.swing.JTextField();
+        CDC_CardWallet_Text_Spese = new javax.swing.JTextField();
+        CDC_CardWallet_Label_SaldoIniziale = new javax.swing.JLabel();
+        CDC_CardWallet_Text_SaldoIniziale = new javax.swing.JTextField();
+        CDC_CardWallet_Label_SaldoFinale = new javax.swing.JLabel();
+        CDC_CardWallet_Text_SaldoFinale = new javax.swing.JTextField();
+        CDC_CardWallet_Tabella1Scroll = new javax.swing.JScrollPane();
+        CDC_CardWallet_Tabella1 = new javax.swing.JTable();
+        CDC_CardWallet_Tabella2Scroll = new javax.swing.JScrollPane();
+        CDC_CardWallet_Tabella2 = new javax.swing.JTable();
+        CDC_CardWallet_Label_Tabella1 = new javax.swing.JLabel();
+        CDC_CardWallet_Label_Tabella2 = new javax.swing.JLabel();
+        CDC_CardWallet_Label_FiltroTabelle = new javax.swing.JLabel();
+        CDC_CardWallet_Text_FiltroTabelle = new javax.swing.JTextField();
+        CDC_FiatWallet_Pannello = new javax.swing.JPanel();
+        CDC_FiatWallet_Bottone_CaricaCSV = new javax.swing.JButton();
+        CDC_FiatWallet_Label_PrimaData = new javax.swing.JLabel();
+        CDC_FiatWallet_Label_UltimaData = new javax.swing.JLabel();
+        CDC_FiatWallet_Text_PrimaData = new javax.swing.JTextField();
+        CDC_FiatWallet_Text_UltimaData = new javax.swing.JTextField();
+        CDC_FiatWallet_Label_GiacenzaIniziale = new javax.swing.JLabel();
+        CDC_FiatWallet_Text_GiacenzaIniziale = new javax.swing.JTextField();
+        CDC_FiatWallet_Label_PeriodoRiferimento = new javax.swing.JLabel();
+        CDC_FiatWallet_Label_GiacenzaMedia = new javax.swing.JLabel();
+        CDC_FiatWallet_Text_GiacenzaMedia = new javax.swing.JTextField();
+        CDC_FiatWallet_Text_PeriodoRiferimento = new javax.swing.JTextField();
+        jSeparator1 = new javax.swing.JSeparator();
+        CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore = new javax.swing.JCheckBox();
+        CDC_FiatWallet_Text_SaldoIniziale = new javax.swing.JTextField();
+        CDC_FiatWallet_Label_SaldoIniziale = new javax.swing.JLabel();
+        CDC_FiatWallet_Label_SaldoFinale = new javax.swing.JLabel();
+        CDC_FiatWallet_Text_SaldoFinale = new javax.swing.JTextField();
+        CDC_FiatWallet_Tabella1Scroll = new javax.swing.JScrollPane();
+        CDC_FiatWallet_Tabella1 = new javax.swing.JTable();
+        CDC_FiatWallet_Tabella2Scroll = new javax.swing.JScrollPane();
+        CDC_FiatWallet_Tabella2 = new javax.swing.JTable();
+        CDC_FiatWallet_Label_Tabella2 = new javax.swing.JLabel();
+        CDC_FiatWallet_Label_Errore1 = new javax.swing.JLabel();
+        CDC_FiatWallet_Label_Errore2 = new javax.swing.JLabel();
+        CDC_FiatWallet_Bottone_Errore = new javax.swing.JButton();
+        CDC_FiatWallet_Label_FiltroTabella = new javax.swing.JLabel();
+        CDC_FiatWallet_Text_FiltroTabella = new javax.swing.JTextField();
+        CDC_Opzioni = new javax.swing.JPanel();
+        CDC_Opzioni_Bottone_CancellaFiatWallet = new javax.swing.JButton();
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet = new javax.swing.JButton();
+        CDC_Opzioni_Bottone_CancellaCardWallet = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
+        jLabel3 = new javax.swing.JLabel();
+        CDC_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
+        Label_Giorni = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        CDC_CardWallet_Bottone_CaricaCSV.setText("Carica Dati Carta");
+        CDC_CardWallet_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_CardWallet_Bottone_CaricaCSVActionPerformed(evt);
+            }
+        });
+
+        CDC_CardWallet_Label_PrimaData.setText("Data prima transazione disponibile : ");
+
+        CDC_CardWallet_Text_PrimaData.setEditable(false);
+
+        CDC_CardWallet_Label_UltimaData.setText("Data ultima transazione disponibile : ");
+
+        CDC_CardWallet_Text_UltimaData.setEditable(false);
+        CDC_CardWallet_Text_UltimaData.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_CardWallet_Text_UltimaDataActionPerformed(evt);
+            }
+        });
+
+        CDC_CardWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in euro al : ");
+
+        CDC_CardWallet_Text_GiacenzaIniziale.setEditable(false);
+        CDC_CardWallet_Text_GiacenzaIniziale.setText("0");
+        CDC_CardWallet_Text_GiacenzaIniziale.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                CDC_CardWallet_Text_GiacenzaInizialeKeyReleased(evt);
+            }
+        });
+
+        CDC_CardWallet_Checkbox_ConsideraValoreMaggiore.setText("Per il calcolo della giacenza media considera il valore più alto della giornata");
+        CDC_CardWallet_Checkbox_ConsideraValoreMaggiore.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked(evt);
+            }
+        });
+
+        CDC_CardWallet_Text_PeriodoRiferimento.setEditable(false);
+        CDC_CardWallet_Text_PeriodoRiferimento.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_CardWallet_Text_PeriodoRiferimento.setForeground(new java.awt.Color(0, 0, 153));
+
+        CDC_CardWallet_Label_PeriodoRiferimento.setText("Periodo di riferimento -> ");
+
+        CDC_CardWallet_Label_GiacenzaMedia.setText("GiacenzaMedia : ");
+
+        CDC_CardWallet_Text_GiacenzaMedia.setEditable(false);
+        CDC_CardWallet_Text_GiacenzaMedia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+
+        CDC_CardWallet_Label_Spese.setText("Totale Spese :");
+
+        CDC_CardWallet_Label_Entrate.setText("Totale Entrate :");
+
+        CDC_CardWallet_Text_Entrate.setEditable(false);
+
+        CDC_CardWallet_Text_Spese.setEditable(false);
+
+        CDC_CardWallet_Label_SaldoIniziale.setText("Saldo Inizio Periodo :");
+
+        CDC_CardWallet_Text_SaldoIniziale.setEditable(false);
+        CDC_CardWallet_Text_SaldoIniziale.setToolTipText("Saldo ad Inizio Giornata");
+
+        CDC_CardWallet_Label_SaldoFinale.setText("Saldo Fine Periodo :");
+
+        CDC_CardWallet_Text_SaldoFinale.setEditable(false);
+        CDC_CardWallet_Text_SaldoFinale.setToolTipText("Saldo a Fine Giornata");
+
+        CDC_CardWallet_Tabella1.setAutoCreateRowSorter(true);
+        CDC_CardWallet_Tabella1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Causale", "Ammontare"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Double.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        CDC_CardWallet_Tabella1.setShowGrid(true);
+        CDC_CardWallet_Tabella1Scroll.setViewportView(CDC_CardWallet_Tabella1);
+        if (CDC_CardWallet_Tabella1.getColumnModel().getColumnCount() > 0) {
+            CDC_CardWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
+            CDC_CardWallet_Tabella1.getColumnModel().getColumn(1).setMaxWidth(100);
+        }
+
+        CDC_CardWallet_Tabella2.setAutoCreateRowSorter(true);
+        CDC_CardWallet_Tabella2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data", "Controparte", "Valore"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Double.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        CDC_CardWallet_Tabella2.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        CDC_CardWallet_Tabella2.setShowGrid(true);
+        CDC_CardWallet_Tabella2Scroll.setViewportView(CDC_CardWallet_Tabella2);
+        if (CDC_CardWallet_Tabella2.getColumnModel().getColumnCount() > 0) {
+            CDC_CardWallet_Tabella2.getColumnModel().getColumn(0).setPreferredWidth(200);
+            CDC_CardWallet_Tabella2.getColumnModel().getColumn(0).setMaxWidth(200);
+            CDC_CardWallet_Tabella2.getColumnModel().getColumn(2).setPreferredWidth(100);
+            CDC_CardWallet_Tabella2.getColumnModel().getColumn(2).setMaxWidth(100);
+        }
+
+        CDC_CardWallet_Label_Tabella1.setBackground(new java.awt.Color(255, 255, 255));
+        CDC_CardWallet_Label_Tabella1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_CardWallet_Label_Tabella1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        CDC_CardWallet_Label_Tabella1.setText("TABELLA MOVIMENTI RAGRUPPATI PER CAUSALE");
+
+        CDC_CardWallet_Label_Tabella2.setBackground(new java.awt.Color(255, 255, 255));
+        CDC_CardWallet_Label_Tabella2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_CardWallet_Label_Tabella2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        CDC_CardWallet_Label_Tabella2.setText("TABELLA MOVIMENTI");
+
+        CDC_CardWallet_Label_FiltroTabelle.setText("Filtro Tabelle : ");
+
+        CDC_CardWallet_Text_FiltroTabelle.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                CDC_CardWallet_Text_FiltroTabelleKeyReleased(evt);
+            }
+        });
+
+        javax.swing.GroupLayout CDC_CardWallet_PannelloLayout = new javax.swing.GroupLayout(CDC_CardWallet_Pannello);
+        CDC_CardWallet_Pannello.setLayout(CDC_CardWallet_PannelloLayout);
+        CDC_CardWallet_PannelloLayout.setHorizontalGroup(
+            CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSeparator2)
+            .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addComponent(CDC_CardWallet_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(CDC_CardWallet_Label_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_CardWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(CDC_CardWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_CardWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(CDC_CardWallet_Checkbox_ConsideraValoreMaggiore, javax.swing.GroupLayout.PREFERRED_SIZE, 455, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(CDC_CardWallet_Label_Spese)
+                            .addComponent(CDC_CardWallet_Label_Entrate))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(CDC_CardWallet_Text_Spese)
+                            .addComponent(CDC_CardWallet_Text_Entrate, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_CardWallet_Label_GiacenzaMedia)
+                                .addGap(26, 26, 26)
+                                .addComponent(CDC_CardWallet_Text_GiacenzaMedia))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_CardWallet_Label_SaldoFinale)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(CDC_CardWallet_Text_SaldoFinale))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_CardWallet_Label_SaldoIniziale)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_CardWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(137, 137, 137))
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addComponent(CDC_CardWallet_Label_FiltroTabelle)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_CardWallet_Text_FiltroTabelle)
+                        .addGap(554, 554, 554))
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addComponent(CDC_CardWallet_Label_GiacenzaIniziale)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_CardWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(CDC_CardWallet_Label_PeriodoRiferimento)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_CardWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(CDC_CardWallet_Label_Tabella1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Label_Tabella2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        CDC_CardWallet_PannelloLayout.setVerticalGroup(
+            CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CDC_CardWallet_Label_PrimaData)
+                    .addComponent(CDC_CardWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDC_CardWallet_Label_UltimaData)
+                    .addComponent(CDC_CardWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDC_CardWallet_Bottone_CaricaCSV))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CDC_CardWallet_Checkbox_ConsideraValoreMaggiore)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CDC_CardWallet_Label_GiacenzaIniziale)
+                    .addComponent(CDC_CardWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDC_CardWallet_Label_PeriodoRiferimento)
+                    .addComponent(CDC_CardWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_CardWallet_Label_SaldoIniziale)
+                            .addComponent(CDC_CardWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_CardWallet_Label_SaldoFinale)
+                            .addComponent(CDC_CardWallet_Text_SaldoFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_CardWallet_Text_GiacenzaMedia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(CDC_CardWallet_Label_GiacenzaMedia)))
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_CardWallet_Label_Spese)
+                            .addComponent(CDC_CardWallet_Text_Spese, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_CardWallet_Text_Entrate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(CDC_CardWallet_Label_Entrate))
+                        .addGap(82, 82, 82)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_CardWallet_Label_Tabella1)
+                            .addComponent(CDC_CardWallet_Label_Tabella2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CDC_CardWallet_Label_FiltroTabelle)
+                    .addComponent(CDC_CardWallet_Text_FiltroTabelle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        CDC.addTab("Carta", CDC_CardWallet_Pannello);
+
+        CDC_FiatWallet_Bottone_CaricaCSV.setText("Carica Dati Fiat Wallet");
+        CDC_FiatWallet_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_FiatWallet_Bottone_CaricaCSVActionPerformed(evt);
+            }
+        });
+
+        CDC_FiatWallet_Label_PrimaData.setText("Data prima transazione disponibile : ");
+
+        CDC_FiatWallet_Label_UltimaData.setText("Data ultima transazione disponibile : ");
+
+        CDC_FiatWallet_Text_PrimaData.setEditable(false);
+
+        CDC_FiatWallet_Text_UltimaData.setEditable(false);
+        CDC_FiatWallet_Text_UltimaData.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_FiatWallet_Text_UltimaDataActionPerformed(evt);
+            }
+        });
+
+        CDC_FiatWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in euro al : ");
+
+        CDC_FiatWallet_Text_GiacenzaIniziale.setEditable(false);
+        CDC_FiatWallet_Text_GiacenzaIniziale.setText("0");
+        CDC_FiatWallet_Text_GiacenzaIniziale.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased(evt);
+            }
+        });
+
+        CDC_FiatWallet_Label_PeriodoRiferimento.setText("Periodo di riferimento -> ");
+
+        CDC_FiatWallet_Label_GiacenzaMedia.setText("GiacenzaMedia : ");
+
+        CDC_FiatWallet_Text_GiacenzaMedia.setEditable(false);
+        CDC_FiatWallet_Text_GiacenzaMedia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+
+        CDC_FiatWallet_Text_PeriodoRiferimento.setEditable(false);
+        CDC_FiatWallet_Text_PeriodoRiferimento.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Text_PeriodoRiferimento.setForeground(new java.awt.Color(0, 0, 153));
+
+        CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.setText("Per il calcolo della giacenza media considera il valore più alto della giornata");
+        CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                CDC_FiatWallet_Checkbox_ConsideraValoreMaggioreMouseClicked(evt);
+            }
+        });
+
+        CDC_FiatWallet_Text_SaldoIniziale.setEditable(false);
+        CDC_FiatWallet_Text_SaldoIniziale.setToolTipText("Saldo ad Inizio Giornata");
+
+        CDC_FiatWallet_Label_SaldoIniziale.setText("Saldo Inizio Periodo :");
+
+        CDC_FiatWallet_Label_SaldoFinale.setText("Saldo Fine Periodo :");
+
+        CDC_FiatWallet_Text_SaldoFinale.setEditable(false);
+        CDC_FiatWallet_Text_SaldoFinale.setToolTipText("Saldo a Fine Giornata");
+
+        CDC_FiatWallet_Tabella1.setAutoCreateRowSorter(true);
+        CDC_FiatWallet_Tabella1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Causale", "Ammontare"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Double.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        CDC_FiatWallet_Tabella1.setShowGrid(true);
+        CDC_FiatWallet_Tabella1Scroll.setViewportView(CDC_FiatWallet_Tabella1);
+        if (CDC_FiatWallet_Tabella1.getColumnModel().getColumnCount() > 0) {
+            CDC_FiatWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
+            CDC_FiatWallet_Tabella1.getColumnModel().getColumn(1).setMaxWidth(100);
+        }
+
+        CDC_FiatWallet_Tabella2.setAutoCreateRowSorter(true);
+        CDC_FiatWallet_Tabella2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data", "Causale", "Dettaglio", "Valore"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        CDC_FiatWallet_Tabella2.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        CDC_FiatWallet_Tabella2.setShowGrid(true);
+        CDC_FiatWallet_Tabella2Scroll.setViewportView(CDC_FiatWallet_Tabella2);
+        if (CDC_FiatWallet_Tabella2.getColumnModel().getColumnCount() > 0) {
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setPreferredWidth(200);
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setMaxWidth(200);
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(3).setPreferredWidth(100);
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(3).setMaxWidth(100);
+        }
+
+        CDC_FiatWallet_Label_Tabella2.setBackground(new java.awt.Color(255, 255, 255));
+        CDC_FiatWallet_Label_Tabella2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Tabella2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        CDC_FiatWallet_Label_Tabella2.setText("TABELLA MOVIMENTI");
+
+        CDC_FiatWallet_Label_Errore1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Errore1.setForeground(new java.awt.Color(255, 0, 51));
+        CDC_FiatWallet_Label_Errore1.setText("Attenzione ci sono dei movimenti non contabilizzati!");
+
+        CDC_FiatWallet_Label_Errore2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Errore2.setForeground(new java.awt.Color(255, 0, 0));
+        CDC_FiatWallet_Label_Errore2.setText("Premere sul pulsante qui sotto per visualizzarli!");
+
+        CDC_FiatWallet_Bottone_Errore.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Bottone_Errore.setText("Vedi Errori");
+        CDC_FiatWallet_Bottone_Errore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_FiatWallet_Bottone_ErroreActionPerformed(evt);
+            }
+        });
+
+        CDC_FiatWallet_Label_FiltroTabella.setText("Filtro Tabella Movimenti : ");
+
+        CDC_FiatWallet_Text_FiltroTabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                CDC_FiatWallet_Text_FiltroTabellaKeyReleased(evt);
+            }
+        });
+
+        javax.swing.GroupLayout CDC_FiatWallet_PannelloLayout = new javax.swing.GroupLayout(CDC_FiatWallet_Pannello);
+        CDC_FiatWallet_Pannello.setLayout(CDC_FiatWallet_PannelloLayout);
+        CDC_FiatWallet_PannelloLayout.setHorizontalGroup(
+            CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_FiatWallet_Label_GiacenzaIniziale)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                        .addComponent(CDC_FiatWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(41, 41, 41)
+                                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                                    .addComponent(CDC_FiatWallet_Label_SaldoFinale)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                    .addComponent(CDC_FiatWallet_Text_SaldoFinale))
+                                                .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                                    .addComponent(CDC_FiatWallet_Label_SaldoIniziale)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(CDC_FiatWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                                    .addComponent(CDC_FiatWallet_Label_GiacenzaMedia)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                    .addComponent(CDC_FiatWallet_Text_GiacenzaMedia, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addComponent(CDC_FiatWallet_Label_Errore1, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                                                .addComponent(CDC_FiatWallet_Label_Errore2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                            .addComponent(CDC_FiatWallet_Bottone_Errore, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(jSeparator1)
+                                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(CDC_FiatWallet_Label_Tabella2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                        .addComponent(CDC_FiatWallet_Label_FiltroTabella)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(CDC_FiatWallet_Text_FiltroTabella))))))
+                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore, javax.swing.GroupLayout.PREFERRED_SIZE, 455, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_FiatWallet_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(CDC_FiatWallet_Label_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_FiatWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                        .addComponent(CDC_FiatWallet_Label_PeriodoRiferimento)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(CDC_FiatWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                        .addComponent(CDC_FiatWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addGap(0, 15, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        CDC_FiatWallet_PannelloLayout.setVerticalGroup(
+            CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CDC_FiatWallet_Label_PrimaData)
+                    .addComponent(CDC_FiatWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDC_FiatWallet_Label_UltimaData)
+                    .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDC_FiatWallet_Bottone_CaricaCSV))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CDC_FiatWallet_Label_GiacenzaIniziale)
+                    .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDC_FiatWallet_Label_PeriodoRiferimento)
+                    .addComponent(CDC_FiatWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_FiatWallet_Label_SaldoIniziale)
+                            .addComponent(CDC_FiatWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_FiatWallet_Label_SaldoFinale)
+                            .addComponent(CDC_FiatWallet_Text_SaldoFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CDC_FiatWallet_Label_GiacenzaMedia)
+                            .addComponent(CDC_FiatWallet_Text_GiacenzaMedia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(CDC_FiatWallet_Label_Errore1)
+                        .addGap(2, 2, 2)
+                        .addComponent(CDC_FiatWallet_Label_Errore2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_FiatWallet_Bottone_Errore))
+                    .addComponent(CDC_FiatWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CDC_FiatWallet_Label_Tabella2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CDC_FiatWallet_Label_FiltroTabella)
+                    .addComponent(CDC_FiatWallet_Text_FiltroTabella, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        CDC.addTab("Fiat Wallet", CDC_FiatWallet_Pannello);
+
+        CDC_Opzioni_Bottone_CancellaFiatWallet.setText("Elimina tutti i dati dal Fiat Wallet");
+        CDC_Opzioni_Bottone_CancellaFiatWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(evt);
+            }
+        });
+
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.setText("Elimina personalizzazioni movimenti Fiat Wallet");
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(evt);
+            }
+        });
+
+        CDC_Opzioni_Bottone_CancellaCardWallet.setText("Elimina tutti i dati dal Card Wallet");
+        CDC_Opzioni_Bottone_CancellaCardWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout CDC_OpzioniLayout = new javax.swing.GroupLayout(CDC_Opzioni);
+        CDC_Opzioni.setLayout(CDC_OpzioniLayout);
+        CDC_OpzioniLayout.setHorizontalGroup(
+            CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CDC_OpzioniLayout.createSequentialGroup()
+                .addGroup(CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                    .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 605, Short.MAX_VALUE))
+        );
+        CDC_OpzioniLayout.setVerticalGroup(
+            CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CDC_OpzioniLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet)
+                .addGap(106, 106, 106)
+                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
+                .addContainerGap(353, Short.MAX_VALUE))
+        );
+
+        CDC.addTab("Opzioni", CDC_Opzioni);
+
+        jLabel1.setText("Seleziona data inizio e fine per i calcoli ->");
+
+        jLabel2.setText("Data Inizio :");
+
+        CDC_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
+        CDC_DataChooser_Iniziale.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                CDC_DataChooser_InizialePropertyChange(evt);
+            }
+        });
+
+        jLabel3.setText("Data Fine :");
+
+        CDC_DataChooser_Finale.setDateFormatString("yyyy-MM-dd");
+        CDC_DataChooser_Finale.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                CDC_DataChooser_FinalePropertyChange(evt);
+            }
+        });
+
+        Label_Giorni.setText("Giorni : ");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(29, 29, 29)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(41, 41, 41)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(37, 37, 37)
+                        .addComponent(Label_Giorni)
+                        .addGap(170, 170, 170))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(CDC)
+                        .addContainerGap())))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel1)
+                        .addComponent(jLabel2))
+                    .addComponent(jLabel3)
+                    .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Label_Giorni, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(CDC)
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    
+    public void CDC_AggiornaGui() {
+        CDC_FiatWallet_AggiornaDatisuGUI();
+        CDC_CardWallet_AggiornaDatisuGUI();
+    }
+    
+    
+    private void CDC_LeggiFileDatiDB() { //CDC_FileDatiDB
+   // CDC_FileDatiDB
+   String riga;
+        try (FileReader fire = new FileReader(CDC_FileDatiDB); 
+                BufferedReader bure = new BufferedReader(fire);) 
+        {
+                while((riga=bure.readLine())!=null)
+                {
+                    String splittata[]=riga.split("=");
+                    if (splittata.length==2)
+                        {
+                            if (splittata[0].equalsIgnoreCase("DataIniziale")){CDC_DataIniziale=splittata[1];}
+                            if (splittata[0].equalsIgnoreCase("DataFinale")){CDC_DataFinale=splittata[1];}
+                            if (splittata[0].equalsIgnoreCase("CDC_FiatWallet_SaldoIniziale")){CDC_FiatWallet_SaldoIniziale=splittata[1];}
+                            if (splittata[0].equalsIgnoreCase("CDC_FiatWallet_DataSaldoIniziale")){CDC_FiatWallet_DataSaldoIniziale=splittata[1];}
+                            if (splittata[0].equalsIgnoreCase("CDC_FiatWallet_ConsideraValoreMassimoGiornaliero")){CDC_FiatWallet_ConsideroValoreMassimoGiornaliero=Boolean.parseBoolean(splittata[1]);}
+                            if (splittata[0].equalsIgnoreCase("CDC_CardWallet_SaldoIniziale")){CDC_CardWallet_SaldoIniziale=splittata[1];}
+                            if (splittata[0].equalsIgnoreCase("CDC_CardWallet_DataSaldoIniziale")){CDC_CardWallet_DataSaldoIniziale=splittata[1];}
+                            if (splittata[0].equalsIgnoreCase("CDC_CardWallet_ConsideraValoreMassimoGiornaliero")){CDC_CardWallet_ConsideroValoreMassimoGiornaliero=Boolean.parseBoolean(splittata[1]);}
+                        }
+                }
+                
+       bure.close();
+       fire.close();
+
+        
+        if (CDC_DataIniziale.equalsIgnoreCase("")||CDC_DataFinale.equalsIgnoreCase("")){
+           LocalDate current_date = LocalDate.now();
+            //System.out.println("Current date: "+current_date);
+
+            //getting the current year from the current_date
+            int current_Year = current_date.getYear();
+          //  System.out.println(Calendar);
+           CDC_DataIniziale=current_Year-1+"-01-01";
+           CDC_DataFinale=current_Year-1+"-12-31";
+        }
+      
+           }   catch (FileNotFoundException ex) {     
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        
+   }catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        
+        
+        
+        
+        
+        
+        
+       CDC_ScriviDatesuGUI(); 
+     }   
+        
+   private void CDC_ScriviDatesuGUI() {
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = f.parse(CDC_DataIniziale);
+            this.CDC_DataChooser_Iniziale.setDate(d);
+            d= f.parse(CDC_DataFinale);
+            this.CDC_DataChooser_Finale.setDate(d);
+            this.CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.setSelected(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+            this.CDC_CardWallet_Checkbox_ConsideraValoreMaggiore.setSelected(CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+        } catch (ParseException ex) {
+         //   Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //CDC_ScriviFileDatiDB();
+   }
+    
+   private void CDC_ScriviFileDatiDB() { //CDC_FileDatiDB
+   // CDC_FileDatiDB
+   try { 
+       FileWriter w=new FileWriter(CDC_FileDatiDB);
+       BufferedWriter b=new BufferedWriter (w);
+       b.write("DataIniziale="+CDC_DataIniziale+"\n");
+       b.write("DataFinale="+CDC_DataFinale+"\n");
+       if (CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(""))CDC_FiatWallet_SaldoIniziale="0";
+       b.write("CDC_FiatWallet_SaldoIniziale="+CDC_FiatWallet_SaldoIniziale+"\n"); 
+       b.write("CDC_FiatWallet_DataSaldoIniziale="+CDC_FiatWallet_DataSaldoIniziale+"\n");
+       b.write("CDC_FiatWallet_ConsideraValoreMassimoGiornaliero="+CDC_FiatWallet_ConsideroValoreMassimoGiornaliero+"\n");
+       b.write("CDC_CardWallet_SaldoIniziale="+CDC_CardWallet_SaldoIniziale+"\n"); 
+       b.write("CDC_CardWallet_DataSaldoIniziale="+CDC_CardWallet_DataSaldoIniziale+"\n");       
+       b.write("CDC_CardWallet_ConsideraValoreMassimoGiornaliero="+CDC_CardWallet_ConsideroValoreMassimoGiornaliero+"\n");
+       //System.out.println(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+       b.close();
+       w.close();
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+   
+   }
+            
+    
+    
+    public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet,String fiatWalletTipiMovimenti) {                                          
+        // TODO add your handling code here:
+        
+        //Questa funzione importa i dati del wallet, presi dal file csv o dal database interno e li mette nelle mappe
+        //questo per rendere le operazioni molto più veloci visto che il tutto viene gestito in ram
+        //non vengono utilizzati database visto che i dati sono relativamente pochi
+        CDC_FiatWallet_Mappa.clear();
+        String riga;
+        try (FileReader fire = new FileReader(fiatwallet); 
+                BufferedReader bure = new BufferedReader(fire);) 
+        {
+                while((riga=bure.readLine())!=null)
+                {
+                    String splittata[]=riga.split(",");
+                    if (splittata.length==10)// se non è esattamente uguale a 10 significa che il file non è corretto
+                    {
+                        if(ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
+                        {
+                            CDC_FiatWallet_Mappa.put(splittata[0], riga);
+                        }
+                    }
+                }
+       bure.close();
+       fire.close();
+    }   catch (FileNotFoundException ex) {     
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        CDC_FiatWallet_MappaTipiMovimenti.clear();
+        //Ora importo i tipi movimento del FiatWallet
+        
+                try (FileReader fire = new FileReader(fiatWalletTipiMovimenti); 
+                BufferedReader bure = new BufferedReader(fire);) 
+        {
+                while((riga=bure.readLine())!=null)
+                {
+                    String splittata[]=riga.split(";");
+                    if (splittata.length==4)// se non è esattamente uguale a 10 significa che il file non è corretto
+                    {
+
+                            CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
+                           // System.out.println("aaa");
+
+                    }
+                }
+       bure.close();
+       fire.close();
+    }   catch (FileNotFoundException ex) {     
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                
+                
+                
+                CDC_FiatWallet_ListaSaldi=CDC_FiatWallet_Funzione_CalcolaListaSaldi();
+        
+   } 
+    
+        public void CDC_CardWallet_Funzione_ImportaWallet(String cardwallet) {                                          
+        // TODO add your handling code here:
+        //Bisogna sistemare la parte dei tipimovimento DA FAREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!
+        CDC_CardWallet_Mappa.clear();
+        String riga;
+        try (FileReader fire = new FileReader(cardwallet); 
+                BufferedReader bure = new BufferedReader(fire);) 
+        {
+                while((riga=bure.readLine())!=null)
+                {
+                    String splittata[]=riga.split(",");
+                    if (splittata.length==9)// se non è esattamente uguale a 10 significa che il file non è corretto
+                    {
+                        if(ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
+                        {
+                            CDC_CardWallet_Mappa.put(splittata[0], riga);
+                        }
+                    }
+                }
+       bure.close();
+       fire.close();
+    }   catch (FileNotFoundException ex) {     
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+      CDC_CardWallet_ListaSaldi=CDC_CardWallet_Funzione_CalcolaListaSaldi();  
+ 
+        
+   } 
+    
+    
+    
+   private void CDC_FiatWallet_AggiornaDatisuGUI() {
+       
+       CDC_FiatWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
+       //scrivo le date relative a tutto quello che ho in pancia come dati
+       //In questa prima parte recupero i dati essenziali che mi servono poi per i calcoli
+       CDC_FiatWallet_Mappa.size();
+       int i=0;
+       for (String value : CDC_FiatWallet_Mappa.values()) {
+           if (i==0) {
+               this.CDC_FiatWallet_Text_PrimaData.setText(value.split(",")[0]);
+               //verifico ora che la primadata corrisponda con quella del file db salvato
+               if (ConvertiDatainLong(value.split(",")[0].split(" ")[0])<ConvertiDatainLong(CDC_DataIniziale))
+                   {
+               this.CDC_FiatWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in Euro al  "+value.split(",")[0].split(" ")[0]+" (Data Primo Movimento Importato) : ");
+               }
+               else
+                   {
+                   this.CDC_FiatWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in Euro al  "+CDC_DataIniziale+" : ");    
+                   }
+               CDC_FiatWallet_Text_GiacenzaIniziale.setEditable(true);
+               if(CDC_FiatWallet_DataSaldoIniziale.equalsIgnoreCase(value.split(",")[0].split(" ")[0]))
+                   {
+                       //se corrisponde allora prendo il saldo iniziale e lo imposto nella gui
+                       this.CDC_FiatWallet_Text_GiacenzaIniziale.setText(CDC_FiatWallet_SaldoIniziale);
+                   }
+               else
+               {
+                   //se non corrisponde lascio il saldo iniziale a zero
+                   //e aggiorno i dati sul file di configurazione
+                   CDC_FiatWallet_SaldoIniziale="0";
+                   CDC_FiatWallet_DataSaldoIniziale=value.split(",")[0].split(" ")[0];
+                   this.CDC_FiatWallet_Text_GiacenzaIniziale.setText("0");
+                   CDC_ScriviFileDatiDB();
+                   
+               }
+                       }
+           if (i==CDC_FiatWallet_Mappa.size()-1) this.CDC_FiatWallet_Text_UltimaData.setText(value.split(",")[0]);
+           i++;
+       }
+       
+       
+       
+       
+       //adesso trovo la lista dei saldi completa
+       
+     //    CDC_FiatWallet_ListaSaldi=CDC_FiatWallet_Funzione_CalcolaListaSaldi();
+          
+                            
+           //TROVO GIACENZA MEDIA
+
+           //String DataIniziale="2021-11-23";
+           //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
+           String Saldi[]=Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_FiatWallet_SaldoIniziale,CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+           this.CDC_FiatWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
+           this.CDC_FiatWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
+           this.CDC_FiatWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
+           CDC_FiatWallet_Funzione_Totali_per_tipo_movimento();
+
+   } 
+    
+    private void CDC_CardWallet_AggiornaDatisuGUI() {
+       
+       CDC_CardWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
+       //scrivo le date relative a tutto quello che ho in pancia come dati
+       //In questa prima parte recupero i dati essenziali che mi servono poi per i calcoli
+       CDC_CardWallet_Mappa.size();
+       int i=0;
+       for (String value : CDC_CardWallet_Mappa.values()) {
+           if (i==0) {
+               this.CDC_CardWallet_Text_PrimaData.setText(value.split(",")[0]);
+               //verifico ora che la primadata corrisponda con quella del file db salvato
+               if (ConvertiDatainLong(value.split(",")[0].split(" ")[0])<ConvertiDatainLong(CDC_DataIniziale))
+                   {
+               this.CDC_CardWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in Euro al  "+value.split(",")[0].split(" ")[0]+" (Data Primo Movimento Importato) : ");
+               }
+               else
+                   {
+                   this.CDC_CardWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in Euro al  "+CDC_DataIniziale+" : ");    
+                   }
+               CDC_CardWallet_Text_GiacenzaIniziale.setEditable(true);
+               if(CDC_CardWallet_DataSaldoIniziale.equalsIgnoreCase(value.split(",")[0].split(" ")[0]))
+                   {
+                       //se corrisponde allora prendo il saldo iniziale e lo imposto nella gui
+                       this.CDC_CardWallet_Text_GiacenzaIniziale.setText(CDC_CardWallet_SaldoIniziale);
+                   }
+               else
+               {
+                   //se non corrisponde lascio il saldo iniziale a zero
+                   //e aggiorno i dati sul file di configurazione
+                   CDC_CardWallet_SaldoIniziale="0";
+                   CDC_CardWallet_DataSaldoIniziale=value.split(",")[0].split(" ")[0];
+                   this.CDC_CardWallet_Text_GiacenzaIniziale.setText("0");
+                   CDC_ScriviFileDatiDB();
+                   
+               }
+                       }
+           if (i==CDC_CardWallet_Mappa.size()-1) this.CDC_CardWallet_Text_UltimaData.setText(value.split(",")[0]);
+           i++;
+       }
+       
+       
+       
+       
+       //adesso trovo la lista dei saldi completa
+       
+        // CDC_CardWallet_ListaSaldi=CDC_CardWallet_Funzione_CalcolaListaSaldi();
+          
+                            
+           //TROVO GIACENZA MEDIA
+
+           //String DataIniziale="2021-11-23";
+           //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
+           String Saldi[]=Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_CardWallet_SaldoIniziale,CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+           this.CDC_CardWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
+           this.CDC_CardWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
+           this.CDC_CardWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
+           CDC_CardWallet_Funzione_Totali_per_tipo_movimento();
+
+   } 
+    
+   public List<String>[] CDC_FiatWallet_Funzione_CalcolaListaSaldi() {
+       
+        this.CDC_FiatWallet_Label_Errore1.setVisible(false);
+        this.CDC_FiatWallet_Label_Errore2.setVisible(false);
+        this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
+        CDC_FiatWallet_MappaErrori.clear();
+        int errori=0;
+       
+       boolean TrovataCorrispondenzaTipo=false;
+       List<String> listaSaldi=new ArrayList<>();
+       List<String> listaSaldiconMassimoGiornaliero=new ArrayList<>();
+            String UltimaData="";
+            BigDecimal totale= new BigDecimal("0");
+            BigDecimal piccoGiornata=new BigDecimal("0");
+            for (String value : CDC_FiatWallet_Mappa.values())
+            {
+                TrovataCorrispondenzaTipo=false;
+                String splittata[]=value.split(",");
+                String Data=splittata[0].split(" ")[0];//prendo solo la data e non l'ora
+                if (!Data.equalsIgnoreCase(UltimaData)&&!UltimaData.equalsIgnoreCase(""))
+                        {                            
+                            
+                                listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
+                               // System.out.println(UltimaData+","+piccoGiornata);
+                                if (ConvertiDatainLong(Data)-ConvertiDatainLong(UltimaData)!=86400000){
+                 //QUESTO SERVE PER AGGIUNGERE UNA RIGA CON IL VALORE CORRETTO DEL GIORNO DOPO QUALORA NON VI SIA GIà UN VALORE DA CONSIDERARE
+                 //INFATTI SE CONSIDERO IL PICCO MASSIMO , IL PRIMO GIORNO METTO IL PICCO MASSIMO MA QUELLO DOPO DEVO CONSIDERARE IL VALORE NORMALE
+                                    listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+
+                                }
+
+                                 
+                            
+                                listaSaldi.add(UltimaData+","+totale);
+                               // System.out.println(UltimaData+","+totale);
+                                
+                            piccoGiornata=totale;
+    //                        System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
+                        }
+                //CDC_FiatWallet_FileTipiMovimentiDB
+            int Colonna=CDC_Funzione_trovaColonnaEuro(value);
+            if (Colonna!=999){
+            for (String tempo : CDC_FiatWallet_MappaTipiMovimenti.values())
+            {
+                if (splittata[9].contains(tempo.split(";")[0]))
+                        {
+                            TrovataCorrispondenzaTipo=true;
+                            if (tempo.split(";")[1].equalsIgnoreCase("+")){
+                                
+                                totale=totale.add(new BigDecimal(splittata[Colonna]));
+                                
+                                //System.out.println(totale+" , "+piccoGiornata+" , "+ totale.compareTo(piccoGiornata));
+                                if (totale.compareTo(piccoGiornata)>0) piccoGiornata=totale;
+                            }
+                            else
+                             {
+                                 totale=totale.subtract(new BigDecimal(splittata[Colonna]));
+                             }   
+                        }
+            }
+            }
+            if(!TrovataCorrispondenzaTipo)
+                {
+                    this.CDC_FiatWallet_Label_Errore1.setVisible(true);
+                    this.CDC_FiatWallet_Label_Errore2.setVisible(true);
+                    this.CDC_FiatWallet_Bottone_Errore.setVisible(true);
+                    String TipoErrore;
+                    if (Colonna==999){
+                        TipoErrore="1";//Movimento non in Euro, non viene contabilizzato
+                    }else
+                    {
+                        TipoErrore="2";//Movimento sconosciuto, non viene contabilizzato per la giacenza media
+                    }
+                    CDC_FiatWallet_MappaErrori.put(String.valueOf(errori), value+","+TipoErrore);
+                    errori++;
+                }
+ 
+
+                    UltimaData=Data;
+            }
+                          
+                                
+                                listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
+                                listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                            
+                                listaSaldi.add(UltimaData+","+totale);
+                                
+                   List<String>[] group2 = (ArrayList<String>[]) new ArrayList[2];
+    group2[0]=listaSaldi;
+    group2[1]=listaSaldiconMassimoGiornaliero;
+    return group2;
+   }
+   
+    
+     private List<String>[] CDC_CardWallet_Funzione_CalcolaListaSaldi() {
+      //da rivedere le doppie liste
+            
+       List<String> listaSaldi=new ArrayList<>();
+       List<String> listaSaldiconMassimoGiornaliero=new ArrayList<>();
+            String UltimaData="";
+            BigDecimal totale= new BigDecimal("0");
+            BigDecimal piccoGiornata=new BigDecimal("0");
+            for (String value : CDC_CardWallet_Mappa.values())
+            {
+
+                
+                String splittata[]=value.split(",");
+                String Data=splittata[0].split(" ")[0];//prendo solo la data e non l'ora
+                if (!Data.equalsIgnoreCase(UltimaData)&&!UltimaData.equalsIgnoreCase(""))
+                        {                            
+                            
+                                listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
+                               // System.out.println(UltimaData+","+piccoGiornata);
+                                if (ConvertiDatainLong(Data)-ConvertiDatainLong(UltimaData)!=86400000){
+                 //QUESTO SERVE PER AGGIUNGERE UNA RIGA CON IL VALORE CORRETTO DEL GIORNO DOPO QUALORA NON VI SIA GIà UN VALORE DA CONSIDERARE
+                 //INFATTI SE CONSIDERO IL PICCO MASSIMO , IL PRIMO GIORNO METTO IL PICCO MASSIMO MA QUELLO DOPO DEVO CONSIDERARE IL VALORE NORMALE
+                                    listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                                    //System.out.println(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+
+                                }
+
+                                 
+                            
+                                listaSaldi.add(UltimaData+","+totale);
+                                //System.out.println(UltimaData+","+totale);
+                                
+                            piccoGiornata=totale;
+    //                        System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
+                        }
+                int Colonna=CDC_Funzione_trovaColonnaEuro(value);
+                if (Colonna!=999){
+                //se è un valore positivo lo salvo nel picco giornata
+                if ((new BigDecimal(splittata[Colonna])).compareTo(BigDecimal.ZERO) > 0)
+               // if (splittata[1].contains("EUR Deposit"))
+                        {
+                            
+                                
+                                totale=totale.add(new BigDecimal(splittata[Colonna]));
+                                
+                                //System.out.println(totale+" , "+piccoGiornata+" , "+ totale.compareTo(piccoGiornata));
+                                if (totale.compareTo(piccoGiornata)>0) piccoGiornata=totale;
+                         }   
+                            else
+                             {
+                                 totale=totale.add(new BigDecimal(splittata[Colonna]));
+                                
+                             }   
+                        
+                         }
+ 
+
+                    UltimaData=Data;
+                   
+            }
+            
+
+          
+                                listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
+                                //System.out.println(UltimaData+","+piccoGiornata);
+                                listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                                //System.out.println(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                              
+                                listaSaldi.add(UltimaData+","+totale);
+                                //System.out.println(UltimaData+","+totale);
+                                
+    //                        System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
+    
+    List<String>[] group2 = (ArrayList<String>[]) new ArrayList[2];
+    group2[0]=listaSaldi;
+    group2[1]=listaSaldiconMassimoGiornaliero;
+    return group2;
+    /*if (conPicco)
+    return listaSaldiconMassimoGiornaliero;
+    else return listaSaldi;*/
+    
+   }
+   
+     private int CDC_Funzione_trovaColonnaEuro(String riga) {
+       int colonna=999;
+       String splittata[] = riga.split(",");
+       //System.out.println(splittata.length);
+       if (splittata.length==10 || splittata.length==9) {
+           if (splittata[2].trim().equalsIgnoreCase("EUR")){
+               colonna=3;
+           }else if (splittata[4].trim().equalsIgnoreCase("EUR")){
+               colonna=5;
+           }else if (splittata[6].trim().equalsIgnoreCase("EUR")){
+               colonna=7;
+           }
+       }
+       return colonna;
+   }
+   
+    private void CDC_FiatWallet_Funzione_Totali_per_tipo_movimento() {
+        //calcola i totali sui bonifici, topupcarta e acquisti crypto passati per il fiat wallet
+
+        DefaultTableModel CDC_FiatWallet_ModelloTabella1 = (DefaultTableModel) CDC_FiatWallet_Tabella1.getModel();
+        DefaultTableModel CDC_FiatWallet_ModelloTabella2 = (DefaultTableModel) CDC_FiatWallet_Tabella2.getModel();
+        PulisciTabella(CDC_FiatWallet_ModelloTabella1);
+        PulisciTabella(CDC_FiatWallet_ModelloTabella2);
+
+        Map<String, String> CDC_FiatWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        for (String value : CDC_FiatWallet_Mappa.values()) {
+
+            String splittata[] = value.split(",");
+            String Data = splittata[0].split(" ")[0];//prendo solo la data e non l'ora
+            if (ConvertiDatainLong(Data) >= ConvertiDatainLong(CDC_DataIniziale) && ConvertiDatainLong(Data) <= ConvertiDatainLong(CDC_DataFinale)) {    //CDC_FiatWallet_FileTipiMovimentiDB
+                boolean trovato = false;
+                Object CDC_FiatWallet_RigaTabella2[]=new Object[4];
+                int Colonna=CDC_Funzione_trovaColonnaEuro(value);
+                if (Colonna!=999){
+                for (String tempo : CDC_FiatWallet_MappaTipiMovimenti.values()) {   
+                   // String Colonna = tempo.split(";")[2];
+                   // String Segno = tempo.split(";")[1];
+                    String Descrizione = tempo.split(";")[3];
+                    String DescrizioneOriginale = tempo.split(";")[0];
+                    if (splittata[9].toUpperCase().contains(DescrizioneOriginale.toUpperCase())) {
+                        trovato = true;
+                        CDC_FiatWallet_RigaTabella2[0]=splittata[0];
+                        CDC_FiatWallet_RigaTabella2[1]=Descrizione;
+                        CDC_FiatWallet_RigaTabella2[2]=splittata[1];
+                        CDC_FiatWallet_RigaTabella2[3]=Double.valueOf(splittata[Colonna]);
+                        if (CDC_FiatWallet_MappaCausali.get(Descrizione) == null) {
+                            // se è una controparte nuova allora la aggiungo alla mappa
+                            // altrimenti la aggiorno con il valore corretto
+                            CDC_FiatWallet_MappaCausali.put(Descrizione, splittata[Colonna]);
+                        } else {
+                            BigDecimal Addendo1 = new BigDecimal(CDC_FiatWallet_MappaCausali.get(Descrizione));
+                            BigDecimal Addendo2 = new BigDecimal(splittata[Colonna]);
+                            String Somma = Addendo1.add(Addendo2).toString();
+                            CDC_FiatWallet_MappaCausali.put(Descrizione, Somma);
+                        }
+
+                    }
+                }
+                // se non trovo la decodifica faccio le somme tenendo come descrizione la colonna 9
+                if (!trovato) {
+                    CDC_FiatWallet_RigaTabella2[0]=splittata[0];
+                    CDC_FiatWallet_RigaTabella2[1]=splittata[9];
+                    CDC_FiatWallet_RigaTabella2[2]=splittata[1];
+                    CDC_FiatWallet_RigaTabella2[3]=Double.valueOf(splittata[Colonna]);
+                    if (CDC_FiatWallet_MappaCausali.get(splittata[9]) == null) {
+                        // se è una controparte nuova allora la aggiungo alla mappa
+                        // altrimenti la aggiorno con il valore corretto
+                        CDC_FiatWallet_MappaCausali.put(splittata[9], splittata[Colonna]);
+                    } else {
+                        BigDecimal Addendo1 = new BigDecimal(CDC_FiatWallet_MappaCausali.get(splittata[9]));
+                        BigDecimal Addendo2 = new BigDecimal(splittata[Colonna]);
+                        String Somma = Addendo1.add(Addendo2).toString();
+                        CDC_FiatWallet_MappaCausali.put(splittata[9], Somma);
+                    }
+                }
+                }else{
+                //errore, non ho trovato movimentazioni in euro
+                    
+                }
+                    
+                CDC_FiatWallet_ModelloTabella2.addRow(CDC_FiatWallet_RigaTabella2);
+            }
+        }
+
+        for (String key : CDC_FiatWallet_MappaCausali.keySet()) {
+            Object CDC_FiatWallet_RigaTabella1[] = new Object[2];
+            CDC_FiatWallet_RigaTabella1[0] = key;
+            CDC_FiatWallet_RigaTabella1[1] = Double.valueOf(CDC_FiatWallet_MappaCausali.get(key));
+            CDC_FiatWallet_ModelloTabella1.addRow(CDC_FiatWallet_RigaTabella1);
+        }
+
+    }
+   
+   
+     public static void PulisciTabella(DefaultTableModel modello) {
+           int z=modello.getRowCount();
+        // System.out.println(modelProblemi.getRowCount());
+         while (z!=0){
+             modello.removeRow(0);
+             z=modello.getRowCount();
+         }
+         
+  }
+   
+     
+
+     
+ 
+     
+     
+        private void FiltraTabella(JTable Tabella, String filtro, int colonna) {
+
+        TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>((DefaultTableModel) Tabella.getModel());
+        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filtro));
+        //se metto 999 significa che non voglio venga riordinato niente
+        if (colonna != 999) {
+            sorter.toggleSortOrder(colonna);
+        }
+        Tabella.setRowSorter(sorter);
+
+    }
+     
+     
+   
+      private void CDC_CardWallet_Funzione_Totali_per_tipo_movimento() {
+          
+        
+
+        DefaultTableModel CDC_CardWallet_ModelloTabella1 = (DefaultTableModel) CDC_CardWallet_Tabella1.getModel();
+        DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) CDC_CardWallet_Tabella2.getModel();
+      //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
+      //  CDC_CardWallet_Tabella2.setModel(model);
+        
+        PulisciTabella(CDC_CardWallet_ModelloTabella2);
+        PulisciTabella(CDC_CardWallet_ModelloTabella1);
+          
+       //calcola i totali sui bonifici, topupcarta e acquisti crypto passati per il fiat wallet
+        BigDecimal TotaleSpese= new BigDecimal("0");
+        BigDecimal TotaleTopUpCarta= new BigDecimal("0");  
+        Map<String, String> CDC_CardWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+            for (String value : CDC_CardWallet_Mappa.values())
+            {
+                
+                String splittata[]=value.split(",");
+                String Data=splittata[0].split(" ")[0];//prendo solo la data e non l'ora
+                if (ConvertiDatainLong(Data)>=ConvertiDatainLong(CDC_DataIniziale)&&ConvertiDatainLong(Data)<=ConvertiDatainLong(CDC_DataFinale))
+
+                {    
+                    int Colonna=CDC_Funzione_trovaColonnaEuro(value);
+                    if (Colonna!=999){
+                    //CDC_FiatWallet_FileTipiMovimentiDB
+                   // System.out.println(CDC_CardWallet_MappaCausali.get(splittata[1]));
+                    if (CDC_CardWallet_MappaCausali.get(splittata[1])==null) {
+                        // se è una controparte nuova allora la aggiungo alla mappa
+                        // altrimenti la aggiorno con il valore corretto
+                        CDC_CardWallet_MappaCausali.put(splittata[1], splittata[Colonna]);
+                    }
+                    else
+                    {
+                        BigDecimal Addendo1= new BigDecimal(CDC_CardWallet_MappaCausali.get(splittata[1]));
+                        BigDecimal Addendo2= new BigDecimal(splittata[Colonna]);
+                        String Somma=Addendo1.add(Addendo2).toString();
+                        CDC_CardWallet_MappaCausali.put(splittata[1], Somma);
+                    }
+                    Object CDC_CardWallet_RigaTabella2[]=new Object[Colonna];
+                    CDC_CardWallet_RigaTabella2[0]=splittata[0];
+                    CDC_CardWallet_RigaTabella2[1]=splittata[1];
+                    CDC_CardWallet_RigaTabella2[2]=Double.parseDouble(splittata[Colonna]);
+                    CDC_CardWallet_ModelloTabella2.addRow(CDC_CardWallet_RigaTabella2);
+
+                    if ((new BigDecimal(splittata[3])).compareTo(BigDecimal.ZERO) > 0)
+                    
+                            {
+                                TotaleTopUpCarta=TotaleTopUpCarta.add(new BigDecimal(splittata[Colonna]));
+                            }
+                    else
+                            {
+                                TotaleSpese=TotaleSpese.add(new BigDecimal(splittata[Colonna]));
+                            }       
+  }
+                }
+            }
+            for (String key : CDC_CardWallet_MappaCausali.keySet())
+            {
+                Object CDC_CardWallet_RigaTabella1[]=new Object[2];
+                CDC_CardWallet_RigaTabella1[0]=key;
+                CDC_CardWallet_RigaTabella1[1]=Double.parseDouble(CDC_CardWallet_MappaCausali.get(key));
+                CDC_CardWallet_ModelloTabella1.addRow(CDC_CardWallet_RigaTabella1);
+            }
+            this.CDC_CardWallet_Text_Spese.setText("€ "+TotaleSpese.multiply(new BigDecimal ("-1")).toString());
+            this.CDC_CardWallet_Text_Entrate.setText("€ "+TotaleTopUpCarta.toString());
+            //CDC_CardWallet_Tabella1.getRowSorter().toggleSortOrder(1);
+            //CDC_CardWallet_Tabella1.getRowSorter().toggleSortOrder(1);
+           // ColoraRigaTabellaShadow(CDC_CardWallet_Tabella2);
+                                  
+   }
+      
+
+   
+    private void CDC_FiatWallet_Funzione_Scrivi() {
+         try { 
+       FileWriter w=new FileWriter(CDC_FiatWallet_FileDB);
+       BufferedWriter b=new BufferedWriter (w);
+
+       for (String value : CDC_FiatWallet_Mappa.values()) {
+           b.write(value+"\n");
+          // System.out.println(value);
+       }
+       b.close();
+       w.close();
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+    }
+    
+        private void CDC_CardWallet_Funzione_Scrivi() {
+         try { 
+       FileWriter w=new FileWriter(CDC_CardWallet_FileDB);
+       BufferedWriter b=new BufferedWriter (w);
+
+       for (String value : CDC_CardWallet_Mappa.values()) {
+           b.write(value+"\n");
+          // System.out.println(value);
+       }
+       b.close();
+       w.close();
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+    }
+    
+    
+    private void CDC_DataChooser_InizialePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialePropertyChange
+        // TODO add your handling code here:
+       // System.out.println(CDC_DataChooser_Iniziale.getDate());
+        if (CDC_DataChooser_Iniziale.getDate()!=null){
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            String Data=f.format(CDC_DataChooser_Iniziale.getDate());
+            if (!Data.equalsIgnoreCase(CDC_DataIniziale)&&ConvertiDatainLong(Data)<ConvertiDatainLong(CDC_DataFinale)){
+                CDC_DataIniziale=Data;
+                this.CDC_ScriviFileDatiDB();
+                CDC_AggiornaGui();               
+            }
+            else if(ConvertiDatainLong(Data)>ConvertiDatainLong(CDC_DataFinale)) {
+                try {
+                    //f.parse(CDC_DataIniziale)
+                    CDC_DataChooser_Iniziale.setDate(f.parse(CDC_DataIniziale));
+                    JOptionPane.showInternalConfirmDialog(null, "Attenzione, la data iniziale non può essere maggiore della data finale!",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                } catch (ParseException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+                    
+
+       // CDC_DataChooser_Iniziale.getDate()
+    }//GEN-LAST:event_CDC_DataChooser_InizialePropertyChange
+
+    private void CDC_DataChooser_FinalePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_FinalePropertyChange
+        // TODO add your handling code here:
+                if (CDC_DataChooser_Finale.getDate()!=null){
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            String Data=f.format(CDC_DataChooser_Finale.getDate());
+            if (!Data.equalsIgnoreCase(CDC_DataFinale)&&ConvertiDatainLong(Data)>ConvertiDatainLong(CDC_DataIniziale)){
+                CDC_DataFinale=Data;
+                this.CDC_ScriviFileDatiDB();
+                CDC_AggiornaGui();
+              
+            }
+            else if(ConvertiDatainLong(Data)<ConvertiDatainLong(CDC_DataIniziale)) {
+                try {
+                    //f.parse(CDC_DataIniziale)
+                    CDC_DataChooser_Finale.setDate(f.parse(CDC_DataFinale));
+                    JOptionPane.showInternalConfirmDialog(null, "Attenzione, la data finale non può essere minore della data iniziale!",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                } catch (ParseException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }//GEN-LAST:event_CDC_DataChooser_FinalePropertyChange
+
+    private void CDC_FiatWallet_Checkbox_ConsideraValoreMaggioreMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Checkbox_ConsideraValoreMaggioreMouseClicked
+        // TODO add your handling code here:
+        CDC_FiatWallet_ConsideroValoreMassimoGiornaliero=this.CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.isSelected();
+        CDC_ScriviFileDatiDB();
+        CDC_FiatWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_FiatWallet_Checkbox_ConsideraValoreMaggioreMouseClicked
+
+    private void CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased
+        // TODO add your handling code here:
+
+        if (!CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())&&isNumeric(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())){
+            CDC_FiatWallet_SaldoIniziale=this.CDC_FiatWallet_Text_GiacenzaIniziale.getText().replaceFirst("^0+(?!$)", "");
+
+            //if (CDC_FiatWallet_Text_GiacenzaIniziale.getText().equalsIgnoreCase("")) CDC_FiatWallet_SaldoIniziale="0";
+            this.CDC_ScriviFileDatiDB();
+
+        }
+        else CDC_FiatWallet_Text_GiacenzaIniziale.setText(CDC_FiatWallet_SaldoIniziale.replaceFirst("^0+(?!$)", ""));
+
+        CDC_FiatWallet_AggiornaDatisuGUI();
+
+    }//GEN-LAST:event_CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased
+
+    private void CDC_FiatWallet_Text_UltimaDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Text_UltimaDataActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CDC_FiatWallet_Text_UltimaDataActionPerformed
+
+    private void CDC_FiatWallet_Bottone_CaricaCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Bottone_CaricaCSVActionPerformed
+        // TODO add your handling code here:
+        //Create a file chooser
+        JFileChooser fc = new JFileChooser();
+
+        //In response to a button click:
+        int returnVal = fc.showOpenDialog(CDC_FiatWallet_Pannello);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+            String fiatwallet=fc.getSelectedFile().getAbsolutePath();
+            CDC_FiatWallet_Funzione_ImportaWallet(fiatwallet,CDC_FiatWallet_FileTipiMovimentiDB);
+
+            //ImportaFiatWallet("C:\\Users\\luca.passelli\\Desktop\\fiat_transactions_record_20220110_144004.csv");
+            CDC_FiatWallet_Funzione_Scrivi();
+            CDC_FiatWallet_AggiornaDatisuGUI();
+
+            //   TextFiatWallet.setText(fc.getSelectedFile().getAbsolutePath());
+
+        } else {
+        }
+    }//GEN-LAST:event_CDC_FiatWallet_Bottone_CaricaCSVActionPerformed
+
+    private void CDC_CardWallet_Text_FiltroTabelleKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_FiltroTabelleKeyReleased
+        // TODO add your handling code here:
+        this.FiltraTabella(CDC_CardWallet_Tabella1, CDC_CardWallet_Text_FiltroTabelle.getText(), 999);
+        this.FiltraTabella(CDC_CardWallet_Tabella2, CDC_CardWallet_Text_FiltroTabelle.getText(), 999);
+    }//GEN-LAST:event_CDC_CardWallet_Text_FiltroTabelleKeyReleased
+
+    private void CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked
+        // TODO add your handling code here:
+        CDC_CardWallet_ConsideroValoreMassimoGiornaliero=this.CDC_CardWallet_Checkbox_ConsideraValoreMaggiore.isSelected();
+        CDC_ScriviFileDatiDB();
+        CDC_CardWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked
+
+    private void CDC_CardWallet_Text_GiacenzaInizialeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_GiacenzaInizialeKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CDC_CardWallet_Text_GiacenzaInizialeKeyReleased
+
+    private void CDC_CardWallet_Text_UltimaDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_UltimaDataActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CDC_CardWallet_Text_UltimaDataActionPerformed
+
+    private void CDC_CardWallet_Bottone_CaricaCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Bottone_CaricaCSVActionPerformed
+        // TODO add your handling code here:
+        // TODO add your handling code here:
+        //Create a file chooser
+        JFileChooser fc = new JFileChooser();
+
+        //In response to a button click:
+        int returnVal = fc.showOpenDialog(CDC_CardWallet_Pannello);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+            String cardwallet=fc.getSelectedFile().getAbsolutePath();
+            CDC_CardWallet_Funzione_ImportaWallet(cardwallet);
+
+            //DA INSERIRE LE 2 RIGHE SOTTO
+            CDC_CardWallet_Funzione_Scrivi();
+            CDC_CardWallet_AggiornaDatisuGUI();
+
+            //   TextFiatWallet.setText(fc.getSelectedFile().getAbsolutePath());
+
+        } else {
+        }
+    }//GEN-LAST:event_CDC_CardWallet_Bottone_CaricaCSVActionPerformed
+
+    private void CDC_FiatWallet_Text_FiltroTabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Text_FiltroTabellaKeyReleased
+        // TODO add your handling code here:
+        this.FiltraTabella(CDC_FiatWallet_Tabella2, CDC_FiatWallet_Text_FiltroTabella.getText(), 999);
+    }//GEN-LAST:event_CDC_FiatWallet_Text_FiltroTabellaKeyReleased
+
+    private void CDC_FiatWallet_Bottone_ErroreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Bottone_ErroreActionPerformed
+        // TODO add your handling code here:
+                Gestione_Errori mod = new Gestione_Errori();
+                mod.CompilaTabellaErrori(CDC_FiatWallet_MappaErrori);
+                mod.setLocationRelativeTo(this);
+                mod.setVisible(true);
+                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB);
+                CDC_FiatWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_FiatWallet_Bottone_ErroreActionPerformed
+
+    private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
+        // TODO add your handling code here:
+        String Messaggio="Sicuro di voler cancellare le personalizzazione sui movimenti del Fiat Wallet?";
+        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione personalizzazioni FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+                try 
+                { 
+                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDB);
+                    BufferedWriter b=new BufferedWriter (w);
+                    for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
+                    {
+                        if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase()))
+                        {
+                            b.write(value+"\n");
+                        }
+                    }
+                    b.close();
+                    w.close();
+                }catch (IOException ex) 
+                {
+
+             }    }
+                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB);
+                CDC_FiatWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
+
+    private void CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
+        // TODO add your handling code here:
+        String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet?";
+        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+                try 
+                { 
+                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileDB);
+                    BufferedWriter b=new BufferedWriter (w);
+                    b.write("");
+                    b.close();
+                    w.close();
+                }catch (IOException ex) 
+                {
+
+             }    }
+                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB);
+                CDC_FiatWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
+
+    private void CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
+        // TODO add your handling code here:
+                String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet?";
+        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione CardWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+                try 
+                { 
+                    FileWriter w=new FileWriter(CDC_Grafica.CDC_CardWallet_FileDB);
+                    BufferedWriter b=new BufferedWriter (w);
+                    b.write("");
+                    b.close();
+                    w.close();
+                }catch (IOException ex) 
+                {
+
+             }    }
+                CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
+                CDC_CardWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
+
+    
+     
+    
+    
+    public static boolean isNumeric(String str) {
+        //ritorna vero se il campo è vuoto oppure è un numero
+     if (str.isBlank()) return true;
+        try  
+  {  
+    double d = Double.parseDouble(str);  
+  }  
+  catch(NumberFormatException nfe)  
+  {  
+    return false;  
+  }  
+  return !str.matches("^.*[a-zA-Z].*$");  
+
+}
+    
+    public String[] Calcolo_SaldieMedie(List<String>[] listaSaldi, String DataInizialeS,String DataFinaleS,String SaldoInizioPeriodo,boolean MediaconPicchi) {
+         
+        
+//viene tornato come primo valore il saldo iniziale
+//come secondo valore il saldo finale
+//come terso la giacenza media
+
+// String SaldoPartenza=SaldoIniziale.toString();
+           String ritorno[]=new String[3];
+           String SaldoInizialeT="0";
+           boolean TrovatoSaldoIniziale=false;
+           String SaldoFinaleT="0";
+           String DataIniziale=DataInizialeS;
+           String DataFinale=DataFinaleS;
+           BigDecimal SaldoIniziale= new BigDecimal("0");
+           BigDecimal UltimoValore= new BigDecimal("0");
+          // System.out.println(DataIniziale);
+           //System.out.println(DataFinale);
+           long diffdate;
+           long longDatainiziale=ConvertiDatainLong(DataIniziale);
+           long longDataFinale=ConvertiDatainLong(DataFinale);
+           int contatore=0;//il numero di giorni che serviranno per il calcolo della giacenza media
+            for (String valori : listaSaldi[0])
+            {
+                String splittata[]=valori.split(",");
+               // long longDatainiziale=ConvertiDatainLong(DataIniziale);
+
+                 
+                 /*   if (longDatainiziale>ConvertiDatainLong(splittata[0]))
+                    {
+                        System.out.println("Errore, bisogna mettere una data inferiore o uguale a "+splittata[0]);
+                        break;
+                    }*/
+                if (longDatainiziale>ConvertiDatainLong(splittata[0]))
+                      {
+                          UltimoValore=new BigDecimal(splittata[1]);
+                        //  System.out.println("SaldoIniziale="+UltimoValore+" , "+splittata[0]);
+                      }  
+                    if (longDatainiziale<=ConvertiDatainLong(splittata[0])&&longDataFinale>=ConvertiDatainLong(splittata[0]))
+                        {
+                            diffdate=Differenza_Date(splittata[0],DataIniziale);
+                            contatore=contatore+Integer.parseInt(String.valueOf(diffdate));
+                            SaldoIniziale=UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
+                            if (!TrovatoSaldoIniziale) SaldoInizialeT=UltimoValore.toString();
+                            TrovatoSaldoIniziale=true;
+                            DataIniziale=splittata[0];
+                            UltimoValore=new BigDecimal(splittata[1]);
+                            
+                        }
+                
+                
+            }
+
+           SaldoFinaleT=UltimoValore.toString();
+           
+           if (MediaconPicchi)
+               {
+            DataIniziale=DataInizialeS;
+            SaldoIniziale= new BigDecimal("0");
+           UltimoValore= new BigDecimal("0");
+             contatore=0;//il numero di giorni che serviranno per il calcolo della giacenza media
+            for (String valori : listaSaldi[1])
+            {
+                String splittata[]=valori.split(",");
+                if (longDatainiziale>ConvertiDatainLong(splittata[0]))
+                      {
+                          UltimoValore=new BigDecimal(splittata[1]);
+                      }  
+                    if (longDatainiziale<=ConvertiDatainLong(splittata[0])&&longDataFinale>=ConvertiDatainLong(splittata[0]))
+                        {
+                            diffdate=Differenza_Date(splittata[0],DataIniziale);
+                            contatore=contatore+Integer.parseInt(String.valueOf(diffdate));
+                            SaldoIniziale=UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
+                            DataIniziale=splittata[0];
+                            UltimoValore=new BigDecimal(splittata[1]);
+                        }
+                
+                
+            }
+               }
+           
+           diffdate=Differenza_Date(DataFinale,DataIniziale)+1;
+           contatore=contatore+Integer.parseInt(String.valueOf(diffdate));
+           SaldoIniziale=UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
+           BigDecimal GiacenzaMedia=SaldoIniziale.divide(new BigDecimal(contatore),2,RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));
+         //  System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
+          this.Label_Giorni.setText("Giorni : "+contatore);
+          
+          
+          SaldoInizialeT=new BigDecimal(SaldoInizialeT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
+          SaldoFinaleT=new BigDecimal(SaldoFinaleT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
+         // System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
+          ritorno[0]=SaldoInizialeT;
+          ritorno[1]=SaldoFinaleT;
+          ritorno[2]=GiacenzaMedia.toString();
+          
+           return ritorno;
+           
+    }
+    
+    public static long Differenza_Date(String Data1, String Data2) {
+        long differenza=0;
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = f.parse(Data1);
+            long m1 = d.getTime();
+            d = f.parse(Data2);
+            long m2 = d.getTime();
+            differenza=(m1-m2)/1000/3600/24;//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+        } catch (ParseException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return differenza;
+    }
+    
+       public static long ConvertiDatainLong(String Data1) {
+           long m1=0;
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = f.parse(Data1);
+            m1 = d.getTime();
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+        } catch (ParseException ex) {
+           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            //System.out.println(Data1+" non è una data");
+        }
+        return m1;
+    } 
+    
+        public static String ConvertiDatadaLong(long Data1) {
+
+  
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = new Date(Data1);
+            //d=f.format(d);
+            String m1=f.format(d);
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+
+        return m1;
+    } 
+    
+    
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new CDC_Grafica().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTabbedPane CDC;
+    private javax.swing.JButton CDC_CardWallet_Bottone_CaricaCSV;
+    private javax.swing.JCheckBox CDC_CardWallet_Checkbox_ConsideraValoreMaggiore;
+    private javax.swing.JLabel CDC_CardWallet_Label_Entrate;
+    private javax.swing.JLabel CDC_CardWallet_Label_FiltroTabelle;
+    private javax.swing.JLabel CDC_CardWallet_Label_GiacenzaIniziale;
+    private javax.swing.JLabel CDC_CardWallet_Label_GiacenzaMedia;
+    private javax.swing.JLabel CDC_CardWallet_Label_PeriodoRiferimento;
+    private javax.swing.JLabel CDC_CardWallet_Label_PrimaData;
+    private javax.swing.JLabel CDC_CardWallet_Label_SaldoFinale;
+    private javax.swing.JLabel CDC_CardWallet_Label_SaldoIniziale;
+    private javax.swing.JLabel CDC_CardWallet_Label_Spese;
+    private javax.swing.JLabel CDC_CardWallet_Label_Tabella1;
+    private javax.swing.JLabel CDC_CardWallet_Label_Tabella2;
+    private javax.swing.JLabel CDC_CardWallet_Label_UltimaData;
+    private javax.swing.JPanel CDC_CardWallet_Pannello;
+    private javax.swing.JTable CDC_CardWallet_Tabella1;
+    private javax.swing.JScrollPane CDC_CardWallet_Tabella1Scroll;
+    private javax.swing.JTable CDC_CardWallet_Tabella2;
+    private javax.swing.JScrollPane CDC_CardWallet_Tabella2Scroll;
+    private javax.swing.JTextField CDC_CardWallet_Text_Entrate;
+    private javax.swing.JTextField CDC_CardWallet_Text_FiltroTabelle;
+    private javax.swing.JTextField CDC_CardWallet_Text_GiacenzaIniziale;
+    private javax.swing.JTextField CDC_CardWallet_Text_GiacenzaMedia;
+    private javax.swing.JTextField CDC_CardWallet_Text_PeriodoRiferimento;
+    private javax.swing.JTextField CDC_CardWallet_Text_PrimaData;
+    private javax.swing.JTextField CDC_CardWallet_Text_SaldoFinale;
+    private javax.swing.JTextField CDC_CardWallet_Text_SaldoIniziale;
+    private javax.swing.JTextField CDC_CardWallet_Text_Spese;
+    private javax.swing.JTextField CDC_CardWallet_Text_UltimaData;
+    private com.toedter.calendar.JDateChooser CDC_DataChooser_Finale;
+    private com.toedter.calendar.JDateChooser CDC_DataChooser_Iniziale;
+    private javax.swing.JButton CDC_FiatWallet_Bottone_CaricaCSV;
+    private javax.swing.JButton CDC_FiatWallet_Bottone_Errore;
+    private javax.swing.JCheckBox CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore;
+    private javax.swing.JLabel CDC_FiatWallet_Label_Errore1;
+    private javax.swing.JLabel CDC_FiatWallet_Label_Errore2;
+    private javax.swing.JLabel CDC_FiatWallet_Label_FiltroTabella;
+    private javax.swing.JLabel CDC_FiatWallet_Label_GiacenzaIniziale;
+    private javax.swing.JLabel CDC_FiatWallet_Label_GiacenzaMedia;
+    private javax.swing.JLabel CDC_FiatWallet_Label_PeriodoRiferimento;
+    private javax.swing.JLabel CDC_FiatWallet_Label_PrimaData;
+    private javax.swing.JLabel CDC_FiatWallet_Label_SaldoFinale;
+    private javax.swing.JLabel CDC_FiatWallet_Label_SaldoIniziale;
+    private javax.swing.JLabel CDC_FiatWallet_Label_Tabella2;
+    private javax.swing.JLabel CDC_FiatWallet_Label_UltimaData;
+    private javax.swing.JPanel CDC_FiatWallet_Pannello;
+    private javax.swing.JTable CDC_FiatWallet_Tabella1;
+    private javax.swing.JScrollPane CDC_FiatWallet_Tabella1Scroll;
+    private javax.swing.JTable CDC_FiatWallet_Tabella2;
+    private javax.swing.JScrollPane CDC_FiatWallet_Tabella2Scroll;
+    private javax.swing.JTextField CDC_FiatWallet_Text_FiltroTabella;
+    private javax.swing.JTextField CDC_FiatWallet_Text_GiacenzaIniziale;
+    private javax.swing.JTextField CDC_FiatWallet_Text_GiacenzaMedia;
+    private javax.swing.JTextField CDC_FiatWallet_Text_PeriodoRiferimento;
+    private javax.swing.JTextField CDC_FiatWallet_Text_PrimaData;
+    private javax.swing.JTextField CDC_FiatWallet_Text_SaldoFinale;
+    private javax.swing.JTextField CDC_FiatWallet_Text_SaldoIniziale;
+    private javax.swing.JTextField CDC_FiatWallet_Text_UltimaData;
+    private javax.swing.JPanel CDC_Opzioni;
+    private javax.swing.JButton CDC_Opzioni_Bottone_CancellaCardWallet;
+    private javax.swing.JButton CDC_Opzioni_Bottone_CancellaFiatWallet;
+    private javax.swing.JButton CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet;
+    private javax.swing.JLabel Label_Giorni;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    // End of variables declaration//GEN-END:variables
+}

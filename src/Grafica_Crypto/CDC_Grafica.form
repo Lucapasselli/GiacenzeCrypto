@@ -1,0 +1,996 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="3"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
+                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="CDC_DataChooser_Iniziale" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="CDC_DataChooser_Finale" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
+                      <Component id="Label_Giorni" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="170" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="CDC" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="CDC_DataChooser_Iniziale" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="CDC_DataChooser_Finale" alignment="0" max="32767" attributes="0"/>
+                  <Component id="Label_Giorni" alignment="0" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="CDC" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JTabbedPane" name="CDC">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="CDC_CardWallet_Pannello">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Carta">
+                <Property name="tabTitle" type="java.lang.String" value="Carta"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jSeparator2" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="CDC_CardWallet_Bottone_CaricaCSV" min="-2" pref="136" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="CDC_CardWallet_Label_PrimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_CardWallet_Text_PrimaData" min="-2" pref="145" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="CDC_CardWallet_Label_UltimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_CardWallet_Text_UltimaData" min="-2" pref="139" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="CDC_CardWallet_Checkbox_ConsideraValoreMaggiore" alignment="0" min="-2" pref="455" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="CDC_CardWallet_Label_Spese" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Label_Entrate" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="CDC_CardWallet_Text_Spese" max="32767" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Text_Entrate" min="-2" pref="135" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="CDC_CardWallet_Label_GiacenzaMedia" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+                                      <Component id="CDC_CardWallet_Text_GiacenzaMedia" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="CDC_CardWallet_Label_SaldoFinale" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="CDC_CardWallet_Text_SaldoFinale" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="CDC_CardWallet_Label_SaldoIniziale" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="CDC_CardWallet_Text_SaldoIniziale" min="-2" pref="135" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="-2" pref="137" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="CDC_CardWallet_Label_FiltroTabelle" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_CardWallet_Text_FiltroTabelle" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="554" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="CDC_CardWallet_Label_GiacenzaIniziale" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_CardWallet_Text_GiacenzaIniziale" min="-2" pref="142" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="CDC_CardWallet_Label_PeriodoRiferimento" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_CardWallet_Text_PeriodoRiferimento" min="-2" pref="204" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="CDC_CardWallet_Label_Tabella1" max="32767" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Tabella1Scroll" pref="300" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="CDC_CardWallet_Tabella2Scroll" pref="594" max="32767" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Label_Tabella2" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="CDC_CardWallet_Label_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Text_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Label_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Text_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Bottone_CaricaCSV" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="CDC_CardWallet_Checkbox_ConsideraValoreMaggiore" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="CDC_CardWallet_Label_GiacenzaIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Text_GiacenzaIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Label_PeriodoRiferimento" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Text_PeriodoRiferimento" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_CardWallet_Label_SaldoIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Text_SaldoIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_CardWallet_Label_SaldoFinale" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Text_SaldoFinale" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_CardWallet_Text_GiacenzaMedia" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Label_GiacenzaMedia" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_CardWallet_Label_Spese" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Text_Spese" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_CardWallet_Text_Entrate" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Label_Entrate" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="82" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_CardWallet_Label_Tabella1" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Label_Tabella2" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="CDC_CardWallet_Tabella2Scroll" pref="247" max="32767" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Tabella1Scroll" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="CDC_CardWallet_Label_FiltroTabelle" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_CardWallet_Text_FiltroTabelle" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JButton" name="CDC_CardWallet_Bottone_CaricaCSV">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Carica Dati Carta"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_CardWallet_Bottone_CaricaCSVActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_PrimaData">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Data prima transazione disponibile : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_PrimaData">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_UltimaData">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Data ultima transazione disponibile : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_UltimaData">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_CardWallet_Text_UltimaDataActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_GiacenzaIniziale">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Inserire la giacenza inziale in euro al : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_GiacenzaIniziale">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="text" type="java.lang.String" value="0"/>
+              </Properties>
+              <Events>
+                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="CDC_CardWallet_Text_GiacenzaInizialeKeyReleased"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="CDC_CardWallet_Checkbox_ConsideraValoreMaggiore">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Per il calcolo della giacenza media considera il valore pi&#xf9; alto della giornata"/>
+              </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JSeparator" name="jSeparator2">
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_PeriodoRiferimento">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="99" green="0" red="0" type="rgb"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_PeriodoRiferimento">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Periodo di riferimento -&gt; "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_GiacenzaMedia">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="GiacenzaMedia : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_GiacenzaMedia">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_Spese">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Totale Spese :"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_Entrate">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Totale Entrate :"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_Entrate">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_Spese">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_SaldoIniziale">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Saldo Inizio Periodo :"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_SaldoIniziale">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="toolTipText" type="java.lang.String" value="Saldo ad Inizio Giornata"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_SaldoFinale">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Saldo Fine Periodo :"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_SaldoFinale">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="toolTipText" type="java.lang.String" value="Saldo a Fine Giornata"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="CDC_CardWallet_Tabella1Scroll">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTable" name="CDC_CardWallet_Tabella1">
+                  <Properties>
+                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                      <Table columnCount="2" rowCount="0">
+                        <Column editable="false" title="Causale" type="java.lang.Object"/>
+                        <Column editable="false" title="Ammontare" type="java.lang.Double"/>
+                      </Table>
+                    </Property>
+                    <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                      <TableColumnModel selectionModel="0">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="-1" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                      </TableColumnModel>
+                    </Property>
+                    <Property name="showGrid" type="boolean" value="true"/>
+                    <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                      <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JScrollPane" name="CDC_CardWallet_Tabella2Scroll">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTable" name="CDC_CardWallet_Tabella2">
+                  <Properties>
+                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                      <Table columnCount="3" rowCount="0">
+                        <Column editable="true" title="Data" type="java.lang.Object"/>
+                        <Column editable="true" title="Controparte" type="java.lang.Object"/>
+                        <Column editable="true" title="Valore" type="java.lang.Double"/>
+                      </Table>
+                    </Property>
+                    <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                      <TableColumnModel selectionModel="0">
+                        <Column maxWidth="200" minWidth="-1" prefWidth="200" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="-1" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                      </TableColumnModel>
+                    </Property>
+                    <Property name="selectionMode" type="int" value="2"/>
+                    <Property name="showGrid" type="boolean" value="true"/>
+                    <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                      <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_Tabella1">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="horizontalAlignment" type="int" value="0"/>
+                <Property name="text" type="java.lang.String" value="TABELLA MOVIMENTI RAGRUPPATI PER CAUSALE"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_Tabella2">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="horizontalAlignment" type="int" value="0"/>
+                <Property name="text" type="java.lang.String" value="TABELLA MOVIMENTI"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_CardWallet_Label_FiltroTabelle">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Filtro Tabelle : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_CardWallet_Text_FiltroTabelle">
+              <Events>
+                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="CDC_CardWallet_Text_FiltroTabelleKeyReleased"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="CDC_FiatWallet_Pannello">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Fiat Wallet">
+                <Property name="tabTitle" type="java.lang.String" value="Fiat Wallet"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="CDC_FiatWallet_Label_GiacenzaIniziale" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Text_GiacenzaIniziale" min="-2" pref="142" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="CDC_FiatWallet_Tabella1Scroll" min="-2" pref="379" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                      <Group type="102" alignment="0" attributes="0">
+                                                          <Component id="CDC_FiatWallet_Label_SaldoFinale" min="-2" max="-2" attributes="0"/>
+                                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                                          <Component id="CDC_FiatWallet_Text_SaldoFinale" max="32767" attributes="0"/>
+                                                      </Group>
+                                                      <Group type="102" alignment="0" attributes="0">
+                                                          <Component id="CDC_FiatWallet_Label_SaldoIniziale" min="-2" max="-2" attributes="0"/>
+                                                          <EmptySpace max="-2" attributes="0"/>
+                                                          <Component id="CDC_FiatWallet_Text_SaldoIniziale" min="-2" pref="155" max="-2" attributes="0"/>
+                                                      </Group>
+                                                      <Group type="102" alignment="1" attributes="0">
+                                                          <Component id="CDC_FiatWallet_Label_GiacenzaMedia" min="-2" max="-2" attributes="0"/>
+                                                          <EmptySpace max="32767" attributes="0"/>
+                                                          <Component id="CDC_FiatWallet_Text_GiacenzaMedia" min="-2" pref="155" max="-2" attributes="0"/>
+                                                      </Group>
+                                                      <Component id="CDC_FiatWallet_Label_Errore1" pref="448" max="32767" attributes="0"/>
+                                                      <Component id="CDC_FiatWallet_Label_Errore2" alignment="0" max="32767" attributes="0"/>
+                                                  </Group>
+                                                  <Component id="CDC_FiatWallet_Bottone_Errore" min="-2" pref="333" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Component id="jSeparator1" max="32767" attributes="0"/>
+                                          <Component id="CDC_FiatWallet_Tabella2Scroll" alignment="1" max="32767" attributes="0"/>
+                                          <Component id="CDC_FiatWallet_Label_Tabella2" alignment="0" max="32767" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="CDC_FiatWallet_Label_FiltroTabella" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="CDC_FiatWallet_Text_FiltroTabella" max="32767" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore" min="-2" pref="455" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="CDC_FiatWallet_Bottone_CaricaCSV" min="-2" pref="163" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Label_PrimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Text_PrimaData" min="-2" pref="145" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="CDC_FiatWallet_Label_PeriodoRiferimento" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="CDC_FiatWallet_Text_PeriodoRiferimento" min="-2" pref="204" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" attributes="0">
+                                              <Component id="CDC_FiatWallet_Label_UltimaData" min="-2" pref="196" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="CDC_FiatWallet_Text_UltimaData" min="-2" pref="149" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="0" pref="15" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="CDC_FiatWallet_Label_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Text_PrimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Label_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Text_UltimaData" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Bottone_CaricaCSV" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="CDC_FiatWallet_Label_GiacenzaIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Text_GiacenzaIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Label_PeriodoRiferimento" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Text_PeriodoRiferimento" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_FiatWallet_Label_SaldoIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_FiatWallet_Text_SaldoIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_FiatWallet_Label_SaldoFinale" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_FiatWallet_Text_SaldoFinale" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="CDC_FiatWallet_Label_GiacenzaMedia" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CDC_FiatWallet_Text_GiacenzaMedia" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Label_Errore1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Label_Errore2" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Bottone_Errore" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="CDC_FiatWallet_Tabella1Scroll" alignment="0" min="-2" pref="181" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="CDC_FiatWallet_Label_Tabella2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="CDC_FiatWallet_Tabella2Scroll" pref="205" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="CDC_FiatWallet_Label_FiltroTabella" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Text_FiltroTabella" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JButton" name="CDC_FiatWallet_Bottone_CaricaCSV">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Carica Dati Fiat Wallet"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_FiatWallet_Bottone_CaricaCSVActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_PrimaData">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Data prima transazione disponibile : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_UltimaData">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Data ultima transazione disponibile : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_PrimaData">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_UltimaData">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_FiatWallet_Text_UltimaDataActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_GiacenzaIniziale">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Inserire la giacenza inziale in euro al : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_GiacenzaIniziale">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="text" type="java.lang.String" value="0"/>
+              </Properties>
+              <Events>
+                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_PeriodoRiferimento">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Periodo di riferimento -&gt; "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_GiacenzaMedia">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="GiacenzaMedia : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_GiacenzaMedia">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_PeriodoRiferimento">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="99" green="0" red="0" type="rgb"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSeparator" name="jSeparator1">
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Per il calcolo della giacenza media considera il valore pi&#xf9; alto della giornata"/>
+              </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_FiatWallet_Checkbox_ConsideraValoreMaggioreMouseClicked"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_SaldoIniziale">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="toolTipText" type="java.lang.String" value="Saldo ad Inizio Giornata"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_SaldoIniziale">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Saldo Inizio Periodo :"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_SaldoFinale">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Saldo Fine Periodo :"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_SaldoFinale">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+                <Property name="toolTipText" type="java.lang.String" value="Saldo a Fine Giornata"/>
+              </Properties>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="CDC_FiatWallet_Tabella1Scroll">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTable" name="CDC_FiatWallet_Tabella1">
+                  <Properties>
+                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                      <Table columnCount="2" rowCount="0">
+                        <Column editable="false" title="Causale" type="java.lang.Object"/>
+                        <Column editable="false" title="Ammontare" type="java.lang.Double"/>
+                      </Table>
+                    </Property>
+                    <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                      <TableColumnModel selectionModel="0">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="-1" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                      </TableColumnModel>
+                    </Property>
+                    <Property name="showGrid" type="boolean" value="true"/>
+                    <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                      <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JScrollPane" name="CDC_FiatWallet_Tabella2Scroll">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTable" name="CDC_FiatWallet_Tabella2">
+                  <Properties>
+                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                      <Table columnCount="4" rowCount="0">
+                        <Column editable="true" title="Data" type="java.lang.Object"/>
+                        <Column editable="true" title="Causale" type="java.lang.Object"/>
+                        <Column editable="true" title="Dettaglio" type="java.lang.Object"/>
+                        <Column editable="true" title="Valore" type="java.lang.Double"/>
+                      </Table>
+                    </Property>
+                    <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                      <TableColumnModel selectionModel="0">
+                        <Column maxWidth="200" minWidth="-1" prefWidth="200" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="-1" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                      </TableColumnModel>
+                    </Property>
+                    <Property name="selectionMode" type="int" value="2"/>
+                    <Property name="showGrid" type="boolean" value="true"/>
+                    <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                      <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_Tabella2">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="horizontalAlignment" type="int" value="0"/>
+                <Property name="text" type="java.lang.String" value="TABELLA MOVIMENTI"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_Errore1">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="33" green="0" red="ff" type="rgb"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Attenzione ci sono dei movimenti non contabilizzati!"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_Errore2">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="0" green="0" red="ff" type="rgb"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Premere sul pulsante qui sotto per visualizzarli!"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="CDC_FiatWallet_Bottone_Errore">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Vedi Errori"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_FiatWallet_Bottone_ErroreActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_FiltroTabella">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Filtro Tabella Movimenti : "/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="CDC_FiatWallet_Text_FiltroTabella">
+              <Events>
+                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="CDC_FiatWallet_Text_FiltroTabellaKeyReleased"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="CDC_Opzioni">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Opzioni">
+                <Property name="tabTitle" type="java.lang.String" value="Opzioni"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="CDC_Opzioni_Bottone_CancellaFiatWallet" max="32767" attributes="0"/>
+                          <Component id="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet" pref="301" max="32767" attributes="0"/>
+                          <Component id="CDC_Opzioni_Bottone_CancellaCardWallet" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="0" pref="605" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="CDC_Opzioni_Bottone_CancellaFiatWallet" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
+                      <Component id="CDC_Opzioni_Bottone_CancellaCardWallet" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="353" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JButton" name="CDC_Opzioni_Bottone_CancellaFiatWallet">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Elimina tutti i dati dal Fiat Wallet"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Elimina personalizzazioni movimenti Fiat Wallet"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="CDC_Opzioni_Bottone_CancellaCardWallet">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Elimina tutti i dati dal Card Wallet"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JLabel" name="jLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Seleziona data inizio e fine per i calcoli -&gt;"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel2">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Data Inizio :"/>
+      </Properties>
+    </Component>
+    <Component class="com.toedter.calendar.JDateChooser" name="CDC_DataChooser_Iniziale">
+      <Properties>
+        <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
+      </Properties>
+      <Events>
+        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="CDC_DataChooser_InizialePropertyChange"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel3">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Data Fine :"/>
+      </Properties>
+    </Component>
+    <Component class="com.toedter.calendar.JDateChooser" name="CDC_DataChooser_Finale">
+      <Properties>
+        <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
+      </Properties>
+      <Events>
+        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="CDC_DataChooser_FinalePropertyChange"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_Giorni">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Giorni : "/>
+      </Properties>
+    </Component>
+  </SubComponents>
+</Form>

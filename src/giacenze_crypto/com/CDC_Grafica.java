@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package Grafica_Crypto;
+package giacenze_crypto.com;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import giacenze_crypto.com.Gestione_Errori;

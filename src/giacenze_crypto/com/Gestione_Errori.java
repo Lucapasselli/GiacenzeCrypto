@@ -4,9 +4,8 @@
  */
 package giacenze_crypto.com;
 
-import Grafica_Crypto.CDC_Grafica;
-import static Grafica_Crypto.CDC_Grafica.ConvertiDatainLong;
-import static Grafica_Crypto.CDC_Grafica.PulisciTabella;
+import static giacenze_crypto.com.CDC_Grafica.ConvertiDatainLong;
+import static giacenze_crypto.com.CDC_Grafica.PulisciTabella;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;

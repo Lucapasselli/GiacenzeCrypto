@@ -4,17 +4,10 @@
  */
 package giacenze_crypto.com;
 
-import static giacenze_crypto.com.CDC_Grafica.ConvertiDatainLong;
-import static giacenze_crypto.com.CDC_Grafica.PulisciTabella;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -120,9 +113,10 @@ public class Gestione_Errori extends javax.swing.JDialog {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         //System.out.println(TabellaErrori.getSelectedRow());//-1 nessuna riga selezionata
-        if (TabellaErrori.getSelectedRow()!=-1){ 
+        if (TabellaErrori.getSelectedRow()!=-1){
+            if (TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 10).toString().equalsIgnoreCase("2")){
             String Messaggio="Selezione il tipo di movimento per la transazione denominata : \n";
-            Messaggio=Messaggio+TabellaErrori.getModel().getValueAt(0, 9)+"\n";
+            Messaggio=Messaggio+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+"\n";
             //int risposta=JOptionPane.showConfirmDialog(null,Messaggio, "Movimento in ingresso?", JOptionPane.YES_NO_CANCEL_OPTION);
             int risposta=JOptionPane.showOptionDialog(null, Messaggio, "Seleziona Tipologia", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Movimento in Ingresso", "Movimento in Uscita","Annulla"}, "okay");
             //yes=0;no=1;cancel=2;
@@ -135,7 +129,7 @@ public class Gestione_Errori extends javax.swing.JDialog {
                     {
                         b.write(value+"\n");
                     }
-                    String Nuovariga=TabellaErrori.getModel().getValueAt(0, 9)+";+;Personalizzato;"+TabellaErrori.getModel().getValueAt(0, 9);
+                    String Nuovariga=TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+";+;Personalizzato;"+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9);
                     b.write(Nuovariga+"\n");
                     //CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.put(TabellaErrori.getModel().getValueAt(0, 9).toString(), Nuovariga);
                     b.close();
@@ -145,7 +139,7 @@ public class Gestione_Errori extends javax.swing.JDialog {
 
                 }
                 
-                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(0, 9)+" come movimento in ingresso", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento in ingresso", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
                 //CDC_Grafica.CDC_FiatWallet_Funzione_ImportaWallet(CDC_Grafica.CDC_FiatWallet_FileDB,CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDB);
                 this.dispose();
             }
@@ -159,7 +153,7 @@ public class Gestione_Errori extends javax.swing.JDialog {
                     {
                         b.write(value+"\n");
                     }
-                    String Nuovariga=TabellaErrori.getModel().getValueAt(0, 9)+";-;Personalizzato;"+TabellaErrori.getModel().getValueAt(0, 9);
+                    String Nuovariga=TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+";-;Personalizzato;"+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9);
                     b.write(Nuovariga+"\n");
                     //CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.put(TabellaErrori.getModel().getValueAt(0, 9).toString(), Nuovariga);
                     b.close();
@@ -168,12 +162,17 @@ public class Gestione_Errori extends javax.swing.JDialog {
                 {
 
                 }
-                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(0, 9)+" come movimento in uscita", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento in uscita", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
                 this.dispose();
             }
             if (risposta==2){
                 //non ho dato nessuna risposta, non faccio nulla
             }
+            }
+            else
+             {
+                JOptionPane.showMessageDialog(null,"Riga senza valuta in Euro, non verrà considerata", "Attenzione", JOptionPane.OK_OPTION); 
+             }   
             }
         else
             {
@@ -224,6 +223,12 @@ public class Gestione_Errori extends javax.swing.JDialog {
         PulisciTabella(ModelloTabellaErrori);
         for (String value : Mappa.values()) {
             String[] riga=value.split(",");
+            if (riga[10].equalsIgnoreCase("")&&riga.length==12)
+                {
+                    //sui nuovi csv è stata aggiunta una colonna vuota,la gestisco in questo modo
+                    //copiando il valore successivo in quello vuoto
+                    riga[10]=riga[11];
+                }
             ModelloTabellaErrori.addRow(riga);
             
         }

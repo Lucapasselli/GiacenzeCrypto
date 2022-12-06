@@ -69,7 +69,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.01 Beta");
+            this.setTitle("Giacenze_Crypto.com 1.02 Beta");
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
 
@@ -1244,6 +1244,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         TipoErrore="2";//Movimento sconosciuto, non viene contabilizzato per la giacenza media
                     }
                     CDC_FiatWallet_MappaErrori.put(String.valueOf(errori), value+","+TipoErrore);
+                    //System.out.println(value+","+TipoErrore);
                     errori++;
                 }
  
@@ -1423,12 +1424,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         CDC_FiatWallet_MappaCausali.put(splittata[9], Somma);
                     }
                 }
+                CDC_FiatWallet_ModelloTabella2.addRow(CDC_FiatWallet_RigaTabella2);
                 }else{
                 //errore, non ho trovato movimentazioni in euro
                     
                 }
                     
-                CDC_FiatWallet_ModelloTabella2.addRow(CDC_FiatWallet_RigaTabella2);
+               // CDC_FiatWallet_ModelloTabella2.addRow(CDC_FiatWallet_RigaTabella2);
             }
         }
 

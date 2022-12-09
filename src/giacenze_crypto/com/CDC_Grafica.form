@@ -497,55 +497,22 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Label_GiacenzaIniziale" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Text_GiacenzaIniziale" min="-2" pref="142" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Label_PeriodoRiferimento" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="CDC_FiatWallet_Text_PeriodoRiferimento" min="-2" pref="204" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="CDC_FiatWallet_Label_GiacenzaIniziale" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="CDC_FiatWallet_Text_GiacenzaIniziale" min="-2" pref="142" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="CDC_FiatWallet_Label_PeriodoRiferimento" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="CDC_FiatWallet_Text_PeriodoRiferimento" min="-2" pref="204" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="jSeparator1" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="CDC_FiatWallet_Tabella1Scroll" min="-2" pref="379" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                      <Group type="102" alignment="0" attributes="0">
-                                                          <Component id="CDC_FiatWallet_Label_SaldoFinale" min="-2" max="-2" attributes="0"/>
-                                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                                          <Component id="CDC_FiatWallet_Text_SaldoFinale" max="32767" attributes="0"/>
-                                                      </Group>
-                                                      <Group type="102" alignment="0" attributes="0">
-                                                          <Component id="CDC_FiatWallet_Label_SaldoIniziale" min="-2" max="-2" attributes="0"/>
-                                                          <EmptySpace max="-2" attributes="0"/>
-                                                          <Component id="CDC_FiatWallet_Text_SaldoIniziale" min="-2" pref="155" max="-2" attributes="0"/>
-                                                      </Group>
-                                                      <Group type="102" alignment="1" attributes="0">
-                                                          <Component id="CDC_FiatWallet_Label_GiacenzaMedia" min="-2" max="-2" attributes="0"/>
-                                                          <EmptySpace max="32767" attributes="0"/>
-                                                          <Component id="CDC_FiatWallet_Text_GiacenzaMedia" min="-2" pref="155" max="-2" attributes="0"/>
-                                                      </Group>
-                                                      <Component id="CDC_FiatWallet_Label_Errore1" pref="448" max="32767" attributes="0"/>
-                                                      <Component id="CDC_FiatWallet_Label_Errore2" alignment="0" max="32767" attributes="0"/>
-                                                  </Group>
-                                                  <Component id="CDC_FiatWallet_Bottone_Errore" min="-2" pref="333" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                          </Group>
-                                          <Component id="jSeparator1" max="32767" attributes="0"/>
-                                          <Component id="CDC_FiatWallet_Tabella2Scroll" alignment="1" max="32767" attributes="0"/>
-                                          <Component id="CDC_FiatWallet_Label_Tabella2" alignment="0" max="32767" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="CDC_FiatWallet_Label_FiltroTabella" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="CDC_FiatWallet_Text_FiltroTabella" max="32767" attributes="0"/>
-                                          </Group>
-                                      </Group>
+                                      <Component id="CDC_FiatWallet_Label_FiltroTabella" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Text_FiltroTabella" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -563,8 +530,46 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="CDC_FiatWallet_Text_UltimaData" min="-2" pref="149" max="-2" attributes="0"/>
                                   </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="CDC_FiatWallet_Tabella1Scroll" min="-2" pref="380" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="46" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="CDC_FiatWallet_Label_Errore1" max="32767" attributes="0"/>
+                                              <Component id="CDC_FiatWallet_Label_Errore2" alignment="0" max="32767" attributes="0"/>
+                                              <Group type="102" alignment="0" attributes="0">
+                                                  <Component id="CDC_FiatWallet_Label_SaldoIniziale" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="CDC_FiatWallet_Text_SaldoIniziale" min="-2" pref="155" max="-2" attributes="0"/>
+                                              </Group>
+                                              <Group type="102" alignment="0" attributes="0">
+                                                  <Group type="103" groupAlignment="0" attributes="0">
+                                                      <Component id="CDC_FiatWallet_Label_SaldoFinale" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                      <Component id="CDC_FiatWallet_Label_GiacenzaMedia" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                      <Component id="CDC_FiatWallet_Text_GiacenzaMedia" pref="155" max="32767" attributes="0"/>
+                                                      <Component id="CDC_FiatWallet_Text_SaldoFinale" max="32767" attributes="0"/>
+                                                  </Group>
+                                              </Group>
+                                          </Group>
+                                          <Component id="CDC_FiatWallet_Bottone_Errore" min="-2" pref="333" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
                               </Group>
                               <EmptySpace min="0" pref="68" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="CDC_FiatWallet_Tabella3Scroll" pref="379" max="32767" attributes="0"/>
+                                  <Component id="CDC_FiatWallet_Label_Tabella3" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="CDC_FiatWallet_Label_Tabella2" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="CDC_FiatWallet_Tabella2Scroll" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -620,9 +625,15 @@
                           <Component id="CDC_FiatWallet_Tabella1Scroll" alignment="0" min="-2" pref="181" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="CDC_FiatWallet_Label_Tabella2" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="CDC_FiatWallet_Label_Tabella2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Label_Tabella3" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="CDC_FiatWallet_Tabella2Scroll" pref="205" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="205" max="32767" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Tabella3Scroll" pref="0" max="32767" attributes="0"/>
+                      </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="CDC_FiatWallet_Label_FiltroTabella" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -797,7 +808,7 @@
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                       <TableColumnModel selectionModel="0">
-                        <Column maxWidth="200" minWidth="-1" prefWidth="200" resizable="true">
+                        <Column maxWidth="130" minWidth="-1" prefWidth="130" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -882,6 +893,53 @@
               <Events>
                 <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="CDC_FiatWallet_Text_FiltroTabellaKeyReleased"/>
               </Events>
+            </Component>
+            <Container class="javax.swing.JScrollPane" name="CDC_FiatWallet_Tabella3Scroll">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTable" name="CDC_FiatWallet_Tabella3">
+                  <Properties>
+                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                      <Table columnCount="2" rowCount="0">
+                        <Column editable="false" title="Causale" type="java.lang.Object"/>
+                        <Column editable="false" title="Ammontare" type="java.lang.Double"/>
+                      </Table>
+                    </Property>
+                    <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                      <TableColumnModel selectionModel="0">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="-1" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                      </TableColumnModel>
+                    </Property>
+                    <Property name="showGrid" type="boolean" value="true"/>
+                    <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                      <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JLabel" name="CDC_FiatWallet_Label_Tabella3">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="horizontalAlignment" type="int" value="0"/>
+                <Property name="text" type="java.lang.String" value="Tabella Dettagli Aggregati"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

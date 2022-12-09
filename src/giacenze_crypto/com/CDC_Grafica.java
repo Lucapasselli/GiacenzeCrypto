@@ -179,6 +179,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Bottone_Errore = new javax.swing.JButton();
         CDC_FiatWallet_Label_FiltroTabella = new javax.swing.JLabel();
         CDC_FiatWallet_Text_FiltroTabella = new javax.swing.JTextField();
+        CDC_FiatWallet_Tabella3Scroll = new javax.swing.JScrollPane();
+        CDC_FiatWallet_Tabella3 = new javax.swing.JTable();
+        CDC_FiatWallet_Label_Tabella3 = new javax.swing.JLabel();
         CDC_Opzioni = new javax.swing.JPanel();
         CDC_Opzioni_Bottone_CancellaFiatWallet = new javax.swing.JButton();
         CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet = new javax.swing.JButton();
@@ -568,8 +571,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Tabella2.setShowGrid(true);
         CDC_FiatWallet_Tabella2Scroll.setViewportView(CDC_FiatWallet_Tabella2);
         if (CDC_FiatWallet_Tabella2.getColumnModel().getColumnCount() > 0) {
-            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setPreferredWidth(200);
-            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setMaxWidth(200);
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setPreferredWidth(130);
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setMaxWidth(130);
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(3).setPreferredWidth(100);
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(3).setMaxWidth(100);
         }
@@ -603,6 +606,41 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        CDC_FiatWallet_Tabella3.setAutoCreateRowSorter(true);
+        CDC_FiatWallet_Tabella3.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Causale", "Ammontare"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Double.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        CDC_FiatWallet_Tabella3.setShowGrid(true);
+        CDC_FiatWallet_Tabella3Scroll.setViewportView(CDC_FiatWallet_Tabella3);
+        if (CDC_FiatWallet_Tabella3.getColumnModel().getColumnCount() > 0) {
+            CDC_FiatWallet_Tabella3.getColumnModel().getColumn(1).setPreferredWidth(100);
+            CDC_FiatWallet_Tabella3.getColumnModel().getColumn(1).setMaxWidth(100);
+        }
+
+        CDC_FiatWallet_Label_Tabella3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_FiatWallet_Label_Tabella3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        CDC_FiatWallet_Label_Tabella3.setText("Tabella Dettagli Aggregati");
+
         javax.swing.GroupLayout CDC_FiatWallet_PannelloLayout = new javax.swing.GroupLayout(CDC_FiatWallet_Pannello);
         CDC_FiatWallet_Pannello.setLayout(CDC_FiatWallet_PannelloLayout);
         CDC_FiatWallet_PannelloLayout.setHorizontalGroup(
@@ -611,46 +649,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                         .addContainerGap()
+                        .addComponent(CDC_FiatWallet_Label_GiacenzaIniziale)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(CDC_FiatWallet_Label_PeriodoRiferimento)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_FiatWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator1)
                             .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                .addComponent(CDC_FiatWallet_Label_GiacenzaIniziale)
+                                .addComponent(CDC_FiatWallet_Label_FiltroTabella)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(CDC_FiatWallet_Label_PeriodoRiferimento)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(CDC_FiatWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                        .addComponent(CDC_FiatWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(41, 41, 41)
-                                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                                    .addComponent(CDC_FiatWallet_Label_SaldoFinale)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                    .addComponent(CDC_FiatWallet_Text_SaldoFinale))
-                                                .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                                    .addComponent(CDC_FiatWallet_Label_SaldoIniziale)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(CDC_FiatWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                                    .addComponent(CDC_FiatWallet_Label_GiacenzaMedia)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                    .addComponent(CDC_FiatWallet_Text_GiacenzaMedia, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addComponent(CDC_FiatWallet_Label_Errore1, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
-                                                .addComponent(CDC_FiatWallet_Label_Errore2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                            .addComponent(CDC_FiatWallet_Bottone_Errore, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addComponent(jSeparator1)
-                                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(CDC_FiatWallet_Label_Tabella2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                        .addComponent(CDC_FiatWallet_Label_FiltroTabella)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(CDC_FiatWallet_Text_FiltroTabella))))))
+                                .addComponent(CDC_FiatWallet_Text_FiltroTabella))))
                     .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore, javax.swing.GroupLayout.PREFERRED_SIZE, 455, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -663,8 +676,36 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(CDC_FiatWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 68, Short.MAX_VALUE)))
+                                .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_FiatWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(46, 46, 46)
+                                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(CDC_FiatWallet_Label_Errore1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(CDC_FiatWallet_Label_Errore2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                            .addComponent(CDC_FiatWallet_Label_SaldoIniziale)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(CDC_FiatWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                            .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(CDC_FiatWallet_Label_SaldoFinale)
+                                                .addComponent(CDC_FiatWallet_Label_GiacenzaMedia))
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                .addComponent(CDC_FiatWallet_Text_GiacenzaMedia, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+                                                .addComponent(CDC_FiatWallet_Text_SaldoFinale))))
+                                    .addComponent(CDC_FiatWallet_Bottone_Errore, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 68, Short.MAX_VALUE))
+                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                            .addComponent(CDC_FiatWallet_Label_Tabella3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(CDC_FiatWallet_Label_Tabella2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(CDC_FiatWallet_Tabella2Scroll))))
                 .addContainerGap())
         );
         CDC_FiatWallet_PannelloLayout.setVerticalGroup(
@@ -709,9 +750,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(CDC_FiatWallet_Bottone_Errore))
                     .addComponent(CDC_FiatWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC_FiatWallet_Label_Tabella2)
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CDC_FiatWallet_Label_Tabella2)
+                    .addComponent(CDC_FiatWallet_Label_Tabella3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                    .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(CDC_FiatWallet_Label_FiltroTabella)
@@ -1369,10 +1414,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DefaultTableModel CDC_FiatWallet_ModelloTabella1 = (DefaultTableModel) CDC_FiatWallet_Tabella1.getModel();
         DefaultTableModel CDC_FiatWallet_ModelloTabella2 = (DefaultTableModel) CDC_FiatWallet_Tabella2.getModel();
+        DefaultTableModel CDC_FiatWallet_ModelloTabella3 = (DefaultTableModel) CDC_FiatWallet_Tabella3.getModel();
         PulisciTabella(CDC_FiatWallet_ModelloTabella1);
         PulisciTabella(CDC_FiatWallet_ModelloTabella2);
+        PulisciTabella(CDC_FiatWallet_ModelloTabella3);
 
         Map<String, String> CDC_FiatWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, String> CDC_FiatWallet_Descrizioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         for (String value : CDC_FiatWallet_Mappa.values()) {
 
@@ -1425,6 +1473,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     }
                 }
                 CDC_FiatWallet_ModelloTabella2.addRow(CDC_FiatWallet_RigaTabella2);
+                //creo movimenti tabella 3
+                if (CDC_FiatWallet_Descrizioni.get(splittata[1]) == null) {
+                        // se è una controparte nuova allora la aggiungo alla mappa
+                        // altrimenti la aggiorno con il valore corretto
+                        CDC_FiatWallet_Descrizioni.put(splittata[1], splittata[Colonna]);
+                    } else {
+                        BigDecimal Addendo1 = new BigDecimal(CDC_FiatWallet_Descrizioni.get(splittata[1]));
+                        BigDecimal Addendo2 = new BigDecimal(splittata[Colonna]);
+                        String Somma = Addendo1.add(Addendo2).toString();
+                        CDC_FiatWallet_Descrizioni.put(splittata[1], Somma);
+                    }
+                
                 }else{
                 //errore, non ho trovato movimentazioni in euro
                     
@@ -1439,6 +1499,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             CDC_FiatWallet_RigaTabella1[0] = key;
             CDC_FiatWallet_RigaTabella1[1] = Double.valueOf(CDC_FiatWallet_MappaCausali.get(key));
             CDC_FiatWallet_ModelloTabella1.addRow(CDC_FiatWallet_RigaTabella1);
+        }
+        for (String key : CDC_FiatWallet_Descrizioni.keySet()) {
+           // System.out.println(Double.valueOf(CDC_FiatWallet_Descrizioni.get(key)));
+            Object CDC_FiatWallet_RigaTabella3[] = new Object[2];
+            CDC_FiatWallet_RigaTabella3[0] = key;
+            CDC_FiatWallet_RigaTabella3[1] = Double.valueOf(CDC_FiatWallet_Descrizioni.get(key));
+            CDC_FiatWallet_ModelloTabella3.addRow(CDC_FiatWallet_RigaTabella3);
         }
 
     }
@@ -2058,12 +2125,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel CDC_FiatWallet_Label_SaldoFinale;
     private javax.swing.JLabel CDC_FiatWallet_Label_SaldoIniziale;
     private javax.swing.JLabel CDC_FiatWallet_Label_Tabella2;
+    private javax.swing.JLabel CDC_FiatWallet_Label_Tabella3;
     private javax.swing.JLabel CDC_FiatWallet_Label_UltimaData;
     private javax.swing.JPanel CDC_FiatWallet_Pannello;
     private javax.swing.JTable CDC_FiatWallet_Tabella1;
     private javax.swing.JScrollPane CDC_FiatWallet_Tabella1Scroll;
     private javax.swing.JTable CDC_FiatWallet_Tabella2;
     private javax.swing.JScrollPane CDC_FiatWallet_Tabella2Scroll;
+    private javax.swing.JTable CDC_FiatWallet_Tabella3;
+    private javax.swing.JScrollPane CDC_FiatWallet_Tabella3Scroll;
     private javax.swing.JTextField CDC_FiatWallet_Text_FiltroTabella;
     private javax.swing.JTextField CDC_FiatWallet_Text_GiacenzaIniziale;
     private javax.swing.JTextField CDC_FiatWallet_Text_GiacenzaMedia;

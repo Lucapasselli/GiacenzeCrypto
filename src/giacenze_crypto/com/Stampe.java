@@ -7,111 +7,107 @@ package giacenze_crypto.com;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
+import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import java.awt.Desktop;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author luca.passelli
  */
 public class Stampe {
-      static Document doc = new Document();
+      static String FilePDF="";
+      static Document doc;
       static PdfWriter writer;
      public Stampe(String PDFPath) throws FileNotFoundException {
-       writer = PdfWriter.getInstance(doc, new FileOutputStream(PDFPath));
+       FilePDF=PDFPath;
+       doc = new Document();
+       writer = PdfWriter.getInstance(doc, new FileOutputStream(FilePDF));
        doc.open();  
        
      } 
-    public static void ScriviPDF(){
+    public void ScriviPDF(){
     try {
-      Font font = new Font(Font.HELVETICA, 12, Font.BOLDITALIC);
-     // Document doc = new Document();
-      //PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(PDFPath));
-      PdfPTable table = new PdfPTable(4);
-      table.setWidthPercentage(100);
-      // setting column widths
-      table.setWidths(new float[] {6.0f, 6.0f, 6.0f, 6.0f});
-      PdfPCell cell = new PdfPCell();
-      // table headers
-      cell.setPhrase(new Phrase("First Name", font));
-      table.addCell(cell);
-      cell.setPhrase(new Phrase("Last Name", font));
-      table.addCell(cell);
-      cell.setPhrase(new Phrase("Email", font));
-      table.addCell(cell);
-      cell.setPhrase(new Phrase("DOB", font));
-      table.addCell(cell);
-   /*   List<User> users = getListOfUsers();
-      // adding table rows
-      for(User user : users) {
-        table.addCell(user.getFirstName());
-        table.addCell(user.getLastName());
-        table.addCell(user.getEmail());
-        table.addCell(new SimpleDateFormat("dd/MM/yyyy").format(user.getDob()));
-      }*/
-      // adding table to document
-      doc.add(table);
       doc.close();
       writer.close();
       System.out.println("PDF using OpenPDF created successfully");
+      File file = new File(FilePDF);
+      if(Desktop.isDesktopSupported()&&file.exists())//check if Desktop is supported by Platform or not  
+{  
+    Desktop desktop = Desktop.getDesktop();  
+    desktop.open(file);              //opens the specified file  
+}  
     } catch (DocumentException  e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-    }
+    }     catch (IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
      }
     public static void AggiungiTitolo(String PDFPath){
 
      }
-    public static void AggiungiTabella(String PDFPath){
-
-     }
-    public static void AggiungiTesto(String PDFPath){
-
+    public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){
+      Font font = new Font(Font.HELVETICA, 12, Font.BOLD);
+      int NumeroColonne=Titoli.length;
+      PdfPTable table = new PdfPTable(NumeroColonne);
+      table.setWidthPercentage(100);
+      //setto le larghezze delle colonne
+      float[] larghezzacelle=new float[NumeroColonne];
+      for (int i=0;i<NumeroColonne;i++){
+          larghezzacelle[i]=6.0f;
+      }
+      //scrivo la riga dei titoli
+      table.setWidths(larghezzacelle);
+      PdfPCell cell = new PdfPCell();
+      for (int i=0;i<NumeroColonne;i++){
+          cell.setPhrase(new Phrase(Titoli[i], font));
+          table.addCell(cell);
+      }
+      //scrivo la riga tabella
+      font = new Font(Font.HELVETICA, 12, Font.NORMAL); 
+      
+      for(int i= 0; i < Dettagli.size(); i++){
+          String Dati[]=Dettagli.get(i);
+          if (Dati.length>=NumeroColonne)
+          {
+              for(int h= 0; h < NumeroColonne; h++){
+                cell.setPhrase(new Phrase(Dati[h], font));
+                //System.out.println(Dati[h]);
+                table.addCell(cell);
+              }
+          }
+          
+      }
+      doc.add(table);
+      
+      
      }
     
-  public static void creaTabellaPDF(String PDFPath,String[] Titoli, List<String[]> Dettagli){
-    try {
-      Font font = new Font(Font.HELVETICA, 12, Font.BOLDITALIC);
-     // Document doc = new Document();
-      PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(PDFPath));
-      PdfPTable table = new PdfPTable(4);
-      table.setWidthPercentage(100);
-      // setting column widths
-      table.setWidths(new float[] {6.0f, 6.0f, 6.0f, 6.0f});
-      PdfPCell cell = new PdfPCell();
-      // table headers
-      cell.setPhrase(new Phrase("First Name", font));
-      table.addCell(cell);
-      cell.setPhrase(new Phrase("Last Name", font));
-      table.addCell(cell);
-      cell.setPhrase(new Phrase("Email", font));
-      table.addCell(cell);
-      cell.setPhrase(new Phrase("DOB", font));
-      table.addCell(cell);
-   /*   List<User> users = getListOfUsers();
-      // adding table rows
-      for(User user : users) {
-        table.addCell(user.getFirstName());
-        table.addCell(user.getLastName());
-        table.addCell(user.getEmail());
-        table.addCell(new SimpleDateFormat("dd/MM/yyyy").format(user.getDob()));
-      }*/
-      doc.open();
-      // adding table to document
-      doc.add(table);
-      doc.close();
-      writer.close();
-      System.out.println("PDF using OpenPDF created successfully");
-    } catch (DocumentException | FileNotFoundException  e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-  }
+    
+    public void AggiungiTesto(String Testo,int intfont,float size){
+            //  Font font = new Font(Font.HELVETICA, 30, Font.BOLD);
+              Paragraph par = new Paragraph(Testo);
+              par.getFont().setSize(size);
+              par.getFont().setStyle(intfont);
+              doc.add(par);
+
+ 
+     }
+    
+
 
 
 

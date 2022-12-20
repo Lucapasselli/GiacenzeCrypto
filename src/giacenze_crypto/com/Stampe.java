@@ -9,8 +9,6 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -42,7 +40,6 @@ public class Stampe {
     try {
       doc.close();
       writer.close();
-      System.out.println("PDF using OpenPDF created successfully");
       File file = new File(FilePDF);
       if(Desktop.isDesktopSupported()&&file.exists())//check if Desktop is supported by Platform or not  
 {  

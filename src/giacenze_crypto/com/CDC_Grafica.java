@@ -15,6 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -51,7 +53,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
     static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
     static String CDC_FileDatiDB="crypto.com.dati.db";
-    static public String CDC_FiatWallet_FileTipiMovimentiDB="crypto.com.fiatwallet.tipimovimenti.db";
+    static String CDC_FiatWallet_FileTipiMovimentiDB="crypto.com.fiatwallet.tipimovimenti.db";
+    static public String CDC_FiatWallet_FileTipiMovimentiDBPers="crypto.com.fiatwallet.tipimovimentiPers.db";
     static String CDC_DataIniziale="";
     static String CDC_DataFinale="";
     static String CDC_FiatWallet_SaldoIniziale="0";
@@ -70,7 +73,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.03 Beta");
+            this.setTitle("Giacenze_Crypto.com 1.04");
+            ImageIcon icon = new ImageIcon("logo.png");
+            this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
 
@@ -92,7 +97,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
         
         CDC_LeggiFileDatiDB();
-        CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB); 
+        CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         //CDC_LeggiFileDatiDB();
 
@@ -132,8 +137,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_CardWallet_Text_GiacenzaIniziale = new javax.swing.JTextField();
         CDC_CardWallet_Checkbox_ConsideraValoreMaggiore = new javax.swing.JCheckBox();
         jSeparator2 = new javax.swing.JSeparator();
-        CDC_CardWallet_Text_PeriodoRiferimento = new javax.swing.JTextField();
-        CDC_CardWallet_Label_PeriodoRiferimento = new javax.swing.JLabel();
         CDC_CardWallet_Label_GiacenzaMedia = new javax.swing.JLabel();
         CDC_CardWallet_Text_GiacenzaMedia = new javax.swing.JTextField();
         CDC_CardWallet_Label_Spese = new javax.swing.JLabel();
@@ -161,10 +164,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Text_UltimaData = new javax.swing.JTextField();
         CDC_FiatWallet_Label_GiacenzaIniziale = new javax.swing.JLabel();
         CDC_FiatWallet_Text_GiacenzaIniziale = new javax.swing.JTextField();
-        CDC_FiatWallet_Label_PeriodoRiferimento = new javax.swing.JLabel();
         CDC_FiatWallet_Label_GiacenzaMedia = new javax.swing.JLabel();
         CDC_FiatWallet_Text_GiacenzaMedia = new javax.swing.JTextField();
-        CDC_FiatWallet_Text_PeriodoRiferimento = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore = new javax.swing.JCheckBox();
         CDC_FiatWallet_Text_SaldoIniziale = new javax.swing.JTextField();
@@ -194,7 +195,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
         jLabel3 = new javax.swing.JLabel();
         CDC_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
-        Label_Giorni = new javax.swing.JLabel();
+        CDC_Label_Giorni = new javax.swing.JLabel();
+        CDC_Text_Giorni = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -234,12 +236,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked(evt);
             }
         });
-
-        CDC_CardWallet_Text_PeriodoRiferimento.setEditable(false);
-        CDC_CardWallet_Text_PeriodoRiferimento.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        CDC_CardWallet_Text_PeriodoRiferimento.setForeground(new java.awt.Color(0, 0, 153));
-
-        CDC_CardWallet_Label_PeriodoRiferimento.setText("Periodo di riferimento -> ");
 
         CDC_CardWallet_Label_GiacenzaMedia.setText("GiacenzaMedia : ");
 
@@ -363,17 +359,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(CDC_CardWallet_Label_GiacenzaIniziale)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CDC_CardWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(CDC_CardWallet_Label_PeriodoRiferimento)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(CDC_CardWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(CDC_CardWallet_Label_Tabella1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE))
+                            .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Label_Tabella2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -431,9 +424,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(CDC_CardWallet_Label_GiacenzaIniziale)
-                    .addComponent(CDC_CardWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(CDC_CardWallet_Label_PeriodoRiferimento)
-                    .addComponent(CDC_CardWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(CDC_CardWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -465,7 +456,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(CDC_CardWallet_Label_Tabella2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -506,16 +497,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        CDC_FiatWallet_Label_PeriodoRiferimento.setText("Periodo di riferimento -> ");
-
         CDC_FiatWallet_Label_GiacenzaMedia.setText("GiacenzaMedia : ");
 
         CDC_FiatWallet_Text_GiacenzaMedia.setEditable(false);
         CDC_FiatWallet_Text_GiacenzaMedia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-
-        CDC_FiatWallet_Text_PeriodoRiferimento.setEditable(false);
-        CDC_FiatWallet_Text_PeriodoRiferimento.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        CDC_FiatWallet_Text_PeriodoRiferimento.setForeground(new java.awt.Color(0, 0, 153));
 
         CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.setText("Per il calcolo della giacenza media considera il valore più alto della giornata");
         CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -670,15 +655,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(CDC_FiatWallet_Label_GiacenzaIniziale)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(CDC_FiatWallet_Label_PeriodoRiferimento)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(CDC_FiatWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator1)
@@ -686,17 +662,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(CDC_FiatWallet_Label_FiltroTabella)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(CDC_FiatWallet_Text_FiltroTabella))))
-                    .addComponent(CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore, javax.swing.GroupLayout.PREFERRED_SIZE, 455, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                        .addComponent(CDC_FiatWallet_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(CDC_FiatWallet_Label_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(CDC_FiatWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(CDC_FiatWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                         .addComponent(CDC_FiatWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(46, 46, 46)
@@ -729,7 +694,26 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(CDC_FiatWallet_Label_Tabella2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(CDC_FiatWallet_Tabella2Scroll))))
+                            .addComponent(CDC_FiatWallet_Tabella2Scroll)))
+                    .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(CDC_FiatWallet_Label_GiacenzaIniziale)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore, javax.swing.GroupLayout.PREFERRED_SIZE, 455, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_FiatWallet_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(CDC_FiatWallet_Label_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_FiatWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_FiatWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         CDC_FiatWallet_PannelloLayout.setVerticalGroup(
@@ -747,9 +731,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(CDC_FiatWallet_Label_GiacenzaIniziale)
-                    .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(CDC_FiatWallet_Label_PeriodoRiferimento)
-                    .addComponent(CDC_FiatWallet_Text_PeriodoRiferimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(CDC_FiatWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -780,7 +762,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(CDC_FiatWallet_Label_Tabella3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
                     .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -831,7 +813,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet)
                 .addGap(106, 106, 106)
                 .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
-                .addContainerGap(353, Short.MAX_VALUE))
+                .addContainerGap(348, Short.MAX_VALUE))
         );
 
         CDC.addTab("Opzioni", CDC_Opzioni);
@@ -856,7 +838,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        Label_Giorni.setText("Giorni : ");
+        CDC_Label_Giorni.setText("Giorni : ");
+
+        CDC_Text_Giorni.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -866,34 +850,35 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(29, 29, 29)
-                        .addComponent(jLabel2)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(41, 41, 41)
-                        .addComponent(jLabel3)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(37, 37, 37)
-                        .addComponent(Label_Giorni)
-                        .addGap(170, 170, 170))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(CDC)
-                        .addContainerGap())))
+                        .addGap(124, 124, 124)
+                        .addComponent(CDC_Label_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CDC_Text_Giorni))
+                    .addComponent(CDC))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel1)
-                        .addComponent(jLabel2))
-                    .addComponent(jLabel3)
-                    .addComponent(CDC_DataChooser_Finale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Label_Giorni, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(CDC_Label_Giorni)
+                        .addComponent(CDC_Text_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(CDC)
                 .addContainerGap())
@@ -1003,7 +988,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             
     
     
-    public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet,String fiatWalletTipiMovimenti) {                                          
+    public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {                                          
         // TODO add your handling code here:
         
         //Questa funzione importa i dati del wallet, presi dal file csv o dal database interno e li mette nelle mappe
@@ -1048,13 +1033,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_MappaTipiMovimenti.clear();
         //Ora importo i tipi movimento del FiatWallet
         
-                try (FileReader fire = new FileReader(fiatWalletTipiMovimenti); 
+                try (FileReader fire = new FileReader(CDC_FiatWallet_FileTipiMovimentiDB); 
                 BufferedReader bure = new BufferedReader(fire);) 
         {
                 while((riga=bure.readLine())!=null)
                 {
                     String splittata[]=riga.split(";");
-                    if (splittata.length==4)// se non è esattamente uguale a 10 significa che il file non è corretto
+                    if (splittata.length==4)// se non è esattamente uguale a 4 significa che il file non è corretto
                     {
 
                             CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
@@ -1064,6 +1049,23 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
        bure.close();
        fire.close();
+               FileReader fires = new FileReader(CDC_FiatWallet_FileTipiMovimentiDBPers); 
+               BufferedReader bures = new BufferedReader(fires);
+        
+                while((riga=bures.readLine())!=null)
+                {
+                    String splittata[]=riga.split(";");
+                    if (splittata.length==4)// se non è esattamente uguale a 4 significa che il file non è corretto
+                    {
+
+                            CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
+                            //System.out.println("aaa");
+
+                    }
+                }
+       bures.close();
+       fires.close();
+       
     }   catch (FileNotFoundException ex) {     
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -1122,7 +1124,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
    private void CDC_FiatWallet_AggiornaDatisuGUI() {
        
-       CDC_FiatWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
+//       CDC_FiatWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
        //scrivo le date relative a tutto quello che ho in pancia come dati
        //In questa prima parte recupero i dati essenziali che mi servono poi per i calcoli
        CDC_FiatWallet_Mappa.size();
@@ -1182,7 +1184,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     private void CDC_CardWallet_AggiornaDatisuGUI() {
        
-       CDC_CardWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
+//       CDC_CardWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
        //scrivo le date relative a tutto quello che ho in pancia come dati
        //In questa prima parte recupero i dati essenziali che mi servono poi per i calcoli
        CDC_CardWallet_Mappa.size();
@@ -1284,7 +1286,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             if (Colonna!=999){
             for (String tempo : CDC_FiatWallet_MappaTipiMovimenti.values())
             {
-                if (splittata[9].contains(tempo.split(";")[0]))
+                if (splittata[9].trim().equalsIgnoreCase(tempo.split(";")[0].trim()))
                         {
                             TrovataCorrispondenzaTipo=true;
                             if (tempo.split(";")[1].equalsIgnoreCase("+")){
@@ -1461,7 +1463,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                    // String Segno = tempo.split(";")[1];
                     String Descrizione = tempo.split(";")[3];
                     String DescrizioneOriginale = tempo.split(";")[0];
-                    if (splittata[9].toUpperCase().contains(DescrizioneOriginale.toUpperCase())) {
+                    if (splittata[9].trim().equalsIgnoreCase(DescrizioneOriginale.trim())) {
                         trovato = true;
                         CDC_FiatWallet_RigaTabella2[0]=splittata[0];
                         CDC_FiatWallet_RigaTabella2[1]=Descrizione;
@@ -1762,7 +1764,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
 
             String fiatwallet=fc.getSelectedFile().getAbsolutePath();
-            CDC_FiatWallet_Funzione_ImportaWallet(fiatwallet,CDC_FiatWallet_FileTipiMovimentiDB);
+            CDC_FiatWallet_Funzione_ImportaWallet(fiatwallet);
 
             //ImportaFiatWallet("C:\\Users\\luca.passelli\\Desktop\\fiat_transactions_record_20220110_144004.csv");
             CDC_FiatWallet_Funzione_Scrivi();
@@ -1830,7 +1832,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 mod.CompilaTabellaErrori(CDC_FiatWallet_MappaErrori);
                 mod.setLocationRelativeTo(this);
                 mod.setVisible(true);
-                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB);
+                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
                 CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_FiatWallet_Bottone_ErroreActionPerformed
 
@@ -1841,7 +1843,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (risposta==0){
                 try 
                 { 
-                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDB);
+                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
                     BufferedWriter b=new BufferedWriter (w);
                     for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
                     {
@@ -1856,7 +1858,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 {
 
              }    }
-                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB);
+                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
                 CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
 
@@ -1877,7 +1879,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
              }    }
                 CDC_FiatWallet_Mappa.clear();
-                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB,CDC_FiatWallet_FileTipiMovimentiDB);
+                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
                 CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
 
@@ -2014,7 +2016,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     public String[] Calcolo_SaldieMedie(List<String>[] listaSaldi, String DataInizialeS,String DataFinaleS,String SaldoInizioPeriodo,boolean MediaconPicchi) {
          
-        
+   //  System.out.println(DataInizialeS+" "+DataFinaleS);
+   //  System.out.println (listaSaldi.length);
 //viene tornato come primo valore il saldo iniziale
 //come secondo valore il saldo finale
 //come terso la giacenza media
@@ -2098,7 +2101,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
            SaldoIniziale=UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
            BigDecimal GiacenzaMedia=SaldoIniziale.divide(new BigDecimal(contatore),2,RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));
          //  System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
-          this.Label_Giorni.setText("Giorni : "+contatore);
+          this.CDC_Text_Giorni.setText(""+contatore);
           
           
           SaldoInizialeT=new BigDecimal(SaldoInizialeT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
@@ -2115,13 +2118,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public static long Differenza_Date(String Data1, String Data2) {
         long differenza=0;
         try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            Date d = f.parse(Data1);
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date d = f.parse(Data1+" 00:00");
             long m1 = d.getTime();
-            d = f.parse(Data2);
+            d = f.parse(Data2+" 00:00");
             long m2 = d.getTime();
-            differenza=(m1-m2)/1000/3600/24;//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
-            
+            double diffe=(double)(m1-m2)/1000/3600/24;//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
+            differenza=Math.round(diffe);//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
+            //System.out.println (Data1+" - "+Data2+" - "+differenza+" - "+a);
             //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
         } catch (ParseException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -2204,7 +2208,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel CDC_CardWallet_Label_FiltroTabelle;
     private javax.swing.JLabel CDC_CardWallet_Label_GiacenzaIniziale;
     private javax.swing.JLabel CDC_CardWallet_Label_GiacenzaMedia;
-    private javax.swing.JLabel CDC_CardWallet_Label_PeriodoRiferimento;
     private javax.swing.JLabel CDC_CardWallet_Label_PrimaData;
     private javax.swing.JLabel CDC_CardWallet_Label_SaldoFinale;
     private javax.swing.JLabel CDC_CardWallet_Label_SaldoIniziale;
@@ -2221,7 +2224,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JTextField CDC_CardWallet_Text_FiltroTabelle;
     private javax.swing.JTextField CDC_CardWallet_Text_GiacenzaIniziale;
     private javax.swing.JTextField CDC_CardWallet_Text_GiacenzaMedia;
-    private javax.swing.JTextField CDC_CardWallet_Text_PeriodoRiferimento;
     private javax.swing.JTextField CDC_CardWallet_Text_PrimaData;
     private javax.swing.JTextField CDC_CardWallet_Text_SaldoFinale;
     private javax.swing.JTextField CDC_CardWallet_Text_SaldoIniziale;
@@ -2238,7 +2240,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel CDC_FiatWallet_Label_FiltroTabella;
     private javax.swing.JLabel CDC_FiatWallet_Label_GiacenzaIniziale;
     private javax.swing.JLabel CDC_FiatWallet_Label_GiacenzaMedia;
-    private javax.swing.JLabel CDC_FiatWallet_Label_PeriodoRiferimento;
     private javax.swing.JLabel CDC_FiatWallet_Label_PrimaData;
     private javax.swing.JLabel CDC_FiatWallet_Label_SaldoFinale;
     private javax.swing.JLabel CDC_FiatWallet_Label_SaldoIniziale;
@@ -2255,16 +2256,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JTextField CDC_FiatWallet_Text_FiltroTabella;
     private javax.swing.JTextField CDC_FiatWallet_Text_GiacenzaIniziale;
     private javax.swing.JTextField CDC_FiatWallet_Text_GiacenzaMedia;
-    private javax.swing.JTextField CDC_FiatWallet_Text_PeriodoRiferimento;
     private javax.swing.JTextField CDC_FiatWallet_Text_PrimaData;
     private javax.swing.JTextField CDC_FiatWallet_Text_SaldoFinale;
     private javax.swing.JTextField CDC_FiatWallet_Text_SaldoIniziale;
     private javax.swing.JTextField CDC_FiatWallet_Text_UltimaData;
+    private javax.swing.JLabel CDC_Label_Giorni;
     private javax.swing.JPanel CDC_Opzioni;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaCardWallet;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaFiatWallet;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet;
-    private javax.swing.JLabel Label_Giorni;
+    private javax.swing.JTextField CDC_Text_Giorni;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

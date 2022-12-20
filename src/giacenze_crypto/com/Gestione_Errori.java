@@ -115,15 +115,15 @@ public class Gestione_Errori extends javax.swing.JDialog {
         //System.out.println(TabellaErrori.getSelectedRow());//-1 nessuna riga selezionata
         if (TabellaErrori.getSelectedRow()!=-1){
             if (TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 10).toString().equalsIgnoreCase("2")){
-            String Messaggio="Selezione il tipo di movimento per la transazione denominata : \n";
+            String Messaggio="Selezionare cosa devo fare del seguente tipo di movimentazione : \n(Attenzione che sottrarre un movimento negativo equivale a sommarlo) \n";
             Messaggio=Messaggio+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+"\n";
             //int risposta=JOptionPane.showConfirmDialog(null,Messaggio, "Movimento in ingresso?", JOptionPane.YES_NO_CANCEL_OPTION);
-            int risposta=JOptionPane.showOptionDialog(null, Messaggio, "Seleziona Tipologia", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Movimento in Ingresso", "Movimento in Uscita","Annulla"}, "okay");
+            int risposta=JOptionPane.showOptionDialog(null, Messaggio, "Seleziona Tipologia", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Sommare sul totale", "Sottrarre dal totale","Annulla"}, "okay");
             //yes=0;no=1;cancel=2;
             if (risposta==0){
                 try 
                 { 
-                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDB);
+                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
                     BufferedWriter b=new BufferedWriter (w);
                     for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
                     {
@@ -139,7 +139,7 @@ public class Gestione_Errori extends javax.swing.JDialog {
 
                 }
                 
-                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento in ingresso", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento da sommare", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
                 //CDC_Grafica.CDC_FiatWallet_Funzione_ImportaWallet(CDC_Grafica.CDC_FiatWallet_FileDB,CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDB);
                 this.dispose();
             }
@@ -147,7 +147,7 @@ public class Gestione_Errori extends javax.swing.JDialog {
                 //è un movimento in uscita lo tratto come tale
                 try 
                 { 
-                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDB);
+                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
                     BufferedWriter b=new BufferedWriter (w);
                     for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
                     {
@@ -162,7 +162,7 @@ public class Gestione_Errori extends javax.swing.JDialog {
                 {
 
                 }
-                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento in uscita", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,"Impostato "+TabellaErrori.getModel().getValueAt(TabellaErrori.getSelectedRow(), 9)+" come movimento da sottrarre", "Tipo movimento impostato", JOptionPane.INFORMATION_MESSAGE);
                 this.dispose();
             }
             if (risposta==2){

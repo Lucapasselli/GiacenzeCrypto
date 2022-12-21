@@ -15,7 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -73,7 +72,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.04");
+            this.setTitle("Giacenze_Crypto.com 1.04 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -297,15 +296,22 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Data", "Controparte", "Valore"
+                "Data", "Controparte", "Valore", "Rimanenze"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Double.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         CDC_CardWallet_Tabella2.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -316,6 +322,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             CDC_CardWallet_Tabella2.getColumnModel().getColumn(0).setMaxWidth(200);
             CDC_CardWallet_Tabella2.getColumnModel().getColumn(2).setPreferredWidth(100);
             CDC_CardWallet_Tabella2.getColumnModel().getColumn(2).setMaxWidth(100);
+            CDC_CardWallet_Tabella2.getColumnModel().getColumn(3).setPreferredWidth(100);
+            CDC_CardWallet_Tabella2.getColumnModel().getColumn(3).setMaxWidth(100);
         }
 
         CDC_CardWallet_Label_Tabella1.setBackground(new java.awt.Color(255, 255, 255));
@@ -356,32 +364,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(CDC_CardWallet_Text_FiltroTabelle)
                         .addGap(554, 554, 554))
                     .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
-                        .addComponent(CDC_CardWallet_Label_GiacenzaIniziale)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(CDC_CardWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(CDC_CardWallet_Label_Tabella1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
+                            .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Label_Tabella2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
-                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
-                                .addComponent(CDC_CardWallet_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(CDC_CardWallet_Label_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(CDC_CardWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(CDC_CardWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(CDC_CardWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(CDC_CardWallet_Checkbox_ConsideraValoreMaggiore, javax.swing.GroupLayout.PREFERRED_SIZE, 455, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -406,7 +395,25 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(CDC_CardWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(CDC_CardWallet_Bottone_StampaRapporto)))
+                        .addComponent(CDC_CardWallet_Bottone_StampaRapporto))
+                    .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                        .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_CardWallet_Label_GiacenzaIniziale)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_CardWallet_Text_GiacenzaIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
+                                .addComponent(CDC_CardWallet_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(CDC_CardWallet_Label_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_CardWallet_Text_PrimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(CDC_CardWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CDC_CardWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(CDC_CardWallet_Checkbox_ConsideraValoreMaggiore, javax.swing.GroupLayout.PREFERRED_SIZE, 455, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         CDC_CardWallet_PannelloLayout.setVerticalGroup(
@@ -556,15 +563,22 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Data", "Causale", "Dettaglio", "Valore"
+                "Data", "Causale", "Dettaglio", "Valore", "Rimanenze"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         CDC_FiatWallet_Tabella2.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -575,6 +589,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setMaxWidth(130);
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(3).setPreferredWidth(100);
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(3).setMaxWidth(100);
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(4).setPreferredWidth(100);
+            CDC_FiatWallet_Tabella2.getColumnModel().getColumn(4).setMaxWidth(100);
         }
 
         CDC_FiatWallet_Label_Tabella2.setBackground(new java.awt.Color(255, 255, 255));
@@ -1448,14 +1464,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Map<String, String> CDC_FiatWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, String> CDC_FiatWallet_Descrizioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
+        String SaldoIniziale=this.CDC_FiatWallet_Text_GiacenzaIniziale.getText().replace("€", "").trim();
+        BigDecimal Totale=new BigDecimal(SaldoIniziale);
         for (String value : CDC_FiatWallet_Mappa.values()) {
 
             String splittata[] = value.split(",");
             String Data = splittata[0].split(" ")[0];//prendo solo la data e non l'ora
+            
             if (ConvertiDatainLong(Data) >= ConvertiDatainLong(CDC_DataIniziale) && ConvertiDatainLong(Data) <= ConvertiDatainLong(CDC_DataFinale)) {    //CDC_FiatWallet_FileTipiMovimentiDB
                 boolean trovato = false;
-                Object CDC_FiatWallet_RigaTabella2[]=new Object[4];
+                Object CDC_FiatWallet_RigaTabella2[]=new Object[5];
                 int Colonna=CDC_Funzione_trovaColonnaEuro(value);
                 if (Colonna!=999){
                 for (String tempo : CDC_FiatWallet_MappaTipiMovimenti.values()) {   
@@ -1469,14 +1487,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         CDC_FiatWallet_RigaTabella2[1]=Descrizione;
                         CDC_FiatWallet_RigaTabella2[2]=splittata[1];
                         CDC_FiatWallet_RigaTabella2[3]=Double.valueOf(splittata[Colonna]);
+                        BigDecimal Adde2 = new BigDecimal(tempo.split(";")[1]+splittata[Colonna]);
+                        Totale=Totale.add(Adde2);
+                        CDC_FiatWallet_RigaTabella2[4]=Double.parseDouble(Totale.toString());
                         if (CDC_FiatWallet_MappaCausali.get(Descrizione) == null) {
                             // se è una controparte nuova allora la aggiungo alla mappa
                             // altrimenti la aggiorno con il valore corretto
                             CDC_FiatWallet_MappaCausali.put(Descrizione, splittata[Colonna]);
+                           // CDC_FiatWallet_RigaTabella2[4]=Double.parseDouble(splittata[Colonna]);
                         } else {
                             BigDecimal Addendo1 = new BigDecimal(CDC_FiatWallet_MappaCausali.get(Descrizione));
                             BigDecimal Addendo2 = new BigDecimal(splittata[Colonna]);
                             String Somma = Addendo1.add(Addendo2).toString();
+                            //CDC_FiatWallet_RigaTabella2[4]=Double.parseDouble(Somma);
                             CDC_FiatWallet_MappaCausali.put(Descrizione, Somma);
                         }
 
@@ -1492,10 +1515,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         // se è una controparte nuova allora la aggiungo alla mappa
                         // altrimenti la aggiorno con il valore corretto
                         CDC_FiatWallet_MappaCausali.put(splittata[9], splittata[Colonna]);
+                        //CDC_FiatWallet_RigaTabella2[4]=Double.parseDouble(splittata[Colonna]);
                     } else {
                         BigDecimal Addendo1 = new BigDecimal(CDC_FiatWallet_MappaCausali.get(splittata[9]));
                         BigDecimal Addendo2 = new BigDecimal(splittata[Colonna]);
                         String Somma = Addendo1.add(Addendo2).toString();
+                       // CDC_FiatWallet_RigaTabella2[4]=Double.parseDouble(Somma);
                         CDC_FiatWallet_MappaCausali.put(splittata[9], Somma);
                     }
                 }
@@ -1582,7 +1607,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
           
        //calcola i totali sui bonifici, topupcarta e acquisti crypto passati per il fiat wallet
         BigDecimal TotaleSpese= new BigDecimal("0");
-        BigDecimal TotaleTopUpCarta= new BigDecimal("0");  
+        BigDecimal TotaleTopUpCarta= new BigDecimal("0"); 
+        String SaldoIniziale=this.CDC_CardWallet_Text_GiacenzaIniziale.getText().replace("€", "").trim();
+        BigDecimal Totale=new BigDecimal(SaldoIniziale);
         Map<String, String> CDC_CardWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             for (String value : CDC_CardWallet_Mappa.values())
             {
@@ -1608,10 +1635,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         String Somma=Addendo1.add(Addendo2).toString();
                         CDC_CardWallet_MappaCausali.put(splittata[1], Somma);
                     }
-                    Object CDC_CardWallet_RigaTabella2[]=new Object[Colonna];
+                    Object CDC_CardWallet_RigaTabella2[]=new Object[4];
                     CDC_CardWallet_RigaTabella2[0]=splittata[0];
                     CDC_CardWallet_RigaTabella2[1]=splittata[1];
                     CDC_CardWallet_RigaTabella2[2]=Double.parseDouble(splittata[Colonna]);
+                    BigDecimal Adde2 = new BigDecimal(splittata[Colonna]);
+                    Totale=Totale.add(Adde2);
+                    CDC_CardWallet_RigaTabella2[3]=Double.parseDouble(Totale.toString());
                     CDC_CardWallet_ModelloTabella2.addRow(CDC_CardWallet_RigaTabella2);
 
                     if ((new BigDecimal(splittata[3])).compareTo(BigDecimal.ZERO) > 0)
@@ -1791,6 +1821,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void CDC_CardWallet_Text_GiacenzaInizialeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_GiacenzaInizialeKeyReleased
         // TODO add your handling code here:
+        if (!CDC_CardWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())&&isNumeric(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())){
+            if (CDC_CardWallet_Text_GiacenzaIniziale.getText().equalsIgnoreCase(""))CDC_CardWallet_Text_GiacenzaIniziale.setText("0");
+            CDC_CardWallet_SaldoIniziale=this.CDC_CardWallet_Text_GiacenzaIniziale.getText().replaceFirst("^0+(?!$)", "");
+
+            //if (CDC_FiatWallet_Text_GiacenzaIniziale.getText().equalsIgnoreCase("")) CDC_FiatWallet_SaldoIniziale="0";
+            this.CDC_ScriviFileDatiDB();
+
+        }
+        else CDC_CardWallet_Text_GiacenzaIniziale.setText(CDC_CardWallet_SaldoIniziale.replaceFirst("^0+(?!$)", ""));
+
+        CDC_CardWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_CardWallet_Text_GiacenzaInizialeKeyReleased
 
     private void CDC_CardWallet_Text_UltimaDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_UltimaDataActionPerformed
@@ -1936,7 +1977,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             stampa.AggiungiTesto("TABELLA MOVIMENTI\n",Font.UNDERLINE,12);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
             tabella1=ListaTabella(CDC_FiatWallet_Tabella2);
-            Titoli1=new String[]{"Data","Causale","Dettaglio","Valore in Euro"};
+            Titoli1=new String[]{"Data","Causale","Dettaglio","Valore in Euro","Rimanenze"};
             stampa.AggiungiTabella(Titoli1,tabella1);
             stampa.ScriviPDF();
             
@@ -1973,7 +2014,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             stampa.AggiungiTesto("TABELLA DETTAGLIO IN ORDINE DI DATA\n",Font.UNDERLINE,12);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
             tabella1=ListaTabella(CDC_CardWallet_Tabella2);
-            Titoli1=new String[]{"Data","Controparte/Causale","Valore"};
+            Titoli1=new String[]{"Data","Controparte/Causale","Valore","Rimanenze"};
             stampa.AggiungiTabella(Titoli1,tabella1);
             stampa.ScriviPDF();
             
@@ -1990,7 +2031,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             for (int i=0;i<numeroRighe;i++){
                 dati=new String[numeroColonne];
                 for (int h=0;h<numeroColonne;h++){
+                    if (tabella.getModel().getValueAt(i, h)!=null)
                     dati[h]=tabella.getModel().getValueAt(i, h).toString();
+                    else dati[h]="movimento non conteggiato";
                 }
                 tabella1.add(dati);
             }

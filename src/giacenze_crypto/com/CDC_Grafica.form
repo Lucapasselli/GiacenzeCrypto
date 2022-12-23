@@ -93,7 +93,6 @@
                               <Component id="CDC_CardWallet_Label_FiltroTabelle" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="CDC_CardWallet_Text_FiltroTabelle" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="554" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">

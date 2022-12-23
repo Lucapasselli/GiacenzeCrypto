@@ -6,9 +6,13 @@ package giacenze_crypto.com;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
 import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.HeaderFooter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -29,13 +33,19 @@ public class Stampe {
       static String FilePDF="";
       static Document doc;
       static PdfWriter writer;
+      
      public Stampe(String PDFPath) throws FileNotFoundException {
        FilePDF=PDFPath;
        doc = new Document();
        writer = PdfWriter.getInstance(doc, new FileOutputStream(FilePDF));
-       doc.open();  
+     //  doc.open();  
        
      } 
+     
+     public void ApriDocumento(){
+        doc.open(); 
+     }
+     
     public void ScriviPDF(){
     try {
       doc.close();
@@ -53,11 +63,27 @@ public class Stampe {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
           }
      }
-    public static void AggiungiTitolo(String PDFPath){
-
+    
+    public void NuovaPagina(){
+        doc.newPage();
+    }
+    
+    public void Piede(String piendino){
+    //    doc.setFooter(new HeaderFooter(piedino,piedino));
+        Font font = new Font(Font.HELVETICA, 6, Font.NORMAL);       
+        HeaderFooter footer = new HeaderFooter(new Phrase(piendino,font), false);
+        footer.setAlignment(Element.ALIGN_RIGHT);
+        footer.setBorder(Rectangle.NO_BORDER);    
+        doc.setFooter(footer);
+        
+    } 
+    
+    public void AggiungiTitolo(String Titolo){
+        doc.addTitle(Titolo);
      }
+    
     public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){
-      Font font = new Font(Font.HELVETICA, 12, Font.BOLD);
+      Font font = new Font(Font.HELVETICA, 10, Font.BOLD);
       int NumeroColonne=Titoli.length;
       PdfPTable table = new PdfPTable(NumeroColonne);
       table.setWidthPercentage(100);
@@ -74,7 +100,7 @@ public class Stampe {
           table.addCell(cell);
       }
       //scrivo la riga tabella
-      font = new Font(Font.HELVETICA, 12, Font.NORMAL); 
+      font = new Font(Font.COURIER, 8, Font.NORMAL); 
       
       for(int i= 0; i < Dettagli.size(); i++){
           String Dati[]=Dettagli.get(i);
@@ -95,10 +121,7 @@ public class Stampe {
     
     
     public void AggiungiTesto(String Testo,int intfont,float size){
-            //  Font font = new Font(Font.HELVETICA, 30, Font.BOLD);
-              Paragraph par = new Paragraph(Testo);
-              par.getFont().setSize(size);
-              par.getFont().setStyle(intfont);
+              Paragraph par = new Paragraph(Testo,FontFactory.getFont(FontFactory.COURIER,size, intfont));              
               doc.add(par);
 
  

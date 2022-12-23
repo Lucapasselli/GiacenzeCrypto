@@ -106,40 +106,38 @@
                                   <Component id="CDC_CardWallet_Label_Tabella2" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="CDC_CardWallet_Label_Spese" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="CDC_CardWallet_Label_Entrate" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="CDC_CardWallet_Text_Spese" max="32767" attributes="0"/>
-                                  <Component id="CDC_CardWallet_Text_Entrate" min="-2" pref="135" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="140" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="CDC_CardWallet_Label_GiacenzaMedia" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                                      <Component id="CDC_CardWallet_Text_GiacenzaMedia" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="CDC_CardWallet_Label_SaldoFinale" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="CDC_CardWallet_Text_SaldoFinale" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="CDC_CardWallet_Label_SaldoIniziale" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="CDC_CardWallet_Text_SaldoIniziale" min="-2" pref="135" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="CDC_CardWallet_Bottone_StampaRapporto" min="-2" max="-2" attributes="0"/>
-                          </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="CDC_CardWallet_Label_Spese" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="CDC_CardWallet_Label_Entrate" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="CDC_CardWallet_Text_Spese" max="32767" attributes="0"/>
+                                          <Component id="CDC_CardWallet_Text_Entrate" min="-2" pref="135" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="140" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="CDC_CardWallet_Label_GiacenzaMedia" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+                                              <Component id="CDC_CardWallet_Text_GiacenzaMedia" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="CDC_CardWallet_Label_SaldoFinale" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                              <Component id="CDC_CardWallet_Text_SaldoFinale" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="CDC_CardWallet_Label_SaldoIniziale" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="CDC_CardWallet_Text_SaldoIniziale" min="-2" pref="135" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="CDC_CardWallet_Label_GiacenzaIniziale" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -159,6 +157,10 @@
                                   <Component id="CDC_CardWallet_Checkbox_ConsideraValoreMaggiore" alignment="0" min="-2" pref="455" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <Component id="CDC_CardWallet_Bottone_StampaRapporto" min="-2" pref="210" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -473,6 +475,12 @@
             <Component class="javax.swing.JButton" name="CDC_CardWallet_Bottone_StampaRapporto">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Stampa Rapporto PDF"/>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[150, 23]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[150, 23]"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_CardWallet_Bottone_StampaRapportoActionPerformed"/>
@@ -935,6 +943,12 @@
             <Component class="javax.swing.JButton" name="CDC_FiatWallet_Bottone_StampaRapporto">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Stampa Rapporto PDF"/>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[150, 23]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[150, 23]"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_FiatWallet_Bottone_StampaRapportoActionPerformed"/>

@@ -72,7 +72,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.05");
+            this.setTitle("Giacenze_Crypto.com 1.06");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -126,6 +126,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void initComponents() {
 
         CDC = new javax.swing.JTabbedPane();
+        TransazioniCrypto = new javax.swing.JPanel();
+        TransazioniCrypto_ScrollPane = new javax.swing.JScrollPane();
+        TransazioniCryptoTabella = new javax.swing.JTable();
+        TransazioniCrypto_Bottone_CaricaCSV = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -198,6 +203,61 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_Text_Giorni = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        TransazioniCryptoTabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Trans_ID", "N.mov./tot.mov.", "Wallet", "Data e Ora", "Tipo Movimento", "Moneta", "Quantità", "Valore mov. e Valuta", "Valore mov. in Euro", "Valore unitario in Euro", "Prezzo di carico tot in euro", "Prezzo di carico in Euro", "Plusvalenza in Euro", "Rif. Trasferimento", "Causale da CEX"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, true, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        TransazioniCrypto_ScrollPane.setViewportView(TransazioniCryptoTabella);
+
+        TransazioniCrypto_Bottone_CaricaCSV.setText("Carica CSV");
+
+        jButton1.setText("Carica Mappa Conversione");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
+        TransazioniCrypto.setLayout(TransazioniCryptoLayout);
+        TransazioniCryptoLayout.setHorizontalGroup(
+            TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 953, Short.MAX_VALUE)
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addComponent(TransazioniCrypto_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(75, 75, 75)
+                        .addComponent(jButton1)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+        );
+        TransazioniCryptoLayout.setVerticalGroup(
+            TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(TransazioniCrypto_Bottone_CaricaCSV)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        CDC.addTab("Transazioni Cripto", TransazioniCrypto);
 
         CDC_CardWallet_Bottone_CaricaCSV.setText("Carica Dati Carta");
         CDC_CardWallet_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
@@ -2043,6 +2103,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_CDC_CardWallet_Bottone_StampaRapportoActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        Calcoli.GeneraMappaCambioUSDEUR();
+        System.out.println(Calcoli.ConvertiUSDEUR("150.345", "2022-10-13"));
+        //Calcoli.RecuperaTassidiCambio();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     public static List<String[]> ListaTabella(JTable tabella) {
             int numeroRighe=tabella.getModel().getRowCount();
             int numeroColonne=tabella.getModel().getColumnCount();
@@ -2329,6 +2396,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaFiatWallet;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet;
     private javax.swing.JTextField CDC_Text_Giorni;
+    private javax.swing.JPanel TransazioniCrypto;
+    private javax.swing.JTable TransazioniCryptoTabella;
+    private javax.swing.JButton TransazioniCrypto_Bottone_CaricaCSV;
+    private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

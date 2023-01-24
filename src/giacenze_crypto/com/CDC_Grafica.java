@@ -6,6 +6,7 @@ package giacenze_crypto.com;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -72,7 +73,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.06");
+            this.setTitle("Giacenze_Crypto.com 1.06 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -96,6 +97,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
         
         CDC_LeggiFileDatiDB();
+        NascondiColonneTabellaCrypto();
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         //CDC_LeggiFileDatiDB();
@@ -209,11 +211,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Trans_ID", "N.mov./tot.mov.", "Wallet", "Data e Ora", "Tipo Movimento", "Moneta", "Quantità", "Valore mov. e Valuta", "Valore mov. in Euro", "Valore unitario in Euro", "Prezzo di carico tot in euro", "Prezzo di carico in Euro", "Plusvalenza in Euro", "Rif. Trasferimento", "Causale da CEX"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange</html>", "<html><center>Wallet</html>", "Data e Ora", "<html><center>Tipo<br>movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Uscita<br> / <br>Entrata</html>", "Moneta", "<html><center>Tipo<br>moneta<br></html>", "Quantità", "<html><center>Valore di<br>mercato<br>transazione<br>come da CSV</html>", "<html><center>Valore di<br>mercato<br>transazione<br>in EURO</html>", "<html><center>Valore di<br>mercato<br>unitario<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>transazione<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>in EURO</html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, true, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -221,6 +223,30 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
         TransazioniCrypto_ScrollPane.setViewportView(TransazioniCryptoTabella);
+        if (TransazioniCryptoTabella.getColumnModel().getColumnCount() > 0) {
+            TransazioniCryptoTabella.getColumnModel().getColumn(4).setMinWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(4).setPreferredWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(4).setMaxWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(12).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(12).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(12).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(13).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(13).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(13).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(14).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(14).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(14).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(15).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(15).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(15).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(16).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(16).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(16).setMaxWidth(100);
+        }
+        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));
 
         TransazioniCrypto_Bottone_CaricaCSV.setText("Carica CSV");
 
@@ -1027,6 +1053,48 @@ public class CDC_Grafica extends javax.swing.JFrame {
        CDC_ScriviDatesuGUI(); 
      }   
         
+    
+    
+    
+    public void NascondiColonneTabellaCrypto(){
+       // this.CDC.remove(this.TransazioniCrypto);
+        //per nascondere devo farlo al contrario
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(19));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(18));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(17));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(14));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(11));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(9));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(7));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(6));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(1));
+        //Elenco Colonne
+        /*
+        0 - TrasID -> es. 202112031045_Binance_ScambioCryptoCrypto
+        1 - Numero di movimenti che compongono la transazione -> es- 1 di 3 (ovvero questa transazione è composta da 3 movimenti e questo è il primo movimento)
+        2 - Exchange/Wallet -> es. Crypto.com
+        3 - Data e ora -> es. 2021/12/03 10:45
+        4 - Tipo Movimento -> es. Scambio Crypto/Crypto
+        5 - Causale originale -> Causale originale come da CSV (es. Crypto_exchange)
+        6 - Uscita/Entrata -> es. Uscita
+        7 - Moneta -> es. CRO oppure ETH oppure EUR
+        8 - Tipo Moneta -> es. Crypto oppure FIAT
+        9 - Quantità -> es. 10
+        10 - Valore di Mercato transazione (come da csv) -> es. 10 USD
+        11 - Valore di Mercato Transazione in EURO -> es. 9
+        12 - Valore di Mercato unitario in EUR (singolo pezzo) -> es 0,9
+        13 - Prezzo di Carico Totale Transazione in EUR -> es. 8
+        14 - Prezzo di Carico in EUR (Unitario) -> es. 0,8
+        15 - Plusvalenza in EUR della Transazione -> es 3
+        16 - Riferimento x Trasferimenti -> Se è un traferimento si mette il riferimento al wallet/ transaziojne che l'ha generato es. 202112031045_Crypto.com_TraferimentoCrypto
+        17 - Note -> Eventuali note sulla transazione o sulla singola parte della transazione.
+        
+        */
+    }
+    
+
+    
+    
    private void CDC_ScriviDatesuGUI() {
         try {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
@@ -1159,8 +1227,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
    } 
     
         public void CDC_CardWallet_Funzione_ImportaWallet(String cardwallet) {                                          
-        // TODO add your handling code here:
-        //Bisogna sistemare la parte dei tipimovimento DA FAREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!
         String riga;
         try (FileReader fire = new FileReader(cardwallet); 
                 BufferedReader bure = new BufferedReader(fire);) 
@@ -1168,7 +1234,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 while((riga=bure.readLine())!=null)
                 {
                     String splittata[]=riga.split(",");
-                    if (splittata.length==9)// se non è esattamente uguale a 10 significa che il file non è corretto
+                    if (splittata.length>=9)// se non è esattamente uguale a 10 significa che il file non è corretto
                     {
                         if(ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
                         {
@@ -1183,7 +1249,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 idRiga=splittata[0]+splittata[1]+splittata[Colonna];
                             }
                             CDC_CardWallet_Mappa.put(idRiga, riga);
-                            //CDC_CardWallet_Mappa.put(splittata[0], riga);
                         }
                     }
                 }
@@ -2106,10 +2171,40 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         Calcoli.GeneraMappaCambioUSDEUR();
-        System.out.println(Calcoli.ConvertiUSDEUR("150.345", "2022-10-13"));
+       // System.out.println(Calcoli.ConvertiUSDEUR("150.345", "2022-10-13"));
+       Importazioni.Importa_Crypto_CDCApp();
+       CaricaTabellaCrypto();
+       
+       
+        //questo sotto serve per aumentare la diomensione dell'header della tabella
         //Calcoli.RecuperaTassidiCambio();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+       private void CaricaTabellaCrypto() {                                         
+        String fileDaImportare = "movimenti.crypto.csv";
+        //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
+        //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
+        //ad esempio questo succede per i dust conversion etc....
+        DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
+      //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
+      //  CDC_CardWallet_Tabella2.setModel(model);
+        
+        PulisciTabella(ModelloTabellaCrypto);
+        String riga;
+        try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
+            while ((riga = bure.readLine()) != null) {
+                String splittata[] = riga.split(";");
+              //  this.TransazioniCryptoTabella.add(splittata);
+              ModelloTabellaCrypto.addRow(splittata);
+                
+            }     
+    }   catch (IOException ex) {   
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
+    
+    
+    
     public static List<String[]> ListaTabella(JTable tabella) {
             int numeroRighe=tabella.getModel().getRowCount();
             int numeroColonne=tabella.getModel().getColumnCount();
@@ -2144,105 +2239,95 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
 }
     
-    public String[] Calcolo_SaldieMedie(List<String>[] listaSaldi, String DataInizialeS,String DataFinaleS,String SaldoInizioPeriodo,boolean MediaconPicchi) {
-         
-   //  System.out.println(DataInizialeS+" "+DataFinaleS);
-   //  System.out.println (listaSaldi.length);
+    public String[] Calcolo_SaldieMedie(List<String>[] listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
+
+        //  System.out.println(DataInizialeS+" "+DataFinaleS);
+        //  System.out.println (listaSaldi.length);
 //viene tornato come primo valore il saldo iniziale
 //come secondo valore il saldo finale
 //come terso la giacenza media
-
 // String SaldoPartenza=SaldoIniziale.toString();
-           String ritorno[]=new String[3];
-           String SaldoInizialeT="0";
-           boolean TrovatoSaldoIniziale=false;
-           String SaldoFinaleT="0";
-           String DataIniziale=DataInizialeS;
-           String DataFinale=DataFinaleS;
-           BigDecimal SaldoIniziale= new BigDecimal("0");
-           BigDecimal UltimoValore= new BigDecimal("0");
-          // System.out.println(DataIniziale);
-           //System.out.println(DataFinale);
-           long diffdate;
-           long longDatainiziale=ConvertiDatainLong(DataIniziale);
-           long longDataFinale=ConvertiDatainLong(DataFinale);
-           int contatore=0;//il numero di giorni che serviranno per il calcolo della giacenza media
-            for (String valori : listaSaldi[0])
-            {
-                String splittata[]=valori.split(",");
-               // long longDatainiziale=ConvertiDatainLong(DataIniziale);
+        String ritorno[] = new String[3];
+        String SaldoInizialeT = "0";
+        boolean TrovatoSaldoIniziale = false;
+        String SaldoFinaleT = "0";
+        String DataIniziale = DataInizialeS;
+        String DataFinale = DataFinaleS;
+        BigDecimal SaldoIniziale = new BigDecimal("0");
+        BigDecimal UltimoValore = new BigDecimal("0");
+        // System.out.println(DataIniziale);
+        //System.out.println(DataFinale);
+        long diffdate;
+        long longDatainiziale = ConvertiDatainLong(DataIniziale);
+        long longDataFinale = ConvertiDatainLong(DataFinale);
+        int contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
+        for (String valori : listaSaldi[0]) {
+            String splittata[] = valori.split(",");
+            // long longDatainiziale=ConvertiDatainLong(DataIniziale);
 
-                 
-                 /*   if (longDatainiziale>ConvertiDatainLong(splittata[0]))
+            /*   if (longDatainiziale>ConvertiDatainLong(splittata[0]))
                     {
                         System.out.println("Errore, bisogna mettere una data inferiore o uguale a "+splittata[0]);
                         break;
                     }*/
-                if (longDatainiziale>ConvertiDatainLong(splittata[0]))
-                      {
-                          UltimoValore=new BigDecimal(splittata[1]);
-                        //  System.out.println("SaldoIniziale="+UltimoValore+" , "+splittata[0]);
-                      }  
-                    if (longDatainiziale<=ConvertiDatainLong(splittata[0])&&longDataFinale>=ConvertiDatainLong(splittata[0]))
-                        {
-                            diffdate=Differenza_Date(splittata[0],DataIniziale);
-                            contatore=contatore+Integer.parseInt(String.valueOf(diffdate));
-                            SaldoIniziale=UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
-                            if (!TrovatoSaldoIniziale) SaldoInizialeT=UltimoValore.toString();
-                            TrovatoSaldoIniziale=true;
-                            DataIniziale=splittata[0];
-                            UltimoValore=new BigDecimal(splittata[1]);
-                            
-                        }
-                
-                
+            if (longDatainiziale > ConvertiDatainLong(splittata[0])) {
+                UltimoValore = new BigDecimal(splittata[1]);
+                SaldoInizialeT=splittata[1];
+                //  System.out.println("SaldoIniziale="+UltimoValore+" , "+splittata[0]);
             }
+            if (longDatainiziale <= ConvertiDatainLong(splittata[0]) && longDataFinale >= ConvertiDatainLong(splittata[0])) {
+                diffdate = Differenza_Date(splittata[0], DataIniziale);
+                contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
+                SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
+                if (!TrovatoSaldoIniziale) {
+                    SaldoInizialeT = UltimoValore.toString();
+                }
+                TrovatoSaldoIniziale = true;
+                DataIniziale = splittata[0];
+                UltimoValore = new BigDecimal(splittata[1]);
 
-           SaldoFinaleT=UltimoValore.toString();
-           
-           if (MediaconPicchi)
-               {
-            DataIniziale=DataInizialeS;
-            SaldoIniziale= new BigDecimal("0");
-           UltimoValore= new BigDecimal("0");
-             contatore=0;//il numero di giorni che serviranno per il calcolo della giacenza media
-            for (String valori : listaSaldi[1])
-            {
-                String splittata[]=valori.split(",");
-                if (longDatainiziale>ConvertiDatainLong(splittata[0]))
-                      {
-                          UltimoValore=new BigDecimal(splittata[1]);
-                      }  
-                    if (longDatainiziale<=ConvertiDatainLong(splittata[0])&&longDataFinale>=ConvertiDatainLong(splittata[0]))
-                        {
-                            diffdate=Differenza_Date(splittata[0],DataIniziale);
-                            contatore=contatore+Integer.parseInt(String.valueOf(diffdate));
-                            SaldoIniziale=UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
-                            DataIniziale=splittata[0];
-                            UltimoValore=new BigDecimal(splittata[1]);
-                        }
-                
-                
             }
-               }
-           
-           diffdate=Differenza_Date(DataFinale,DataIniziale)+1;
-           contatore=contatore+Integer.parseInt(String.valueOf(diffdate));
-           SaldoIniziale=UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
-           BigDecimal GiacenzaMedia=SaldoIniziale.divide(new BigDecimal(contatore),2,RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));
-         //  System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
-          this.CDC_Text_Giorni.setText(""+contatore);
-          
-          
-          SaldoInizialeT=new BigDecimal(SaldoInizialeT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
-          SaldoFinaleT=new BigDecimal(SaldoFinaleT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
-         // System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
-          ritorno[0]=SaldoInizialeT;
-          ritorno[1]=SaldoFinaleT;
-          ritorno[2]=GiacenzaMedia.toString();
-          
-           return ritorno;
-           
+        }
+
+        SaldoFinaleT = UltimoValore.toString();
+
+        if (MediaconPicchi) {
+            DataIniziale = DataInizialeS;
+            SaldoIniziale = new BigDecimal("0");
+            UltimoValore = new BigDecimal("0");
+            contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
+            for (String valori : listaSaldi[1]) {
+                String splittata[] = valori.split(",");
+                if (longDatainiziale > ConvertiDatainLong(splittata[0])) {
+                    UltimoValore = new BigDecimal(splittata[1]);
+                }
+                if (longDatainiziale <= ConvertiDatainLong(splittata[0]) && longDataFinale >= ConvertiDatainLong(splittata[0])) {
+                    diffdate = Differenza_Date(splittata[0], DataIniziale);
+                    contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
+                    SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
+                    DataIniziale = splittata[0];
+                    UltimoValore = new BigDecimal(splittata[1]);
+                }
+
+            }
+        }
+
+        diffdate = Differenza_Date(DataFinale, DataIniziale) + 1;
+        contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
+        SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
+        BigDecimal GiacenzaMedia = SaldoIniziale.divide(new BigDecimal(contatore), 2, RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));
+        //  System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
+        this.CDC_Text_Giorni.setText("" + contatore);
+
+        SaldoInizialeT = new BigDecimal(SaldoInizialeT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
+        SaldoFinaleT = new BigDecimal(SaldoFinaleT).add(new BigDecimal(SaldoInizioPeriodo)).toString();
+        // System.out.println("Giacenza media "+GiacenzaMedia+";"+SaldoInizialeT+";"+SaldoFinaleT);
+        ritorno[0] = SaldoInizialeT;
+        ritorno[1] = SaldoFinaleT;
+        ritorno[2] = GiacenzaMedia.toString();
+
+        return ritorno;
+
     }
     
     public static long Differenza_Date(String Data1, String Data2) {

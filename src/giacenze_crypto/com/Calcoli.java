@@ -11,12 +11,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
@@ -101,6 +102,7 @@ public class Calcoli {
 
         if (risultato != null) {
             risultato = String.valueOf(Double.parseDouble(Valore) * Double.parseDouble(risultato));
+            risultato=(new BigDecimal (risultato)).setScale(4, RoundingMode.CEILING).toString();
             return risultato;
         }
         return risultato;

@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -101,8 +102,11 @@ public class Calcoli {
         }
 
         if (risultato != null) {
-            risultato = String.valueOf(Double.parseDouble(Valore) * Double.parseDouble(risultato));
-            risultato=(new BigDecimal (risultato)).setScale(4, RoundingMode.CEILING).toString();
+
+            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+
+          //  System.out.println(risultato);
+
             return risultato;
         }
         return risultato;

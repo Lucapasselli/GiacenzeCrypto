@@ -125,22 +125,26 @@
               <SubComponents>
                 <Component class="javax.swing.JTable" name="TransazioniCryptoTabella">
                   <Properties>
+                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                      <Table columnCount="20" rowCount="0">
+                      <Table columnCount="23" rowCount="0">
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;ID&lt;br&gt;Transazione&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Numero&lt;br&gt;movimento&lt;br&gt;su Totale&lt;br&gt;movimenti&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="Data e Ora" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Exchange&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Wallet&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="Data e Ora" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Tipo&lt;br&gt;movimento&lt;br&gt;&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Tipo&lt;br&gt;Transazione&lt;br&gt;&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Dettaglio&lt;br&gt;Movimento&lt;br&gt;&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Numero&lt;br&gt;movimento&lt;br&gt;su Totale&lt;br&gt;movimenti&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Causale&lt;br&gt;originale&lt;br&gt;&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Uscita&lt;br&gt; / &lt;br&gt;Entrata&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="Moneta" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Tipo&lt;br&gt;moneta&lt;br&gt;&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="Quantit&#xe0;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore di&lt;br&gt;mercato&lt;br&gt;transazione&lt;br&gt;come da CSV&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore di&lt;br&gt;mercato&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore di&lt;br&gt;mercato&lt;br&gt;unitario&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Moneta&lt;br&gt;Ven./Trasf.&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Tipo&lt;br&gt;Moneta&lt;br&gt;Ven./Trasf.&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Ven./Trasf.&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Moneta&lt;br&gt;Acq./Ric.&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Tipo&lt;br&gt;Moneta&lt;br&gt;Acq./Ric.&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Acq./Ric.&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore &lt;br&gt;transazione&lt;br&gt;come da CSV&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;unitario&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Prezzo di&lt;br&gt;carico&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Prezzo di&lt;br&gt;carico&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plusvalenza&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
@@ -151,21 +155,6 @@
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                       <TableColumnModel selectionModel="0">
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                          <Title/>
-                          <Editor/>
-                          <Renderer/>
-                        </Column>
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                          <Title/>
-                          <Editor/>
-                          <Renderer/>
-                        </Column>
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                          <Title/>
-                          <Editor/>
-                          <Renderer/>
-                        </Column>
                         <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
@@ -191,12 +180,42 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
                         <Column maxWidth="60" minWidth="60" prefWidth="60" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
                         </Column>
                         <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="60" minWidth="60" prefWidth="60" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="60" minWidth="60" prefWidth="60" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>

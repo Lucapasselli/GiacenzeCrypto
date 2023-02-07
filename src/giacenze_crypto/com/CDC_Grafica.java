@@ -206,16 +206,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        TransazioniCryptoTabella.setAutoCreateRowSorter(true);
         TransazioniCryptoTabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange</html>", "<html><center>Wallet</html>", "Data e Ora", "<html><center>Tipo<br>movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Uscita<br> / <br>Entrata</html>", "Moneta", "<html><center>Tipo<br>moneta<br></html>", "Quantità", "<html><center>Valore di<br>mercato<br>transazione<br>come da CSV</html>", "<html><center>Valore di<br>mercato<br>transazione<br>in EURO</html>", "<html><center>Valore di<br>mercato<br>unitario<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>transazione<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>in EURO</html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto"
+                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Exchange</html>", "<html><center>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Valore<br>unitario<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>transazione<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>in EURO</html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -224,27 +225,33 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
         TransazioniCrypto_ScrollPane.setViewportView(TransazioniCryptoTabella);
         if (TransazioniCryptoTabella.getColumnModel().getColumnCount() > 0) {
-            TransazioniCryptoTabella.getColumnModel().getColumn(4).setMinWidth(120);
-            TransazioniCryptoTabella.getColumnModel().getColumn(4).setPreferredWidth(120);
-            TransazioniCryptoTabella.getColumnModel().getColumn(4).setMaxWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(1).setMinWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(1).setPreferredWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(1).setMaxWidth(120);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(12).setMinWidth(80);
-            TransazioniCryptoTabella.getColumnModel().getColumn(12).setPreferredWidth(100);
-            TransazioniCryptoTabella.getColumnModel().getColumn(12).setMaxWidth(100);
-            TransazioniCryptoTabella.getColumnModel().getColumn(13).setMinWidth(80);
-            TransazioniCryptoTabella.getColumnModel().getColumn(13).setPreferredWidth(100);
-            TransazioniCryptoTabella.getColumnModel().getColumn(13).setMaxWidth(100);
-            TransazioniCryptoTabella.getColumnModel().getColumn(14).setMinWidth(80);
-            TransazioniCryptoTabella.getColumnModel().getColumn(14).setPreferredWidth(100);
-            TransazioniCryptoTabella.getColumnModel().getColumn(14).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMinWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setPreferredWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMaxWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(12).setMinWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(12).setPreferredWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(12).setMaxWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(15).setMinWidth(80);
             TransazioniCryptoTabella.getColumnModel().getColumn(15).setPreferredWidth(100);
             TransazioniCryptoTabella.getColumnModel().getColumn(15).setMaxWidth(100);
             TransazioniCryptoTabella.getColumnModel().getColumn(16).setMinWidth(80);
             TransazioniCryptoTabella.getColumnModel().getColumn(16).setPreferredWidth(100);
             TransazioniCryptoTabella.getColumnModel().getColumn(16).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(17).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(17).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(17).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(18).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(18).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(18).setMaxWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(19).setMinWidth(80);
+            TransazioniCryptoTabella.getColumnModel().getColumn(19).setPreferredWidth(100);
+            TransazioniCryptoTabella.getColumnModel().getColumn(19).setMaxWidth(100);
         }
         TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));
 
@@ -1059,15 +1066,29 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public void NascondiColonneTabellaCrypto(){
        // this.CDC.remove(this.TransazioniCrypto);
         //per nascondere devo farlo al contrario
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(19));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(18));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(17));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(22));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(21));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(20));
+       // TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(19));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(18));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(17));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(16));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(15));        
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(14));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(11));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(13));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(12));        
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(11));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(10));        
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(9));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(8));        
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(7));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(6));
-        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(1));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(6));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(5));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(4));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(3));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(2));
+        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(1));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(0));
         //Elenco Colonne
         /*
         0 - TrasID -> es. 202112031045_Binance_ScambioCryptoCrypto

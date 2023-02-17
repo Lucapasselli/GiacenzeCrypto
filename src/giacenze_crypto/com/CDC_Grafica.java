@@ -296,7 +296,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(TransazioniCrypto_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(75, 75, 75)
                                 .addComponent(jButton1))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 604, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 759, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         TransazioniCryptoLayout.setVerticalGroup(
@@ -2241,13 +2241,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
         String DataOra = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
         
-        String ExchangeWallet=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 2).toString()+
-                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 3).toString()+")";
+        String ExchangeWallet=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 3).toString()+
+                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 4).toString()+")";
         
-        String CausaleMovimento=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 4).toString()+
-                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 5).toString()+")";
+        String CausaleMovimento=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 5).toString()+
+                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 6).toString()+")";
         
-        String CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 6).toString();
+        String CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 7).toString();
         
         String ValoreTransazione=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 15).toString();
         String ValoreTransazionePrezzoCarico=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 17).toString();
@@ -2257,31 +2257,33 @@ public class CDC_Grafica extends javax.swing.JFrame {
         String unitarioPrzCaricoRic="";
         String unitarioValoreUsc="";
         String unitarioPrzCaricoUsc="";
-        if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")){
-            unitarioValoreRic=new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Valore di mercato unitario)";
+        String MonRic=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 11).toString().trim();
+        String MonUsc=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 8).toString().trim();
+        if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+            unitarioValoreRic="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
-        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")){
-            unitarioPrzCaricoRic=new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTARic),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Prezzo di carico unitario)";
+        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+            unitarioPrzCaricoRic="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
-        if (isNumeric(ValoreTransazione)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")){
-            unitarioValoreUsc=new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTAUsc),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Valore di mercato unitario)";
+        if (isNumeric(ValoreTransazione)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+            unitarioValoreUsc="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
-        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")){
-            unitarioPrzCaricoUsc=new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTAUsc),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Prezzo di carico unitario)";
+        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+            unitarioPrzCaricoUsc="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
         String MonetaRicevuta="";
         String MonetaUscita="";
         if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)){
         MonetaRicevuta=QTARic+
-                " "+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 11).toString()+
-                " ( "+unitarioValoreRic+
-                " ( "+unitarioPrzCaricoRic+")";
+                " "+MonRic+
+                "  "+unitarioValoreRic+" "+
+                "  "+unitarioPrzCaricoRic;
         }
         if (isNumeric(ValoreTransazione)&&isNumeric(QTAUsc)){
         MonetaUscita=QTAUsc+
-                " "+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 8).toString()+
-                " ( "+unitarioValoreUsc+")"+
-                " ( "+unitarioPrzCaricoUsc+")";
+                " "+MonUsc+
+                "  "+unitarioValoreUsc+" "+
+                "  "+unitarioPrzCaricoUsc;
         
 
         }
@@ -2294,8 +2296,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "EXCHANGE/WALLET :&#9&#9&#9<b>"+ExchangeWallet+"</b><br>"+
                 "CAUSALE MOVIMENTO :&#9&#9&#9<b>"+CausaleMovimento+"</b><br>"+
                 "CAUSALE DA CSV :&#9&#9&#9<b>"+CausaleOriginale+"</b><br>"+
-                "MONETA RICEVUTA :&#9&#9&#9<b>"+MonetaRicevuta+"</b><br>"+
                 "MONETA USCITA :&#9&#9&#9<b>"+MonetaUscita+"</b><br>"+
+                "MONETA RICEVUTA :&#9&#9&#9<b>"+MonetaRicevuta+"</b><br>"+
                 "VALORE TRANSAZIONE da CSV :&#9&#9<b>"+ValoreTransazioneCSV+"</b><br>"+
                 "VALORE TRANSAZIONE :&#9&#9&#9<b>"+ValoreTransazione+"</b><br>"+
                 "VALORE TRANSAZIONE AL PREZZO DI CARICO :&#9<b>"+ValoreTransazionePrezzoCarico+"\n";

@@ -155,6 +155,15 @@ public class Importazioni {
     
     
      public static List<String[]> ConsolidaMovimenti_CDCAPP(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
+         //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
+         //TI=Trasferimento Interno
+         //TC=Trasferimento Crypto
+         //TF=Trasferimento Fiat
+         //AC=Acquisto Crypto (con FIAT)
+         //VC=Vendita Crypto (per FIAT)
+         //SC=Scambio Crypto
+         //RW=Staking/caschback/airdrop etc....
+         
          List<String[]> lista=new ArrayList<>();
          int numMovimenti=listaMovimentidaConsolidare.size();
          String dust_accreditati="";
@@ -179,7 +188,8 @@ public class Importazioni {
                                     movimentoConvertito.trim().equalsIgnoreCase("ALTRE-REWARD"))
                             {
 
-                                RT[0] = movimentoSplittato[0] + "_CDCAPP_" + Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
+                                RT[0] = movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_RW_*_"+movimentoSplittato[2].trim();
                                 RT[1] = movimentoSplittato[0];
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = "Crypto.com App";
@@ -220,10 +230,7 @@ public class Importazioni {
                                         valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
                                     }
                                     RT[15] = valoreEuro;
-                                    BigDecimal Dividendo = new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
                                     BigDecimal QTA = new BigDecimal(movimentoSplittato[3]);
-                                    BigDecimal risultato = Dividendo.divide(QTA, RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                    String UnitarioMercato = risultato.abs().toString();
                                     String plus;
                                     if (QTA.toString().contains("-")) {
                                         plus = "-" + valoreEuro;
@@ -240,18 +247,19 @@ public class Importazioni {
                                 RT[21] = "";
                                 RT[22] = "A";
                                 lista.add(RT);
-                                // Mappa_Movimenti.put(RT[0]+RT[1].split(" di ")[0].trim(), RT);
+                                
                             }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO"))
                             {
                                 //trasferimento FIAT
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_TF_*_"+movimentoSplittato[2].trim();
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
-                                RT[5]="ACQUISTO CRYPTO";
-                                RT[6]="TRASFERIMENTO FIAT";                                
+                                RT[5]="TRASFERIMENTO FIAT";
+                                RT[6]="";                                
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]="";
                                 RT[9]="";
@@ -268,11 +276,6 @@ public class Importazioni {
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();                                
                                 RT[15]=valoreEuro;
-                                BigDecimal Dividendo=new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
-                                BigDecimal QTA=new BigDecimal(movimentoSplittato[3]).abs();
-                                
-                                BigDecimal risultato=Dividendo.divide(QTA, RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                String UnitarioMercato=risultato.toString();
                                 RT[16]="";
                                 RT[17]=valoreEuro;
                                 RT[18]="";
@@ -283,16 +286,15 @@ public class Importazioni {
                                 lista.add(RT);
                                 
                                 //Vendita Euro x Crypto
+                                //movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_AC_*_"+movimentoSplittato[2].trim();
                                 RT=new String[23];
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
-                                
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_AC_"+movimentoSplittato[2].trim()+"_"+movimentoSplittato[4].trim();                              
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="ACQUISTO CRYPTO";
-                                RT[6]="SCAMBIO "+movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                                
-                                
+                                RT[6]="SCAMBIO "+movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                               
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[2];
                                 RT[9]="FIAT";
@@ -309,11 +311,6 @@ public class Importazioni {
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();
                                 RT[15]=valoreEuro;
-                                Dividendo=new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
-                                QTA=new BigDecimal(movimentoSplittato[5]).abs();
-                                risultato=Dividendo.divide(QTA,RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                //System.out.println(Dividendo+ "/"+QTA+"="+risultato);
-                                UnitarioMercato=risultato.toString();
                                 RT[16]="";
                                 RT[17]=valoreEuro;
                                 RT[18]="";
@@ -328,7 +325,7 @@ public class Importazioni {
                             {
                                 //Vendita Crypto x Euro
                                 
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_VC_"+movimentoSplittato[2].trim()+"_"+movimentoSplittato[4].trim(); 
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -352,11 +349,6 @@ public class Importazioni {
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();
                                 RT[15]=valoreEuro;
-                                BigDecimal Dividendo=new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
-                                BigDecimal QTA=new BigDecimal(movimentoSplittato[3]).abs();
-                                BigDecimal risultato=Dividendo.divide(QTA,RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                //System.out.println(Dividendo+ "/"+QTA+"="+risultato);
-                                String UnitarioMercato=risultato.toString();
                                 RT[16]="";
                                 RT[17]="Da calcolare";
                                 RT[18]="";
@@ -369,7 +361,7 @@ public class Importazioni {
                                 
                                 //trasferimento FIAT
                                 RT=new String[23];
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_TF_"+movimentoSplittato[2].trim()+"_*"; 
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -393,11 +385,6 @@ public class Importazioni {
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();                                
                                 RT[15]=valoreEuro;
-                                Dividendo=new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
-                                QTA=new BigDecimal(movimentoSplittato[5]).abs();
-                                
-                                risultato=Dividendo.divide(QTA, RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                UnitarioMercato=risultato.toString();
                                 RT[16]="";
                                 RT[17]=valoreEuro;
                                 RT[18]="";
@@ -435,11 +422,6 @@ public class Importazioni {
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();
                                 RT[15]=valoreEuro;
-                                BigDecimal Dividendo=new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
-                                BigDecimal QTA=new BigDecimal(movimentoSplittato[5]).abs();
-                                BigDecimal risultato=Dividendo.divide(QTA,RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                //System.out.println(Dividendo+ "/"+QTA+"="+risultato);
-                                String UnitarioMercato=risultato.toString();
                                 RT[16]="";
                                 RT[17]="Da calcolare";
                                 RT[18]="";
@@ -451,14 +433,8 @@ public class Importazioni {
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION"))
                             {
-                                 //System.out.println(k);
-                         //         System.out.println(movimento);
-                                //  String dust_accreditati="";
-                                //  String dust_addebitati[]=new String[numMovimenti-1];
-                                // int numeroAddebiti=0;
-                                //  String dust_sommaaddebiti="";
                                 // serve solo per il calcolo della percentuale di cro da attivare
-                                    //dust_sommaaddebiti="0";
+
                                     // se è un movimento negativo lo inserisco tra gli addebiti
                                     if (movimentoSplittato[3].contains("-")){
                                         dust_addebitati[numeroAddebiti]=movimento;
@@ -484,8 +460,7 @@ public class Importazioni {
                                         RT[3] = "Crypto.com App";
                                         RT[4] = "Crypto Wallet";
                                         RT[5] = "SCAMBIO CRYPTO-CRYPTO";
-                                        RT[6] = "SCAMBIO DUST "+splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate  
-                                        
+                                        RT[6] = "SCAMBIO DUST "+splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
                                         RT[7] = splittata[9] + "(" + splittata[1] + ")";
                                         RT[8] = splittata[2];
                                         RT[9] = "Crypto";
@@ -496,9 +471,8 @@ public class Importazioni {
                                         BigDecimal sumAddebiti=new BigDecimal(dust_sommaaddebiti);
                                         BigDecimal totCRO=new BigDecimal(dust_accreditati.split(",")[3]);
                                         BigDecimal operazione;
-                                      //  System.out.println(valoreTrans+" "+sumAddebiti+" "+totCRO);
                                         operazione=(valoreTrans.divide(sumAddebiti,8, RoundingMode.HALF_UP));
-                                        String numCRO=operazione.multiply(totCRO).toString();//da sistemare calcolo errato
+                                        String numCRO=operazione.multiply(totCRO).stripTrailingZeros().toString();//da sistemare calcolo errato
                                         RT[13] =numCRO;//dust_accreditati.split(",")[3];//bisogna fare i calcoli
                                         RT[14] = splittata[6] + " " + splittata[7];///////
                                         String valoreEuro = "";
@@ -510,11 +484,6 @@ public class Importazioni {
                                         }
                                         valoreEuro = new BigDecimal(valoreEuro).abs().toString();
                                         RT[15] = valoreEuro;
-                                        BigDecimal Dividendo = new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
-                                        BigDecimal QTA = new BigDecimal(numCRO).abs();
-
-                                        BigDecimal risultato = Dividendo.divide(QTA, RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                        String UnitarioMercato = risultato.toString();
                                         RT[16] = "";
                                         RT[17] = "Da calcolare";
                                         RT[18] = "";
@@ -598,11 +567,6 @@ public class Importazioni {
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();
                                 RT[15]=valoreEuro;
-                                BigDecimal Dividendo=new BigDecimal(valoreEuro).setScale(8, RoundingMode.HALF_UP);
-                                BigDecimal QTA=new BigDecimal(movimentoSplittato[3]).abs();
-                                BigDecimal risultato=Dividendo.divide(QTA,RoundingMode.HALF_UP).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros();
-                                //System.out.println(Dividendo+ "/"+QTA+"="+risultato);
-                                String UnitarioMercato=risultato.toString();
                                 RT[16]="";
                                 RT[17]="Da calcolare";
                                 RT[18]="";

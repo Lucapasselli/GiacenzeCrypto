@@ -6,6 +6,9 @@ package giacenze_crypto.com;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -14,6 +17,7 @@ import javax.swing.table.DefaultTableCellRenderer;
  * @author luca.passelli
  */
 public class Tabelle {
+    static Color verdeScuro=new Color (23, 114, 69);
     static Color verde=new Color (145, 255, 143);
     static Color verdeChiaro=new Color (172, 255, 171);
     static Color rosso=new Color(255, 120, 120);
@@ -24,35 +28,71 @@ public class Tabelle {
     static Color grigioChiaro=new Color(245, 245, 245);
     static Color arancione=new Color(255, 216, 166);
     static Color arancioneChiaro=new Color(255, 226, 189);
+
+
+
+
     
     
     public static JTable ColoraRigheTabellaCrypto(final JTable table) {
+      //  bg=grigioChiaro;
+     //   Data="";
+
+     //System.out.println("test");
+
+     
+
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
-
+            
             public Component getTableCellRendererComponent(JTable table,
                     Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-                Color bg;
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-                // modelrow serve per prendere la riga anche se è stata riordinata
-                // int modelRow = table.getRowSorter().convertRowIndexToModel(row);
+                
+             
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
-                if (isSelected) {
-                    setBackground(table.getSelectionBackground());
 
-                } else if (table.getModel().getValueAt(row, 5).toString().equals("OK")) {
+            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+ 
+            if (isSelected) {
 
-                    setBackground(Color.RED);
-                    setForeground(Color.BLACK);
-                    bg = (row % 2 == 0 ? verde : verdeChiaro);
-                    setBackground(bg);
-
-                } else {
-                    bg = (row % 2 == 0 ? grigioChiaro : bianco);
-                    setBackground(bg);
-                    setForeground(table.getForeground());
+                    c.setBackground(table.getSelectionBackground());
+                    c.revalidate();
                 }
 
+                else if (col==11 && value.toString().equalsIgnoreCase("da calcolare")) {
+                       // if (value.toString().equalsIgnoreCase("da calcolare"))
+                         //   {
+                   // c.setBackground(MappaColori.get(row));
+                    setBackground(arancione);
+                    setForeground(table.getForeground());
+                   // }
+
+                } else if (col==12 && value.toString().equalsIgnoreCase("da calcolare")) { 
+                  //  c.setBackground(MappaColori.get(row));
+                    setBackground(arancione);
+                    setForeground(table.getForeground());
+                   // c.setBackground(MappaColori.get(row));
+                }
+                else if (col==12 && value.toString().trim().contains("-")) {
+                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
+                    c.setBackground(bg);
+                    setForeground(Color.RED);
+                } 
+                else if (col==12 && !value.toString().trim().equalsIgnoreCase("0.00")) {
+                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
+                    c.setBackground(bg);
+                    setForeground(verdeScuro);
+                }   
+                else {
+                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
+                    setForeground(Color.black);
+                  c.setBackground(bg);
+                  
+
+                }
+
+              // riga=row;
                 return this;
             }
         });

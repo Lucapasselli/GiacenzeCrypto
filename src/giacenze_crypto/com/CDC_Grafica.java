@@ -133,6 +133,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCryptoTabella = new javax.swing.JTable();
         TransazioniCrypto_Bottone_CaricaCSV = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        TransazioniCryptoTextPane = new javax.swing.JTextPane();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -212,7 +214,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Exchange</html>", "<html><center>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Valore<br>unitario<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>transazione<br>in EURO</html>", "<html><center>Prezzo di<br>carico<br>in EURO</html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto"
+                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange</html>", "<html><center>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Non Utilizzata</html>", "<html><center>Prezzo di<br>carico<br>transazione<br>in EURO</html>", "<html><center><html><center>Non Utilizzata</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -223,11 +225,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        TransazioniCryptoTabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                TransazioniCryptoTabellaMouseReleased(evt);
+            }
+        });
+        TransazioniCryptoTabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                TransazioniCryptoTabellaKeyReleased(evt);
+            }
+        });
         TransazioniCrypto_ScrollPane.setViewportView(TransazioniCryptoTabella);
         if (TransazioniCryptoTabella.getColumnModel().getColumnCount() > 0) {
             TransazioniCryptoTabella.getColumnModel().getColumn(1).setMinWidth(120);
             TransazioniCryptoTabella.getColumnModel().getColumn(1).setPreferredWidth(120);
             TransazioniCryptoTabella.getColumnModel().getColumn(1).setMaxWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(2).setMinWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(2).setPreferredWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(2).setMaxWidth(70);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(60);
@@ -264,6 +279,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        TransazioniCryptoTextPane.setContentType("text/html"); // NOI18N
+        jScrollPane1.setViewportView(TransazioniCryptoTextPane);
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -273,9 +291,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 953, Short.MAX_VALUE)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                        .addComponent(TransazioniCrypto_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(75, 75, 75)
-                        .addComponent(jButton1)
+                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                .addComponent(TransazioniCrypto_Bottone_CaricaCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(75, 75, 75)
+                                .addComponent(jButton1))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 604, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         TransazioniCryptoLayout.setVerticalGroup(
@@ -286,7 +307,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_CaricaCSV)
                     .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -1070,9 +1093,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(21));
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(20));
        // TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(19));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(18));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(18));
         //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(17));
-        //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(16));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(16));
         //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(15));        
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(14));
         //TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(13));
@@ -2201,6 +2224,209 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //Calcoli.RecuperaTassidiCambio();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void TransazioniCryptoTabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaMouseReleased
+        // TODO add your handling code here:
+        CompilaTextPaneDatiMovimento();
+    }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
+
+    private void TransazioniCryptoTabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaKeyReleased
+        // TODO add your handling code here:
+        CompilaTextPaneDatiMovimento();
+    }//GEN-LAST:event_TransazioniCryptoTabellaKeyReleased
+
+    
+        public void CompilaTextPaneDatiMovimento() {
+
+        String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 0).toString();
+        
+        String DataOra = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
+        
+        String ExchangeWallet=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 2).toString()+
+                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 3).toString()+")";
+        
+        String CausaleMovimento=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 4).toString()+
+                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 5).toString()+")";
+        
+        String CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 6).toString();
+        
+        String ValoreTransazione=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 15).toString();
+        String ValoreTransazionePrezzoCarico=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 17).toString();
+        String QTARic=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 13).toString();
+        String QTAUsc=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 10).toString();
+        String unitarioValoreRic="";
+        String unitarioPrzCaricoRic="";
+        String unitarioValoreUsc="";
+        String unitarioPrzCaricoUsc="";
+        if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")){
+            unitarioValoreRic=new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Valore di mercato unitario)";
+        }
+        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")){
+            unitarioPrzCaricoRic=new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTARic),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Prezzo di carico unitario)";
+        }
+        if (isNumeric(ValoreTransazione)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")){
+            unitarioValoreUsc=new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTAUsc),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Valore di mercato unitario)";
+        }
+        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")){
+            unitarioPrzCaricoUsc=new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTAUsc),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+" EUR (Prezzo di carico unitario)";
+        }
+        String MonetaRicevuta="";
+        String MonetaUscita="";
+        if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)){
+        MonetaRicevuta=QTARic+
+                " "+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 11).toString()+
+                " ( "+unitarioValoreRic+
+                " ( "+unitarioPrzCaricoRic+")";
+        }
+        if (isNumeric(ValoreTransazione)&&isNumeric(QTAUsc)){
+        MonetaUscita=QTAUsc+
+                " "+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 8).toString()+
+                " ( "+unitarioValoreUsc+")"+
+                " ( "+unitarioPrzCaricoUsc+")";
+        
+
+        }
+        String ValoreTransazioneCSV=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 14).toString();
+
+      //  String MacAddress = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
+        
+        String daAppendere="ID TRANSAZIONE :&#9&#9&#9<b>"+IDTransazione+"</b><br>"+
+                "DATA e ORA :&#9&#9&#9<b>"+DataOra+"</b><br>"+
+                "EXCHANGE/WALLET :&#9&#9&#9<b>"+ExchangeWallet+"</b><br>"+
+                "CAUSALE MOVIMENTO :&#9&#9&#9<b>"+CausaleMovimento+"</b><br>"+
+                "CAUSALE DA CSV :&#9&#9&#9<b>"+CausaleOriginale+"</b><br>"+
+                "MONETA RICEVUTA :&#9&#9&#9<b>"+MonetaRicevuta+"</b><br>"+
+                "MONETA USCITA :&#9&#9&#9<b>"+MonetaUscita+"</b><br>"+
+                "VALORE TRANSAZIONE da CSV :&#9&#9<b>"+ValoreTransazioneCSV+"</b><br>"+
+                "VALORE TRANSAZIONE :&#9&#9&#9<b>"+ValoreTransazione+"</b><br>"+
+                "VALORE TRANSAZIONE AL PREZZO DI CARICO :&#9<b>"+ValoreTransazionePrezzoCarico+"\n";
+        
+        this.TransazioniCryptoTextPane.setText(daAppendere);
+        //Riempio i dati sulle porte aperte del Terminale selezionato
+        // TextPanePorteAperte.setText(RitornaPorteAperteDaMACNew(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString()));
+       // DatiPorte = RitornaPorteAperteDaMACNew(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString());
+
+        // System.out.println(DatiPorte);
+//Font font = TextAreaPorteAperte.getFont();  
+        //TextAreaPorteAperte.setFont(font.deriveFont(Font.BOLD));
+      //  if (DatiPorte.trim().equalsIgnoreCase("")) {
+          //  DatiPorte = RitornaPorteAperteDaMacAddress(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString()).replace("\n", "<br>");
+            // TextPanePorteAperte.setText((RitornaPorteAperteDaMacAddress(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString())).replace("\n","<br>"));
+      //  }
+       /* if (MappaMac_DettagliXcliente.get(MacAddress) != null) {
+            DatiPorte = DatiPorte + "<br><br>";
+            if (!MappaMac_DettagliXcliente.get(MacAddress)[4].equals("")) {
+                DatiPorte = DatiPorte + "<b>POSIZIONE :&#9</b> " + MappaMac_DettagliXcliente.get(MacAddress)[4].replace("\n", "<br>&#9 ") + "<br><br>";
+            }
+            if (!MappaMac_DettagliXcliente.get(MacAddress)[5].equals("")) {
+                DatiPorte = DatiPorte + "<b>NOTE :&#9</b> " + MappaMac_DettagliXcliente.get(MacAddress)[5].replace("\n", "<br>&#9 ");
+            }
+        }*/
+  /*      TextPanePorteAperte.setText(DatiPorte.replace("SERVIZI", "<b> SERVIZI </b>").replace("\n", "<br>"));
+// TextPaneDatiRiga.setText("IP : "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),0).toString()+"\n");
+        //TextAreaDatiRiga.setText("IP : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 0).toString() + "\n");
+        Stringa = Stringa + "IP :&#9&#9&#9<b>" + TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 0).toString() + "</b><br>";
+        // appendToPane(TextPaneDatiRiga, "My Name is Too Good.\n", Color.RED);
+        //  TextPaneDatiRiga.repaint();
+        // if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),5)!=null)&&!(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),5).toString().equalsIgnoreCase(""))) TextPaneDatiRiga.("NOME : "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),5).toString()+"\n");
+
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + "NOME :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5).toString() + "</b><br>";
+            //  TextAreaDatiRiga.append("NOME : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3).toString().equalsIgnoreCase(""))) {
+
+            Stringa = Stringa + ("SO :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3).toString() + "</b><br>");
+            //TextAreaDatiRiga.append("SO :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("DETTAGLI SO :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4).toString() + "</b><br>");
+            //TextAreaDatiRiga.append("DETTAGLI SO : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("RAM :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6).toString() + "</b><br>");
+            //TextAreaDatiRiga.append("RAM : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("GRUPPO DI LAVORO :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7).toString() + "</b><br>");
+            //TextAreaDatiRiga.append("GRUPPO DI LAVORO : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("MARCA :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString() + "</b><br>");
+            // TextAreaDatiRiga.append("MARCA : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("MODELLO :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString() + "</b><br>");
+            //TextAreaDatiRiga.append("MODELLO : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("NUMERO DI SERIE :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10).toString() + "</b><br>");
+            //TextAreaDatiRiga.append("NUMERO DI SERIE : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("BIOS :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11).toString() + "</b><br>");
+            //TextAreaDatiRiga.append("BIOS : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11).toString() + "\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12).toString().trim().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("PROCESSORE :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12).toString() + "</b><br>");
+            // TextAreaDatiRiga.append("PROCESSORE : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12).toString() + "\n");
+        }
+         if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 13) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 13).toString().trim().equalsIgnoreCase(""))) {
+            String tempSpazio=TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 14).toString().trim();
+            String atempSpazio[]=tempSpazio.split("\\|");
+            String tempModello=TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 13).toString().trim();
+            String atempModello[]=tempModello.split("\\|");
+            for (int h=0;h<atempModello.length;h++){
+                String temp=atempModello[h].trim();
+                if (tempSpazio!=null && atempSpazio.length>h && !atempSpazio[h].trim().equalsIgnoreCase("")){
+                    temp=temp+" ("+Utili.FormattaByteinManieraLeggibile(atempSpazio[h].trim())+")";
+                }
+                Stringa = Stringa + ("DISCO "+h+" :&#9&#9&#9<b>" + temp + "</b><br>");
+            }
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23).toString().equalsIgnoreCase("0"))) {
+            Stringa = Stringa + ("Ultima volta attivo :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23).toString() + " controlli fà </b><br>");
+            //TextAreaDatiRiga.append("Ultima volta attivo : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23).toString() + " controlli fà \n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25).toString().equalsIgnoreCase(""))) {
+            Stringa = Stringa + ("Numero Presenze in Rete :&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25).toString() + " controlli Effettuati</b><br>");
+            //TextAreaDatiRiga.append("Numero Presenze in Rete : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25).toString() + " controlli Effettuati\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 21) != null) && (TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 21).toString().equalsIgnoreCase("SI"))) {
+            Stringa = Stringa + ("APPARECCHIATURA IN DHCP<br>");
+            //TextAreaDatiRiga.append("APPARECCHIATURA IN DHCP\n");
+        }
+        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 22) != null) && (TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 22).toString().equalsIgnoreCase("SI"))) {
+            Stringa = Stringa + ("ATTENZIONE: POSSIBILE CONFLITTO IP<br>");
+            // TextAreaDatiRiga.append("ATTENZIONE: POSSIBILE CONFLITTO IP\n");
+        }
+        TextPaneDatiRiga.setText(Stringa);
+        TextPanePorteAperte.setCaretPosition(0);
+        TextPaneDatiRiga.setCaretPosition(0);
+
+        //Ora vado a caricare l'immagine del prodotto nella parte bassa
+        String marca = "";
+        String modello = "";
+        marca = Utili.TogliPrimoAsterisco(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString());
+        modello = Utili.TogliPrimoAsterisco(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString());
+        //questa parte serve per togliere gli asterischi dalla ricerca
+        //c'è l'asterisco infatti solo se la marca e modello sono presi dal database interno
+
+        ReteLabelImmagine.setIcon(null);
+        String rigaDettagliMacchina[] = MappaTipoMacchina_Dettagli.get(marca + " " + modello);
+        if (rigaDettagliMacchina != null) {
+            Utili.CaricaImmagineProdotto(rigaDettagliMacchina[2], ReteLabelImmagine, TabellaRete);
+            Immagine=rigaDettagliMacchina[2];
+        }else Immagine=null;
+
+        //  TextAreaRete.append("MacAdress : "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),1).toString()+"\n");
+        //  TextAreaRete.append("Ultima volta attivo "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),14).toString()+" controllo fà \n");*/
+    }
+    
+    
+    
+    
+    
+    
        private void CaricaTabellaCrypto() {                                         
         String fileDaImportare = "movimenti.crypto.csv";
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
@@ -2209,8 +2435,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
       //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
       //  CDC_CardWallet_Tabella2.setModel(model);
-        
+   //                  model = (DefaultTableModel) RegTabellaElenco.getModel();
+            /// model.getDataVector().removeAllElements();
+             
+             //RegTabellaElenco.removeAll();
+    //         Tabelle.PulisciTabella(model);
+    //         ElencoChiavi();
+     //        Tabelle.ColoraRigaTabellaRegistro(RegTabellaElenco);
         PulisciTabella(ModelloTabellaCrypto);
+        Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         String riga;
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
             while ((riga = bure.readLine()) != null) {
@@ -2504,12 +2737,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JTextField CDC_Text_Giorni;
     private javax.swing.JPanel TransazioniCrypto;
     private javax.swing.JTable TransazioniCryptoTabella;
+    private javax.swing.JTextPane TransazioniCryptoTextPane;
     private javax.swing.JButton TransazioniCrypto_Bottone_CaricaCSV;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     // End of variables declaration//GEN-END:variables

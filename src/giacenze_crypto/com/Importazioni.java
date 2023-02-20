@@ -5,6 +5,7 @@
 package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.ConvertiDatainLong;
+import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -102,7 +103,7 @@ public class Importazioni {
                         int nElementi = listaConsolidata.size();
                         for (int i = 0; i < nElementi; i++) {
                             String consolidata[] = listaConsolidata.get(i);
-                            Mappa_Movimenti.put(consolidata[0] + consolidata[2].split(" di ")[0].trim(), consolidata);
+                            Mappa_Movimenti.put(consolidata[0], consolidata);
                         }
 
                         //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
@@ -118,8 +119,9 @@ public class Importazioni {
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
                 String consolidata[] = listaConsolidata.get(i);
-                //System.out.println(consolidata[2].split(" di ")[0].trim());
-                Mappa_Movimenti.put(consolidata[0] + consolidata[2].split(" di ")[0].trim(), consolidata);
+                //System.out.println(consolidata[2].split(" di ")[0].trim());               
+                Mappa_Movimenti.put(consolidata[0], consolidata);
+               // 
             }
 
             bure.close();
@@ -131,7 +133,25 @@ public class Importazioni {
         }     
 
         
-        Scrivi_Movimenti_Crypto(Mappa_Movimenti);
+       int numeromov=0; 
+       int numeroscartati=0;
+       int numeroaggiunti=0;
+       for (String v : Mappa_Movimenti.keySet()) {//////////////////////////////////////////////////////////////////////////
+           numeromov++;
+           if (MappaCryptoWallet.get(v)==null)//////////////////////////////////////////////////////////////////////////////////
+           {//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+               ////////////////////////// da FINIREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!
+               MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               numeroaggiunti++;
+           }else {
+            //   System.out.println("Movimento Duplicato " + v);
+               numeroscartati++;
+           }
+       }
+       System.out.println("TotaleMovimenti="+numeromov);
+       System.out.println("TotaleScartati="+numeroscartati);
+       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+        
         
     }
     
@@ -152,7 +172,22 @@ public class Importazioni {
                  //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
                }
     }
-    
+        
+        
+    private static void Leggi_Movimenti_Crypto() {///da finireeeeeeeeeeeeeeeee
+        try {
+            FileReader w = new FileReader("movimenti.crypto.csv");
+            BufferedReader bure = new BufferedReader(w);
+            String riga;
+            while ((riga = bure.readLine()) != null) {
+                String splittata[] = riga.split(";");
+            }
+            bure.close();
+            w.close();
+        } catch (IOException ex) {
+            //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     
      public static List<String[]> ConsolidaMovimenti_CDCAPP(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
@@ -189,7 +224,7 @@ public class Importazioni {
                             {
 
                                 //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
-                                RT[0] = movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_RW_*_"+movimentoSplittato[2].trim();
+                                RT[0] = movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_RW";
                                 RT[1] = movimentoSplittato[0];
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = "Crypto.com App";
@@ -253,7 +288,7 @@ public class Importazioni {
                             {
                                 //trasferimento FIAT
                                 
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_TF_*_"+movimentoSplittato[2].trim();
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TF";
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -288,7 +323,7 @@ public class Importazioni {
                                 //Vendita Euro x Crypto
                                 //movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_AC_*_"+movimentoSplittato[2].trim();
                                 RT=new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_AC_"+movimentoSplittato[2].trim()+"_"+movimentoSplittato[4].trim();                              
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_AC";                              
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -325,7 +360,7 @@ public class Importazioni {
                             {
                                 //Vendita Crypto x Euro
                                 
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_VC_"+movimentoSplittato[2].trim()+"_"+movimentoSplittato[4].trim(); 
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC"; 
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -361,7 +396,7 @@ public class Importazioni {
                                 
                                 //trasferimento FIAT
                                 RT=new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_TF_"+movimentoSplittato[2].trim()+"_*"; 
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TF"; 
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -398,7 +433,7 @@ public class Importazioni {
                             {
                                 //Scambio Crypto Crypto
                                 
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_SC";
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+1;
                                 RT[3]="Crypto.com App";
@@ -454,7 +489,7 @@ public class Importazioni {
                                     for (int w = 0; w < numeroAddebiti; w++) {
                                         String splittata[]=dust_addebitati[w].split(",");
                                         RT = new String[23];
-                                        RT[0] = splittata[0] + "_CDCAPP_" + Mappa_Conversione_Causali.get(splittata[9]);
+                                        RT[0] = movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
                                         RT[1] = splittata[0];
                                         RT[2] = w+1 + " di " + numeroAddebiti;
                                         RT[3] = "Crypto.com App";
@@ -543,7 +578,7 @@ public class Importazioni {
                                 }
                                 
                                 RT = new String[23];
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TI";
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -579,7 +614,7 @@ public class Importazioni {
                                 
                                 
                                 RT = new String[23];
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TI";
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -611,7 +646,7 @@ public class Importazioni {
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO"))
                             {
                                                                 RT = new String[23];
-                                RT[0]=movimentoSplittato[0]+"_CDCAPP_"+Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TC";
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+1;
                                 RT[3]="Crypto.com App";

@@ -49,7 +49,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    //static Map<String, String> CDC_MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
     static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
     static String CDC_FileDatiDB="crypto.com.dati.db";
@@ -100,6 +100,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         NascondiColonneTabellaCrypto();
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
+        CaricaTabellaCrypto();
         //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
@@ -271,6 +272,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));
 
         TransazioniCrypto_Bottone_CaricaCSV.setText("Carica CSV");
+        TransazioniCrypto_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_Bottone_CaricaCSVActionPerformed(evt);
+            }
+        });
 
         jButton1.setText("Carica Mappa Conversione");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -307,9 +313,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_CaricaCSV)
                     .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -2215,10 +2221,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         Calcoli.GeneraMappaCambioUSDEUR();
-       // System.out.println(Calcoli.ConvertiUSDEUR("150.345", "2022-10-13"));
-       Importazioni.Importa_Crypto_CDCApp();
-       CaricaTabellaCrypto();
+
+///////       Importazioni.Importa_Crypto_CDCApp();
+///////       CaricaTabellaCrypto();
        
+        Gestione_Importazioni gest = new Gestione_Importazioni();
+        gest.setLocationRelativeTo(this);
+        gest.setVisible(true);
+
        
         //questo sotto serve per aumentare la diomensione dell'header della tabella
         //Calcoli.RecuperaTassidiCambio();
@@ -2233,6 +2243,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         // TODO add your handling code here:
         CompilaTextPaneDatiMovimento();
     }//GEN-LAST:event_TransazioniCryptoTabellaKeyReleased
+
+    private void TransazioniCrypto_Bottone_CaricaCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_CaricaCSVActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_CaricaCSVActionPerformed
 
     
         public void CompilaTextPaneDatiMovimento() {
@@ -2288,7 +2302,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         }
         String ValoreTransazioneCSV=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 14).toString();
-
+        String Plusvalenza=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 19).toString();
+        String Note=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 21).toString();
+        String Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 20).toString();
       //  String MacAddress = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
         
         String daAppendere="ID TRANSAZIONE :&#9&#9&#9<b>"+IDTransazione+"</b><br>"+
@@ -2300,7 +2316,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "MONETA RICEVUTA :&#9&#9&#9<b>"+MonetaRicevuta+"</b><br>"+
                 "VALORE TRANSAZIONE da CSV :&#9&#9<b>"+ValoreTransazioneCSV+"</b><br>"+
                 "VALORE TRANSAZIONE :&#9&#9&#9<b>"+ValoreTransazione+"</b><br>"+
-                "VALORE TRANSAZIONE AL PREZZO DI CARICO :&#9<b>"+ValoreTransazionePrezzoCarico+"\n";
+                "VALORE TRANSAZIONE AL PREZZO DI CARICO :&#9<b>"+ValoreTransazionePrezzoCarico+"</b><br>"+
+                "PLUSVALENZA :&#9&#9&#9<b>"+Plusvalenza+"</b><br>"+
+                "RIFERIMENTI :&#9&#9&#9<b>"+Note+"</b><br>"+
+                "NOTE :&#9&#9&#9<b>"+Riferimenti+"</b><br>";
         
         this.TransazioniCryptoTextPane.setText(daAppendere);
         //Riempio i dati sulle porte aperte del Terminale selezionato
@@ -2435,15 +2454,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
-      //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
-      //  CDC_CardWallet_Tabella2.setModel(model);
-   //                  model = (DefaultTableModel) RegTabellaElenco.getModel();
-            /// model.getDataVector().removeAllElements();
-             
-             //RegTabellaElenco.removeAll();
-    //         Tabelle.PulisciTabella(model);
-    //         ElencoChiavi();
-     //        Tabelle.ColoraRigaTabellaRegistro(RegTabellaElenco);
         PulisciTabella(ModelloTabellaCrypto);
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         String riga;
@@ -2452,6 +2462,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 String splittata[] = riga.split(";");
               //  this.TransazioniCryptoTabella.add(splittata);
               ModelloTabellaCrypto.addRow(splittata);
+              MappaCryptoWallet.put(splittata[0], splittata);
                 
             }     
     }   catch (IOException ex) {   

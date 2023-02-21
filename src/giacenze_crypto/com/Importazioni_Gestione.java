@@ -1,5 +1,7 @@
 package giacenze_crypto.com;
 
+import javax.swing.JFileChooser;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -9,12 +11,12 @@ package giacenze_crypto.com;
  *
  * @author luca.passelli
  */
-public class Gestione_Importazioni extends javax.swing.JDialog {
+public class Importazioni_Gestione extends javax.swing.JDialog {
 
     /**
      * Creates new form Gestione_Importazioni
      */
-    public Gestione_Importazioni() {
+    public Importazioni_Gestione() {
          this.setTitle("Import da File");
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
@@ -141,7 +143,30 @@ public class Gestione_Importazioni extends javax.swing.JDialog {
 
     private void Bottone_SelezionaFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SelezionaFileActionPerformed
         // TODO add your handling code here:
-        
+                // TODO add your handling code here:
+        //Create a file chooser
+        JFileChooser fc = new JFileChooser();
+
+        //In response to a button click:
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+            String FileDaImportare=fc.getSelectedFile().getAbsolutePath();
+            if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv"))
+        {
+            Importazioni.Importa_Crypto_CDCApp(FileDaImportare);
+        }
+      /*      CDC_FiatWallet_Funzione_ImportaWallet(fiatwallet);
+
+            //ImportaFiatWallet("C:\\Users\\luca.passelli\\Desktop\\fiat_transactions_record_20220110_144004.csv");
+            CDC_FiatWallet_Funzione_Scrivi();
+            CDC_FiatWallet_AggiornaDatisuGUI();*/
+
+            //   TextFiatWallet.setText(fc.getSelectedFile().getAbsolutePath());
+
+       } else {
+        }
+        this.dispose();
     }//GEN-LAST:event_Bottone_SelezionaFileActionPerformed
 
     /**
@@ -161,20 +186,21 @@ public class Gestione_Importazioni extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Gestione_Importazioni.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Importazioni_Gestione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Gestione_Importazioni.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Importazioni_Gestione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Gestione_Importazioni.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Importazioni_Gestione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Gestione_Importazioni.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Importazioni_Gestione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Gestione_Importazioni().setVisible(true);
+                new Importazioni_Gestione().setVisible(true);
             }
         });
     }

@@ -27,8 +27,9 @@ import java.util.logging.Logger;
  */
 public class Importazioni {
     
-    public static void Importa_Crypto_CDCApp() {
-
+    public static void Importa_Crypto_CDCApp(String fileCDCapp) {
+        
+        String fileDaImportare = fileCDCapp;
         Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         //Faccio una lista di causali per la conversione dei dati del csv
@@ -80,7 +81,7 @@ public class Importazioni {
 //        Mappa_Conversione_Causali.put("crypto_credit_program_created", fileDaImportare);  //Crypto Loan 
         Mappa_Conversione_Causali.put("admin_wallet_credited", "ALTRE-REWARD");//es. aggiustamenti luna  
 
-        String fileDaImportare = "testCDCApp.csv";
+        
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
@@ -136,11 +137,11 @@ public class Importazioni {
        int numeromov=0; 
        int numeroscartati=0;
        int numeroaggiunti=0;
-       for (String v : Mappa_Movimenti.keySet()) {//////////////////////////////////////////////////////////////////////////
+       for (String v : Mappa_Movimenti.keySet()) {
            numeromov++;
-           if (MappaCryptoWallet.get(v)==null)//////////////////////////////////////////////////////////////////////////////////
-           {//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-               ////////////////////////// da FINIREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!
+           if (MappaCryptoWallet.get(v)==null)
+           {
+
                MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
                numeroaggiunti++;
            }else {
@@ -150,15 +151,15 @@ public class Importazioni {
        }
        System.out.println("TotaleMovimenti="+numeromov);
        System.out.println("TotaleScartati="+numeroscartati);
-       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+//////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
         
         
     }
     
     
-        private static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti) {
+        public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti) {
          try { 
-            FileWriter w=new FileWriter("movimenti.crypto.csv");
+            FileWriter w=new FileWriter("movimenti.crypto.db");
             BufferedWriter b=new BufferedWriter (w);
        for (String[] v : Mappa_Movimenti.values()) {
           String riga=v[0]+";"+v[1]+";"+v[2]+";"+v[3]+";"+v[4]+";"+v[5]+";"+v[6]+";"+v[7]+";"+v[8]+";"+v[9]+";"+v[10]+";"+v[11]+";"+v[12]+";"+v[13]+";"+v[14]+";"+v[15]+";"+v[16]+";"+v[17]+";"+v[18]+";"+v[19]+";"+v[20]+";"+v[21]+";"+v[22];
@@ -262,8 +263,9 @@ public class Importazioni {
                                         valoreEuro = movimentoSplittato[7];
                                     }
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
-                                        valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);                                        
                                     }
+                                    valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
                                     RT[15] = valoreEuro;
                                     BigDecimal QTA = new BigDecimal(movimentoSplittato[3]);
                                     String plus;
@@ -344,7 +346,7 @@ public class Importazioni {
                                     {
                                         valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], movimentoSplittato[0].split(" ")[0]);
                                     }
-                                valoreEuro=new BigDecimal(valoreEuro).abs().toString();
+                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]=valoreEuro;
@@ -382,7 +384,7 @@ public class Importazioni {
                                     {
                                         valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
                                     }
-                                valoreEuro=new BigDecimal(valoreEuro).abs().toString();
+                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]="Da calcolare";
@@ -418,7 +420,7 @@ public class Importazioni {
                                     {
                                         valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[5], movimentoSplittato[0].split(" ")[0]);
                                     }
-                                valoreEuro=new BigDecimal(valoreEuro).abs().toString();                                
+                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();                                
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]=valoreEuro;
@@ -455,7 +457,7 @@ public class Importazioni {
                                     {
                                         valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
                                     }
-                                valoreEuro=new BigDecimal(valoreEuro).abs().toString();
+                                valoreEuro=new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]="Da calcolare";
@@ -473,7 +475,7 @@ public class Importazioni {
                                     // se è un movimento negativo lo inserisco tra gli addebiti
                                     if (movimentoSplittato[3].contains("-")){
                                         dust_addebitati[numeroAddebiti]=movimento;
-                                        dust_sommaaddebiti=new BigDecimal(dust_sommaaddebiti).add(new BigDecimal(movimentoSplittato[7])).toString();
+                                        dust_sommaaddebiti=new BigDecimal(dust_sommaaddebiti).abs().add(new BigDecimal(movimentoSplittato[7])).abs().toString();
                                        // System.out.println(dust_sommaaddebiti+ " "+movimentoSplittato[7]);
                                         numeroAddebiti++;
                                     }
@@ -503,21 +505,28 @@ public class Importazioni {
                                         RT[11] = dust_accreditati.split(",")[2];
                                         RT[12] = "Crypto";
                                         BigDecimal valoreTrans=new BigDecimal(splittata[7]);
-                                        BigDecimal sumAddebiti=new BigDecimal(dust_sommaaddebiti);
+                                        BigDecimal sumAddebiti;
+                                        //System.out.println(dust_sommaaddebiti);
+                                        if (new BigDecimal(dust_sommaaddebiti).compareTo(new BigDecimal("0"))!=0){
+                                            sumAddebiti=new BigDecimal(dust_sommaaddebiti);
+                                        }else
+                                            {
+                                               sumAddebiti=new BigDecimal("0.000000001"); 
+                                            }
                                         BigDecimal totCRO=new BigDecimal(dust_accreditati.split(",")[3]);
-                                        BigDecimal operazione;
+                                        BigDecimal operazione;                                        
                                         operazione=(valoreTrans.divide(sumAddebiti,8, RoundingMode.HALF_UP));
-                                        String numCRO=operazione.multiply(totCRO).stripTrailingZeros().toString();//da sistemare calcolo errato
+                                        String numCRO=operazione.multiply(totCRO).stripTrailingZeros().abs().toString();//da sistemare calcolo errato
                                         RT[13] =numCRO;//dust_accreditati.split(",")[3];//bisogna fare i calcoli
                                         RT[14] = splittata[6] + " " + splittata[7];///////
                                         String valoreEuro = "";
                                         if (splittata[6].trim().equalsIgnoreCase("EUR")) {
-                                            valoreEuro = movimentoSplittato[7];
+                                            valoreEuro = splittata[7];
                                         }
                                         if (splittata[6].trim().equalsIgnoreCase("USD")) {
                                             valoreEuro = Calcoli.ConvertiUSDEUR(splittata[7], splittata[0].split(" ")[0]);
                                         }
-                                        valoreEuro = new BigDecimal(valoreEuro).abs().toString();
+                                        valoreEuro = new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
                                         RT[15] = valoreEuro;
                                         RT[16] = "";
                                         RT[17] = "Da calcolare";
@@ -583,8 +592,8 @@ public class Importazioni {
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]=WalletPartenza;
-                                RT[5]="TRASFERIMENTO INTERNO CRYPTO";
-                                RT[6]="TRASFERIMENTO INTERNO DA "+WalletPartenza+" A "+WalletDestinazione;                                
+                                RT[5]="TRASFERIMENTO INTERNO";
+                                RT[6]="TRASFERIMENTO DA "+WalletPartenza+" A "+WalletDestinazione;                                
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[2];
@@ -600,7 +609,7 @@ public class Importazioni {
                                     {
                                         valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
                                     }
-                                valoreEuro=new BigDecimal(valoreEuro).abs().toString();
+                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]="Da calcolare";
@@ -677,7 +686,7 @@ public class Importazioni {
                                     {
                                         valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
                                     }
-                                valoreEuro=new BigDecimal(valoreEuro).abs().toString();
+                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]="Da calcolare";

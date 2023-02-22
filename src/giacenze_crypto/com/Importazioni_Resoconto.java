@@ -4,6 +4,12 @@
  */
 package giacenze_crypto.com;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+
+
+
 /**
  *
  * @author luca.passelli
@@ -13,9 +19,31 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
     /**
      * Creates new form Importazioni_Resoconto
      */
+    
+    /*    int Transazioni=0;
+        int TransazioniAggiunte=0;
+        int TrasazioniScartate=0;
+        String movimentiSconosciuti="";*/
+    
     public Importazioni_Resoconto() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
+        TextPane_Attenzione.setVisible(false);
+        TextPane_Errori.setVisible(false);
+    }
+    
+    public void ImpostaValori(int T,int TAggiunte,int TScartate,String movScon){
+
+        this.Text_TransTotali.setText(String.valueOf(T));
+        this.Text_TransImportate.setText(String.valueOf(TAggiunte));
+        this.Text_TransScartate.setText(String.valueOf(TScartate));
+        if (!movScon.trim().equalsIgnoreCase("")){
+            this.Bottone_CopiaAppunti.setEnabled(true);
+            this.TextPane_Attenzione.setVisible(true);
+            this.TextPane_Errori.setVisible(true);
+            this.TextPane_Errori.setText(movScon);
+          //  this.
+        }
     }
 
     /**
@@ -27,46 +55,64 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        Label_Titolo = new javax.swing.JLabel();
+        Label_TransTotali = new javax.swing.JLabel();
+        Label_TransImportate = new javax.swing.JLabel();
+        Label_TransScartate = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
+        TextPane_Attenzione = new javax.swing.JTextPane();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextPane2 = new javax.swing.JTextPane();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        TextPane_Errori = new javax.swing.JTextPane();
+        Text_TransTotali = new javax.swing.JTextField();
+        Text_TransImportate = new javax.swing.JTextField();
+        Text_TransScartate = new javax.swing.JTextField();
+        Bottone_Ok = new javax.swing.JButton();
+        Bottone_CopiaAppunti = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("RESOCONTO IMPORTAZIONE");
+        Label_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        Label_Titolo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        Label_Titolo.setText("RESOCONTO IMPORTAZIONE");
 
-        jLabel2.setText("Transazioni Totali :");
+        Label_TransTotali.setText("Transazioni Totali :");
 
-        jLabel3.setText("Transazioni Importate :");
+        Label_TransImportate.setText("Transazioni Importate :");
 
-        jLabel4.setText("Transazioni Scartate perchè già esistenti :");
+        Label_TransScartate.setText("Transazioni Scartate perchè già esistenti :");
 
-        jTextPane1.setEditable(false);
-        jTextPane1.setContentType("text/html"); // NOI18N
-        jTextPane1.setText("<html>\r\n  <head>\r\n\r\n  </head>\r\n  <body>\r\n    <p style=\"margin-top: 0\">\r\n      \r<b><center>ATTENZIONE!!! &#9    ALCUNE TRANSAZIONI SONO STATE SCARTATE!</b><br><br>\n Le transazioni di seguito elencate non sono contemplate dall'import del programma<br>\ne' quindi importate segnalare la cosa affinchè possano essere aggiunte all'import<br><br>\nMandare una mail all'indirizzo pippo@pippo.com con il dettaglio dei movimenti presenti qua sotto<br>\nse si vuole che vengano implementate nelle versioni successive del programma<br>\n    </p>\r\n  </body>\r\n</html>\r\n");
-        jScrollPane1.setViewportView(jTextPane1);
+        TextPane_Attenzione.setEditable(false);
+        TextPane_Attenzione.setContentType("text/html"); // NOI18N
+        TextPane_Attenzione.setText("<html>\r\n  <head>\r\n\r\n  </head>\r\n  <body>\r\n    <p style=\"margin-top: 0\">\r\n      \r<b><center>ATTENZIONE!!! &#9    ALCUNE TRANSAZIONI SONO STATE SCARTATE!</b><br><br>\n<center> Le transazioni di seguito elencate non sono contemplate dall'import del programma<br>\n<center>e' quindi importate segnalare la cosa affinchè possano essere aggiunte all'import<br><br>\n<center>Mandare una mail all'indirizzo pippo@pippo.com con il dettaglio dei movimenti presenti qua sotto<br>\n<center>se si vuole che vengano implementate nelle versioni successive del programma<br>\n    </p>\r\n  </body>\r\n</html>\r\n");
+        jScrollPane1.setViewportView(TextPane_Attenzione);
 
-        jTextPane2.setEditable(false);
-        jScrollPane2.setViewportView(jTextPane2);
+        TextPane_Errori.setEditable(false);
+        jScrollPane2.setViewportView(TextPane_Errori);
 
-        jTextField1.setEditable(false);
+        Text_TransTotali.setEditable(false);
+        Text_TransTotali.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
-        jTextField2.setEditable(false);
+        Text_TransImportate.setEditable(false);
+        Text_TransImportate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
-        jTextField3.setEditable(false);
+        Text_TransScartate.setEditable(false);
+        Text_TransScartate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Text_TransScartate.setForeground(new java.awt.Color(204, 0, 0));
 
-        jButton1.setText("OK");
+        Bottone_Ok.setText("OK");
+        Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_OkActionPerformed(evt);
+            }
+        });
+
+        Bottone_CopiaAppunti.setText("Copia errori negli appunti");
+        Bottone_CopiaAppunti.setEnabled(false);
+        Bottone_CopiaAppunti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_CopiaAppuntiActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -78,50 +124,65 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(Label_TransImportate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Label_TransScartate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Label_TransTotali, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField1)
-                            .addComponent(jTextField2)
-                            .addComponent(jTextField3)))
+                            .addComponent(Text_TransTotali)
+                            .addComponent(Text_TransImportate)
+                            .addComponent(Text_TransScartate)))
                     .addComponent(jScrollPane2)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addComponent(Label_Titolo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(Bottone_CopiaAppunti, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Bottone_Ok)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(231, 231, 231)
-                .addComponent(jButton1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(Label_Titolo)
                 .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Label_TransTotali)
+                    .addComponent(Text_TransTotali, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Label_TransImportate)
+                    .addComponent(Text_TransImportate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Label_TransScartate)
+                    .addComponent(Text_TransScartate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Bottone_Ok)
+                    .addComponent(Bottone_CopiaAppunti)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_Bottone_OkActionPerformed
+
+    private void Bottone_CopiaAppuntiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CopiaAppuntiActionPerformed
+        // TODO add your handling code here:
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection(this.TextPane_Errori.getText());
+        clipboard.setContents(stringSelection, null);
+        
+    }//GEN-LAST:event_Bottone_CopiaAppuntiActionPerformed
 
     /**
      * @param args the command line arguments
@@ -159,17 +220,18 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JButton Bottone_CopiaAppunti;
+    private javax.swing.JButton Bottone_Ok;
+    private javax.swing.JLabel Label_Titolo;
+    private javax.swing.JLabel Label_TransImportate;
+    private javax.swing.JLabel Label_TransScartate;
+    private javax.swing.JLabel Label_TransTotali;
+    private javax.swing.JTextPane TextPane_Attenzione;
+    private javax.swing.JTextPane TextPane_Errori;
+    private javax.swing.JTextField Text_TransImportate;
+    private javax.swing.JTextField Text_TransScartate;
+    private javax.swing.JTextField Text_TransTotali;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextPane jTextPane1;
-    private javax.swing.JTextPane jTextPane2;
     // End of variables declaration//GEN-END:variables
 }

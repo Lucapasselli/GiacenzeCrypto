@@ -27,8 +27,19 @@ import java.util.logging.Logger;
  */
 public class Importazioni {
     
+    public static int Transazioni=0;
+    public static int TransazioniAggiunte=0;
+    public static int TrasazioniScartate=0;
+    
+    public static String movimentiSconosciuti="";
+    
+    
     public static void Importa_Crypto_CDCApp(String fileCDCapp) {
         
+        Transazioni=0;
+        TransazioniAggiunte=0;
+        TrasazioniScartate=0;
+        movimentiSconosciuti="";
         String fileDaImportare = fileCDCapp;
         Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -149,10 +160,12 @@ public class Importazioni {
                numeroscartati++;
            }
        }
-       System.out.println("TotaleMovimenti="+numeromov);
-       System.out.println("TotaleScartati="+numeroscartati);
+     //  System.out.println("TotaleMovimenti="+numeromov);
+     //  System.out.println("TotaleScartati="+numeroscartati);
 //////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
-        
+        Transazioni=numeromov;
+        TransazioniAggiunte=numeroaggiunti;
+        TrasazioniScartate=numeroscartati;
         
     }
     
@@ -216,6 +229,7 @@ public class Importazioni {
                            if (movimentoConvertito==null)
                                 {
                                    System.out.println("Errore in importazione da CDCAPP csv: "+movimento);
+                                   movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
                                 }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("CASHBACK")||
                                     movimentoConvertito.trim().equalsIgnoreCase("STAKING")||
@@ -701,6 +715,7 @@ public class Importazioni {
                                     {
                                         //qui ci saranno tutti i movimenti scartati
                                     //    System.out.println(movimento);
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
                                     }
                            
                            

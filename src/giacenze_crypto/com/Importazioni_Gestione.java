@@ -41,6 +41,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         Bottone_Annulla = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setResizable(false);
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
@@ -140,7 +141,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_Bottone_AnnullaActionPerformed
-
+   
+    
+    
     private void Bottone_SelezionaFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SelezionaFileActionPerformed
         // TODO add your handling code here:
                 // TODO add your handling code here:
@@ -155,6 +158,11 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv"))
         {
             Importazioni.Importa_Crypto_CDCApp(FileDaImportare);
+          //  FineImportazione(int Transazioni,int TransazioniAggiunte,int TrasazioniScartate,String Errori){
+            Importazioni_Resoconto res=new Importazioni_Resoconto();
+            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.movimentiSconosciuti);
+            res.setLocationRelativeTo(this);
+            res.setVisible(true);
         }
       /*      CDC_FiatWallet_Funzione_ImportaWallet(fiatwallet);
 

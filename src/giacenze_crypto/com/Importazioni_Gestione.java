@@ -39,6 +39,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         ScrollPane_Attenzione = new javax.swing.JScrollPane();
         TextPane_Attenzione = new javax.swing.JTextPane();
         Bottone_Annulla = new javax.swing.JButton();
+        CheckBox_Sovrascrivi = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -77,6 +78,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
         });
 
+        CheckBox_Sovrascrivi.setText("Sovrascrivere movimenti già presenti");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -86,15 +89,17 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Label_TipoFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(ComboBox_TipoFile, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Label_NomeExchange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Text_NomeExchange)
-                            .addComponent(ScrollPane_Attenzione)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Bottone_SelezionaFile, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Bottone_Annulla)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(ComboBox_TipoFile, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Label_NomeExchange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Text_NomeExchange)
+                                .addComponent(ScrollPane_Attenzione)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(Bottone_SelezionaFile, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(Bottone_Annulla)))
+                            .addComponent(CheckBox_Sovrascrivi))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -105,13 +110,15 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 .addComponent(Label_TipoFile)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ComboBox_TipoFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CheckBox_Sovrascrivi)
+                .addGap(39, 39, 39)
                 .addComponent(ScrollPane_Attenzione, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Label_NomeExchange)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Text_NomeExchange, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(41, 41, 41)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_SelezionaFile)
                     .addComponent(Bottone_Annulla))
@@ -157,10 +164,12 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             String FileDaImportare=fc.getSelectedFile().getAbsolutePath();
             if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv"))
         {
-            Importazioni.Importa_Crypto_CDCApp(FileDaImportare);
+            boolean SovrascriEsistenti=this.CheckBox_Sovrascrivi.isSelected();
+            Importazioni.AzzeraContatori();
+            Importazioni.Importa_Crypto_CDCApp(FileDaImportare,SovrascriEsistenti);
           //  FineImportazione(int Transazioni,int TransazioniAggiunte,int TrasazioniScartate,String Errori){
             Importazioni_Resoconto res=new Importazioni_Resoconto();
-            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.movimentiSconosciuti);
+            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate,Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
             res.setLocationRelativeTo(this);
             res.setVisible(true);
         }
@@ -216,6 +225,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_SelezionaFile;
+    private javax.swing.JCheckBox CheckBox_Sovrascrivi;
     private javax.swing.JComboBox<String> ComboBox_TipoFile;
     private javax.swing.JLabel Label_NomeExchange;
     private javax.swing.JLabel Label_TipoFile;

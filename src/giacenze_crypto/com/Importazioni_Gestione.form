@@ -29,16 +29,19 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="Label_TipoFile" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="ComboBox_TipoFile" max="32767" attributes="0"/>
-                          <Component id="Label_NomeExchange" max="32767" attributes="0"/>
-                          <Component id="Text_NomeExchange" max="32767" attributes="0"/>
-                          <Component id="ScrollPane_Attenzione" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="Bottone_SelezionaFile" min="-2" pref="198" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="Bottone_Annulla" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="ComboBox_TipoFile" max="32767" attributes="0"/>
+                              <Component id="Label_NomeExchange" max="32767" attributes="0"/>
+                              <Component id="Text_NomeExchange" max="32767" attributes="0"/>
+                              <Component id="ScrollPane_Attenzione" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="Bottone_SelezionaFile" min="-2" pref="198" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="Bottone_Annulla" min="-2" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
+                          <Component id="CheckBox_Sovrascrivi" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
@@ -54,13 +57,15 @@
               <Component id="Label_TipoFile" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="ComboBox_TipoFile" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="CheckBox_Sovrascrivi" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
               <Component id="ScrollPane_Attenzione" min="-2" pref="127" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="Label_NomeExchange" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="Text_NomeExchange" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_SelezionaFile" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Bottone_Annulla" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -135,6 +140,11 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AnnullaActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="CheckBox_Sovrascrivi">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Sovrascrivere movimenti gi&#xe0; presenti"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

@@ -4,6 +4,7 @@
  */
 package giacenze_crypto.com;
 
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -32,11 +33,14 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
         TextPane_Errori.setVisible(false);
     }
     
-    public void ImpostaValori(int T,int TAggiunte,int TScartate,String movScon){
+    public void ImpostaValori(int T,int TAggiunte,int TScartate,int TSconosciute,String movScon){
 
         this.Text_TransTotali.setText(String.valueOf(T));
         this.Text_TransImportate.setText(String.valueOf(TAggiunte));
         this.Text_TransScartate.setText(String.valueOf(TScartate));
+        this.Text_TransSconosciute.setText(String.valueOf(TSconosciute));
+        if (TSconosciute==0) Text_TransSconosciute.setForeground(Color.BLACK); else Text_TransSconosciute.setForeground(Color.RED);
+        if (TScartate==0) this.Text_TransScartate.setForeground(Color.BLACK); else Text_TransScartate.setForeground(Color.RED);
         if (!movScon.trim().equalsIgnoreCase("")){
             this.Bottone_CopiaAppunti.setEnabled(true);
             this.TextPane_Attenzione.setVisible(true);
@@ -68,6 +72,8 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
         Text_TransScartate = new javax.swing.JTextField();
         Bottone_Ok = new javax.swing.JButton();
         Bottone_CopiaAppunti = new javax.swing.JButton();
+        Label_TransSconosciute = new javax.swing.JLabel();
+        Text_TransSconosciute = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -114,6 +120,12 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
             }
         });
 
+        Label_TransSconosciute.setText("Transazioni Scartate perchè sconosciute :");
+
+        Text_TransSconosciute.setEditable(false);
+        Text_TransSconosciute.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Text_TransSconosciute.setForeground(new java.awt.Color(255, 51, 51));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -121,24 +133,26 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(Label_TransImportate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Label_TransScartate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Label_TransTotali, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Text_TransTotali)
-                            .addComponent(Text_TransImportate)
-                            .addComponent(Text_TransScartate)))
                     .addComponent(jScrollPane2)
                     .addComponent(Label_Titolo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Bottone_CopiaAppunti, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_Ok)))
+                        .addComponent(Bottone_Ok))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Label_TransSconosciute, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Label_TransImportate, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Label_TransScartate, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Label_TransTotali, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Text_TransTotali)
+                            .addComponent(Text_TransImportate)
+                            .addComponent(Text_TransScartate)
+                            .addComponent(Text_TransSconosciute))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -158,10 +172,14 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Label_TransScartate)
                     .addComponent(Text_TransScartate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Text_TransSconosciute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Label_TransSconosciute))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Bottone_Ok)
@@ -225,11 +243,13 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
     private javax.swing.JLabel Label_Titolo;
     private javax.swing.JLabel Label_TransImportate;
     private javax.swing.JLabel Label_TransScartate;
+    private javax.swing.JLabel Label_TransSconosciute;
     private javax.swing.JLabel Label_TransTotali;
     private javax.swing.JTextPane TextPane_Attenzione;
     private javax.swing.JTextPane TextPane_Errori;
     private javax.swing.JTextField Text_TransImportate;
     private javax.swing.JTextField Text_TransScartate;
+    private javax.swing.JTextField Text_TransSconosciute;
     private javax.swing.JTextField Text_TransTotali;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

@@ -26,10 +26,19 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jScrollPane2" alignment="0" max="32767" attributes="0"/>
+                  <Component id="Label_Titolo" alignment="1" pref="563" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="1" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="Bottone_CopiaAppunti" min="-2" pref="260" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="Bottone_Ok" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="Label_TransImportate" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="Label_TransSconosciute" max="32767" attributes="0"/>
+                          <Component id="Label_TransImportate" alignment="1" max="32767" attributes="0"/>
                           <Component id="Label_TransScartate" alignment="1" max="32767" attributes="0"/>
                           <Component id="Label_TransTotali" alignment="1" max="32767" attributes="0"/>
                       </Group>
@@ -38,15 +47,8 @@
                           <Component id="Text_TransTotali" max="32767" attributes="0"/>
                           <Component id="Text_TransImportate" max="32767" attributes="0"/>
                           <Component id="Text_TransScartate" alignment="0" max="32767" attributes="0"/>
+                          <Component id="Text_TransSconosciute" alignment="0" max="32767" attributes="0"/>
                       </Group>
-                  </Group>
-                  <Component id="jScrollPane2" alignment="0" max="32767" attributes="0"/>
-                  <Component id="Label_Titolo" alignment="1" pref="563" max="32767" attributes="0"/>
-                  <Component id="jScrollPane1" alignment="1" max="32767" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <Component id="Bottone_CopiaAppunti" min="-2" pref="260" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="Bottone_Ok" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -73,10 +75,15 @@
                   <Component id="Label_TransScartate" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Text_TransScartate" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Text_TransSconosciute" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Label_TransSconosciute" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane1" min="-2" pref="128" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane2" min="-2" pref="210" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" min="-2" pref="194" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="Bottone_Ok" min="-2" max="-2" attributes="0"/>
@@ -184,6 +191,22 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_CopiaAppuntiActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_TransSconosciute">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Transazioni Scartate perch&#xe8; sconosciute :"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="Text_TransSconosciute">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Segoe UI" size="12" style="1"/>
+        </Property>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="33" green="33" red="ff" type="rgb"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

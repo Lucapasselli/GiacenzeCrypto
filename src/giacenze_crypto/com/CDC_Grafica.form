@@ -92,10 +92,8 @@
                           <Component id="TransazioniCrypto_ScrollPane" pref="953" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="TransazioniCrypto_Bottone_CaricaCSV" min="-2" pref="105" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="TransazioniCrypto_Bottone_Importa" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" min="-2" pref="508" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -117,8 +115,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="TransazioniCrypto_Bottone_CaricaCSV" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_Importa" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_Salva" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -302,20 +299,12 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_CaricaCSV">
+            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_Importa">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Carica CSV"/>
+                <Property name="text" type="java.lang.String" value="Importa Movimentazioni"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_CaricaCSVActionPerformed"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.JButton" name="jButton1">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Carica Mappa Conversione"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_ImportaActionPerformed"/>
               </Events>
             </Component>
             <Container class="javax.swing.JScrollPane" name="jScrollPane1">

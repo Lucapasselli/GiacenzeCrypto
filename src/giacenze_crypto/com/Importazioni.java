@@ -30,16 +30,24 @@ public class Importazioni {
     public static int Transazioni=0;
     public static int TransazioniAggiunte=0;
     public static int TrasazioniScartate=0;
+    public static int TrasazioniSconosciute=0;
     
     public static String movimentiSconosciuti="";
     
+    public static void AzzeraContatori()
+            {
+                Transazioni=0;
+                TransazioniAggiunte=0;
+                TrasazioniScartate=0;
+                TrasazioniSconosciute=0;
+                movimentiSconosciuti="";
+            }
+           
     
-    public static void Importa_Crypto_CDCApp(String fileCDCapp) {
+    public static void Importa_Crypto_CDCApp(String fileCDCapp,boolean SovrascriEsistenti) {
         
-        Transazioni=0;
-        TransazioniAggiunte=0;
-        TrasazioniScartate=0;
-        movimentiSconosciuti="";
+        AzzeraContatori();
+        
         String fileDaImportare = fileCDCapp;
         Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -150,7 +158,7 @@ public class Importazioni {
        int numeroaggiunti=0;
        for (String v : Mappa_Movimenti.keySet()) {
            numeromov++;
-           if (MappaCryptoWallet.get(v)==null)
+           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
            {
 
                MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
@@ -228,8 +236,9 @@ public class Importazioni {
                            // System.out.println(movimentoSplittato[9]);
                            if (movimentoConvertito==null)
                                 {
-                                   System.out.println("Errore in importazione da CDCAPP csv: "+movimento);
+                                //   System.out.println("Errore in importazione da CDCAPP csv: "+movimento);
                                    movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                   TrasazioniSconosciute++;
                                 }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("CASHBACK")||
                                     movimentoConvertito.trim().equalsIgnoreCase("STAKING")||
@@ -716,6 +725,7 @@ public class Importazioni {
                                         //qui ci saranno tutti i movimenti scartati
                                     //    System.out.println(movimento);
                                         movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
                                     }
                            
                            

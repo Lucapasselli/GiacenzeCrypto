@@ -54,6 +54,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
     static String CDC_FileDatiDB="crypto.com.dati.db";
     static String CDC_FiatWallet_FileTipiMovimentiDB="crypto.com.fiatwallet.tipimovimenti.db";
+    static String CryptoWallet_FileDB="movimenti.crypto.db";
     static public String CDC_FiatWallet_FileTipiMovimentiDBPers="crypto.com.fiatwallet.tipimovimentiPers.db";
     static String CDC_DataIniziale="";
     static String CDC_DataFinale="";
@@ -84,9 +85,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             
             File filedati=new File (CDC_FileDatiDB);
             if (!filedati.exists()) filedati.createNewFile();
-            
-            
-            File cryptowallet=new File ("crypto.com.cryptowallet.db");
+                        
+            File cryptowallet=new File (CryptoWallet_FileDB);
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
             
             UIManager.setLookAndFeel( new FlatIntelliJLaf() );
@@ -201,6 +201,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_Opzioni_Bottone_CancellaFiatWallet = new javax.swing.JButton();
         CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet = new javax.swing.JButton();
         CDC_Opzioni_Bottone_CancellaCardWallet = new javax.swing.JButton();
+        Opzioni_Bottone_CancellaTransazioniCrypto = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -947,6 +948,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        Opzioni_Bottone_CancellaTransazioniCrypto.setText("Elimina tutte le transazioni Crypto");
+        Opzioni_Bottone_CancellaTransazioniCrypto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout CDC_OpzioniLayout = new javax.swing.GroupLayout(CDC_Opzioni);
         CDC_Opzioni.setLayout(CDC_OpzioniLayout);
         CDC_OpzioniLayout.setHorizontalGroup(
@@ -955,7 +963,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                    .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 658, Short.MAX_VALUE))
         );
         CDC_OpzioniLayout.setVerticalGroup(
@@ -967,7 +976,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet)
                 .addGap(106, 106, 106)
                 .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
-                .addContainerGap(348, Short.MAX_VALUE))
+                .addGap(66, 66, 66)
+                .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto)
+                .addContainerGap(259, Short.MAX_VALUE))
         );
 
         CDC.addTab("Opzioni", CDC_Opzioni);
@@ -2233,6 +2244,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void TransazioniCrypto_Bottone_ImportaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_ImportaActionPerformed
         // TODO add your handling code here:
         Calcoli.GeneraMappaCambioUSDEUR();
+       // Importazioni.Formatta_Data_CoinTracking("11.07.2022 20:12");
 
 ///////       Importazioni.Importa_Crypto_CDCApp();
 ///////       CaricaTabellaCrypto();
@@ -2264,6 +2276,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
+
+    private void Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
+        // TODO add your handling code here:
+                // TODO add your handling code here:
+        String Messaggio="Sicuro di voler cancellare tutti i dati delle Transazioni Crypto?";
+        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+                try 
+                { 
+                    FileWriter w=new FileWriter(CDC_Grafica.CryptoWallet_FileDB);
+                    BufferedWriter b=new BufferedWriter (w);
+                    b.write("");
+                    b.close();
+                    w.close();
+                }catch (IOException ex) 
+                {
+
+             }    }
+                MappaCryptoWallet.clear();
+        try {
+            CaricaTabellaCryptoDaFile();
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                
+    }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
 
     
         public void CompilaTextPaneDatiMovimento() {
@@ -2466,7 +2504,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     
        private void CaricaTabellaCryptoDaFile() throws IOException {                                         
-        String fileDaImportare = "movimenti.crypto.db";
+        String fileDaImportare = CryptoWallet_FileDB;
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
@@ -2777,6 +2815,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaFiatWallet;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet;
     private javax.swing.JTextField CDC_Text_Giorni;
+    private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JPanel TransazioniCrypto;
     private javax.swing.JTable TransazioniCryptoTabella;
     private javax.swing.JTextPane TransazioniCryptoTextPane;

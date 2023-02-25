@@ -1241,6 +1241,7 @@
                           <Component id="CDC_Opzioni_Bottone_CancellaFiatWallet" max="32767" attributes="0"/>
                           <Component id="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet" pref="301" max="32767" attributes="0"/>
                           <Component id="CDC_Opzioni_Bottone_CancellaCardWallet" max="32767" attributes="0"/>
+                          <Component id="Opzioni_Bottone_CancellaTransazioniCrypto" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="658" max="32767" attributes="0"/>
                   </Group>
@@ -1255,7 +1256,9 @@
                       <Component id="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
                       <Component id="CDC_Opzioni_Bottone_CancellaCardWallet" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="348" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="66" max="-2" attributes="0"/>
+                      <Component id="Opzioni_Bottone_CancellaTransazioniCrypto" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="259" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1283,6 +1286,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="Opzioni_Bottone_CancellaTransazioniCrypto">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Elimina tutte le transazioni Crypto"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

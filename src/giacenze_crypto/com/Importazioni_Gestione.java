@@ -172,6 +172,16 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate,Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
             res.setLocationRelativeTo(this);
             res.setVisible(true);
+        }else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING"))
+        {
+            boolean SovrascriEsistenti=this.CheckBox_Sovrascrivi.isSelected();
+            Importazioni.AzzeraContatori();
+            Importazioni.Importa_Crypto_CoinTracking(FileDaImportare,SovrascriEsistenti);
+          //  FineImportazione(int Transazioni,int TransazioniAggiunte,int TrasazioniScartate,String Errori){
+            Importazioni_Resoconto res=new Importazioni_Resoconto();
+            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate,Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+            res.setLocationRelativeTo(this);
+            res.setVisible(true);
         }
       /*      CDC_FiatWallet_Funzione_ImportaWallet(fiatwallet);
 

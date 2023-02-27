@@ -21,6 +21,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -250,7 +251,7 @@ public class Importazioni {
                     String data = Formatta_Data_CoinTracking(splittata[12]);
                     if (!data.equalsIgnoreCase("")) {
                         if (Mappa_MovimentiTemporanea.get(riga) == null) {
-                            Mappa_MovimentiTemporanea.put(riga, "");
+                            Mappa_MovimentiTemporanea.put(data+" "+riga, riga);
                         } else {
                             //System.out.println("Movimento doppio - " + riga);
                         }
@@ -271,20 +272,23 @@ public class Importazioni {
         
       //  String riga;
         String ultimaData = "";
-        Object Righe[]=Mappa_MovimentiTemporanea.keySet().toArray();
+        //Iterator<String> iteratore=Mappa_MovimentiTemporanea.keySet().iterator();
         List<String> listaMovimentidaConsolidare = new ArrayList<>();
-        for (Object Righe1 : Righe) {
-            riga=Righe1.toString();
+        for (String str : Mappa_MovimentiTemporanea.keySet()) {
+            riga=Mappa_MovimentiTemporanea.get(str);
             String splittata[] = riga.split(",");
             String data=Formatta_Data_CoinTracking(splittata[12]);
+            //System.out.println(data+" "+ultimaData);
             if (ConvertiDatainLong(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
             {
                 //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
                 if (data.equalsIgnoreCase(ultimaData)) {
                     listaMovimentidaConsolidare.add(riga);
+                    //System.out.println(splittata[12]);
                 } else //altrimenti consolido il movimento precedente
                 {
-                    // System.out.println(riga);
+                     //System.out.println(listaMovimentidaConsolidare.size());
+                    
                     List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,"Binance");
                     int nElementi = listaConsolidata.size();
                     for (int i = 0; i < nElementi; i++) {
@@ -296,7 +300,7 @@ public class Importazioni {
                     listaMovimentidaConsolidare = new ArrayList<>();
                     listaMovimentidaConsolidare.add(riga);
                 }
-                ultimaData = splittata[0];
+                ultimaData = Formatta_Data_CoinTracking(splittata[12]);
                 
             }
         }
@@ -916,11 +920,8 @@ public class Importazioni {
          
          List<String[]> lista=new ArrayList<>();
          int numMovimenti=listaMovimentidaConsolidare.size();
-         String dust_accreditati="";
-         String dust_addebitati[]=new String[1];
-         if (numMovimenti>1) {dust_addebitati=new String[numMovimenti-1];}
-         String dust_sommaaddebiti="0";
-         int numeroAddebiti=0;
+
+
                         for (int k=0;k<numMovimenti;k++){
                             String RT[]=new String[23];
                             String movimento=listaMovimentidaConsolidare.get(k);
@@ -1144,232 +1145,125 @@ public class Importazioni {
                                 
  
                                 // serve solo per il calcolo della percentuale di cro da attivare
-
-                                    // se è un movimento negativo lo inserisco tra gli addebiti
-                                    if (movimentoSplittato[3].contains("-")){
-                                        dust_addebitati[numeroAddebiti]=movimento;
-                                        dust_sommaaddebiti=new BigDecimal(dust_sommaaddebiti).abs().add(new BigDecimal(movimentoSplittato[7])).abs().toString();
-                                       // System.out.println(dust_sommaaddebiti+ " "+movimentoSplittato[7]);
-                                        numeroAddebiti++;
-                                    }
-                                    else
-                                    {
-                                       dust_accreditati=movimento;
-                                    }   
+                       //  for (int k=0;k<numMovimenti;k++){
+                       //     String RT[]=new String[23];
+                       //     String movimento=listaMovimentidaConsolidare.get(k);
                                 
                            // se è l'ultimo movimento allora creo anche le righe
-                                if (k==numMovimenti-1){
+                                
                                   // System.out.println(movimento);
                                  //  System.out.println(numeroAddebiti);
-                                    for (int w = 0; w < numeroAddebiti; w++) {
-                                        String splittata[]=dust_addebitati[w].split(",");
-                                        RT = new String[23];
-                                        RT[0] = movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
-                                        RT[1] = splittata[0];
-                                        RT[2] = w+1 + " di " + numeroAddebiti;
-                                        RT[3] = "Crypto.com App";
-                                        RT[4] = "Crypto Wallet";
-                                        RT[5] = "SCAMBIO CRYPTO-CRYPTO";
-                                        RT[6] = "SCAMBIO DUST "+splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
-                                        RT[7] = splittata[9] + "(" + splittata[1] + ")";
-                                        RT[8] = splittata[2];
-                                        RT[9] = "Crypto";
-                                        RT[10] = splittata[3];
-                                        RT[11] = dust_accreditati.split(",")[2];
-                                        RT[12] = "Crypto";
-                                        BigDecimal valoreTrans=new BigDecimal(splittata[7]);
-                                        BigDecimal sumAddebiti;
-                                        //System.out.println(dust_sommaaddebiti);
-                                        if (new BigDecimal(dust_sommaaddebiti).compareTo(new BigDecimal("0"))!=0){
-                                            sumAddebiti=new BigDecimal(dust_sommaaddebiti);
-                                        }else
-                                            {
-                                               sumAddebiti=new BigDecimal("0.000000001"); 
-                                            }
-                                        BigDecimal totCRO=new BigDecimal(dust_accreditati.split(",")[3]);
-                                        BigDecimal operazione;                                        
-                                        operazione=(valoreTrans.divide(sumAddebiti,8, RoundingMode.HALF_UP));
-                                        String numCRO=operazione.multiply(totCRO).stripTrailingZeros().abs().toString();//da sistemare calcolo errato
-                                        RT[13] =numCRO;//dust_accreditati.split(",")[3];//bisogna fare i calcoli
-                                        RT[14] = splittata[6] + " " + splittata[7];///////
-                                        String valoreEuro = "";
-                                        if (splittata[6].trim().equalsIgnoreCase("EUR")) {
-                                            valoreEuro = splittata[7];
-                                        }
-                                        if (splittata[6].trim().equalsIgnoreCase("USD")) {
-                                            valoreEuro = Calcoli.ConvertiUSDEUR(splittata[7], splittata[0].split(" ")[0]);
-                                        }
-                                        valoreEuro = new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
-                                        RT[15] = valoreEuro;
+                                String TipoMov="TRASFERIMENTO CRYPTO";
+                                String TipoMovAbbreviato="TC";
+                                boolean trovatacorrispondenza=false;
+                                boolean annullato=false;
+                                for (int w = 0; w < numMovimenti; w++) {
+                                    String mov=listaMovimentidaConsolidare.get(w);
+                                    String movSplit[]=mov.split(",");
+                                 //   System.out.println(movSplit[0]+" "+numMovimenti);
+                                    //controllo se trovo un movimento di deposito e una controparte di prelievo
+                                    if ((movimentoSplittato[0].trim().equalsIgnoreCase("Deposito")&&movSplit[0].trim().equalsIgnoreCase("Prelievo"))||
+                                            (movimentoSplittato[0].trim().equalsIgnoreCase("Prelievo")&&movSplit[0].trim().equalsIgnoreCase("Deposito")))
+                                    {
+                                        //adesso controllo se i valori e valute di deposito e prelievo sono identici
+                                        //System.out.println("Trovato Deposito e prelievo");
+                                        //System.out.println(movimentoSplittato[1]+" "+movSplit[5]);
+                                       if (movimentoSplittato[1].trim().equalsIgnoreCase(movSplit[5].trim())&&
+                                               movimentoSplittato[5].trim().equalsIgnoreCase(movSplit[1].trim())&&
+                                               movimentoSplittato[2].trim().equalsIgnoreCase(movSplit[6].trim())&&
+                                               movimentoSplittato[6].trim().equalsIgnoreCase(movSplit[2].trim()))
+                                           {
+                                             //  System.out.println("Stesso Wallet");
+                                               //adesso controllo se sono relativi allo stesso wallet, in quel caso non scrivo nulla in caso contrario lo tratto come trasferimento interno
+                                               if (movimentoSplittato[10].trim().equalsIgnoreCase(movSplit[10].trim()))                                                   
+                                                {
+                                                    //Se è uguale anche il wallet i movimenti si annullano e non scrivo nulla
+                                                    //System.out.println("Stesso Wallet");
+                                                    annullato=true;
+                                                }
+                                               else //altrimenti lo salvo come movimento interno
+                                                {
+                                                    trovatacorrispondenza=true;
+                                                    TipoMov="TRASFERIMENTO INTERNO";
+                                                    TipoMovAbbreviato="TI";
+                                                  //  System.out.println("ok");
+                                                }   
+                                           }
+                                    }
+                                    }
+                                //se dopo il ciclo trovo che non è ne un traferimento interno ne un movimento da non importare allora
+                                //significa che è un traferimento Crypto o traferimento FIAT
+                                //a questo punto verifico che tipo di movimento è e imposto le variabili di conseguenza
+                                if (trovatacorrispondenza==false && annullato==false && 
+                                        (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")||movimentoSplittato[2].trim().equalsIgnoreCase("EUR")||
+                                        movimentoSplittato[6].trim().equalsIgnoreCase("USD")||movimentoSplittato[2].trim().equalsIgnoreCase("USD")))
+                                {
+                                        TipoMov="TRASFERIMENTO FIAT";
+                                        TipoMovAbbreviato="TF";
+                                }
+                                if (annullato==false)   
+                                    {
+                                    RT=new String[23];
+                                    RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_"+TipoMovAbbreviato;
+                                    RT[1] = data;
+                                    RT[2] = k + 1 + " di " + numMovimenti;
+                                    RT[3] = Exchange;
+                                    RT[4] = movimentoSplittato[10];
+                                    RT[5] = TipoMov;
+                                    //parte sotto da sistemare in base se è un prelievo o un deposito
+
+                                    String TipoMovimento=movimentoSplittato[0].trim();
+
+                                                                                                 
+                                    
+                                    if (TipoMovimento.equalsIgnoreCase("Deposito"))
+                                        {
+                                        RT[6] ="TRASFERIMENTO "+movimentoSplittato[2];
+                                        RT[7] = TipoMovimento;
+                                        RT[8] = "";
+                                        RT[9] = "";
+                                        RT[10] = "";
+                                        RT[11] = movimentoSplittato[2];
+                                        if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR")) RT[12] = "FIAT";else RT[12] = "Crypto";
+                                        RT[13] = movimentoSplittato[1];
+                                        String valoreEur;
+                                        if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[1];else valoreEur =movimentoSplittato[4];
+                                        RT[14] = "EUR "+valoreEur;
+                                        RT[15] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                         RT[16] = "";
-                                        RT[17] = "Da calcolare";
+                                        RT[17] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                         RT[18] = "";
-                                        RT[19] = "0.00";
-                                        RT[20] = "";
-                                        RT[21] = "";
-                                        RT[22] = "A";
-                                        lista.add(RT);
-                                    }
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da Calcolare";
+                                        }
+                                    if (TipoMovimento.equalsIgnoreCase("Prelievo"))
+                                        {
+                                        RT[6] ="TRASFERIMENTO "+movimentoSplittato[6];
+                                        RT[7] = TipoMovimento;
+                                        RT[8] = movimentoSplittato[6];
+                                        if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) RT[9] = "FIAT";else RT[9] = "Crypto";
+                                        RT[10] = "-"+movimentoSplittato[5];
+                                        RT[11] = "";
+                                        RT[12] = "";
+                                        RT[13] = "";
+                                        String valoreEur;
+                                        if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[5];else valoreEur =movimentoSplittato[8];
+                                        RT[14] = "EUR "+valoreEur;
+                                        RT[15] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        RT[16] = "";
+                                        RT[17] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        RT[18] = "";
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da Calcolare";
+
+                                        }
+                                    RT[20] = "";
+                                    RT[21] = "";
+                                    RT[22] = "A"; 
+                                    lista.add(RT);
+                                  }   
                                 }
-                                }
-                                else if (movimentoSplittato[0].trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
-                            {
+                                
                                
-                                //come prima cosa devo individuare il portafoglio nel quale vanno i token
-                                String WalletPartenza="";
-                                String WalletDestinazione="";
-                                if (movimentoSplittato[9].toLowerCase().contains("supercharger"))
-                                {
-                                    if (movimentoSplittato[3].contains("-"))
-                                    {
-                                        WalletPartenza="Crypto Wallet";
-                                        WalletDestinazione="Supercharger";
-                                    }
-                                    else
-                                    {
-                                        WalletPartenza="Supercharger";
-                                        WalletDestinazione="Crypto Wallet";                                        
-                                    }
-                                }else if (movimentoSplittato[9].toLowerCase().contains("earn"))
-                                {
-                                    if (movimentoSplittato[3].contains("-"))
-                                    {
-                                        WalletPartenza="Crypto Wallet";
-                                        WalletDestinazione="Earn";
-                                    }
-                                    else
-                                    {
-                                        WalletPartenza="Earn";
-                                        WalletDestinazione="Crypto Wallet";                                        
-                                    }
-                                }else if (movimentoSplittato[9].toLowerCase().contains("lock"))
-                                {
-                                    if (movimentoSplittato[3].contains("-"))
-                                    {
-                                        WalletPartenza="Crypto Wallet";
-                                        WalletDestinazione="Fondi Bloccati";
-                                    }
-                                    else
-                                    {
-                                        WalletPartenza="Fondi Bloccati";
-                                        WalletDestinazione="Crypto Wallet";                                        
-                                    }
-                                }
-                                else {
-                                    System.out.println(movimento);
-                                }
-                                
-                                RT = new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TI";
-                                RT[1]=movimentoSplittato[0];
-                                RT[2]=1+" di "+2;
-                                RT[3]="Crypto.com App";
-                                RT[4]=WalletPartenza;
-                                RT[5]="TRASFERIMENTO INTERNO";
-                                RT[6]="TRASFERIMENTO DA "+WalletPartenza+" A "+WalletDestinazione;                                
-                                
-                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
-                                RT[8]=movimentoSplittato[2];
-                                RT[9]="Crypto";
-                                if (movimentoSplittato[3].contains("-")) RT[10]=movimentoSplittato[3]; else RT[10]="-"+movimentoSplittato[3];                                 
-                                RT[11]="";
-                                RT[12]="";
-                                RT[13]="";                                                                                            
-                                RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
-                                String valoreEuro="";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
-                                    {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
-                                    }
-                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                RT[15]=valoreEuro;
-                                RT[16]="";
-                                RT[17]="Da calcolare";
-                                RT[18]="";
-                                RT[19]="0.00";
-                                RT[20]="";
-                                RT[21]="";
-                                RT[22]="A";
-                                lista.add(RT);  
-                                
-                                
-                                
-                                RT = new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TI";
-                                RT[1]=movimentoSplittato[0];
-                                RT[2]=2+" di "+2;
-                                RT[3]="Crypto.com App";
-                                RT[4]=WalletDestinazione;
-                                RT[5]="TRASFERIMENTO INTERNO CRYPTO";
-                                RT[6]="TRASFERIMENTO INTERNO DA "+WalletPartenza+" A "+WalletDestinazione;                                
-                                
-                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
-                                RT[8]="";
-                                RT[9]="";
-                                RT[10]="";                                 
-                                RT[11]=movimentoSplittato[2];
-                                RT[12]="Crypto";
-                                RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();                                                                                            
-                                RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
-                                RT[15]=valoreEuro;
-                                RT[16]="";
-                                RT[17]="Da calcolare";
-                                RT[18]="";
-                                RT[19]="0.00";
-                                RT[20]="";
-                                RT[21]="";
-                                RT[22]="A";
-                                lista.add(RT); 
-                                
-                                
-                                
-                            }
-                               else if (movimentoSplittato[0].trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO"))
-                            {
-                                                                RT = new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TC";
-                                RT[1]=movimentoSplittato[0];
-                                RT[2]=1+" di "+1;
-                                RT[3]="Crypto.com App";
-                                RT[4]="Crypto Wallet";
-                                RT[5]="TRASFERIMENTO CRYPTO";
-                                RT[6]="TRASFERIMENTO CRYPTO";                                
-                                
-                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
-                                if (movimentoSplittato[3].contains("-")) {
-                                    RT[8]=movimentoSplittato[2];
-                                    RT[9]="Crypto";
-                                    RT[10]=movimentoSplittato[3];
-                                    RT[11]="";
-                                    RT[12]="";
-                                    RT[13]="";
-                                } else {
-                                    RT[8]="";
-                                    RT[9]="";
-                                    RT[10]="";
-                                    RT[11]=movimentoSplittato[2];
-                                    RT[12]="Crypto";
-                                    RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();                               
-                                }                                                                                            
-                                RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
-                                String valoreEuro="";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
-                                    {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
-                                    }
-                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                RT[15]=valoreEuro;
-                                RT[16]="";
-                                RT[17]="Da calcolare";
-                                RT[18]="";
-                                RT[19]="Da calcolare";
-                                RT[20]="";
-                                if (movimentoSplittato.length>10) RT[21]="Trans ID : "+movimentoSplittato[10];else RT[21]="";
-                                RT[22]="A";
-                                lista.add(RT); 
-                            }
+                             
                            else
                                     {
                                         //qui ci saranno tutti i movimenti scartati

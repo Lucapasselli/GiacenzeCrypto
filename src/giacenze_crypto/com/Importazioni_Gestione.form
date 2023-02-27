@@ -29,19 +29,17 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="Label_TipoFile" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="ComboBox_TipoFile" max="32767" attributes="0"/>
-                              <Component id="Label_NomeExchange" max="32767" attributes="0"/>
-                              <Component id="Text_NomeExchange" max="32767" attributes="0"/>
-                              <Component id="ScrollPane_Attenzione" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="Bottone_SelezionaFile" min="-2" pref="198" max="-2" attributes="0"/>
-                                  <EmptySpace max="32767" attributes="0"/>
-                                  <Component id="Bottone_Annulla" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="ComboBox_TipoFile" max="32767" attributes="0"/>
+                          <Component id="Label_NomeExchange" max="32767" attributes="0"/>
+                          <Component id="ScrollPane_Attenzione" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="Bottone_SelezionaFile" min="-2" pref="198" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="Bottone_Annulla" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="CheckBox_Sovrascrivi" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="CheckBox_Exchanges" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
@@ -64,8 +62,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="Label_NomeExchange" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="Text_NomeExchange" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="CheckBox_Exchanges" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_SelezionaFile" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Bottone_Annulla" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -111,11 +109,6 @@
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="Text_NomeExchange">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-    </Component>
     <Container class="javax.swing.JScrollPane" name="ScrollPane_Attenzione">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
@@ -145,6 +138,89 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Sovrascrivere movimenti gi&#xe0; presenti"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="CheckBox_Exchanges">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="71">
+            <StringItem index="0" value=" - nessuno -"/>
+            <StringItem index="1" value="Abra"/>
+            <StringItem index="2" value="Acx"/>
+            <StringItem index="3" value="AscendEX"/>
+            <StringItem index="4" value="BSDEX"/>
+            <StringItem index="5" value="BTC Markets"/>
+            <StringItem index="6" value="BTCPay Bybit"/>
+            <StringItem index="7" value="BYDFI"/>
+            <StringItem index="8" value="Binance"/>
+            <StringItem index="9" value="Binance US"/>
+            <StringItem index="10" value="Bison"/>
+            <StringItem index="11" value="Bitcoin Suisse"/>
+            <StringItem index="12" value="Bitcoin.de"/>
+            <StringItem index="13" value="Bitfinex"/>
+            <StringItem index="14" value="Bithumb Glo."/>
+            <StringItem index="15" value="Bitpanda"/>
+            <StringItem index="16" value="Bitpanda Pro"/>
+            <StringItem index="17" value="Bitrue"/>
+            <StringItem index="18" value="Bitstamp"/>
+            <StringItem index="19" value="Bittrex"/>
+            <StringItem index="20" value="BlockFi"/>
+            <StringItem index="21" value="CEX"/>
+            <StringItem index="22" value="Cake Defl"/>
+            <StringItem index="23" value="Celsius"/>
+            <StringItem index="24" value="Changelly"/>
+            <StringItem index="25" value="Circle"/>
+            <StringItem index="26" value="CoinEx"/>
+            <StringItem index="27" value="Coinbase"/>
+            <StringItem index="28" value="Coinbase Pro"/>
+            <StringItem index="29" value="Coinmate"/>
+            <StringItem index="30" value="Coinmerce"/>
+            <StringItem index="31" value="Coinmetro"/>
+            <StringItem index="32" value="Coss"/>
+            <StringItem index="33" value="Crex24"/>
+            <StringItem index="34" value="Criptan"/>
+            <StringItem index="35" value="Crypto.com"/>
+            <StringItem index="36" value="Crypto.com Exchange"/>
+            <StringItem index="37" value="DFX.swiss"/>
+            <StringItem index="38" value="Deribit"/>
+            <StringItem index="39" value="Digital Surge"/>
+            <StringItem index="40" value="Gate.lo"/>
+            <StringItem index="41" value="Gemini"/>
+            <StringItem index="42" value="HRBTC"/>
+            <StringItem index="43" value="Haru"/>
+            <StringItem index="44" value="Hodinaut"/>
+            <StringItem index="45" value="Hotbit"/>
+            <StringItem index="46" value="Iconomi"/>
+            <StringItem index="47" value="Idex"/>
+            <StringItem index="48" value="Kraken"/>
+            <StringItem index="49" value="KuCoin"/>
+            <StringItem index="50" value="Localbitcoins"/>
+            <StringItem index="51" value="Luxor"/>
+            <StringItem index="52" value="MEXC"/>
+            <StringItem index="53" value="Mercatox"/>
+            <StringItem index="54" value="NFTBank"/>
+            <StringItem index="55" value="Nexo"/>
+            <StringItem index="56" value="Northcrypto"/>
+            <StringItem index="57" value="OKColn"/>
+            <StringItem index="58" value="OKX"/>
+            <StringItem index="59" value="Phemex"/>
+            <StringItem index="60" value="Pocket Bitcoin"/>
+            <StringItem index="61" value="Poloniex"/>
+            <StringItem index="62" value="Relal"/>
+            <StringItem index="63" value="STEX"/>
+            <StringItem index="64" value="SwissBorg"/>
+            <StringItem index="65" value="Swyftx"/>
+            <StringItem index="66" value="Tradeogre"/>
+            <StringItem index="67" value="Uphold"/>
+            <StringItem index="68" value="Voyager"/>
+            <StringItem index="69" value="Yield App "/>
+            <StringItem index="70" value="Zerion"/>
+          </StringArray>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

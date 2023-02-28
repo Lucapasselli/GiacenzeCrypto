@@ -179,7 +179,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                    // System.out.println(CheckBox_Exchanges.getSelectedItem().toString().trim());
                     boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                     Importazioni.AzzeraContatori();
-                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti);
+                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,CheckBox_Exchanges.getSelectedItem().toString().trim());
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                     res.setLocationRelativeTo(this);
@@ -188,6 +188,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             } else {
 
                 //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista
+                //Poi devo anche gestire la corretta importazione del nome dell'exchange
             }
 
 

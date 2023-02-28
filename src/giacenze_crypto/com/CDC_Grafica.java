@@ -2306,28 +2306,29 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
         public void CompilaTextPaneDatiMovimento() {
 
-        String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 0).toString();
+        int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+        String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
         
-        String DataOra = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
+        String DataOra = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 1).toString();
         
-        String ExchangeWallet=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 3).toString()+
-                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 4).toString()+")";
+        String ExchangeWallet=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 3).toString()+
+                " ("+TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 4).toString()+")";
         
-        String CausaleMovimento=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 5).toString()+
-                " ("+TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 6).toString()+")";
+        String CausaleMovimento=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 5).toString()+
+                " ("+TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 6).toString()+")";
         
-        String CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 7).toString();
+        String CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 7).toString();
         
-        String ValoreTransazione=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 15).toString();
-        String ValoreTransazionePrezzoCarico=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 17).toString();
-        String QTARic=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 13).toString();
-        String QTAUsc=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 10).toString();
+        String ValoreTransazione=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 15).toString();
+        String ValoreTransazionePrezzoCarico=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 17).toString();
+        String QTARic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 13).toString();
+        String QTAUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 10).toString();
         String unitarioValoreRic="";
         String unitarioPrzCaricoRic="";
         String unitarioValoreUsc="";
         String unitarioPrzCaricoUsc="";
-        String MonRic=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 11).toString().trim();
-        String MonUsc=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 8).toString().trim();
+        String MonRic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 11).toString().trim();
+        String MonUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8).toString().trim();
         if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
             unitarioValoreRic="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
@@ -2356,10 +2357,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
 
         }
-        String ValoreTransazioneCSV=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 14).toString();
-        String Plusvalenza=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 19).toString();
-        String Note=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 21).toString();
-        String Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 20).toString();
+        String ValoreTransazioneCSV=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 14).toString();
+        String Plusvalenza=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 19).toString();
+        String Note=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21).toString();
+        String Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20).toString();
       //  String MacAddress = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
         
         String daAppendere="ID TRANSAZIONE :&#9&#9&#9<b>"+IDTransazione+"</b><br>"+
@@ -2377,125 +2378,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "NOTE :&#9&#9&#9<b>"+Riferimenti+"</b><br>";
         
         this.TransazioniCryptoTextPane.setText(daAppendere);
-        //Riempio i dati sulle porte aperte del Terminale selezionato
-        // TextPanePorteAperte.setText(RitornaPorteAperteDaMACNew(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString()));
-       // DatiPorte = RitornaPorteAperteDaMACNew(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString());
 
-        // System.out.println(DatiPorte);
-//Font font = TextAreaPorteAperte.getFont();  
-        //TextAreaPorteAperte.setFont(font.deriveFont(Font.BOLD));
-      //  if (DatiPorte.trim().equalsIgnoreCase("")) {
-          //  DatiPorte = RitornaPorteAperteDaMacAddress(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString()).replace("\n", "<br>");
-            // TextPanePorteAperte.setText((RitornaPorteAperteDaMacAddress(StoricoNMap, TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 1).toString())).replace("\n","<br>"));
-      //  }
-       /* if (MappaMac_DettagliXcliente.get(MacAddress) != null) {
-            DatiPorte = DatiPorte + "<br><br>";
-            if (!MappaMac_DettagliXcliente.get(MacAddress)[4].equals("")) {
-                DatiPorte = DatiPorte + "<b>POSIZIONE :&#9</b> " + MappaMac_DettagliXcliente.get(MacAddress)[4].replace("\n", "<br>&#9 ") + "<br><br>";
-            }
-            if (!MappaMac_DettagliXcliente.get(MacAddress)[5].equals("")) {
-                DatiPorte = DatiPorte + "<b>NOTE :&#9</b> " + MappaMac_DettagliXcliente.get(MacAddress)[5].replace("\n", "<br>&#9 ");
-            }
-        }*/
-  /*      TextPanePorteAperte.setText(DatiPorte.replace("SERVIZI", "<b> SERVIZI </b>").replace("\n", "<br>"));
-// TextPaneDatiRiga.setText("IP : "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),0).toString()+"\n");
-        //TextAreaDatiRiga.setText("IP : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 0).toString() + "\n");
-        Stringa = Stringa + "IP :&#9&#9&#9<b>" + TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 0).toString() + "</b><br>";
-        // appendToPane(TextPaneDatiRiga, "My Name is Too Good.\n", Color.RED);
-        //  TextPaneDatiRiga.repaint();
-        // if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),5)!=null)&&!(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),5).toString().equalsIgnoreCase(""))) TextPaneDatiRiga.("NOME : "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),5).toString()+"\n");
-
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + "NOME :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5).toString() + "</b><br>";
-            //  TextAreaDatiRiga.append("NOME : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 5).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3).toString().equalsIgnoreCase(""))) {
-
-            Stringa = Stringa + ("SO :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3).toString() + "</b><br>");
-            //TextAreaDatiRiga.append("SO :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 3).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("DETTAGLI SO :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4).toString() + "</b><br>");
-            //TextAreaDatiRiga.append("DETTAGLI SO : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 4).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("RAM :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6).toString() + "</b><br>");
-            //TextAreaDatiRiga.append("RAM : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 6).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("GRUPPO DI LAVORO :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7).toString() + "</b><br>");
-            //TextAreaDatiRiga.append("GRUPPO DI LAVORO : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 7).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("MARCA :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString() + "</b><br>");
-            // TextAreaDatiRiga.append("MARCA : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("MODELLO :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString() + "</b><br>");
-            //TextAreaDatiRiga.append("MODELLO : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("NUMERO DI SERIE :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10).toString() + "</b><br>");
-            //TextAreaDatiRiga.append("NUMERO DI SERIE : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 10).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("BIOS :&#9&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11).toString() + "</b><br>");
-            //TextAreaDatiRiga.append("BIOS : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 11).toString() + "\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12).toString().trim().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("PROCESSORE :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12).toString() + "</b><br>");
-            // TextAreaDatiRiga.append("PROCESSORE : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 12).toString() + "\n");
-        }
-         if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 13) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 13).toString().trim().equalsIgnoreCase(""))) {
-            String tempSpazio=TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 14).toString().trim();
-            String atempSpazio[]=tempSpazio.split("\\|");
-            String tempModello=TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 13).toString().trim();
-            String atempModello[]=tempModello.split("\\|");
-            for (int h=0;h<atempModello.length;h++){
-                String temp=atempModello[h].trim();
-                if (tempSpazio!=null && atempSpazio.length>h && !atempSpazio[h].trim().equalsIgnoreCase("")){
-                    temp=temp+" ("+Utili.FormattaByteinManieraLeggibile(atempSpazio[h].trim())+")";
-                }
-                Stringa = Stringa + ("DISCO "+h+" :&#9&#9&#9<b>" + temp + "</b><br>");
-            }
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23).toString().equalsIgnoreCase("0"))) {
-            Stringa = Stringa + ("Ultima volta attivo :&#9&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23).toString() + " controlli fà </b><br>");
-            //TextAreaDatiRiga.append("Ultima volta attivo : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 23).toString() + " controlli fà \n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25) != null) && !(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25).toString().equalsIgnoreCase(""))) {
-            Stringa = Stringa + ("Numero Presenze in Rete :&#9<b>" + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25).toString() + " controlli Effettuati</b><br>");
-            //TextAreaDatiRiga.append("Numero Presenze in Rete : " + TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 25).toString() + " controlli Effettuati\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 21) != null) && (TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 21).toString().equalsIgnoreCase("SI"))) {
-            Stringa = Stringa + ("APPARECCHIATURA IN DHCP<br>");
-            //TextAreaDatiRiga.append("APPARECCHIATURA IN DHCP\n");
-        }
-        if ((TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 22) != null) && (TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 22).toString().equalsIgnoreCase("SI"))) {
-            Stringa = Stringa + ("ATTENZIONE: POSSIBILE CONFLITTO IP<br>");
-            // TextAreaDatiRiga.append("ATTENZIONE: POSSIBILE CONFLITTO IP\n");
-        }
-        TextPaneDatiRiga.setText(Stringa);
-        TextPanePorteAperte.setCaretPosition(0);
-        TextPaneDatiRiga.setCaretPosition(0);
-
-        //Ora vado a caricare l'immagine del prodotto nella parte bassa
-        String marca = "";
-        String modello = "";
-        marca = Utili.TogliPrimoAsterisco(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 8).toString());
-        modello = Utili.TogliPrimoAsterisco(TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(), 9).toString());
-        //questa parte serve per togliere gli asterischi dalla ricerca
-        //c'è l'asterisco infatti solo se la marca e modello sono presi dal database interno
-
-        ReteLabelImmagine.setIcon(null);
-        String rigaDettagliMacchina[] = MappaTipoMacchina_Dettagli.get(marca + " " + modello);
-        if (rigaDettagliMacchina != null) {
-            Utili.CaricaImmagineProdotto(rigaDettagliMacchina[2], ReteLabelImmagine, TabellaRete);
-            Immagine=rigaDettagliMacchina[2];
-        }else Immagine=null;
-
-        //  TextAreaRete.append("MacAdress : "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),1).toString()+"\n");
-        //  TextAreaRete.append("Ultima volta attivo "+TabellaRete.getModel().getValueAt(TabellaRete.getSelectedRow(),14).toString()+" controllo fà \n");*/
     }
     
     

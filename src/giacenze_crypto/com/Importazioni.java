@@ -192,7 +192,7 @@ public class Importazioni {
             try {
             SimpleDateFormat originale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
             
-            Date d = originale.parse(Data+":30");
+            Date d = originale.parse(Data+":00");
             originale.applyPattern("yyyy-MM-dd HH:mm:ss");
             DataFormattata = originale.format(d);
         } catch (ParseException ex) {
@@ -229,7 +229,7 @@ public class Importazioni {
         
         
     
-        public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti) {
+        public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange) {
         
         AzzeraContatori();        
         String fileDaImportare = fileCoinTracking;
@@ -289,7 +289,7 @@ public class Importazioni {
                 {
                      //System.out.println(listaMovimentidaConsolidare.size());
                     
-                    List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,"Binance");
+                    List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange);
                     int nElementi = listaConsolidata.size();
                     for (int i = 0; i < nElementi; i++) {
                     String consolidata[] = listaConsolidata.get(i);
@@ -305,7 +305,7 @@ public class Importazioni {
             }
         }
             
-            List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,"Binance");
+            List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange);
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
                 String consolidata[] = listaConsolidata.get(i);
@@ -384,6 +384,8 @@ public class Importazioni {
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Crypto
+         //DC=Deposito Crypto
+         //PC=Prelievo Crypto
          //TF=Trasferimento Fiat
          //AC=Acquisto Crypto (con FIAT)
          //VC=Vendita Crypto (per FIAT)
@@ -820,8 +822,8 @@ public class Importazioni {
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]=WalletDestinazione;
-                                RT[5]="TRASFERIMENTO INTERNO CRYPTO";
-                                RT[6]="TRASFERIMENTO INTERNO DA "+WalletPartenza+" A "+WalletDestinazione;                                
+                                RT[5]="TRASFERIMENTO INTERNO";
+                                RT[6]="TRASFERIMENTO DA "+WalletPartenza+" A "+WalletDestinazione;                                
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]="";
@@ -846,17 +848,20 @@ public class Importazioni {
                             }
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO"))
                             {
-                                                                RT = new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TC";
+                                RT = new String[23];
+                            //    RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TC";
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+1;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
-                                RT[5]="TRASFERIMENTO CRYPTO";
-                                RT[6]="TRASFERIMENTO CRYPTO";                                
+                             //   RT[5]="TRASFERIMENTO CRYPTO";
+                            //    RT[6]="TRASFERIMENTO CRYPTO";                                
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 if (movimentoSplittato[3].contains("-")) {
+                                    RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PC";
+                                    RT[5]="PRELIEVO CRYPTO";
+                                    RT[6]="PRELIEVO "+movimentoSplittato[2];
                                     RT[8]=movimentoSplittato[2];
                                     RT[9]="Crypto";
                                     RT[10]=movimentoSplittato[3];
@@ -864,6 +869,9 @@ public class Importazioni {
                                     RT[12]="";
                                     RT[13]="";
                                 } else {
+                                    RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DC";
+                                    RT[5]="DEPOSITO CRYPTO";
+                                    RT[6]="DEPOSITO "+movimentoSplittato[2];
                                     RT[8]="";
                                     RT[9]="";
                                     RT[10]="";
@@ -906,6 +914,8 @@ public class Importazioni {
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Crypto
+         //DC=Deposito Crypto
+         //PC=Prelievo Crypto
          //TF=Trasferimento Fiat
          //AC=Acquisto Crypto (con FIAT)
          //VC=Vendita Crypto (per FIAT)
@@ -951,7 +961,7 @@ public class Importazioni {
                                 RT[14] = "EUR "+movimentoSplittato[4];
                                 RT[15] = movimentoSplittato[4];
                                 RT[16] = "";
-                                RT[17] = "Da Calcolare";//verrà calcolato con il metodo lifo
+                                RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
                                 RT[19] = "0.00";
                                 RT[20] = "";
@@ -1009,9 +1019,9 @@ public class Importazioni {
                                 RT[14] = "EUR "+movimentoSplittato[1];
                                 RT[15] = new BigDecimal(movimentoSplittato[1]).setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[16] = "";
-                                RT[17] = "Da Calcolare";//verrà calcolato con il metodo lifo
+                                RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
-                                RT[19] = "Da Calcolare";
+                                RT[19] = "Da calcolare";
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
@@ -1099,9 +1109,9 @@ public class Importazioni {
                                 RT[14] = "EUR "+movimentoSplittato[8];
                                 RT[15] = movimentoSplittato[8];
                                 RT[16] = "";
-                                RT[17] = "Da Calcolare";
+                                RT[17] = "Da calcolare";
                                 RT[18] = "";
-                                RT[19] = "Da Calcolare";
+                                RT[19] = "Da calcolare";
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A"; 
@@ -1118,7 +1128,7 @@ public class Importazioni {
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5]="TRASFERIMENTO FIAT";
-                                RT[6]="TRASFERIMENTO "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[6]="PRELIEVO "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
                                 RT[7] = movimentoSplittato[0];                                
                                 RT[8] = movimentoSplittato[6];
                                 RT[9] = "FIAT";
@@ -1218,7 +1228,12 @@ public class Importazioni {
                                     
                                     if (TipoMovimento.equalsIgnoreCase("Deposito"))
                                         {
-                                        RT[6] ="TRASFERIMENTO "+movimentoSplittato[2];
+                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                            {
+                                        RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DC";
+                                        RT[5] = "DEPOSITO CRYPTO";
+                                        }
+                                        RT[6] ="DEPOSITO "+movimentoSplittato[2];
                                         RT[7] = TipoMovimento;
                                         RT[8] = "";
                                         RT[9] = "";
@@ -1231,13 +1246,18 @@ public class Importazioni {
                                         RT[14] = "EUR "+valoreEur;
                                         RT[15] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                         RT[16] = "";
-                                        RT[17] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        RT[17] = "Da Calcolare";
                                         RT[18] = "";
-                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da Calcolare";
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da calcolare";
                                         }
                                     if (TipoMovimento.equalsIgnoreCase("Prelievo"))
                                         {
-                                        RT[6] ="TRASFERIMENTO "+movimentoSplittato[6];
+                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                            {
+                                        RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PC";
+                                        RT[5] = "PRELIEVO CRYPTO";
+                                        }
+                                        RT[6] = "PRELIEVO "+movimentoSplittato[6];
                                         RT[7] = TipoMovimento;
                                         RT[8] = movimentoSplittato[6];
                                         if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) RT[9] = "FIAT";else RT[9] = "Crypto";
@@ -1250,9 +1270,9 @@ public class Importazioni {
                                         RT[14] = "EUR "+valoreEur;
                                         RT[15] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                         RT[16] = "";
-                                        RT[17] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        RT[17] = "Da Calcolare";
                                         RT[18] = "";
-                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da Calcolare";
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da calcolare";
 
                                         }
                                     RT[20] = "";

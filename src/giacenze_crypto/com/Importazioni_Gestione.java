@@ -1,6 +1,9 @@
 package giacenze_crypto.com;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -39,7 +42,11 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         TextPane_Attenzione = new javax.swing.JTextPane();
         Bottone_Annulla = new javax.swing.JButton();
         CheckBox_Sovrascrivi = new javax.swing.JCheckBox();
-        CheckBox_Exchanges = new javax.swing.JComboBox<>();
+        ComboBox_Exchanges = new javax.swing.JComboBox<>();
+        Text_NomeWallet = new javax.swing.JTextField();
+        Label_NomeWallet = new javax.swing.JLabel();
+        ComboBox_TipoImport = new javax.swing.JComboBox<>();
+        Label_TipoImport = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -60,7 +67,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
         });
 
-        Label_NomeExchange.setText("Imposta il nome dell'Exchange/wallet da Importare");
+        Label_NomeExchange.setText("Scegli il nome dell'Exchange/Wallet/Blockchain da Importare");
         Label_NomeExchange.setEnabled(false);
 
         TextPane_Attenzione.setEditable(false);
@@ -78,8 +85,19 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         CheckBox_Sovrascrivi.setText("Sovrascrivere movimenti già presenti");
 
-        CheckBox_Exchanges.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " - nessuno -", "Abra", "Acx", "AscendEX", "BSDEX", "BTC Markets", "BTCPay Bybit", "BYDFI", "Binance", "Binance US", "Bison", "Bitcoin Suisse", "Bitcoin.de", "Bitfinex", "Bithumb Glo.", "Bitpanda", "Bitpanda Pro", "Bitrue", "Bitstamp", "Bittrex", "BlockFi", "CEX", "Cake Defl", "Celsius", "Changelly", "Circle", "CoinEx", "Coinbase", "Coinbase Pro", "Coinmate", "Coinmerce", "Coinmetro", "Coss", "Crex24", "Criptan", "Crypto.com", "Crypto.com Exchange", "DFX.swiss", "Deribit", "Digital Surge", "Gate.lo", "Gemini", "HRBTC", "Haru", "Hodinaut", "Hotbit", "Iconomi", "Idex", "Kraken", "KuCoin", "Localbitcoins", "Luxor", "MEXC", "Mercatox", "NFTBank", "Nexo", "Northcrypto", "OKColn", "OKX", "Phemex", "Pocket Bitcoin", "Poloniex", "Relal", "STEX", "SwissBorg", "Swyftx", "Tradeogre", "Uphold", "Voyager", "Yield App ", "Zerion" }));
-        CheckBox_Exchanges.setEnabled(false);
+        ComboBox_Exchanges.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " - nessuno -", "Abra", "Acx", "AscendEX", "BSDEX", "BTC Markets", "BTCPay Bybit", "BYDFI", "Binance", "Binance US", "Bison", "Bitcoin Suisse", "Bitcoin.de", "Bitfinex", "Bithumb Glo.", "Bitpanda", "Bitpanda Pro", "Bitrue", "Bitstamp", "Bittrex", "BlockFi", "CEX", "Cake Defl", "Celsius", "Changelly", "Circle", "CoinEx", "Coinbase", "Coinbase Pro", "Coinmate", "Coinmerce", "Coinmetro", "Coss", "Crex24", "Criptan", "Crypto.com", "Crypto.com Exchange", "DFX.swiss", "Deribit", "Digital Surge", "Gate.lo", "Gemini", "HRBTC", "Haru", "Hodinaut", "Hotbit", "Iconomi", "Idex", "Kraken", "KuCoin", "Localbitcoins", "Luxor", "MEXC", "Mercatox", "NFTBank", "Nexo", "Northcrypto", "OKColn", "OKX", "Phemex", "Pocket Bitcoin", "Poloniex", "Relal", "STEX", "SwissBorg", "Swyftx", "Tradeogre", "Uphold", "Voyager", "Yield App ", "Zerion" }));
+        ComboBox_Exchanges.setEnabled(false);
+
+        Text_NomeWallet.setEnabled(false);
+
+        Label_NomeWallet.setText("Indicare nome o indirizzo del Wallet");
+        Label_NomeWallet.setEnabled(false);
+
+        ComboBox_TipoImport.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "------------", "Exchange", "Wallet", "Transazioni Blockchain" }));
+        ComboBox_TipoImport.setEnabled(false);
+
+        Label_TipoImport.setText("Scegliere che cosa si vuole importare");
+        Label_TipoImport.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -99,7 +117,11 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(Bottone_Annulla))
                             .addComponent(CheckBox_Sovrascrivi)
-                            .addComponent(CheckBox_Exchanges, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(ComboBox_Exchanges, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Text_NomeWallet)
+                            .addComponent(Label_NomeWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ComboBox_TipoImport, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Label_TipoImport, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -114,15 +136,23 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 .addComponent(CheckBox_Sovrascrivi)
                 .addGap(39, 39, 39)
                 .addComponent(ScrollPane_Attenzione, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(Label_TipoImport)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(ComboBox_TipoImport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Label_NomeExchange)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CheckBox_Exchanges, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
+                .addComponent(ComboBox_Exchanges, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Label_NomeWallet)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Text_NomeWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_SelezionaFile)
                     .addComponent(Bottone_Annulla))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -132,15 +162,24 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         // TODO add your handling code here:
         if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("CoinTracking.info CSV"))
         {
-            Label_NomeExchange.setEnabled(true);
-            CheckBox_Exchanges.setEnabled(true);
+            Label_TipoImport.setEnabled(true);
+            ComboBox_TipoImport.setEnabled(true);
             TextPane_Attenzione.setEnabled(true);
+          //  List <String> al = new ArrayList<> (); 
+          //  ComboBox_TipoImport.set
+            
         }
         else
           {
             Label_NomeExchange.setEnabled(false);
-            CheckBox_Exchanges.setEnabled(false);
-            TextPane_Attenzione.setEnabled(false);  
+            Label_TipoImport.setEnabled(false);
+            Label_NomeExchange.setEnabled(false);
+            ComboBox_Exchanges.setEnabled(false);
+            ComboBox_TipoImport.setEnabled(false);
+            this.Text_NomeWallet.setEnabled(false);
+            TextPane_Attenzione.setEnabled(false);
+
+
           }  
     }//GEN-LAST:event_ComboBox_TipoFileItemStateChanged
 
@@ -170,7 +209,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
         } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
 
-            if (!CheckBox_Exchanges.getSelectedItem().toString().trim().equalsIgnoreCase("- nessuno -")) {
+            if (!ComboBox_Exchanges.getSelectedItem().toString().trim().equalsIgnoreCase("- nessuno -")) {
                 JFileChooser fc = new JFileChooser();
                 int returnVal = fc.showOpenDialog(this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -179,7 +218,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                    // System.out.println(CheckBox_Exchanges.getSelectedItem().toString().trim());
                     boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                     Importazioni.AzzeraContatori();
-                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,CheckBox_Exchanges.getSelectedItem().toString().trim());
+                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,ComboBox_Exchanges.getSelectedItem().toString().trim());
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                     res.setLocationRelativeTo(this);
@@ -189,6 +228,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
                 //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista
                 //Poi devo anche gestire la corretta importazione del nome dell'exchange
+                JOptionPane.showInternalConfirmDialog(null, "Attenzione, non è stata fatta nessuna scelta dal menù a tendina",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
             }
 
 
@@ -236,12 +277,16 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_SelezionaFile;
-    private javax.swing.JComboBox<String> CheckBox_Exchanges;
     private javax.swing.JCheckBox CheckBox_Sovrascrivi;
+    private javax.swing.JComboBox<String> ComboBox_Exchanges;
     private javax.swing.JComboBox<String> ComboBox_TipoFile;
+    private javax.swing.JComboBox<String> ComboBox_TipoImport;
     private javax.swing.JLabel Label_NomeExchange;
+    private javax.swing.JLabel Label_NomeWallet;
     private javax.swing.JLabel Label_TipoFile;
+    private javax.swing.JLabel Label_TipoImport;
     private javax.swing.JScrollPane ScrollPane_Attenzione;
     private javax.swing.JTextPane TextPane_Attenzione;
+    private javax.swing.JTextField Text_NomeWallet;
     // End of variables declaration//GEN-END:variables
 }

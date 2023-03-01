@@ -484,13 +484,13 @@ public class Importazioni {
                             {
                                 //trasferimento FIAT
                                 
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TF";
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DF";
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
-                                RT[5]="TRASFERIMENTO FIAT";
-                                RT[6]="";                                
+                                RT[5]="DEPOSITO FIAT";
+                                RT[6]="DEPOSITO "+movimentoSplittato[2];                                
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]="";
                                 RT[9]="";
@@ -592,13 +592,13 @@ public class Importazioni {
                                 
                                 //trasferimento FIAT
                                 RT=new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TF"; 
+                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_PF"; 
                                 RT[1]=movimentoSplittato[0];
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
-                                RT[5]="VENDITA CRYPTO";
-                                RT[6]="TRASFERIMENTO FIAT";
+                                RT[5]="PRELIEVO FIAT";
+                                RT[6]="PRELIEVO "+movimentoSplittato[4];
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[4];
@@ -916,6 +916,8 @@ public class Importazioni {
          //TC=Trasferimento Crypto
          //DC=Deposito Crypto
          //PC=Prelievo Crypto
+         //DF=Deposito Fiat
+         //PF=Prelievo Fiat
          //TF=Trasferimento Fiat
          //AC=Acquisto Crypto (con FIAT)
          //VC=Vendita Crypto (per FIAT)
@@ -958,8 +960,11 @@ public class Importazioni {
                                 RT[11] = movimentoSplittato[2];
                                 RT[12] = "Crypto";
                                 RT[13] = movimentoSplittato[1];
-                                RT[14] = "EUR "+movimentoSplittato[4];
-                                RT[15] = movimentoSplittato[4];
+                                String prezzoTrans;
+                                if (new BigDecimal(movimentoSplittato[4]).compareTo(new BigDecimal("0"))==0) prezzoTrans=movimentoSplittato[8];
+                                else prezzoTrans=movimentoSplittato[4];
+                                RT[14] = "EUR "+prezzoTrans;
+                                RT[15] = prezzoTrans;
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1122,12 +1127,12 @@ public class Importazioni {
                             {
                                 //Commissioni
                                 
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TF";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PF";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
-                                RT[5]="TRASFERIMENTO FIAT";
+                                RT[5]="PRELIEVO FIAT";
                                 RT[6]="PRELIEVO "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
                                 RT[7] = movimentoSplittato[0];                                
                                 RT[8] = movimentoSplittato[6];
@@ -1233,6 +1238,11 @@ public class Importazioni {
                                         RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DC";
                                         RT[5] = "DEPOSITO CRYPTO";
                                         }
+                                        else if (TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                            {
+                                              RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DF";
+                                              RT[5] = "DEPOSITO FIAT";  
+                                            }
                                         RT[6] ="DEPOSITO "+movimentoSplittato[2];
                                         RT[7] = TipoMovimento;
                                         RT[8] = "";
@@ -1257,6 +1267,11 @@ public class Importazioni {
                                         RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PC";
                                         RT[5] = "PRELIEVO CRYPTO";
                                         }
+                                        else if (TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                            {
+                                              RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PF";
+                                              RT[5] = "PRELIEVO FIAT";  
+                                            }
                                         RT[6] = "PRELIEVO "+movimentoSplittato[6];
                                         RT[7] = TipoMovimento;
                                         RT[8] = movimentoSplittato[6];

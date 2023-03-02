@@ -2,6 +2,9 @@ package giacenze_crypto.com;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -19,6 +22,29 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     /**
      * Creates new form Gestione_Importazioni
      */
+    static String Exchanges[]=new String[]{"----------",
+    "Abra","Acx","AscendEX","BSDEX","BTC Markets","BTCPay Bybit",
+    "BYDFI","Binance","Binance US","Bison","Bitcoin Suisse","Bitcoin.de",
+    "Bitfinex","Bithumb Glo.","Bitpanda","Bitpanda Pro","Bitrue","Bitstamp",
+    "Bittrex","BlockFi","CEX","Cake Defl","Celsius","Changelly",
+    "Circle","CoinEx","Coinbase","Coinbase Pro","Coinmate","Coinmerce",
+    "Coinmetro","Coss","Crex24","Criptan","Crypto.com","Crypto.com Exchange",
+    "DFX.swiss","Deribit","Digital Surge","Gate.lo","Gemini","HRBTC",
+    "Haru","Hodinaut","Hotbit","Iconomi","Idex","Kraken",
+    "KuCoin","Localbitcoins","Luxor","MEXC","Mercatox","NFTBank",
+    "Nexo","Northcrypto","OKColn","OKX","Phemex","Pocket Bitcoin",
+    "Poloniex","Relal","STEX","SwissBorg","Swyftx","Tradeogre",
+    "Uphold","Voyager","Yield App","Zerion"};
+    
+    static String Wallets[]=new String[]{"----------",
+    "BitBox","Citcoin Core Client","Blochchain.com","Electrum","Exodus","Gate Hub","Ledger Live","Mycellum","Trezor"};
+    
+    static String BlockChain[]=new String[]{"----------",
+    "Avalanche (AVAX)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
+    "Dash (DASH)","Dogecoin (DOGE)","Polkadot (DOT)","Eos (EOS)","Ethereum (ETH)",
+    "Fantom (FTM)","Litecoin (LTC)","Terra Classic (LUNA)","Poligon (MATIC)","Tron (TRX)","Solana (SOL)",
+    "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)"};
+    
     public Importazioni_Gestione() {
          this.setTitle("Import da File");
         setModalityType(ModalityType.APPLICATION_MODAL);
@@ -87,14 +113,29 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         ComboBox_Exchanges.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " - nessuno -", "Abra", "Acx", "AscendEX", "BSDEX", "BTC Markets", "BTCPay Bybit", "BYDFI", "Binance", "Binance US", "Bison", "Bitcoin Suisse", "Bitcoin.de", "Bitfinex", "Bithumb Glo.", "Bitpanda", "Bitpanda Pro", "Bitrue", "Bitstamp", "Bittrex", "BlockFi", "CEX", "Cake Defl", "Celsius", "Changelly", "Circle", "CoinEx", "Coinbase", "Coinbase Pro", "Coinmate", "Coinmerce", "Coinmetro", "Coss", "Crex24", "Criptan", "Crypto.com", "Crypto.com Exchange", "DFX.swiss", "Deribit", "Digital Surge", "Gate.lo", "Gemini", "HRBTC", "Haru", "Hodinaut", "Hotbit", "Iconomi", "Idex", "Kraken", "KuCoin", "Localbitcoins", "Luxor", "MEXC", "Mercatox", "NFTBank", "Nexo", "Northcrypto", "OKColn", "OKX", "Phemex", "Pocket Bitcoin", "Poloniex", "Relal", "STEX", "SwissBorg", "Swyftx", "Tradeogre", "Uphold", "Voyager", "Yield App ", "Zerion" }));
         ComboBox_Exchanges.setEnabled(false);
+        ComboBox_Exchanges.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ComboBox_ExchangesItemStateChanged(evt);
+            }
+        });
 
         Text_NomeWallet.setEnabled(false);
+        Text_NomeWallet.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Text_NomeWalletKeyReleased(evt);
+            }
+        });
 
         Label_NomeWallet.setText("Indicare nome o indirizzo del Wallet");
         Label_NomeWallet.setEnabled(false);
 
         ComboBox_TipoImport.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "------------", "Exchange", "Wallet", "Transazioni Blockchain" }));
         ComboBox_TipoImport.setEnabled(false);
+        ComboBox_TipoImport.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ComboBox_TipoImportItemStateChanged(evt);
+            }
+        });
 
         Label_TipoImport.setText("Scegliere che cosa si vuole importare");
         Label_TipoImport.setEnabled(false);
@@ -165,12 +206,19 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             Label_TipoImport.setEnabled(true);
             ComboBox_TipoImport.setEnabled(true);
             TextPane_Attenzione.setEnabled(true);
-          //  List <String> al = new ArrayList<> (); 
-          //  ComboBox_TipoImport.set
+            ComboBox_TipoImport.setSelectedIndex(0);
+            Bottone_SelezionaFile.setEnabled(false);
+     
             
+           /* ArrayList<String> elements = new ArrayList<String>();
+            elements.addAll(java.util.Arrays.asList(Exchanges));
+            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBox_TipoImport.setModel(model);*/
+
         }
         else
           {
+              
             Label_NomeExchange.setEnabled(false);
             Label_TipoImport.setEnabled(false);
             Label_NomeExchange.setEnabled(false);
@@ -178,6 +226,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             ComboBox_TipoImport.setEnabled(false);
             this.Text_NomeWallet.setEnabled(false);
             TextPane_Attenzione.setEnabled(false);
+            Bottone_SelezionaFile.setEnabled(true);
 
 
           }  
@@ -209,7 +258,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
         } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
 
-            if (!ComboBox_Exchanges.getSelectedItem().toString().trim().equalsIgnoreCase("- nessuno -")) {
+            
                 JFileChooser fc = new JFileChooser();
                 int returnVal = fc.showOpenDialog(this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -218,25 +267,121 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                    // System.out.println(CheckBox_Exchanges.getSelectedItem().toString().trim());
                     boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                     Importazioni.AzzeraContatori();
-                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,ComboBox_Exchanges.getSelectedItem().toString().trim());
+                    String nomewallet;
+                    if (this.ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) 
+                        nomewallet=this.Text_NomeWallet.getText().trim();
+                    else nomewallet=ComboBox_Exchanges.getSelectedItem().toString().trim();
+                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet);
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                     res.setLocationRelativeTo(this);
                     res.setVisible(true);
                 }
-            } else {
+            /* else {
 
                 //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista
                 //Poi devo anche gestire la corretta importazione del nome dell'exchange
                 JOptionPane.showInternalConfirmDialog(null, "Attenzione, non è stata fatta nessuna scelta dal menù a tendina",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
-            }
+            }*/
 
 
         } else {
         }
         if (selezioneok) this.dispose();
     }//GEN-LAST:event_Bottone_SelezionaFileActionPerformed
+
+    private void ComboBox_TipoImportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoImportItemStateChanged
+        // TODO add your handling code here:
+        if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Exchange"))
+        {
+            Label_TipoImport.setEnabled(true);
+            ComboBox_TipoImport.setEnabled(true);
+            TextPane_Attenzione.setEnabled(true);
+            ComboBox_Exchanges.setEnabled(true);
+            Label_NomeExchange.setEnabled(true);
+            
+            ArrayList<String> elements = new ArrayList<String>();
+            elements.addAll(java.util.Arrays.asList(Exchanges));
+            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBox_Exchanges.setModel(model);
+            Bottone_SelezionaFile.setEnabled(false);
+
+        }else if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Wallet"))
+        {
+            Label_TipoImport.setEnabled(true);
+            ComboBox_TipoImport.setEnabled(true);
+            TextPane_Attenzione.setEnabled(true);
+            ComboBox_Exchanges.setEnabled(true);
+            Label_NomeExchange.setEnabled(true);
+            ArrayList<String> elements = new ArrayList<String>();
+            elements.addAll(java.util.Arrays.asList(Wallets));
+            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBox_Exchanges.setModel(model);
+            Bottone_SelezionaFile.setEnabled(false);
+
+        }else if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni BlockChain"))
+        {
+            Label_TipoImport.setEnabled(true);
+            ComboBox_TipoImport.setEnabled(true);
+            TextPane_Attenzione.setEnabled(true);
+            ComboBox_Exchanges.setEnabled(true);
+            Label_NomeExchange.setEnabled(true);
+            ArrayList<String> elements = new ArrayList<String>();
+            elements.addAll(java.util.Arrays.asList(BlockChain));
+            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBox_Exchanges.setModel(model);
+            Bottone_SelezionaFile.setEnabled(false);
+
+        }
+        else
+          {
+            Label_NomeExchange.setEnabled(false);
+            Label_NomeExchange.setEnabled(false);
+            ComboBox_Exchanges.setEnabled(false);
+            Text_NomeWallet.setEnabled(false);
+            Bottone_SelezionaFile.setEnabled(false);
+
+
+          }  
+
+    }//GEN-LAST:event_ComboBox_TipoImportItemStateChanged
+
+    private void ComboBox_ExchangesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_ExchangesItemStateChanged
+        // TODO add your handling code here:
+        if ((ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Exchange")||
+                ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Wallet"))&&
+                !ComboBox_Exchanges.getSelectedItem().toString().trim().equalsIgnoreCase("----------"))
+        {
+            Bottone_SelezionaFile.setEnabled(true);
+            Label_NomeWallet.setEnabled(false);
+            Text_NomeWallet.setEnabled(false);
+
+        }else if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni BlockChain")&&
+                !ComboBox_Exchanges.getSelectedItem().toString().trim().equalsIgnoreCase("----------"))
+        {
+            Label_NomeWallet.setEnabled(true);
+            Text_NomeWallet.setEnabled(true);
+            Bottone_SelezionaFile.setEnabled(false);
+            if (!this.Text_NomeWallet.getText().trim().equalsIgnoreCase("")) Bottone_SelezionaFile.setEnabled(true);
+        
+           // System.out.println("ss");
+
+        }
+        else
+          {
+            Bottone_SelezionaFile.setEnabled(false);
+            Label_NomeWallet.setEnabled(false);
+            Text_NomeWallet.setEnabled(false);
+          //  System.out.println("hh");
+          }  
+    }//GEN-LAST:event_ComboBox_ExchangesItemStateChanged
+
+    private void Text_NomeWalletKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Text_NomeWalletKeyReleased
+        // TODO add your handling code here:
+        if (!this.Text_NomeWallet.getText().trim().equalsIgnoreCase(""))
+            Bottone_SelezionaFile.setEnabled(true);
+    }//GEN-LAST:event_Text_NomeWalletKeyReleased
 
     /**
      * @param args the command line arguments

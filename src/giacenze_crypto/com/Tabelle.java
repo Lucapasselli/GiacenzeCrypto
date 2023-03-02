@@ -59,8 +59,26 @@ public class Tabelle {
                     c.setBackground(table.getSelectionBackground());
                     c.revalidate();
                 }
+                else if (col==3 && value.toString().toLowerCase().contains("deposito")) {
+                       // if (value.toString().equalsIgnoreCase("da calcolare"))
+                         //   {
+                   // c.setBackground(MappaColori.get(row));
+                    setBackground(bg);
+                    setForeground(verdeScuro);
+                   // }
 
-                else if (col==11 && value.toString().equalsIgnoreCase("da calcolare")) {
+                } 
+                else if (col==3 && value.toString().toLowerCase().contains("prelievo")) {
+                       // if (value.toString().equalsIgnoreCase("da calcolare"))
+                         //   {
+                   // c.setBackground(MappaColori.get(row));
+                    setBackground(bg);
+                    setForeground(Color.RED);
+                   // }
+
+                } 
+
+                else if (col==10 && value.toString().equalsIgnoreCase("da calcolare")) {
                        // if (value.toString().equalsIgnoreCase("da calcolare"))
                          //   {
                    // c.setBackground(MappaColori.get(row));
@@ -68,18 +86,18 @@ public class Tabelle {
                     setForeground(table.getForeground());
                    // }
 
-                } else if (col==12 && value.toString().equalsIgnoreCase("da calcolare")) { 
+                } else if (col==11 && value.toString().equalsIgnoreCase("da calcolare")) { 
                   //  c.setBackground(MappaColori.get(row));
                     setBackground(arancione);
                     setForeground(table.getForeground());
                    // c.setBackground(MappaColori.get(row));
                 }
-                else if (col==12 && value.toString().trim().contains("-")) {
+                else if (col==11 && value.toString().trim().contains("-")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(Color.RED);
                 } 
-                else if (col==12 && !value.toString().trim().equalsIgnoreCase("0.00")) {
+                else if (col==11 && !value.toString().trim().equalsIgnoreCase("0.00")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(verdeScuro);

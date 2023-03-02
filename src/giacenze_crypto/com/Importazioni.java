@@ -425,11 +425,12 @@ public class Importazioni {
                                 RT[3] = "Crypto.com App";
                                 RT[4] = "Crypto Wallet";
                                 RT[5] = Mappa_Conversione_Causali.get(movimentoSplittato[9]);
-                                RT[6] = movimentoSplittato[9];                                
+                                RT[6] = Mappa_Conversione_Causali.get(movimentoSplittato[9]);                                
                                 RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                 
                                 if (movimentoSplittato[3].contains("-")) {
-                                    RT[4] = "RIMBORSO " + Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                  //  RT[5] = "RIMBORSO " + Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                    RT[6] = "RIMBORSO "+ Mappa_Conversione_Causali.get(movimentoSplittato[9]); 
                                     RT[8] = movimentoSplittato[2];
                                     RT[9] = "Crypto";
                                     RT[10] = movimentoSplittato[3];

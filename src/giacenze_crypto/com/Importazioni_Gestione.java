@@ -268,9 +268,12 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                     Importazioni.AzzeraContatori();
                     String nomewallet;
-                    if (this.ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) 
-                        nomewallet=this.Text_NomeWallet.getText().trim();
-                    else nomewallet=ComboBox_Exchanges.getSelectedItem().toString().trim();
+                    if (this.ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain"))
+                        {
+                        nomewallet=this.Text_NomeWallet.getText().trim()+" "+ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")")+1);
+                    //System.out.println(nomewallet);
+                        }
+                        else nomewallet=ComboBox_Exchanges.getSelectedItem().toString().trim();
                     Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet);
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);

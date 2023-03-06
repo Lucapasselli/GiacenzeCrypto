@@ -98,6 +98,8 @@
                                       <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" min="-2" pref="508" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_Salva" min="-2" pref="111" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="TransazioniCrypto_Bottone_Annulla" min="-2" pref="100" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="jScrollPane1" min="-2" pref="759" max="-2" attributes="0"/>
@@ -126,6 +128,7 @@
                           <Component id="TransazioniCrypto_Bottone_Importa" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_Salva" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_Annulla" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="TransazioniCrypto_ScrollPane" pref="258" max="32767" attributes="0"/>
@@ -375,6 +378,15 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_CheckBox_EscludiTIActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_Annulla">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Annulla"/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_AnnullaActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>
@@ -1261,6 +1273,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="CDC_Opzioni">
+          <Events>
+            <EventHandler event="componentShown" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="CDC_OpzioniComponentShown"/>
+          </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Opzioni">
@@ -1275,13 +1290,6 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel5" min="-2" pref="303" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_Bottone_CancellaTransazioniCrypto" alignment="0" min="-2" pref="301" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="jSeparator4" alignment="0" min="-2" pref="671" max="-2" attributes="0"/>
@@ -1302,6 +1310,22 @@
                               </Group>
                               <EmptySpace pref="344" max="32767" attributes="0"/>
                           </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jLabel5" min="-2" pref="303" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                          <Component id="Opzioni_Bottone_CancellaTransazioniCryptoXwallet" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="Opzioni_Bottone_CancellaTransazioniCrypto" alignment="0" pref="301" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                                      <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" min="-2" pref="275" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
               </Group>
@@ -1311,9 +1335,9 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                       <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="CDC_Opzioni_Bottone_CancellaFiatWallet" min="-2" max="-2" attributes="0"/>
@@ -1321,7 +1345,6 @@
                                       <Component id="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                       <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="CDC_Opzioni_Bottone_CancellaCardWallet" min="-2" max="-2" attributes="0"/>
@@ -1339,7 +1362,13 @@
                       <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="Opzioni_Bottone_CancellaTransazioniCrypto" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="344" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="Opzioni_Bottone_CancellaTransazioniCryptoXwallet" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="315" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1409,6 +1438,31 @@
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="CARD WALLET"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="Opzioni_Bottone_CancellaTransazioniCryptoXwallet">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Elimina Dati singolo Wallet/Exchange"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="Opzioni_Combobox_CancellaTransazioniCryptoXwallet">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="1">
+                    <StringItem index="0" value="----------"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel8">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="-&gt;"/>
               </Properties>
             </Component>
           </SubComponents>

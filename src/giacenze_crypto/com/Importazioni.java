@@ -947,7 +947,7 @@ public class Importazioni {
                                     {
                                         // in Questo caso si tratta di uno scambio Crypto-Crypto
                                 //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_SC";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_SC";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
@@ -978,7 +978,7 @@ public class Importazioni {
                             }else if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
                                     {
                                         //in questo caso abbiamo un Acquisto Crypto
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_AC";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_AC";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
@@ -1008,7 +1008,7 @@ public class Importazioni {
                             else if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))
                                     {
                                         //in questo caso abbiamo una Vendita Crypto
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_VC";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
@@ -1038,7 +1038,7 @@ public class Importazioni {
                             {
                                 //Rewards di vario tipo
                                 
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_RW";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_RW";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
@@ -1067,7 +1067,7 @@ public class Importazioni {
                             {
                                 //Rewards di vario tipo
                                 
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_RW";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_RW";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
@@ -1096,7 +1096,7 @@ public class Importazioni {
                             {
                                 //Commissioni
                                 
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_CM";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_CM";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
@@ -1128,7 +1128,7 @@ public class Importazioni {
                             {
                                 //Commissioni
                                 
-                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PF";
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_PF";
                                 RT[1] = data;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
@@ -1220,7 +1220,7 @@ public class Importazioni {
                                 if (annullato==false)   
                                     {
                                     RT=new String[23];
-                                    RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_"+TipoMovAbbreviato;
+                                    RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_"+TipoMovAbbreviato;
                                     RT[1] = data;
                                     RT[2] = k + 1 + " di " + numMovimenti;
                                     RT[3] = Exchange;
@@ -1236,12 +1236,12 @@ public class Importazioni {
                                         {
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
-                                        RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DC";
+                                        RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_DC";
                                         RT[5] = "DEPOSITO CRYPTO";
                                         }
                                         else if (TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
-                                              RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DF";
+                                              RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_DF";
                                               RT[5] = "DEPOSITO FIAT";  
                                             }
                                         RT[6] ="DEPOSITO "+movimentoSplittato[2];
@@ -1265,12 +1265,12 @@ public class Importazioni {
                                         {
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
-                                        RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PC";
+                                        RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_PC";
                                         RT[5] = "PRELIEVO CRYPTO";
                                         }
                                         else if (TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
-                                              RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PF";
+                                              RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_PF";
                                               RT[5] = "PRELIEVO FIAT";  
                                             }
                                         RT[6] = "PRELIEVO "+movimentoSplittato[6];

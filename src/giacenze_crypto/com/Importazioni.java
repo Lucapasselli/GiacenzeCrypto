@@ -19,6 +19,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -192,7 +198,7 @@ public class Importazioni {
             try {
             SimpleDateFormat originale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
             
-            Date d = originale.parse(Data+":00");
+            Date d = originale.parse(Data+":30");
             originale.applyPattern("yyyy-MM-dd HH:mm:ss");
             DataFormattata = originale.format(d);
         } catch (ParseException ex) {
@@ -202,6 +208,17 @@ public class Importazioni {
            // System.out.println(newDateString);
             return DataFormattata;
     }
+        
+        public static String Formatta_Data_UTC(String Data) {
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return LocalDateTime.parse(Data, formatter)
+            .atOffset(ZoneOffset.UTC)
+            .atZoneSameInstant(ZoneId.of("Europe/Rome"))
+            .format(formatter);
+
+    }    
+        
     
     
         public String createMD5Hash(final String input)
@@ -403,6 +420,11 @@ public class Importazioni {
                             String RT[]=new String[23];
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
+                            String data=movimentoSplittato[0];
+                            data=Formatta_Data_UTC(data);
+                            String dataa=data.trim().substring(0, data.length()-3);
+                             //   String inputValue = "2012-08-15T22:56:02.038Z";
+
                             String movimentoConvertito=Mappa_Conversione_Causali.get(movimentoSplittato[9]);
                            // System.out.println(movimentoSplittato[9]);
                            if (movimentoConvertito==null)
@@ -419,8 +441,8 @@ public class Importazioni {
                             {
 
                                 //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
-                                RT[0] = movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_RW";
-                                RT[1] = movimentoSplittato[0];
+                                RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_RW";
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = "Crypto.com App";
                                 RT[4] = "Crypto Wallet";
@@ -458,7 +480,7 @@ public class Importazioni {
                                         valoreEuro = movimentoSplittato[7];
                                     }
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
-                                        valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);                                        
+                                        valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);                                        
                                     }
                                     valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
                                     RT[15] = valoreEuro;
@@ -485,8 +507,8 @@ public class Importazioni {
                             {
                                 //trasferimento FIAT
                                 
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DF";
-                                RT[1]=movimentoSplittato[0];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DF";
+                                RT[1]=dataa;
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
@@ -504,7 +526,7 @@ public class Importazioni {
                                 if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[3];
                                 if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();                                
                                 RT[15]=valoreEuro;
@@ -520,8 +542,8 @@ public class Importazioni {
                                 //Vendita Euro x Crypto
                                 //movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_AC_*_"+movimentoSplittato[2].trim();
                                 RT=new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_AC";                              
-                                RT[1]=movimentoSplittato[0];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_AC";                              
+                                RT[1]=dataa;
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
@@ -539,7 +561,7 @@ public class Importazioni {
                                 if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[3];
                                 if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -557,8 +579,8 @@ public class Importazioni {
                             {
                                 //Vendita Crypto x Euro
                                 
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC"; 
-                                RT[1]=movimentoSplittato[0];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC"; 
+                                RT[1]=dataa;
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
@@ -577,7 +599,7 @@ public class Importazioni {
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -593,8 +615,8 @@ public class Importazioni {
                                 
                                 //trasferimento FIAT
                                 RT=new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_PF"; 
-                                RT[1]=movimentoSplittato[0];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_PF"; 
+                                RT[1]=dataa;
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
@@ -613,7 +635,7 @@ public class Importazioni {
                                 if (movimentoSplittato[4].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[5];
                                 if (movimentoSplittato[4].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[5], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[5], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();                                
                                 RT[15]=valoreEuro;
@@ -630,8 +652,8 @@ public class Importazioni {
                             {
                                 //Scambio Crypto Crypto
                                 
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_SC";
-                                RT[1]=movimentoSplittato[0];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_SC";
+                                RT[1]=dataa;
                                 RT[2]=1+" di "+1;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
@@ -650,7 +672,7 @@ public class Importazioni {
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[15]=valoreEuro;
@@ -686,8 +708,8 @@ public class Importazioni {
                                     for (int w = 0; w < numeroAddebiti; w++) {
                                         String splittata[]=dust_addebitati[w].split(",");
                                         RT = new String[23];
-                                        RT[0] = movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
-                                        RT[1] = splittata[0];
+                                        RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
+                                        RT[1] = dataa;
                                         RT[2] = w+1 + " di " + numeroAddebiti;
                                         RT[3] = "Crypto.com App";
                                         RT[4] = "Crypto Wallet";
@@ -782,8 +804,8 @@ public class Importazioni {
                                 }
                                 
                                 RT = new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TI";
-                                RT[1]=movimentoSplittato[0];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TI";
+                                RT[1]=dataa;
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]=WalletPartenza;
@@ -802,7 +824,7 @@ public class Importazioni {
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -818,8 +840,8 @@ public class Importazioni {
                                 
                                 
                                 RT = new String[23];
-                                RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TI";
-                                RT[1]=movimentoSplittato[0];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TI";
+                                RT[1]=dataa;
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";
                                 RT[4]=WalletDestinazione;
@@ -851,7 +873,7 @@ public class Importazioni {
                             {
                                 RT = new String[23];
                             //    RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TC";
-                                RT[1]=movimentoSplittato[0];
+                                RT[1]=dataa;
                                 RT[2]=1+" di "+1;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
@@ -860,7 +882,7 @@ public class Importazioni {
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 if (movimentoSplittato[3].contains("-")) {
-                                    RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PC";
+                                    RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PC";
                                     RT[5]="PRELIEVO CRYPTO";
                                     RT[6]="PRELIEVO "+movimentoSplittato[2];
                                     RT[8]=movimentoSplittato[2];
@@ -870,7 +892,7 @@ public class Importazioni {
                                     RT[12]="";
                                     RT[13]="";
                                 } else {
-                                    RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DC";
+                                    RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DC";
                                     RT[5]="DEPOSITO CRYPTO";
                                     RT[6]="DEPOSITO "+movimentoSplittato[2];
                                     RT[8]="";
@@ -885,7 +907,7 @@ public class Importazioni {
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -941,6 +963,7 @@ public class Importazioni {
                             String movimentoSplittato[]=movimento.split(",");
                            // System.out.println(movimentoSplittato[9]);
                             String data=Formatta_Data_CoinTracking(movimentoSplittato[12]);
+                            String dataa=data.substring(0, data.length()-3).trim();
                             if (movimentoSplittato[0].trim().equalsIgnoreCase("Trade"))
                             {
                                 if (!movimentoSplittato[6].trim().equalsIgnoreCase("EUR")&&!movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))
@@ -948,7 +971,7 @@ public class Importazioni {
                                         // in Questo caso si tratta di uno scambio Crypto-Crypto
                                 //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_SC";
-                                RT[1] = data;
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
@@ -979,7 +1002,7 @@ public class Importazioni {
                                     {
                                         //in questo caso abbiamo un Acquisto Crypto
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_AC";
-                                RT[1] = data;
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
@@ -1009,7 +1032,7 @@ public class Importazioni {
                                     {
                                         //in questo caso abbiamo una Vendita Crypto
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_VC";
-                                RT[1] = data;
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
@@ -1039,7 +1062,7 @@ public class Importazioni {
                                 //Rewards di vario tipo
                                 
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_RW";
-                                RT[1] = data;
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
@@ -1068,7 +1091,7 @@ public class Importazioni {
                                 //Rewards di vario tipo
                                 
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_RW";
-                                RT[1] = data;
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
@@ -1097,7 +1120,7 @@ public class Importazioni {
                                 //Commissioni
                                 
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_CM";
-                                RT[1] = data;
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
@@ -1129,7 +1152,7 @@ public class Importazioni {
                                 //Commissioni
                                 
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_PF";
-                                RT[1] = data;
+                                RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
@@ -1221,7 +1244,7 @@ public class Importazioni {
                                     {
                                     RT=new String[23];
                                     RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_"+TipoMovAbbreviato;
-                                    RT[1] = data;
+                                    RT[1] = dataa;
                                     RT[2] = k + 1 + " di " + numMovimenti;
                                     RT[3] = Exchange;
                                     RT[4] = movimentoSplittato[10];

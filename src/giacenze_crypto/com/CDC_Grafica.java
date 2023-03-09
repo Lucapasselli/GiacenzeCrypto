@@ -149,7 +149,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_Tabella = new javax.swing.JTable();
         DepositiPrelievi_Bottone_AssegnazionAutomatica = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        DepositiPrelievi_CheckBox_movimentiClassificati = new javax.swing.JCheckBox();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -455,8 +455,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        jCheckBox1.setSelected(true);
-        jCheckBox1.setText("Mostra movimenti già classificati");
+        DepositiPrelievi_CheckBox_movimentiClassificati.setSelected(true);
+        DepositiPrelievi_CheckBox_movimentiClassificati.setText("Mostra movimenti già classificati");
+        DepositiPrelievi_CheckBox_movimentiClassificati.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout DepositiPrelieviLayout = new javax.swing.GroupLayout(DepositiPrelievi);
         DepositiPrelievi.setLayout(DepositiPrelieviLayout);
@@ -471,7 +476,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton1))
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -481,7 +486,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBox1)
+                .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(DepositiPrelievi_Bottone_AssegnazionAutomatica)
@@ -2197,7 +2202,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 try {
                     //f.parse(CDC_DataIniziale)
                     CDC_DataChooser_Iniziale.setDate(f.parse(CDC_DataIniziale));
-                    JOptionPane.showInternalConfirmDialog(null, "Attenzione, la data iniziale non può essere maggiore della data finale!",
+                    JOptionPane.showConfirmDialog(this, "Attenzione, la data iniziale non può essere maggiore della data finale!",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
                 } catch (ParseException ex) {
                     Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -2226,7 +2231,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 try {
                     //f.parse(CDC_DataIniziale)
                     CDC_DataChooser_Finale.setDate(f.parse(CDC_DataFinale));
-                    JOptionPane.showInternalConfirmDialog(null, "Attenzione, la data finale non può essere minore della data iniziale!",
+                    JOptionPane.showConfirmDialog(this, "Attenzione, la data finale non può essere minore della data iniziale!",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
                 } catch (ParseException ex) {
                     Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -2667,6 +2672,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
           String TipoMovimento=v[0].split("_")[4].trim();
           if (TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))
           {
+            //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
+            if (v[18].trim().equalsIgnoreCase("")||this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
+              {
             String riga[]=new String[7];
             riga[0]=v[0];
             riga[1]=v[1];
@@ -2684,6 +2692,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
             riga[6]=v[18];
             ModelloTabellaDepositiPrelievi.addRow(riga);
+            }
           }
                   
        }
@@ -2731,12 +2740,89 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed
         // TODO add your handling code here:
         //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
+        int numeromodifiche=0;
+        DefaultTableModel ModelloTabella1DepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
+        //SituazioneImport_Tabella1.
+        int numeroRighe=ModelloTabella1DepositiPrelievi.getRowCount();
+        for (int i=0;i<numeroRighe;i++){
+            //System.out.println(ModelloTabella1DepositiPrelievi.getValueAt(i, 1));
+            String id=ModelloTabella1DepositiPrelievi.getValueAt(i, 0).toString();
+            String data=ModelloTabella1DepositiPrelievi.getValueAt(i, 1).toString();
+            String moneta=ModelloTabella1DepositiPrelievi.getValueAt(i, 4).toString();
+            String qta=ModelloTabella1DepositiPrelievi.getValueAt(i, 5).toString();
+            String wallet=ModelloTabella1DepositiPrelievi.getValueAt(i, 2).toString();
+            //come prima cosa verifico che il movimento non sia già abbinato/assegnato
+        if (MappaCryptoWallet.get(id)!=null && MappaCryptoWallet.get(id)[18].equalsIgnoreCase(""))
+            for (int k=i+1;k<numeroRighe;k++){ 
+                String id2=ModelloTabella1DepositiPrelievi.getValueAt(k, 0).toString();
+                String data2=ModelloTabella1DepositiPrelievi.getValueAt(k, 1).toString();
+                String moneta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 4).toString();
+                String qta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 5).toString();
+                String wallet2=ModelloTabella1DepositiPrelievi.getValueAt(k, 2).toString();
+                //le condizioni affinchè avvenga l'abbinamento automatico devono essere               
+                //1- il movimento non deve risultarte già abbinato
+                //2- differenza tra le date minore di 1 ora
+                //3- stessa moneta
+                //4- exchange diverso
+                //5- importo uguale o comunque non deve differire di più del 2% ma uno deve essere un deposito e l'altro un prelievo
+                BigDecimal Sommaqta=new BigDecimal(qta).add(new BigDecimal (qta2)).abs().stripTrailingZeros();
+                BigDecimal PercentualeDifferenza=Sommaqta.abs().divide(new BigDecimal(qta).abs(),RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+                
+                if (MappaCryptoWallet.get(id2)[18].equalsIgnoreCase("")&&//1
+                        Differenza_Date_secondi(data2,data)<3600 &&//2
+                        moneta.equalsIgnoreCase(moneta2)&&//3
+                        !wallet.equalsIgnoreCase(wallet2)&&//4
+                        PercentualeDifferenza.compareTo(new BigDecimal(2))==-1)//5
+                
+                {
+                    String tipo;
+                    String aggiornata2[]=MappaCryptoWallet.get(id2);
+                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà";else tipo="PTW - Trasferimento tra Wallet di proprietà";
+                    aggiornata2[18]=tipo;
+                    aggiornata2[5]="TRASFERIMENTO TRA WALLET";
+                    aggiornata2[19]="0";
+                    aggiornata2[20]=id;
+                    String aggiornata[]=MappaCryptoWallet.get(id);
+                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà";else tipo="PTW - Trasferimento tra Wallet di proprietà";
+                    aggiornata[18]=tipo;
+                    aggiornata[5]="TRASFERIMENTO TRA WALLET";
+                    aggiornata[19]="0";
+                    aggiornata[20]=id2;
+                    MappaCryptoWallet.put(id, aggiornata);
+                    MappaCryptoWallet.put(id2, aggiornata2);
+                    numeromodifiche++;
+                   // System.out.println(data+" ; "+data2+" ; "+Differenza_Date_secondi(data2,data));
+                    break;
+                }
+            }
+        }
+
+       // this.CDC.setSelectedIndex(0);
+        if (numeromodifiche>0){
+        JOptionPane.showConfirmDialog(this, "Sono stati individuati e aggiornati "+numeromodifiche+" coppie di transazioni, ricordarsi di salvare le modifiche!!",
+        "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
+        this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+        this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
+        }
+        else{
+        JOptionPane.showConfirmDialog(this, "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente",
+        "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
+        }
+        this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed
 
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
         // TODO add your handling code here:
         SituazioneImport_Caricatabella1();
     }//GEN-LAST:event_SituazioneImportComponentShown
+
+    private void DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
+        // TODO add your handling code here:
+       // System.out.println("cambio");
+       DepositiPrelievi_Caricatabella();
+    }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
 
     
         public void CompilaTextPaneDatiMovimento() {
@@ -3019,6 +3105,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
         return differenza;
     }
     
+    public static long Differenza_Date_secondi(String Data1, String Data2) {
+        long differenza=0;
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date d = f.parse(Data1+" 00:00");
+            long m1 = d.getTime();
+            d = f.parse(Data2+" 00:00");
+            long m2 = d.getTime();
+            double diffe=(double)(m1-m2)/1000;//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
+            differenza=Math.round(diffe);//Ritorno la differenza in giorni che poi mi servirà per il calcolo della giacenza media
+            //System.out.println (Data1+" - "+Data2+" - "+differenza+" - "+a);
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+        } catch (ParseException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return differenza;
+    }
+    
        public static long ConvertiDatainLong(String Data1) {
            long m1=0;
         try {
@@ -3154,6 +3258,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JTextField CDC_Text_Giorni;
     private javax.swing.JPanel DepositiPrelievi;
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazionAutomatica;
+    private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
@@ -3171,7 +3276,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel TransazioniCrypto_Label_MovimentiNonSalvati;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

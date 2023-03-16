@@ -2474,12 +2474,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void TransazioniCryptoTabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaMouseReleased
         // TODO add your handling code here:
-        CompilaTextPaneDatiMovimento();
+        TransazioniCrypto_CompilaTextPaneDatiMovimento();
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
     private void TransazioniCryptoTabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaKeyReleased
         // TODO add your handling code here:
-        CompilaTextPaneDatiMovimento();
+        TransazioniCrypto_CompilaTextPaneDatiMovimento();
     }//GEN-LAST:event_TransazioniCryptoTabellaKeyReleased
 
     private void TransazioniCrypto_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
@@ -2660,7 +2660,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        DepositiPrelievi_Caricatabella();
+
+        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
+        int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();
+        
+        String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+       // System.out.println(IDTransazione);
+        ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(IDTransazione);
+        mod.setLocationRelativeTo(this);
+        mod.setVisible(true);
+        }
+
+        
+        // adesso devo caricarci i dettagli del movimento selezionato etc...
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void DepositiPrelievi_Caricatabella()
@@ -2825,8 +2837,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
 
     
-        public void CompilaTextPaneDatiMovimento() {
-
+        public void TransazioniCrypto_CompilaTextPaneDatiMovimento() {
+        if (TransazioniCryptoTabella.getSelectedRow()>=0){
         int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
         String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
         
@@ -2899,7 +2911,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "NOTE :&#9&#9&#9<b>"+Riferimenti+"</b><br>";
         
         this.TransazioniCryptoTextPane.setText(daAppendere);
-
+}
     }
     
     

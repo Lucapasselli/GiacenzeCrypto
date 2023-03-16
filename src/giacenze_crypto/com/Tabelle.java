@@ -6,9 +6,6 @@ package giacenze_crypto.com;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 

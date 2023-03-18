@@ -4,10 +4,12 @@
  */
 package giacenze_crypto.com;
 
+
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+
 
 
 
@@ -48,6 +50,8 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
             this.TextPane_Errori.setText(movScon);
           //  this.
         }
+              
+        
     }
 
     /**

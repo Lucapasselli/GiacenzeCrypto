@@ -349,7 +349,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1054, Short.MAX_VALUE)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -470,7 +470,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1009, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1048, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addComponent(DepositiPrelievi_Bottone_AssegnazionAutomatica)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -526,7 +526,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         SituazioneImport.setLayout(SituazioneImportLayout);
         SituazioneImportLayout.setHorizontalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1021, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1060, Short.MAX_VALUE)
         );
         SituazioneImportLayout.setVerticalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -705,11 +705,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(CDC_CardWallet_Text_FiltroTabelle))
                     .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Label_Tabella1, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Label_Tabella1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Label_Tabella2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(CDC_CardWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1042,7 +1042,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                             .addComponent(CDC_FiatWallet_Text_GiacenzaMedia, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
                                             .addComponent(CDC_FiatWallet_Text_SaldoFinale)))
                                     .addComponent(CDC_FiatWallet_Bottone_Errore, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 256, Short.MAX_VALUE))
+                                .addGap(0, 295, Short.MAX_VALUE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                                 .addGap(0, 0, Short.MAX_VALUE)
                                 .addComponent(CDC_FiatWallet_Bottone_StampaRapporto, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -1211,7 +1211,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addGroup(CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                                     .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addContainerGap(344, Short.MAX_VALUE))
+                        .addContainerGap(383, Short.MAX_VALUE))
                     .addGroup(CDC_OpzioniLayout.createSequentialGroup()
                         .addGroup(CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1306,7 +1306,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(CDC_Label_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CDC_Text_Giorni))
-                    .addComponent(CDC))
+                    .addComponent(CDC, javax.swing.GroupLayout.DEFAULT_SIZE, 1060, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -2669,6 +2669,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(IDTransazione);
         mod.setLocationRelativeTo(this);
         mod.setVisible(true);
+        if (mod.getModificaEffettuata()){
+         this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
+         this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
+         this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+        }
+       // System.out.println(mod.getModificaEffettuata());        
+        DepositiPrelievi_Caricatabella();
         }
 
         
@@ -2789,13 +2796,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 {
                     String tipo;
                     String aggiornata2[]=MappaCryptoWallet.get(id2);
-                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà";else tipo="PTW - Trasferimento tra Wallet di proprietà";
+                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     aggiornata2[18]=tipo;
                     aggiornata2[5]="TRASFERIMENTO TRA WALLET";
                     aggiornata2[19]="0";
                     aggiornata2[20]=id;
                     String aggiornata[]=MappaCryptoWallet.get(id);
-                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà";else tipo="PTW - Trasferimento tra Wallet di proprietà";
+                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     aggiornata[18]=tipo;
                     aggiornata[5]="TRASFERIMENTO TRA WALLET";
                     aggiornata[19]="0";

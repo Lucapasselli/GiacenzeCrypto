@@ -7,6 +7,10 @@ package giacenze_crypto.com;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import static giacenze_crypto.com.CDC_Grafica.PulisciTabella;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -18,15 +22,74 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     /**
      * Creates new form ClassificazioneTrasf_Modifica
      */
+    //CLASSIFICAZIONE TRASFERIMENTI
+    
+    //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
+    //PCO -> Cashout o similare (prelievo)
+    //PTW -> Trasferimento tra Wallet (prelievo)
+    //DTW -> Trasferimento tra Wallet (deposito)
+    //DAI -> Airdrop o similare (deposito)
+    //DCZ -> Costo di carico 0 (deposito)
+    
+    
+    
     static String IDTrans="";
+    boolean ModificaEffettuata=false;
     public ClassificazioneTrasf_Modifica(String ID) {
+        ModificaEffettuata=false;
         IDTrans=ID;
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
         PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(jTable1);
-        ModelloTabellaDepositiPrelievi.addRow(DammiRigaTabellaDaID(ID));
+        String riga[]=DammiRigaTabellaDaID(ID);
+        ModelloTabellaDepositiPrelievi.addRow(riga);
+        String tipomov=riga[6].split("-")[0].trim();
+        int ntipo=0;
+        if (tipomov.equalsIgnoreCase("PWN")){
+            ntipo=2;
+        }else if (tipomov.equalsIgnoreCase("PCO")){
+            ntipo=1;
+        }else if (tipomov.equalsIgnoreCase("PTW")){
+            ntipo=3;
+        }else if (tipomov.equalsIgnoreCase("DTW")){
+            ntipo=3;
+        }else if (tipomov.equalsIgnoreCase("DAI")){
+            ntipo=1;
+        }else if (tipomov.equalsIgnoreCase("DCZ")){
+            ntipo=2;
+        }
+        String papele[];
+        if (ID.split("_")[4].equalsIgnoreCase("DC")){
+            papele=new String[]{"- nessuna selezione -",
+                "AIRDROP O SIMILARI (verrà calcolata la plusvalenza)",
+                "DEPOSITO CON COSTO DI CARICO A ZERO",
+                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)"};
+
+        }else
+        {
+            papele=new String[]{"- nessuna selezione -",
+                "CASHOUT O SIMILARE (verrà calcolata la plusvalenza)",
+                "PRELIEVO SCONOSCIUTO (qta e valore verrà tolta dal calcolo della Plus con LIFO)",
+                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)"};
+
+        }
+            ArrayList<String> elements = new ArrayList<>();
+            elements.addAll(java.util.Arrays.asList(papele));
+            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            this.ComboBox_TipoMovimento.setModel(model);
+            this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
+            CompilaTabellaMovimetiAssociabili(ID);
+
+        
+        
+    }
+  
+    
+    
+    public boolean getModificaEffettuata(){
+        return ModificaEffettuata;
     }
     
     public String[] DammiRigaTabellaDaID(String ID){
@@ -63,7 +126,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        ComboBox_TipoMovimento = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
@@ -80,11 +143,21 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
         jLabel2.setText("Scegli la tipologia di movimento dalla lista :");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        ComboBox_TipoMovimento.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
         jButton1.setText("OK");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Annulla");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Scegli movimento da abbinare qua sotto :");
 
@@ -105,6 +178,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        jTable1.setFocusable(false);
+        jTable1.setRequestFocusEnabled(false);
+        jTable1.setRowSelectionAllowed(false);
         jScrollPane2.setViewportView(jTable1);
         if (jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setMinWidth(1);
@@ -172,27 +248,26 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ComboBox_TipoMovimento, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton2))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField1))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
-                            .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane2)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField1)))))
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -205,7 +280,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(ComboBox_TipoMovimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
@@ -213,8 +288,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton2)
                     .addComponent(jButton1))
@@ -224,6 +299,165 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+            //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
+    //PCO -> Cashout o similare (prelievo)
+    //PTW -> Trasferimento tra Wallet (prelievo)
+    //DTW -> Trasferimento tra Wallet (deposito)
+    //DAI -> Airdrop o similare (deposito)
+    //DCZ -> Costo di carico 0 (deposito)
+        int scelta=this.ComboBox_TipoMovimento.getSelectedIndex();
+        String descrizione="";
+        String dettaglio="";
+        String attuale[]=MappaCryptoWallet.get(IDTrans);
+        String controparte=attuale[20];
+        if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
+          //in questo caso sono in presenza di un movimento di deposito
+          switch(scelta){
+              case 1 -> {
+                  descrizione="AIRDROP o SIMILARE";
+                  dettaglio="DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
+                }
+              case 2 -> {
+                  descrizione="DEPOSITO CRYPTO";
+                  dettaglio="DCZ - Deposito a costo zero (no plusvalenza)";
+                }
+              case 3 -> {
+                  descrizione="TRASFERIMENTO TRA WALLET";
+                  dettaglio="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                }
+              default -> descrizione="DEPOSITO CRYPTO";
+                  //qui si va solo in caso la scelata sia nessuna
+          }
+        }else{
+          //in questo caso sono in presenza di un movimento di prelievo
+          switch(scelta){
+              case 1 -> {
+                  descrizione="CASHOUT o SIMILARI";
+                  dettaglio="PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
+                }
+              case 2 -> {
+                  descrizione="PRELIEVO CRYPTO";
+                  dettaglio="PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+                }
+              case 3 -> {
+                  descrizione="TRASFERIMENTO TRA WALLET";
+                  dettaglio="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                }
+              default -> descrizione="PRELIEVO CRYPTO";
+          }
+        }
+        attuale[5]=descrizione;
+        attuale[18]=dettaglio;
+        attuale[20]="";
+        MappaCryptoWallet.put(IDTrans, attuale);
+        if (!controparte.equalsIgnoreCase("")){
+            //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
+            RiportaIDTransaSituazioneIniziale(controparte);
+        }
+        JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+        "Modifiche fatte!",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        ModificaEffettuata=true;
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    
+        public void RiportaIDTransaSituazioneIniziale(String ID){
+            String descrizione;
+            String attuale[]=MappaCryptoWallet.get(ID);
+            if (ID.split("_")[4].equalsIgnoreCase("DC")){
+                descrizione="DEPOSITO CRYPTO";
+            }else
+             {
+                 descrizione="PRELIEVO CRYPTO";
+                 
+             }
+        attuale[5]=descrizione;
+        attuale[18]="";
+        attuale[20]="";
+        MappaCryptoWallet.put(ID, attuale);
+        }
+
+
+        public void CompilaTabellaMovimetiAssociabili(String ID){
+        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable2.getModel();
+        PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabelle.ColoraRigheTabellaCrypto(jTable2);
+        String attuale[]=MappaCryptoWallet.get(ID);
+        long DataOraAttuale=Calcoli.ConvertiDatainLong(attuale[1]);
+        String TipoMovimentoAttuale=attuale[0].split("_")[4].trim();
+        String TipoMovimentoRichiesto;
+        String MonetaAttuale;
+        BigDecimal QtaAttuale;
+        if (TipoMovimentoAttuale.equalsIgnoreCase("PC"))
+                {
+                    MonetaAttuale=attuale[8].trim();
+                    QtaAttuale=new BigDecimal(attuale[10]).stripTrailingZeros();
+                    TipoMovimentoRichiesto="DC";
+                }
+        else {
+            MonetaAttuale=attuale[11].trim();
+            QtaAttuale=new BigDecimal(attuale[13]).stripTrailingZeros();
+            TipoMovimentoRichiesto="PC";
+        }
+        BigDecimal escursioneMassima=new BigDecimal(5);
+        BigDecimal QtaAttualeMax=QtaAttuale.add(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100)));
+        BigDecimal QtaAttualeMin=QtaAttuale.subtract(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100)));
+
+        
+        
+        // a questo punto in tabella metto le righe che soddisfano le seguenti condizioni
+        //1 - La moneta deve essere la stessa
+        //2 - Il movimento deve essere opposto
+        //3 - Qta deve essere compreso tra qtaMax e QtaMin che sono un 5%
+        //4 - il movimento deve essere fatto nel giro di max 24 ore dopo quello analizzata e massimo 24 ore prima
+        for (String[] v : MappaCryptoWallet.values()) {
+          String TipoMovimento=v[0].split("_")[4].trim();
+          if (TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))
+          {
+            String riga[]=new String[7];
+            riga[0]=v[0];
+            riga[1]=v[1];
+            riga[2]=v[3];
+            riga[3]=v[5];
+            if (TipoMovimento.equalsIgnoreCase("PC"))
+                {
+                riga[4]=v[8];
+                riga[5]=new BigDecimal(v[10]).stripTrailingZeros().toPlainString();
+                }
+            else //DC
+                {
+                riga[4]=v[11];
+                riga[5]=new BigDecimal(v[13]).stripTrailingZeros().toPlainString();
+                }
+            riga[6]=v[18];
+       
+           if (TipoMovimento.equalsIgnoreCase("DC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
+          {  
+              BigDecimal Qta=new BigDecimal(v[13]);
+              long DataOra=Calcoli.ConvertiDatainLong(v[1]);
+             // System.out.println(DataOra+" - "+DataOraAttuale);
+              if (MonetaAttuale.equalsIgnoreCase(v[11].trim())/*&&
+                      TipoMovimentoRichiesto.equalsIgnoreCase(TipoMovimento)&&
+                      Qta.compareTo(QtaAttualeMax)==-1&&Qta.compareTo(QtaAttualeMin)==1&&
+                      DataOra<(DataOraAttuale+86400000)&&
+                      DataOra>(DataOraAttuale-86400000)*/){
+               ModelloTabellaDepositiPrelievi.addRow(riga); 
+            }
+           }   
+
+         //   ModelloTabellaDepositiPrelievi.addRow(riga); 
+            
+          }
+                  
+       }
+        }
     /**
      * @param args the command line arguments
      */
@@ -260,9 +494,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> ComboBox_TipoMovimento;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

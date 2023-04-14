@@ -2676,6 +2676,26 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
        // System.out.println(mod.getModificaEffettuata());        
         DepositiPrelievi_Caricatabella();
+        
+        
+        
+      /*            String tipo;
+                    String aggiornata2[]=MappaCryptoWallet.get(id2);
+                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    aggiornata2[18]=tipo;
+                    aggiornata2[5]="TRASFERIMENTO TRA WALLET";
+                    aggiornata2[19]="0";
+                    aggiornata2[20]=id;
+                    String aggiornata[]=MappaCryptoWallet.get(id);
+                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    aggiornata[18]=tipo;
+                    aggiornata[5]="TRASFERIMENTO TRA WALLET";
+                    aggiornata[19]="0";
+                    aggiornata[20]=id2;
+                    MappaCryptoWallet.put(id, aggiornata);
+                    MappaCryptoWallet.put(id2, aggiornata2);*/
+        
+        
         }
 
         

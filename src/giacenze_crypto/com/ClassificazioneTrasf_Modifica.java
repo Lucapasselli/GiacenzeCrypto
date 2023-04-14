@@ -49,17 +49,26 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         int ntipo=0;
         if (tipomov.equalsIgnoreCase("PWN")){
             ntipo=2;
+                        TransferNO();
         }else if (tipomov.equalsIgnoreCase("PCO")){
             ntipo=1;
+                        TransferNO();
         }else if (tipomov.equalsIgnoreCase("PTW")){
             ntipo=3;
+                        TransferSI();
         }else if (tipomov.equalsIgnoreCase("DTW")){
             ntipo=3;
+                        TransferSI();
         }else if (tipomov.equalsIgnoreCase("DAI")){
             ntipo=1;
+                        TransferNO();
         }else if (tipomov.equalsIgnoreCase("DCZ")){
             ntipo=2;
-        }
+                        TransferNO();
+        }else{  
+           // jTable2.setEnabled(false);
+            TransferNO();
+            }
         String papele[];
         if (ID.split("_")[4].equalsIgnoreCase("DC")){
             papele=new String[]{"- nessuna selezione -",
@@ -144,6 +153,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         jLabel2.setText("Scegli la tipologia di movimento dalla lista :");
 
         ComboBox_TipoMovimento.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        ComboBox_TipoMovimento.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ComboBox_TipoMovimentoItemStateChanged(evt);
+            }
+        });
 
         jButton1.setText("OK");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -317,6 +331,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String dettaglio="";
         String attuale[]=MappaCryptoWallet.get(IDTrans);
         String controparte=attuale[20];
+        boolean trasferimento=false;
         if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
           //in questo caso sono in presenza di un movimento di deposito
           switch(scelta){
@@ -331,6 +346,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
               case 3 -> {
                   descrizione="TRASFERIMENTO TRA WALLET";
                   dettaglio="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                  trasferimento=true;
                 }
               default -> descrizione="DEPOSITO CRYPTO";
                   //qui si va solo in caso la scelata sia nessuna
@@ -349,6 +365,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
               case 3 -> {
                   descrizione="TRASFERIMENTO TRA WALLET";
                   dettaglio="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                  trasferimento=true;
                 }
               default -> descrizione="PRELIEVO CRYPTO";
           }
@@ -356,17 +373,118 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         attuale[5]=descrizione;
         attuale[18]=dettaglio;
         attuale[20]="";
-        MappaCryptoWallet.put(IDTrans, attuale);
+       
         if (!controparte.equalsIgnoreCase("")){
             //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
             RiportaIDTransaSituazioneIniziale(controparte);
         }
+        if (!trasferimento){
+            MappaCryptoWallet.put(IDTrans, attuale);
+        }
+        else{
+            
+            if (jTable2.getSelectedRow()>=0){
+            int rigaselezionata=jTable2.getSelectedRow();
+            String IDTransazione = jTable2.getValueAt(rigaselezionata, 0).toString();
+            System.out.println(IDTransazione);
+            //ok id transazione selezionata trovato adesso vediamo del resto
+            
+                        // qua metto tutto quello che serve per l'associazione con la controparte in caso di trasferimento
+                     /*            String tipo;
+                    String aggiornata2[]=MappaCryptoWallet.get(id2);
+                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    aggiornata2[18]=tipo;
+                    aggiornata2[5]="TRASFERIMENTO TRA WALLET";
+                    aggiornata2[19]="0";
+                    aggiornata2[20]=id;
+                    String aggiornata[]=MappaCryptoWallet.get(id);
+                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    aggiornata[18]=tipo;
+                    aggiornata[5]="TRASFERIMENTO TRA WALLET";
+                    aggiornata[19]="0";
+                    aggiornata[20]=id2;
+                    MappaCryptoWallet.put(id, aggiornata);
+                    MappaCryptoWallet.put(id2, aggiornata2);*/
+        }else{
+                //in questo caso mando fuori un messaggio che dice di selezionare un movimento di conroparte per andare avanti
+            }
+
+        }
+        
+        
+        
+        
         JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
         "Modifiche fatte!",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
         ModificaEffettuata=true;
         this.dispose();
+        
+
+        
+        
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void ComboBox_TipoMovimentoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoMovimentoItemStateChanged
+        // TODO add your handling code here:
+      //  System.out.println("cambio");
+        int scelta=this.ComboBox_TipoMovimento.getSelectedIndex();
+        String descrizione,dettaglio;
+                if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
+          //in questo caso sono in presenza di un movimento di deposito
+          switch(scelta){
+              case 1 -> {
+                  descrizione="AIRDROP o SIMILARE";
+                  dettaglio="DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
+                  TransferNO();
+                }
+              case 2 -> {
+                  descrizione="DEPOSITO CRYPTO";
+                  dettaglio="DCZ - Deposito a costo zero (no plusvalenza)";
+                  TransferNO();
+                }
+              case 3 -> {
+                  descrizione="TRASFERIMENTO TRA WALLET";
+                  dettaglio="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                  TransferSI();
+                }
+              default -> {descrizione="DEPOSITO CRYPTO";
+               TransferNO();}
+                  //qui si va solo in caso la scelata sia nessuna
+          }
+        }else{
+          //in questo caso sono in presenza di un movimento di prelievo
+          switch(scelta){
+              case 1 -> {
+                  descrizione="CASHOUT o SIMILARI";
+                  dettaglio="PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
+                  TransferNO();
+                }
+              case 2 -> {
+                  descrizione="PRELIEVO CRYPTO";
+                  dettaglio="PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+                  TransferNO();
+                }
+              case 3 -> {
+                  descrizione="TRASFERIMENTO TRA WALLET";
+                  dettaglio="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                  TransferSI();
+                }
+              default -> {descrizione="PRELIEVO CRYPTO";
+              TransferNO();}
+          }
+        }
+    }//GEN-LAST:event_ComboBox_TipoMovimentoItemStateChanged
+
+    private void TransferSI(){
+                  jTable2.setEnabled(true);
+                  jLabel3.setEnabled(true);
+                  Tabelle.ColoraRigheTabellaCrypto(jTable2);
+    }
+    private void TransferNO(){
+                  jTable2.setEnabled(false);
+                  jLabel3.setEnabled(false);
+                  Tabelle.ColoraTabelladiGrigio(jTable2);
+    }
     
         public void RiportaIDTransaSituazioneIniziale(String ID){
             String descrizione;
@@ -388,7 +506,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         public void CompilaTabellaMovimetiAssociabili(String ID){
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable2.getModel();
         PulisciTabella(ModelloTabellaDepositiPrelievi);
-        Tabelle.ColoraRigheTabellaCrypto(jTable2);
+        //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         String attuale[]=MappaCryptoWallet.get(ID);
         long DataOraAttuale=Calcoli.ConvertiDatainLong(attuale[1]);
         String TipoMovimentoAttuale=attuale[0].split("_")[4].trim();
@@ -407,8 +525,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             TipoMovimentoRichiesto="PC";
         }
         BigDecimal escursioneMassima=new BigDecimal(5);
-        BigDecimal QtaAttualeMax=QtaAttuale.add(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100)));
-        BigDecimal QtaAttualeMin=QtaAttuale.subtract(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100)));
+        BigDecimal QtaAttualeMax=QtaAttuale.add(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
+        BigDecimal QtaAttualeMin=QtaAttuale.subtract(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
 
         
         
@@ -440,17 +558,32 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
        
            if (TipoMovimento.equalsIgnoreCase("DC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
           {  
-              BigDecimal Qta=new BigDecimal(v[13]);
+              BigDecimal Qta=new BigDecimal(v[13]).abs();
               long DataOra=Calcoli.ConvertiDatainLong(v[1]);
              // System.out.println(DataOra+" - "+DataOraAttuale);
-              if (MonetaAttuale.equalsIgnoreCase(v[11].trim())/*&&
+              if (MonetaAttuale.equalsIgnoreCase(v[11].trim())&&//v[11] è appunto la moneta
                       TipoMovimentoRichiesto.equalsIgnoreCase(TipoMovimento)&&
                       Qta.compareTo(QtaAttualeMax)==-1&&Qta.compareTo(QtaAttualeMin)==1&&
                       DataOra<(DataOraAttuale+86400000)&&
-                      DataOra>(DataOraAttuale-86400000)*/){
+                      DataOra>(DataOraAttuale-86400000)){
                ModelloTabellaDepositiPrelievi.addRow(riga); 
             }
-           }   
+              
+           } 
+           else if (TipoMovimento.equalsIgnoreCase("PC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
+          {  
+              BigDecimal Qta=new BigDecimal(v[10]).abs();
+              long DataOra=Calcoli.ConvertiDatainLong(v[1]);
+             // System.out.println(DataOra+" - "+DataOraAttuale);
+              if (MonetaAttuale.equalsIgnoreCase(v[8].trim())&&//v[11] è appunto la moneta
+                      TipoMovimentoRichiesto.equalsIgnoreCase(TipoMovimento)&&
+                      Qta.compareTo(QtaAttualeMax)==-1&&Qta.compareTo(QtaAttualeMin)==1&&
+                      DataOra<(DataOraAttuale+86400000)&&
+                      DataOra>(DataOraAttuale-86400000)){
+               ModelloTabellaDepositiPrelievi.addRow(riga); 
+            }
+              
+           }
 
          //   ModelloTabellaDepositiPrelievi.addRow(riga); 
             

@@ -103,14 +103,31 @@
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="jScrollPane1" min="-2" pref="759" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" attributes="0">
-                                              <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="TransazioniCryptoFiltro_Text" max="32767" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Group type="102" attributes="0">
+                                                      <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                                                      <EmptySpace max="-2" attributes="0"/>
+                                                      <Component id="TransazioniCryptoFiltro_Text" max="32767" attributes="0"/>
+                                                  </Group>
+                                                  <Component id="TransazioniCrypto_CheckBox_EscludiTI" max="32767" attributes="0"/>
+                                              </Group>
                                           </Group>
-                                          <Component id="TransazioniCrypto_CheckBox_EscludiTI" max="32767" attributes="0"/>
+                                          <Group type="102" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
+                                                      <Component id="LabelValore" min="-2" pref="82" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <Group type="102" alignment="0" attributes="0">
+                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                                                  </Group>
+                                              </Group>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                          </Group>
                                       </Group>
                                   </Group>
                               </Group>
@@ -132,10 +149,17 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="TransazioniCrypto_ScrollPane" pref="258" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jScrollPane1" min="-2" pref="230" max="-2" attributes="0"/>
-                          <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jScrollPane1" min="-2" pref="230" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                              <Component id="LabelValore" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_EscludiTI" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -389,6 +413,19 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_AnnullaActionPerformed"/>
               </Events>
             </Component>
+            <Component class="javax.swing.JLabel" name="LabelValore">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Valore"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="jButton1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="jButton1"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+              </Events>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="DepositiPrelievi">
@@ -411,9 +448,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jScrollPane2" alignment="0" pref="1048" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="DepositiPrelievi_Bottone_AssegnazionAutomatica" min="-2" max="-2" attributes="0"/>
+                              <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
-                              <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                              <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
@@ -433,8 +470,8 @@
                       <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="DepositiPrelievi_Bottone_AssegnazionAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -507,20 +544,20 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_AssegnazionAutomatica">
+            <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_AssegnazioneAutomatica">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Assegnazione Automatica"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="jButton1">
+            <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_AssegnazioneManuale">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Carica"/>
+                <Property name="text" type="java.lang.String" value="Modifica movimento"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JCheckBox" name="DepositiPrelievi_CheckBox_movimentiClassificati">

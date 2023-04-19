@@ -19,8 +19,10 @@ import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -144,11 +146,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCryptoFiltro_Text = new javax.swing.JTextField();
         TransazioniCrypto_CheckBox_EscludiTI = new javax.swing.JCheckBox();
         TransazioniCrypto_Bottone_Annulla = new javax.swing.JButton();
+        LabelValore = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         DepositiPrelievi = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         DepositiPrelievi_Tabella = new javax.swing.JTable();
-        DepositiPrelievi_Bottone_AssegnazionAutomatica = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica = new javax.swing.JButton();
+        DepositiPrelievi_Bottone_AssegnazioneManuale = new javax.swing.JButton();
         DepositiPrelievi_CheckBox_movimentiClassificati = new javax.swing.JCheckBox();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -342,6 +346,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        LabelValore.setText("Valore");
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -362,13 +375,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 759, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(jLabel7)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCryptoFiltro_Text))
-                                    .addComponent(TransazioniCrypto_CheckBox_EscludiTI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                                .addComponent(jLabel7)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(TransazioniCryptoFiltro_Text))
+                                            .addComponent(TransazioniCrypto_CheckBox_EscludiTI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                                .addGap(28, 28, 28)
+                                                .addComponent(LabelValore, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                                .addGap(18, 18, 18)
+                                                .addComponent(jButton1)))
+                                        .addGap(0, 0, Short.MAX_VALUE)))))
                         .addGap(6, 6, 6))))
         );
         TransazioniCryptoLayout.setVerticalGroup(
@@ -382,10 +406,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_Annulla))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addComponent(LabelValore)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -441,17 +471,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
         }
 
-        DepositiPrelievi_Bottone_AssegnazionAutomatica.setText("Assegnazione Automatica");
-        DepositiPrelievi_Bottone_AssegnazionAutomatica.addActionListener(new java.awt.event.ActionListener() {
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("Assegnazione Automatica");
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed(evt);
+                DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(evt);
             }
         });
 
-        jButton1.setText("Carica");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setText("Modifica movimento");
+        DepositiPrelievi_Bottone_AssegnazioneManuale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed(evt);
             }
         });
 
@@ -472,9 +502,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1048, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addComponent(DepositiPrelievi_Bottone_AssegnazionAutomatica)
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1))
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale))
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -489,8 +519,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(DepositiPrelievi_Bottone_AssegnazionAutomatica)
-                    .addComponent(jButton1)))
+                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
+                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)))
         );
 
         CDC.addTab("Calssificazione Trasferimenti Crypto", DepositiPrelievi);
@@ -1306,7 +1336,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(CDC_Label_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(CDC_Text_Giorni))
-                    .addComponent(CDC, javax.swing.GroupLayout.DEFAULT_SIZE, 1060, Short.MAX_VALUE))
+                    .addComponent(CDC))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -2658,7 +2688,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
           }
     }//GEN-LAST:event_CDC_OpzioniComponentShown
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
         // TODO add your handling code here:
 
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -2669,10 +2699,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
         ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(IDTransazione);
         mod.setLocationRelativeTo(this);
         mod.setVisible(true);
+        //System.out.println(mod.getModificaEffettuata());
         if (mod.getModificaEffettuata()){
          this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
          this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
          this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+         this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
        // System.out.println(mod.getModificaEffettuata());        
         DepositiPrelievi_Caricatabella();
@@ -2700,7 +2732,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         
         // adesso devo caricarci i dettagli del movimento selezionato etc...
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
 
     private void DepositiPrelievi_Caricatabella()
             {
@@ -2776,7 +2808,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelieviComponentShown
 
-    private void DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed
+    private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
         // TODO add your handling code here:
         //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
         int numeromodifiche=0;
@@ -2850,7 +2882,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
         this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         DepositiPrelievi_Caricatabella();
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazionAutomaticaActionPerformed
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
         // TODO add your handling code here:
@@ -2862,6 +2894,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
        // System.out.println("cambio");
        DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        Deque<String> stack = new ArrayDeque<String>();
+        stack.push("a");
+        stack.push("b");
+        System.out.println(stack.size());
+        System.out.println(stack.pop());
+        System.out.println(stack.pop());
+        
+        
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     
         public void TransazioniCrypto_CompilaTextPaneDatiMovimento() {
@@ -2919,7 +2964,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
         String ValoreTransazioneCSV=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 14).toString();
         String Plusvalenza=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 19).toString();
-        String Note=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21).toString();
+        String Note=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21).toString().replace("|&£|","<br>&#9");
         String Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20).toString();
       //  String MacAddress = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
         
@@ -2934,8 +2979,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "VALORE TRANSAZIONE :&#9&#9&#9<b>"+ValoreTransazione+"</b><br>"+
                 "VALORE TRANSAZIONE AL PREZZO DI CARICO :&#9<b>"+ValoreTransazionePrezzoCarico+"</b><br>"+
                 "PLUSVALENZA :&#9&#9&#9<b>"+Plusvalenza+"</b><br>"+
-                "RIFERIMENTI :&#9&#9&#9<b>"+Note+"</b><br>"+
-                "NOTE :&#9&#9&#9<b>"+Riferimenti+"</b><br>";
+                "RIFERIMENTI :&#9&#9&#9<b>"+Riferimenti+"</b><br>"+
+                "NOTE :&#9<b>"+Note+"</b><br>";
         
         this.TransazioniCryptoTextPane.setText(daAppendere);
 }
@@ -3296,9 +3341,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet;
     private javax.swing.JTextField CDC_Text_Giorni;
     private javax.swing.JPanel DepositiPrelievi;
-    private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazionAutomatica;
+    private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneAutomatica;
+    private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneManuale;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;
+    private javax.swing.JLabel LabelValore;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;

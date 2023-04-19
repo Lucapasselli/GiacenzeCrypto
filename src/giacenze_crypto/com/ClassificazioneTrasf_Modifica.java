@@ -89,6 +89,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
             this.ComboBox_TipoMovimento.setModel(model);
             this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
+            String v[]=MappaCryptoWallet.get(ID);
+            TextArea_Note.setText(v[21].replace("|&£|" ,"\n"));
             CompilaTabellaMovimetiAssociabili(ID);
 
         
@@ -136,15 +138,16 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         ComboBox_TipoMovimento = new javax.swing.JComboBox<>();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        Bottone_OK = new javax.swing.JButton();
+        Bottone_Annulla = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        Tabella_MovimentiAbbinati = new javax.swing.JTable();
         jLabel4 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        TextArea_Note = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -159,17 +162,17 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             }
         });
 
-        jButton1.setText("OK");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        Bottone_OK.setText("OK");
+        Bottone_OK.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                Bottone_OKActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Annulla");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        Bottone_Annulla.setText("Annulla");
+        Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                Bottone_AnnullaActionPerformed(evt);
             }
         });
 
@@ -217,7 +220,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             jTable1.getColumnModel().getColumn(5).setMaxWidth(100);
         }
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        Tabella_MovimentiAbbinati.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -233,29 +236,33 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane3.setViewportView(jTable2);
-        if (jTable2.getColumnModel().getColumnCount() > 0) {
-            jTable2.getColumnModel().getColumn(0).setMinWidth(1);
-            jTable2.getColumnModel().getColumn(0).setPreferredWidth(1);
-            jTable2.getColumnModel().getColumn(0).setMaxWidth(1);
-            jTable2.getColumnModel().getColumn(1).setMinWidth(120);
-            jTable2.getColumnModel().getColumn(1).setPreferredWidth(120);
-            jTable2.getColumnModel().getColumn(1).setMaxWidth(120);
-            jTable2.getColumnModel().getColumn(2).setMinWidth(200);
-            jTable2.getColumnModel().getColumn(2).setPreferredWidth(200);
-            jTable2.getColumnModel().getColumn(2).setMaxWidth(200);
-            jTable2.getColumnModel().getColumn(3).setMinWidth(200);
-            jTable2.getColumnModel().getColumn(3).setPreferredWidth(200);
-            jTable2.getColumnModel().getColumn(3).setMaxWidth(200);
-            jTable2.getColumnModel().getColumn(4).setMinWidth(60);
-            jTable2.getColumnModel().getColumn(4).setPreferredWidth(60);
-            jTable2.getColumnModel().getColumn(4).setMaxWidth(60);
-            jTable2.getColumnModel().getColumn(5).setMinWidth(100);
-            jTable2.getColumnModel().getColumn(5).setPreferredWidth(100);
-            jTable2.getColumnModel().getColumn(5).setMaxWidth(100);
+        jScrollPane3.setViewportView(Tabella_MovimentiAbbinati);
+        if (Tabella_MovimentiAbbinati.getColumnModel().getColumnCount() > 0) {
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(0).setMinWidth(1);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(0).setPreferredWidth(1);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(0).setMaxWidth(1);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setMinWidth(120);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setPreferredWidth(120);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setMaxWidth(120);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(2).setMinWidth(200);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(2).setPreferredWidth(200);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(2).setMaxWidth(200);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(3).setMinWidth(200);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(3).setPreferredWidth(200);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(3).setMaxWidth(200);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(4).setMinWidth(60);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(4).setPreferredWidth(60);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(4).setMaxWidth(60);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(5).setMinWidth(100);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(5).setPreferredWidth(100);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(5).setMaxWidth(100);
         }
 
         jLabel4.setText("Note :");
+
+        TextArea_Note.setColumns(20);
+        TextArea_Note.setRows(5);
+        jScrollPane1.setViewportView(TextArea_Note);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -267,21 +274,21 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     .addComponent(ComboBox_TipoMovimento, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1)
+                        .addComponent(Bottone_OK)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2))
+                        .addComponent(Bottone_Annulla))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
                     .addComponent(jScrollPane2)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -296,101 +303,156 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ComboBox_TipoMovimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton1))
+                    .addComponent(Bottone_Annulla)
+                    .addComponent(Bottone_OK))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AnnullaActionPerformed
         // TODO add your handling code here:
         this.dispose();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_Bottone_AnnullaActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void Bottone_OKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OKActionPerformed
         // TODO add your handling code here:
-            //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
-    //PCO -> Cashout o similare (prelievo)
-    //PTW -> Trasferimento tra Wallet (prelievo)
-    //DTW -> Trasferimento tra Wallet (deposito)
-    //DAI -> Airdrop o similare (deposito)
-    //DCZ -> Costo di carico 0 (deposito)
-        int scelta=this.ComboBox_TipoMovimento.getSelectedIndex();
-        String descrizione="";
-        String dettaglio="";
-        String attuale[]=MappaCryptoWallet.get(IDTrans);
-        String controparte=attuale[20];
-        boolean trasferimento=false;
-        if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
-          //in questo caso sono in presenza di un movimento di deposito
-          switch(scelta){
-              case 1 -> {
-                  descrizione="AIRDROP o SIMILARE";
-                  dettaglio="DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
+        //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
+        //PCO -> Cashout o similare (prelievo)
+        //PTW -> Trasferimento tra Wallet (prelievo)
+        //DTW -> Trasferimento tra Wallet (deposito)
+        //DAI -> Airdrop o similare (deposito)
+        //DCZ -> Costo di carico 0 (deposito)
+        int scelta = this.ComboBox_TipoMovimento.getSelectedIndex();
+        String descrizione = "";
+        String dettaglio = "";
+        //String Note=jTextField1.getText();
+        String Note=TextArea_Note.getText().replace("\n", "|&£|");
+        String attuale[] = MappaCryptoWallet.get(IDTrans);
+        String controparte = attuale[20];
+        String plusvalenza="Da calcolare";
+        boolean trasferimento = false;
+        if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
+            //in questo caso sono in presenza di un movimento di deposito
+            switch (scelta) {
+                case 1 -> {
+                    descrizione = "AIRDROP o SIMILARE";
+                    dettaglio = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
                 }
-              case 2 -> {
-                  descrizione="DEPOSITO CRYPTO";
-                  dettaglio="DCZ - Deposito a costo zero (no plusvalenza)";
+                case 2 -> {
+                    descrizione = "DEPOSITO CRYPTO";
+                    dettaglio = "DCZ - Deposito a costo zero (no plusvalenza)";
+                    plusvalenza="0";
                 }
-              case 3 -> {
-                  descrizione="TRASFERIMENTO TRA WALLET";
-                  dettaglio="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                  trasferimento=true;
+                case 3 -> {
+                    descrizione = "TRASFERIMENTO TRA WALLET";
+                    dettaglio = "DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    plusvalenza="0";
+                    trasferimento = true;
                 }
-              default -> descrizione="DEPOSITO CRYPTO";
-                  //qui si va solo in caso la scelata sia nessuna
-          }
-        }else{
-          //in questo caso sono in presenza di un movimento di prelievo
-          switch(scelta){
-              case 1 -> {
-                  descrizione="CASHOUT o SIMILARI";
-                  dettaglio="PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
+                default ->
+                    descrizione = "DEPOSITO CRYPTO";
+                //qui si va solo in caso la scelata sia nessuna
+            }
+        } else {
+            //in questo caso sono in presenza di un movimento di prelievo
+            switch (scelta) {
+                case 1 -> {
+                    descrizione = "CASHOUT o SIMILARI";
+                    dettaglio = "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
                 }
-              case 2 -> {
-                  descrizione="PRELIEVO CRYPTO";
-                  dettaglio="PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+                case 2 -> {
+                    descrizione = "PRELIEVO CRYPTO";
+                    dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+                    plusvalenza="0";
                 }
-              case 3 -> {
-                  descrizione="TRASFERIMENTO TRA WALLET";
-                  dettaglio="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                  trasferimento=true;
+                case 3 -> {
+                    descrizione = "TRASFERIMENTO TRA WALLET";
+                    dettaglio = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    plusvalenza="0";
+                    trasferimento = true;
                 }
-              default -> descrizione="PRELIEVO CRYPTO";
-          }
+                default ->
+                    descrizione = "PRELIEVO CRYPTO";
+            }
         }
-        attuale[5]=descrizione;
-        attuale[18]=dettaglio;
-        attuale[20]="";
-       
-        if (!controparte.equalsIgnoreCase("")){
+
+        if (!controparte.equalsIgnoreCase("")) {
             //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
             RiportaIDTransaSituazioneIniziale(controparte);
         }
-        if (!trasferimento){
+
+        if (!trasferimento) {
+            attuale[5] = descrizione;
+            attuale[18] = dettaglio;
+            attuale[19] = plusvalenza;
+            attuale[20] = "";
+            attuale[21] = Note;
+            //in teoria avendo preso l'oggetto e modificandone il contenuto non serve questa seconda parte
             MappaCryptoWallet.put(IDTrans, attuale);
+            JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                    "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            ModificaEffettuata = true;
+            this.dispose();
+        } else {
+
+            if (Tabella_MovimentiAbbinati.getSelectedRow() >= 0) {
+                int rigaselezionata = Tabella_MovimentiAbbinati.getSelectedRow();
+                String IDTransazioneControparte = Tabella_MovimentiAbbinati.getValueAt(rigaselezionata, 0).toString();
+
+                //devo aggiungere che dettaglioTrasferimento deve essere vuoto!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                // System.out.println(IDTransazione);
+                String tipoControparte;
+                String attualeControparte[] = MappaCryptoWallet.get(IDTransazioneControparte);
+                //se il movimento selezionato non è associato a nulla alloro lo associo, altrimenti faccio uscire un messaggio di errore
+                if (attualeControparte[20].equalsIgnoreCase("")) {
+                    if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
+                        tipoControparte = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    } else {
+                        tipoControparte = "DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                    }
+                    attuale[5] = descrizione;
+                    attualeControparte[5] = descrizione;
+                    attuale[18] = dettaglio;
+                    attualeControparte[18] = tipoControparte;
+                    attuale[20] = IDTransazioneControparte;
+                    attualeControparte[20] = IDTrans;
+                    attuale[19] = "0";
+                    attualeControparte[19] = "0";
+                    attuale[21] = Note;
+                    MappaCryptoWallet.put(IDTrans, attuale);
+                    MappaCryptoWallet.put(IDTransazioneControparte, attualeControparte);
+
+                    JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                            "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    ModificaEffettuata = true;
+                    this.dispose();
+
+                } else {
+                    JOptionPane.showConfirmDialog(this, "Il movimento selezionato dalla tabella è già abbinato ad un altro movimento!\n"
+                            + "Scegliere altro movimento oppure disabbinare dal movimento precedentemente associato e ripetere la procedura.",
+                        "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
+            } else {
+                //in questo caso mando fuori un messaggio che dice di selezionare un movimento di conroparte per andare avanti
+                JOptionPane.showConfirmDialog(this, "Per questo tipo di movimentazione è obbligatorio selezionare il movimento corrispondente nella tabella!",
+                        "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+            }
+
         }
-        else{
-            
-            if (jTable2.getSelectedRow()>=0){
-            int rigaselezionata=jTable2.getSelectedRow();
-            String IDTransazione = jTable2.getValueAt(rigaselezionata, 0).toString();
-            System.out.println(IDTransazione);
-            //ok id transazione selezionata trovato adesso vediamo del resto
-            
-                        // qua metto tutto quello che serve per l'associazione con la controparte in caso di trasferimento
-                     /*            String tipo;
+
+        // this.dispose();
+        /*            String tipo;
                     String aggiornata2[]=MappaCryptoWallet.get(id2);
                     if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     aggiornata2[18]=tipo;
@@ -405,24 +467,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     aggiornata[20]=id2;
                     MappaCryptoWallet.put(id, aggiornata);
                     MappaCryptoWallet.put(id2, aggiornata2);*/
-        }else{
-                //in questo caso mando fuori un messaggio che dice di selezionare un movimento di conroparte per andare avanti
-            }
 
-        }
-        
-        
-        
-        
-        JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-        "Modifiche fatte!",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-        ModificaEffettuata=true;
-        this.dispose();
-        
-
-        
-        
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_Bottone_OKActionPerformed
 
     private void ComboBox_TipoMovimentoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoMovimentoItemStateChanged
         // TODO add your handling code here:
@@ -476,14 +522,14 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     }//GEN-LAST:event_ComboBox_TipoMovimentoItemStateChanged
 
     private void TransferSI(){
-                  jTable2.setEnabled(true);
+                  Tabella_MovimentiAbbinati.setEnabled(true);
                   jLabel3.setEnabled(true);
-                  Tabelle.ColoraRigheTabellaCrypto(jTable2);
+                  Tabelle.ColoraRigheTabellaCrypto(Tabella_MovimentiAbbinati);
     }
     private void TransferNO(){
-                  jTable2.setEnabled(false);
+                  Tabella_MovimentiAbbinati.setEnabled(false);
                   jLabel3.setEnabled(false);
-                  Tabelle.ColoraTabelladiGrigio(jTable2);
+                  Tabelle.ColoraTabelladiGrigio(Tabella_MovimentiAbbinati);
     }
     
         public void RiportaIDTransaSituazioneIniziale(String ID){
@@ -498,13 +544,14 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
              }
         attuale[5]=descrizione;
         attuale[18]="";
+        attuale[19]="Da calcolare";
         attuale[20]="";
         MappaCryptoWallet.put(ID, attuale);
         }
 
 
         public void CompilaTabellaMovimetiAssociabili(String ID){
-        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable2.getModel();
+        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
         PulisciTabella(ModelloTabellaDepositiPrelievi);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         String attuale[]=MappaCryptoWallet.get(ID);
@@ -627,17 +674,18 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Bottone_Annulla;
+    private javax.swing.JButton Bottone_OK;
     private javax.swing.JComboBox<String> ComboBox_TipoMovimento;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JTable Tabella_MovimentiAbbinati;
+    private javax.swing.JTextArea TextArea_Note;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
-    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }

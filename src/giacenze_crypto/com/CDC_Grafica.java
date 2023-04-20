@@ -2897,12 +2897,28 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        Deque<String> stack = new ArrayDeque<String>();
-        stack.push("a");
-        stack.push("b");
+        Deque<String[]> stack = new ArrayDeque<String[]>();
+       // stack.push("a");
+       // stack.push("b");
         System.out.println(stack.size());
-        System.out.println(stack.pop());
-        System.out.println(stack.pop());
+       // System.out.println(stack.pop());
+       // System.out.println(stack.pop());
+        Map<String, Deque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (String[] v : MappaCryptoWallet.values()) {
+            //Se deposito crypto non associato o prelievo crypto non associato non lo considero e lo salto - DC-PC()
+            //Se è un trasferimento interno lo salto - TI
+            //se è un trasferimento tra wallet lo salto - PC-DC(PTW-DTW)
+            //se deposito airdrop lo considero - DC(DAI)
+            //se deposito a zero lo considero - DC(DCZ)
+            //se cashout lo levo e calcolo la plusvalenza - PC(PCO)
+            //se è un prelievo sconosciuto lo tolgo dallo stack ma non calcolo plusvalenza. - PC(PWN)
+            //se è uno scambio crypto tolgo la moneta venduta, aggiungo moneta acquistata e riporto valore LIFO su moneta acquistata - SC
+            //se è deposito fiat lo salto - DF
+            //se è acquisto crypto aggiungo a stack - AC
+            //se è vendita crypto tolgo da stack e calcolo plus in base al lifo - VC
+            //da completare con altre casistiche........................................................................
+            String IDTransazione=v[0];
+        }
         
         
         

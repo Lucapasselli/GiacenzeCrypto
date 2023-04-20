@@ -348,6 +348,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 case 1 -> {
                     descrizione = "AIRDROP o SIMILARE";
                     dettaglio = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
+                    plusvalenza=attuale[15];
                 }
                 case 2 -> {
                     descrizione = "DEPOSITO CRYPTO";

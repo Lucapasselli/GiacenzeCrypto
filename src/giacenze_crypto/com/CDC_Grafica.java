@@ -1578,6 +1578,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
        bure.close();
        fire.close();
+                File movPers=new File (CDC_FiatWallet_FileTipiMovimentiDBPers);
+        if (!movPers.exists()) movPers.createNewFile();
                FileReader fires = new FileReader(CDC_FiatWallet_FileTipiMovimentiDBPers); 
                BufferedReader bures = new BufferedReader(fires);
         
@@ -1999,7 +2001,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         CDC_FiatWallet_RigaTabella2[3]=Double.valueOf(splittata[Colonna]);
                         BigDecimal Adde2 = new BigDecimal(tempo.split(";")[1]+splittata[Colonna]);
                         Totale=Totale.add(Adde2);
-                        CDC_FiatWallet_RigaTabella2[4]=Double.parseDouble(Totale.toString());
+                        CDC_FiatWallet_RigaTabella2[4]=Double.valueOf(Totale.toString());
                         if (CDC_FiatWallet_MappaCausali.get(Descrizione) == null) {
                             // se è una controparte nuova allora la aggiungo alla mappa
                             // altrimenti la aggiorno con il valore corretto
@@ -2148,10 +2150,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     Object CDC_CardWallet_RigaTabella2[]=new Object[4];
                     CDC_CardWallet_RigaTabella2[0]=splittata[0];
                     CDC_CardWallet_RigaTabella2[1]=splittata[1];
-                    CDC_CardWallet_RigaTabella2[2]=Double.parseDouble(splittata[Colonna]);
+                    CDC_CardWallet_RigaTabella2[2]=Double.valueOf(splittata[Colonna]);
                     BigDecimal Adde2 = new BigDecimal(splittata[Colonna]);
                     Totale=Totale.add(Adde2);
-                    CDC_CardWallet_RigaTabella2[3]=Double.parseDouble(Totale.toString());
+                    CDC_CardWallet_RigaTabella2[3]=Double.valueOf(Totale.toString());
                     CDC_CardWallet_ModelloTabella2.addRow(CDC_CardWallet_RigaTabella2);
 
                     if ((new BigDecimal(splittata[3])).compareTo(BigDecimal.ZERO) > 0)
@@ -2664,7 +2666,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
         Iterator I=Cancellare.iterator();
         while (I.hasNext()){
-            MappaCryptoWallet.remove(I.next());
+            MappaCryptoWallet.remove(I.next().toString());
         }
         }
            // MappaCryptoWallet.clear();
@@ -2900,7 +2902,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Deque<String[]> stack = new ArrayDeque<String[]>();
        // stack.push("a");
        // stack.push("b");
-        System.out.println(stack.size());
+       // System.out.println(stack.size());
        // System.out.println(stack.pop());
        // System.out.println(stack.pop());
         Map<String, Deque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -2918,12 +2920,61 @@ public class CDC_Grafica extends javax.swing.JFrame {
             //se è vendita crypto tolgo da stack e calcolo plus in base al lifo - VC
             //da completare con altre casistiche........................................................................
             String IDTransazione=v[0];
+            String IDTS[]=IDTransazione.split("_");
+            //per questa prima fase intanto ignoro tutti i prelievi, una volta finito di scrivere la funzione
+            //riprenderò in mano questa parte per aggiungere tutte le casistiche
+            if (IDTS[4].equalsIgnoreCase("DC")||(IDTS[4].equalsIgnoreCase("PC"))){
+                
+            }else if (IDTS[4].equalsIgnoreCase("DF")){ //Deposito Fiat FARE!!!!!
+                
+            }else if (IDTS[4].equalsIgnoreCase("PF")){ //Prelievo Fiat FARE!!!!!
+                
+            }else if (IDTS[4].equalsIgnoreCase("AC")){ //Acquisto Crypto FARE!!!!!
+              //  TransazioniCrypto_InserisciValoreStack(CryptoStack, Moneta);
+             // TransazioniCrypto_Stack_InserisciValore(Map<String, Deque> CryptoStack, String Moneta,String Qta,String Valore);
+            // System.out.println(v[11]+" "+v[13]+" "+v[15]);
+             String Moneta=v[11];
+             String Qta=v[13];
+             String Valore=v[15];
+             //bisogna ora capire se vale la pena metterci dentro anche la data o meno
+             TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                
+            }else if (IDTS[4].equalsIgnoreCase("VC")){ //Vendita Crypto FARE!!!!!
+                
+            }else if (IDTS[4].equalsIgnoreCase("SC")){ //Scambio Crypto FARE!!!!!
+                
+            }else if (IDTS[4].equalsIgnoreCase("RW")){ //Reward varie FARE!!!!!
+                
+            }else if (IDTS[4].equalsIgnoreCase("TI")){ //Trasferimento interno FARE!!!!!
+                
+            }else if (IDTS[4].equalsIgnoreCase("CM")){ //Commissioni FARE!!!!!
+                
+            }else { //Qualcosa di non contemplato
+                System.out.println(IDTransazione);
+            }
         }
         
         
         
     }//GEN-LAST:event_jButton1ActionPerformed
-
+public void TransazioniCrypto_Stack_InserisciValore(Map<String, Deque> CryptoStack, String Moneta,String Qta,String Valore) {
+    
+    Deque<String[]> stack;
+    String valori[]=new String[3];
+    valori[0]=Moneta;
+    valori[1]=Qta;
+    valori[2]=Valore;
+    if (CryptoStack.get(Moneta)==null){
+        stack = new ArrayDeque<String[]>();
+        stack.push(valori);
+        CryptoStack.put(Moneta, stack);
+    }else{
+        stack=CryptoStack.get(Moneta);
+        stack.push(valori);
+        CryptoStack.put(Moneta, stack);
+    }
+   // System.out.println(Moneta +" - "+stack.size());
+}
     
         public void TransazioniCrypto_CompilaTextPaneDatiMovimento() {
         if (TransazioniCryptoTabella.getSelectedRow()>=0){

@@ -476,12 +476,15 @@ public class Importazioni {
                                     RT[13] = movimentoSplittato[3];
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     String valoreEuro = "";
+                                    
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) {
                                         valoreEuro = movimentoSplittato[7];
                                     }
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
                                         valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);                                        
                                     }
+                                    //System.out.println("-"+valoreEuro+"-");
+                                    //valoreEuro=new BigDecimal(1).toString();
                                     valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
                                     RT[15] = valoreEuro;
                                     BigDecimal QTA = new BigDecimal(movimentoSplittato[3]);

@@ -2942,6 +2942,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }else if (IDTS[4].equalsIgnoreCase("VC")){ //Vendita Crypto FARE!!!!!
                 
             }else if (IDTS[4].equalsIgnoreCase("SC")){ //Scambio Crypto FARE!!!!!
+                //nel caso degli scambi, prima recupero il valore dallo stack per la moneta venduta
+                //poi quel valore lo metto nello stack per la moneta acquistata
+                //e quindi lo stesso vaolre lo scrivo sulla riga dello scambio
                 
             }else if (IDTS[4].equalsIgnoreCase("RW")){ //Reward varie FARE!!!!!
                 
@@ -2957,7 +2960,55 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
         
     }//GEN-LAST:event_jButton1ActionPerformed
-public void TransazioniCrypto_Stack_InserisciValore(Map<String, Deque> CryptoStack, String Moneta,String Qta,String Valore) {
+ 
+public String TransazioniCrypto_Stack_TogliQta(Map<String, Deque> CryptoStack, String Moneta,String Qta) {
+    
+    //come ritorno ci invio il valore della movimentazione
+    String ritorno="";
+    Deque<String[]> stack;
+    BigDecimal qtaRimanente=new BigDecimal(Qta).abs();
+    BigDecimal costoTransazione=new BigDecimal("0");
+    //prima cosa individuo la moneta e prendo lo stack corrispondente
+    if (CryptoStack.get(Moneta)==null){
+        //ritorno="0";
+    }else{
+        stack=CryptoStack.get(Moneta);
+        while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 || stack.size()<1){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
+            String ultimoRecupero[];
+            ultimoRecupero=stack.pop();
+            BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]);
+            BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]);
+            if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta e minore o uguale alla qta rimanente allore
+                {
+                //imposto il nuovo valore su qtarimanente che è uguale a qtarimanente-qtaestratta
+                qtaRimanente=qtaRimanente.subtract(qtaEstratta);
+                //recupero il valore di quella transazione e la aggiungo al costoTransazione
+                costoTransazione=costoTransazione.add(costoEstratta);
+            }else{
+                //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
+                //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
+                //recuperare il prezzo della qta rimanente e la qta rimanente e riaggiungerla allo stack
+                qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
+                String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta).multiply(new BigDecimal(qtaRimanenteStack)).toPlainString();
+                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
+                stack.push(valori);
+                costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
+                qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
+            }
+            
+        }
+        //pop -> toglie dello stack l'ultimo e recupera il dato
+        //peek - > recupera solo il dato
+    }
+    ritorno=costoTransazione.toString();
+    
+    
+    return ritorno;
+   // System.out.println(Moneta +" - "+stack.size());
+}   
+    
+    public void TransazioniCrypto_Stack_InserisciValore(Map<String, Deque> CryptoStack, String Moneta,String Qta,String Valore) {
     
     Deque<String[]> stack;
     String valori[]=new String[3];

@@ -2905,7 +2905,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        // System.out.println(stack.size());
        // System.out.println(stack.pop());
        // System.out.println(stack.pop());
-        Map<String, Deque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String[] v : MappaCryptoWallet.values()) {
             //Se deposito crypto non associato o prelievo crypto non associato non lo considero e lo salto - DC-PC()
             //Se è un trasferimento interno lo salto - TI
@@ -2950,19 +2950,46 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 //nel caso degli scambi, prima recupero il valore dallo stack per la moneta venduta
                 //poi quel valore lo metto nello stack per la moneta acquistata
                 //e quindi lo stesso vaolre lo scrivo sulla riga dello scambio
+                String Moneta=v[8];
+                String Qta=new BigDecimal(v[10]).abs().toPlainString();
+                //System.out.println(Moneta+" - "+Qta);
+                //String Valore=v[15];
+                String PrzCarico;
+                //String Plusvalenza;
+                PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta);
+                //Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
+                v[17]=PrzCarico;
+                v[19]="0.00";  
+                String Moneta2=v[11];
+                String Qta2=v[13];
+                //System.out.println(Moneta2+" - "+Qta2+" - "+PrzCarico);
+                TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta2,Qta2,PrzCarico);
                 
             }else if (IDTS[4].equalsIgnoreCase("RW")){ //Reward varie
                 //IN QUESTO CASO DEVO SOLO INSERIRE IL DATO NELLO STACK
                 String Moneta=v[11];
                 String Qta=v[13];
+               // if (Qta.equalsIgnoreCase("")) System.out.println(v[13]+" - "+v[0]);
                 String Valore=v[15];
-                TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                //se esiste la qta in quella possizione vuol dire che è una rewad, altrimenti è un rimborso di una reward
+                if (!Qta.equalsIgnoreCase(""))
+                    {
+                    TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                    }
+                else{
+                    Moneta=v[8];
+                    Qta=new BigDecimal(v[10]).abs().toPlainString();
+                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta);
+                    String Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
+                    v[17]=PrzCarico;
+                    v[19]=Plusvalenza;
+                }
                 
             }else if (IDTS[4].equalsIgnoreCase("TI")){ //Trasferimento interno
-                //IN QUESTO CASO NON DEVO FARE NULLA
+                //IN QUESTO CASO dovrei solo calcolare il prezzo di carico ma senza togliere nulla dallo stack
             }else if (IDTS[4].equalsIgnoreCase("CM")){ //Commissioni
                 String Moneta=v[8];
-                String Qta=v[10];
+                String Qta=new BigDecimal(v[10]).abs().toPlainString();
                 String Valore=v[15];
                 String PrzCarico;
                 String Plusvalenza;
@@ -2980,18 +3007,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
     }//GEN-LAST:event_jButton1ActionPerformed
  
-public String TransazioniCrypto_Stack_TogliQta(Map<String, Deque> CryptoStack, String Moneta,String Qta) {
+public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta) {
     
     //come ritorno ci invio il valore della movimentazione
     String ritorno="";
-    Deque<String[]> stack;
+    ArrayDeque<String[]> stack;
     BigDecimal qtaRimanente=new BigDecimal(Qta).abs();
     BigDecimal costoTransazione=new BigDecimal("0");
     //prima cosa individuo la moneta e prendo lo stack corrispondente
     if (CryptoStack.get(Moneta)==null){
         //ritorno="0";
     }else{
+        
         stack=CryptoStack.get(Moneta);
+        /*ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
+        stack=stack2.clone();*/
         //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
         while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && stack.size()>0){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
            // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
@@ -2999,18 +3029,25 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, Deque> CryptoStack, S
             ultimoRecupero=stack.pop();
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]);
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]);
+        /*   if (Moneta.equalsIgnoreCase("usdt")){ 
+                System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
+                System.out.println(qtaRimanente);
+                }*/
+            //System.out.println(qtaEstratta+" - "+costoEstratta);
             if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta e minore o uguale alla qta rimanente allore
                 {
                 //imposto il nuovo valore su qtarimanente che è uguale a qtarimanente-qtaestratta
                 qtaRimanente=qtaRimanente.subtract(qtaEstratta);
+                //System.out.println(qtaRimanente);
                 //recupero il valore di quella transazione e la aggiungo al costoTransazione
                 costoTransazione=costoTransazione.add(costoEstratta);
             }else{
                 //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
                 //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
                 //recuperare il prezzo della qta rimanente e la qta rimanente e riaggiungerla allo stack
-                qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
+                //non ho più qta rimanente
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
+               // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
                 String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
                 stack.push(valori);
@@ -3021,6 +3058,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, Deque> CryptoStack, S
         }
         //pop -> toglie dello stack l'ultimo e recupera il dato
         //peek - > recupera solo il dato
+
     }
     ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
     
@@ -3029,9 +3067,9 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, Deque> CryptoStack, S
    // System.out.println(Moneta +" - "+stack.size());
 }   
     
-    public void TransazioniCrypto_Stack_InserisciValore(Map<String, Deque> CryptoStack, String Moneta,String Qta,String Valore) {
+    public void TransazioniCrypto_Stack_InserisciValore(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String Valore) {
     
-    Deque<String[]> stack;
+    ArrayDeque<String[]> stack;
     String valori[]=new String[3];
     valori[0]=Moneta;
     valori[1]=Qta;

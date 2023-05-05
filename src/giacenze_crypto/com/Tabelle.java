@@ -75,7 +75,7 @@ public class Tabelle {
 
                 } 
 
-                else if (col==10 && value.toString().equalsIgnoreCase("da calcolare")) {
+                else if (value!=null && col==10 && value.toString().equalsIgnoreCase("da calcolare")) {
                        // if (value.toString().equalsIgnoreCase("da calcolare"))
                          //   {
                    // c.setBackground(MappaColori.get(row));
@@ -83,18 +83,18 @@ public class Tabelle {
                     setForeground(table.getForeground());
                    // }
 
-                } else if (col==11 && value.toString().equalsIgnoreCase("da calcolare")) { 
+                } else if (value!=null && col==11 && value.toString().equalsIgnoreCase("da calcolare")) { 
                   //  c.setBackground(MappaColori.get(row));
                     setBackground(arancione);
                     setForeground(table.getForeground());
                    // c.setBackground(MappaColori.get(row));
                 }
-                else if (col==11 && value.toString().trim().contains("-")) {
+                else if (value!=null && col==11 && value.toString().trim().contains("-")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(Color.RED);
                 } 
-                else if (col==11 && !value.toString().trim().equalsIgnoreCase("0.00")) {
+                else if (value!=null && col==11 && !value.toString().trim().equalsIgnoreCase("0.00")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(verdeScuro);

@@ -460,7 +460,7 @@ public class Importazioni {
                                     RT[12] = "";
                                     RT[13] = "";
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                    RT[15] = "0";
+                                    RT[15] = "0.00";
                                     RT[16] = "";
                                     RT[17] = "Da Calcolare";//verrà calcolato con il metodo lifo
                                     RT[18] = "";//verrà calcolato con il metodo lifo
@@ -1283,9 +1283,19 @@ public class Importazioni {
                                         RT[14] = "EUR "+valoreEur;
                                         RT[15] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                         RT[16] = "";
-                                        RT[17] = "Da Calcolare";
+                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                            {
+                                                RT[17]="Da calcolare";
+                                                //se sono qua significa che c'è in piedi un deposito crypto
+                                            }
+                                        else if (TipoMovAbbreviato.equalsIgnoreCase("TI")) RT[17] = "Da calcolare";else RT[17]=RT[15];
                                         RT[18] = "";
-                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da calcolare";
+                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                            {
+                                                RT[19]="Da calcolare";
+                                                //se sono qua significa che c'è in piedi un deposito crypto
+                                            }
+                                        else RT[19] = "0.00";
                                         }
                                     if (TipoMovimento.equalsIgnoreCase("Prelievo"))
                                         {

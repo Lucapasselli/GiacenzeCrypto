@@ -2626,9 +2626,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         // TODO add your handling code here:
         //disabilito il filtro prima dell'eleaborazioneper velocizzare il tutto
         //il filtro altrimenti viene applicato ogni volta che aggiungo una riga in tabella e rallenta tantissimo
-        this.FiltraTabella(TransazioniCryptoTabella, "", 999);
+   //     this.FiltraTabella(TransazioniCryptoTabella, "", 999);
         this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-        this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+   //     this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_EscludiTIActionPerformed
 
     private void TransazioniCrypto_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
@@ -2852,13 +2852,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     String aggiornata2[]=MappaCryptoWallet.get(id2);
                     if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     aggiornata2[18]=tipo;
-                    aggiornata2[5]="TRASFERIMENTO TRA WALLET";
+                    if(id2.split("_")[4].equalsIgnoreCase("DC")) aggiornata2[5]="TRASFERIMENTO TRA WALLET";else aggiornata2[5]="TRASFERIMENTO TRA WALLET";
                     aggiornata2[19]="0";
                     aggiornata2[20]=id;
                     String aggiornata[]=MappaCryptoWallet.get(id);
                     if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     aggiornata[18]=tipo;
-                    aggiornata[5]="TRASFERIMENTO TRA WALLET";
+                    if(id.split("_")[4].equalsIgnoreCase("DC")) aggiornata[5]="TRASFERIMENTO TRA WALLET";else aggiornata[5]="TRASFERIMENTO TRA WALLET";
                     aggiornata[19]="0";
                     aggiornata[20]=id2;
                     MappaCryptoWallet.put(id, aggiornata);
@@ -2894,12 +2894,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
         // TODO add your handling code here:
        // System.out.println("cambio");
+
        DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        Deque<String[]> stack = new ArrayDeque<String[]>();
+        // TODO add your handling code here:        
+        AggiornaPlusvalenze();
+        this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    
+public void AggiornaPlusvalenze(){
+            Deque<String[]> stack = new ArrayDeque<String[]>();
        // stack.push("a");
        // stack.push("b");
        // System.out.println(stack.size());
@@ -2923,8 +2930,56 @@ public class CDC_Grafica extends javax.swing.JFrame {
             String IDTS[]=IDTransazione.split("_");
             //per questa prima fase intanto ignoro tutti i prelievi, una volta finito di scrivere la funzione
             //riprenderò in mano questa parte per aggiungere tutte le casistiche
-            if (IDTS[4].equalsIgnoreCase("DC")||(IDTS[4].equalsIgnoreCase("PC"))){//FARE PARTE PIU' COMPLESSA!!!!!!!!!!!!!
-                //QUI VANNO GESTITI I DEPOSITI E I PRELIEVI CRYPTO IN BASE ALLA TIPOLOGIA
+            if (IDTS[4].equalsIgnoreCase("DC")){//FARE PARTE PIU' COMPLESSA!!!!!!!!!!!!!
+                //QUI VANNO GESTITI I DEPOSITI CRYPTO IN BASE ALLA TIPOLOGIA
+                //Le tipologie sono:
+                //DTW -> Trasferimento tra Wallet (deposito) (plusvalenza 0 e solo calcolo costo carico, nessun movimento sullo stack)
+                //DAI -> Airdrop o similare (deposito) (plusvalenza=valore transazione, prezzo di carico = valore transazione)
+                //DCZ -> Costo di carico 0 (deposito)  (no plusvalenza, costo di carico=0 aggiunto allo stack)
+                //e senza classificazione che va trattato come fosse un DTW
+                String Moneta=v[11];
+                String Qta=v[13];
+                String Valore=v[15];
+                if (v[18].contains("DTW")||v[18].equalsIgnoreCase("")){
+                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,false);
+                    v[17]=PrzCarico;
+                    v[19]="0.00";
+                }else if(v[18].contains("DAI")){
+                    v[17]=Valore;
+                    v[19]=Valore;
+                    TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                }else if(v[18].contains("DCZ")){
+                    v[17]="0.00";
+                    v[19]="0.00";
+                    TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,"0.00");                    
+                }
+                //System.out.println(v[18]);
+            }else if (IDTS[4].equalsIgnoreCase("PC")){ //FARE PARTE PIU' COMPLESSA!!!!!!!!!!!!!
+             //QUI VANNO GESTITI I PRELIEVI CRYPTO IN BASE ALLA TIPOLOGIA  
+                //Le tipologie sono:
+                //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo) (lo elimino dai calcoli e non genero plusvalenze)
+                //PCO -> Cashout o similare (prelievo) (plusvalenza calcolata + tolto valore dallo stack)
+                //PTW -> Trasferimento tra Wallet (prelievo) (plusvalenza 0 e solo calcolo costo carico, nessun movimento sullo stack)
+                //e senza classificazione che va trattato come fosse un PTW
+                String Moneta=v[8];
+                String Qta=new BigDecimal(v[10]).abs().toPlainString();
+                String Valore=v[15];
+                if (v[18].contains("PTW")||v[18].equalsIgnoreCase("")){
+                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,false);
+                    v[17]=PrzCarico;
+                    v[19]="0.00";
+                }else if(v[18].contains("PCO")){
+                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,true);
+                    String Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
+                    v[17]=PrzCarico;
+                    v[19]=Plusvalenza;
+                }else if(v[18].contains("PWN")){
+                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,true);
+                    v[17]=PrzCarico;
+                    v[19]="0.00";                    
+                }
+               // System.out.println(v[18]);
+
             }else if (IDTS[4].equalsIgnoreCase("DF")){ //Deposito Fiat
              //IN QUESTO CASO NON DEVO FARE NULLA   
             }else if (IDTS[4].equalsIgnoreCase("PF")){ //Prelievo Fiat
@@ -2941,7 +2996,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 String Valore=v[15];
                 String PrzCarico;
                 String Plusvalenza;
-                PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta);
+                PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,true);
                 Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                 v[17]=PrzCarico;
                 v[19]=Plusvalenza;
@@ -2956,7 +3011,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 //String Valore=v[15];
                 String PrzCarico;
                 //String Plusvalenza;
-                PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta);
+                PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,true);
                 //Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                 v[17]=PrzCarico;
                 v[19]="0.00";  
@@ -2979,7 +3034,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 else{
                     Moneta=v[8];
                     Qta=new BigDecimal(v[10]).abs().toPlainString();
-                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta);
+                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,true);
                     String Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                     v[17]=PrzCarico;
                     v[19]=Plusvalenza;
@@ -2987,13 +3042,25 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 
             }else if (IDTS[4].equalsIgnoreCase("TI")){ //Trasferimento interno
                 //IN QUESTO CASO dovrei solo calcolare il prezzo di carico ma senza togliere nulla dallo stack
+                String Moneta=v[11];
+                String Qta=v[13];
+                if (!Qta.equalsIgnoreCase("")){
+                String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,false);
+                v[17]=PrzCarico;
+                }
+                else {
+                    Moneta=v[8];
+                    Qta=new BigDecimal(v[10]).abs().toPlainString();
+                    String PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,false);
+                    v[17]=PrzCarico;
+                }
             }else if (IDTS[4].equalsIgnoreCase("CM")){ //Commissioni
                 String Moneta=v[8];
                 String Qta=new BigDecimal(v[10]).abs().toPlainString();
                 String Valore=v[15];
                 String PrzCarico;
                 String Plusvalenza;
-                PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta);
+                PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,true);
                 Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                 v[17]=PrzCarico;
                 v[19]=Plusvalenza;                
@@ -3002,12 +3069,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
 
         }
-        
-        
-        this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-    }//GEN-LAST:event_jButton1ActionPerformed
- 
-public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta) {
+}
+    
+public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,boolean toglidaStack) {
     
     //come ritorno ci invio il valore della movimentazione
     String ritorno="";
@@ -3018,8 +3082,11 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     if (CryptoStack.get(Moneta)==null){
         //ritorno="0";
     }else{
-        
-        stack=CryptoStack.get(Moneta);
+        if (toglidaStack)stack=CryptoStack.get(Moneta);
+        else{
+            ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
+            stack=stack2.clone();
+        }
         /*ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
         stack=stack2.clone();*/
         //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
@@ -3169,6 +3236,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     
     
        private void CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException { 
+        this.FiltraTabella(TransazioniCryptoTabella, "", 999);
         this.TransazioniCryptoTextPane.setText("");
         String fileDaImportare = CryptoWallet_FileDB;
         MappaCryptoWallet.clear();
@@ -3201,9 +3269,11 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     }   catch (IOException ex) {   
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }    
     
         private void CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
+        this.FiltraTabella(TransazioniCryptoTabella, "", 999);
         this.TransazioniCryptoTextPane.setText("");
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
         PulisciTabella(ModelloTabellaCrypto);
@@ -3221,6 +3291,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
          TransazioniCrypto_Bottone_Annulla.setEnabled(true);
          this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
         }
+         this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }       
     
     public static List<String[]> ListaTabella(JTable tabella) {

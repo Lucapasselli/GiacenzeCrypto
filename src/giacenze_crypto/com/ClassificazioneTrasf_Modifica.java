@@ -340,6 +340,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String Note=TextArea_Note.getText().replace("\n", "|&£|");
         String attuale[] = MappaCryptoWallet.get(IDTrans);
         String controparte = attuale[20];
+        String PrzCarico="Da calcolare";
         String plusvalenza="Da calcolare";
         boolean trasferimento = false;
         if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
@@ -349,11 +350,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     descrizione = "AIRDROP o SIMILARE";
                     dettaglio = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
                     plusvalenza=attuale[15];
+                    PrzCarico=attuale[15];
                 }
                 case 2 -> {
-                    descrizione = "DEPOSITO CRYPTO";
+                    descrizione = "DEPOSITO CRYPTO (a costo zero)";
                     dettaglio = "DCZ - Deposito a costo zero (no plusvalenza)";
-                    plusvalenza="0";
+                    PrzCarico="0.00";
+                    plusvalenza="0.00";
                 }
                 case 3 -> {
                     descrizione = "TRASFERIMENTO TRA WALLET";
@@ -361,8 +364,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     plusvalenza="0";
                     trasferimento = true;
                 }
-                default ->
+                default ->{
                     descrizione = "DEPOSITO CRYPTO";
+                    }
                 //qui si va solo in caso la scelata sia nessuna
             }
         } else {
@@ -373,7 +377,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     dettaglio = "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
                 }
                 case 2 -> {
-                    descrizione = "PRELIEVO CRYPTO";
+                    descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
                     dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
                     plusvalenza="0";
                 }
@@ -395,6 +399,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
         if (!trasferimento) {
             attuale[5] = descrizione;
+            attuale[17] = PrzCarico;
             attuale[18] = dettaglio;
             attuale[19] = plusvalenza;
             attuale[20] = "";

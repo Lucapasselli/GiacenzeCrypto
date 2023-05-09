@@ -6,6 +6,7 @@ package giacenze_crypto.com;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -78,7 +79,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.07 Very Very Alpha");
+            this.setTitle("Giacenze_Crypto.com 1.07 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -102,10 +103,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
         
         CDC_LeggiFileDatiDB();
-        NascondiColonneTabellaCrypto();
+        TransazioniCrypto_NascondiColonneTabellaCrypto();
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
-        CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
@@ -146,8 +147,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCryptoFiltro_Text = new javax.swing.JTextField();
         TransazioniCrypto_CheckBox_EscludiTI = new javax.swing.JCheckBox();
         TransazioniCrypto_Bottone_Annulla = new javax.swing.JButton();
-        LabelValore = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        TransazioniCrypto_Label_Plusvalenza = new javax.swing.JLabel();
+        TransazioniCrypto_Text_Plusvalenza = new javax.swing.JTextField();
         DepositiPrelievi = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         DepositiPrelievi_Tabella = new javax.swing.JTable();
@@ -346,12 +347,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        LabelValore.setText("Valore");
+        TransazioniCrypto_Label_Plusvalenza.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        TransazioniCrypto_Label_Plusvalenza.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        TransazioniCrypto_Label_Plusvalenza.setText("Plusvalenze del periodo selezionato : ");
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        TransazioniCrypto_Text_Plusvalenza.setEditable(false);
+        TransazioniCrypto_Text_Plusvalenza.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        TransazioniCrypto_Text_Plusvalenza.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        TransazioniCrypto_Text_Plusvalenza.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                TransazioniCrypto_Text_PlusvalenzaActionPerformed(evt);
             }
         });
 
@@ -364,36 +369,28 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1054, Short.MAX_VALUE)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addComponent(TransazioniCrypto_Bottone_Importa)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6))
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_Bottone_Importa)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 759, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                                .addComponent(jLabel7)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(TransazioniCryptoFiltro_Text))
-                                            .addComponent(TransazioniCrypto_CheckBox_EscludiTI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                                .addGap(28, 28, 28)
-                                                .addComponent(LabelValore, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                                .addGap(18, 18, 18)
-                                                .addComponent(jButton1)))
-                                        .addGap(0, 0, Short.MAX_VALUE)))))
-                        .addGap(6, 6, 6))))
+                            .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                    .addComponent(jLabel7)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(TransazioniCrypto_Text_Plusvalenza)
+                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
+                            .addComponent(TransazioniCrypto_CheckBox_EscludiTI, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())))
         );
         TransazioniCryptoLayout.setVerticalGroup(
             TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -405,23 +402,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_Salva)
                     .addComponent(TransazioniCrypto_Bottone_Annulla))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addComponent(TransazioniCrypto_Label_Plusvalenza)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                        .addGap(23, 23, 23)
-                        .addComponent(LabelValore)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(135, 135, 135)
                         .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel7)
-                            .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                            .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())
+                    .addComponent(jScrollPane1)))
         );
 
         CDC.addTab("Transazioni Crypto", TransazioniCrypto);
@@ -502,12 +497,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1048, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
+                            .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale))
-                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)))
                 .addContainerGap())
         );
         DepositiPrelieviLayout.setVerticalGroup(
@@ -1423,7 +1417,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     
     
-    public void NascondiColonneTabellaCrypto(){
+    public void TransazioniCrypto_NascondiColonneTabellaCrypto(){
        // this.CDC.remove(this.TransazioniCrypto);
         //per nascondere devo farlo al contrario
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(22));
@@ -1533,7 +1527,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     String splittata[]=riga.split(",");
                     if (splittata.length==10)// se non è esattamente uguale a 10 significa che il file non è corretto
                     {
-                        if(ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
+                        if(Funzioni_Date_ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
                         {
                             //CDC_FiatWallet_Mappa.put(splittata[0], riga);
                             String idRiga;
@@ -1619,7 +1613,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     String splittata[]=riga.split(",");
                     if (splittata.length>=9)// se non è esattamente uguale a 10 significa che il file non è corretto
                     {
-                        if(ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
+                        if(Funzioni_Date_ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
                         {
                             int Colonna=CDC_Funzione_trovaColonnaEuro(riga);
                             String idRiga;
@@ -1661,7 +1655,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
            if (i==0) {
                this.CDC_FiatWallet_Text_PrimaData.setText(value.split(",")[0]);
                //verifico ora che la primadata corrisponda con quella del file db salvato
-               if (ConvertiDatainLong(value.split(",")[0].split(" ")[0])<ConvertiDatainLong(CDC_DataIniziale))
+               if (Funzioni_Date_ConvertiDatainLong(value.split(",")[0].split(" ")[0])<Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale))
                    {
                this.CDC_FiatWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in Euro al  "+value.split(",")[0].split(" ")[0]+" (Data Primo Movimento Importato) : ");
                }
@@ -1702,7 +1696,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_FiatWallet_SaldoIniziale,CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_FiatWallet_SaldoIniziale,CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_FiatWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_FiatWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_FiatWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
@@ -1721,7 +1715,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
            if (i==0) {
                this.CDC_CardWallet_Text_PrimaData.setText(value.split(",")[0]);
                //verifico ora che la primadata corrisponda con quella del file db salvato
-               if (ConvertiDatainLong(value.split(",")[0].split(" ")[0])<ConvertiDatainLong(CDC_DataIniziale))
+               if (Funzioni_Date_ConvertiDatainLong(value.split(",")[0].split(" ")[0])<Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale))
                    {
                this.CDC_CardWallet_Label_GiacenzaIniziale.setText("Inserire la giacenza inziale in Euro al  "+value.split(",")[0].split(" ")[0]+" (Data Primo Movimento Importato) : ");
                }
@@ -1762,7 +1756,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_CardWallet_SaldoIniziale,CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_CardWallet_SaldoIniziale,CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_CardWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_CardWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_CardWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
@@ -1794,10 +1788,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             
                                 listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
                                // System.out.println(UltimaData+","+piccoGiornata);
-                                if (ConvertiDatainLong(Data)-ConvertiDatainLong(UltimaData)!=86400000){
+                                if (Funzioni_Date_ConvertiDatainLong(Data)-Funzioni_Date_ConvertiDatainLong(UltimaData)!=86400000){
                  //QUESTO SERVE PER AGGIUNGERE UNA RIGA CON IL VALORE CORRETTO DEL GIORNO DOPO QUALORA NON VI SIA GIà UN VALORE DA CONSIDERARE
                  //INFATTI SE CONSIDERO IL PICCO MASSIMO , IL PRIMO GIORNO METTO IL PICCO MASSIMO MA QUELLO DOPO DEVO CONSIDERARE IL VALORE NORMALE
-                                    listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                                    listaSaldiconMassimoGiornaliero.add(Funzioni_Date_ConvertiDatadaLong(Funzioni_Date_ConvertiDatainLong(UltimaData)+86400000)+","+totale);
 
                                 }
 
@@ -1854,7 +1848,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                           
                                 
                                 listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
-                                listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                                listaSaldiconMassimoGiornaliero.add(Funzioni_Date_ConvertiDatadaLong(Funzioni_Date_ConvertiDatainLong(UltimaData)+86400000)+","+totale);
                             
                                 listaSaldi.add(UltimaData+","+totale);
                                 
@@ -1884,10 +1878,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             
                                 listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
                                // System.out.println(UltimaData+","+piccoGiornata);
-                                if (ConvertiDatainLong(Data)-ConvertiDatainLong(UltimaData)!=86400000){
+                                if (Funzioni_Date_ConvertiDatainLong(Data)-Funzioni_Date_ConvertiDatainLong(UltimaData)!=86400000){
                  //QUESTO SERVE PER AGGIUNGERE UNA RIGA CON IL VALORE CORRETTO DEL GIORNO DOPO QUALORA NON VI SIA GIà UN VALORE DA CONSIDERARE
                  //INFATTI SE CONSIDERO IL PICCO MASSIMO , IL PRIMO GIORNO METTO IL PICCO MASSIMO MA QUELLO DOPO DEVO CONSIDERARE IL VALORE NORMALE
-                                    listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                                    listaSaldiconMassimoGiornaliero.add(Funzioni_Date_ConvertiDatadaLong(Funzioni_Date_ConvertiDatainLong(UltimaData)+86400000)+","+totale);
                                     //System.out.println(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
 
                                 }
@@ -1930,7 +1924,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
           
                                 listaSaldiconMassimoGiornaliero.add(UltimaData+","+piccoGiornata);
                                 //System.out.println(UltimaData+","+piccoGiornata);
-                                listaSaldiconMassimoGiornaliero.add(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
+                                listaSaldiconMassimoGiornaliero.add(Funzioni_Date_ConvertiDatadaLong(Funzioni_Date_ConvertiDatainLong(UltimaData)+86400000)+","+totale);
                                 //System.out.println(ConvertiDatadaLong(ConvertiDatainLong(UltimaData)+86400000)+","+totale);
                               
                                 listaSaldi.add(UltimaData+","+totale);
@@ -1970,9 +1964,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DefaultTableModel CDC_FiatWallet_ModelloTabella1 = (DefaultTableModel) CDC_FiatWallet_Tabella1.getModel();
         DefaultTableModel CDC_FiatWallet_ModelloTabella2 = (DefaultTableModel) CDC_FiatWallet_Tabella2.getModel();
         DefaultTableModel CDC_FiatWallet_ModelloTabella3 = (DefaultTableModel) CDC_FiatWallet_Tabella3.getModel();
-        PulisciTabella(CDC_FiatWallet_ModelloTabella1);
-        PulisciTabella(CDC_FiatWallet_ModelloTabella2);
-        PulisciTabella(CDC_FiatWallet_ModelloTabella3);
+        Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella1);
+        Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella2);
+        Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella3);
 
         Map<String, String> CDC_FiatWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, String> CDC_FiatWallet_Descrizioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -1983,7 +1977,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             String splittata[] = value.split(",");
             String Data = splittata[0].split(" ")[0];//prendo solo la data e non l'ora
             
-            if (ConvertiDatainLong(Data) >= ConvertiDatainLong(CDC_DataIniziale) && ConvertiDatainLong(Data) <= ConvertiDatainLong(CDC_DataFinale)) {    //CDC_FiatWallet_FileTipiMovimentiDB
+            if (Funzioni_Date_ConvertiDatainLong(Data) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(Data) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {    //CDC_FiatWallet_FileTipiMovimentiDB
                 boolean trovato = false;
                 Object CDC_FiatWallet_RigaTabella2[]=new Object[5];
                 int Colonna=CDC_Funzione_trovaColonnaEuro(value);
@@ -2075,7 +2069,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }
    
    
-     public static void PulisciTabella(DefaultTableModel modello) {
+     public static void Funzioni_Tabelle_PulisciTabella(DefaultTableModel modello) {
            int z=modello.getRowCount();
         // System.out.println(modelProblemi.getRowCount());
          while (z!=0){
@@ -2091,7 +2085,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
  
      
      
-        private void FiltraTabella(JTable Tabella, String filtro, int colonna) {
+        private void Funzioni_Tabelle_FiltraTabella(JTable Tabella, String filtro, int colonna) {
 
         TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>((DefaultTableModel) Tabella.getModel());
         sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filtro));
@@ -2114,8 +2108,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
       //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
       //  CDC_CardWallet_Tabella2.setModel(model);
         
-        PulisciTabella(CDC_CardWallet_ModelloTabella2);
-        PulisciTabella(CDC_CardWallet_ModelloTabella1);
+        Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella2);
+        Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella1);
           
        //calcola i totali sui bonifici, topupcarta e acquisti crypto passati per il fiat wallet
         BigDecimal TotaleSpese= new BigDecimal("0");
@@ -2128,7 +2122,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 
                 String splittata[]=value.split(",");
                 String Data=splittata[0].split(" ")[0];//prendo solo la data e non l'ora
-                if (ConvertiDatainLong(Data)>=ConvertiDatainLong(CDC_DataIniziale)&&ConvertiDatainLong(Data)<=ConvertiDatainLong(CDC_DataFinale))
+                if (Funzioni_Date_ConvertiDatainLong(Data)>=Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)&&Funzioni_Date_ConvertiDatainLong(Data)<=Funzioni_Date_ConvertiDatainLong(CDC_DataFinale))
 
                 {    
                     int Colonna=CDC_Funzione_trovaColonnaEuro(value);
@@ -2224,13 +2218,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (CDC_DataChooser_Iniziale.getDate()!=null){
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String Data=f.format(CDC_DataChooser_Iniziale.getDate());
-            if (!Data.equalsIgnoreCase(CDC_DataIniziale)&&ConvertiDatainLong(Data)<=ConvertiDatainLong(CDC_DataFinale)){
+            if (!Data.equalsIgnoreCase(CDC_DataIniziale)&&Funzioni_Date_ConvertiDatainLong(Data)<=Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)){
                 CDC_DataIniziale=Data;
                 this.CDC_ScriviFileDatiDB();
                 CDC_AggiornaGui(); 
-                CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             }
-            else if(ConvertiDatainLong(Data)>ConvertiDatainLong(CDC_DataFinale)) {
+            else if(Funzioni_Date_ConvertiDatainLong(Data)>Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                 try {
                     //f.parse(CDC_DataIniziale)
                     CDC_DataChooser_Iniziale.setDate(f.parse(CDC_DataIniziale));
@@ -2251,15 +2245,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 if (CDC_DataChooser_Finale.getDate()!=null){
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String Data=f.format(CDC_DataChooser_Finale.getDate());
-            if (!Data.equalsIgnoreCase(CDC_DataFinale)&&ConvertiDatainLong(Data)>=ConvertiDatainLong(CDC_DataIniziale)){
+            if (!Data.equalsIgnoreCase(CDC_DataFinale)&&Funzioni_Date_ConvertiDatainLong(Data)>=Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)){
                 CDC_DataFinale=Data;
                 this.CDC_ScriviFileDatiDB();
                 CDC_AggiornaGui();
-                CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 
               
             }
-            else if(ConvertiDatainLong(Data)<ConvertiDatainLong(CDC_DataIniziale)) {
+            else if(Funzioni_Date_ConvertiDatainLong(Data)<Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)) {
                 try {
                     //f.parse(CDC_DataIniziale)
                     CDC_DataChooser_Finale.setDate(f.parse(CDC_DataFinale));
@@ -2282,7 +2276,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased
         // TODO add your handling code here:
 
-        if (!CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())&&isNumeric(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())){
+        if (!CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())&&Funzioni_isNumeric(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())){
             CDC_FiatWallet_SaldoIniziale=this.CDC_FiatWallet_Text_GiacenzaIniziale.getText().replaceFirst("^0+(?!$)", "");
 
             //if (CDC_FiatWallet_Text_GiacenzaIniziale.getText().equalsIgnoreCase("")) CDC_FiatWallet_SaldoIniziale="0";
@@ -2323,8 +2317,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void CDC_CardWallet_Text_FiltroTabelleKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_FiltroTabelleKeyReleased
         // TODO add your handling code here:
-        this.FiltraTabella(CDC_CardWallet_Tabella1, CDC_CardWallet_Text_FiltroTabelle.getText(), 999);
-        this.FiltraTabella(CDC_CardWallet_Tabella2, CDC_CardWallet_Text_FiltroTabelle.getText(), 999);
+        this.Funzioni_Tabelle_FiltraTabella(CDC_CardWallet_Tabella1, CDC_CardWallet_Text_FiltroTabelle.getText(), 999);
+        this.Funzioni_Tabelle_FiltraTabella(CDC_CardWallet_Tabella2, CDC_CardWallet_Text_FiltroTabelle.getText(), 999);
     }//GEN-LAST:event_CDC_CardWallet_Text_FiltroTabelleKeyReleased
 
     private void CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Checkbox_ConsideraValoreMaggioreMouseClicked
@@ -2336,7 +2330,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void CDC_CardWallet_Text_GiacenzaInizialeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_GiacenzaInizialeKeyReleased
         // TODO add your handling code here:
-        if (!CDC_CardWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())&&isNumeric(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())){
+        if (!CDC_CardWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())&&Funzioni_isNumeric(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())){
             if (CDC_CardWallet_Text_GiacenzaIniziale.getText().equalsIgnoreCase(""))CDC_CardWallet_Text_GiacenzaIniziale.setText("0");
             CDC_CardWallet_SaldoIniziale=this.CDC_CardWallet_Text_GiacenzaIniziale.getText().replaceFirst("^0+(?!$)", "");
 
@@ -2378,8 +2372,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void CDC_FiatWallet_Text_FiltroTabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Text_FiltroTabellaKeyReleased
         // TODO add your handling code here:
-        this.FiltraTabella(CDC_FiatWallet_Tabella2, CDC_FiatWallet_Text_FiltroTabella.getText(), 999);
-        this.FiltraTabella(CDC_FiatWallet_Tabella3, CDC_FiatWallet_Text_FiltroTabella.getText(), 999);
+        this.Funzioni_Tabelle_FiltraTabella(CDC_FiatWallet_Tabella2, CDC_FiatWallet_Text_FiltroTabella.getText(), 999);
+        this.Funzioni_Tabelle_FiltraTabella(CDC_FiatWallet_Tabella3, CDC_FiatWallet_Text_FiltroTabella.getText(), 999);
     }//GEN-LAST:event_CDC_FiatWallet_Text_FiltroTabellaKeyReleased
 
     private void CDC_FiatWallet_Bottone_ErroreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Bottone_ErroreActionPerformed
@@ -2415,7 +2409,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             stampa.NuovaPagina();
             stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            List<String[]> tabella1=ListaTabella(CDC_FiatWallet_Tabella1);
+            List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella1);
             String Titoli1[]=new String[]{"Tipologia","Valore in Euro"};
             stampa.AggiungiTabella(Titoli1,tabella1);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
@@ -2423,7 +2417,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             stampa.NuovaPagina();
             stampa.AggiungiTesto("TABELLA TOTALI PER DETTAGLIO\n",Font.UNDERLINE,12);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            tabella1=ListaTabella(CDC_FiatWallet_Tabella3);
+            tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella3);
             Titoli1=new String[]{"Tipologia","Valore in Euro"};
             stampa.AggiungiTabella(Titoli1,tabella1);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
@@ -2431,7 +2425,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             stampa.NuovaPagina();
             stampa.AggiungiTesto("TABELLA MOVIMENTI\n",Font.UNDERLINE,12);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            tabella1=ListaTabella(CDC_FiatWallet_Tabella2);
+            tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella2);
             Titoli1=new String[]{"Data","Causale","Dettaglio","Valore in Euro","Rimanenze"};
             stampa.AggiungiTabella(Titoli1,tabella1);
             stampa.ScriviPDF();
@@ -2468,7 +2462,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             stampa.NuovaPagina();
             stampa.AggiungiTesto("TABELLA TOTALI RAGGRUPPATA PER CONTROPARTE/CAUSALE IN ORDINE ALFABETICO\n",Font.UNDERLINE,12);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            List<String[]> tabella1=ListaTabella(CDC_CardWallet_Tabella1);
+            List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(CDC_CardWallet_Tabella1);
             String Titoli1[]=new String[]{"Controparte/Causale","Valore in Euro"};
             stampa.AggiungiTabella(Titoli1,tabella1);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
@@ -2476,7 +2470,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             stampa.NuovaPagina();
             stampa.AggiungiTesto("TABELLA DETTAGLIO IN ORDINE DI DATA\n",Font.UNDERLINE,12);
             stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            tabella1=ListaTabella(CDC_CardWallet_Tabella2);
+            tabella1=Funzioni_Tabelle_ListaTabella(CDC_CardWallet_Tabella2);
             Titoli1=new String[]{"Data","Controparte/Causale","Valore in Euro","Rimanenze in Euro"};
             stampa.AggiungiTabella(Titoli1,tabella1);
             stampa.ScriviPDF();
@@ -2497,7 +2491,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Importazioni_Gestione gest = new Importazioni_Gestione();
         gest.setLocationRelativeTo(this);
         gest.setVisible(true);
-        CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        
+        Funzioni_PulisciMovimentiAssociatinonEsistenti();
+        Funzioni_AggiornaPlusvalenze();
+        Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
 
        
         //questo sotto serve per aumentare la diomensione dell'header della tabella
@@ -2542,7 +2539,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }    }
             MappaCryptoWallet.clear();
             try {
-                CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             } catch (IOException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -2619,7 +2616,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void TransazioniCryptoFiltro_TextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TransazioniCryptoFiltro_TextKeyReleased
         // TODO add your handling code here:
-        this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }//GEN-LAST:event_TransazioniCryptoFiltro_TextKeyReleased
 
     private void TransazioniCrypto_CheckBox_EscludiTIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_EscludiTIActionPerformed
@@ -2627,7 +2624,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //disabilito il filtro prima dell'eleaborazioneper velocizzare il tutto
         //il filtro altrimenti viene applicato ogni volta che aggiungo una riga in tabella e rallenta tantissimo
    //     this.FiltraTabella(TransazioniCryptoTabella, "", 999);
-        this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        this.Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
    //     this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_EscludiTIActionPerformed
 
@@ -2635,7 +2632,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         try {
 
             // TODO add your handling code here:
-            this.CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            this.Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             TransazioniCrypto_Bottone_Salva.setEnabled(false);
             TransazioniCrypto_Bottone_Annulla.setEnabled(false);
             TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
@@ -2651,7 +2648,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //this.TransazioniCryptoFiltro_Text.setText("");
         //questo server per velocizzare la ricerca
         //disabilito il filtro e poi lo riabilito finito l'eleaborazione
-        this.FiltraTabella(TransazioniCryptoTabella, "", 999);
+        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         int movimentiCancellati=0;
         List<String> Cancellare=new ArrayList<String>();
         if (risposta==0)
@@ -2673,12 +2670,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
         JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
            if (movimentiCancellati>0){
-                CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
                 this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
                 this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
                 }
-        this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
 
     private void CDC_OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_CDC_OpzioniComponentShown
@@ -2706,7 +2703,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
          this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
          this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
          this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
-         this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+         
+         Funzioni_AggiornaPlusvalenze();
+         this.Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
        // System.out.println(mod.getModificaEffettuata());        
         DepositiPrelievi_Caricatabella();
@@ -2739,7 +2738,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void DepositiPrelievi_Caricatabella()
             {
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
-        PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
         for (String[] v : MappaCryptoWallet.values()) {
           String TipoMovimento=v[0].split("_")[4].trim();
@@ -2775,7 +2774,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             {
         Map<String, String[]> SituazioneImport_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         DefaultTableModel ModelloTabella1SituazioneImport = (DefaultTableModel) this.SituazioneImport_Tabella1.getModel();
-        PulisciTabella(ModelloTabella1SituazioneImport);
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella1SituazioneImport);
         Tabelle.ColoraRigheTabellaCrypto(SituazioneImport_Tabella1);
         for (String[] v : MappaCryptoWallet.values()) {
             
@@ -2842,7 +2841,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 BigDecimal PercentualeDifferenza=Sommaqta.abs().divide(new BigDecimal(qta).abs(),RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
                 
                 if (MappaCryptoWallet.get(id2)[18].equalsIgnoreCase("")&&//1
-                        Differenza_Date_secondi(data2,data)<3600 &&//2
+                        Funzioni_Date_DifferenzaDateSecondi(data2,data)<3600 &&//2
                         moneta.equalsIgnoreCase(moneta2)&&//3
                         !wallet.equalsIgnoreCase(wallet2)&&//4
                         PercentualeDifferenza.compareTo(new BigDecimal(2))==-1)//5
@@ -2882,7 +2881,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         JOptionPane.showConfirmDialog(this, "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente",
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
         }
-        this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        
+        Funzioni_AggiornaPlusvalenze();
+        this.Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
@@ -2898,14 +2899,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
        DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:        
-        AggiornaPlusvalenze();
-        this.CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void TransazioniCrypto_Text_PlusvalenzaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Text_PlusvalenzaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TransazioniCrypto_Text_PlusvalenzaActionPerformed
 
+    public void Funzioni_PulisciMovimentiAssociatinonEsistenti(){
+        //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
+        //su movimenti già associati
+        for (String[] v : MappaCryptoWallet.values()) {
+          if (v[18].contains("DTW")||v[18].contains("PTW"))
+          {
+              String ID=v[0];
+              String riferimento=v[20];
+              String movimentoOpposto[]=MappaCryptoWallet.get(riferimento);
+              if (movimentoOpposto==null || !movimentoOpposto[20].equalsIgnoreCase(ID)){
+                //se il movimento opposto non esiste oppure se sul movimento opposto non trovo l'id di questo movimento allora pulisco le righe
+                if (v[18].contains("DTW"))v[5]="DEPOSITO CRYPTO"; else v[5]="PRELIEVO CRYPTO";
+                v[18]="";
+                
+                  
+              }
+            
+            }
+          }
+    }
     
-public void AggiornaPlusvalenze(){
+public void Funzioni_AggiornaPlusvalenze(){
             Deque<String[]> stack = new ArrayDeque<String[]>();
        // stack.push("a");
        // stack.push("b");
@@ -3178,27 +3197,27 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         String unitarioPrzCaricoUsc="";
         String MonRic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 11).toString().trim();
         String MonUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8).toString().trim();
-        if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
             unitarioValoreRic="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
-        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico)&&Funzioni_isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
             unitarioPrzCaricoRic="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
-        if (isNumeric(ValoreTransazione)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
             unitarioValoreUsc="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
-        if (isNumeric(ValoreTransazionePrezzoCarico)&&isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico)&&Funzioni_isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
             unitarioPrzCaricoUsc="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
         String MonetaRicevuta="";
         String MonetaUscita="";
-        if (isNumeric(ValoreTransazione)&&isNumeric(QTARic)){
+        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTARic)){
         MonetaRicevuta=QTARic+
                 " "+MonRic+
                 "  "+unitarioValoreRic+" "+
                 "  "+unitarioPrzCaricoRic;
         }
-        if (isNumeric(ValoreTransazione)&&isNumeric(QTAUsc)){
+        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTAUsc)){
         MonetaUscita=QTAUsc+
                 " "+MonUsc+
                 "  "+unitarioValoreUsc+" "+
@@ -3223,7 +3242,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
                 "VALORE TRANSAZIONE :&#9&#9&#9<b>"+ValoreTransazione+"</b><br>"+
                 "VALORE TRANSAZIONE AL PREZZO DI CARICO :&#9<b>"+ValoreTransazionePrezzoCarico+"</b><br>"+
                 "PLUSVALENZA :&#9&#9&#9<b>"+Plusvalenza+"</b><br>"+
-                "RIFERIMENTI :&#9&#9&#9<b>"+Riferimenti+"</b><br>"+
+                "RIFERIMENTI TRASFERIMENTO :&#9&#9<b>"+Riferimenti+"</b><br>"+
                 "NOTE :&#9<b>"+Note+"</b><br>";
         
         this.TransazioniCryptoTextPane.setText(daAppendere);
@@ -3235,18 +3254,19 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     
     
     
-       private void CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException { 
-        this.FiltraTabella(TransazioniCryptoTabella, "", 999);
+       private void Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException { 
+        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         this.TransazioniCryptoTextPane.setText("");
         String fileDaImportare = CryptoWallet_FileDB;
         MappaCryptoWallet.clear();
         Mappa_Wallet.clear();
+        BigDecimal Plusvalenza=new BigDecimal("0");
         
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
-        PulisciTabella(ModelloTabellaCrypto);
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         File TransazioniCrypto1=new File (fileDaImportare);
         if (!TransazioniCrypto1.exists()) TransazioniCrypto1.createNewFile();
@@ -3258,8 +3278,12 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
                 MappaCryptoWallet.put(splittata[0], splittata);
               //  this.TransazioniCryptoTabella.add(splittata);
               if (EscludiTI==true&&!splittata[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
-                  if (ConvertiDatainLong(splittata[1]) >= ConvertiDatainLong(CDC_DataIniziale) && ConvertiDatainLong(splittata[1]) <= ConvertiDatainLong(CDC_DataFinale)) {
+                  if (Funzioni_Date_ConvertiDatainLong(splittata[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(splittata[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                      ModelloTabellaCrypto.addRow(splittata);
+                                     if (Funzioni_isNumeric(splittata[19]))
+                {
+                    Plusvalenza=Plusvalenza.add(new BigDecimal(splittata[19]));
+                }
               }
                   }
              //   MappaCryptoWallet.put(splittata[0], splittata);
@@ -3269,32 +3293,45 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     }   catch (IOException ex) {   
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+        this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
+        Color verde=new Color (45, 155, 103);
+        Color rosso=new Color(166,16,34);
+        if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-"))TransazioniCrypto_Text_Plusvalenza.setForeground(verde);else TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
+        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }    
     
-        private void CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
-        this.FiltraTabella(TransazioniCryptoTabella, "", 999);
+        private void Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
+        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         this.TransazioniCryptoTextPane.setText("");
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
-        PulisciTabella(ModelloTabellaCrypto);
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
+        BigDecimal Plusvalenza=new BigDecimal("0");
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
          for (String[] v : MappaCryptoWallet.values()) {
           Mappa_Wallet.put(v[3], "");
           if (EscludiTI==true&&!v[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
-                  if (ConvertiDatainLong(v[1]) >= ConvertiDatainLong(CDC_DataIniziale) && ConvertiDatainLong(v[1]) <= ConvertiDatainLong(CDC_DataFinale)) {
-          ModelloTabellaCrypto.addRow(v);
-          }
-                  }
+                if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
+                ModelloTabellaCrypto.addRow(v);
+                if (Funzioni_isNumeric(v[19]))
+                {
+                    Plusvalenza=Plusvalenza.add(new BigDecimal(v[19]));
+                }
+                }
+            }
        }
          if (Importazioni.TransazioniAggiunte!=0){
          this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
          TransazioniCrypto_Bottone_Annulla.setEnabled(true);
          this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
         }
-         this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+         this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
+         Color verde=new Color (45, 155, 103);
+        Color rosso=new Color(166,16,34);
+        if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-"))TransazioniCrypto_Text_Plusvalenza.setForeground(verde);else TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
+         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }       
     
-    public static List<String[]> ListaTabella(JTable tabella) {
+    public static List<String[]> Funzioni_Tabelle_ListaTabella(JTable tabella) {
             int numeroRighe=tabella.getModel().getRowCount();
             int numeroColonne=tabella.getModel().getColumnCount();
             String dati[];
@@ -3313,7 +3350,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
      
     
     
-    public static boolean isNumeric(String str) {
+    public static boolean Funzioni_isNumeric(String str) {
         //ritorna vero se il campo è vuoto oppure è un numero
      if (str.isBlank()) return true;
         try  
@@ -3328,7 +3365,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
 
 }
     
-    public String[] Calcolo_SaldieMedie(List<String>[] listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
+    public String[] Funzioni_Calcolo_SaldieMedie(List<String>[] listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
 
         //  System.out.println(DataInizialeS+" "+DataFinaleS);
         //  System.out.println (listaSaldi.length);
@@ -3347,8 +3384,8 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         // System.out.println(DataIniziale);
         //System.out.println(DataFinale);
         long diffdate;
-        long longDatainiziale = ConvertiDatainLong(DataIniziale);
-        long longDataFinale = ConvertiDatainLong(DataFinale);
+        long longDatainiziale = Funzioni_Date_ConvertiDatainLong(DataIniziale);
+        long longDataFinale = Funzioni_Date_ConvertiDatainLong(DataFinale);
         int contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
         for (String valori : listaSaldi[0]) {
             String splittata[] = valori.split(",");
@@ -3359,13 +3396,13 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
                         System.out.println("Errore, bisogna mettere una data inferiore o uguale a "+splittata[0]);
                         break;
                     }*/
-            if (longDatainiziale > ConvertiDatainLong(splittata[0])) {
+            if (longDatainiziale > Funzioni_Date_ConvertiDatainLong(splittata[0])) {
                 UltimoValore = new BigDecimal(splittata[1]);
                 SaldoInizialeT=splittata[1];
                 //  System.out.println("SaldoIniziale="+UltimoValore+" , "+splittata[0]);
             }
-            if (longDatainiziale <= ConvertiDatainLong(splittata[0]) && longDataFinale >= ConvertiDatainLong(splittata[0])) {
-                diffdate = Differenza_Date(splittata[0], DataIniziale);
+            if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
+                diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
                 contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
                 SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
                 if (!TrovatoSaldoIniziale) {
@@ -3387,11 +3424,11 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
             contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
             for (String valori : listaSaldi[1]) {
                 String splittata[] = valori.split(",");
-                if (longDatainiziale > ConvertiDatainLong(splittata[0])) {
+                if (longDatainiziale > Funzioni_Date_ConvertiDatainLong(splittata[0])) {
                     UltimoValore = new BigDecimal(splittata[1]);
                 }
-                if (longDatainiziale <= ConvertiDatainLong(splittata[0]) && longDataFinale >= ConvertiDatainLong(splittata[0])) {
-                    diffdate = Differenza_Date(splittata[0], DataIniziale);
+                if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
+                    diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
                     contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
                     SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
                     DataIniziale = splittata[0];
@@ -3401,7 +3438,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
             }
         }
 
-        diffdate = Differenza_Date(DataFinale, DataIniziale) + 1;
+        diffdate = Funzioni_Date_DifferenzaDate(DataFinale, DataIniziale) + 1;
         contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
         SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
         BigDecimal GiacenzaMedia = SaldoIniziale.divide(new BigDecimal(contatore), 2, RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));
@@ -3419,7 +3456,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
 
     }
     
-    public static long Differenza_Date(String Data1, String Data2) {
+    public static long Funzioni_Date_DifferenzaDate(String Data1, String Data2) {
         long differenza=0;
         try {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -3437,7 +3474,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         return differenza;
     }
     
-    public static long Differenza_Date_secondi(String Data1, String Data2) {
+    public static long Funzioni_Date_DifferenzaDateSecondi(String Data1, String Data2) {
         long differenza=0;
         try {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -3455,7 +3492,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         return differenza;
     }
     
-       public static long ConvertiDatainLong(String Data1) {
+       public static long Funzioni_Date_ConvertiDatainLong(String Data1) {
            long m1=0;
         try {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
@@ -3470,7 +3507,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         return m1;
     } 
     
-        public static String ConvertiDatadaLong(long Data1) {
+        public static String Funzioni_Date_ConvertiDatadaLong(long Data1) {
 
   
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
@@ -3593,7 +3630,6 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneManuale;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;
-    private javax.swing.JLabel LabelValore;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
@@ -3608,8 +3644,9 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JButton TransazioniCrypto_Bottone_Salva;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_EscludiTI;
     private javax.swing.JLabel TransazioniCrypto_Label_MovimentiNonSalvati;
+    private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

@@ -5,13 +5,13 @@
 package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
-import static giacenze_crypto.com.CDC_Grafica.PulisciTabella;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import static giacenze_crypto.com.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
 
 /**
  *
@@ -41,7 +41,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
-        PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(jTable1);
         String riga[]=DammiRigaTabellaDaID(ID);
         ModelloTabellaDepositiPrelievi.addRow(riga);
@@ -558,7 +558,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
         public void CompilaTabellaMovimetiAssociabili(String ID){
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
-        PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         String attuale[]=MappaCryptoWallet.get(ID);
         long DataOraAttuale=Calcoli.ConvertiDatainLong(attuale[1]);

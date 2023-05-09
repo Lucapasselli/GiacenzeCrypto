@@ -4,7 +4,6 @@
  */
 package giacenze_crypto.com;
 
-import static giacenze_crypto.com.CDC_Grafica.ConvertiDatainLong;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,20 +18,18 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
 
 /**
  *
@@ -124,7 +121,7 @@ public class Importazioni {
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
             while ((riga = bure.readLine()) != null) {
                 String splittata[] = riga.split(",");
-                if (ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
+                if (Funzioni_Date_ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
                     //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
                     if (splittata[0].equalsIgnoreCase(ultimaData)) {
@@ -265,12 +262,15 @@ public class Importazioni {
                 while ((riga = bure.readLine()) != null) {
                     riga=riga.replaceAll("\"", "");
                     String splittata[] = riga.split(",");
-                    String data = Formatta_Data_CoinTracking(splittata[12]);
-                    if (!data.equalsIgnoreCase("")) {
-                        if (Mappa_MovimentiTemporanea.get(riga) == null) {
-                            Mappa_MovimentiTemporanea.put(data+" "+riga, riga);
-                        } else {
+                    if (splittata.length==13){
+                        String data = Formatta_Data_CoinTracking(splittata[12]);
+                        if (!data.equalsIgnoreCase("")) {
+                            if (Mappa_MovimentiTemporanea.get(riga) == null) {
+                                Mappa_MovimentiTemporanea.put(data+" "+riga, riga);
+                                //System.out.println(riga);
+                            } else {
                             //System.out.println("Movimento doppio - " + riga);
+                            }
                         }
                     }
                 }
@@ -296,7 +296,7 @@ public class Importazioni {
             String splittata[] = riga.split(",");
             String data=Formatta_Data_CoinTracking(splittata[12]);
             //System.out.println(data+" "+ultimaData);
-            if (ConvertiDatainLong(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
+            if (Funzioni_Date_ConvertiDatainLong(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
             {
                 //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
                 if (data.equalsIgnoreCase(ultimaData)) {

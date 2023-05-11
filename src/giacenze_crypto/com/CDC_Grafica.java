@@ -71,6 +71,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
     static List<String>[] CDC_CardWallet_ListaSaldi;
     static public List<String>[] CDC_FiatWallet_ListaSaldi;
+    static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     
     //static String Appoggio="";
     
@@ -103,10 +104,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
         
         CDC_LeggiFileDatiDB();
-        TransazioniCrypto_NascondiColonneTabellaCrypto();
+        TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto();
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
-        Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
@@ -1417,7 +1418,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     
     
-    public void TransazioniCrypto_NascondiColonneTabellaCrypto(){
+    public void TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto(){
        // this.CDC.remove(this.TransazioniCrypto);
         //per nascondere devo farlo al contrario
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(22));
@@ -2222,7 +2223,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 CDC_DataIniziale=Data;
                 this.CDC_ScriviFileDatiDB();
                 CDC_AggiornaGui(); 
-                Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             }
             else if(Funzioni_Date_ConvertiDatainLong(Data)>Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                 try {
@@ -2249,7 +2250,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 CDC_DataFinale=Data;
                 this.CDC_ScriviFileDatiDB();
                 CDC_AggiornaGui();
-                Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 
               
             }
@@ -2492,9 +2493,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         gest.setLocationRelativeTo(this);
         gest.setVisible(true);
         
-        Funzioni_PulisciMovimentiAssociatinonEsistenti();
-        Funzioni_AggiornaPlusvalenze();
-        Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti();
+        TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
 
        
         //questo sotto serve per aumentare la diomensione dell'header della tabella
@@ -2517,6 +2518,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.TransazioniCrypto_Bottone_Salva.setEnabled(false);
         TransazioniCrypto_Bottone_Annulla.setEnabled(false);
         this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
+        Importazioni.TransazioniAggiunte=0;
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
 
@@ -2539,7 +2541,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }    }
             MappaCryptoWallet.clear();
             try {
-                Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             } catch (IOException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -2624,7 +2626,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //disabilito il filtro prima dell'eleaborazioneper velocizzare il tutto
         //il filtro altrimenti viene applicato ogni volta che aggiungo una riga in tabella e rallenta tantissimo
    //     this.FiltraTabella(TransazioniCryptoTabella, "", 999);
-        this.Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
    //     this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_EscludiTIActionPerformed
 
@@ -2632,7 +2634,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         try {
 
             // TODO add your handling code here:
-            this.Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             TransazioniCrypto_Bottone_Salva.setEnabled(false);
             TransazioniCrypto_Bottone_Annulla.setEnabled(false);
             TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
@@ -2670,7 +2672,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
         JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
            if (movimentiCancellati>0){
-                Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
                 this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
                 this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
@@ -2704,8 +2706,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
          this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
          this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
          
-         Funzioni_AggiornaPlusvalenze();
-         this.Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+         TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
        // System.out.println(mod.getModificaEffettuata());        
         DepositiPrelievi_Caricatabella();
@@ -2882,8 +2884,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
         }
         
-        Funzioni_AggiornaPlusvalenze();
-        this.Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
@@ -2903,7 +2905,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_TransazioniCrypto_Text_PlusvalenzaActionPerformed
 
-    public void Funzioni_PulisciMovimentiAssociatinonEsistenti(){
+    public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){
         //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
         //su movimenti già associati
         for (String[] v : MappaCryptoWallet.values()) {
@@ -2924,7 +2926,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
           }
     }
     
-public void Funzioni_AggiornaPlusvalenze(){
+public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
             Deque<String[]> stack = new ArrayDeque<String[]>();
        // stack.push("a");
        // stack.push("b");
@@ -3254,7 +3256,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     
     
     
-       private void Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException { 
+       private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException { 
         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         this.TransazioniCryptoTextPane.setText("");
         String fileDaImportare = CryptoWallet_FileDB;
@@ -3300,7 +3302,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }    
     
-        private void Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
+        private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         this.TransazioniCryptoTextPane.setText("");
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();

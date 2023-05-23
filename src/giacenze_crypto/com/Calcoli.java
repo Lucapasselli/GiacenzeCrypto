@@ -4,24 +4,39 @@
  */
 package giacenze_crypto.com;
 
+
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +46,7 @@ import java.util.logging.Logger;
  */
 public class Calcoli {
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     
     public static void GeneraMappaCambioUSDEUR(){
@@ -55,6 +71,27 @@ public class Calcoli {
         }
     }  
     
+        public static void GeneraMappaCambioUSDTEUR(){
+        String riga;
+         try (FileReader fire = new FileReader("cambioUSDTEUR.db"); 
+                BufferedReader bure = new BufferedReader(fire);) 
+        {
+                while((riga=bure.readLine())!=null)
+                {
+                    String rigaSplittata[]=riga.split(",");
+                    if (rigaSplittata.length==2)
+                    {
+                       MappaConversioneUSDTEUR.put(rigaSplittata[0], rigaSplittata[1]);
+                    }
+                }
+                bure.close();
+                fire.close();
+       } catch (FileNotFoundException ex) {        
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
     
     public static String ConvertiUSDEUR(String Valore, String Data) {
         String risultato = null;
@@ -77,7 +114,7 @@ public class Calcoli {
                         break;
                     }
                 }
-            } else if (ConvertiDatainLong(Data) > ConvertiDatainLong("2019-01-01") && ConvertiDatainLong(Data) < ConvertiDatainLong(DatadiOggi)) {
+            } else if (ConvertiDatainLong(Data) >= ConvertiDatainLong("2017-01-01") && ConvertiDatainLong(Data) <= ConvertiDatainLong(DatadiOggi)) {
                 if (ConvertiDatainLong(Data) < ConvertiDatainLong(PrimaData)) {
                     //in questo caso richiedo i 10 gg precedenti la data richiesta
                     //anche perchè in questo modo comincio a compilare la tabella dei cambi
@@ -95,7 +132,7 @@ public class Calcoli {
             }
         } else {
             if (dateDisponibili.length == 0) {
-                PrimaData = "2019-01-01";
+                PrimaData = "2017-01-01";
                 UltimaData = DatadiOggi;
                 if(RecuperaTassidiCambio(PrimaData, UltimaData)!=null)risultato = ConvertiUSDEUR("1", Data);
             }
@@ -111,9 +148,48 @@ public class Calcoli {
         }
         return risultato;
     }
+    
+    public static String ConvertiUSDTEUR(String Valore, long Datalong) {
+        String risultato;// = null;
+        //come prima cosa devo decidere il formato data
+        long adesso=System.currentTimeMillis();
+        long inizio2019=ConvertiDatainLong("2019-01-01");
+        String DataOra=ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno=ConvertiDatadaLong(Datalong);
+        risultato = MappaConversioneUSDTEUR.get(DataOra);
+       /* SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
+        String DatadiOggi = f.format(System.currentTimeMillis());*/
+        if (risultato == null) {
+            //se non è disponibile il dato orario verifico se il dato è delle ultime 2 ore o se è antecedente al 2019 allora prendo il dato giornaliero.
+            //questo perchè prima del 2019 coingecko non ha i dati orari ma solo quelli giornalieri
+            //in alternativa richiedo acoingecko di darmi i prezzi orari dei 90 giorni a partire dalla data richiesta
+            if (adesso-Datalong<7200000 || Datalong-inizio2019<0)             //7200000 millisecondi sono 2 ore
+            {
+                //solo in questo caso vado a prendere il valore del giorno e non quello orario
+                risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+                 if (risultato==null)  //se non trovo nenache il valore del giorno allora richiamo l'api coingecko per l'aggiornamento dei prezzi
+                {
+                     RecuperaTassidiCambioUSDT(DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                     risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+                 }//non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+
+            }else {
+                RecuperaTassidiCambioUSDT(DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                risultato = MappaConversioneUSDTEUR.get(DataOra);
+            }
+                    } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+
+        if (risultato != null) {
+            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+        }
+        return risultato;
+    }
+    
+    
+    
+    
      
-     
-            public static long ConvertiDatainLong(String Data1) {
+    public static long ConvertiDatainLong(String Data1) {
            long m1=0;
         try {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
@@ -128,6 +204,20 @@ public class Calcoli {
         return m1;
     } 
      
+        public static long ConvertiDatainLongMinuto(String Data1) {
+           long m1=0;
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date d = f.parse(Data1);
+            m1 = d.getTime();
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+        } catch (ParseException ex) {
+           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            //System.out.println(Data1+" non è una data");
+        }
+        return m1;
+    } 
     
     public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {      
         String ok="ok";
@@ -159,7 +249,110 @@ public class Calcoli {
         }
         return ok;
      }
+ 
     
+    
+    
+    public static String RecuperaTassidiCambioUSDT(String DataIniziale, String DataFinale) {
+        String ok = "ok";
+        long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
+        long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
+        
+        //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
+        long difData=dataFin-dataIni;
+        ArrayList<Long> ArraydataIni = new ArrayList<>();
+        ArrayList<Long> ArraydataFin = new ArrayList<>();
+        //dataFin=dataIni+7776000 ;//questa fa si che mi dia i prezzi orari
+        //coingeko ha la seguente peculiarità:
+        //se richiedo piu' di 90gg mi da i prezzi giornalieri
+        //da 1 giorno a 90 da i prezzi ogni ora
+        //se invece chiediamo meno di 1 giorno da i prezzi ogni 5 minuti
+        //quello che interessa a me è avere i prezzi giornalieri (come backup) e quelli orari
+        //per cui per ogni richiesta devo gestire la cosa
+        //quindi, se ho meno di 3 mese porto il range a 3 mesi e prendo il primo valore di ogni giorno per quanto riaguarda il giornaliero
+        //e tutti gli altri valori per gli orari.
+        //se ho più di 3 mesi devo dividere le richieste in multipli di 3 mesi fino ad arrivare alla data iniziale che desidero.
+        //i multipli devono partire dalla data finale e andare indietro.
+        //7776000 secondi equivalgono a 3 mesi (90giorni per la precisione).
+        //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
+      // System.out.println(dataIni+" - "+dataFin);
+        while (difData>0){
+            ArraydataIni.add(dataIni);
+            ArraydataFin.add(dataIni+7776000);
+            dataIni=dataIni+7776000;
+            difData=dataFin-dataIni;    
+           // i++;
+        }
+    /*    System.out.println(ArraydataIni.size());
+        for (int i=0;i<ArraydataIni.size();i++){
+            //qui ci metto il ciclo con le richieste e volendo anche la parte grafica con l'andamento
+            System.out.println(ArraydataIni.get(i)+ " - "+ArraydataFin.get(i));
+            
+        }*/
+
+for (int i=0;i<ArraydataIni.size();i++){
+        try {
+            URL url = new URL("https://api.coingecko.com/api/v3/coins/tether/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i));
+            URLConnection connection = url.openConnection();
+            System.out.println(url);
+            try ( BufferedReader in = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+
+                }
+
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
+                //  List<PrezzoData> prezzoDataList = new ArrayList<>();
+                if (pricesArray != null) {
+                    for (JsonElement element : pricesArray) {
+                        JsonArray priceArray = element.getAsJsonArray();
+                        if (priceArray.size()==2)
+                    {
+                    //   if (rigaSplittata[0].equalsIgnoreCase("Euro")) MappaConversioneUSDEUR.put(rigaSplittata[5], rigaSplittata[3]);
+                    
+                        long timestamp = priceArray.get(0).getAsLong();
+                        String price = priceArray.get(1).getAsString();
+                        Date date = new java.util.Date(timestamp);
+                        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                        SimpleDateFormat sdf2 = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                        sdf2.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                        String DataconOra = sdf.format(date);
+                        String Data = sdf2.format(date);
+                        MappaConversioneUSDTEUR.put(Data, price);
+                        MappaConversioneUSDTEUR.put(DataconOra, price);
+                        //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
+                        //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
+                        //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
+                        //ora devo gestire l'inserimento nella mappa
+                        }
+                    }
+                } else {
+                    ok = null;
+                }
+            } catch (IOException ex) {
+                ok = null;
+            }
+            TimeUnit.SECONDS.sleep(2);
+        } 
+
+        catch (MalformedURLException ex) {
+            ok = null;
+        } catch (IOException ex) {
+            ok = null;
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+        ScriviFileConversioneUSDTEUR();
+        return ok;
+    }
     
     
      static void ScriviFileConversioneUSDEUR() { //CDC_FileDatiDB
@@ -185,13 +378,50 @@ public class Calcoli {
    
    }
     
-    
+        static void ScriviFileConversioneUSDTEUR() { //CDC_FileDatiDB
+   // CDC_FileDatiDB
+   try { 
+       File file=new File ("cambioUSDTEUR.db");
+        if (!file.exists()) file.createNewFile();
+       FileWriter w=new FileWriter("cambioUSDTEUR.db");
+       BufferedWriter b=new BufferedWriter (w);
+       
+       Object DateCambi[]=MappaConversioneUSDTEUR.keySet().toArray();
+       
+       for (int i=0;i<DateCambi.length;i++){
+           b.write(DateCambi[i].toString()+","+MappaConversioneUSDTEUR.get(DateCambi[i].toString())+"\n");
+       }
+       
+      // b.write("DataIniziale="+CDC_DataIniziale+"\n");
+       //System.out.println(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+       b.close();
+       w.close();
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+   
+   }
+     
     
     
     public static String ConvertiDatadaLong(long Data1) {
 
   
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = new Date(Data1);
+            //d=f.format(d);
+            String m1=f.format(d);
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+
+        return m1;
+    } 
+    
+        public static String ConvertiDatadaLongallOra(long Data1) {
+
+  
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
             Date d = new Date(Data1);
             //d=f.format(d);
             String m1=f.format(d);

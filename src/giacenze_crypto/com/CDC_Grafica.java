@@ -15,8 +15,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -150,6 +153,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Bottone_Annulla = new javax.swing.JButton();
         TransazioniCrypto_Label_Plusvalenza = new javax.swing.JLabel();
         TransazioniCrypto_Text_Plusvalenza = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
         DepositiPrelievi = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         DepositiPrelievi_Tabella = new javax.swing.JTable();
@@ -361,6 +365,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -390,7 +401,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(TransazioniCrypto_Text_Plusvalenza)
                                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
-                            .addComponent(TransazioniCrypto_CheckBox_EscludiTI, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(TransazioniCrypto_CheckBox_EscludiTI, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton1))
                         .addContainerGap())))
         );
         TransazioniCryptoLayout.setVerticalGroup(
@@ -410,7 +422,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(TransazioniCrypto_Label_Plusvalenza)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(135, 135, 135)
+                        .addGap(73, 73, 73)
+                        .addComponent(jButton1)
+                        .addGap(39, 39, 39)
                         .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1510,7 +1524,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
    
    }
             
-    
+    public static void getBitcoinPrice(String symbol, long timestamp) throws IOException {
+        String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + symbol + "&interval=1m&startTime=" + timestamp + "&endTime=" + timestamp;
+
+        URL url = new URL(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder response = new StringBuilder();
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+
+        // Parsing del JSON di risposta per ottenere il prezzo
+        String json = response.toString();
+        String[] data = json.substring(1, json.length() - 1).split(",");
+        //double price = Double.parseDouble(data[4]);
+        System.out.println (apiUrl);
+        System.out.println (response.toString());
+        System.out.println (data[4]); //questo è il valore sulla coppia con usdt
+
+       // return price;
+    }
     
     public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {                                          
         // TODO add your handling code here:
@@ -2905,6 +2944,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_TransazioniCrypto_Text_PlusvalenzaActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+       
+            // TODO add your handling code here:
+           /* long timestamp = 1621344000000L;
+            getBitcoinPrice("BTCUSDT", timestamp);*/
+           Calcoli.GeneraMappaCambioUSDTEUR();
+           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2023-01-01 20:22")));
+           Calcoli.ScriviFileConversioneUSDTEUR();
+
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){
         //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
         //su movimenti già associati
@@ -3649,6 +3699,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

@@ -2522,7 +2522,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void TransazioniCrypto_Bottone_ImportaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_ImportaActionPerformed
         // TODO add your handling code here:
-        Calcoli.GeneraMappaCambioUSDEUR();
+       // Calcoli.GeneraMappaCambioUSDEUR();
        // Importazioni.Formatta_Data_CoinTracking("11.07.2022 20:12");
 
 ///////       Importazioni.Importa_Crypto_CDCApp();
@@ -2949,9 +2949,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
             // TODO add your handling code here:
            /* long timestamp = 1621344000000L;
             getBitcoinPrice("BTCUSDT", timestamp);*/
-           Calcoli.GeneraMappaCambioUSDTEUR();
-           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2023-01-01 20:22")));
-           Calcoli.ScriviFileConversioneUSDTEUR();
+          Calcoli.RecuperaTassidiCambioXXXUSDT("BTC", "2023-05-01", "2023-05-30");
+       /*    System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2023-01-01 20:22")));
+           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2021-01-01 20:22")));
+           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2020-01-01 20:22")));
+           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2019-01-01 20:22")));
+           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2018-01-01 20:22")));*/
 
     }//GEN-LAST:event_jButton1ActionPerformed
 

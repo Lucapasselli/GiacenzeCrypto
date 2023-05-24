@@ -115,6 +115,7 @@ public class Importazioni {
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
         Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+       // Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         String riga;
         String ultimaData = "";
         List<String> listaMovimentidaConsolidare = new ArrayList<>();
@@ -382,7 +383,7 @@ public class Importazioni {
     }
         
         
-    private static void Leggi_Movimenti_Crypto() {///da finireeeeeeeeeeeeeeeee
+  /*  private static void Leggi_Movimenti_Crypto() {///da finireeeeeeeeeeeeeeeee
         try {
             FileReader w = new FileReader("movimenti.crypto.csv");
             BufferedReader bure = new BufferedReader(w);
@@ -395,7 +396,7 @@ public class Importazioni {
         } catch (IOException ex) {
             //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
+    }*/
     
      public static List<String[]> ConsolidaMovimenti_CDCAPP(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
@@ -442,6 +443,7 @@ public class Importazioni {
 
                                 //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
                                 RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_RW";
+           // System.out.println(RT[0]);
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = "Crypto.com App";
@@ -1349,7 +1351,7 @@ public class Importazioni {
         return lista;
     }   
     
-    public void Importa_Crypto_CDCExchange(){
+    /*public void Importa_Crypto_CDCExchange(){
         
     }
     
@@ -1359,6 +1361,6 @@ public class Importazioni {
     
     public void Importa_Crypto_OKX(){
         
-    }
+    }*/
     
 }

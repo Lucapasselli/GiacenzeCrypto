@@ -2949,7 +2949,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             // TODO add your handling code here:
            /* long timestamp = 1621344000000L;
             getBitcoinPrice("BTCUSDT", timestamp);*/
-          Calcoli.RecuperaTassidiCambioXXXUSDT("BTC", "2023-05-01", "2023-05-30");
+       //   Calcoli.RecuperaTassidiCambioXXXUSDT("BTC", "2023-05-01", "2023-05-30");
+          Calcoli.ConvertiXXXEUR("BTC", "0.02", Calcoli.ConvertiDatainLongMinuto("2021-05-02 19:09"));
+          Calcoli.ScriviFileConversioneXXXEUR();
        /*    System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2023-01-01 20:22")));
            System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2021-01-01 20:22")));
            System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2020-01-01 20:22")));

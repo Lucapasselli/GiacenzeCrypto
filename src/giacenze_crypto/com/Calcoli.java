@@ -41,9 +41,11 @@ import java.util.logging.Logger;
 public class Calcoli {
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneXXXUSDT = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static boolean fileConversioneUSDTEURcaricato=false;
     static boolean fileConversioneUSDEURcaricato=false;
+    static boolean fileConversioneXXXEURcaricato=false;
     
     
     public static void GeneraMappaCambioUSDEUR(){
@@ -105,6 +107,39 @@ public class Calcoli {
         }
     } 
     
+        
+        public static void GeneraMappaCambioXXXEUR(){
+         try {
+             File file=new File ("cambioXXXEUR.db");
+             if (!file.exists()) file.createNewFile();
+             String riga;
+             try (FileReader fire = new FileReader("cambioXXXEUR.db");
+                     BufferedReader bure = new BufferedReader(fire);)
+             {
+                 while((riga=bure.readLine())!=null)
+                 {
+                     String rigaSplittata[]=riga.split(",");
+                     if (rigaSplittata.length==2)
+                     {
+                         MappaConversioneXXXEUR.put(rigaSplittata[0], rigaSplittata[1]);
+                         MappaConversioneXXXEUR_temp.put(rigaSplittata[0], rigaSplittata[1]);
+                     }
+                 }
+                 bure.close();
+                 fire.close();        
+             } catch (FileNotFoundException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (IOException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             }
+             fileConversioneXXXEURcaricato=true;
+         } catch (IOException ex) {        
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
+        
+        
+        
     public static String ConvertiUSDEUR(String Valore, String Data) {
         if (!fileConversioneUSDEURcaricato)
             {
@@ -209,8 +244,8 @@ public class Calcoli {
         //long inizio2019=ConvertiDatainLong("2019-01-01");
         String DataOra=ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=ConvertiDatadaLong(Datalong);
-        String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
-        String DataFine=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datafine=la data+45gg
+        //String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
+        //String DataFine=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datafine=la data+45gg
         risultato = MappaConversioneUSDTEUR.get(DataOra);
        /* SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
         String DatadiOggi = f.format(System.currentTimeMillis());*/
@@ -220,7 +255,7 @@ public class Calcoli {
                 risultato = MappaConversioneUSDTEUR.get(DataGiorno);
                  if (risultato==null)  //se non trovo nenache il valore del giorno allora richiamo l'api coingecko per l'aggiornamento dei prezzi
                 {
-                     RecuperaTassidiCambioUSDT(DataInizio,DataFine);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                     RecuperaTassidiCambioUSDT(DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
                      risultato = MappaConversioneUSDTEUR.get(DataGiorno);
                  }//non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 
@@ -232,7 +267,33 @@ public class Calcoli {
         return risultato;
     }
     
-    
+       public static String ConvertiXXXEUR(String Crypto,String Valore, long Datalong) {
+        //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
+        if (!fileConversioneXXXEURcaricato)
+            {
+                GeneraMappaCambioXXXEUR();
+            }
+        
+        String risultato;// = null;
+        String DataOra=ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno=ConvertiDatadaLong(Datalong);
+        //risultato = MappaConversioneXXXEUR.get(DataOra+" "+Crypto);
+        risultato = MappaConversioneXXXEUR_temp.get(DataOra+" "+Crypto);
+        if (risultato == null) {
+
+                     RecuperaTassidiCambioXXXUSDT(Crypto,DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                     risultato = MappaConversioneXXXEUR_temp.get(DataOra+" "+Crypto);
+                 //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+
+                     //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+        }
+        if (risultato != null) {
+            //questa è la mappa che al termine della conversione devo scrivere nel file;
+            MappaConversioneXXXEUR.put(DataOra+" "+Crypto, risultato);
+            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+        }
+        return risultato;
+    } 
     
     
      
@@ -374,7 +435,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                         sdf2.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                         String DataconOra = sdf.format(date);
                         String Data = sdf2.format(date);
-                        MappaConversioneUSDTEUR.put(Data, price);
+                        if (MappaConversioneUSDTEUR.get(Data)==null) MappaConversioneUSDTEUR.put(Data, price);
                         MappaConversioneUSDTEUR.put(DataconOra, price);
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
                         //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
@@ -472,8 +533,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                         sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                         String DataconOra = sdf.format(date);
                         String Prezzo=ConvertiUSDTEUR(price,timestamp);
-                        System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
-                       MappaConversioneXXXUSDT.put(DataconOra+" "+Crypto, Prezzo);
+                       // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
+                       MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, Prezzo);
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
                         //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
                         //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
@@ -497,7 +558,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
         }
-        ScriviFileConversioneUSDTEUR();
+     //   ScriviFileConversioneUSDTEUR();
         return ok;
     }
     
@@ -530,6 +591,31 @@ for (int i=0;i<ArraydataIni.size();i++){
    
    }
     
+         static void ScriviFileConversioneXXXEUR() { //CDC_FileDatiDB
+   // Devo lanciare questa funzione alla fine di ogni conversione per aggiornare i dati sul database dei prezzi
+   try { 
+       FileWriter w=new FileWriter("cambioXXXEUR.db");
+       BufferedWriter b=new BufferedWriter (w);
+       
+       Object DateCambi[]=MappaConversioneXXXEUR.keySet().toArray();
+       
+       for (int i=0;i<DateCambi.length;i++){
+           b.write(DateCambi[i].toString()+","+MappaConversioneXXXEUR.get(DateCambi[i].toString())+"\n");
+       }
+       
+      // b.write("DataIniziale="+CDC_DataIniziale+"\n");
+       //System.out.println(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+       b.close();
+       w.close();
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+   
+   } 
+     
+     
+     
         static void ScriviFileConversioneUSDTEUR() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    try { 

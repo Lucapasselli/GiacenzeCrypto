@@ -30,6 +30,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
+import java.util.Collections;
 
 /**
  *
@@ -120,7 +121,19 @@ public class Importazioni {
         String ultimaData = "";
         List<String> listaMovimentidaConsolidare = new ArrayList<>();
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
+        List<String> righeFile = new ArrayList<>();
+
+            //in questo modo butto tutto il file in un array che poi verrà riordinato in modo da avere i movimenti in ordine di data
             while ((riga = bure.readLine()) != null) {
+                righeFile.add(riga);
+                }
+            Collections.sort(righeFile);
+            Collections.sort(righeFile);
+            
+            for (int w=0;w<righeFile.size();w++){
+                
+                riga=righeFile.get(w);
+                //System.out.println(riga);
                 String splittata[] = riga.split(",");
                 if (Funzioni_Date_ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
@@ -294,6 +307,7 @@ public class Importazioni {
         List<String> listaMovimentidaConsolidare = new ArrayList<>();
         for (String str : Mappa_MovimentiTemporanea.keySet()) {
             riga=Mappa_MovimentiTemporanea.get(str);
+           // System.out.println(riga);
             String splittata[] = riga.split(",");
             String data=Formatta_Data_CoinTracking(splittata[12]);
             //System.out.println(data+" "+ultimaData);

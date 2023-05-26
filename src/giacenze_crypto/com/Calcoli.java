@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,9 +44,8 @@ public class Calcoli {
     static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static boolean fileConversioneUSDTEURcaricato=false;
-    static boolean fileConversioneUSDEURcaricato=false;
-    static boolean fileConversioneXXXEURcaricato=false;
+    static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
     
     
     public static void GeneraMappaCambioUSDEUR(){
@@ -75,7 +75,7 @@ public class Calcoli {
          } catch (IOException ex) {        
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
-         fileConversioneUSDEURcaricato=true;
+
     }  
     
         public static void GeneraMappaCambioUSDTEUR(){
@@ -101,7 +101,7 @@ public class Calcoli {
              } catch (IOException ex) {
                  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
              }
-             fileConversioneUSDTEURcaricato=true;
+
          } catch (IOException ex) {        
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -132,7 +132,7 @@ public class Calcoli {
              } catch (IOException ex) {
                  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
              }
-             fileConversioneXXXEURcaricato=true;
+
          } catch (IOException ex) {        
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -141,7 +141,7 @@ public class Calcoli {
         
         
     public static String ConvertiUSDEUR(String Valore, String Data) {
-        if (!fileConversioneUSDEURcaricato)
+        if (MappaConversioneUSDEUR.isEmpty())
             {
                 GeneraMappaCambioUSDEUR();
             }
@@ -233,7 +233,7 @@ public class Calcoli {
     
     public static String ConvertiUSDTEUR(String Valore, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-        if (!fileConversioneUSDTEURcaricato)
+        if (MappaConversioneUSDTEUR.isEmpty())
             {
                 GeneraMappaCambioUSDTEUR();
             }
@@ -269,7 +269,7 @@ public class Calcoli {
     
        public static String ConvertiXXXEUR(String Crypto,String Valore, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-        if (!fileConversioneXXXEURcaricato)
+        if (MappaConversioneXXXEUR.isEmpty())
             {
                 GeneraMappaCambioXXXEUR();
             }
@@ -565,6 +565,68 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     
     
+        
+        
+    public static String RecuperaCoppieBinance() {
+        String ok = "ok";
+        ArrayList<String> ArraydiCoppie = new ArrayList<>();
+       // String a[]=new
+   /*    USDCUSDT
+BUSDUSDT
+DAIUSDT
+TUSDUSDT
+BTCUSDT
+ETHUSDT
+BNBUSDT
+LTCUSDT
+ADAUSDT
+XRPUSDT
+DASHUSDT
+NEOUSDT
+IOTAUSDT
+EOSUSDT
+XLMUSDT
+QTUMUSDT
+PAXUSDT
+TRXUSDT
+ATOMUSDT
+MATICUSDT*/
+        try {
+            String apiUrl = "https://api.binance.com/api/v3/exchangeInfo";
+            URL url = new URL(apiUrl);
+            URLConnection connection = url.openConnection();
+            System.out.println(url);
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+
+            Gson gson = new Gson();
+            JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+            JsonArray pricesArray = jsonObject.getAsJsonArray("symbols");
+            if (pricesArray != null) {
+                for (JsonElement element : pricesArray) {
+
+                    JsonObject Coppie = element.getAsJsonObject();
+                    String symbol = Coppie.get("symbol").getAsString();
+                    if (symbol.substring(symbol.length()-4).equals("USDT")) System.out.println(symbol);
+
+                }
+            } else {
+                ok = null;
+            }
+
+            TimeUnit.SECONDS.sleep(1);
+        } catch (JsonSyntaxException | IOException | InterruptedException ex) {
+            ok = null;
+        }
+        return ok;
+    }
+        
+        
+        
     
     
     

@@ -45,6 +45,10 @@ public class Calcoli {
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
+    static String CoppiePrioritarie[]=new String []{"USDCUSDT","USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","BTCUSDT",
+        "ETHUSDT","BNBUSDT","LTCUSDT","ADAUSDT","XRPUSDT","NEOUSDT",
+        "IOTAUSDT","EOSUSDT","XLMUSDT","SOLUSDT","PAXUSDT","TRXUSDT","ATOMUSDT","MATICUSDT"};
 
     
     
@@ -231,7 +235,7 @@ public class Calcoli {
     }*/
     
     
-    public static String ConvertiUSDTEUR(String Valore, long Datalong) {
+    public static String ConvertiUSDTEUR(String Qta, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         if (MappaConversioneUSDTEUR.isEmpty())
             {
@@ -262,18 +266,21 @@ public class Calcoli {
                     } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 
         if (risultato != null) {
-            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
         }
         return risultato;
     }
     
-       public static String ConvertiXXXEUR(String Crypto,String Valore, long Datalong) {
+       public static String ConvertiXXXEUR(String Crypto,String Qta, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         if (MappaConversioneXXXEUR.isEmpty())
             {
                 GeneraMappaCambioXXXEUR();
             }
-        
+        if (MappaCoppieBinance.isEmpty())
+        {
+            RecuperaCoppieBinance();
+        }
         String risultato;// = null;
         String DataOra=ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=ConvertiDatadaLong(Datalong);
@@ -290,7 +297,7 @@ public class Calcoli {
         if (risultato != null) {
             //questa è la mappa che al termine della conversione devo scrivere nel file;
             MappaConversioneXXXEUR.put(DataOra+" "+Crypto, risultato);
-            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
         }
         return risultato;
     } 
@@ -563,34 +570,50 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    
+    public static String DammiPrezzoTransazione(String Moneta1,String Moneta2,String Qta1,String Qta2,long Data) {
+        String PrezzoTransazione=null;
+        boolean trovato1=false;
+        boolean trovato2=false;
+        if (MappaCoppieBinance.isEmpty())
+        {
+            RecuperaCoppieBinance();
+            //se non ho la mappa delle coppie di binance la recupero
+        }
+        //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
+        for (String CoppiePrioritarie1 : CoppiePrioritarie) {
+            if (!trovato1 && Qta1!=null && Moneta1!=null && (Moneta1+"USDT").toUpperCase().equals(CoppiePrioritarie1)){
+                trovato1=true;
+                PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
+                if (PrezzoTransazione!=null)return PrezzoTransazione;//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
+                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+            }
+            if (!trovato2 && Qta2!=null && Moneta2!=null && (Moneta2+"USDT").toUpperCase().equals(CoppiePrioritarie1)){
+                trovato2=true;
+                PrezzoTransazione=ConvertiXXXEUR(Moneta2,Qta2,Data);
+                if (PrezzoTransazione!=null)return PrezzoTransazione;
+               //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+            }
+        }
+        //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
+        //a questo punto la cerco tra tutte le coppie che binance riconosce
+        if (!trovato1 && Qta1!=null && Moneta1!=null && MappaCoppieBinance.get(Moneta1+"USDT")!=null){
+                PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
+                if (PrezzoTransazione!=null)return PrezzoTransazione;
+                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+            }
+            if (!trovato2 && Qta2!=null && Moneta2!=null && MappaCoppieBinance.get(Moneta2+"USDT")!=null){
+                PrezzoTransazione=ConvertiXXXEUR(Moneta2,Qta2,Data);
+                if (PrezzoTransazione!=null)return PrezzoTransazione;
+               //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+            }
+        return PrezzoTransazione;
+    } 
     
         
-        
+    //questa funzione la chiamo sempre una sola volta per verificare quali sono le coppie di trading di cui binance mi fornisce i dati    
     public static String RecuperaCoppieBinance() {
         String ok = "ok";
-        ArrayList<String> ArraydiCoppie = new ArrayList<>();
-       // String a[]=new
-   /*    USDCUSDT
-BUSDUSDT
-DAIUSDT
-TUSDUSDT
-BTCUSDT
-ETHUSDT
-BNBUSDT
-LTCUSDT
-ADAUSDT
-XRPUSDT
-DASHUSDT
-NEOUSDT
-IOTAUSDT
-EOSUSDT
-XLMUSDT
-QTUMUSDT
-PAXUSDT
-TRXUSDT
-ATOMUSDT
-MATICUSDT*/
+
         try {
             String apiUrl = "https://api.binance.com/api/v3/exchangeInfo";
             URL url = new URL(apiUrl);
@@ -611,8 +634,11 @@ MATICUSDT*/
 
                     JsonObject Coppie = element.getAsJsonObject();
                     String symbol = Coppie.get("symbol").getAsString();
-                    if (symbol.substring(symbol.length()-4).equals("USDT")) System.out.println(symbol);
-
+                    if (symbol.substring(symbol.length()-4).equals("USDT")) 
+                        {
+                        //System.out.println(symbol);
+                        MappaCoppieBinance.put(symbol, symbol);
+                        }
                 }
             } else {
                 ok = null;

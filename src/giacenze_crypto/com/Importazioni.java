@@ -371,6 +371,7 @@ public class Importazioni {
         Transazioni=numeromov;
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
+        Calcoli.ScriviFileConversioneXXXEUR();
         
     }
     
@@ -1007,7 +1008,8 @@ public class Importazioni {
                                 if (new BigDecimal(movimentoSplittato[4]).compareTo(new BigDecimal("0"))==0) prezzoTrans=movimentoSplittato[8];
                                 else prezzoTrans=movimentoSplittato[4];
                                 RT[14] = "EUR "+prezzoTrans;
-                                RT[15] = prezzoTrans;
+                                //questo è il primo movimento fatto, mancano gli altri
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1362,6 +1364,7 @@ public class Importazioni {
                            
                            
                         }
+        
         return lista;
     }   
     

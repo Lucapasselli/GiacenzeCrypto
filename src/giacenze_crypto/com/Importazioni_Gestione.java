@@ -271,7 +271,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     //System.out.println(nomewallet);
                         }
                         else nomewallet=ComboBox_Exchanges.getSelectedItem().toString().trim();
-                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet);
+                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet,this);
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                     res.setLocationRelativeTo(this);
@@ -283,6 +283,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 //Poi devo anche gestire la corretta importazione del nome dell'exchange
                 JOptionPane.showInternalConfirmDialog(null, "Attenzione, non è stata fatta nessuna scelta dal menù a tendina",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                
+                
+
             }*/
 
 

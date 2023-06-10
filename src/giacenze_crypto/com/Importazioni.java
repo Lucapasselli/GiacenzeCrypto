@@ -31,6 +31,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
 import java.util.Collections;
+import javax.swing.SwingUtilities;
+import giacenze_crypto.com.CDC_Grafica;
+import java.awt.Component;
 
 /**
  *
@@ -42,6 +45,7 @@ public class Importazioni {
     public static int TransazioniAggiunte=0;
     public static int TrasazioniScartate=0;
     public static int TrasazioniSconosciute=0;
+    
     
     public static String movimentiSconosciuti="";
     
@@ -257,9 +261,34 @@ public class Importazioni {
         
         
     
-        public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange) {
+        public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c) {
         
-        AzzeraContatori();        
+
+         //   Download progressb=new Download();
+  /*                 SwingUtilities.invokeLater(() -> {
+           // ProgressBarExample example = new ProgressBarExample();
+  Download progressb=new Download();
+  progressb.SetMassimo(100);
+            // Esempio di aggiornamento della progress bar dalla funzione main
+            for (int i = 0; i <= 100; i++) {
+                final int progress = i;
+                SwingUtilities.invokeLater(() -> progressb.updateProgress(progress));
+                try {
+                    Thread.sleep(100); // Aggiorna la progress bar ogni 100 millisecondi
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });*/
+       
+         Download progressb=new Download();
+         progressb.setLocationRelativeTo(c);
+         progressb.setVisible(true);
+          Thread thread;
+            thread = new Thread() {
+            public void run() {
+            try {
+ AzzeraContatori();        
         String fileDaImportare = fileCoinTracking;
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
@@ -305,6 +334,8 @@ public class Importazioni {
         String ultimaData = "";
         //Iterator<String> iteratore=Mappa_MovimentiTemporanea.keySet().iterator();
         List<String> listaMovimentidaConsolidare = new ArrayList<>();
+      progressb.SetMassimo(Mappa_MovimentiTemporanea.size());
+        int avanzamento=0;
         for (String str : Mappa_MovimentiTemporanea.keySet()) {
             riga=Mappa_MovimentiTemporanea.get(str);
            // System.out.println(riga);
@@ -335,6 +366,8 @@ public class Importazioni {
                 ultimaData = Formatta_Data_CoinTracking(splittata[12]);
                 
             }
+            avanzamento++;
+             progressb.SetAvanzamento(avanzamento);
         }
             
             List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange);
@@ -372,6 +405,20 @@ public class Importazioni {
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
         Calcoli.ScriviFileConversioneXXXEUR();
+       // return true;
+
+            } catch (Exception ex) {
+            //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            }
+            
+            };
+            thread.start();         
+                   
+                 
+            
+        
+       
         
     }
     
@@ -1036,10 +1083,11 @@ public class Importazioni {
                                 RT[11] = movimentoSplittato[2];
                                 RT[12] = "Crypto";
                                 RT[13] = movimentoSplittato[1];
+                                String prezzoTrans=new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[14] = "EUR "+movimentoSplittato[5];
-                                RT[15] = new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                 RT[16] = "";
-                                RT[17] = new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[17] = RT[15];
                                 RT[18] = "";
                                 RT[19] = "0.00";
                                 RT[20] = "";
@@ -1067,7 +1115,8 @@ public class Importazioni {
                                 RT[12] = "FIAT";
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[1];
-                                RT[15] = new BigDecimal(movimentoSplittato[1]).setScale(2, RoundingMode.HALF_UP).toString();
+                                String prezzoTrans=new BigDecimal(movimentoSplittato[1]).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1097,11 +1146,12 @@ public class Importazioni {
                                 RT[12] = "Crypto";
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[4];
-                                RT[15] = movimentoSplittato[4];
+                                String prezzoTrans= movimentoSplittato[4];
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                 RT[16] = "";
-                                RT[17] = movimentoSplittato[4];
+                                RT[17] = RT[15];
                                 RT[18] = "";
-                                RT[19] = movimentoSplittato[4];
+                                RT[19] = RT[15];
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
@@ -1126,11 +1176,12 @@ public class Importazioni {
                                 RT[12] = "Crypto";
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[4];
-                                RT[15] = movimentoSplittato[4];
+                                String prezzoTrans= movimentoSplittato[4];
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                 RT[16] = "";
-                                RT[17] = movimentoSplittato[4];
+                                RT[17] = RT[15];
                                 RT[18] = "";
-                                RT[19] = movimentoSplittato[4];
+                                RT[19] = RT[15];
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
@@ -1157,7 +1208,8 @@ public class Importazioni {
                                 RT[12] = "";
                                 RT[13] = "";
                                 RT[14] = "EUR "+movimentoSplittato[8];
-                                RT[15] = movimentoSplittato[8];
+                                String prezzoTrans= movimentoSplittato[8];
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";
                                 RT[18] = "";
@@ -1187,9 +1239,10 @@ public class Importazioni {
                                 RT[12] = "";
                                 RT[13] = "";
                                 RT[14] = "EUR "+movimentoSplittato[5];
-                                RT[15] = new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
+                                String prezzoTrans= new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                 RT[16] = "";
-                                RT[17] = new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[17] = RT[15];
                                 RT[18] = "";
                                 RT[19] = "0.00";
                                 RT[20] = "";
@@ -1299,7 +1352,9 @@ public class Importazioni {
                                         String valoreEur;
                                         if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[1];else valoreEur =movimentoSplittato[4];
                                         RT[14] = "EUR "+valoreEur;
-                                        RT[15] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        
+                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                         RT[16] = "";
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
@@ -1338,7 +1393,8 @@ public class Importazioni {
                                         String valoreEur;
                                         if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[5];else valoreEur =movimentoSplittato[8];
                                         RT[14] = "EUR "+valoreEur;
-                                        RT[15] = new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
+                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
                                         RT[16] = "";
                                         RT[17] = "Da Calcolare";
                                         RT[18] = "";

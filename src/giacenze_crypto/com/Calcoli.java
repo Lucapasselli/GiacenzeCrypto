@@ -52,7 +52,7 @@ public class Calcoli {
 
     
   //DA FARE : Recupero prezzi orari in base all'ora più vicina  
-    //DA FARE : Controllare perchè non viene sdalvato il prezzo
+    //DA FARE : se ci sono euro tenere buono quello
     
     public static void GeneraMappaCambioUSDEUR(){
          try {
@@ -199,7 +199,7 @@ public class Calcoli {
 
         if (risultato != null) {
 
-            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+            risultato = (new BigDecimal(Valore).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
 
           //  System.out.println(risultato);
 
@@ -578,7 +578,15 @@ for (int i=0;i<ArraydataIni.size();i++){
         boolean trovato1=false;
         boolean trovato2=false;
         //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
-        if (Moneta1!=null && Moneta1.equalsIgnoreCase("USDT")){
+        if (Moneta1!=null && Moneta1.equalsIgnoreCase("EUR")){
+            PrezzoTransazione=new BigDecimal(Qta1).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+            if (PrezzoTransazione!=null)return PrezzoTransazione;
+        }
+        else if  (Moneta2!=null && Moneta2.equalsIgnoreCase("EUR")){
+            PrezzoTransazione=new BigDecimal(Qta2).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+             if (PrezzoTransazione!=null)return PrezzoTransazione;
+        }
+        else if (Moneta1!=null && Moneta1.equalsIgnoreCase("USDT")){
             PrezzoTransazione=new BigDecimal(ConvertiUSDTEUR(Qta1,Data)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
             if (PrezzoTransazione!=null)return PrezzoTransazione;
         }

@@ -8,6 +8,8 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -38,10 +42,15 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 
 /**
  *
@@ -2944,8 +2953,191 @@ public class CDC_Grafica extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_TransazioniCrypto_Text_PlusvalenzaActionPerformed
 
+    
+         private static boolean eseguiOperazioneConProgressbar() {
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setPreferredSize(new Dimension(250, 30));
+        progressBar.setStringPainted(true);
+
+        JFrame frame = new JFrame("ProgressBar Example");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 200);
+        frame.setLayout(new FlowLayout());
+        frame.add(progressBar);
+        frame.setVisible(true);
+
+        SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                for (int i = 0; i <= 100; i++) {
+                    Thread.sleep(50);
+                    setProgress(i);
+                }
+                return true;
+            }
+
+            @Override
+            protected void done() {
+                progressBar.setString("Completato!");
+            }
+        };
+
+        worker.addPropertyChangeListener(evt -> {
+            if ("progress".equals(evt.getPropertyName())) {
+                int progress = (int) evt.getNewValue();
+                progressBar.setValue(progress);
+            }
+        });
+
+        worker.execute();
+
+        try {
+            worker.get();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    
+    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
        
+eseguiOperazioneConProgressbar();
+/*
+         Download progressb=new Download();
+         progressb.setLocationRelativeTo(CDC_Grafica.this);
+         progressb.setVisible(true);
+         
+         
+          SwingWorker<Integer, Integer> worker = new SwingWorker<Integer, Integer>() {
+                @Override
+                protected Integer doInBackground() throws Exception {
+                    // Simulazione di un'operazione lunga
+                    for (int i = 0; i <= 100; i++) {
+                        Thread.sleep(50);
+                        publish(i); // Invia i valori intermedi per l'aggiornamento della progressbar
+                    }
+                    return 42; // Valore da restituire al termine dell'operazione
+                }
+
+                @Override
+                protected void process(List<Integer> chunks) {
+                    // Aggiorna la progressbar con l'ultimo valore pubblicato
+                    int progress = chunks.get(chunks.size() - 1);
+                    progressb.SetAvanzamento(progress);
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        int result = get(); // Ottieni il risultato dell'operazione doInBackground()
+                      //  progressBar.setIndeterminate(false);
+                       // progressBar.setString("Completato! Risultato: " + result);
+
+                        // Esegui il codice successivo al completamento dell'operazione
+                 //       codiceSuccessivo();
+                 System.out.println("Finito");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                     //   startButton.setEnabled(true);
+                    }
+                }
+            };
+
+            worker.execute();
+        try {
+            worker.wait();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         
+         
+         
+         
+         
+         
+         
+         //final CountDownLatch latch = new CountDownLatch(1);
+     /*    Thread progressBarThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // Simulazione di un'operazione lunga
+                        for (int i = 0; i <= 100; i++) {
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            }
+                            final int progress = i;
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressb.SetAvanzamento(progress);
+                                }
+                            });
+                        }
+
+                        // Notifica il thread principale quando il thread con la progressbar è completato
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                System.out.println("Finito");
+                               // latch.countDown();
+                              //  startButton.setEnabled(true); // Riattiva il pulsante Start
+                            }
+                        });
+                    }
+                });
+
+                progressBarThread.start();
+             /*   try {
+                    latch.await();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }*/
+
+
+            /*       Thread thread;
+            thread = new Thread() {
+            public void run() {
+            try {
+            
+            progressb.SetMassimo(100);
+            for (int i = 0; i <= 100; i++) {
+            
+            Thread.sleep(100);
+            // progressb.Pausa();
+            progressb.SetAvanzamento(i);
+            }
+            CDC_Grafica.this.setEnabled(true);
+            } catch (Exception ex) {
+            //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
+            CDC_Grafica.this.setEnabled(true);
+            }
+            }
+            
+            };
+            thread.start();*/
+
+           
+      
+               
+
+                  System.out.println("porcapaletta");
+    /*    while (progressb.isVisible()) {
+            try { 
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }      */   
+              //    System.out.println("porcapaletta");
+        
+        
             // TODO add your handling code here:
            /* long timestamp = 1621344000000L;
             getBitcoinPrice("BTCUSDT", timestamp);*/
@@ -2955,8 +3147,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
           Calcoli.ConvertiXXXEUR("BTC", "0.02", Calcoli.ConvertiDatainLongMinuto("2021-05-15 19:09"));
           Calcoli.ConvertiXXXEUR("BTC", "0.02", Calcoli.ConvertiDatainLongMinuto("2021-07-04 12:09"));
           Calcoli.ScriviFileConversioneXXXEUR();*/
-         Calcoli.GeneraMappaCambioXXXEUR();
-          System.out.println(Calcoli.DammiPrezzoTransazione("SOL", null, "150", null, Calcoli.ConvertiDatainLongMinuto("2022-05-08 19:09"),"0"));
+    /*  int h=101/35*102;
+      System.out.println(h);*/
+    /*    Calcoli.GeneraMappaCambioXXXEUR();
+          System.out.println(Calcoli.DammiPrezzoTransazione("SOL", null, "150", null, Calcoli.ConvertiDatainLongMinuto("2022-05-08 19:09"),"0"));*/
        /*    System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2023-01-01 20:22")));
            System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2021-01-01 20:22")));
            System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2020-01-01 20:22")));

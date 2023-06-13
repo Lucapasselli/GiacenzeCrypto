@@ -261,7 +261,7 @@ public class Importazioni {
         
         
     
-        public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c) {
+        public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c,boolean PrezzoZero) {
         
 
          //   Download progressb=new Download();
@@ -280,14 +280,9 @@ public class Importazioni {
                 }
             }
         });*/
-       
-         Download progressb=new Download();
-         progressb.setLocationRelativeTo(c);
-         progressb.setVisible(true);
-          Thread thread;
-            thread = new Thread() {
-            public void run() {
-            try {
+    Download progressb=new Download();
+         progressb.setLocationRelativeTo(c);   
+progressb.setVisible(true);
  AzzeraContatori();        
         String fileDaImportare = fileCoinTracking;
 
@@ -352,7 +347,7 @@ public class Importazioni {
                 {
                      //System.out.println(listaMovimentidaConsolidare.size());
                     
-                    List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange);
+                    List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange,PrezzoZero);
                     int nElementi = listaConsolidata.size();
                     for (int i = 0; i < nElementi; i++) {
                     String consolidata[] = listaConsolidata.get(i);
@@ -370,7 +365,7 @@ public class Importazioni {
              progressb.SetAvanzamento(avanzamento);
         }
             
-            List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange);
+            List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange,PrezzoZero);
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
                 String consolidata[] = listaConsolidata.get(i);
@@ -405,15 +400,9 @@ public class Importazioni {
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
         Calcoli.ScriviFileConversioneXXXEUR();
+        progressb.dispose();
        // return true;
-
-            } catch (Exception ex) {
-            //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            }
-            
-            };
-            thread.start();         
+       
                    
                  
             
@@ -1000,7 +989,7 @@ public class Importazioni {
         return lista;
     }   
     
-        public static List<String[]> ConsolidaMovimenti_CoinTracking(List<String> listaMovimentidaConsolidare,String Exchange){
+        public static List<String[]> ConsolidaMovimenti_CoinTracking(List<String> listaMovimentidaConsolidare,String Exchange,boolean PrezzoZero){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Crypto
@@ -1056,7 +1045,7 @@ public class Importazioni {
                                 else prezzoTrans=movimentoSplittato[4];
                                 RT[14] = "EUR "+prezzoTrans;
                                 //questo è il primo movimento fatto, mancano gli altri
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1085,7 +1074,7 @@ public class Importazioni {
                                 RT[13] = movimentoSplittato[1];
                                 String prezzoTrans=new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[14] = "EUR "+movimentoSplittato[5];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1116,7 +1105,7 @@ public class Importazioni {
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[1];
                                 String prezzoTrans=new BigDecimal(movimentoSplittato[1]).setScale(2, RoundingMode.HALF_UP).toString();
-                                RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1147,7 +1136,7 @@ public class Importazioni {
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[4];
                                 String prezzoTrans= movimentoSplittato[4];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1177,7 +1166,7 @@ public class Importazioni {
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[4];
                                 String prezzoTrans= movimentoSplittato[4];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1209,7 +1198,7 @@ public class Importazioni {
                                 RT[13] = "";
                                 RT[14] = "EUR "+movimentoSplittato[8];
                                 String prezzoTrans= movimentoSplittato[8];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";
                                 RT[18] = "";
@@ -1240,7 +1229,7 @@ public class Importazioni {
                                 RT[13] = "";
                                 RT[14] = "EUR "+movimentoSplittato[5];
                                 String prezzoTrans= new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1354,7 +1343,7 @@ public class Importazioni {
                                         RT[14] = "EUR "+valoreEur;
                                         String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                         
-                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                         RT[16] = "";
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
@@ -1394,7 +1383,7 @@ public class Importazioni {
                                         if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[5];else valoreEur =movimentoSplittato[8];
                                         RT[14] = "EUR "+valoreEur;
                                         String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
-                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans);
+                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero);
                                         RT[16] = "";
                                         RT[17] = "Da Calcolare";
                                         RT[18] = "";

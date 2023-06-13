@@ -273,16 +273,19 @@ public class Calcoli {
         return risultato;
     }
     
+    
+    
+    
        public static String ConvertiXXXEUR(String Crypto,String Qta, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         if (MappaConversioneXXXEUR.isEmpty())
             {
                 GeneraMappaCambioXXXEUR();
             }
-        if (MappaCoppieBinance.isEmpty())
+     /*   if (MappaCoppieBinance.isEmpty())
         {
             RecuperaCoppieBinance();
-        }
+        }*/
         String risultato;// = null;
         String DataOra=ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=ConvertiDatadaLong(Datalong);
@@ -301,6 +304,7 @@ public class Calcoli {
             MappaConversioneXXXEUR.put(DataOra+" "+Crypto, risultato);
             risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
         }
+      //  System.out.println(risultato);
         return risultato;
     } 
     
@@ -480,7 +484,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     
         public static String RecuperaTassidiCambioXXXUSDT(String Crypto,String DataIniziale, String DataFinale) {
-        String ok = "ok";
+        String ok = null;
         String CoppiaCrypto=Crypto+"USDT";
         long dataIni = ConvertiDatainLong(DataIniziale) ;
         long dataFin = ConvertiDatainLong(DataFinale) + 86400000;
@@ -545,6 +549,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String Prezzo=ConvertiUSDTEUR(price,timestamp);
                        // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
                        MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, Prezzo);
+                       ok="ok";
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
                         //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
                         //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
@@ -561,75 +566,114 @@ for (int i=0;i<ArraydataIni.size();i++){
         } 
 
         catch (MalformedURLException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             ok = null;
         } catch (IOException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             ok = null;
         } catch (InterruptedException ex) {
+            ok = null;
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
         }
      //   ScriviFileConversioneUSDTEUR();
+     //System.out.println(ok);
         return ok;
     }
     
     
-    public static String DammiPrezzoTransazione(String Moneta1,String Moneta2,String Qta1,String Qta2,long Data, String Prezzo) {
+    public static String DammiPrezzoTransazione(String Moneta1,String Moneta2,String Qta1,String Qta2,long Data, String Prezzo,boolean PrezzoZero) {
         String PrezzoTransazione;
         boolean trovato1=false;
         boolean trovato2=false;
         //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
         if (Moneta1!=null && Moneta1.equalsIgnoreCase("EUR")){
-            PrezzoTransazione=new BigDecimal(Qta1).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-            if (PrezzoTransazione!=null)return PrezzoTransazione;
+            PrezzoTransazione=Qta1;
+            if (PrezzoTransazione!=null)
+                {
+                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                return PrezzoTransazione;
+                }
         }
         else if  (Moneta2!=null && Moneta2.equalsIgnoreCase("EUR")){
-            PrezzoTransazione=new BigDecimal(Qta2).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-             if (PrezzoTransazione!=null)return PrezzoTransazione;
+            PrezzoTransazione=Qta2;
+             if (PrezzoTransazione!=null)
+                 {
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                 return PrezzoTransazione;
+                 }
         }
         else if (Moneta1!=null && Moneta1.equalsIgnoreCase("USDT")){
-            PrezzoTransazione=new BigDecimal(ConvertiUSDTEUR(Qta1,Data)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-            if (PrezzoTransazione!=null)return PrezzoTransazione;
+            PrezzoTransazione=ConvertiUSDTEUR(Qta1,Data);
+            if (PrezzoTransazione!=null)
+                 {
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                 return PrezzoTransazione;
+                 }
         }
         else if  (Moneta2!=null && Moneta2.equalsIgnoreCase("USDT")){
-            PrezzoTransazione=new BigDecimal(ConvertiUSDTEUR(Qta2,Data)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-             if (PrezzoTransazione!=null)return PrezzoTransazione;
+            PrezzoTransazione=ConvertiUSDTEUR(Qta2,Data);
+             if (PrezzoTransazione!=null)
+                 {
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                 return PrezzoTransazione;
+                 }
         }
         else
             {
-        if (MappaCoppieBinance.isEmpty())
-        {
-            RecuperaCoppieBinance();
-            //se non ho la mappa delle coppie di binance la recupero
-        }
+
         //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
         for (String CoppiePrioritarie1 : CoppiePrioritarie) {
             if (!trovato1 && Qta1!=null && Moneta1!=null && (Moneta1+"USDT").toUpperCase().equals(CoppiePrioritarie1)){
                 trovato1=true;
-                PrezzoTransazione=new BigDecimal(ConvertiXXXEUR(Moneta1,Qta1,Data)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-                if (PrezzoTransazione!=null)return PrezzoTransazione;//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
+                PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
+                if (PrezzoTransazione!=null)
+                 {
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                 return PrezzoTransazione;
+                 }//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
                 //se trovo la condizione ritorno il prezzo e interrnompo la funzione
             }
             if (!trovato2 && Qta2!=null && Moneta2!=null && (Moneta2+"USDT").toUpperCase().equals(CoppiePrioritarie1)){
                 trovato2=true;
-                PrezzoTransazione=new BigDecimal(ConvertiXXXEUR(Moneta2,Qta2,Data)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-                if (PrezzoTransazione!=null)return PrezzoTransazione;
+                PrezzoTransazione=ConvertiXXXEUR(Moneta2,Qta2,Data);
+                if (PrezzoTransazione!=null)
+                  {
+                  PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();                       
+                 return PrezzoTransazione;
+                 }
                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
             }
         }
         //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
         //a questo punto la cerco tra tutte le coppie che binance riconosce
+        if (MappaCoppieBinance.isEmpty())
+        {
+            RecuperaCoppieBinance();
+            //se non ho la mappa delle coppie di binance la recupero
+        }
         if (!trovato1 && Qta1!=null && Moneta1!=null && MappaCoppieBinance.get(Moneta1+"USDT")!=null){
-                PrezzoTransazione=new BigDecimal(ConvertiXXXEUR(Moneta1,Qta1,Data)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-                if (PrezzoTransazione!=null)return PrezzoTransazione;
+                PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
+                if (PrezzoTransazione!=null)
+                {
+                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                    }
                 //se trovo la condizione ritorno il prezzo e interrnompo la funzione
             }
             if (!trovato2 && Qta2!=null && Moneta2!=null && MappaCoppieBinance.get(Moneta2+"USDT")!=null){
-                PrezzoTransazione=new BigDecimal(ConvertiXXXEUR(Moneta2,Qta2,Data)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-                if (PrezzoTransazione!=null)return PrezzoTransazione;
+                PrezzoTransazione=ConvertiXXXEUR(Moneta2,Qta2,Data);
+               // System.out.println("prezzo.."+PrezzoTransazione);
+                if (PrezzoTransazione!=null)
+                    {
+                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                     return PrezzoTransazione;
+                     }
                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
             }
             }
-        return Prezzo;
+        if (PrezzoZero)return "0.00";
+        else return Prezzo;
     } 
     
         

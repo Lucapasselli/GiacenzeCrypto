@@ -1,5 +1,6 @@
 package giacenze_crypto.com;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -238,12 +239,12 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     
     private void Bottone_SelezionaFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SelezionaFileActionPerformed
 
-        boolean selezioneok=false;
+        boolean selezioneok[]=new boolean[]{false};
         if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv")) {
             JFileChooser fc = new JFileChooser();
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                selezioneok=true;
+                selezioneok[0]=true;
                 String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                 boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                 Importazioni.AzzeraContatori();
@@ -255,28 +256,54 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
         } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
 
+            Component c=this;
+
+         
+          Thread thread;
+            thread = new Thread() {
+            public void run() {
+            try {
+                     
+            
             
                 JFileChooser fc = new JFileChooser();
-                int returnVal = fc.showOpenDialog(this);
+                int returnVal = fc.showOpenDialog(c);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    selezioneok=true;
+                    selezioneok[0]=true;
                     String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                    // System.out.println(CheckBox_Exchanges.getSelectedItem().toString().trim());
-                    boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+                    boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
                     Importazioni.AzzeraContatori();
                     String nomewallet;
-                    if (this.ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain"))
+                    boolean PrezzoZero=false;
+                    if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain"))
                         {
-                        nomewallet=this.Text_NomeWallet.getText().trim()+" "+ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")")+1);
-                    //System.out.println(nomewallet);
+                        nomewallet=Text_NomeWallet.getText().trim()+" "+ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")")+1);
+                        //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
+                        //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
+                        PrezzoZero=true;
+                        //System.out.println(nomewallet);
                         }
                         else nomewallet=ComboBox_Exchanges.getSelectedItem().toString().trim();
-                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet,this);
+                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet,c,PrezzoZero);
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
-                    res.setLocationRelativeTo(this);
+                    res.setLocationRelativeTo(c);
                     res.setVisible(true);
+                    if (selezioneok[0]) dispose();
                 }
+                
+                
+                
+                
+                
+            } catch (Exception ex) {
+            //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            }
+            
+            };
+            thread.start();  
             /* else {
 
                 //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista
@@ -291,7 +318,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         } else {
         }
-        if (selezioneok) this.dispose();
+        if (selezioneok[0]) this.dispose();
     }//GEN-LAST:event_Bottone_SelezionaFileActionPerformed
 
     private void ComboBox_TipoImportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoImportItemStateChanged

@@ -8,8 +8,6 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;

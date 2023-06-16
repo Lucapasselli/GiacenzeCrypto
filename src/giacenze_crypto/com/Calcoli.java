@@ -356,7 +356,7 @@ public class Calcoli {
             else{
         try {
             TimeUnit.SECONDS.sleep(5);
-            System.out.println(transactionHash);
+            
             String url = "https://bscscan.com/tx/" + transactionHash;
             URL obj = new URI(url).toURL();
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -413,6 +413,7 @@ public class Calcoli {
                     i++;
                 }
             }
+           
            String riga=transactionHash+"_BSC,"+coinU+","+qtaU+","+coinE+","+qtaE;
            ScriviFileConversioneSwapTransIDCoins(riga);
            MappaConversioneSwapTransIDCoins.put(transactionHash+"_BSC", coinU+","+qtaU+","+coinE+","+qtaE);
@@ -425,6 +426,7 @@ public class Calcoli {
         }
             }
        // return null;
+        System.out.println(transactionHash);
         System.out.println("qta="+qtaU+" - coin="+coinU);
         System.out.println("qta="+qtaE+" - coin="+coinE); 
         System.out.println("");

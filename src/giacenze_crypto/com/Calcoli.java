@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -30,10 +33,12 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.*;
 
 /**
  *
@@ -45,6 +50,9 @@ public class Calcoli {
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
     static String CoppiePrioritarie[]=new String []{"USDCUSDT","USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","BTCUSDT",
         "ETHUSDT","BNBUSDT","LTCUSDT","ADAUSDT","XRPUSDT","NEOUSDT",
@@ -53,6 +61,43 @@ public class Calcoli {
     
   //DA FARE : Recupero prezzi orari in base all'ora più vicina  
     //DA FARE : se ci sono euro tenere buono quello
+  
+    
+    
+    
+      public static void GeneraMappaConversioneSwapTransIDCoins(){
+         try {
+             File file=new File ("conversioneTransIDCoins.db");
+             if (!file.exists()) file.createNewFile();
+             String riga;
+             try (FileReader fire = new FileReader("conversioneTransIDCoins.db");
+                     BufferedReader bure = new BufferedReader(fire);)
+             {
+                 while((riga=bure.readLine())!=null)
+                 {
+                     String rigaSplittata[]=riga.split(",");
+                     if (rigaSplittata.length==5)
+                     {
+                         MappaConversioneSwapTransIDCoins.put(rigaSplittata[0], rigaSplittata[1]+","+rigaSplittata[2]+","+rigaSplittata[3]+","+rigaSplittata[4]);
+                     }
+                 }
+                 bure.close();
+                 fire.close();        
+             } catch (FileNotFoundException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (IOException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             }
+             
+         } catch (IOException ex) {        
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }   
+    
+    
+    
+    
     
     public static void GeneraMappaCambioUSDEUR(){
          try {
@@ -143,8 +188,286 @@ public class Calcoli {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
+    
         
+    public static void GeneraMappaConversioneAddressCoin(){
+         try {
+             File file=new File ("conversioneAddressCoin.db");
+             if (!file.exists()) file.createNewFile();
+             String riga;
+             try (FileReader fire = new FileReader("conversioneAddressCoin.db");
+                     BufferedReader bure = new BufferedReader(fire);)
+             {
+                 while((riga=bure.readLine())!=null)
+                 {
+                     String rigaSplittata[]=riga.split(",");
+                     if (rigaSplittata.length==2)
+                         //se lunghezza=2 significa che non ho l'id di coingecko della moneta
+                     {
+                         MappaConversioneAddressCoin.put(rigaSplittata[0], rigaSplittata[1]);
+                     }
+                     else if (rigaSplittata.length==3)
+                         //se lunghezza=3 significa che ho anche l'id di coingecko della moneta
+                         //utile nel caso mi servissero i prezzi di una shitcoin listata da coingecko
+                     {
+                         MappaConversioneAddressCoin.put(rigaSplittata[0], rigaSplittata[1]+","+rigaSplittata[2]);
+                     }
+                 }
+                 bure.close();
+                 fire.close();        
+             } catch (FileNotFoundException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (IOException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             }
+
+         } catch (IOException ex) {        
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
+    
+    
+    
+     public static String ConvertiAddressCoin(String Address,String rete)   
+        {
+        if (MappaConversioneAddressCoin.isEmpty())
+            {
+                GeneraMappaConversioneAddressCoin();
+                //qui andro' anche a popolare la mappa con la conversione della rete per coingecko
+                MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
+            }
+        if (MappaConversioneAddressCoin.get(Address+"_"+rete)!=null)
+        {
+            return MappaConversioneAddressCoin.get(Address+"_"+rete).split(",")[0];
+        }
+        else
+            {
+        try {
+            TimeUnit.SECONDS.sleep(1);//il timeout serve per evitare di fare troppe richieste all'API
+            String url = "https://api.coingecko.com/api/v3/coins/"+MappaConversioneSimboloReteCoingecko.get(rete)+ "/contract/" + Address;
+            URL obj = new URI(url).toURL();
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod("GET");
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            Gson gson = new Gson();
+            JsonObject coinInfo = gson.fromJson(response.toString(), JsonObject.class);
+            
+           String Simbolo=coinInfo.get("symbol").toString().replace("\"", "").toUpperCase();
+           String ID=coinInfo.get("id").toString().replace("\"", "").toUpperCase();
+           MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),Simbolo.toUpperCase()+","+ID);
+            return Simbolo;
+        } catch (Exception ex) {
+          //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+          //  System.out.println(ex.getMessage());
+/////////////////Se su coingecko non trovo nulla allora lancio la funzione che cerca il codice del token dal'html di bscscan
+          //se anche li non trovo nulla allora ci rinuncio
+          if (rete.equalsIgnoreCase("BSC")){
+              String Simbolo=RitornaNomeTokendadaBSCSCAN(Address);
+              if (Simbolo!=null)
+                  {
+              MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),Simbolo.toUpperCase()+",");
+              }
+              return Simbolo;
+          }
+          }
+          return null;
+        }
+       // return null;
+        }
         
+
+     public static void RitornaTransazioniWallet()
+         {    
+        try {
+            String walletAddress = "XXXXXXXXXXXXXXXXXXXXXXXX";
+            String apiKey = "XXXXXXXXXXXXXXXXXXXXXXXXXX";
+            
+            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&apikey=" + apiKey).toURL();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            
+            JSONObject jsonObject = new JSONObject(response.toString());
+            
+            JSONArray transactions = jsonObject.getJSONArray("result");
+            for (int i = 0; i < transactions.length(); i++) {
+                
+                JSONObject transaction = transactions.getJSONObject(i);
+                System.out.println(transaction.toString());
+                String hash = transaction.getString("hash");
+                String blockNumber = transaction.getString("blockNumber");
+                String timeStamp = transaction.getString("timeStamp");
+                String from = transaction.getString("from");
+                String to = transaction.getString("to");
+                String value = transaction.getString("value");
+                
+              /*  System.out.println("Hash: " + hash);
+                System.out.println("Block Number: " + blockNumber);
+                System.out.println("Timestamp: " + timeStamp);
+                System.out.println("From: " + from);
+                System.out.println("To: " + to);
+                System.out.println("Value: " + value);
+                System.out.println("--------------------");*/
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
+     
+     
+     public static void RecuperaDettagliTransazioneBSC(String transactionHash){
+           String coinE=null;
+           String qtaE=null;
+           String coinU=null;
+           String qtaU=null;
+            if (MappaConversioneSwapTransIDCoins.isEmpty())
+            {
+                GeneraMappaConversioneSwapTransIDCoins();
+            }
+              String Moneta;
+            if(MappaConversioneSwapTransIDCoins.get(transactionHash+"_BSC")!=null)
+            {
+                String splittata[]=MappaConversioneSwapTransIDCoins.get(transactionHash+"_BSC").split(",");
+                coinU=splittata[0];
+                qtaU=splittata[1];
+                coinE=splittata[2];
+                qtaE=splittata[3];  
+            }
+            else{
+        try {
+            TimeUnit.SECONDS.sleep(5);
+            System.out.println(transactionHash);
+            String url = "https://bscscan.com/tx/" + transactionHash;
+            URL obj = new URI(url).toURL();
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+           // con.setRequestMethod("GET");
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            con.disconnect();
+            Moneta=response.toString();
+            Moneta=Moneta.substring(Moneta.indexOf("Tokens Transferred:")).trim();
+            Moneta=Moneta.substring(0,Moneta.indexOf("</a></div></li></ul></div></div>")).replaceAll("\\<.*?\\>", " ");
+           // System.out.println(Moneta);
+
+            String splittata[]=Moneta.split(" For ");
+            if (splittata.length>=3)
+                {
+                    int i=0;
+                for (String split:splittata)
+                {
+                    if (i==1){
+                        String temp=split.trim().split("From")[0].trim();
+                        String divisioneparentesi[]=temp.split("\\(");     
+                        if (divisioneparentesi.length==3){
+                            qtaU=temp.substring(0, temp.indexOf("(")).replaceAll(",","").trim();
+                            coinU=temp.split("\\(")[2].replaceAll("\\)", "");
+                        }else if (divisioneparentesi.length==2){
+                            qtaU=temp.substring(0, temp.indexOf(" ")).replaceAll(",","").trim();
+                            coinU=temp.split("\\(")[1].replaceAll("\\)", "");                            
+                        }
+                        if (coinU.equalsIgnoreCase("WBNB"))coinU="BNB";
+                      // System.out.println("qta="+qta+" - coin="+coin); 
+                    }
+                    if (i==splittata.length-1)
+                        {
+                        String temp=split.trim().split("From")[0].trim();
+                        String divisioneparentesi[]=temp.split("\\(");       
+                        if (divisioneparentesi.length==3){
+                            qtaE=temp.substring(0, temp.indexOf("(")).replaceAll(",", "").trim();
+                            coinE=temp.split("\\(")[2].replaceAll("\\)", "");
+                        }else if (divisioneparentesi.length==2){
+                            qtaE=temp.substring(0, temp.indexOf(" ")).replaceAll(",","").trim();
+                            coinE=temp.split("\\(")[1].replaceAll("\\)", "");                            
+                        }
+                        if (coinE.equalsIgnoreCase("WBNB"))coinE="BNB";
+                    //    System.out.println("qta="+qtaE+" - coin="+coinE); 
+                    //    System.out.println(""); 
+                        }
+                   // System.out.println(split.trim());
+                    i++;
+                }
+            }
+           String riga=transactionHash+"_BSC,"+coinU+","+qtaU+","+coinE+","+qtaE;
+           ScriviFileConversioneSwapTransIDCoins(riga);
+           MappaConversioneSwapTransIDCoins.put(transactionHash+"_BSC", coinU+","+qtaU+","+coinE+","+qtaE);
+           
+           
+        } catch (URISyntaxException | IOException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            }
+       // return null;
+        System.out.println("qta="+qtaU+" - coin="+coinU);
+        System.out.println("qta="+qtaE+" - coin="+coinE); 
+        System.out.println("");
+      
+      }
+     
+      public static String RitornaNomeTokendadaBSCSCAN(String Address)
+          {
+              String Moneta;
+        try {
+            String url = "https://bscscan.com/token/" + Address;
+            URL obj = new URI(url).toURL();
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+           // con.setRequestMethod("GET");
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            con.disconnect();
+            Moneta=response.toString();
+            Moneta=Moneta.substring(Moneta.indexOf("<title>")+8, Moneta.indexOf("</title>")).trim();
+            if (!Moneta.contains(")")) { // se non contiene la parentesi significa che non ho trovato la moneta
+                Moneta=null;
+            }
+            else
+                {
+            Moneta=Moneta.substring(Moneta.indexOf("(")+1, Moneta.indexOf(")")).trim();
+            }
+         //  System.out.println(Moneta);
+           return Moneta;
+           
+           
+           
+        } catch (URISyntaxException | IOException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+      }
+     
         
     public static String ConvertiUSDEUR(String Valore, String Data) {
         if (MappaConversioneUSDEUR.isEmpty())
@@ -343,7 +666,7 @@ public class Calcoli {
     public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {      
         String ok="ok";
         try {      
-            URL url = new URL("https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD");
+            URL url = new URI("https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD").toURL();
             URLConnection connection = url.openConnection();
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(connection.getInputStream())))
@@ -368,6 +691,8 @@ public class Calcoli {
         } catch (IOException ex) {
           //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             ok=null;
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return ok;
@@ -415,7 +740,7 @@ public class Calcoli {
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
-            URL url = new URL("https://api.coingecko.com/api/v3/coins/tether/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i));
+            URL url = new URI("https://api.coingecko.com/api/v3/coins/tether/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
             URLConnection connection = url.openConnection();
             System.out.println(url);
             try ( BufferedReader in = new BufferedReader(
@@ -472,7 +797,9 @@ for (int i=0;i<ArraydataIni.size();i++){
             ok = null;
         } catch (InterruptedException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }   catch (URISyntaxException ex) {
+                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
        // ScriviFileConversioneUSDTEUR();
         return ok;
@@ -515,7 +842,7 @@ for (int i=0;i<ArraydataIni.size();i++){
 for (int i=0;i<ArraydataIni.size();i++){
         try {
             String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + CoppiaCrypto + "&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i)+ "&limit=1000";
-            URL url = new URL(apiUrl);
+            URL url = new URI(apiUrl).toURL();
             URLConnection connection = url.openConnection();
             System.out.println(url);
             try ( BufferedReader in = new BufferedReader(
@@ -574,7 +901,9 @@ for (int i=0;i<ArraydataIni.size();i++){
         } catch (InterruptedException ex) {
             ok = null;
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }   catch (URISyntaxException ex) {
+                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
      //   ScriviFileConversioneUSDTEUR();
      //System.out.println(ok);
@@ -683,7 +1012,7 @@ for (int i=0;i<ArraydataIni.size();i++){
 
         try {
             String apiUrl = "https://api.binance.com/api/v3/exchangeInfo";
-            URL url = new URL(apiUrl);
+            URL url = new URI(apiUrl).toURL();
             URLConnection connection = url.openConnection();
             System.out.println(url);
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -714,6 +1043,8 @@ for (int i=0;i<ArraydataIni.size();i++){
             TimeUnit.SECONDS.sleep(1);
         } catch (JsonSyntaxException | IOException | InterruptedException ex) {
             ok = null;
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
         return ok;
     }
@@ -745,8 +1076,61 @@ for (int i=0;i<ArraydataIni.size();i++){
                }
    
    }
+     
+     
+        static void ScriviFileConversioneAddressCoin() { //CDC_FileDatiDB
+   // CDC_FileDatiDB
+   try { 
+       FileWriter w=new FileWriter("conversioneAddressCoin.db");
+       BufferedWriter b=new BufferedWriter (w);
+       
+       Object Address[]=MappaConversioneAddressCoin.keySet().toArray();
+       
+       for (Object Addres : Address) {
+           b.write(Addres.toString() + "," + MappaConversioneAddressCoin.get(Addres.toString()) + "\n");
+       }
+       
+      //il file è cosi composto
+      //Address_rete,Simbolo,ID Coingecko
+      //Es. 0x1456345343737364_BSC,BUSD,Binance USD
+      //Simboli rete usati per ora
+      //CRO=Cronos chain
+      //BSC=Binance Smart Chain
+      //ETH=Ethereum
+       b.close();
+       w.close();
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+   
+   }
+        
+        
+   static void ScriviFileConversioneSwapTransIDCoins(String riga) { //CDC_FileDatiDB
+   // CDC_FileDatiDB
+   try { 
+       FileWriter w=new FileWriter("conversioneTransIDCoins.db",true);
+       BufferedWriter b=new BufferedWriter (w);
+       b.append(riga+"\n");
+       b.close();
+       w.close();
+             
+      //il file è cosi composto
+      //TransID_rete,coin uscita,qta uscita,coin entrata,qta entrata
+      //Es. 0x1456345343737364_BSC,BUSD,10,eth,0.005
+      //Simboli rete usati per ora
+      //CRO=Cronos chain
+      //BSC=Binance Smart Chain
+      //ETH=Ethereum
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+   
+   }
     
-         static void ScriviFileConversioneXXXEUR() { //CDC_FileDatiDB
+   static void ScriviFileConversioneXXXEUR() { //CDC_FileDatiDB
    // Devo lanciare questa funzione alla fine di ogni conversione per aggiornare i dati sul database dei prezzi
    try { 
        FileWriter w=new FileWriter("cambioXXXEUR.db");

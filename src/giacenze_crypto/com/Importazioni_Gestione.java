@@ -264,8 +264,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             public void run() {
             try {
                      
-            
-            
+                Bottone_SelezionaFile.setEnabled(false);
+                Bottone_Annulla.setEnabled(false);
                 JFileChooser fc = new JFileChooser();
                 int returnVal = fc.showOpenDialog(c);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -290,9 +290,11 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                     res.setLocationRelativeTo(c);
                     res.setVisible(true);
+                    
                     if (selezioneok[0]) dispose();
                 }
-                
+                Bottone_SelezionaFile.setEnabled(true);
+                Bottone_Annulla.setEnabled(true);
                 
                 
                 

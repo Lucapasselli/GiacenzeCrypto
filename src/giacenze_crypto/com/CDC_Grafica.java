@@ -15,11 +15,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -28,11 +25,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -40,8 +34,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -1531,32 +1523,36 @@ public class CDC_Grafica extends javax.swing.JFrame {
    
    }
             
-    public static void getBitcoinPrice(String symbol, long timestamp) throws IOException {
-        String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + symbol + "&interval=1m&startTime=" + timestamp + "&endTime=" + timestamp;
-
-        URL url = new URL(apiUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
+   /* public static void getBitcoinPrice(String symbol, long timestamp) throws IOException {
+        try {
+            String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + symbol + "&interval=1m&startTime=" + timestamp + "&endTime=" + timestamp;
+            
+            URL url = new URI(apiUrl).toURL();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+            
+            // Parsing del JSON di risposta per ottenere il prezzo
+            String json = response.toString();
+            String[] data = json.substring(1, json.length() - 1).split(",");
+            //double price = Double.parseDouble(data[4]);
+            System.out.println (apiUrl);
+            System.out.println (response.toString());
+            System.out.println (data[4]); //questo è il valore sulla coppia con usdt
+            
+            // return price;
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
-        reader.close();
-
-        // Parsing del JSON di risposta per ottenere il prezzo
-        String json = response.toString();
-        String[] data = json.substring(1, json.length() - 1).split(",");
-        //double price = Double.parseDouble(data[4]);
-        System.out.println (apiUrl);
-        System.out.println (response.toString());
-        System.out.println (data[4]); //questo è il valore sulla coppia con usdt
-
-       // return price;
-    }
+    }*/
     
     public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {                                          
         // TODO add your handling code here:
@@ -3002,159 +2998,23 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
        
-eseguiOperazioneConProgressbar();
-/*
-         Download progressb=new Download();
-         progressb.setLocationRelativeTo(CDC_Grafica.this);
-         progressb.setVisible(true);
-         
-         
-          SwingWorker<Integer, Integer> worker = new SwingWorker<Integer, Integer>() {
-                @Override
-                protected Integer doInBackground() throws Exception {
-                    // Simulazione di un'operazione lunga
-                    for (int i = 0; i <= 100; i++) {
-                        Thread.sleep(50);
-                        publish(i); // Invia i valori intermedi per l'aggiornamento della progressbar
-                    }
-                    return 42; // Valore da restituire al termine dell'operazione
-                }
+//BscTransactionExporter a=new BscTransactionExporter();
+//a.creaCSV();
 
-                @Override
-                protected void process(List<Integer> chunks) {
-                    // Aggiorna la progressbar con l'ultimo valore pubblicato
-                    int progress = chunks.get(chunks.size() - 1);
-                    progressb.SetAvanzamento(progress);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        int result = get(); // Ottieni il risultato dell'operazione doInBackground()
-                      //  progressBar.setIndeterminate(false);
-                       // progressBar.setString("Completato! Risultato: " + result);
-
-                        // Esegui il codice successivo al completamento dell'operazione
-                 //       codiceSuccessivo();
-                 System.out.println("Finito");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                     //   startButton.setEnabled(true);
-                    }
-                }
-            };
-
-            worker.execute();
-        try {
-            worker.wait();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        }
-         
-         
-         
-         
-         
-         
-         
-         //final CountDownLatch latch = new CountDownLatch(1);
-     /*    Thread progressBarThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        // Simulazione di un'operazione lunga
-                        for (int i = 0; i <= 100; i++) {
-                            try {
-                                Thread.sleep(50);
-                            } catch (InterruptedException ex) {
-                                ex.printStackTrace();
-                            }
-                            final int progress = i;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    progressb.SetAvanzamento(progress);
-                                }
-                            });
-                        }
-
-                        // Notifica il thread principale quando il thread con la progressbar è completato
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                System.out.println("Finito");
-                               // latch.countDown();
-                              //  startButton.setEnabled(true); // Riattiva il pulsante Start
-                            }
-                        });
-                    }
-                });
-
-                progressBarThread.start();
-             /*   try {
-                    latch.await();
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }*/
-
-
-            /*       Thread thread;
-            thread = new Thread() {
-            public void run() {
-            try {
-            
-            progressb.SetMassimo(100);
-            for (int i = 0; i <= 100; i++) {
-            
-            Thread.sleep(100);
-            // progressb.Pausa();
-            progressb.SetAvanzamento(i);
-            }
-            CDC_Grafica.this.setEnabled(true);
-            } catch (Exception ex) {
-            //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
-            CDC_Grafica.this.setEnabled(true);
-            }
-            }
-            
-            };
-            thread.start();*/
-
-           
-      
-               
-
-                  System.out.println("porcapaletta");
-    /*    while (progressb.isVisible()) {
-            try { 
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }      */   
-              //    System.out.println("porcapaletta");
-        
-        
-            // TODO add your handling code here:
-           /* long timestamp = 1621344000000L;
-            getBitcoinPrice("BTCUSDT", timestamp);*/
-       //   Calcoli.RecuperaTassidiCambioXXXUSDT("BTC", "2023-05-01", "2023-05-30");
-      /* Calcoli.RecuperaCoppieBinance();
-          Calcoli.ConvertiXXXEUR("BTC", "0.02", Calcoli.ConvertiDatainLongMinuto("2021-05-08 19:09"));
-          Calcoli.ConvertiXXXEUR("BTC", "0.02", Calcoli.ConvertiDatainLongMinuto("2021-05-15 19:09"));
-          Calcoli.ConvertiXXXEUR("BTC", "0.02", Calcoli.ConvertiDatainLongMinuto("2021-07-04 12:09"));
-          Calcoli.ScriviFileConversioneXXXEUR();*/
-    /*  int h=101/35*102;
-      System.out.println(h);*/
-    /*    Calcoli.GeneraMappaCambioXXXEUR();
-          System.out.println(Calcoli.DammiPrezzoTransazione("SOL", null, "150", null, Calcoli.ConvertiDatainLongMinuto("2022-05-08 19:09"),"0"));*/
-       /*    System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2023-01-01 20:22")));
-           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2021-01-01 20:22")));
-           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2020-01-01 20:22")));
-           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2019-01-01 20:22")));
-           System.out.println(Calcoli.ConvertiUSDTEUR("1", Calcoli.ConvertiDatainLongMinuto("2018-01-01 20:22")));*/
-
+System.out.println(Calcoli.ConvertiAddressCoin("0x0523215dcafbf4e4aa92117d13c6985a3bef27d7","BSC"));
+System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d56","BSC"));
+//System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d567","BSC"));
+//Calcoli.ScriviFileConversioneAddressCoin();
+//Calcoli.RitornaTransazioniWallet();
+//Calcoli.RecuperaDettagliTransazione("0xe537a08d0a9f3d6a373e2d4db2ce7c0f8dcfa8d18912a1694a0774b61f21540d");
+Calcoli.RecuperaDettagliTransazioneBSC("0x4ebaddf7c4e1c1dca97ecadbd1e7af2bb949b17211430c8afb31c2144471ed50");
+//Calcoli.RecuperaDettagliTransazione("0xe416a83fa083013ed956efa617b1b7028bb398a51cff074215bb4b943111eb79");
+Calcoli.RecuperaDettagliTransazioneBSC("0xa73502f49fc4efdda4b42e189b0a51099604b732cd57c8c3f44e5ccefaa416c5");
+Calcoli.RecuperaDettagliTransazioneBSC("0xc21b4f5b4c07bbc396f30cbe9240f8a193730c4f03e6825122bf3651f2031a16");
+Calcoli.RecuperaDettagliTransazioneBSC("0xc2856df968911209407a877e4b8605f062dec4846af3041a071cb608b695f949");
+Calcoli.RecuperaDettagliTransazioneBSC("0x95c38f9a9104abd5bdaeae5a2270ba07b9229ce8035dd3a39ff633e9cc759edd");
+//Calcoli.RecuperaDettagliTransazione("0x413c0c37af72710e6fc91e8c4ac47ee25b8313db70b86f8b70d2237c6c74c80e");
+   // String a=Calcoli.RitornaNomeTokendadaBSCSCAN("0xe9e7cea3dedca5984780bafc599bd69add087d567");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){

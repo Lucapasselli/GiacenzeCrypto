@@ -3001,18 +3001,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
 //BscTransactionExporter a=new BscTransactionExporter();
 //a.creaCSV();
 
-System.out.println(Calcoli.ConvertiAddressCoin("0x0523215dcafbf4e4aa92117d13c6985a3bef27d7","BSC"));
-System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d56","BSC"));
+//System.out.println(Calcoli.ConvertiAddressCoin("0x0523215dcafbf4e4aa92117d13c6985a3bef27d7","BSC"));
+//System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d56","BSC"));
 //System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d567","BSC"));
 //Calcoli.ScriviFileConversioneAddressCoin();
-//Calcoli.RitornaTransazioniWallet();
+Calcoli.RitornaTransazioniWallet();
 //Calcoli.RecuperaDettagliTransazione("0xe537a08d0a9f3d6a373e2d4db2ce7c0f8dcfa8d18912a1694a0774b61f21540d");
-Calcoli.RecuperaDettagliTransazioneBSC("0x4ebaddf7c4e1c1dca97ecadbd1e7af2bb949b17211430c8afb31c2144471ed50");
+//Calcoli.RecuperaDettagliTransazioneBSC("0x4ebaddf7c4e1c1dca97ecadbd1e7af2bb949b17211430c8afb31c2144471ed50");
 //Calcoli.RecuperaDettagliTransazione("0xe416a83fa083013ed956efa617b1b7028bb398a51cff074215bb4b943111eb79");
-Calcoli.RecuperaDettagliTransazioneBSC("0xa73502f49fc4efdda4b42e189b0a51099604b732cd57c8c3f44e5ccefaa416c5");
-Calcoli.RecuperaDettagliTransazioneBSC("0xc21b4f5b4c07bbc396f30cbe9240f8a193730c4f03e6825122bf3651f2031a16");
-Calcoli.RecuperaDettagliTransazioneBSC("0xc2856df968911209407a877e4b8605f062dec4846af3041a071cb608b695f949");
-Calcoli.RecuperaDettagliTransazioneBSC("0x95c38f9a9104abd5bdaeae5a2270ba07b9229ce8035dd3a39ff633e9cc759edd");
+//Calcoli.RecuperaDettagliTransazioneBSC("0xa73502f49fc4efdda4b42e189b0a51099604b732cd57c8c3f44e5ccefaa416c5");
+//Calcoli.RecuperaDettagliTransazioneBSC("0xc21b4f5b4c07bbc396f30cbe9240f8a193730c4f03e6825122bf3651f2031a16");
+//Calcoli.RecuperaDettagliTransazioneBSC("0xc2856df968911209407a877e4b8605f062dec4846af3041a071cb608b695f949");
+//Calcoli.RecuperaDettagliTransazioneBSC("0x95c38f9a9104abd5bdaeae5a2270ba07b9229ce8035dd3a39ff633e9cc759edd");
 //Calcoli.RecuperaDettagliTransazione("0x413c0c37af72710e6fc91e8c4ac47ee25b8313db70b86f8b70d2237c6c74c80e");
    // String a=Calcoli.RitornaNomeTokendadaBSCSCAN("0xe9e7cea3dedca5984780bafc599bd69add087d567");
     }//GEN-LAST:event_jButton1ActionPerformed

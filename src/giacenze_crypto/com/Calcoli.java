@@ -53,6 +53,7 @@ public class Calcoli {
     static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
     static String CoppiePrioritarie[]=new String []{"USDCUSDT","USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","BTCUSDT",
         "ETHUSDT","BNBUSDT","LTCUSDT","ADAUSDT","XRPUSDT","NEOUSDT",
@@ -287,10 +288,11 @@ public class Calcoli {
      public static void RitornaTransazioniWallet()
          {    
         try {
-            String walletAddress = "XXXXXXXXXXXXXXXXXXXXXXXX";
-            String apiKey = "XXXXXXXXXXXXXXXXXXXXXXXXXX";
+            String walletAddress = "xxxx";
+            String apiKey = "xxxx";
             
-            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&apikey=" + apiKey).toURL();
+            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey=" + apiKey).toURL();
+          //  URL url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&apikey="+apiKey).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -302,28 +304,45 @@ public class Calcoli {
                 response.append(inputLine);
             }
             in.close();
-            
+
             JSONObject jsonObject = new JSONObject(response.toString());
             
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-                
+
                 JSONObject transaction = transactions.getJSONObject(i);
                 System.out.println(transaction.toString());
                 String hash = transaction.getString("hash");
-                String blockNumber = transaction.getString("blockNumber");
-                String timeStamp = transaction.getString("timeStamp");
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
                 String value = transaction.getString("value");
+                TransazioneDefi trans;
+                if (MappaTransazioniDefi.get(hash)==null){
+                trans=new TransazioneDefi();
+                }else  trans=MappaTransazioniDefi.get(hash);
                 
-              /*  System.out.println("Hash: " + hash);
-                System.out.println("Block Number: " + blockNumber);
-                System.out.println("Timestamp: " + timeStamp);
+                trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
+                trans.HashTransazione=hash;
+                trans.Rete="BSC";
+                trans.MonetaCommissioni="BNB";
+                trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
+                BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
+                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).toPlainString();
+                trans.QtaCommissioni=qtaCommissione;
+                trans.TipoTransazione=transaction.getString("functionName");
+               // BigDecimal
+                //trans.QtaCommissioni=
+                
+                System.out.println("Hash: " + trans.HashTransazione);
+                System.out.println("Tipo Transazione: " + trans.TipoTransazione);
+                System.out.println("TransazioneOK: " + trans.TransazioneOK);
+                System.out.println("DataOra: " + trans.DataOra);
+                System.out.println("QtaCommissioni: " + trans.QtaCommissioni);
                 System.out.println("From: " + from);
                 System.out.println("To: " + to);
                 System.out.println("Value: " + value);
-                System.out.println("--------------------");*/
+                System.out.println("--------------------");
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
@@ -1203,6 +1222,20 @@ for (int i=0;i<ArraydataIni.size();i++){
 
         return m1;
     } 
+    
+        public static String ConvertiDatadaLongAlSecondo(long Data1) {
+
+  
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date d = new Date(Data1);
+            //d=f.format(d);
+            String m1=f.format(d);
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+
+        return m1;
+    } 
+    
     
         public static String ConvertiDatadaLongallOra(long Data1) {
 

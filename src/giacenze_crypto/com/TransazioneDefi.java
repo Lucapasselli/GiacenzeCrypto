@@ -21,6 +21,10 @@ public class TransazioneDefi {
   public String QtaEntrata;
   public String MonetaUscita;
   public String QtaUscita;
+
+    public TransazioneDefi() {
+        this.TransazioneOK = true;
+    }
  
   
 

@@ -283,22 +283,161 @@ public class Calcoli {
         }
        // return null;
         }
-        
-
-     public static void RitornaTransazioniWallet()
+     
+ 
+     
+   public static void RitornaTransazioniInterneTokenWalletBSC(String walletAddress,String apiKey)
          {    
-        try {
-            String walletAddress = "xxxx";
-            String apiKey = "xxxx";
-            
-            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey=" + apiKey).toURL();
-          //  URL url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&apikey="+apiKey).toURL();
+               try {
+
+            URL url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey=" + apiKey).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
-            StringBuffer response = new StringBuffer();
+            StringBuilder response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            JSONObject jsonObject = new JSONObject(response.toString());
+            
+            JSONArray transactions = jsonObject.getJSONArray("result");
+            for (int i = 0; i < transactions.length(); i++) {
+
+                JSONObject transaction = transactions.getJSONObject(i);
+                String hash = transaction.getString("hash");
+                String from = transaction.getString("from");
+                String to = transaction.getString("to");
+                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                TransazioneDefi trans;
+                if (MappaTransazioniDefi.get(hash)==null){
+                    trans=new TransazioneDefi();
+                }else 
+                    {
+                    trans=MappaTransazioniDefi.get(hash);
+                    }
+
+                    if (from.equalsIgnoreCase(walletAddress)){
+                        trans.QtaUscita=value;
+                        trans.MonetaUscita="BNB";
+                    }else if (to.equalsIgnoreCase(walletAddress)){
+                        trans.QtaEntrata=value;
+                        trans.MonetaEntrata="BNB";                       
+                    }
+
+                MappaTransazioniDefi.put(hash, trans);
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         }     
+     
+     
+    public static void RitornaTransazioniTokenWalletBSC(String walletAddress,String apiKey)
+         {    
+               try {
+      
+            URL url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey="+apiKey).toURL();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            JSONObject jsonObject = new JSONObject(response.toString());
+            
+            JSONArray transactions = jsonObject.getJSONArray("result");
+            for (int i = 0; i < transactions.length(); i++) {
+
+                JSONObject transaction = transactions.getJSONObject(i);
+                System.out.println(transaction.toString());
+                String tokenSymbol=transaction.getString("tokenSymbol");
+                String tokenName=transaction.getString("tokenName");
+                String tokenAddress=transaction.getString("contractAddress");
+                String tokenDecimal=transaction.getString("tokenDecimal");
+                String hash = transaction.getString("hash");
+                String from = transaction.getString("from");
+                String to = transaction.getString("to");
+                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
+                TransazioneDefi trans;
+                if (MappaTransazioniDefi.get(hash)==null){
+                    trans=new TransazioneDefi();
+                }else 
+                    {
+                   //     System.out.println("arghhhhh "+hash);
+                    trans=MappaTransazioniDefi.get(hash);
+                    }
+
+                    if (from.equalsIgnoreCase(walletAddress)){
+                        trans.QtaUscita=value;
+                        trans.MonetaUscita=tokenSymbol;
+                    }else if (to.equalsIgnoreCase(walletAddress)){
+                        trans.QtaEntrata=value;
+                        trans.MonetaEntrata=tokenSymbol;                       
+                    }
+                
+                
+                trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
+                trans.HashTransazione=hash;
+                trans.Rete="BSC";
+                trans.MonetaCommissioni="BNB";
+               // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
+                BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
+                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                trans.QtaCommissioni=qtaCommissione;
+
+                
+                System.out.println("Hash: " + trans.HashTransazione);
+                System.out.println("Tipo Transazione: " + trans.TipoTransazione);
+                System.out.println("TransazioneOK: " + trans.TransazioneOK);
+                System.out.println("DataOra: " + trans.DataOra);
+                System.out.println("QtaCommissioni: " + trans.QtaCommissioni);
+                System.out.println("Moneta Entrata: " + trans.MonetaEntrata);
+                System.out.println("Qta Entrata: " + trans.QtaEntrata);
+                System.out.println("Moneta Uscita: " + trans.MonetaUscita);
+                System.out.println("Qta Uscita: " + trans.QtaUscita);
+                System.out.println("From: " + from);
+                System.out.println("To: " + to);
+                System.out.println("Value: " + value);
+                System.out.println("--------------------");
+                MappaTransazioniDefi.put(hash, trans);
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         }    
+
+     public static void RitornaTransazioniWalletBSC(String walletAddress,String apiKey)
+         {    
+        try {
+            
+            
+            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey=" + apiKey).toURL();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
             
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
@@ -315,11 +454,24 @@ public class Calcoli {
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
-                String value = transaction.getString("value");
+                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
                 if (MappaTransazioniDefi.get(hash)==null){
-                trans=new TransazioneDefi();
-                }else  trans=MappaTransazioniDefi.get(hash);
+                    trans=new TransazioneDefi();
+                }else 
+                    {
+                   //     System.out.println("arghhhhh "+hash);
+                    trans=MappaTransazioniDefi.get(hash);
+                    }
+                if (!value.equalsIgnoreCase("0")){
+                    if (from.equalsIgnoreCase(walletAddress)){
+                        trans.QtaUscita=value;
+                        trans.MonetaUscita="BNB";
+                    }else if (to.equalsIgnoreCase(walletAddress)){
+                        trans.QtaEntrata=value;
+                        trans.MonetaEntrata="BNB";                       
+                    }
+                }
                 
                 trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
                 trans.HashTransazione=hash;
@@ -328,21 +480,26 @@ public class Calcoli {
                 trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
                 BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
                 BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
-                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).toPlainString();
+                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 trans.QtaCommissioni=qtaCommissione;
                 trans.TipoTransazione=transaction.getString("functionName");
                // BigDecimal
                 //trans.QtaCommissioni=
                 
-                System.out.println("Hash: " + trans.HashTransazione);
+           /*     System.out.println("Hash: " + trans.HashTransazione);
                 System.out.println("Tipo Transazione: " + trans.TipoTransazione);
                 System.out.println("TransazioneOK: " + trans.TransazioneOK);
                 System.out.println("DataOra: " + trans.DataOra);
                 System.out.println("QtaCommissioni: " + trans.QtaCommissioni);
+                System.out.println("Moneta Entrata: " + trans.MonetaEntrata);
+                System.out.println("Qta Entrata: " + trans.QtaEntrata);
+                System.out.println("Moneta Uscita: " + trans.MonetaUscita);
+                System.out.println("Qta Uscita: " + trans.QtaUscita);
                 System.out.println("From: " + from);
                 System.out.println("To: " + to);
                 System.out.println("Value: " + value);
-                System.out.println("--------------------");
+                System.out.println("--------------------");*/
+                MappaTransazioniDefi.put(hash, trans);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);

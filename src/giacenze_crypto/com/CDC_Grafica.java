@@ -3005,9 +3005,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
 //System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d56","BSC"));
 //System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d567","BSC"));
          //Calcoli.ScriviFileConversioneAddressCoin();
-String walletAddress = "xxx";
-String apiKey = "xxx";
+         
+         //hash da controllare
+         //0xf2ce89470cb24f111afbef0386f1b093fee7395402ca252e8365f730c95c6c20
+         //0xfe94c1fe714c2b2c87e9682905c4c0182a5a2b8870a49ad3f13220f3fde62770
+String walletAddress = "xxxx";
+String apiKey = "xxxx";
 Calcoli.RitornaTransazioniBSC(walletAddress,apiKey);
+for (TransazioneDefi v : Calcoli.MappaTransazioniDefi.values()) {
+   // for (String v : Calcoli.MappaTransazioniDefi.keySet()) {
+  //  System.out.println(v+" : "+Calcoli.MappaTransazioniDefi.get(v).DataOra);
+    for (String[] st : v.RitornaRigheTabella()){
+       MappaCryptoWallet.put(st[0], st);
+    }
+}
+TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
 //Calcoli.RitornaTransazioniWalletBSC(walletAddress,apiKey);
 //Calcoli.RitornaTransazioniTokenWalletBSC(walletAddress,apiKey);
 
@@ -3304,7 +3316,9 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         String CausaleMovimento=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 5).toString()+
                 " ("+TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 6).toString()+")";
         
-        String CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 7).toString();
+        String CausaleOriginale="";
+        if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 7)!=null)
+        CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 7).toString();
         
         String ValoreTransazione=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 15).toString();
         String ValoreTransazionePrezzoCarico=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 17).toString();
@@ -3454,7 +3468,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
             int numeroRighe=tabella.getModel().getRowCount();
             int numeroColonne=tabella.getModel().getColumnCount();
             String dati[];
-            List<String[]> tabella1=new ArrayList<String[]>();
+            List<String[]> tabella1=new ArrayList<>();
             for (int i=0;i<numeroRighe;i++){
                 dati=new String[numeroColonne];
                 for (int h=0;h<numeroColonne;h++){

@@ -315,6 +315,7 @@ public class Calcoli {
                 TransazioneDefi trans;
                 if (MappaTransazioniDefi.get(hash)==null){
                     trans=new TransazioneDefi();
+                    MappaTransazioniDefi.put(hash, trans);
                 }else 
                     {
                     trans=MappaTransazioniDefi.get(hash);
@@ -328,8 +329,12 @@ public class Calcoli {
                         trans.MonetaEntrata="BNB";                       
                     }
                     trans.Wallet=walletAddress;
+                trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
+                trans.HashTransazione=hash;
+                trans.Rete="BSC";
+                trans.MonetaCommissioni="BNB";
 
-                MappaTransazioniDefi.put(hash, trans);
+                
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
@@ -378,6 +383,7 @@ public class Calcoli {
                 TransazioneDefi trans;
                 if (MappaTransazioniDefi.get(hash)==null){
                     trans=new TransazioneDefi();
+                    MappaTransazioniDefi.put(hash, trans);
                 }else 
                     {
                    //     System.out.println("arghhhhh "+hash);
@@ -392,8 +398,8 @@ public class Calcoli {
                     }else if (to.equalsIgnoreCase(walletAddress)){
                         trans.QtaEntrata=value;
                         trans.MonetaEntrata=tokenSymbol;
-                        trans.MonetaUscitaAddress=tokenAddress;
-                        trans.MonetaUscitaName=tokenName;
+                        trans.MonetaEntrataAddress=tokenAddress;
+                        trans.MonetaEntrataName=tokenName;
                     }
                 
                 trans.Wallet=walletAddress;
@@ -421,7 +427,7 @@ public class Calcoli {
                 System.out.println("To: " + to);
                 System.out.println("Value: " + value);
                 System.out.println("--------------------");
-                MappaTransazioniDefi.put(hash, trans);
+                
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
@@ -465,6 +471,7 @@ public class Calcoli {
                 TransazioneDefi trans;
                 if (MappaTransazioniDefi.get(hash)==null){
                     trans=new TransazioneDefi();
+                    MappaTransazioniDefi.put(hash, trans);
                 }else 
                     {
                    //     System.out.println("arghhhhh "+hash);
@@ -507,7 +514,7 @@ public class Calcoli {
                 System.out.println("To: " + to);
                 System.out.println("Value: " + value);
                 System.out.println("--------------------");*/
-                MappaTransazioniDefi.put(hash, trans);
+             //   MappaTransazioniDefi.put(hash, trans);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);

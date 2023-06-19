@@ -3005,11 +3005,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 //System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d56","BSC"));
 //System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d567","BSC"));
          //Calcoli.ScriviFileConversioneAddressCoin();
-String walletAddress = "XXX";
-String apiKey = "XXX";
-Calcoli.RitornaTransazioniInterneTokenWalletBSC(walletAddress,apiKey);
-Calcoli.RitornaTransazioniWalletBSC(walletAddress,apiKey);
-Calcoli.RitornaTransazioniTokenWalletBSC(walletAddress,apiKey);
+String walletAddress = "xxx";
+String apiKey = "xxx";
+Calcoli.RitornaTransazioniBSC(walletAddress,apiKey);
+//Calcoli.RitornaTransazioniWalletBSC(walletAddress,apiKey);
+//Calcoli.RitornaTransazioniTokenWalletBSC(walletAddress,apiKey);
 
         //Calcoli.RecuperaDettagliTransazione("0xe537a08d0a9f3d6a373e2d4db2ce7c0f8dcfa8d18912a1694a0774b61f21540d");
 //Calcoli.RecuperaDettagliTransazioneBSC("0x4ebaddf7c4e1c1dca97ecadbd1e7af2bb949b17211430c8afb31c2144471ed50");

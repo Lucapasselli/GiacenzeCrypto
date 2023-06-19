@@ -31,8 +31,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
 import java.util.Collections;
-import javax.swing.SwingUtilities;
-import giacenze_crypto.com.CDC_Grafica;
 import java.awt.Component;
 
 /**

@@ -33,7 +33,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -286,7 +285,7 @@ public class Calcoli {
      
  
      
-   public static void RitornaTransazioniInterneTokenWalletBSC(String walletAddress,String apiKey)
+   public static boolean RitornaTransazioniBSC(String walletAddress,String apiKey)
          {    
                try {
 
@@ -328,20 +327,23 @@ public class Calcoli {
                         trans.QtaEntrata=value;
                         trans.MonetaEntrata="BNB";                       
                     }
+                    trans.Wallet=walletAddress;
 
                 MappaTransazioniDefi.put(hash, trans);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+            return false;
+        } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
+               
+        return RitornaTransazioniBSC_2di3(walletAddress,apiKey);
          }     
      
      
-    public static void RitornaTransazioniTokenWalletBSC(String walletAddress,String apiKey)
+    public static boolean RitornaTransazioniBSC_3di3(String walletAddress,String apiKey)
          {    
                try {
       
@@ -385,12 +387,16 @@ public class Calcoli {
                     if (from.equalsIgnoreCase(walletAddress)){
                         trans.QtaUscita=value;
                         trans.MonetaUscita=tokenSymbol;
+                        trans.MonetaUscitaAddress=tokenAddress;
+                        trans.MonetaUscitaName=tokenName;
                     }else if (to.equalsIgnoreCase(walletAddress)){
                         trans.QtaEntrata=value;
-                        trans.MonetaEntrata=tokenSymbol;                       
+                        trans.MonetaEntrata=tokenSymbol;
+                        trans.MonetaUscitaAddress=tokenAddress;
+                        trans.MonetaUscitaName=tokenName;
                     }
                 
-                
+                trans.Wallet=walletAddress;
                 trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
@@ -419,14 +425,15 @@ public class Calcoli {
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+            return false;
+        } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
+               return true;
          }    
 
-     public static void RitornaTransazioniWalletBSC(String walletAddress,String apiKey)
+     public static boolean RitornaTransazioniBSC_2di3(String walletAddress,String apiKey)
          {    
         try {
             
@@ -478,6 +485,7 @@ public class Calcoli {
                 trans.Rete="BSC";
                 trans.MonetaCommissioni="BNB";
                 trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                trans.Wallet=walletAddress;
                 BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
                 BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
                 String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
@@ -503,11 +511,12 @@ public class Calcoli {
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+            return false;
+        } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
+        return RitornaTransazioniBSC_3di3(walletAddress,apiKey);
     } 
      
      

@@ -6,6 +6,8 @@ package giacenze_crypto.com;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -30,11 +32,34 @@ public class TransazioneDefi {
   public String MonetaUscitaAddress;
   public String MonetaUscitaName;
   public String QtaUscita;
+  static Map<String, ValoriToken> MappaTokenEntrata = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  static Map<String, ValoriToken> MappaTokenUscita = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public TransazioneDefi() {
         this.TransazioneOK = true;
     }
- 
+    
+    public void InserisciMoneteEntrata(String Moneta,String MonetaName,String MonetaAddress,String AddressNoWallet,String Qta){
+        ValoriToken entrata;
+        if (MappaTokenEntrata.get(MonetaAddress)==null)
+            {
+            entrata=new ValoriToken();
+            }
+        else 
+            {
+            entrata=MappaTokenEntrata.get(MonetaAddress);
+            }
+        //adesso devo gestire l'eventuale somma di qta
+        //DA FAREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!
+        entrata.IndirizzoNoWallet=AddressNoWallet;
+        entrata.Moneta=Moneta;
+        entrata.MonetaAddress=MonetaAddress;
+        entrata.MonetaName=MonetaName;
+        entrata.Qta=Qta;
+    }
+     public void InserisciMoneteUscita(){
+        
+    }
   public List<String[]> RitornaRigheTabella(){
       String RT[]=new String[23];
       List<String[]> righe=new ArrayList<>();
@@ -237,4 +262,18 @@ public class TransazioneDefi {
       }
   }
 
+  
+  
+ private class ValoriToken {
+
+  public String Moneta;
+  public String Qta;
+  public String MonetaAddress;
+  public String MonetaName;
+  public String IndirizzoNoWallet;
+  
 }
+ 
+}
+
+

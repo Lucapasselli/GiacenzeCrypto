@@ -306,7 +306,8 @@ public class Calcoli {
             
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-
+                String qta;
+                String AddressNoWallet;
                 JSONObject transaction = transactions.getJSONObject(i);
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
@@ -322,17 +323,19 @@ public class Calcoli {
                     }
 
                     if (from.equalsIgnoreCase(walletAddress)){
-                        trans.QtaUscita=value;
-                        trans.MonetaUscita="BNB";
-                    }else if (to.equalsIgnoreCase(walletAddress)){
-                        trans.QtaEntrata=value;
-                        trans.MonetaEntrata="BNB";                       
+                        AddressNoWallet=to;
+                        qta="-"+value;
+                    }else{
+                        AddressNoWallet=from;
+                        qta=value;                      
                     }
+                    
                     trans.Wallet=walletAddress;
                 trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
                 trans.MonetaCommissioni="BNB";
+                trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
 
                 
             }
@@ -369,7 +372,8 @@ public class Calcoli {
             
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-
+                String AddressNoWallet;
+                String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
                 System.out.println(transaction.toString());
                 String tokenSymbol=transaction.getString("tokenSymbol");
@@ -391,15 +395,11 @@ public class Calcoli {
                     }
 
                     if (from.equalsIgnoreCase(walletAddress)){
-                        trans.QtaUscita=value;
-                        trans.MonetaUscita=tokenSymbol;
-                        trans.MonetaUscitaAddress=tokenAddress;
-                        trans.MonetaUscitaName=tokenName;
-                    }else if (to.equalsIgnoreCase(walletAddress)){
-                        trans.QtaEntrata=value;
-                        trans.MonetaEntrata=tokenSymbol;
-                        trans.MonetaEntrataAddress=tokenAddress;
-                        trans.MonetaEntrataName=tokenName;
+                        AddressNoWallet=to;
+                        qta="-"+value;
+                    }else {
+                        AddressNoWallet=from;
+                        qta=value;
                     }
                 
                 trans.Wallet=walletAddress;
@@ -411,10 +411,11 @@ public class Calcoli {
                 BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
                 BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
                 String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni=qtaCommissione;
+                trans.QtaCommissioni="-"+qtaCommissione;
+                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);
 
                 
-                System.out.println("Hash: " + trans.HashTransazione);
+              /*  System.out.println("Hash: " + trans.HashTransazione);
                 System.out.println("Tipo Transazione: " + trans.TipoTransazione);
                 System.out.println("TransazioneOK: " + trans.TransazioneOK);
                 System.out.println("DataOra: " + trans.DataOra);
@@ -426,7 +427,7 @@ public class Calcoli {
                 System.out.println("From: " + from);
                 System.out.println("To: " + to);
                 System.out.println("Value: " + value);
-                System.out.println("--------------------");
+                System.out.println("--------------------");*/
                 
             }
         } catch (MalformedURLException ex) {
@@ -461,7 +462,8 @@ public class Calcoli {
             
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-
+                String AddressNoWallet;
+                String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
                 System.out.println(transaction.toString());
                 String hash = transaction.getString("hash");
@@ -477,16 +479,8 @@ public class Calcoli {
                    //     System.out.println("arghhhhh "+hash);
                     trans=MappaTransazioniDefi.get(hash);
                     }
-                if (!value.equalsIgnoreCase("0")){
-                    if (from.equalsIgnoreCase(walletAddress)){
-                        trans.QtaUscita=value;
-                        trans.MonetaUscita="BNB";
-                    }else if (to.equalsIgnoreCase(walletAddress)){
-                        trans.QtaEntrata=value;
-                        trans.MonetaEntrata="BNB";                       
-                    }
-                }
-                
+
+
                 trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
@@ -496,25 +490,20 @@ public class Calcoli {
                 BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
                 BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
                 String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni=qtaCommissione;
+                trans.QtaCommissioni="-"+qtaCommissione;
                 trans.TipoTransazione=transaction.getString("functionName");
-               // BigDecimal
-                //trans.QtaCommissioni=
+                if (!value.equalsIgnoreCase("0")){
+                    if (from.equalsIgnoreCase(walletAddress)){
+                        AddressNoWallet=to;
+                        qta="-"+value;
+                    }else {
+                        AddressNoWallet=from;
+                        qta=value;
+                    }
+                trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
+                }
                 
-           /*     System.out.println("Hash: " + trans.HashTransazione);
-                System.out.println("Tipo Transazione: " + trans.TipoTransazione);
-                System.out.println("TransazioneOK: " + trans.TransazioneOK);
-                System.out.println("DataOra: " + trans.DataOra);
-                System.out.println("QtaCommissioni: " + trans.QtaCommissioni);
-                System.out.println("Moneta Entrata: " + trans.MonetaEntrata);
-                System.out.println("Qta Entrata: " + trans.QtaEntrata);
-                System.out.println("Moneta Uscita: " + trans.MonetaUscita);
-                System.out.println("Qta Uscita: " + trans.QtaUscita);
-                System.out.println("From: " + from);
-                System.out.println("To: " + to);
-                System.out.println("Value: " + value);
-                System.out.println("--------------------");*/
-             //   MappaTransazioniDefi.put(hash, trans);
+              
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);

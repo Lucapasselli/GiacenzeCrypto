@@ -336,6 +336,7 @@ public class Calcoli {
                 trans.Rete="BSC";
                 trans.MonetaCommissioni="BNB";
                 trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
+                System.out.println(value+" - "+hash);
 
                 
             }
@@ -428,6 +429,7 @@ public class Calcoli {
                 System.out.println("To: " + to);
                 System.out.println("Value: " + value);
                 System.out.println("--------------------");*/
+             //   ScriviFileConversioneXXXEUR();
                 
             }
         } catch (MalformedURLException ex) {

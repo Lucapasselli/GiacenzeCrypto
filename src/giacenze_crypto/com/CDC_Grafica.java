@@ -3020,6 +3020,7 @@ for (TransazioneDefi v : Calcoli.MappaTransazioniDefi.values()) {
     }
 }
 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+Calcoli.ScriviFileConversioneXXXEUR();
 //Calcoli.RitornaTransazioniWalletBSC(walletAddress,apiKey);
 //Calcoli.RitornaTransazioniTokenWalletBSC(walletAddress,apiKey);
 

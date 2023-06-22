@@ -285,11 +285,11 @@ public class Calcoli {
      
  
      
-   public static boolean RitornaTransazioniBSC(String walletAddress,String apiKey)
+   public static boolean RitornaTransazioniBSC_2di3(String walletAddress,String apiKey)
          {    
                try {
 
-            URL url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey=" + apiKey).toURL();
+            URL url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey=" + apiKey).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -329,14 +329,26 @@ public class Calcoli {
                         AddressNoWallet=from;
                         qta=value;                      
                     }
-                    
-                    trans.Wallet=walletAddress;
+                trans.Blocco=transaction.getString("blockNumber");
+                trans.Wallet=walletAddress;
                 trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
-                trans.MonetaCommissioni="BNB";
-                trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
-                System.out.println(value+" - "+hash);
+                trans.MonetaCommissioni="BNB";  
+                if (trans.QtaCommissioni!=null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs())==1)
+                    {
+                        // se il valore della commissione è maggiore del bnb di ritorno allora lo sottraggo dalle commissioni
+                        //anzichè metterlo come importo dei trasferimenti
+                     //   System.out.println("AAAA - "+trans.HashTransazione+ " - "+ qta);
+                        trans.QtaCommissioni=new BigDecimal(trans.QtaCommissioni).subtract(new BigDecimal(qta)).toPlainString();
+                    }
+                else {
+                    trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
+                 //   System.out.println(trans.HashTransazione+ " - "+ qta);
+                }
+
+                
+              //  System.out.println(value+" - "+hash);
 
                 
             }
@@ -348,7 +360,7 @@ public class Calcoli {
             return false;
         }
                
-        return RitornaTransazioniBSC_2di3(walletAddress,apiKey);
+        return RitornaTransazioniBSC_3di3(walletAddress,apiKey);
          }     
      
      
@@ -356,7 +368,7 @@ public class Calcoli {
          {    
                try {
       
-            URL url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey="+apiKey).toURL();
+            URL url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey="+apiKey).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -376,7 +388,7 @@ public class Calcoli {
                 String AddressNoWallet;
                 String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
-                System.out.println(transaction.toString());
+            //    System.out.println(transaction.toString());
                 String tokenSymbol=transaction.getString("tokenSymbol");
                 String tokenName=transaction.getString("tokenName");
                 String tokenAddress=transaction.getString("contractAddress");
@@ -402,7 +414,7 @@ public class Calcoli {
                         AddressNoWallet=from;
                         qta=value;
                     }
-                
+                trans.Blocco=transaction.getString("blockNumber");
                 trans.Wallet=walletAddress;
                 trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
                 trans.HashTransazione=hash;
@@ -414,22 +426,6 @@ public class Calcoli {
                 String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 trans.QtaCommissioni="-"+qtaCommissione;
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);
-
-                
-              /*  System.out.println("Hash: " + trans.HashTransazione);
-                System.out.println("Tipo Transazione: " + trans.TipoTransazione);
-                System.out.println("TransazioneOK: " + trans.TransazioneOK);
-                System.out.println("DataOra: " + trans.DataOra);
-                System.out.println("QtaCommissioni: " + trans.QtaCommissioni);
-                System.out.println("Moneta Entrata: " + trans.MonetaEntrata);
-                System.out.println("Qta Entrata: " + trans.QtaEntrata);
-                System.out.println("Moneta Uscita: " + trans.MonetaUscita);
-                System.out.println("Qta Uscita: " + trans.QtaUscita);
-                System.out.println("From: " + from);
-                System.out.println("To: " + to);
-                System.out.println("Value: " + value);
-                System.out.println("--------------------");*/
-             //   ScriviFileConversioneXXXEUR();
                 
             }
         } catch (MalformedURLException ex) {
@@ -442,12 +438,12 @@ public class Calcoli {
                return true;
          }    
 
-     public static boolean RitornaTransazioniBSC_2di3(String walletAddress,String apiKey)
+     public static boolean RitornaTransazioniBSC(String walletAddress,String apiKey)
          {    
         try {
+            MappaTransazioniDefi.clear();
             
-            
-            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock=0&endblock=999999999&sort=asc" +"&apikey=" + apiKey).toURL();
+            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey=" + apiKey).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -467,7 +463,7 @@ public class Calcoli {
                 String AddressNoWallet;
                 String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
-                System.out.println(transaction.toString());
+               // System.out.println(transaction.toString());
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
@@ -482,7 +478,7 @@ public class Calcoli {
                     trans=MappaTransazioniDefi.get(hash);
                     }
 
-
+                trans.Blocco=transaction.getString("blockNumber");
                 trans.DataOra=ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
@@ -514,7 +510,7 @@ public class Calcoli {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
-        return RitornaTransazioniBSC_3di3(walletAddress,apiKey);
+        return RitornaTransazioniBSC_2di3(walletAddress,apiKey);
     } 
      
      
@@ -1096,7 +1092,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    public static String DammiPrezzoTransazione(String Moneta1,String Moneta2,String Qta1,String Qta2,long Data, String Prezzo,boolean PrezzoZero) {
+    public static String DammiPrezzoTransazione(String Moneta1,String Moneta2,String Qta1,String Qta2,long Data, String Prezzo,boolean PrezzoZero,int Decimali) {
         String PrezzoTransazione;
         boolean trovato1=false;
         boolean trovato2=false;
@@ -1105,7 +1101,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             PrezzoTransazione=Qta1;
             if (PrezzoTransazione!=null)
                 {
-                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
                 }
         }
@@ -1113,7 +1109,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             PrezzoTransazione=Qta2;
              if (PrezzoTransazione!=null)
                  {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                  return PrezzoTransazione;
                  }
         }
@@ -1121,7 +1117,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             PrezzoTransazione=ConvertiUSDTEUR(Qta1,Data);
             if (PrezzoTransazione!=null)
                  {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                  return PrezzoTransazione;
                  }
         }
@@ -1129,7 +1125,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             PrezzoTransazione=ConvertiUSDTEUR(Qta2,Data);
              if (PrezzoTransazione!=null)
                  {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                  return PrezzoTransazione;
                  }
         }
@@ -1143,7 +1139,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
                 if (PrezzoTransazione!=null)
                  {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                  return PrezzoTransazione;
                  }//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
                 //se trovo la condizione ritorno il prezzo e interrnompo la funzione
@@ -1153,7 +1149,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 PrezzoTransazione=ConvertiXXXEUR(Moneta2,Qta2,Data);
                 if (PrezzoTransazione!=null)
                   {
-                  PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();                       
+                  PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();                       
                  return PrezzoTransazione;
                  }
                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
@@ -1170,7 +1166,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
                 if (PrezzoTransazione!=null)
                 {
-                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     return PrezzoTransazione;
                     }
                 //se trovo la condizione ritorno il prezzo e interrnompo la funzione
@@ -1180,7 +1176,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                // System.out.println("prezzo.."+PrezzoTransazione);
                 if (PrezzoTransazione!=null)
                     {
-                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                      return PrezzoTransazione;
                      }
                //se trovo la condizione ritorno il prezzo e interrnompo la funzione

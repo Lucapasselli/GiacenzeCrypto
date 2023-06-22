@@ -3332,15 +3332,19 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         String MonRic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 11).toString().trim();
         String MonUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8).toString().trim();
         if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+            if (new BigDecimal(QTARic).compareTo(new BigDecimal(0))!=0)
             unitarioValoreRic="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
         if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico)&&Funzioni_isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+            if (new BigDecimal(QTARic).compareTo(new BigDecimal(0))!=0)
             unitarioPrzCaricoRic="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
         if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+            if (new BigDecimal(QTAUsc).compareTo(new BigDecimal(0))!=0)
             unitarioValoreUsc="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
         if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico)&&Funzioni_isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+            if (new BigDecimal(QTAUsc).compareTo(new BigDecimal(0))!=0)
             unitarioPrzCaricoUsc="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
         String MonetaRicevuta="";

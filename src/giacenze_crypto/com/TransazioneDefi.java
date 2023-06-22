@@ -20,20 +20,21 @@ public class TransazioneDefi {
 
   public String Wallet;
   public String DataOra;
-  public String HashTransazione; 
+  public String HashTransazione;
+  public String Blocco;
   public String Rete;
   public boolean TransazioneOK;
   public String TipoTransazione;
   public String MonetaCommissioni;
   public String QtaCommissioni;
-  public String MonetaEntrata;
-  public String MonetaEntrataAddress;
-  public String MonetaEntrataName;
-  public String QtaEntrata;
-  public String MonetaUscita;
-  public String MonetaUscitaAddress;
-  public String MonetaUscitaName;
-  public String QtaUscita;
+  //public String MonetaEntrata;
+  //public String MonetaEntrataAddress;
+  //public String MonetaEntrataName;
+  //public String QtaEntrata;
+  //public String MonetaUscita;
+  //public String MonetaUscitaAddress;
+  //public String MonetaUscitaName;
+  //public String QtaUscita;
     // static Map<String, ValoriToken> MappaTokenEntrata = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private final Map<String, ValoriToken> MappaToken;
   private final Map<String, ValoriToken> MappaTokenUscita;
@@ -69,14 +70,14 @@ public class TransazioneDefi {
             monete.Qta=Qta;
             MappaToken.put(MonetaAddress,monete);
            // System.out.println(dataAlMinuto+" - "+Moneta);
-            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);
+            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6);
             }
         else 
             {
             monete=MappaToken.get(MonetaAddress);
             monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
             //System.out.println(dataAlMinuto+" - "+Moneta);
-            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,monete.Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);
+            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,monete.Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6);
             }
     }
     
@@ -132,85 +133,106 @@ public class TransazioneDefi {
           return Tipo;
     }   
      
-         public void CreaCoppie(){
-               //      this.MappaTokenEntrata = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-                //  this.MappaTokenUscita = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-                
-            //Prima di tutto scorro le 2 mappe e controllo se ce n'è almeno una di cui riesco a trovare il prezzo completo della transazione
-            boolean trovatoValoreTransazione=true;
-            BigDecimal ValoreTransazioneEntrata=new BigDecimal("0");
-            int numEntrateSenzaPrezzo=0;
-            int numUsciteSenzaPrezzo=0;
-            BigDecimal ValoreTransazioneUscita=new BigDecimal("0");
-            BigDecimal ValoreTransazione=new BigDecimal("0");
-            for (ValoriToken a:MappaTokenEntrata.values()){
-                if (a.Prezzo.equals("0")){
-                    //Se trovo un prezzo a zero valorizzo il booleano a false
-                    trovatoValoreTransazione=false;
-                    numEntrateSenzaPrezzo++;
-                    ValoreTransazioneEntrata=ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
-                }
-                ValoreTransazioneEntrata=ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
-            }
-            if (trovatoValoreTransazione)// se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo
-                {
-                    ValoreTransazione=ValoreTransazioneEntrata;
-                   
-                }
-            //se non trovo il valore della transazione allora lo cerco nei valori in entrata
-            
-                for (ValoriToken a:MappaTokenUscita.values()){
-                    if (a.Prezzo.equals("0")){
-                    //Se trovo un prezzo a zero valorizzo il booleano a false
-                    trovatoValoreTransazione=false;
-                    numUsciteSenzaPrezzo++;
-                    ValoreTransazioneUscita=ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
-                }
-                ValoreTransazioneUscita=ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
-            }
-                if (trovatoValoreTransazione&&ValoreTransazione.compareTo(new BigDecimal(0))==0)
-                    {
-                        ValoreTransazione=ValoreTransazioneUscita;
-                    }
+      
+      
+      
+    public void AssegnaPesiaPartiTransazione() {
 
-            
-            //Ora calcolo i pesi dei vari token
-            //La funzione si divide in 2, se non trovo il valore transazione allora do lo stesso peso ai vari token
-            if (!trovatoValoreTransazione)// se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo
-                {
-                   for (ValoriToken a:MappaTokenEntrata.values()){
-                       a.Peso=new BigDecimal(1).divide(new BigDecimal(MappaTokenEntrata.size()),10, RoundingMode.HALF_UP).toPlainString();
-                   }
-                   for (ValoriToken a:MappaTokenUscita.values()){
-                       a.Peso=new BigDecimal(1).divide(new BigDecimal(MappaTokenUscita.size()),10, RoundingMode.HALF_UP).toPlainString();
-                   }
+        //Prima di tutto scorro le 2 mappe e controllo se ce n'è almeno una di cui riesco a trovare il prezzo completo della transazione
+        boolean trovatoValoreTransazione = true;
+        BigDecimal ValoreTransazioneEntrata = new BigDecimal("0");
+        BigDecimal ValoreTransazioneUscita = new BigDecimal("0");
+        BigDecimal ValoreTransazione = new BigDecimal("0");
+        for (ValoriToken a : MappaTokenEntrata.values()) {
+            if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
+                //Se trovo un prezzo a zero valorizzo il booleano a false
+                trovatoValoreTransazione = false;
+                // numEntrateSenzaPrezzo++;
+                ValoreTransazioneEntrata = ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
+            }
+            ValoreTransazioneEntrata = ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
+        }
+        if (trovatoValoreTransazione)// se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo
+        {
+            ValoreTransazione = ValoreTransazioneEntrata;
+
+        } //se non trovo il valore della transazione allora lo cerco nei valori in entrata
+        else {
+            for (ValoriToken a : MappaTokenUscita.values()) {
+                if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
+                    //Se trovo un prezzo a zero valorizzo il booleano a false
+                    trovatoValoreTransazione = false;
+                    // numUsciteSenzaPrezzo++;
+                    ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
                 }
-                       
-            else // se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo e rifaccio i pesi in base ai valori
-                //bisogna capire ora come sviluppare questo ciclo
-                {
-                    boolean calcolatoTutto=false;
-                    int numToken=MappaTokenEntrata.size();
-                    int numTokenconPrezzoRimanenti=numToken-numEntrateSenzaPrezzo;
-                    while(!calcolatoTutto){
-                        for (ValoriToken a:MappaTokenEntrata.values()){
-                           // New BigDecimal pesi;
-                            if (a.Peso.equals("0")){//se non ha peso vuol dire che non l'ho ancora conteggiato
-                                a.Peso=new BigDecimal(1).divide(new BigDecimal(MappaTokenEntrata.size()),10, RoundingMode.HALF_UP).toPlainString();
-                            }
-                        else {
-                                
-                            }
-                    }
-                   
-                }
+                ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
+            }
+            if (trovatoValoreTransazione) {
+                ValoreTransazione = ValoreTransazioneUscita;
+            }
+        }
+
+        //Ora calcolo i pesi dei vari token
+        //La funzione si divide in 2, se non trovo il valore transazione allora do lo stesso peso ai vari token
+        if (!trovatoValoreTransazione)// se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo
+        {
+            for (ValoriToken a : MappaTokenEntrata.values()) {
+                a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenEntrata.size()), 10, RoundingMode.HALF_UP).toPlainString();
+            }
+            for (ValoriToken a : MappaTokenUscita.values()) {
+                a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenUscita.size()), 10, RoundingMode.HALF_UP).toPlainString();
+            }
+        } else // se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo e rifaccio i pesi in base ai valori
+        //bisogna capire ora come sviluppare questo ciclo
+        {
+           // System.out.println(ValoreTransazione + " - " + HashTransazione);
             
-         }  
-         }
-         
-       /*  public void ImpostaPesiSuiToken(BigDecimal ValoreTransazione){
-             
-         }*/
+            int numTokenRimenenti = MappaTokenEntrata.size();
+            BigDecimal PesoRimanente = new BigDecimal(1);
+
+            //primo ciclo do i pesi ai token con i prezzi
+            for (ValoriToken a : MappaTokenEntrata.values()) {
+                //Se ha prezzo riduco di 1 il numero dei token rimanenti e faccio il calcolo del peso
+                //il peso lo calcolo dividendo il prezzo per il valore della transazione
+                if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))!=0) {
+                    numTokenRimenenti--;
+                    a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
+                    PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
+                }
+            }
+            //secondo ciclo do i pesi ai token senza prezzo
+            for (ValoriToken a : MappaTokenEntrata.values()) {
+                // New BigDecimal pesi;
+                if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
+                    // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
+                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 15, RoundingMode.HALF_UP).toPlainString();
+                }
+            }
+            
+            numTokenRimenenti = MappaTokenUscita.size();
+            PesoRimanente = new BigDecimal(1);
+
+            //primo ciclo do i pesi ai token con i prezzi
+            for (ValoriToken a : MappaTokenUscita.values()) {
+                //Se ha prezzo riduco di 1 il numero dei token rimanenti e faccio il calcolo del peso
+                //il peso lo calcolo dividendo il prezzo per il valore della transazione
+                if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))!=0) {
+                    numTokenRimenenti--;
+                    a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
+                    PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
+                }
+            }
+            //secondo ciclo do i pesi ai token senza prezzo
+            for (ValoriToken a : MappaTokenUscita.values()) {
+                // New BigDecimal pesi;
+                if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
+                    // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
+                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 15, RoundingMode.HALF_UP).toPlainString();
+                }
+            }
+        }
+    }
+
          
      
   public List<String[]> RitornaRigheTabella(){
@@ -237,7 +259,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -267,7 +289,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -300,7 +322,7 @@ public class TransazioneDefi {
               RT[12]="Crypto";
               RT[13]=token.Qta;
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -331,7 +353,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -360,7 +382,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -373,15 +395,15 @@ public class TransazioneDefi {
               }
               
       }else if(IdentificaTipoTransazione()!=null && IdentificaTipoTransazione().equalsIgnoreCase("scambio")){
-          //scambio crypto crypto
- /*      //   System.out.println(MonetaUscita+" - "+MonetaEntrata);
+          //prima di tutto genero il movimento di commissione
+              RT=new String[23];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="COMMISSIONE";
-              RT[6]="COMMISSIONE SCAMBIO "+MonetaUscita+" -> "+MonetaEntrata;
+              RT[6]="COMMISSIONE PER SCAMBIO";
               RT[7]=TipoTransazione;
               RT[8]=MonetaCommissioni;
               RT[9]="Crypto";
@@ -390,7 +412,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -399,24 +421,36 @@ public class TransazioneDefi {
               RT[21]="";
               RT[22]="A";
               righe.add(RT);
-       
+          
+            AssegnaPesiaPartiTransazione();  
+          // in seconda istanza a seconda del numero di token che compongono la transazione creo i vari scambi 
+          int i=1;
+          int totMov=MappaTokenEntrata.size()*MappaTokenUscita.size();
+          for (ValoriToken tokenE : MappaTokenEntrata.values()) {
+              for (ValoriToken tokenU : MappaTokenUscita.values()) {
+                  //peso transazione                  
+              BigDecimal PesoTransazione=new BigDecimal(tokenE.Peso).multiply(new BigDecimal(tokenU.Peso));
+              if (MappaTokenEntrata.size()==1&&MappaTokenUscita.size()==1) PesoTransazione=new BigDecimal(1);
+             // System.out.println(PesoTransazione + " - "+HashTransazione);
+              BigDecimal PrezzoTransazione=new BigDecimal (Calcoli.DammiPrezzoTransazione(tokenU.Moneta,tokenE.Moneta,tokenU.Qta,tokenE.Qta,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6))
+                .multiply(PesoTransazione);
               RT=new String[23];
-              RT[0]=PrimaParteID+"_1_1_SC";
+              RT[0]=PrimaParteID+"_"+i+"_"+totMov+"_SC";
               RT[1]=dataAlMinuto;
-              RT[2]="1 di 1";
+              RT[2]=i+" di "+totMov;
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="SCAMBIO CRYPTO";
-              RT[6]="SCAMBIO CRYPTO "+MonetaUscita+" -> "+MonetaEntrata;
+              RT[6]="SCAMBIO CRYPTO "+tokenU.Moneta+" -> "+tokenE.Moneta;
               RT[7]=TipoTransazione;
-              RT[8]=MonetaUscita;
+              RT[8]=tokenU.Moneta;
               RT[9]="Crypto";
-              RT[10]=QtaUscita;
-              RT[11]=MonetaEntrata;
+              RT[10]=new BigDecimal(tokenU.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
+              RT[11]=tokenE.Moneta;
               RT[12]="Crypto";
-              RT[13]=QtaEntrata;
+              RT[13]=new BigDecimal(tokenE.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=PrezzoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -425,8 +459,11 @@ public class TransazioneDefi {
               RT[21]="";
               RT[22]="A";
               righe.add(RT);
-              
-              */
+              i++;
+              }
+          }
+          //scambio crypto crypto
+ 
 
               
       }else{
@@ -455,7 +492,7 @@ public class TransazioneDefi {
               RT[12]="Crypto";
               RT[13]=token.Qta;
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="0.00";
               RT[18]="";
@@ -487,7 +524,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="0.00";
               RT[18]="";

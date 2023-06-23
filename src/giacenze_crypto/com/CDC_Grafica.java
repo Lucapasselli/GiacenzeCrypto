@@ -3011,8 +3011,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
          //hash da controllare
          //0xf2ce89470cb24f111afbef0386f1b093fee7395402ca252e8365f730c95c6c20
          //0xfe94c1fe714c2b2c87e9682905c4c0182a5a2b8870a49ad3f13220f3fde62770
-String walletAddress = "0x235de84ce69e04675b0afa3dd9594c726008c9b1";
-String apiKey = "1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
+String walletAddress = "xxx";
+String apiKey = "xxx";
 Calcoli.RitornaTransazioniBSC(walletAddress,apiKey);
 for (TransazioneDefi v : Calcoli.MappaTransazioniDefi.values()) {
    // for (String v : Calcoli.MappaTransazioniDefi.keySet()) {

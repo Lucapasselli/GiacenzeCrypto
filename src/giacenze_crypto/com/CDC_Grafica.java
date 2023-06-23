@@ -250,11 +250,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Non Utilizzata</html>", "<html><center>Prezzo di<br>carico<br>transazione<br>in EURO</html>", "<html><center><html><center>Non Utilizzata</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto"
+                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Non Utilizzata</html>", "<html><center>Prezzo di<br>carico<br>transazione<br>in EURO</html>", "<html><center><html><center>Non Utilizzata</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -281,10 +281,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
             TransazioniCryptoTabella.getColumnModel().getColumn(2).setMaxWidth(70);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(100);
             TransazioniCryptoTabella.getColumnModel().getColumn(11).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(11).setPreferredWidth(60);
-            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMaxWidth(60);
+            TransazioniCryptoTabella.getColumnModel().getColumn(11).setMaxWidth(100);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setPreferredWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(12).setMaxWidth(60);
@@ -660,7 +660,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        CDC_CardWallet_Tabella1.setShowGrid(true);
         CDC_CardWallet_Tabella1Scroll.setViewportView(CDC_CardWallet_Tabella1);
         if (CDC_CardWallet_Tabella1.getColumnModel().getColumnCount() > 0) {
             CDC_CardWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -691,8 +690,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        CDC_CardWallet_Tabella2.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        CDC_CardWallet_Tabella2.setShowGrid(true);
         CDC_CardWallet_Tabella2Scroll.setViewportView(CDC_CardWallet_Tabella2);
         if (CDC_CardWallet_Tabella2.getColumnModel().getColumnCount() > 0) {
             CDC_CardWallet_Tabella2.getColumnModel().getColumn(0).setPreferredWidth(200);
@@ -929,7 +926,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        CDC_FiatWallet_Tabella1.setShowGrid(true);
         CDC_FiatWallet_Tabella1Scroll.setViewportView(CDC_FiatWallet_Tabella1);
         if (CDC_FiatWallet_Tabella1.getColumnModel().getColumnCount() > 0) {
             CDC_FiatWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -960,8 +956,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        CDC_FiatWallet_Tabella2.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        CDC_FiatWallet_Tabella2.setShowGrid(true);
         CDC_FiatWallet_Tabella2Scroll.setViewportView(CDC_FiatWallet_Tabella2);
         if (CDC_FiatWallet_Tabella2.getColumnModel().getColumnCount() > 0) {
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(0).setPreferredWidth(130);
@@ -1025,7 +1019,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        CDC_FiatWallet_Tabella3.setShowGrid(true);
         CDC_FiatWallet_Tabella3Scroll.setViewportView(CDC_FiatWallet_Tabella3);
         if (CDC_FiatWallet_Tabella3.getColumnModel().getColumnCount() > 0) {
             CDC_FiatWallet_Tabella3.getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -1434,6 +1427,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public void TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto(){
        // this.CDC.remove(this.TransazioniCrypto);
         //per nascondere devo farlo al contrario
+        
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(30));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(29));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(28));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(27));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(26));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(25));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(24));
+        TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(23));
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(22));
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(21));
         TransazioniCryptoTabella.getColumnModel().removeColumn(TransazioniCryptoTabella.getColumnModel().getColumn(20));
@@ -3009,8 +3011,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
          //hash da controllare
          //0xf2ce89470cb24f111afbef0386f1b093fee7395402ca252e8365f730c95c6c20
          //0xfe94c1fe714c2b2c87e9682905c4c0182a5a2b8870a49ad3f13220f3fde62770
-String walletAddress = "xxx";
-String apiKey = "xxx";
+String walletAddress = "0x235de84ce69e04675b0afa3dd9594c726008c9b1";
+String apiKey = "1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
 Calcoli.RitornaTransazioniBSC(walletAddress,apiKey);
 for (TransazioneDefi v : Calcoli.MappaTransazioniDefi.values()) {
    // for (String v : Calcoli.MappaTransazioniDefi.keySet()) {
@@ -3039,7 +3041,7 @@ Calcoli.ScriviFileConversioneXXXEUR();
         //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
         //su movimenti già associati
         for (String[] v : MappaCryptoWallet.values()) {
-          if (v[18].contains("DTW")||v[18].contains("PTW"))
+          if (v[18]!=null&&(v[18].contains("DTW")||v[18].contains("PTW")))
           {
               String ID=v[0];
               String riferimento=v[20];

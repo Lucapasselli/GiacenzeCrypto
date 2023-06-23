@@ -171,7 +171,7 @@
                   <Properties>
                     <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                      <Table columnCount="23" rowCount="0">
+                      <Table columnCount="31" rowCount="0">
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;ID&lt;br&gt;Transazione&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="Data e Ora" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Numero&lt;br&gt;movimento&lt;br&gt;su Totale&lt;br&gt;movimenti&lt;/html&gt;" type="java.lang.Object"/>
@@ -195,6 +195,14 @@
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Riferimento&lt;br&gt;Trasferimento&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="Note" type="java.lang.Object"/>
                         <Column editable="false" title="Auto" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="ND" type="java.lang.Object"/>
                       </Table>
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -239,6 +247,26 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
+                        <Column maxWidth="100" minWidth="60" prefWidth="60" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="60" prefWidth="60" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
                         <Column maxWidth="60" minWidth="60" prefWidth="60" resizable="true">
                           <Title/>
                           <Editor/>
@@ -254,12 +282,27 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="60" minWidth="60" prefWidth="60" resizable="true">
+                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="60" minWidth="60" prefWidth="60" resizable="true">
+                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -274,27 +317,32 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="100" minWidth="80" prefWidth="100" resizable="true">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>

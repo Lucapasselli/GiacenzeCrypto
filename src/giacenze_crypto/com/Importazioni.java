@@ -43,6 +43,7 @@ public class Importazioni {
     public static int TransazioniAggiunte=0;
     public static int TrasazioniScartate=0;
     public static int TrasazioniSconosciute=0;
+    public static int ColonneTabella=31;
     
     
     public static String movimentiSconosciuti="";
@@ -411,6 +412,16 @@ progressb.setVisible(true);
     
     
     
+        public static String[] RiempiVuotiArray(String[] array){
+            for (String v : array) {
+                if(v==null){
+                    v="";
+                }
+            }
+            return array;
+        }
+        
+        
     
     
     
@@ -419,10 +430,14 @@ progressb.setVisible(true);
             FileWriter w=new FileWriter("movimenti.crypto.db");
             BufferedWriter b=new BufferedWriter (w);
        for (String[] v : Mappa_Movimenti.values()) {
-          String riga=v[0]+";"+v[1]+";"+v[2]+";"+v[3]+";"+v[4]+";"+v[5]+";"+v[6]+";"+v[7]+";"+v[8]+";"+v[9]+";"+v[10]+";"+v[11]+";"+v[12]+";"+v[13]+";"+v[14]+";"+v[15]+";"+v[16]+";"+v[17]+";"+v[18]+";"+v[19]+";"+v[20]+";"+v[21]+";"+v[22];
-         //  System.out.println(riga);
+           String riga="";
+                for (String v1 : v) {
+                    riga = riga + v1 + ";";
+                }
+       //   riga=v[0]+";"+v[1]+";"+v[2]+";"+v[3]+";"+v[4]+";"+v[5]+";"+v[6]+";"+v[7]+";"+v[8]+";"+v[9]+";"+v[10]+";"+v[11]+";"+v[12]+";"+v[13]+";"+v[14]+";"+v[15]+";"+v[16]+";"+v[17]+";"+v[18]+";"+v[19]+";"+v[20]+";"+v[21]+";"+v[22];
+
            b.write(riga+"\n");
-          // System.out.println(value);
+
        }
        b.close();
        w.close();
@@ -467,7 +482,7 @@ progressb.setVisible(true);
          String dust_sommaaddebiti="0";
          int numeroAddebiti=0;
                         for (int k=0;k<numMovimenti;k++){
-                            String RT[]=new String[23];
+                            String RT[]=new String[ColonneTabella];
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
                             String data=movimentoSplittato[0];
@@ -545,15 +560,16 @@ progressb.setVisible(true);
                                     } else {
                                         plus = valoreEuro;
                                     }
-                                    RT[16] = "";
+                                 //   RT[16] = "";
                                     RT[17] = valoreEuro;
-                                    RT[18] = "";
+                                 //   RT[18] = "";
                                     RT[19] = new BigDecimal(plus).setScale(2, RoundingMode.HALF_UP).toString();
                                 }
 
-                                RT[20] = "";
-                                RT[21] = "";
+                               /* RT[20] = "";
+                                RT[21] = "";*/
                                 RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 
                             }
@@ -569,9 +585,9 @@ progressb.setVisible(true);
                                 RT[5]="DEPOSITO FIAT";
                                 RT[6]="DEPOSITO "+movimentoSplittato[2];                                
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
-                                RT[8]="";
+                               /* RT[8]="";
                                 RT[9]="";
-                                RT[10]="";
+                                RT[10]="";*/
                                 RT[11]=movimentoSplittato[2];                                                               
                                 RT[12]="FIAT";
                                 RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();
@@ -584,18 +600,19 @@ progressb.setVisible(true);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().toString();                                
                                 RT[15]=valoreEuro;
-                                RT[16]="";
+                               // RT[16]="";
                                 RT[17]=valoreEuro;
                                 RT[18]="";
                                 RT[19]="0.00";
-                                RT[20]="";
-                                RT[21]="";
-                                RT[22]="A";
+                              /*  RT[20]="";
+                                RT[21]="";*/
+                                RT[22]="A";                              
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 
                                 //Vendita Euro x Crypto
                                 //movimentoSplittato[0].replaceAll(" |-|:", "") +"_"+String.valueOf(k+1)+ "_CDCAPP_AC_*_"+movimentoSplittato[2].trim();
-                                RT=new String[23];
+                                RT=new String[ColonneTabella];
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_AC";                              
                                 RT[1]=dataa;
                                 RT[2]=2+" di "+2;
@@ -626,6 +643,7 @@ progressb.setVisible(true);
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT); 
                                 
                             }
@@ -664,11 +682,12 @@ progressb.setVisible(true);
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);   
                                 
                                 
                                 //trasferimento FIAT
-                                RT=new String[23];
+                                RT=new String[ColonneTabella];
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_PF"; 
                                 RT[1]=dataa;
                                 RT[2]=2+" di "+2;
@@ -700,6 +719,7 @@ progressb.setVisible(true);
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);                
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO-CRYPTO"))
@@ -737,6 +757,7 @@ progressb.setVisible(true);
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);     
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION"))
@@ -761,7 +782,7 @@ progressb.setVisible(true);
                                  //  System.out.println(numeroAddebiti);
                                     for (int w = 0; w < numeroAddebiti; w++) {
                                         String splittata[]=dust_addebitati[w].split(",");
-                                        RT = new String[23];
+                                        RT = new String[ColonneTabella];
                                         RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
                                         RT[1] = dataa;
                                         RT[2] = w+1 + " di " + numeroAddebiti;
@@ -806,6 +827,7 @@ progressb.setVisible(true);
                                         RT[20] = "";
                                         RT[21] = "";
                                         RT[22] = "A";
+                                        RiempiVuotiArray(RT);
                                         lista.add(RT);
                                     }
                                 }
@@ -857,7 +879,7 @@ progressb.setVisible(true);
                                     System.out.println(movimento);
                                 }
                                 
-                                RT = new String[23];
+                                RT = new String[ColonneTabella];
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TI";
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+2;
@@ -889,11 +911,12 @@ progressb.setVisible(true);
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);  
                                 
                                 
                                 
-                                RT = new String[23];
+                                RT = new String[ColonneTabella];
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TI";
                                 RT[1]=dataa;
                                 RT[2]=2+" di "+2;
@@ -918,6 +941,7 @@ progressb.setVisible(true);
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT); 
                                 
                                 
@@ -925,7 +949,7 @@ progressb.setVisible(true);
                             }
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO"))
                             {
-                                RT = new String[23];
+                                RT = new String[ColonneTabella];
                             //    RT[0]=movimentoSplittato[0].replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TC";
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+1;
@@ -972,6 +996,7 @@ progressb.setVisible(true);
                                 RT[20]="";
                                 if (movimentoSplittato.length>10) RT[21]="Trans ID : "+movimentoSplittato[10];else RT[21]="";
                                 RT[22]="A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT); 
                             }
                            else
@@ -1012,7 +1037,7 @@ progressb.setVisible(true);
 
 
                         for (int k=0;k<numMovimenti;k++){
-                            String RT[]=new String[23];
+                            String RT[]=new String[ColonneTabella];
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
                            // System.out.println(movimentoSplittato[9]);
@@ -1051,6 +1076,7 @@ progressb.setVisible(true);
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 
                             }else if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
@@ -1080,6 +1106,7 @@ progressb.setVisible(true);
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                                         
                                     }
@@ -1111,6 +1138,7 @@ progressb.setVisible(true);
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                                     }
                             }
@@ -1142,6 +1170,7 @@ progressb.setVisible(true);
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
                             else if (movimentoSplittato[0].trim().equalsIgnoreCase("Staking"))
@@ -1172,6 +1201,7 @@ progressb.setVisible(true);
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
                             else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Fee"))
@@ -1203,7 +1233,8 @@ progressb.setVisible(true);
                                 RT[19] = "Da calcolare";
                                 RT[20] = "";
                                 RT[21] = "";
-                                RT[22] = "A"; 
+                                RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                                                               
                             }
@@ -1234,7 +1265,8 @@ progressb.setVisible(true);
                                 RT[19] = "0.00";
                                 RT[20] = "";
                                 RT[21] = "";
-                                RT[22] = "A"; 
+                                RT[22] = "A";
+                                RiempiVuotiArray(RT);
                                 lista.add(RT);
                                                               
                             }
@@ -1303,7 +1335,7 @@ progressb.setVisible(true);
                                 }
                                 if (annullato==false)   
                                     {
-                                    RT=new String[23];
+                                    RT=new String[ColonneTabella];
                                     RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_"+TipoMovAbbreviato;
                                     RT[1] = dataa;
                                     RT[2] = k + 1 + " di " + numMovimenti;
@@ -1390,7 +1422,8 @@ progressb.setVisible(true);
                                         }
                                     RT[20] = "";
                                     RT[21] = "";
-                                    RT[22] = "A"; 
+                                    RT[22] = "A";
+                                    RiempiVuotiArray(RT);
                                     lista.add(RT);
                                   }   
                                 }

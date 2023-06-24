@@ -3006,8 +3006,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi() {
-        String walletAddress = "0x235De84ce69E04675b0afa3dd9594c726008C9B1";
-        String apiKey = "1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
+        String walletAddress = "xxx";
+        String apiKey = "xxx";
         Component c=this;
         Thread thread;
             thread = new Thread() {

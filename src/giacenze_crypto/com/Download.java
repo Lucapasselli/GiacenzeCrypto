@@ -65,6 +65,14 @@ private Timer timer = new Timer(1000, new ActionListener() {
      public void Pausa(){
          timer.start();
      }
+     
+     public void SetLabel(String testo){
+         this.LabelScaricamento.setText(testo);
+     }
+     
+     public void Titolo(String testo){
+         this.setTitle(testo);
+     }
     
      public void SetMassimo(int Max){
 
@@ -130,7 +138,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ProgressBarDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                    .addComponent(ProgressBarDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
                     .addComponent(LabelAvanzamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(LabelScaricamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())

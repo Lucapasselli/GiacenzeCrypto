@@ -30,7 +30,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="ProgressBarDownload" alignment="0" pref="265" max="32767" attributes="0"/>
+                  <Component id="ProgressBarDownload" alignment="0" pref="488" max="32767" attributes="0"/>
                   <Component id="LabelAvanzamento" alignment="0" max="32767" attributes="0"/>
                   <Component id="LabelScaricamento" max="32767" attributes="0"/>
               </Group>

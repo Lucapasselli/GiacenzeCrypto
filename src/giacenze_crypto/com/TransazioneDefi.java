@@ -243,7 +243,7 @@ public class TransazioneDefi {
       if(!TransazioneOK){
            //Transazione non andata a buon fine
            //Considero solo le commisioni
-           RT=new String[23];
+           RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -267,13 +267,21 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]="";
+              RT[26]="";
+              RT[27]="";
+              RT[28]="";
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
               //chiudo il cilco perchè questa è una transazione unica
               return righe;
        }
       else if (TipoTransazione!=null&&TipoTransazione.contains("approve"))
           {
-              RT=new String[23];
+              RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -297,6 +305,14 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]="";
+              RT[26]="";
+              RT[27]="";
+              RT[28]="";
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
               //chiudo il ciclo perchè questa è una transazione unica
               return righe;
@@ -306,7 +322,7 @@ public class TransazioneDefi {
          int numeroDepositi=MappaToken.size();
          int i=1;
          for(ValoriToken token : MappaToken.values()){
-              RT=new String[23];
+              RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_"+numeroDepositi+"_DC";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
@@ -330,6 +346,14 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]="";
+              RT[26]="";
+              RT[27]=token.MonetaName;
+              RT[28]=token.MonetaAddress;
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
               i++;
               }
@@ -337,7 +361,7 @@ public class TransazioneDefi {
       }else if(IdentificaTipoTransazione()!=null && IdentificaTipoTransazione().equalsIgnoreCase("prelievo")){
          //Prelievo (considero le commissioni) 
               
-         RT=new String[23];
+         RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -361,12 +385,20 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]="";
+              RT[26]="";
+              RT[27]="";
+              RT[28]="";
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
             
               int numeroPrelievi=MappaToken.size();
               int i=1;
               for(ValoriToken token : MappaToken.values()){
-              RT=new String[23];
+              RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_"+numeroPrelievi+"_PC";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroPrelievi;
@@ -390,13 +422,21 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]=token.MonetaName;
+              RT[26]=token.MonetaAddress;
+              RT[27]="";
+              RT[28]="";
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
               i++;
               }
               
       }else if(IdentificaTipoTransazione()!=null && IdentificaTipoTransazione().equalsIgnoreCase("scambio")){
           //prima di tutto genero il movimento di commissione
-              RT=new String[23];
+              RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -420,6 +460,14 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]="";
+              RT[26]="";
+              RT[27]="";
+              RT[28]="";
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
           
             AssegnaPesiaPartiTransazione();  
@@ -434,7 +482,7 @@ public class TransazioneDefi {
              // System.out.println(PesoTransazione + " - "+HashTransazione);
               BigDecimal PrezzoTransazione=new BigDecimal (Calcoli.DammiPrezzoTransazione(tokenU.Moneta,tokenE.Moneta,tokenU.Qta,tokenE.Qta,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6))
                 .multiply(PesoTransazione);
-              RT=new String[23];
+              RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_"+totMov+"_SC";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+totMov;
@@ -458,6 +506,14 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]=tokenU.MonetaName;
+              RT[26]=tokenU.MonetaAddress;
+              RT[27]=tokenE.MonetaName;
+              RT[28]=tokenE.MonetaAddress;
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
               i++;
               }
@@ -476,7 +532,7 @@ public class TransazioneDefi {
       int i=1;
       //mi occupo ora di inserire le transazioni tecniche
       for(ValoriToken token : MappaTokenTecniciEntrata.values()){
-              RT=new String[23];
+              RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_"+numeroDepositi+"_TI";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
@@ -500,6 +556,14 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]="";
+              RT[26]="";
+              RT[27]=token.MonetaName;
+              RT[28]=token.MonetaAddress;
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
               i++;
       }
@@ -508,7 +572,7 @@ public class TransazioneDefi {
       int numeroPrelievi=MappaTokenTecniciUscita.size();
       i=1;     
       for(ValoriToken token : MappaTokenTecniciUscita.values()){
-              RT=new String[23];
+              RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_"+numeroPrelievi+"_TI";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
@@ -532,6 +596,14 @@ public class TransazioneDefi {
               RT[20]="";
               RT[21]="";
               RT[22]="A";
+              RT[23]=Blocco;
+              RT[24]=HashTransazione;
+              RT[25]=token.MonetaName;
+              RT[26]=token.MonetaAddress;
+              RT[27]="";
+              RT[28]="";
+              RT[29]="";
+              RT[30]="";
               righe.add(RT);
               i++;
       }

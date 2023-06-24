@@ -3000,43 +3000,59 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
        
-//BscTransactionExporter a=new BscTransactionExporter();
-//a.creaCSV();
+        TransazioniCrypto_Funzioni_AggiornaDefi();
 
-//System.out.println(Calcoli.ConvertiAddressCoin("0x0523215dcafbf4e4aa92117d13c6985a3bef27d7","BSC"));
-//System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d56","BSC"));
-//System.out.println(Calcoli.ConvertiAddressCoin("0xe9e7cea3dedca5984780bafc599bd69add087d567","BSC"));
-         //Calcoli.ScriviFileConversioneAddressCoin();
-         
-         //hash da controllare
-         //0xf2ce89470cb24f111afbef0386f1b093fee7395402ca252e8365f730c95c6c20
-         //0xfe94c1fe714c2b2c87e9682905c4c0182a5a2b8870a49ad3f13220f3fde62770
-String walletAddress = "xxx";
-String apiKey = "xxx";
-Calcoli.RitornaTransazioniBSC(walletAddress,apiKey);
-for (TransazioneDefi v : Calcoli.MappaTransazioniDefi.values()) {
-   // for (String v : Calcoli.MappaTransazioniDefi.keySet()) {
-  //  System.out.println(v+" : "+Calcoli.MappaTransazioniDefi.get(v).DataOra);
-    for (String[] st : v.RitornaRigheTabella()){
-       MappaCryptoWallet.put(st[0], st);
-    }
-}
-TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-Calcoli.ScriviFileConversioneXXXEUR();
-//Calcoli.RitornaTransazioniWalletBSC(walletAddress,apiKey);
-//Calcoli.RitornaTransazioniTokenWalletBSC(walletAddress,apiKey);
-
-        //Calcoli.RecuperaDettagliTransazione("0xe537a08d0a9f3d6a373e2d4db2ce7c0f8dcfa8d18912a1694a0774b61f21540d");
-//Calcoli.RecuperaDettagliTransazioneBSC("0x4ebaddf7c4e1c1dca97ecadbd1e7af2bb949b17211430c8afb31c2144471ed50");
-//Calcoli.RecuperaDettagliTransazione("0xe416a83fa083013ed956efa617b1b7028bb398a51cff074215bb4b943111eb79");
-//Calcoli.RecuperaDettagliTransazioneBSC("0xa73502f49fc4efdda4b42e189b0a51099604b732cd57c8c3f44e5ccefaa416c5");
-//Calcoli.RecuperaDettagliTransazioneBSC("0xc21b4f5b4c07bbc396f30cbe9240f8a193730c4f03e6825122bf3651f2031a16");
-//Calcoli.RecuperaDettagliTransazioneBSC("0xc2856df968911209407a877e4b8605f062dec4846af3041a071cb608b695f949");
-//Calcoli.RecuperaDettagliTransazioneBSC("0x95c38f9a9104abd5bdaeae5a2270ba07b9229ce8035dd3a39ff633e9cc759edd");
-//Calcoli.RecuperaDettagliTransazione("0x413c0c37af72710e6fc91e8c4ac47ee25b8313db70b86f8b70d2237c6c74c80e");
-   // String a=Calcoli.RitornaNomeTokendadaBSCSCAN("0xe9e7cea3dedca5984780bafc599bd69add087d567");
     }//GEN-LAST:event_jButton1ActionPerformed
 
+ 
+    public void TransazioniCrypto_Funzioni_AggiornaDefi() {
+        String walletAddress = "0x235De84ce69E04675b0afa3dd9594c726008C9B1";
+        String apiKey = "1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
+        Component c=this;
+        Thread thread;
+            thread = new Thread() {
+            public void run() {
+        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));   
+        CDC.setEnabled(false);
+        TransazioniCrypto.setEnabled(false);
+        TransazioniCrypto_Bottone_Importa.setEnabled(false);
+        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(walletAddress, apiKey,c);
+        if (MappaTransazioniDefi != null) {
+
+            int i=0;
+            for (TransazioneDefi v : MappaTransazioniDefi.values()) {
+                // for (String v : Calcoli.MappaTransazioniDefi.keySet()) {
+                //  System.out.println(v+" : "+Calcoli.MappaTransazioniDefi.get(v).DataOra);
+                for (String[] st : v.RitornaRigheTabella()) {
+                    MappaCryptoWallet.put(st[0], st);
+                    i++;
+                }
+            }
+            Calcoli.ScriviFileConversioneXXXEUR();
+
+           
+            TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+            JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti "+i+" nuovi movimenti",
+                            "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            TransazioniCrypto_Bottone_Salva.setEnabled(true);
+            TransazioniCrypto_Bottone_Annulla.setEnabled(true);
+            TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true); 
+            CDC.setEnabled(true);
+            TransazioniCrypto.setEnabled(true);
+            TransazioniCrypto_Bottone_Importa.setEnabled(true);
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            c.setCursor(Cursor.getDefaultCursor());
+            
+         //   
+        }
+        }
+            };
+        thread.start();          
+    }
+            
+    
+    
+    
     public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){
         //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
         //su movimenti già associati
@@ -3441,9 +3457,9 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     }    
     
         private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
-        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-        this.TransazioniCryptoTextPane.setText("");
-        DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
+        Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+        TransazioniCryptoTextPane.setText("");
+        DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) TransazioniCryptoTabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
         BigDecimal Plusvalenza=new BigDecimal("0");
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
@@ -3460,15 +3476,15 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
             }
        }
          if (Importazioni.TransazioniAggiunte!=0){
-         this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
+         TransazioniCrypto_Bottone_Salva.setEnabled(true);
          TransazioniCrypto_Bottone_Annulla.setEnabled(true);
-         this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
         }
-         this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
+         TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
          Color verde=new Color (45, 155, 103);
         Color rosso=new Color(166,16,34);
         if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-"))TransazioniCrypto_Text_Plusvalenza.setForeground(verde);else TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
-         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }       
     
     public static List<String[]> Funzioni_Tabelle_ListaTabella(JTable tabella) {

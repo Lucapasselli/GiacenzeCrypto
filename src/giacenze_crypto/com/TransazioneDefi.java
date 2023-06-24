@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -524,6 +525,8 @@ public class TransazioneDefi {
               
       }else{
           System.out.println("Transazione non contemplata "+HashTransazione);
+                      JOptionPane.showConfirmDialog(null, "Transazione non contemplata "+HashTransazione,
+                    "Transazione non contemplata",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
           
       }
       

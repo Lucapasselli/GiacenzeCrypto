@@ -40,6 +40,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JOptionPane;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -67,6 +68,16 @@ public class Importazioni {
                 movimentiSconosciuti="";
             }
            
+    
+    //23->Blocco Transazione
+    //24->Hash Transazione
+    //25->Nome Moneta Uscita
+    //26->Contratto Moneta Uscita
+    //27->Nome Moneta Entrata
+    //28->Contratto Moneta Entrata
+    //
+    //
+    
     
     public static void Importa_Crypto_CDCApp(String fileCDCapp,boolean SovrascriEsistenti) {
         
@@ -1650,7 +1661,6 @@ progressb.setVisible(true);
                     MappaTransazioniDefi.put(hash, trans);
                 }else 
                     {
-                   //     System.out.println("arghhhhh "+hash);
                     trans=MappaTransazioniDefi.get(hash);
                     }
 
@@ -1681,19 +1691,24 @@ progressb.setVisible(true);
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             progressb.dispose();
             Calcoli.ScriviFileConversioneXXXEUR();
+            JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             progressb.dispose();
             Calcoli.ScriviFileConversioneXXXEUR();
+                        JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         } catch (InterruptedException ex) {
             Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
             progressb.dispose();
             Calcoli.ScriviFileConversioneXXXEUR();
+                        JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         }
-       // return RitornaTransazioniBSC_2di3(walletAddress,apiKey);
         progressb.dispose();
         Calcoli.ScriviFileConversioneXXXEUR();
         return MappaTransazioniDefi;

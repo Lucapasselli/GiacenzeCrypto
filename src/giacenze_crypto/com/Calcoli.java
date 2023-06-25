@@ -47,6 +47,7 @@ import org.json.*;
 public class Calcoli {
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneAddressEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -160,6 +161,49 @@ public class Calcoli {
     } 
     
         
+        
+        
+        
+        
+        
+             public static void GeneraMappaCambioAddressEUR(){
+         try {
+             File file=new File ("cambioAddressEUR.db");
+             if (!file.exists()) file.createNewFile();
+             String riga;
+             try (FileReader fire = new FileReader("cambioAddressEUR.db");
+                     BufferedReader bure = new BufferedReader(fire);)
+             {
+                 while((riga=bure.readLine())!=null)
+                 {
+                     String rigaSplittata[]=riga.split(",");
+                     if (rigaSplittata.length==2)
+                     {
+                         MappaConversioneAddressEUR.put(rigaSplittata[0], rigaSplittata[1]);
+                     }
+                 }
+                 bure.close();
+                 fire.close();        
+             } catch (FileNotFoundException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (IOException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             }
+
+         } catch (IOException ex) {        
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         public static void GeneraMappaCambioXXXEUR(){
          try {
              File file=new File ("cambioXXXEUR.db");
@@ -229,7 +273,7 @@ public class Calcoli {
     
     
     
-     public static String ConvertiAddressCoin(String Address,String rete)   
+     public static String DammiIDCoingeckodaAddress(String Address,String rete)   
         {
         if (MappaConversioneAddressCoin.isEmpty())
             {
@@ -239,7 +283,7 @@ public class Calcoli {
             }
         if (MappaConversioneAddressCoin.get(Address+"_"+rete)!=null)
         {
-            return MappaConversioneAddressCoin.get(Address+"_"+rete).split(",")[0];
+            return MappaConversioneAddressCoin.get(Address+"_"+rete).split(",")[1];
         }
         else
             {
@@ -261,16 +305,17 @@ public class Calcoli {
             Gson gson = new Gson();
             JsonObject coinInfo = gson.fromJson(response.toString(), JsonObject.class);
             
-           String Simbolo=coinInfo.get("symbol").toString().replace("\"", "").toUpperCase();
-           String ID=coinInfo.get("id").toString().replace("\"", "").toUpperCase();
-           MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),Simbolo.toUpperCase()+","+ID);
-            return Simbolo;
+           String Simbolo=coinInfo.get("symbol").toString().replace("\"", "");
+           String ID=coinInfo.get("id").toString().replace("\"", "");
+           MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),Simbolo+","+ID);
+           ScriviFileConversioneAddressCoin(Address.toUpperCase()+"_"+rete.toUpperCase()+","+Simbolo+","+ID);
+            return ID;
         } catch (Exception ex) {
           //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
           //  System.out.println(ex.getMessage());
 /////////////////Se su coingecko non trovo nulla allora lancio la funzione che cerca il codice del token dal'html di bscscan
           //se anche li non trovo nulla allora ci rinuncio
-          if (rete.equalsIgnoreCase("BSC")){
+ /*         if (rete.equalsIgnoreCase("BSC")){
               String Simbolo=RitornaNomeTokendadaBSCSCAN(Address);
               if (Simbolo!=null)
                   {
@@ -278,11 +323,13 @@ public class Calcoli {
               }
               return Simbolo;
           }
-          }
+          }*/
+          MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),"nulladifatto,nulladifatto");
           return null;
         }
        // return null;
-        }
+//       return Simbolo;
+        }}
      
  
      
@@ -694,7 +741,10 @@ public class Calcoli {
                  if (risultato==null)  //se non trovo nenache il valore del giorno allora richiamo l'api coingecko per l'aggiornamento dei prezzi
                 {
                      RecuperaTassidiCambioUSDT(DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                     risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+                     risultato = MappaConversioneUSDTEUR.get(DataOra);
+                     if (risultato == null) {
+                         risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+                     }
                  }//non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 
                     } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
@@ -704,6 +754,51 @@ public class Calcoli {
         }
         return risultato;
     }
+    
+    
+    
+    
+    
+        public static String ConvertiAddressEUR(String Qta, long Datalong,String Address,String Rete) {
+        //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
+        if (MappaConversioneAddressEUR.isEmpty())
+            {
+                GeneraMappaCambioAddressEUR();
+            }
+        Address=Address.toUpperCase();
+        String risultato;// = null;
+        //come prima cosa devo decidere il formato data
+       // long adesso=System.currentTimeMillis();
+        //long inizio2019=ConvertiDatainLong("2019-01-01");
+        String DataOra=ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno=ConvertiDatadaLong(Datalong);
+        //String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
+        //String DataFine=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datafine=la data+45gg
+        risultato = MappaConversioneAddressEUR.get(DataOra+"_"+Address+"_"+Rete);
+       /* SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
+        String DatadiOggi = f.format(System.currentTimeMillis());*/
+        if (risultato == null) {
+
+                //solo in questo caso vado a prendere il valore del giorno e non quello orario
+                     RecuperaTassidiCambiodaAddress(DataGiorno,DataGiorno,Address,Rete);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                     risultato = MappaConversioneAddressEUR.get(DataOra+"_"+Address+"_"+Rete);
+                      if (risultato == null) {
+                        risultato = MappaConversioneAddressEUR.get(DataGiorno+"_"+Address+"_"+Rete);
+                        }
+                      if (risultato != null) {
+                                ScriviFileConversioneAddressEUR(DataOra+"_"+Address+"_"+Rete+","+risultato);                       
+                      }
+                 //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+
+                    } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+
+        if (risultato != null) {
+            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();        
+        }
+        return risultato;
+    }
+    
+    
     
     
     
@@ -808,6 +903,115 @@ public class Calcoli {
      }
  
     
+ 
+        public static String RecuperaTassidiCambiodaAddress(String DataIniziale, String DataFinale,String Address,String Rete) {
+        String ok = "ok";
+        long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
+        long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
+        String ID=DammiIDCoingeckodaAddress(Address,Rete);
+        
+        if (ID!=null&&!ID.equalsIgnoreCase("nulladifatto")){//quando non trovo nulla potrei aver restituito null o nulladifatto
+            //in questo caso ovviamente non vado avanti con la funzione che tanto non posso trovare i prezzi
+        
+        //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
+        long difData=dataFin-dataIni;
+        ArrayList<Long> ArraydataIni = new ArrayList<>();
+        ArrayList<Long> ArraydataFin = new ArrayList<>();
+        //dataFin=dataIni+7776000 ;//questa fa si che mi dia i prezzi orari
+        //coingeko ha la seguente peculiarità:
+        //se richiedo piu' di 90gg mi da i prezzi giornalieri
+        //da 1 giorno a 90 da i prezzi ogni ora
+        //se invece chiediamo meno di 1 giorno da i prezzi ogni 5 minuti
+        //quello che interessa a me è avere i prezzi giornalieri (come backup) e quelli orari
+        //per cui per ogni richiesta devo gestire la cosa
+        //quindi, se ho meno di 3 mese porto il range a 3 mesi e prendo il primo valore di ogni giorno per quanto riaguarda il giornaliero
+        //e tutti gli altri valori per gli orari.
+        //se ho più di 3 mesi devo dividere le richieste in multipli di 3 mesi fino ad arrivare alla data iniziale che desidero.
+        //i multipli devono partire dalla data finale e andare indietro.
+        //7776000 secondi equivalgono a 3 mesi (90giorni per la precisione).
+        //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
+      // System.out.println(dataIni+" - "+dataFin);
+        while (difData>0){
+            ArraydataIni.add(dataIni);
+            ArraydataFin.add(dataIni+7776000);
+            dataIni=dataIni+7776000;
+            difData=dataFin-dataIni;    
+           // i++;
+        }
+
+
+for (int i=0;i<ArraydataIni.size();i++){
+        try {
+            URL url = new URI("https://api.coingecko.com/api/v3/coins/"+ID+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
+            URLConnection connection = url.openConnection();
+            System.out.println(url);
+            try ( BufferedReader in = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+
+                }
+/////System.out.println(response);
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
+                //  List<PrezzoData> prezzoDataList = new ArrayList<>();
+                if (pricesArray != null) {
+                    for (JsonElement element : pricesArray) {
+                        JsonArray priceArray = element.getAsJsonArray();
+                        if (priceArray.size()==2)
+                    {
+                    //   if (rigaSplittata[0].equalsIgnoreCase("Euro")) MappaConversioneUSDEUR.put(rigaSplittata[5], rigaSplittata[3]);
+                    
+                        long timestamp = priceArray.get(0).getAsLong();
+                        String price = priceArray.get(1).getAsString();
+                        Date date = new java.util.Date(timestamp);
+                        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                        SimpleDateFormat sdf2 = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                        sdf2.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                        String DataconOra = sdf.format(date);
+                        String Data = sdf2.format(date);
+                        if (MappaConversioneAddressEUR.get(Data)==null) MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, price);
+                        MappaConversioneAddressEUR.put(DataconOra+"_"+Address+"_"+Rete, price);
+                        //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
+                        //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
+                        //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
+                        //ora devo gestire l'inserimento nella mappa
+                        }
+                    }
+                } else {
+                    ok = null;
+                }
+            } catch (IOException ex) {
+                ok = null;
+            }
+            ScriviFileConversioneUSDTEUR();
+            TimeUnit.SECONDS.sleep(2);
+        } 
+
+        catch (MalformedURLException ex) {
+            ok = null;
+        } catch (IOException ex) {
+            ok = null;
+        } catch (InterruptedException | URISyntaxException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+       // ScriviFileConversioneUSDTEUR();
+        return ok;
+        }
+        
+        else {
+            return null;
+        }
+    }
+    
+    
+    
     
     
     public static String RecuperaTassidiCambioUSDT(String DataIniziale, String DataFinale) {
@@ -840,12 +1044,7 @@ public class Calcoli {
             difData=dataFin-dataIni;    
            // i++;
         }
-    /*    System.out.println(ArraydataIni.size());
-        for (int i=0;i<ArraydataIni.size();i++){
-            //qui ci metto il ciclo con le richieste e volendo anche la parte grafica con l'andamento
-            System.out.println(ArraydataIni.get(i)+ " - "+ArraydataFin.get(i));
-            
-        }*/
+
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
@@ -904,11 +1103,9 @@ for (int i=0;i<ArraydataIni.size();i++){
             ok = null;
         } catch (IOException ex) {
             ok = null;
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | URISyntaxException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        }   catch (URISyntaxException ex) {
-                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        }
         }
        // ScriviFileConversioneUSDTEUR();
         return ok;
@@ -1187,17 +1384,14 @@ for (int i=0;i<ArraydataIni.size();i++){
    }
      
      
-        static void ScriviFileConversioneAddressCoin() { //CDC_FileDatiDB
+        static void ScriviFileConversioneAddressCoin(String Riga) { //CDC_FileDatiDB
    // CDC_FileDatiDB
    try { 
-       FileWriter w=new FileWriter("conversioneAddressCoin.db");
+       FileWriter w=new FileWriter("conversioneAddressCoin.db",true);
        BufferedWriter b=new BufferedWriter (w);
-       
-       Object Address[]=MappaConversioneAddressCoin.keySet().toArray();
-       
-       for (Object Addres : Address) {
-           b.write(Addres.toString() + "," + MappaConversioneAddressCoin.get(Addres.toString()) + "\n");
-       }
+       b.append(Riga+"\n");
+       b.close();
+       w.close();
        
       //il file è cosi composto
       //Address_rete,Simbolo,ID Coingecko
@@ -1206,14 +1400,40 @@ for (int i=0;i<ArraydataIni.size();i++){
       //CRO=Cronos chain
       //BSC=Binance Smart Chain
       //ETH=Ethereum
-       b.close();
-       w.close();
 
     }catch (IOException ex) {
                  //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
                }
    
    }
+   
+        
+   
+        
+    static void ScriviFileConversioneAddressEUR(String Riga) { 
+
+   try { 
+       FileWriter w=new FileWriter("cambioAddressEUR.db",true);
+       BufferedWriter b=new BufferedWriter (w);
+       b.append(Riga+"\n");
+       b.close();
+       w.close();
+       
+      //il file è cosi composto
+      //Data_Address_rete,Prezzo
+      //Es. 2023-01-01 01_0x1456345343737364_BSC,BUSD,Binance USD
+      //Simboli rete usati per ora
+      //CRO=Cronos chain
+      //BSC=Binance Smart Chain
+      //ETH=Ethereum
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+   
+   }      
+        
+        
         
         
    static void ScriviFileConversioneSwapTransIDCoins(String riga) { //CDC_FileDatiDB

@@ -3000,7 +3000,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
        
-        TransazioniCrypto_Funzioni_AggiornaDefi();
+     //   TransazioniCrypto_Funzioni_AggiornaDefi();
+     
+    // String a=Calcoli.ConvertiAddressEUR("1",Long.parseLong("1672531260000"), "0x168e3b1746aa249a9b3603b70605924fe255ee1a", "BSC");
+     String a=Calcoli.ConvertiAddressEUR("1",Long.parseLong("1672531260000"), "0xc748673057861a797275cd8a068abb95a902e8de", "BSC");
+     //0x469eda64aed3a3ad6f868c44564291aa415cb1d9
+     System.out.println("aaa - "+a);
 
     }//GEN-LAST:event_jButton1ActionPerformed
 

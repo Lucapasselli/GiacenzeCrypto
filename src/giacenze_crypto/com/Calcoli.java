@@ -52,6 +52,7 @@ public class Calcoli {
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaAddressCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -769,19 +770,33 @@ public class Calcoli {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
+            MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
         }
+        if (MappaConversioneAddressCoin.isEmpty())
+            {
+                GeneraMappaConversioneAddressCoin();               
+            }
+        
+        if (MappaConversioneAddressCoin.get(Address+"_"+Rete)!=null&&MappaConversioneAddressCoin.get(Address+"_"+Rete).equalsIgnoreCase("nullo"))
+        {
+            //se il token non è gestito da coingecko ritorno null immediatamente
+            //non ha senso andare avanti con le richieste
+            return null;
+        }
+        
+        
+        
+        
+        
+        
+        
         Address = Address.toUpperCase();
         String risultato;// = null;
         //come prima cosa devo decidere il formato data
-        // long adesso=System.currentTimeMillis();
-        //long inizio2019=ConvertiDatainLong("2019-01-01");
         String DataOra = ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = ConvertiDatadaLong(Datalong);
-        //String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
-        //String DataFine=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datafine=la data+45gg
         risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
-        /* SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
-        String DatadiOggi = f.format(System.currentTimeMillis());*/
+
         if (risultato == null) {
 
             //solo in questo caso vado a prendere il valore del giorno e non quello orario
@@ -790,19 +805,24 @@ public class Calcoli {
             if (risultato == null) {
                 risultato = MappaConversioneAddressEUR.get(DataGiorno + "_" + Address + "_" + Rete);
             }
-            if (risultato != null) {
-                risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
-            }
-            //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
-
         } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
-
+//ora controllo che l'indirizzo sia gestito, in caso contrario termino il ciclo
+        if (MappaConversioneAddressCoin.get(Address+"_"+Rete)!=null&&MappaConversioneAddressCoin.get(Address+"_"+Rete).equalsIgnoreCase("nullo"))
+        {
+            return null;
+        }
+        
+  //se è gestito controllo se lo avevo già nel file ein caso contrario lo inserisco      
         if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
             if (risultato==null) risultato="nullo";
             MappaConversioneAddressEURtemp.put(DataOra + "_" + Address + "_" + Rete, risultato);
             ScriviFileConversioneAddressEUR(DataOra + "_" + Address + "_" + Rete + "," + risultato);
         }
+        //quindi se il risultato non è nullo faccio i calcoli
         if (risultato != null && risultato.equalsIgnoreCase("nullo")) risultato=null;
+        else if (risultato != null) {
+            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+            }
         return risultato;
     }
     
@@ -913,12 +933,27 @@ public class Calcoli {
     
  
         public static String RecuperaTassidiCambiodaAddress(String DataIniziale, String DataFinale,String Address,String Rete) {
-        String ok = "ok";
+        
+        if (MappaConversioneAddressEUR.isEmpty()) {
+            GeneraMappaCambioAddressEUR();
+            MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
+        }
+        if (MappaConversioneAddressCoin.isEmpty())
+            {
+                GeneraMappaConversioneAddressCoin();               
+            }
+        
+        //come prima cosa vedo se la rete è gestita altrimenti chiudo immediatamente il ciclo    
+         if (MappaConversioneSimboloReteCoingecko.get(Rete)==null)   {
+             return null;
+         }
+         
+            String ok = "ok";
         long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
         long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
-        String ID=DammiIDCoingeckodaAddress(Address,Rete);
+      //  String ID=DammiIDCoingeckodaAddress(Address,Rete);
         
-        if (ID!=null&&!ID.equalsIgnoreCase("nulladifatto")){//quando non trovo nulla potrei aver restituito null o nulladifatto
+   //     if (ID!=null&&!ID.equalsIgnoreCase("nulladifatto")){//quando non trovo nulla potrei aver restituito null o nulladifatto
             //in questo caso ovviamente non vado avanti con la funzione che tanto non posso trovare i prezzi
         
         //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
@@ -946,12 +981,15 @@ public class Calcoli {
             difData=dataFin-dataIni;    
            // i++;
         }
-
+//MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
+      
+  //    MappaConversioneAddressCoin.isEmpty()
+            
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
             TimeUnit.SECONDS.sleep(5);//il timeout serve per evitare di fare troppe richieste all'API
-            URL url = new URI("https://api.coingecko.com/api/v3/coins/"+ID+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
+            URL url = new URI("https://api.coingecko.com/api/v3/coins/"+MappaConversioneSimboloReteCoingecko.get(Rete)+"/contract/"+Address+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
             URLConnection connection = url.openConnection();
             System.out.println(url);
             try ( BufferedReader in = new BufferedReader(
@@ -963,6 +1001,10 @@ for (int i=0;i<ArraydataIni.size();i++){
                     response.append(line);
 
                 }
+                //se nella risposta ho questo genere di errore significa che quell'address non è gestito
+                //a questo punto lo escludo dalle ulteriori ricerche mettendolo in una tabella apposita
+                //e ovviamente chiudo il ciclo
+                System.out.println(response.toString());
 /////System.out.println(response);
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
@@ -996,27 +1038,32 @@ for (int i=0;i<ArraydataIni.size();i++){
                     ok = null;
                 }
             } catch (IOException ex) {
-                ok = null;
+                        MappaConversioneAddressCoin.put(Address+"_"+Rete, "nullo");
+                        ScriviFileConversioneAddressCoin(Address+"_"+Rete+",nullo");
+                        return null;
             }
-            ScriviFileConversioneUSDTEUR();
+         //   ScriviFileConversioneUSDTEUR();
         } 
 
         catch (MalformedURLException ex) {
             ok = null;
+            System.out.println("Errore URL : "+ex);
         } catch (IOException ex) {
             ok = null;
+            System.out.println("Errore IOE : "+ex.getMessage());
         } catch (InterruptedException | URISyntaxException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             ok=null;
+            System.out.println("Errore URI : "+ex.getMessage());
         }
         }
        // ScriviFileConversioneUSDTEUR();
         return ok;
-        }
+   /*     }
         
         else {
             return null;
-        }
+        }*/
     }
     
     
@@ -1305,7 +1352,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                 RecuperaCoppieBinance();
                 //se non ho la mappa delle coppie di binance la recupero
             }
-            if (Qta1 != null && Moneta1 != null && MappaCoppieBinance.get(Moneta1 + "USDT") != null) {
+            //Se ho gli address non cerco in binance i dati che potrei incorrere in errori di omonimia
+            //utilizzo l'address che è molto più preciso
+            if (Qta1 != null && Moneta1 != null && MappaCoppieBinance.get(Moneta1 + "USDT") != null && Address1==null) {
                 PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
@@ -1313,7 +1362,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
                 //se trovo la condizione ritorno il prezzo e interrnompo la funzione
             }
-            if (Qta2 != null && Moneta2 != null && MappaCoppieBinance.get(Moneta2 + "USDT") != null) {
+            if (Qta2 != null && Moneta2 != null && MappaCoppieBinance.get(Moneta2 + "USDT") != null && Address2==null) {
                 PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
                 // System.out.println("prezzo.."+PrezzoTransazione);
                 if (PrezzoTransazione != null) {
@@ -1378,8 +1427,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         return ok;
     }
         
-        
-        
+    
     
     
     

@@ -3000,8 +3000,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
        
+//Calcoli.RecuperaTassidiCambiodaAddress("2020-01-01", "2020-01-01","0xc748673057861a797275cd8a068abb95a902e8de","BSC");
         TransazioniCrypto_Funzioni_AggiornaDefi();
-      //  String a=Calcoli.DammiIDCoingeckodaAddress("0xc748673057861a797275CD8A068AbB95A902e8de", "BSC");
+      
+
+
+//  String a=Calcoli.DammiIDCoingeckodaAddress("0xc748673057861a797275CD8A068AbB95A902e8de", "BSC");
      //           System.out.println("aaa - "+a);
     // String a=Calcoli.ConvertiAddressEUR("1",Long.parseLong("1672531260000"), "0x168e3b1746aa249a9b3603b70605924fe255ee1a", "BSC");
  //    String a=Calcoli.ConvertiAddressEUR("1",Long.parseLong("1672531260000"), "0xc748673057861a797275cd8a068abb95a902e8de", "BSC");

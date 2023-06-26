@@ -71,14 +71,14 @@ public class TransazioneDefi {
             monete.Qta=Qta;
             MappaToken.put(MonetaAddress,monete);
            // System.out.println(dataAlMinuto+" - "+Moneta);
-            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6);
+            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,monete.MonetaAddress,null,Rete);
             }
         else 
             {
             monete=MappaToken.get(MonetaAddress);
             monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
             //System.out.println(dataAlMinuto+" - "+Moneta);
-            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,monete.Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6);
+            monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,monete.Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,monete.MonetaAddress,null,Rete);
             }
     }
     
@@ -260,7 +260,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,null);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -298,7 +298,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,null);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -330,7 +330,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="DEPOSITO CRYPTO";
-              RT[6]="DEPOSITO "+token.Moneta;
+              RT[6]="DEPOSITO "+token.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]="";
               RT[9]="";
@@ -339,7 +339,7 @@ public class TransazioneDefi {
               RT[12]="Crypto";
               RT[13]=token.Qta;
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,token.MonetaAddress,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -378,7 +378,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -406,7 +406,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="PRELIEVO CRYPTO";
-              RT[6]="PRELIEVO "+token.Moneta;
+              RT[6]="PRELIEVO "+token.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]=token.Moneta;
               RT[9]="Crypto";
@@ -415,7 +415,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,token.MonetaAddress,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -453,7 +453,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -481,7 +481,7 @@ public class TransazioneDefi {
               BigDecimal PesoTransazione=new BigDecimal(tokenE.Peso).multiply(new BigDecimal(tokenU.Peso));
               if (MappaTokenEntrata.size()==1&&MappaTokenUscita.size()==1) PesoTransazione=new BigDecimal(1);
              // System.out.println(PesoTransazione + " - "+HashTransazione);
-              BigDecimal PrezzoTransazione=new BigDecimal (Calcoli.DammiPrezzoTransazione(tokenU.Moneta,tokenE.Moneta,tokenU.Qta,tokenE.Qta,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6))
+              BigDecimal PrezzoTransazione=new BigDecimal (Calcoli.DammiPrezzoTransazione(tokenU.Moneta,tokenE.Moneta,tokenU.Qta,tokenE.Qta,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,tokenU.MonetaAddress,tokenE.MonetaAddress,Rete))
                 .multiply(PesoTransazione);
               RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_"+totMov+"_SC";
@@ -490,7 +490,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="SCAMBIO CRYPTO";
-              RT[6]="SCAMBIO CRYPTO "+tokenU.Moneta+" -> "+tokenE.Moneta;
+              RT[6]="SCAMBIO "+tokenU.MonetaName+" -> "+tokenE.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]=tokenU.Moneta;
               RT[9]="Crypto";
@@ -542,7 +542,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="TRANSAZIONE TECNICA INTERNA";
-              RT[6]="TRANSAZIONE TECNICA DI "+token.Moneta;
+              RT[6]="TRANSAZIONE TECNICA DI "+token.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]="";
               RT[9]="";
@@ -551,7 +551,7 @@ public class TransazioneDefi {
               RT[12]="Crypto";
               RT[13]=token.Qta;
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,token.MonetaAddress,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="0.00";
               RT[18]="";
@@ -582,7 +582,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="TRANSAZIONE TECNICA INTERNA";
-              RT[6]="TRANSAZIONE TECNICA DI "+token.Moneta;
+              RT[6]="TRANSAZIONE TECNICA DI "+token.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]=token.Moneta;
               RT[9]="Crypto";
@@ -591,7 +591,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,token.MonetaAddress,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="0.00";
               RT[18]="";

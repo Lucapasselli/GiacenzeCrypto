@@ -48,6 +48,7 @@ public class Calcoli {
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneAddressEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaConversioneAddressEURtemp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa di appoggio per scrivere il file correttamente
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -180,6 +181,7 @@ public class Calcoli {
                      if (rigaSplittata.length==2)
                      {
                          MappaConversioneAddressEUR.put(rigaSplittata[0], rigaSplittata[1]);
+                         MappaConversioneAddressEURtemp.put(rigaSplittata[0], rigaSplittata[1]);
                      }
                  }
                  bure.close();
@@ -288,8 +290,9 @@ public class Calcoli {
         else
             {
         try {
-            TimeUnit.SECONDS.sleep(1);//il timeout serve per evitare di fare troppe richieste all'API
+            TimeUnit.SECONDS.sleep(5);//il timeout serve per evitare di fare troppe richieste all'API
             String url = "https://api.coingecko.com/api/v3/coins/"+MappaConversioneSimboloReteCoingecko.get(rete)+ "/contract/" + Address;
+            System.out.println(url);
             URL obj = new URI(url).toURL();
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
             con.setRequestMethod("GET");
@@ -309,6 +312,7 @@ public class Calcoli {
            String ID=coinInfo.get("id").toString().replace("\"", "");
            MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),Simbolo+","+ID);
            ScriviFileConversioneAddressCoin(Address.toUpperCase()+"_"+rete.toUpperCase()+","+Simbolo+","+ID);
+        //   System.out.println(ID);
             return ID;
         } catch (Exception ex) {
           //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
@@ -325,6 +329,8 @@ public class Calcoli {
           }
           }*/
           MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),"nulladifatto,nulladifatto");
+          ScriviFileConversioneAddressCoin(Address.toUpperCase()+"_"+rete.toUpperCase()+",nulladifatto,nulladifatto");
+     //     System.out.println("nulladifatto "+ex.getMessage());
           return null;
         }
        // return null;
@@ -759,42 +765,44 @@ public class Calcoli {
     
     
     
-        public static String ConvertiAddressEUR(String Qta, long Datalong,String Address,String Rete) {
+    public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-        if (MappaConversioneAddressEUR.isEmpty())
-            {
-                GeneraMappaCambioAddressEUR();
-            }
-        Address=Address.toUpperCase();
+        if (MappaConversioneAddressEUR.isEmpty()) {
+            GeneraMappaCambioAddressEUR();
+        }
+        Address = Address.toUpperCase();
         String risultato;// = null;
         //come prima cosa devo decidere il formato data
-       // long adesso=System.currentTimeMillis();
+        // long adesso=System.currentTimeMillis();
         //long inizio2019=ConvertiDatainLong("2019-01-01");
-        String DataOra=ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno=ConvertiDatadaLong(Datalong);
+        String DataOra = ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno = ConvertiDatadaLong(Datalong);
         //String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
         //String DataFine=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datafine=la data+45gg
-        risultato = MappaConversioneAddressEUR.get(DataOra+"_"+Address+"_"+Rete);
-       /* SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
+        risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
+        /* SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
         String DatadiOggi = f.format(System.currentTimeMillis());*/
         if (risultato == null) {
 
-                //solo in questo caso vado a prendere il valore del giorno e non quello orario
-                     RecuperaTassidiCambiodaAddress(DataGiorno,DataGiorno,Address,Rete);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                     risultato = MappaConversioneAddressEUR.get(DataOra+"_"+Address+"_"+Rete);
-                      if (risultato == null) {
-                        risultato = MappaConversioneAddressEUR.get(DataGiorno+"_"+Address+"_"+Rete);
-                        }
-                      if (risultato != null) {
-                                ScriviFileConversioneAddressEUR(DataOra+"_"+Address+"_"+Rete+","+risultato);                       
-                      }
-                 //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+            //solo in questo caso vado a prendere il valore del giorno e non quello orario
+            RecuperaTassidiCambiodaAddress(DataGiorno, DataGiorno, Address, Rete);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+            risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
+            if (risultato == null) {
+                risultato = MappaConversioneAddressEUR.get(DataGiorno + "_" + Address + "_" + Rete);
+            }
+            if (risultato != null) {
+                risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+            }
+            //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 
-                    } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
+        } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 
-        if (risultato != null) {
-            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();        
+        if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
+            if (risultato==null) risultato="nullo";
+            MappaConversioneAddressEURtemp.put(DataOra + "_" + Address + "_" + Rete, risultato);
+            ScriviFileConversioneAddressEUR(DataOra + "_" + Address + "_" + Rete + "," + risultato);
         }
+        if (risultato != null && risultato.equalsIgnoreCase("nullo")) risultato=null;
         return risultato;
     }
     
@@ -942,6 +950,7 @@ public class Calcoli {
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
+            TimeUnit.SECONDS.sleep(5);//il timeout serve per evitare di fare troppe richieste all'API
             URL url = new URI("https://api.coingecko.com/api/v3/coins/"+ID+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
             URLConnection connection = url.openConnection();
             System.out.println(url);
@@ -990,7 +999,6 @@ for (int i=0;i<ArraydataIni.size();i++){
                 ok = null;
             }
             ScriviFileConversioneUSDTEUR();
-            TimeUnit.SECONDS.sleep(2);
         } 
 
         catch (MalformedURLException ex) {
@@ -999,6 +1007,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             ok = null;
         } catch (InterruptedException | URISyntaxException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            ok=null;
         }
         }
        // ScriviFileConversioneUSDTEUR();
@@ -1048,6 +1057,7 @@ for (int i=0;i<ArraydataIni.size();i++){
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
+            TimeUnit.SECONDS.sleep(3);//il timeout serve per evitare di fare troppe richieste all'API
             URL url = new URI("https://api.coingecko.com/api/v3/coins/tether/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
             URLConnection connection = url.openConnection();
             System.out.println(url);
@@ -1096,7 +1106,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 ok = null;
             }
             ScriviFileConversioneUSDTEUR();
-            TimeUnit.SECONDS.sleep(2);
+           // TimeUnit.SECONDS.sleep(2);
         } 
 
         catch (MalformedURLException ex) {
@@ -1217,99 +1227,112 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    public static String DammiPrezzoTransazione(String Moneta1,String Moneta2,String Qta1,String Qta2,long Data, String Prezzo,boolean PrezzoZero,int Decimali) {
+    public static String DammiPrezzoTransazione(String Moneta1, String Moneta2, String Qta1, String Qta2, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
         String PrezzoTransazione;
-        boolean trovato1=false;
-        boolean trovato2=false;
+        // boolean trovato1=false;
+        // boolean trovato2=false;
         //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
-        if (Moneta1!=null && Moneta1.equalsIgnoreCase("EUR")){
-            PrezzoTransazione=Qta1;
-            if (PrezzoTransazione!=null)
-                {
-                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+        //metto anche la condizione che address sia null perchè ci sono delle monete che hanno simbolo eur ma non lo sono
+        //e se hanno un address sicuramente non sono fiat
+        if (Moneta1 != null && Moneta1.equalsIgnoreCase("EUR") && Address1 == null) {
+            PrezzoTransazione = Qta1;
+            if (PrezzoTransazione != null) {
+                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
-                }
-        }
-        else if  (Moneta2!=null && Moneta2.equalsIgnoreCase("EUR")){
-            PrezzoTransazione=Qta2;
-             if (PrezzoTransazione!=null)
-                 {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                 return PrezzoTransazione;
-                 }
-        }
-        else if (Moneta1!=null && Moneta1.equalsIgnoreCase("USDT")){
-            PrezzoTransazione=ConvertiUSDTEUR(Qta1,Data);
-            if (PrezzoTransazione!=null)
-                 {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                 return PrezzoTransazione;
-                 }
-        }
-        else if  (Moneta2!=null && Moneta2.equalsIgnoreCase("USDT")){
-            PrezzoTransazione=ConvertiUSDTEUR(Qta2,Data);
-             if (PrezzoTransazione!=null)
-                 {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                 return PrezzoTransazione;
-                 }
-        }
-        else
-            {
+            }
+        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("EUR") && Address2 == null) {
+            PrezzoTransazione = Qta2;
+            if (PrezzoTransazione != null) {
+                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                return PrezzoTransazione;
+            }
+        } else if (Moneta1 != null && Moneta1.equalsIgnoreCase("USDT")) {
+            PrezzoTransazione = ConvertiUSDTEUR(Qta1, Data);
+            if (PrezzoTransazione != null) {
+                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                return PrezzoTransazione;
+            }
+        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("USDT")) {
+            PrezzoTransazione = ConvertiUSDTEUR(Qta2, Data);
+            if (PrezzoTransazione != null) {
+                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                return PrezzoTransazione;
+            }
+        } else {
 
-        //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
-        for (String CoppiePrioritarie1 : CoppiePrioritarie) {
-            if (!trovato1 && Qta1!=null && Moneta1!=null && (Moneta1+"USDT").toUpperCase().equals(CoppiePrioritarie1)){
-                trovato1=true;
-                PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
-                if (PrezzoTransazione!=null)
-                 {
-                     PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                 return PrezzoTransazione;
-                 }//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
-                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
-            }
-            if (!trovato2 && Qta2!=null && Moneta2!=null && (Moneta2+"USDT").toUpperCase().equals(CoppiePrioritarie1)){
-                trovato2=true;
-                PrezzoTransazione=ConvertiXXXEUR(Moneta2,Qta2,Data);
-                if (PrezzoTransazione!=null)
-                  {
-                  PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();                       
-                 return PrezzoTransazione;
-                 }
-               //se trovo la condizione ritorno il prezzo e interrnompo la funzione
-            }
-        }
-        //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
-        //a questo punto la cerco tra tutte le coppie che binance riconosce
-        if (MappaCoppieBinance.isEmpty())
-        {
-            RecuperaCoppieBinance();
-            //se non ho la mappa delle coppie di binance la recupero
-        }
-        if (!trovato1 && Qta1!=null && Moneta1!=null && MappaCoppieBinance.get(Moneta1+"USDT")!=null){
-                PrezzoTransazione=ConvertiXXXEUR(Moneta1,Qta1,Data);
-                if (PrezzoTransazione!=null)
-                {
-                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                    return PrezzoTransazione;
+            //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
+            for (String CoppiePrioritarie1 : CoppiePrioritarie) {
+                if (Qta1 != null && Moneta1 != null && (Moneta1 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
+                    // trovato1=true;
+                    PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
+                    if (PrezzoTransazione != null) {
+                        PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                        return PrezzoTransazione;
+                    }//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
+                    //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+                }
+                if (Qta2 != null && Moneta2 != null && (Moneta2 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
+                    // trovato2=true;
+                    PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
+                    if (PrezzoTransazione != null) {
+                        PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                        return PrezzoTransazione;
                     }
+                    //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+                }
+            }
+            //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
+            //a questo punto controllo se ho l'address delle monetee controllo su coingecko.
+
+            if (Qta1 != null && Moneta1 != null && Address1 != null && Rete != null) {
+                PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete);
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    //   trovato1=true;
+                    return PrezzoTransazione;
+                }
+            }
+            if (Qta2 != null && Moneta2 != null && Address2 != null && Rete != null) {
+                PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete);
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            }
+
+            //a questo punto la cerco tra tutte le coppie che binance riconosce
+            if (MappaCoppieBinance.isEmpty()) {
+                RecuperaCoppieBinance();
+                //se non ho la mappa delle coppie di binance la recupero
+            }
+            if (Qta1 != null && Moneta1 != null && MappaCoppieBinance.get(Moneta1 + "USDT") != null) {
+                PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
                 //se trovo la condizione ritorno il prezzo e interrnompo la funzione
             }
-            if (!trovato2 && Qta2!=null && Moneta2!=null && MappaCoppieBinance.get(Moneta2+"USDT")!=null){
-                PrezzoTransazione=ConvertiXXXEUR(Moneta2,Qta2,Data);
-               // System.out.println("prezzo.."+PrezzoTransazione);
-                if (PrezzoTransazione!=null)
-                    {
-                    PrezzoTransazione=new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                     return PrezzoTransazione;
-                     }
-               //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+            if (Qta2 != null && Moneta2 != null && MappaCoppieBinance.get(Moneta2 + "USDT") != null) {
+                PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
+                // System.out.println("prezzo.."+PrezzoTransazione);
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
             }
-            }
-        if (PrezzoZero)return "0.00";
-        else return Prezzo;
-    } 
+        }
+        if (PrezzoZero) {
+            return "0.00";
+        } else {
+            return Prezzo;
+        }
+    }
+ 
+    
+    
+    
     
         
     //questa funzione la chiamo sempre una sola volta per verificare quali sono le coppie di trading di cui binance mi fornisce i dati    

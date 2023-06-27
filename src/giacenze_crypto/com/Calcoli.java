@@ -807,6 +807,7 @@ public class Calcoli {
             }
         } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 //ora controllo che l'indirizzo sia gestito, in caso contrario termino il ciclo
+//questo perchè con la richiesta che ho appena fatto potrebbe essersi generata una nuova voce nella mappa
         if (MappaConversioneAddressCoin.get(Address+"_"+Rete)!=null&&MappaConversioneAddressCoin.get(Address+"_"+Rete).equalsIgnoreCase("nullo"))
         {
             return null;
@@ -814,8 +815,10 @@ public class Calcoli {
         
   //se è gestito controllo se lo avevo già nel file ein caso contrario lo inserisco      
         if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
+            if (risultato!=null) MappaConversioneAddressEUR.put(DataOra + "_" + Address + "_" + Rete, risultato);
             if (risultato==null) risultato="nullo";
             MappaConversioneAddressEURtemp.put(DataOra + "_" + Address + "_" + Rete, risultato);
+       
             ScriviFileConversioneAddressEUR(DataOra + "_" + Address + "_" + Rete + "," + risultato);
         }
         //quindi se il risultato non è nullo faccio i calcoli

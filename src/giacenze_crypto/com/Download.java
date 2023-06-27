@@ -93,6 +93,17 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
      }
      
+          public void SetMessaggioAvanzamento (String Messaggio) {
+ //Thread thread = new Thread() {
+ //           public void run() {
+        // avanzamento=Avanzamento;
+        // ProgressBarDownload.setValue(Avanzamento);
+         LabelAvanzamento.setText(Messaggio);
+ //}      };
+// thread.start();
+
+     }
+     
      public void ChiudiFinestra (){
          this.dispose();
      }

@@ -3002,6 +3002,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
 //Calcoli.RecuperaTassidiCambiodaAddress("2020-01-01", "2020-01-01","0xc748673057861a797275cd8a068abb95a902e8de","BSC");
         TransazioniCrypto_Funzioni_AggiornaDefi();
+        //https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0XC748673057861A797275CD8A068ABB95A902E8DE/market_chart/range?vs_currency=EUR&from=1623794400&to=1631570400
+        //Verificare quello sopra, viene messo nelle monete non supportate
       
 
 

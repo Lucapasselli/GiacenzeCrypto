@@ -1487,7 +1487,7 @@ progressb.setVisible(true);
             
             //PARTE 1 : Recupero la lista delle transazioni
             progressb.SetMassimo(3);
-            progressb.SetAvanzamento(1);
+            
             URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey=" + apiKey).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -1512,6 +1512,7 @@ progressb.setVisible(true);
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
+                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
                 if (MappaTransazioniDefi.get(hash)==null){
@@ -1524,7 +1525,8 @@ progressb.setVisible(true);
                     }
 
                 trans.Blocco=transaction.getString("blockNumber");
-                trans.DataOra=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
+                trans.DataOra=Data;//Da modificare con data e ora reale
+                trans.TimeStamp=transaction.getString("timeStamp");
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
                 trans.MonetaCommissioni="BNB";
@@ -1543,10 +1545,12 @@ progressb.setVisible(true);
                         AddressNoWallet=from;
                         qta=value;
                     }
+                progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
                 trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
+               
                 }
             }
-            
+             progressb.SetAvanzamento(1);
             TimeUnit.SECONDS.sleep(1);
   
             
@@ -1554,7 +1558,7 @@ progressb.setVisible(true);
             
             
             //PARTE 2: Recupero delle transazioni interne
-            progressb.SetAvanzamento(2);
+            
             url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey=" + apiKey).toURL();
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -1576,6 +1580,7 @@ progressb.setVisible(true);
                 String AddressNoWallet;
                 JSONObject transaction = transactions.getJSONObject(i);
                 String hash = transaction.getString("hash");
+                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
@@ -1597,7 +1602,8 @@ progressb.setVisible(true);
                     }
                 trans.Blocco=transaction.getString("blockNumber");
                 trans.Wallet=walletAddress;
-                trans.DataOra=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
+                trans.DataOra=Data;
+                trans.TimeStamp=transaction.getString("timeStamp");
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
                 trans.MonetaCommissioni="BNB";  
@@ -1609,6 +1615,7 @@ progressb.setVisible(true);
                         trans.QtaCommissioni=new BigDecimal(trans.QtaCommissioni).subtract(new BigDecimal(qta)).toPlainString();
                     }
                 else {
+                    progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
                     trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
                  //   System.out.println(trans.HashTransazione+ " - "+ qta);
                 }
@@ -1618,14 +1625,14 @@ progressb.setVisible(true);
 
                 
             }           
-            
+            progressb.SetAvanzamento(2);
             TimeUnit.SECONDS.sleep(1);
             
             
             
                 
             //PARTE 3: Recupero la lista delle transazioni dei token bsc20   
-            progressb.SetAvanzamento(3);
+           
             url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey="+apiKey).toURL();
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -1649,6 +1656,7 @@ progressb.setVisible(true);
             //    System.out.println(transaction.toString());
                 String tokenSymbol=transaction.getString("tokenSymbol");
                 String tokenName=transaction.getString("tokenName");
+                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String tokenAddress=transaction.getString("contractAddress");
                 String tokenDecimal=transaction.getString("tokenDecimal");
                 String hash = transaction.getString("hash");
@@ -1673,7 +1681,8 @@ progressb.setVisible(true);
                     }
                 trans.Blocco=transaction.getString("blockNumber");
                 trans.Wallet=walletAddress;
-                trans.DataOra=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);//Da modificare con data e ora reale
+                trans.DataOra=Data;//Da modificare con data e ora reale
+                trans.TimeStamp=transaction.getString("timeStamp");
                 trans.HashTransazione=hash;
                 trans.Rete="BSC";
                 trans.MonetaCommissioni="BNB";
@@ -1682,10 +1691,11 @@ progressb.setVisible(true);
                 BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
                 String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 trans.QtaCommissioni="-"+qtaCommissione;
+                progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);                   
          }             
-            
-            TimeUnit.SECONDS.sleep(1);
+          progressb.SetAvanzamento(3);   
+         //   TimeUnit.SECONDS.sleep(1);
                     
         } catch (MalformedURLException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
@@ -1709,8 +1719,9 @@ progressb.setVisible(true);
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         }
-        progressb.dispose();
+        
         Calcoli.ScriviFileConversioneXXXEUR();
+        progressb.dispose();
         return MappaTransazioniDefi;
         }    
     

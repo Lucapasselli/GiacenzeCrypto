@@ -28,6 +28,7 @@ public class TransazioneDefi {
   public String TipoTransazione;
   public String MonetaCommissioni;
   public String QtaCommissioni;
+  public String TimeStamp;
   //public String MonetaEntrata;
   //public String MonetaEntrataAddress;
   //public String MonetaEntrataName;
@@ -63,6 +64,7 @@ public class TransazioneDefi {
         
         if (MappaToken.get(MonetaAddress)==null)
             {
+                //se non esiste lo inserisco
             monete=new ValoriToken();
             monete.IndirizzoNoWallet=AddressNoWallet;
             monete.Moneta=Moneta;
@@ -75,6 +77,7 @@ public class TransazioneDefi {
             }
         else 
             {
+                //altrimenti faccio la somma
             monete=MappaToken.get(MonetaAddress);
             monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
             //System.out.println(dataAlMinuto+" - "+Moneta);

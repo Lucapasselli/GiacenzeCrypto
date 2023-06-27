@@ -281,7 +281,7 @@ public class Importazioni {
         
         
     
-        public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c,boolean PrezzoZero) {
+public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c,boolean PrezzoZero) {
         
 
          //   Download progressb=new Download();
@@ -301,6 +301,7 @@ public class Importazioni {
             }
         });*/
     Download progressb=new Download();
+    progressb.setDefaultCloseOperation(0);
          progressb.setLocationRelativeTo(c);   
 progressb.setVisible(true);
  AzzeraContatori();        
@@ -1473,7 +1474,15 @@ progressb.setVisible(true);
         
      public static Map<String,TransazioneDefi> RitornaTransazioniBSC(String walletAddress,String apiKey,Component c)
          {   
+    /*         System.out.println("aaa");
+        try {
+            t.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+        }
+             System.out.println("bbb");*/
             Download progressb=new Download();
+            progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(c); 
             progressb.Titolo("Importazione da rete BSC");
             progressb.SetLabel("Scaricamento transazioni da "+walletAddress+" in corso...");

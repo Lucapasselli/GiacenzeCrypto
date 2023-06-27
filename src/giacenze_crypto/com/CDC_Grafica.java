@@ -3001,6 +3001,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
        
 //Calcoli.RecuperaTassidiCambiodaAddress("2020-01-01", "2020-01-01","0xc748673057861a797275cd8a068abb95a902e8de","BSC");
+//Calcoli.RecuperaCoinsCoingecko();
         TransazioniCrypto_Funzioni_AggiornaDefi();
         //https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0XC748673057861A797275CD8A068ABB95A902E8DE/market_chart/range?vs_currency=EUR&from=1623794400&to=1631570400
         //Verificare quello sopra, viene messo nelle monete non supportate
@@ -3024,17 +3025,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Thread thread;
             thread = new Thread() {
             public void run() {
-        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));   
-        CDC.setEnabled(false);
-        TransazioniCrypto.setEnabled(false);
-        TransazioniCrypto_Bottone_Importa.setEnabled(false);
+        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); 
+        c.setEnabled(false);
         Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(walletAddress, apiKey,c);
         if (MappaTransazioniDefi != null) {
 
             int i=0;
             for (TransazioneDefi v : MappaTransazioniDefi.values()) {
-                // for (String v : Calcoli.MappaTransazioniDefi.keySet()) {
-                //  System.out.println(v+" : "+Calcoli.MappaTransazioniDefi.get(v).DataOra);
                 for (String[] st : v.RitornaRigheTabella()) {
                     MappaCryptoWallet.put(st[0], st);
                     i++;
@@ -3049,13 +3046,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             TransazioniCrypto_Bottone_Salva.setEnabled(true);
             TransazioniCrypto_Bottone_Annulla.setEnabled(true);
             TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true); 
-            CDC.setEnabled(true);
-            TransazioniCrypto.setEnabled(true);
-            TransazioniCrypto_Bottone_Importa.setEnabled(true);
+            c.setEnabled(true);
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-            c.setCursor(Cursor.getDefaultCursor());
-            
-         //   
+            c.setCursor(Cursor.getDefaultCursor());   
         }
         }
             };

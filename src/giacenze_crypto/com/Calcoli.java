@@ -52,7 +52,7 @@ public class Calcoli {
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaAddressCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static Map<String, String> MappaSimboliCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -276,7 +276,7 @@ public class Calcoli {
     
     
     
-     public static String DammiIDCoingeckodaAddress(String Address,String rete)   
+/*     public static String DammiIDCoingeckodaAddress(String Address,String rete)   
         {
         if (MappaConversioneAddressCoin.isEmpty())
             {
@@ -328,7 +328,7 @@ public class Calcoli {
               }
               return Simbolo;
           }
-          }*/
+          }
           MappaConversioneAddressCoin.put(Address.toUpperCase()+"_"+rete.toUpperCase(),"nulladifatto,nulladifatto");
           ScriviFileConversioneAddressCoin(Address.toUpperCase()+"_"+rete.toUpperCase()+",nulladifatto,nulladifatto");
      //     System.out.println("nulladifatto "+ex.getMessage());
@@ -336,7 +336,7 @@ public class Calcoli {
         }
        // return null;
 //       return Simbolo;
-        }}
+        }}*/
      
  
      
@@ -766,24 +766,28 @@ public class Calcoli {
     
     
     
-    public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete) {
+    public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
             MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
         }
-        if (MappaConversioneAddressCoin.isEmpty())
-            {
-                GeneraMappaConversioneAddressCoin();               
-            }
-        
-        if (MappaConversioneAddressCoin.get(Address+"_"+Rete)!=null&&MappaConversioneAddressCoin.get(Address+"_"+Rete).equalsIgnoreCase("nullo"))
-        {
+        if (MappaConversioneAddressCoin.isEmpty()) {
+            GeneraMappaConversioneAddressCoin();
+        }
+        if (MappaSimboliCoingecko.isEmpty()) {
+            RecuperaCoinsCoingecko();
+        }
+        if (Simbolo != null && MappaSimboliCoingecko.get(Simbolo.toUpperCase().trim()) == null) {
+            //Se ho un simbolo e questo non è nella lista allora termino subito il ciclo che tanto mi restituirebbe null lo stesso
+            return null;
+        }
+        if (MappaConversioneAddressCoin.get(Address + "_" + Rete) != null && MappaConversioneAddressCoin.get(Address + "_" + Rete).equalsIgnoreCase("nullo")) {
             //se il token non è gestito da coingecko ritorno null immediatamente
             //non ha senso andare avanti con le richieste
             return null;
         }
-        
+
         
         
         
@@ -800,7 +804,7 @@ public class Calcoli {
         if (risultato == null) {
 
             //solo in questo caso vado a prendere il valore del giorno e non quello orario
-            RecuperaTassidiCambiodaAddress(DataGiorno, DataGiorno, Address, Rete);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+            RecuperaTassidiCambiodaAddress(DataGiorno, DataGiorno, Address, Rete ,Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
             risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
             if (risultato == null) {
                 risultato = MappaConversioneAddressEUR.get(DataGiorno + "_" + Address + "_" + Rete);
@@ -935,8 +939,17 @@ public class Calcoli {
  
     
  
-        public static String RecuperaTassidiCambiodaAddress(String DataIniziale, String DataFinale,String Address,String Rete) {
+        public static String RecuperaTassidiCambiodaAddress(String DataIniziale, String DataFinale,String Address,String Rete,String Simbolo) {
         
+        
+        if(MappaSimboliCoingecko.isEmpty())    {
+            RecuperaCoinsCoingecko();
+        }
+        if (Simbolo!=null && MappaSimboliCoingecko.get(Simbolo.toUpperCase().trim())==null){
+            //Se ho un simbolo e questo non è nella lista allora termino subito il ciclo che tanto mi restituirebbe null lo stesso
+            return null;
+        }
+            
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
             MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
@@ -951,7 +964,6 @@ public class Calcoli {
              return null;
          }
          
-            String ok = "ok";
         long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
         long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
       //  String ID=DammiIDCoingeckodaAddress(Address,Rete);
@@ -991,22 +1003,52 @@ public class Calcoli {
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
-            TimeUnit.SECONDS.sleep(5);//il timeout serve per evitare di fare troppe richieste all'API
+            TimeUnit.SECONDS.sleep(7);//il timeout serve per evitare di fare troppe richieste all'API
             URL url = new URI("https://api.coingecko.com/api/v3/coins/"+MappaConversioneSimboloReteCoingecko.get(Rete)+"/contract/"+Address+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
-            URLConnection connection = url.openConnection();
             System.out.println(url);
-            try ( BufferedReader in = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            int statusCode = connection.getResponseCode();
+             StringBuilder response;
+             
+            if (statusCode >= 200 && statusCode <= 299) {
+                response = new StringBuilder();
+                // La chiamata API ha avuto successo, leggi la risposta
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String line;
-
                 while ((line = in.readLine()) != null) {
                     response.append(line);
-
                 }
+                in.close();
+             }
+            else {
+                // Si è verificato un errore nella chiamata API
+                response = new StringBuilder();
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                String errorLine;
+                while ((errorLine = errorReader.readLine()) != null) {
+                    response.append(errorLine);
+                }
+                errorReader.close();
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                JsonElement errore=jsonObject.get("error");
+                if (errore!=null && errore.toString().contains("coin not found"))
+                    {
+                    //Se arrivo qua vuol dire che la coin non è gestita da coingecko e la salvo nella lista degli address esclusi
+                    MappaConversioneAddressCoin.put(Address+"_"+Rete, "nullo");
+                    ScriviFileConversioneAddressCoin(Address+"_"+Rete+",nullo");
+                    return null;  
+                    }
+            }
+             
+            
+            
                 //se nella risposta ho questo genere di errore significa che quell'address non è gestito
                 //a questo punto lo escludo dalle ulteriori ricerche mettendolo in una tabella apposita
                 //e ovviamente chiudo il ciclo
+                
+
                 System.out.println(response.toString());
 /////System.out.println(response);
                 Gson gson = new Gson();
@@ -1038,35 +1080,21 @@ for (int i=0;i<ArraydataIni.size();i++){
                         }
                     }
                 } else {
-                    ok = null;
+                    connection.disconnect();
+                    return null;
                 }
-            } catch (IOException ex) {
-                        MappaConversioneAddressCoin.put(Address+"_"+Rete, "nullo");
-                        ScriviFileConversioneAddressCoin(Address+"_"+Rete+",nullo");
-                        return null;
-            }
-         //   ScriviFileConversioneUSDTEUR();
+         connection.disconnect();
         } 
 
         catch (MalformedURLException ex) {
-            ok = null;
-            System.out.println("Errore URL : "+ex);
-        } catch (IOException ex) {
-            ok = null;
-            System.out.println("Errore IOE : "+ex.getMessage());
-        } catch (InterruptedException | URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            ok=null;
-            System.out.println("Errore URI : "+ex.getMessage());
-        }
-        }
-       // ScriviFileConversioneUSDTEUR();
-        return ok;
-   /*     }
-        
-        else {
             return null;
-        }*/
+        } catch (IOException | URISyntaxException | InterruptedException ex) {
+            return null;
+        }
+        }
+
+        return "ok";
+
     }
     
     
@@ -1335,7 +1363,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             //a questo punto controllo se ho l'address delle monetee controllo su coingecko.
 
             if (Qta1 != null && Moneta1 != null && Address1 != null && Rete != null) {
-                PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete);
+                PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete,Moneta1);
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     //   trovato1=true;
@@ -1343,7 +1371,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
             }
             if (Qta2 != null && Moneta2 != null && Address2 != null && Rete != null) {
-                PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete);
+                PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete,Moneta2);
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     return PrezzoTransazione;
@@ -1430,7 +1458,59 @@ for (int i=0;i<ArraydataIni.size();i++){
         return ok;
     }
         
-    
+    //questa funzione la chiamo sempre una sola volta per verificare quali sono le coin gestite da coingecko    
+    public static String RecuperaCoinsCoingecko() {
+
+        try {
+            TimeUnit.SECONDS.sleep(7);
+            URL url = new URI("https://api.coingecko.com/api/v3/coins/list").toURL();
+            System.out.println(url);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            int statusCode = connection.getResponseCode();
+            StringBuilder response;
+            
+            if (statusCode >= 200 && statusCode <= 299) {
+                response = new StringBuilder();
+                // La chiamata API ha avuto successo, leggi la risposta
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String line;
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+                }
+                in.close();
+                JSONArray pricesArray = new JSONArray(response.toString());
+
+                for (int i = 0; i < pricesArray.length(); i++) {
+                    JSONObject coinObject = pricesArray.getJSONObject(i);
+                    String coinSymbol = coinObject.getString("symbol").toUpperCase().trim();
+                    //System.out.println(coinSymbol);
+                    MappaSimboliCoingecko.put(coinSymbol, coinSymbol);
+                }
+                connection.disconnect();
+
+            } else {
+                
+                // Si è verificato un errore nella chiamata API
+                response = new StringBuilder();
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                String errorLine;
+                while ((errorLine = errorReader.readLine()) != null) {
+                    response.append(errorLine);
+                }
+                errorReader.close();
+                connection.disconnect();
+                return null;
+
+            }
+
+        } catch (JsonSyntaxException | IOException | InterruptedException | URISyntaxException ex) {
+            return null;
+        }
+
+        return "ok";
+        //solo se il comando va a buon fine ritorno ok altrimenti ritorno null
+    }
     
     
     

@@ -5,10 +5,29 @@
  */
 package giacenze_crypto.com;
 
+import static giacenze_crypto.com.Importazioni.AzzeraContatori;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 
 
@@ -24,6 +43,7 @@ public class Download extends javax.swing.JDialog {
 public static int Massimo;
 public static int avanzamento;
 public static Component finestra;
+
 //    static boolean DownloadTerminato=false;
    // static boolean finito=false;
 
@@ -47,6 +67,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
 
     public Download() {
+
      //   finestra=c;
       //  finestra.setEnabled(false);
   
@@ -166,13 +187,14 @@ private Timer timer = new Timer(1000, new ActionListener() {
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
+        getAccessibleContext().setAccessibleParent(null);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        // TODO add your handling code here:
-    //    finestra.setEnabled(true);
-      //  finestra.requestFocus();
+
+      
     }//GEN-LAST:event_formWindowClosed
 
     /**
@@ -208,6 +230,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
         /* Create and display the form */
 
     }
+    
+
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel LabelAvanzamento;

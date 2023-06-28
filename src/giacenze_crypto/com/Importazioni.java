@@ -32,7 +32,6 @@ import java.util.logging.Logger;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
 import java.util.Collections;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -353,6 +352,10 @@ progressb.setVisible(true);
       progressb.SetMassimo(Mappa_MovimentiTemporanea.size());
         int avanzamento=0;
         for (String str : Mappa_MovimentiTemporanea.keySet()) {
+            if (progressb.FineThread()){
+            //se è stato interrotta la finestra di progresso interrompo il ciclo
+                progressb.ChiudiFinestra();
+                }
             riga=Mappa_MovimentiTemporanea.get(str);
            // System.out.println(riga);
             String splittata[] = riga.split(",");
@@ -535,12 +538,12 @@ progressb.setVisible(true);
                                 RT[3] = "Crypto.com App";
                                 RT[4] = "Crypto Wallet";
                                 RT[5] = Mappa_Conversione_Causali.get(movimentoSplittato[9]);
-                                RT[6] = Mappa_Conversione_Causali.get(movimentoSplittato[9]);                                
+                                RT[6] = "-> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                 
                                 if (movimentoSplittato[3].contains("-")) {
-                                  //  RT[5] = "RIMBORSO " + Mappa_Conversione_Causali.get(movimentoSplittato[9]);
-                                    RT[6] = "RIMBORSO "+ Mappa_Conversione_Causali.get(movimentoSplittato[9]); 
+                                    RT[5] = "RIMBORSO " + Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                                    RT[6] = movimentoSplittato[2]+" ->"; 
                                     RT[8] = movimentoSplittato[2];
                                     RT[9] = "Crypto";
                                     RT[10] = movimentoSplittato[3];
@@ -605,7 +608,7 @@ progressb.setVisible(true);
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="DEPOSITO FIAT";
-                                RT[6]="DEPOSITO "+movimentoSplittato[2];                                
+                                RT[6]="-> "+movimentoSplittato[2];                                
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                /* RT[8]="";
                                 RT[9]="";
@@ -641,7 +644,7 @@ progressb.setVisible(true);
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="ACQUISTO CRYPTO";
-                                RT[6]="SCAMBIO "+movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                               
+                                RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                               
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[2];
                                 RT[9]="FIAT";
@@ -679,7 +682,7 @@ progressb.setVisible(true);
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="VENDITA CRYPTO";
-                                RT[6]="SCAMBIO "+movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                                
+                                RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                                
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[2];
@@ -716,7 +719,7 @@ progressb.setVisible(true);
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="PRELIEVO FIAT";
-                                RT[6]="PRELIEVO "+movimentoSplittato[4];
+                                RT[6]=movimentoSplittato[4]+" ->";
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[4];
@@ -753,8 +756,8 @@ progressb.setVisible(true);
                                 RT[2]=1+" di "+1;
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
-                                RT[5]="SCAMBIO CRYPTO-CRYPTO";
-                                RT[6]="SCAMBIO "+movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                                
+                                RT[5]="SCAMBIO CRYPTO";
+                                RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                                
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[2];
@@ -810,8 +813,8 @@ progressb.setVisible(true);
                                         RT[2] = w+1 + " di " + numeroAddebiti;
                                         RT[3] = "Crypto.com App";
                                         RT[4] = "Crypto Wallet";
-                                        RT[5] = "SCAMBIO CRYPTO-CRYPTO";
-                                        RT[6] = "SCAMBIO DUST "+splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
+                                        RT[5] = "SCAMBIO CRYPTO";
+                                        RT[6] = splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
                                         RT[7] = splittata[9] + "(" + splittata[1] + ")";
                                         RT[8] = splittata[2];
                                         RT[9] = "Crypto";
@@ -908,7 +911,7 @@ progressb.setVisible(true);
                                 RT[3]="Crypto.com App";
                                 RT[4]=WalletPartenza;
                                 RT[5]="TRASFERIMENTO INTERNO";
-                                RT[6]="TRASFERIMENTO DA "+WalletPartenza+" A "+WalletDestinazione;                                
+                                RT[6]=movimentoSplittato[2]+" -> ";                                
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[2];
@@ -945,7 +948,7 @@ progressb.setVisible(true);
                                 RT[3]="Crypto.com App";
                                 RT[4]=WalletDestinazione;
                                 RT[5]="TRASFERIMENTO INTERNO";
-                                RT[6]="TRASFERIMENTO DA "+WalletPartenza+" A "+WalletDestinazione;                                
+                                RT[6]=" -> "+movimentoSplittato[2];                                
                                 
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]="";
@@ -984,7 +987,7 @@ progressb.setVisible(true);
                                 if (movimentoSplittato[3].contains("-")) {
                                     RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_PC";
                                     RT[5]="PRELIEVO CRYPTO";
-                                    RT[6]="PRELIEVO "+movimentoSplittato[2];
+                                    RT[6]=movimentoSplittato[2]+" ->";
                                     RT[8]=movimentoSplittato[2];
                                     RT[9]="Crypto";
                                     RT[10]=movimentoSplittato[3];
@@ -994,7 +997,7 @@ progressb.setVisible(true);
                                 } else {
                                     RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DC";
                                     RT[5]="DEPOSITO CRYPTO";
-                                    RT[6]="DEPOSITO "+movimentoSplittato[2];
+                                    RT[6]="-> "+movimentoSplittato[2];
                                     RT[8]="";
                                     RT[9]="";
                                     RT[10]="";
@@ -1077,7 +1080,7 @@ progressb.setVisible(true);
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5] = "SCAMBIO CRYPTO";
-                                RT[6] = "SCAMBIO CRYPTO "+movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
+                                RT[6] = movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[0];
                                 RT[8] = movimentoSplittato[6];
                                 RT[9] = "Crypto";
@@ -1110,7 +1113,7 @@ progressb.setVisible(true);
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5] = "ACQUISTO CRYPTO";
-                                RT[6] = "ACQUISTO CRYPTO "+movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
+                                RT[6] = movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[0];
                                 RT[8] = movimentoSplittato[6];
                                 RT[9] = "FIAT";
@@ -1142,7 +1145,7 @@ progressb.setVisible(true);
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5] = "VENDITA CRYPTO";
-                                RT[6] = "VENDITA CRYPTO "+movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
+                                RT[6] = movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[0];
                                 RT[8] = movimentoSplittato[6];
                                 RT[9] = "Crypto";
@@ -1174,7 +1177,7 @@ progressb.setVisible(true);
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5] = "ALTRE-REWARD";
-                                RT[6] = "ALTRE-REWARD "+movimentoSplittato[2];                                
+                                RT[6] = "-> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[0];
                                 RT[8] = "";
                                 RT[9] = "";
@@ -1205,7 +1208,7 @@ progressb.setVisible(true);
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5] = "STAKING";
-                                RT[6] = "STAKING "+movimentoSplittato[2];                                
+                                RT[6] = "-> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[0];
                                 RT[8] = "";
                                 RT[9] = "";
@@ -1236,7 +1239,7 @@ progressb.setVisible(true);
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5]="COMMISSIONE";
-                                RT[6]="COMMISSIONE IN "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[6]="Commissione in "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
                                 RT[7] = movimentoSplittato[0];                                
                                 RT[8] = movimentoSplittato[6];
                                 String TipoMoneta="Crypto";
@@ -1270,7 +1273,7 @@ progressb.setVisible(true);
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
                                 RT[5]="PRELIEVO FIAT";
-                                RT[6]="PRELIEVO "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[6]=movimentoSplittato[6]+" ->";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
                                 RT[7] = movimentoSplittato[0];                                
                                 RT[8] = movimentoSplittato[6];
                                 RT[9] = "FIAT";
@@ -1382,7 +1385,7 @@ progressb.setVisible(true);
                                               RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_DF";
                                               RT[5] = "DEPOSITO FIAT";  
                                             }
-                                        RT[6] ="DEPOSITO "+movimentoSplittato[2];
+                                        RT[6] ="-> "+movimentoSplittato[2];
                                         RT[7] = TipoMovimento;
                                         RT[8] = "";
                                         RT[9] = "";
@@ -1423,7 +1426,7 @@ progressb.setVisible(true);
                                               RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_PF";
                                               RT[5] = "PRELIEVO FIAT";  
                                             }
-                                        RT[6] = "PRELIEVO "+movimentoSplittato[6];
+                                        RT[6] = movimentoSplittato[6]+" ->";
                                         RT[7] = TipoMovimento;
                                         RT[8] = movimentoSplittato[6];
                                         if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) RT[9] = "FIAT";else RT[9] = "Crypto";
@@ -1482,12 +1485,15 @@ progressb.setVisible(true);
         }
              System.out.println("bbb");*/
             Download progressb=new Download();
+         //   progressb.SetThread(t);
+         //   progressb.SetComponent(c);
+            
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(c); 
             progressb.Titolo("Importazione da rete BSC");
             progressb.SetLabel("Scaricamento transazioni da "+walletAddress+" in corso...");
             progressb.setVisible(true);
-            progressb.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+           // progressb.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             AzzeraContatori();   
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try {
@@ -1511,9 +1517,24 @@ progressb.setVisible(true);
             in.close();
 
             JSONObject jsonObject = new JSONObject(response.toString());
-            
+            int status = Integer.parseInt(jsonObject.getString("status"));
+            if (status==0){
+                //in questo caso la richiesta è anda in errore
+                //scrivo il messaggio, e chiudo la progress bar
+               // System.out.println(jsonObject.getString("result"));
+                progressb.ChiudiFinestra();
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
+                return null;
+            }
+           // System.out.println(response);
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
+                if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                    progressb.ChiudiFinestra();
+                    return null;
+                }
                 String AddressNoWallet;
                 String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
@@ -1582,9 +1603,24 @@ progressb.setVisible(true);
             in.close();
 
             jsonObject = new JSONObject(response.toString());
+            status = Integer.parseInt(jsonObject.getString("status"));
+            if (status==0){
+                //in questo caso la richiesta è anda in errore
+                //scrivo il messaggio, e chiudo la progress bar
+               // System.out.println(jsonObject.getString("result"));
+                progressb.ChiudiFinestra();
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
+                return null;
+            }
             
             transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
+                if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                    progressb.ChiudiFinestra();
+                    return null;
+                }
                 String qta;
                 String AddressNoWallet;
                 JSONObject transaction = transactions.getJSONObject(i);
@@ -1656,9 +1692,25 @@ progressb.setVisible(true);
             in.close();
 
             jsonObject = new JSONObject(response.toString());
+            status = Integer.parseInt(jsonObject.getString("status"));
+            if (status==0){
+                //in questo caso la richiesta è anda in errore
+                //scrivo il messaggio, e chiudo la progress bar
+               // System.out.println(jsonObject.getString("result"));
+                progressb.ChiudiFinestra();
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
+                return null;
+            }
             
             transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
+                if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                    progressb.ChiudiFinestra();
+                    return null;
+                }
+                //System.out.println("sono qui");
                 String AddressNoWallet;
                 String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
@@ -1707,21 +1759,21 @@ progressb.setVisible(true);
          //   TimeUnit.SECONDS.sleep(1);
                     
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null,"AAA"+ ex);
             progressb.dispose();
             Calcoli.ScriviFileConversioneXXXEUR();
             JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         } catch (IOException | URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null,"AAA"+  ex);
             progressb.dispose();
             Calcoli.ScriviFileConversioneXXXEUR();
                         JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         } catch (InterruptedException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null,"AAA"+  ex);
             progressb.dispose();
             Calcoli.ScriviFileConversioneXXXEUR();
                         JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,

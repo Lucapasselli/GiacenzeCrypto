@@ -5,29 +5,11 @@
  */
 package giacenze_crypto.com;
 
-import static giacenze_crypto.com.Importazioni.AzzeraContatori;
-import java.awt.Component;
-import java.awt.Cursor;
+
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import javax.swing.Timer;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 
 
@@ -40,9 +22,9 @@ public class Download extends javax.swing.JDialog {
     /**
      * Creates new form Attesa
      */
-public static int Massimo;
-public static int avanzamento;
-public static Component finestra;
+public int Massimo;
+public int avanzamento;
+public boolean FineThread=false;
 
 //    static boolean DownloadTerminato=false;
    // static boolean finito=false;
@@ -82,7 +64,11 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     }
     
-
+    public Boolean FineThread(){
+        return FineThread;
+    }
+    
+    
      public void Pausa(){
          timer.start();
      }
@@ -126,7 +112,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
      }
      
      public void ChiudiFinestra (){
-         this.dispose();
+        this.dispose();
      }
      
      
@@ -148,6 +134,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         LabelScaricamento = new javax.swing.JLabel();
         ProgressBarDownload = new javax.swing.JProgressBar();
         LabelAvanzamento = new javax.swing.JLabel();
+        Bottone_Interrompi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setAlwaysOnTop(true);
@@ -163,6 +150,13 @@ private Timer timer = new Timer(1000, new ActionListener() {
         LabelAvanzamento.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         LabelAvanzamento.setText("Avanzamento");
 
+        Bottone_Interrompi.setText("Interrompi");
+        Bottone_Interrompi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_InterrompiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -174,6 +168,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
                     .addComponent(LabelAvanzamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(LabelScaricamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Bottone_Interrompi)
+                .addGap(206, 206, 206))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -184,7 +182,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
                 .addComponent(ProgressBarDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(LabelAvanzamento)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Bottone_Interrompi)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleParent(null);
@@ -196,6 +196,12 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
       
     }//GEN-LAST:event_formWindowClosed
+
+    private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
+        // TODO add your handling code here:
+        FineThread=true;
+
+    }//GEN-LAST:event_Bottone_InterrompiActionPerformed
 
     /**
      * @param args the command line arguments
@@ -235,6 +241,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Bottone_Interrompi;
     private javax.swing.JLabel LabelAvanzamento;
     private javax.swing.JLabel LabelScaricamento;
     private javax.swing.JProgressBar ProgressBarDownload;

@@ -41,6 +41,7 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -3019,8 +3020,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi() {
-        String walletAddress = "xxx";
-        String apiKey = "xxx";
+        String walletAddress = "0x235de84ce69e04675b0afa3dd9594c726008c9b1";
+        String apiKey = "1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
         Component c=this;
         Thread thread;
             thread = new Thread() {
@@ -3043,13 +3044,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
             TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
             JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti "+i+" nuovi movimenti",
                             "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-            TransazioniCrypto_Bottone_Salva.setEnabled(true);
-            TransazioniCrypto_Bottone_Annulla.setEnabled(true);
-            TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true); 
-            c.setEnabled(true);
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-            c.setCursor(Cursor.getDefaultCursor());   
+            Importazioni.TransazioniAggiunte=i;
+            
+             
         }
+        c.setEnabled(true);
+        c.requestFocus();
+        c.setCursor(Cursor.getDefaultCursor()); 
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
             };
         thread.start();          
@@ -3342,18 +3344,26 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         
         String CausaleOriginale="";
         if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 7)!=null)
-        CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 7).toString();
+            CausaleOriginale=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 7).toString();
         
         String ValoreTransazione=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 15).toString();
         String ValoreTransazionePrezzoCarico=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 17).toString();
-        String QTARic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 13).toString();
-        String QTAUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 10).toString();
+        String QTARic="";
+        if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 13)!=null)
+            QTARic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 13).toString();
+        String QTAUsc="";
+        if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 10)!=null)
+            QTAUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 10).toString();
         String unitarioValoreRic="";
         String unitarioPrzCaricoRic="";
         String unitarioValoreUsc="";
         String unitarioPrzCaricoUsc="";
-        String MonRic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 11).toString().trim();
-        String MonUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8).toString().trim();
+        String MonRic="";
+        if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 11)!=null)
+            MonRic=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 11).toString().trim();
+        String MonUsc="";
+        if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8)!=null)
+            MonUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8).toString().trim();
         if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
             if (new BigDecimal(QTARic).compareTo(new BigDecimal(0))!=0)
             unitarioValoreRic="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
@@ -3388,8 +3398,12 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         }
         String ValoreTransazioneCSV=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 14).toString();
         String Plusvalenza=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 19).toString();
-        String Note=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21).toString().replace("|&£|","<br>&#9");
-        String Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20).toString();
+        String Note="";
+        if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21)!=null)
+            Note=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21).toString().replace("|&£|","<br>&#9");
+        String Riferimenti="";
+        if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20)!=null)
+            Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20).toString();
       //  String MacAddress = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
         
         String daAppendere="ID TRANSAZIONE :&#9&#9&#9<b>"+IDTransazione+"</b><br>"+
@@ -3464,6 +3478,13 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         TransazioniCryptoTextPane.setText("");
+        
+        
+       //da verificare se va bene, serve per evitare problemi di sorting nel caso in cui la richiesta arrivi da un thread
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(TransazioniCryptoTabella.getModel());
+        TransazioniCryptoTabella.setRowSorter(sorter);
+        
+        
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) TransazioniCryptoTabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
         BigDecimal Plusvalenza=new BigDecimal("0");

@@ -254,7 +254,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="COMMISSIONE";
-              RT[6]="COMMISSIONE SU OPERAZIONE FALLITA";
+              RT[6]="Per Operazione Fallita";
               RT[7]=TipoTransazione;
               RT[8]=MonetaCommissioni;
               RT[9]="Crypto";
@@ -277,7 +277,7 @@ public class TransazioneDefi {
               RT[26]="";
               RT[27]="";
               RT[28]="";
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
               //chiudo il cilco perchè questa è una transazione unica
@@ -292,7 +292,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="COMMISSIONE";
-              RT[6]="COMMISSIONE PER APPROVAZIONE CONTRATTO";
+              RT[6]="Per Approvazione Contratto";
               RT[7]=TipoTransazione;
               RT[8]=MonetaCommissioni;
               RT[9]="Crypto";
@@ -315,7 +315,7 @@ public class TransazioneDefi {
               RT[26]="";
               RT[27]="";
               RT[28]="";
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
               //chiudo il ciclo perchè questa è una transazione unica
@@ -327,13 +327,13 @@ public class TransazioneDefi {
          int i=1;
          for(ValoriToken token : MappaToken.values()){
               RT=new String[Importazioni.ColonneTabella];
-              RT[0]=PrimaParteID+"_"+i+"_"+numeroDepositi+"_DC";
+              RT[0]=PrimaParteID+"_"+i+"_1_DC";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="DEPOSITO CRYPTO";
-              RT[6]="DEPOSITO "+token.MonetaName;
+              RT[6]="-> "+token.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]="";
               RT[9]="";
@@ -356,7 +356,7 @@ public class TransazioneDefi {
               RT[26]="";
               RT[27]=token.MonetaName;
               RT[28]=token.MonetaAddress;
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
               i++;
@@ -372,7 +372,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="COMMISSIONE";
-              RT[6]="COMMISSIONE SU PRELIEVO";
+              RT[6]="Per Prelievo";
               RT[7]=TipoTransazione;
               RT[8]=MonetaCommissioni;
               RT[9]="Crypto";
@@ -395,7 +395,7 @@ public class TransazioneDefi {
               RT[26]="";
               RT[27]="";
               RT[28]="";
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
             
@@ -403,13 +403,13 @@ public class TransazioneDefi {
               int i=1;
               for(ValoriToken token : MappaToken.values()){
               RT=new String[Importazioni.ColonneTabella];
-              RT[0]=PrimaParteID+"_"+i+"_"+numeroPrelievi+"_PC";
+              RT[0]=PrimaParteID+"_"+i+"_1_PC";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroPrelievi;
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="PRELIEVO CRYPTO";
-              RT[6]="PRELIEVO "+token.MonetaName;
+              RT[6]=token.MonetaName+" ->";
               RT[7]=TipoTransazione;
               RT[8]=token.Moneta;
               RT[9]="Crypto";
@@ -432,7 +432,7 @@ public class TransazioneDefi {
               RT[26]=token.MonetaAddress;
               RT[27]="";
               RT[28]="";
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
               i++;
@@ -447,7 +447,7 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="COMMISSIONE";
-              RT[6]="COMMISSIONE PER SCAMBIO";
+              RT[6]="Per Scambio";
               RT[7]=TipoTransazione;
               RT[8]=MonetaCommissioni;
               RT[9]="Crypto";
@@ -470,7 +470,7 @@ public class TransazioneDefi {
               RT[26]="";
               RT[27]="";
               RT[28]="";
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
           
@@ -487,13 +487,13 @@ public class TransazioneDefi {
               BigDecimal PrezzoTransazione=new BigDecimal (Calcoli.DammiPrezzoTransazione(tokenU.Moneta,tokenE.Moneta,tokenU.Qta,tokenE.Qta,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,tokenU.MonetaAddress,tokenE.MonetaAddress,Rete))
                 .multiply(PesoTransazione);
               RT=new String[Importazioni.ColonneTabella];
-              RT[0]=PrimaParteID+"_"+i+"_"+totMov+"_SC";
+              RT[0]=PrimaParteID+"_"+i+"_1_SC";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+totMov;
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="SCAMBIO CRYPTO";
-              RT[6]="SCAMBIO "+tokenU.MonetaName+" -> "+tokenE.MonetaName;
+              RT[6]=tokenU.MonetaName+" -> "+tokenE.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]=tokenU.Moneta;
               RT[9]="Crypto";
@@ -516,7 +516,7 @@ public class TransazioneDefi {
               RT[26]=tokenU.MonetaAddress;
               RT[27]=tokenE.MonetaName;
               RT[28]=tokenE.MonetaAddress;
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
               i++;
@@ -539,13 +539,13 @@ public class TransazioneDefi {
       //mi occupo ora di inserire le transazioni tecniche
       for(ValoriToken token : MappaTokenTecniciEntrata.values()){
               RT=new String[Importazioni.ColonneTabella];
-              RT[0]=PrimaParteID+"_"+i+"_"+numeroDepositi+"_TI";
+              RT[0]=PrimaParteID+"_"+i+"_1_TI";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="TRANSAZIONE TECNICA INTERNA";
-              RT[6]="TRANSAZIONE TECNICA DI "+token.MonetaName;
+              RT[6]="-> "+token.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]="";
               RT[9]="";
@@ -568,7 +568,7 @@ public class TransazioneDefi {
               RT[26]="";
               RT[27]=token.MonetaName;
               RT[28]=token.MonetaAddress;
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
               i++;
@@ -579,13 +579,13 @@ public class TransazioneDefi {
       i=1;     
       for(ValoriToken token : MappaTokenTecniciUscita.values()){
               RT=new String[Importazioni.ColonneTabella];
-              RT[0]=PrimaParteID+"_"+i+"_"+numeroPrelievi+"_TI";
+              RT[0]=PrimaParteID+"_"+i+"_1_TI";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]="TRANSAZIONE TECNICA INTERNA";
-              RT[6]="TRANSAZIONE TECNICA DI "+token.MonetaName;
+              RT[6]=token.MonetaName+" ->";
               RT[7]=TipoTransazione;
               RT[8]=token.Moneta;
               RT[9]="Crypto";
@@ -608,7 +608,7 @@ public class TransazioneDefi {
               RT[26]=token.MonetaAddress;
               RT[27]="";
               RT[28]="";
-              RT[29]="";
+              RT[29]=TimeStamp;
               RT[30]="";
               righe.add(RT);
               i++;

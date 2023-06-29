@@ -147,13 +147,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCryptoTextPane = new javax.swing.JTextPane();
         TransazioniCrypto_Label_MovimentiNonSalvati = new javax.swing.JLabel();
         TransazioniCrypto_Bottone_Salva = new javax.swing.JButton();
-        jLabel7 = new javax.swing.JLabel();
+        TransazioniCrypto_Label_Filtro = new javax.swing.JLabel();
         TransazioniCryptoFiltro_Text = new javax.swing.JTextField();
         TransazioniCrypto_CheckBox_EscludiTI = new javax.swing.JCheckBox();
         TransazioniCrypto_Bottone_Annulla = new javax.swing.JButton();
         TransazioniCrypto_Label_Plusvalenza = new javax.swing.JLabel();
         TransazioniCrypto_Text_Plusvalenza = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
+        TransazioniCrypto_Bottone_InserisciWallet = new javax.swing.JButton();
+        Analisi_Crypto = new javax.swing.JPanel();
+        AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         DepositiPrelievi_Tabella = new javax.swing.JTable();
@@ -307,7 +310,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
         TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));
 
-        TransazioniCrypto_Bottone_Importa.setText("Importa Movimentazioni");
+        TransazioniCrypto_Bottone_Importa.setText("Carica CSV");
         TransazioniCrypto_Bottone_Importa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_ImportaActionPerformed(evt);
@@ -329,7 +332,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        jLabel7.setText("Filtro : ");
+        TransazioniCrypto_Label_Filtro.setText("Filtro : ");
 
         TransazioniCryptoFiltro_Text.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -372,6 +375,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        TransazioniCrypto_Bottone_InserisciWallet.setText("Inserisci Wallet");
+        TransazioniCrypto_Bottone_InserisciWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_Bottone_InserisciWalletActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -382,6 +392,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1054, Short.MAX_VALUE)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(TransazioniCrypto_Bottone_Importa)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(TransazioniCrypto_Bottone_InserisciWallet)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -395,7 +407,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                    .addComponent(jLabel7)
+                                    .addComponent(TransazioniCrypto_Label_Filtro)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -413,7 +425,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_Importa)
                     .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati)
                     .addComponent(TransazioniCrypto_Bottone_Salva)
-                    .addComponent(TransazioniCrypto_Bottone_Annulla))
+                    .addComponent(TransazioniCrypto_Bottone_Annulla)
+                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -428,13 +441,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel7)
+                            .addComponent(TransazioniCrypto_Label_Filtro)
                             .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addContainerGap())
                     .addComponent(jScrollPane1)))
         );
 
         CDC.addTab("Transazioni Crypto", TransazioniCrypto);
+
+        AnalisiCrypto.setTabPlacement(javax.swing.JTabbedPane.LEFT);
 
         DepositiPrelievi.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -510,7 +525,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1048, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
@@ -523,7 +538,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -532,7 +547,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)))
         );
 
-        CDC.addTab("Calssificazione Trasferimenti Crypto", DepositiPrelievi);
+        AnalisiCrypto.addTab("Calssificazione Trasferimenti Crypto", DepositiPrelievi);
 
         SituazioneImport.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -565,17 +580,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
         SituazioneImport.setLayout(SituazioneImportLayout);
         SituazioneImportLayout.setHorizontalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1060, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 847, Short.MAX_VALUE)
         );
         SituazioneImportLayout.setVerticalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(SituazioneImportLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        CDC.addTab("Sitazione Import Crypto", SituazioneImport);
+        AnalisiCrypto.addTab("Sitazione Import Crypto", SituazioneImport);
+
+        javax.swing.GroupLayout Analisi_CryptoLayout = new javax.swing.GroupLayout(Analisi_Crypto);
+        Analisi_Crypto.setLayout(Analisi_CryptoLayout);
+        Analisi_CryptoLayout.setHorizontalGroup(
+            Analisi_CryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(AnalisiCrypto)
+        );
+        Analisi_CryptoLayout.setVerticalGroup(
+            Analisi_CryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Analisi_CryptoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(AnalisiCrypto))
+        );
+
+        CDC.addTab("Analisi Crypto", Analisi_Crypto);
 
         CDC_CardWallet_Bottone_CaricaCSV.setText("Carica Dati Carta");
         CDC_CardWallet_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
@@ -3018,9 +3048,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 //
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void TransazioniCrypto_Bottone_InserisciWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_InserisciWalletActionPerformed
+        // TODO add your handling code here:
+        GestioneWallets a =new GestioneWallets();
+        a.setLocationRelativeTo(this);
+        a.setTitle("Gestione dei Wallet Defi");
+        a.setVisible(true);
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_InserisciWalletActionPerformed
+
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi() {
-        String walletAddress = "xxx";
+        String walletAddress = "0x08De9dc11b55e7Ee9669A06952049aA7E4a9B558AB45";
         String apiKey = "xxx";
         Component c=this;
         Thread thread;
@@ -3741,6 +3779,8 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTabbedPane AnalisiCrypto;
+    private javax.swing.JPanel Analisi_Crypto;
     private javax.swing.JTabbedPane CDC;
     private javax.swing.JButton CDC_CardWallet_Bottone_CaricaCSV;
     private javax.swing.JButton CDC_CardWallet_Bottone_StampaRapporto;
@@ -3823,8 +3863,10 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JTextPane TransazioniCryptoTextPane;
     private javax.swing.JButton TransazioniCrypto_Bottone_Annulla;
     private javax.swing.JButton TransazioniCrypto_Bottone_Importa;
+    private javax.swing.JButton TransazioniCrypto_Bottone_InserisciWallet;
     private javax.swing.JButton TransazioniCrypto_Bottone_Salva;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_EscludiTI;
+    private javax.swing.JLabel TransazioniCrypto_Label_Filtro;
     private javax.swing.JLabel TransazioniCrypto_Label_MovimentiNonSalvati;
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
@@ -3836,7 +3878,6 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

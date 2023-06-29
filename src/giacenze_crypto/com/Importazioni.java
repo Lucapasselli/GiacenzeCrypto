@@ -1553,12 +1553,12 @@ progressb.setVisible(true);
                    //     System.out.println("arghhhhh "+hash);
                     trans=MappaTransazioniDefi.get(hash);
                     }
-
+trans.Rete="BSC";
                 trans.Blocco=transaction.getString("blockNumber");
                 trans.DataOra=Data;//Da modificare con data e ora reale
                 trans.TimeStamp=transaction.getString("timeStamp");
                 trans.HashTransazione=hash;
-                trans.Rete="BSC";
+                
                 trans.MonetaCommissioni="BNB";
                 trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
                 trans.Wallet=walletAddress;
@@ -1621,6 +1621,7 @@ progressb.setVisible(true);
                     progressb.ChiudiFinestra();
                     return null;
                 }
+                
                 String qta;
                 String AddressNoWallet;
                 JSONObject transaction = transactions.getJSONObject(i);
@@ -1630,6 +1631,7 @@ progressb.setVisible(true);
                 String to = transaction.getString("to");
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
+                
                 if (MappaTransazioniDefi.get(hash)==null){
                     trans=new TransazioneDefi();
                     MappaTransazioniDefi.put(hash, trans);
@@ -1637,7 +1639,7 @@ progressb.setVisible(true);
                     {
                     trans=MappaTransazioniDefi.get(hash);
                     }
-
+trans.Rete="BSC";
                     if (from.equalsIgnoreCase(walletAddress)){
                         AddressNoWallet=to;
                         qta="-"+value;
@@ -1650,7 +1652,7 @@ progressb.setVisible(true);
                 trans.DataOra=Data;
                 trans.TimeStamp=transaction.getString("timeStamp");
                 trans.HashTransazione=hash;
-                trans.Rete="BSC";
+                
                 trans.MonetaCommissioni="BNB";  
                 if (trans.QtaCommissioni!=null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs())==1)
                     {
@@ -1732,7 +1734,7 @@ progressb.setVisible(true);
                     {
                     trans=MappaTransazioniDefi.get(hash);
                     }
-
+trans.Rete="BSC";
                     if (from.equalsIgnoreCase(walletAddress)){
                         AddressNoWallet=to;
                         qta="-"+value;
@@ -1745,7 +1747,7 @@ progressb.setVisible(true);
                 trans.DataOra=Data;//Da modificare con data e ora reale
                 trans.TimeStamp=transaction.getString("timeStamp");
                 trans.HashTransazione=hash;
-                trans.Rete="BSC";
+                
                 trans.MonetaCommissioni="BNB";
                // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
                 BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));

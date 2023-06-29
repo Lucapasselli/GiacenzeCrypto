@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -819,8 +818,8 @@ public class Calcoli {
         
   //se è gestito controllo se lo avevo già nel file ein caso contrario lo inserisco      
         if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
-            if (risultato!=null) MappaConversioneAddressEUR.put(DataOra + "_" + Address + "_" + Rete, risultato);
-            if (risultato==null) risultato="nullo";
+           // if (risultato!=null) MappaConversioneAddressEUR.put(DataOra + "_" + Address + "_" + Rete, risultato);
+           // if (risultato==null) risultato="nullo";
             MappaConversioneAddressEURtemp.put(DataOra + "_" + Address + "_" + Rete, risultato);
        
             ScriviFileConversioneAddressEUR(DataOra + "_" + Address + "_" + Rete + "," + risultato);
@@ -963,9 +962,11 @@ public class Calcoli {
          if (MappaConversioneSimboloReteCoingecko.get(Rete)==null)   {
              return null;
          }
-         
-        long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
+        
+        long dataAdesso= System.currentTimeMillis() / 1000;  
+        long dataIni = ( ConvertiDatainLong(DataIniziale) / 1000 ) - 86400;
         long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
+        if (dataFin>dataAdesso) dataFin=dataAdesso;
       //  String ID=DammiIDCoingeckodaAddress(Address,Rete);
         
    //     if (ID!=null&&!ID.equalsIgnoreCase("nulladifatto")){//quando non trovo nulla potrei aver restituito null o nulladifatto
@@ -989,9 +990,12 @@ public class Calcoli {
         //7776000 secondi equivalgono a 3 mesi (90giorni per la precisione).
         //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
       // System.out.println(dataIni+" - "+dataFin);
+        long temp;
         while (difData>0){
             ArraydataIni.add(dataIni);
-            ArraydataFin.add(dataIni+7776000);
+            temp=dataIni+7776000;
+            if (temp>dataAdesso) temp=dataAdesso;
+            ArraydataFin.add(temp);
             dataIni=dataIni+7776000;
             difData=dataFin-dataIni;    
            // i++;
@@ -1010,8 +1014,25 @@ for (int i=0;i<ArraydataIni.size();i++){
             connection.setRequestMethod("GET");
             int statusCode = connection.getResponseCode();
              StringBuilder response;
-             
+           //  System.out.println(statusCode);
             if (statusCode >= 200 && statusCode <= 299) {
+                //come prima cosa se la richiesta ha avuto successo riempio tutte le ore in tutte le date con prezzo a zero
+                //poi verranno sostituiti dai valori reali nel momento in cui leggerò la risposta
+                //questo mi serve per avere sempre una risposta anche per le coin senza prezzi
+                long DataProggressiva=ArraydataIni.get(i)*1000;
+                Date data;
+                String Data;
+                SimpleDateFormat sdfx = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+             //    System.out.println(DataProggressiva);
+              //   System.out.println(ArraydataFin.get(i));
+                 while (DataProggressiva < ArraydataFin.get(i)*1000) {                    
+                    data = new java.util.Date(DataProggressiva);                   
+                    sdfx.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                    Data = sdfx.format(data);
+                    MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, "nullo");
+                    DataProggressiva=DataProggressiva+3600000;
+                }
+                 
                 response = new StringBuilder();
                 // La chiamata API ha avuto successo, leggi la risposta
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -1307,6 +1328,8 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     public static String DammiPrezzoTransazione(String Moneta1, String Moneta2, String Qta1, String Qta2, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
         String PrezzoTransazione;
+        Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        MappaReteCoin.put("BSC", "BNB");
         // boolean trovato1=false;
         // boolean trovato2=false;
         //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
@@ -1324,13 +1347,13 @@ for (int i=0;i<ArraydataIni.size();i++){
                 PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
             }
-        } else if (Moneta1 != null && Moneta1.equalsIgnoreCase("USDT")) {
+        } else if (Moneta1 != null && Moneta1.equalsIgnoreCase("USDT")&& Address1 == null) {
             PrezzoTransazione = ConvertiUSDTEUR(Qta1, Data);
             if (PrezzoTransazione != null) {
                 PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
             }
-        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("USDT")) {
+        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("USDT")&& Address2 == null) {
             PrezzoTransazione = ConvertiUSDTEUR(Qta2, Data);
             if (PrezzoTransazione != null) {
                 PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
@@ -1340,22 +1363,28 @@ for (int i=0;i<ArraydataIni.size();i++){
 
             //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
             for (String CoppiePrioritarie1 : CoppiePrioritarie) {
-                if (Qta1 != null && Moneta1 != null && (Moneta1 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
+                if (Qta1 != null && Moneta1 != null && (Moneta1 + "USDT").toUpperCase().equals(CoppiePrioritarie1) &&
+                        (Rete==null || Moneta1.equalsIgnoreCase(MappaReteCoin.get(Rete)))) {
                     // trovato1=true;
+
                     PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
                     if (PrezzoTransazione != null) {
                         PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                         return PrezzoTransazione;
                     }//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
                     //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+                    
                 }
-                if (Qta2 != null && Moneta2 != null && (Moneta2 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
+                if (Qta2 != null && Moneta2 != null && (Moneta2 + "USDT").toUpperCase().equals(CoppiePrioritarie1)&&
+                        (Rete==null || Moneta2.equalsIgnoreCase(MappaReteCoin.get(Rete)))) {
                     // trovato2=true;
+
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
                     if (PrezzoTransazione != null) {
                         PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                         return PrezzoTransazione;
                     }
+                    
                     //se trovo la condizione ritorno il prezzo e interrnompo la funzione
                 }
             }

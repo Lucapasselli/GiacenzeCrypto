@@ -93,7 +93,8 @@ public class TransazioneDefi {
           List<String> daEliminare=new ArrayList<>();
           for(ValoriToken token : MappaToken.values())
               {
-                  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==1)
+                //  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==1)
+                  if (!token.Qta.contains("-"))
                    {
                        
                        if (token.IndirizzoNoWallet.equalsIgnoreCase("0x0000000000000000000000000000000000000000")&&token.Moneta.toUpperCase().contains("DIVIDEND_TRACKER")){
@@ -107,7 +108,8 @@ public class TransazioneDefi {
                             trovataEntrata=true;
                        }
                    }  
-                  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==-1)
+                  //if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==-1)
+                  if (token.Qta.contains("-"))
                    {
                        
                        if (token.IndirizzoNoWallet.equalsIgnoreCase("0x0000000000000000000000000000000000000000")&&token.Moneta.toUpperCase().contains("DIVIDEND_TRACKER")){
@@ -263,7 +265,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,null);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -301,7 +303,7 @@ public class TransazioneDefi {
               RT[12]="";
               RT[13]="";
               RT[14]="";
-              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,null);//calcolare con numero contratto
+              RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";

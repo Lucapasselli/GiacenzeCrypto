@@ -4,6 +4,7 @@
  */
 package giacenze_crypto.com;
 
+import static giacenze_crypto.com.Calcoli.CoppiePrioritarie;
 import static giacenze_crypto.com.Calcoli.MappaConversioneAddressCoin;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -83,7 +84,13 @@ public class TransazioneDefi {
             MappaToken.put(MonetaAddress,monete);
            // System.out.println(dataAlMinuto+" - "+Moneta);
             monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,monete.MonetaAddress,null,Rete);
-            if (Calcoli.MappaConversioneAddressCoin.get(MonetaAddress+"_"+Rete)!=null) monete.Moneta=monete.Moneta+" **";
+            if (Calcoli.MappaConversioneAddressCoin.get(MonetaAddress+"_"+Rete)!=null) {          
+                for (String Coppia : CoppiePrioritarie) {
+                    if ((monete.Moneta+"USDT").equalsIgnoreCase(Coppia)||monete.Moneta.equalsIgnoreCase("USDT"))
+                        monete.Moneta=monete.Moneta+" **";
+                }                
+            }
+
             }
         else 
             {
@@ -260,6 +267,7 @@ public class TransazioneDefi {
       List<String[]> righe=new ArrayList<>();
       String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
       String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+HashTransazione;
+      if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
       if(!TransazioneOK){
            //Transazione non andata a buon fine
            //Considero solo le commisioni

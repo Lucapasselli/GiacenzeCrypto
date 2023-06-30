@@ -1523,7 +1523,7 @@ progressb.setVisible(true);
                 //scrivo il messaggio, e chiudo la progress bar
                // System.out.println(jsonObject.getString("result"));
                 progressb.ChiudiFinestra();
-                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("message"),
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
                 return null;
             }

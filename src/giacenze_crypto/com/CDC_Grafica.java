@@ -3061,8 +3061,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi() {
-        String walletAddress = "0x235de84ce69e04675b0afa3dd9594c726008c9b1aab";
-        String apiKey = "xxx";
+        String walletAddress = "0x235De84ce69E04675b0afa3dd9594c726008C9B1";
+        String apiKey = "1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
         Component c=this;
         Thread thread;
             thread = new Thread() {
@@ -3086,13 +3086,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
             JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti "+i+" nuovi movimenti",
                             "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             Importazioni.TransazioniAggiunte=i;
-            
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
              
         }
         c.setEnabled(true);
         c.requestFocus();
-        c.setCursor(Cursor.getDefaultCursor()); 
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        c.setCursor(Cursor.getDefaultCursor());
+        
+       // TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
             };
         thread.start();          

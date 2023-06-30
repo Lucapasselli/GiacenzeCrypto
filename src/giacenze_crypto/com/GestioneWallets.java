@@ -4,10 +4,29 @@
  */
 package giacenze_crypto.com;
 
+import static giacenze_crypto.com.Calcoli.MappaConversioneAddressEUR;
+import static giacenze_crypto.com.Calcoli.MappaConversioneAddressEURtemp;
+import static giacenze_crypto.com.Calcoli.MappaConversioneUSDEUR;
+import static giacenze_crypto.com.Calcoli.MappaWallets;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author luca.passelli
  */
+
+
 public class GestioneWallets extends javax.swing.JDialog {
 
     /**
@@ -37,6 +56,11 @@ public class GestioneWallets extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         Bottone_InserisciWallet.setText("Inserisci Wallet");
         Bottone_InserisciWallet.addActionListener(new java.awt.event.ActionListener() {
@@ -127,10 +151,40 @@ public class GestioneWallets extends javax.swing.JDialog {
     private void Bottone_InserisciWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciWalletActionPerformed
         // TODO add your handling code here:
         String Wallet=TextField_IndirizzoWallet.getText().trim();
+        String Rete=ComboBox_Rete.getItemAt(ComboBox_Rete.getSelectedIndex());
+        if (Rete.split("\\(").length>1){
+            Rete=Rete.split("\\(")[1].trim().substring(0, Rete.split("\\(")[1].length()-1);
+        } else {
+        }
         if (Wallet.length()!=42 || !Wallet.substring(1, 2).equalsIgnoreCase("x")){
             //non è un indirizzo di wallet valido
+            JOptionPane.showConfirmDialog(this, "Attenzione! \nIl Wallet specificato non è valido",
+                            "Wallet non Valido",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        }else if(ComboBox_Rete.getSelectedIndex()==0){
+            //non è valido la selezione della combobox
+            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare una rete valida",
+                            "Rete non valida",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);            
+        }else{
+            //Se arrivo qui i dati sono corretti adesso devo
+            //1 - Controllare se non esiste già un wallet della stessa rte con lo stesso indirizzo
+            if (MappaWallets.get(Wallet+"_"+Rete)!=null){
+                JOptionPane.showConfirmDialog(this, "Attenzione! \nWallet gia' prensente nella lista",
+                            "Wallet gia' presente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);  
+            }
+            //2 - Inserisco il wallet nella lista
+            else{
+                MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
+                ScriviFileWallets();
+                //CompilaTabella
+            }
         }
     }//GEN-LAST:event_Bottone_InserisciWalletActionPerformed
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        // TODO add your handling code here:
+        LeggiFileWallets();
+        //CompilaTabella;
+    }//GEN-LAST:event_formWindowOpened
 
     /**
      * @param args the command line arguments
@@ -167,6 +221,59 @@ public class GestioneWallets extends javax.swing.JDialog {
         });
     }
 
+    
+    public static void LeggiFileWallets(){
+         try {
+             //Il file wallet è così composto
+             //IndirizzoWallet;Rete;
+             //la mappa che andrò a generare invece sarà
+             //key:IndirizzoWallet_Rete
+             //Dati:IndirizzoWallet;Rete
+             File file=new File ("Wallets.db");
+             if (!file.exists()) file.createNewFile();
+             String riga;
+             try (FileReader fire = new FileReader("Wallets.db");
+                     BufferedReader bure = new BufferedReader(fire);)
+             {
+                 while((riga=bure.readLine())!=null)
+                 {
+                     String rigaSplittata[]=riga.split(";");
+                     if (rigaSplittata.length==2)
+                     {
+                         MappaWallets.put(rigaSplittata[0]+"_"+rigaSplittata[1], riga);
+                     }
+                 }
+                 bure.close();
+                 fire.close();        
+             } catch (FileNotFoundException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (IOException ex) {
+                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+             }
+
+         } catch (IOException ex) {        
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
+    
+    
+    static void ScriviFileWallets() {
+   try { 
+       FileWriter w=new FileWriter("Wallets.db");
+       BufferedWriter b=new BufferedWriter (w);
+       for (String k:MappaWallets.values()){
+           b.write(k+"\n");
+       }
+       b.close();
+       w.close();
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+   
+   }
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_InserisciWallet;
     private javax.swing.JButton Bottone_RimuoviWallet;

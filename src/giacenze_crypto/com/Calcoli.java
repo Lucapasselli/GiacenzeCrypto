@@ -44,6 +44,7 @@ import org.json.*;
  * @author luca.passelli
  */
 public class Calcoli {
+    static Map<String, String> MappaWallets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneAddressEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -63,7 +64,7 @@ public class Calcoli {
 
     
   //DA FARE : Recupero prezzi orari in base all'ora più vicina  
-    //DA FARE : se ci sono euro tenere buono quello
+
   
     
     

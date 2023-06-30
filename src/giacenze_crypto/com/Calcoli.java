@@ -1347,14 +1347,27 @@ for (int i=0;i<ArraydataIni.size();i++){
                 PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
             }
-        } else if (Moneta1 != null && Moneta1.equalsIgnoreCase("USDT")&& Address1 == null) {
-            PrezzoTransazione = ConvertiUSDTEUR(Qta1, Data);
+        } else if (Moneta1 != null && Moneta1.equalsIgnoreCase("USDT")) {
+            //se l'address è uguale alla moneta di riferimento della rete vuol dire che sto chiedendo il prezzo della coin nativa
+            if (Address1==null){
+                PrezzoTransazione = ConvertiUSDTEUR(Qta1, Data);
+            }                    
+            else
+                {
+                PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete,Moneta1);
+                } 
             if (PrezzoTransazione != null) {
                 PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
             }
-        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("USDT")&& Address2 == null) {
-            PrezzoTransazione = ConvertiUSDTEUR(Qta2, Data);
+        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("USDT")) {
+            if (Address2==null){
+                PrezzoTransazione = ConvertiUSDTEUR(Qta2, Data);
+                 }                    
+            else
+                {
+                PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete,Moneta2);
+                } 
             if (PrezzoTransazione != null) {
                 PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
@@ -1363,11 +1376,15 @@ for (int i=0;i<ArraydataIni.size();i++){
 
             //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
             for (String CoppiePrioritarie1 : CoppiePrioritarie) {
-                if (Qta1 != null && Moneta1 != null && (Moneta1 + "USDT").toUpperCase().equals(CoppiePrioritarie1) &&
-                        (Rete==null || Moneta1.equalsIgnoreCase(MappaReteCoin.get(Rete)))) {
+                if (Qta1 != null && Moneta1 != null && (Moneta1 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
                     // trovato1=true;
-
-                    PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
+                    if (Address1==null  || MappaReteCoin.get(Rete).equalsIgnoreCase(Address1)){
+                        PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
+                    }
+                    else
+                       {
+                        PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete,Moneta1);
+                       } 
                     if (PrezzoTransazione != null) {
                         PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                         return PrezzoTransazione;
@@ -1375,11 +1392,15 @@ for (int i=0;i<ArraydataIni.size();i++){
                     //se trovo la condizione ritorno il prezzo e interrnompo la funzione
                     
                 }
-                if (Qta2 != null && Moneta2 != null && (Moneta2 + "USDT").toUpperCase().equals(CoppiePrioritarie1)&&
-                        (Rete==null || Moneta2.equalsIgnoreCase(MappaReteCoin.get(Rete)))) {
+                if (Qta2 != null && Moneta2 != null && (Moneta2 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
                     // trovato2=true;
-
-                    PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
+                    if (Address2==null  || MappaReteCoin.get(Rete).equalsIgnoreCase(Address2)){
+                        PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
+                    }
+                    else
+                       {
+                        PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete,Moneta2);
+                       } 
                     if (PrezzoTransazione != null) {
                         PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                         return PrezzoTransazione;

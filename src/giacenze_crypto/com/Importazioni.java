@@ -1553,12 +1553,11 @@ progressb.setVisible(true);
                    //     System.out.println("arghhhhh "+hash);
                     trans=MappaTransazioniDefi.get(hash);
                     }
-trans.Rete="BSC";
+                trans.Rete="BSC";
                 trans.Blocco=transaction.getString("blockNumber");
                 trans.DataOra=Data;//Da modificare con data e ora reale
                 trans.TimeStamp=transaction.getString("timeStamp");
-                trans.HashTransazione=hash;
-                
+                trans.HashTransazione=hash;                
                 trans.MonetaCommissioni="BNB";
                 trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
                 trans.Wallet=walletAddress;
@@ -1583,6 +1582,89 @@ trans.Rete="BSC";
              progressb.SetAvanzamento(1);
             TimeUnit.SECONDS.sleep(1);
   
+            
+          
+                        //PARTE 3: Recupero la lista delle transazioni dei token bsc20   
+           
+            url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey="+apiKey).toURL();
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            inputLine="";
+            response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            jsonObject = new JSONObject(response.toString());
+            status = Integer.parseInt(jsonObject.getString("status"));
+            if (status==0){
+                //in questo caso la richiesta è anda in errore
+                //scrivo il messaggio, e chiudo la progress bar
+               // System.out.println(jsonObject.getString("result"));
+                progressb.ChiudiFinestra();
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
+                return null;
+            }
+            
+            transactions = jsonObject.getJSONArray("result");
+            for (int i = 0; i < transactions.length(); i++) {
+                if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                    progressb.ChiudiFinestra();
+                    return null;
+                }
+                //System.out.println("sono qui");
+                String AddressNoWallet;
+                String qta;
+                JSONObject transaction = transactions.getJSONObject(i);
+            //    System.out.println(transaction.toString());
+                String tokenSymbol=transaction.getString("tokenSymbol");
+                String tokenName=transaction.getString("tokenName");
+                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
+                String tokenAddress=transaction.getString("contractAddress");
+                String tokenDecimal=transaction.getString("tokenDecimal");
+                String hash = transaction.getString("hash");
+                String from = transaction.getString("from");
+                String to = transaction.getString("to");
+                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
+                TransazioneDefi trans;
+                if (MappaTransazioniDefi.get(hash)==null){
+                    trans=new TransazioneDefi();
+                    MappaTransazioniDefi.put(hash, trans);
+                }else 
+                    {
+                    trans=MappaTransazioniDefi.get(hash);
+                    }
+                    trans.Rete="BSC";
+                    if (from.equalsIgnoreCase(walletAddress)){
+                        AddressNoWallet=to;
+                        qta="-"+value;
+                    }else {
+                        AddressNoWallet=from;
+                        qta=value;
+                    }
+                trans.Blocco=transaction.getString("blockNumber");
+                trans.Wallet=walletAddress;
+                trans.DataOra=Data;//Da modificare con data e ora reale
+                trans.TimeStamp=transaction.getString("timeStamp");
+                trans.HashTransazione=hash;
+                
+                trans.MonetaCommissioni="BNB";
+               // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
+                BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
+                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                trans.QtaCommissioni="-"+qtaCommissione;
+                progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
+                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);                   
+         }             
+          progressb.SetAvanzamento(2);   
+          TimeUnit.SECONDS.sleep(1); 
             
             
             
@@ -1639,7 +1721,7 @@ trans.Rete="BSC";
                     {
                     trans=MappaTransazioniDefi.get(hash);
                     }
-trans.Rete="BSC";
+                trans.Rete="BSC";
                     if (from.equalsIgnoreCase(walletAddress)){
                         AddressNoWallet=to;
                         qta="-"+value;
@@ -1654,11 +1736,13 @@ trans.Rete="BSC";
                 trans.HashTransazione=hash;
                 
                 trans.MonetaCommissioni="BNB";  
-                if (trans.QtaCommissioni!=null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs())==1)
+                if (trans.QtaCommissioni!=null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs())==1 &&
+                        !(trans.TipoTransazione.toLowerCase().contains("swap")&&(trans.RitornaNumeroTokenUscita()==0||trans.RitornaNumeroTokenentrata()==0)))
                     {
                         // se il valore della commissione è maggiore del bnb di ritorno allora lo sottraggo dalle commissioni
                         //anzichè metterlo come importo dei trasferimenti
-                     //   System.out.println("AAAA - "+trans.HashTransazione+ " - "+ qta);
+                        // questo non deve essere fatto però se è uno swap di cui questi bnb sono gli unici in ritorno
+                     //questa cosa la devo gestire
                         trans.QtaCommissioni=new BigDecimal(trans.QtaCommissioni).subtract(new BigDecimal(qta)).toPlainString();
                     }
                 else {
@@ -1672,92 +1756,13 @@ trans.Rete="BSC";
 
                 
             }           
-            progressb.SetAvanzamento(2);
-            TimeUnit.SECONDS.sleep(1);
+            progressb.SetAvanzamento(3);
+            
             
             
             
                 
-            //PARTE 3: Recupero la lista delle transazioni dei token bsc20   
-           
-            url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey="+apiKey).toURL();
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            
-            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            inputLine="";
-            response = new StringBuilder();
-            
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
 
-            jsonObject = new JSONObject(response.toString());
-            status = Integer.parseInt(jsonObject.getString("status"));
-            if (status==0){
-                //in questo caso la richiesta è anda in errore
-                //scrivo il messaggio, e chiudo la progress bar
-               // System.out.println(jsonObject.getString("result"));
-                progressb.ChiudiFinestra();
-                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
-                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
-                return null;
-            }
-            
-            transactions = jsonObject.getJSONArray("result");
-            for (int i = 0; i < transactions.length(); i++) {
-                if (progressb.FineThread()){
-                    //se è stato interrotta la finestra di progresso interrompo il ciclo
-                    progressb.ChiudiFinestra();
-                    return null;
-                }
-                //System.out.println("sono qui");
-                String AddressNoWallet;
-                String qta;
-                JSONObject transaction = transactions.getJSONObject(i);
-            //    System.out.println(transaction.toString());
-                String tokenSymbol=transaction.getString("tokenSymbol");
-                String tokenName=transaction.getString("tokenName");
-                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
-                String tokenAddress=transaction.getString("contractAddress");
-                String tokenDecimal=transaction.getString("tokenDecimal");
-                String hash = transaction.getString("hash");
-                String from = transaction.getString("from");
-                String to = transaction.getString("to");
-                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
-                TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(hash)==null){
-                    trans=new TransazioneDefi();
-                    MappaTransazioniDefi.put(hash, trans);
-                }else 
-                    {
-                    trans=MappaTransazioniDefi.get(hash);
-                    }
-trans.Rete="BSC";
-                    if (from.equalsIgnoreCase(walletAddress)){
-                        AddressNoWallet=to;
-                        qta="-"+value;
-                    }else {
-                        AddressNoWallet=from;
-                        qta=value;
-                    }
-                trans.Blocco=transaction.getString("blockNumber");
-                trans.Wallet=walletAddress;
-                trans.DataOra=Data;//Da modificare con data e ora reale
-                trans.TimeStamp=transaction.getString("timeStamp");
-                trans.HashTransazione=hash;
-                
-                trans.MonetaCommissioni="BNB";
-               // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-                BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
-                BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
-                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni="-"+qtaCommissione;
-                progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
-                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);                   
-         }             
-          progressb.SetAvanzamento(3);   
          //   TimeUnit.SECONDS.sleep(1);
                     
         } catch (MalformedURLException ex) {

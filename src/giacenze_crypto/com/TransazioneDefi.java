@@ -5,7 +5,6 @@
 package giacenze_crypto.com;
 
 import static giacenze_crypto.com.Calcoli.CoppiePrioritarie;
-import static giacenze_crypto.com.Calcoli.MappaConversioneAddressCoin;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -31,15 +30,6 @@ public class TransazioneDefi {
   public String MonetaCommissioni;
   public String QtaCommissioni;
   public String TimeStamp;
-  //public String MonetaEntrata;
-  //public String MonetaEntrataAddress;
-  //public String MonetaEntrataName;
-  //public String QtaEntrata;
-  //public String MonetaUscita;
-  //public String MonetaUscitaAddress;
-  //public String MonetaUscitaName;
-  //public String QtaUscita;
-    // static Map<String, ValoriToken> MappaTokenEntrata = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private final Map<String, ValoriToken> MappaToken;
   private final Map<String, ValoriToken> MappaTokenUscita;
   private final Map<String, ValoriToken> MappaTokenEntrata;

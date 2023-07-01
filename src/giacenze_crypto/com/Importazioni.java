@@ -1477,17 +1477,8 @@ progressb.setVisible(true);
         
      public static Map<String,TransazioneDefi> RitornaTransazioniBSC(String walletAddress,String apiKey,Component c)
          {   
-    /*         System.out.println("aaa");
-        try {
-            t.join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
-        }
-             System.out.println("bbb");*/
+
             Download progressb=new Download();
-         //   progressb.SetThread(t);
-         //   progressb.SetComponent(c);
-            
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(c); 
             progressb.Titolo("Importazione da rete BSC");
@@ -1522,10 +1513,13 @@ progressb.setVisible(true);
                 //in questo caso la richiesta è anda in errore
                 //scrivo il messaggio, e chiudo la progress bar
                // System.out.println(jsonObject.getString("result"));
+                              if (!jsonObject.getString("message").trim().equalsIgnoreCase("No transactions found"))
+                   {
                 progressb.ChiudiFinestra();
                 JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("message"),
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
                 return null;
+                }
             }
            // System.out.println(response);
             JSONArray transactions = jsonObject.getJSONArray("result");
@@ -1580,7 +1574,7 @@ progressb.setVisible(true);
                 }
             }
              progressb.SetAvanzamento(1);
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(2);
   
             
           
@@ -1605,10 +1599,13 @@ progressb.setVisible(true);
                 //in questo caso la richiesta è anda in errore
                 //scrivo il messaggio, e chiudo la progress bar
                // System.out.println(jsonObject.getString("result"));
+               if (!jsonObject.getString("message").trim().equalsIgnoreCase("No transactions found"))
+                   {
                 progressb.ChiudiFinestra();
-                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("message"),
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
                 return null;
+                }
             }
             
             transactions = jsonObject.getJSONArray("result");
@@ -1664,7 +1661,7 @@ progressb.setVisible(true);
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);                   
          }             
           progressb.SetAvanzamento(2);   
-          TimeUnit.SECONDS.sleep(1); 
+          TimeUnit.SECONDS.sleep(2); 
             
             
             
@@ -1690,10 +1687,13 @@ progressb.setVisible(true);
                 //in questo caso la richiesta è anda in errore
                 //scrivo il messaggio, e chiudo la progress bar
                // System.out.println(jsonObject.getString("result"));
+                                             if (!jsonObject.getString("message").trim().equalsIgnoreCase("No transactions found"))
+                   {
                 progressb.ChiudiFinestra();
-                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("result"),
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("message"),
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
                 return null;
+                }
             }
             
             transactions = jsonObject.getJSONArray("result");
@@ -1757,6 +1757,7 @@ progressb.setVisible(true);
                 
             }           
             progressb.SetAvanzamento(3);
+            TimeUnit.SECONDS.sleep(2);
             
             
             

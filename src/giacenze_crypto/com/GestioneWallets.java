@@ -4,10 +4,17 @@
  */
 package giacenze_crypto.com;
 
-import static giacenze_crypto.com.Calcoli.MappaConversioneAddressEUR;
-import static giacenze_crypto.com.Calcoli.MappaConversioneAddressEURtemp;
-import static giacenze_crypto.com.Calcoli.MappaConversioneUSDEUR;
+import static giacenze_crypto.com.CDC_Grafica.CDC_DataFinale;
+import static giacenze_crypto.com.CDC_Grafica.CDC_DataIniziale;
+import static giacenze_crypto.com.CDC_Grafica.CryptoWallet_FileDB;
+import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
+import static giacenze_crypto.com.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
+import static giacenze_crypto.com.CDC_Grafica.Funzioni_isNumeric;
+import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
+import static giacenze_crypto.com.CDC_Grafica.Mappa_Wallet;
 import static giacenze_crypto.com.Calcoli.MappaWallets;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,11 +22,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
+import java.math.BigDecimal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -47,12 +54,13 @@ public class GestioneWallets extends javax.swing.JDialog {
 
         Bottone_InserisciWallet = new javax.swing.JButton();
         Bottone_RimuoviWallet = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        ScrollPaneTabellaWallets = new javax.swing.JScrollPane();
+        TabellaWallets = new javax.swing.JTable();
         Label_IndirizzoWallet = new javax.swing.JLabel();
         Label_Rete = new javax.swing.JLabel();
         TextField_IndirizzoWallet = new javax.swing.JTextField();
         ComboBox_Rete = new javax.swing.JComboBox<>();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
@@ -69,32 +77,36 @@ public class GestioneWallets extends javax.swing.JDialog {
             }
         });
 
-        Bottone_RimuoviWallet.setText("Rimuovi Wallet");
+        Bottone_RimuoviWallet.setText("Rimuovi Wallet Selezionato");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        TabellaWallets.setAutoCreateRowSorter(true);
+        TabellaWallets.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "Indirizo Wallet", "Rete"
+                "Indirizo Wallet", "Rete", "<html><center>Data Ultimo Movimento<br>Importato</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(1).setPreferredWidth(300);
-            jTable1.getColumnModel().getColumn(1).setMaxWidth(600);
+        ScrollPaneTabellaWallets.setViewportView(TabellaWallets);
+        if (TabellaWallets.getColumnModel().getColumnCount() > 0) {
+            TabellaWallets.getColumnModel().getColumn(1).setPreferredWidth(100);
+            TabellaWallets.getColumnModel().getColumn(1).setMaxWidth(100);
+            TabellaWallets.getColumnModel().getColumn(2).setPreferredWidth(200);
+            TabellaWallets.getColumnModel().getColumn(2).setMaxWidth(200);
         }
+        TabellaWallets.getTableHeader().setPreferredSize(new Dimension(TabellaWallets.getColumnModel().getTotalColumnWidth(), 48));
 
         Label_IndirizzoWallet.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_IndirizzoWallet.setText("Indirizzo Wallet :");
@@ -104,6 +116,8 @@ public class GestioneWallets extends javax.swing.JDialog {
 
         ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)" }));
 
+        jButton1.setLabel("<html>Scarica nuovi movimenti<br>da tutti i Wallet della lista</html>");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -111,7 +125,7 @@ public class GestioneWallets extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 917, Short.MAX_VALUE)
+                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.DEFAULT_SIZE, 917, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
@@ -124,24 +138,30 @@ public class GestioneWallets extends javax.swing.JDialog {
                                 .addComponent(Label_IndirizzoWallet)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_RimuoviWallet))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_RimuoviWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Label_IndirizzoWallet)
-                    .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Label_Rete)
-                    .addComponent(ComboBox_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Bottone_InserisciWallet)
-                    .addComponent(Bottone_RimuoviWallet))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Label_IndirizzoWallet)
+                            .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_RimuoviWallet))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Label_Rete)
+                            .addComponent(ComboBox_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_InserisciWallet)))
+                    .addComponent(jButton1))
                 .addContainerGap())
         );
 
@@ -175,15 +195,46 @@ public class GestioneWallets extends javax.swing.JDialog {
             else{
                 MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
                 ScriviFileWallets();
-                //CompilaTabella
+                PopolaTabella();
             }
         }
     }//GEN-LAST:event_Bottone_InserisciWalletActionPerformed
 
+    
+    private void PopolaTabella(){
+
+        DefaultTableModel ModelloTabellaWallets = (DefaultTableModel) TabellaWallets.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaWallets);
+        //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
+        //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
+        for (String[] v : MappaCryptoWallet.values()) {
+            Mappa_Wallet.put(v[3], v[1]);
+        }
+        for (String riga:MappaWallets.values())
+        {
+                String splittata[] = riga.split(";");
+                String rigaTabella[]=new String[3];
+                String w=splittata[0]+" ("+splittata[1]+")";
+                rigaTabella[0]=splittata[0];
+                rigaTabella[1]=splittata[1];
+                if (Mappa_Wallet.get(w)==null){
+                    rigaTabella[2]="Nessun Dato Importato";
+                }
+                else{
+                    rigaTabella[2]=Mappa_Wallet.get(w);
+                }
+                    
+                ModelloTabellaWallets.addRow(rigaTabella);            
+            }
+
+    }
+    
+    
+    
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
         LeggiFileWallets();
-        //CompilaTabella;
+        PopolaTabella();
     }//GEN-LAST:event_formWindowOpened
 
     /**
@@ -280,8 +331,9 @@ public class GestioneWallets extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> ComboBox_Rete;
     private javax.swing.JLabel Label_IndirizzoWallet;
     private javax.swing.JLabel Label_Rete;
+    private javax.swing.JScrollPane ScrollPaneTabellaWallets;
+    private javax.swing.JTable TabellaWallets;
     private javax.swing.JTextField TextField_IndirizzoWallet;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
 }

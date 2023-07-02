@@ -54,6 +54,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     /**
      * Creates new form com
      */
+    static public boolean TabellaCryptodaAggiornare=false;
     static Map<String, String> CDC_FiatWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -250,6 +251,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_Text_Giorni = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                formWindowGainedFocus(evt);
+            }
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
+            }
+        });
 
         TransazioniCryptoTabella.setAutoCreateRowSorter(true);
         TransazioniCryptoTabella.setModel(new javax.swing.table.DefaultTableModel(
@@ -1285,7 +1293,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 671, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(CDC_OpzioniLayout.createSequentialGroup()
                                 .addGroup(CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 301, Short.MAX_VALUE)
                                     .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                                     .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(36, 36, 36)
@@ -1442,8 +1450,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         }
                 }
                 
-       bure.close();
-       fire.close();
+      // bure.close();
+      // fire.close();
 
         
         if (CDC_DataIniziale.equalsIgnoreCase("")||CDC_DataFinale.equalsIgnoreCase("")){
@@ -1641,8 +1649,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         }
                     }
                 }
-       bure.close();
-       fire.close();
+    //   bure.close();
+     //  fire.close();
     }   catch (FileNotFoundException ex) {     
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -1667,8 +1675,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
                     }
                 }
-       bure.close();
-       fire.close();
+     //  bure.close();
+     //  fire.close();
                 File movPers=new File (CDC_FiatWallet_FileTipiMovimentiDBPers);
         if (!movPers.exists()) movPers.createNewFile();
                FileReader fires = new FileReader(CDC_FiatWallet_FileTipiMovimentiDBPers); 
@@ -1726,8 +1734,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         }
                     }
                 }
-       bure.close();
-       fire.close();
+     //  bure.close();
+     //  fire.close();
     }   catch (FileNotFoundException ex) {     
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -3065,7 +3073,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
 
     //    System.out.println(System.currentTimeMillis()); 
-       TransazioniCrypto_Funzioni_AggiornaDefi();
+    //   TransazioniCrypto_Funzioni_AggiornaDefi();
         //https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0XC748673057861A797275CD8A068ABB95A902E8DE/market_chart/range?vs_currency=EUR&from=1623794400&to=1631570400
         //Verificare quello sopra, viene messo nelle monete non supportate
       
@@ -3082,10 +3090,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void TransazioniCrypto_Bottone_InserisciWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_InserisciWalletActionPerformed
         // TODO add your handling code here:
-        GestioneWallets a =new GestioneWallets();
+        this.setEnabled(false);
+        GestioneWallets a =new GestioneWallets(this);
         a.setLocationRelativeTo(this);
         a.setTitle("Gestione dei Wallet Defi");
         a.setVisible(true);
+     //   System.out.println("cavolo");
+
     }//GEN-LAST:event_TransazioniCrypto_Bottone_InserisciWalletActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -3109,17 +3120,25 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+        // TODO add your handling code here:
+        if(TabellaCryptodaAggiornare){
+            TabellaCryptodaAggiornare=false;
+           // System.out.println("TabellaAggiornata");
+            TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        }
+    }//GEN-LAST:event_formWindowGainedFocus
+
  
-    public void TransazioniCrypto_Funzioni_AggiornaDefi() {
-        String walletAddress = "xxx";
-        String apiKey = "xxx";
+    public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
         Component c=this;
         Thread thread;
             thread = new Thread() {
             public void run() {
         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); 
         c.setEnabled(false);
-        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(walletAddress, apiKey,c);
+        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, apiKey,c);
         if (MappaTransazioniDefi != null) {
 
             int i=0;

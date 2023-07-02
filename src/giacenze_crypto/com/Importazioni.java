@@ -191,8 +191,8 @@ public class Importazioni {
                // 
             }
 
-            bure.close();
-            fire.close();
+         //   bure.close();
+          //  fire.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -332,8 +332,8 @@ progressb.setVisible(true);
                         }
                     }
                 }
-                bure.close();
-            fire.close();
+           //     bure.close();
+           // fire.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -1475,26 +1475,34 @@ progressb.setVisible(true);
         
         
         
-     public static Map<String,TransazioneDefi> RitornaTransazioniBSC(String walletAddress,String apiKey,Component c)
+     public static Map<String,TransazioneDefi> RitornaTransazioniBSC( List<String> Portafogli,String apiKey,Component c)
          {   
-
+            apiKey="1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
             Download progressb=new Download();
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(c); 
             progressb.Titolo("Importazione da rete BSC");
-            progressb.SetLabel("Scaricamento transazioni da "+walletAddress+" in corso...");
             progressb.setVisible(true);
-           // progressb.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            AzzeraContatori();   
-        Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            progressb.SetMassimo(Portafogli.size()*3);
+            AzzeraContatori(); 
+            Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            int ava=0;
+            for (String wallets:Portafogli){
+                String walletAddress=wallets.split(";")[0];
+                String Blocco=wallets.split(";")[1];
+                Blocco = String.valueOf(Integer.parseInt(Blocco)+1);
+ 
+            progressb.SetLabel("Scaricamento transazioni da "+walletAddress+" in corso...");
+            
+
         try {
             
            // MappaTransazioniDefi.clear();
             
             //PARTE 1 : Recupero la lista delle transazioni
-            progressb.SetMassimo(3);
             
-            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey=" + apiKey).toURL();
+            
+            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey=" + apiKey).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -1573,14 +1581,15 @@ progressb.setVisible(true);
                
                 }
             }
-             progressb.SetAvanzamento(1);
-            TimeUnit.SECONDS.sleep(2);
+            ava++;
+             progressb.SetAvanzamento(ava);
+            TimeUnit.SECONDS.sleep(3);
   
             
           
                         //PARTE 3: Recupero la lista delle transazioni dei token bsc20   
            
-            url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey="+apiKey).toURL();
+            url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey="+apiKey).toURL();
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -1660,15 +1669,16 @@ progressb.setVisible(true);
                 progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);                   
          }             
-          progressb.SetAvanzamento(2);   
-          TimeUnit.SECONDS.sleep(2); 
+            ava++;
+             progressb.SetAvanzamento(ava);  
+          TimeUnit.SECONDS.sleep(3); 
             
             
             
             
             //PARTE 2: Recupero delle transazioni interne
             
-            url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock=0&sort=asc" +"&apikey=" + apiKey).toURL();
+            url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey=" + apiKey).toURL();
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -1756,8 +1766,9 @@ progressb.setVisible(true);
 
                 
             }           
-            progressb.SetAvanzamento(3);
-            TimeUnit.SECONDS.sleep(2);
+            ava++;
+             progressb.SetAvanzamento(ava);
+            TimeUnit.SECONDS.sleep(3);
             
             
             
@@ -1789,6 +1800,7 @@ progressb.setVisible(true);
             return null;
         }
         
+        }
         Calcoli.ScriviFileConversioneXXXEUR();
         progressb.dispose();
         return MappaTransazioniDefi;

@@ -346,12 +346,24 @@ public class GestioneWallets extends javax.swing.JDialog {
                          + IDWallet+" ?",
                             "Wallet non Valido",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                  IDWallet=IDWallet+"_"+TabellaWallets.getModel().getValueAt(rigaselezionata, 2).toString();
-                System.out.println(r);
+              //  System.out.println(r);
                 if(r==0){
                 MappaWallets.remove(IDWallet);
                 ScriviFileWallets();
                 PopolaTabella();
+                String Messaggio = "Il Wallet è stato cancellato \nVuoi cancellare anche tutte le movimentazioni importate finora?";
+            r=JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"SI","NO"}, "OK");
+           if(r==0){
+               //System.out.println(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
+             int movEliminati=CDC_Grafica.Funzioni_CancellaMovimentazioniWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
+             if (movEliminati>0){
+                 TabellaDaAggiornare=true;
+                 Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";
+                JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
+                }
            }
+           
+                }
             }
         }else
            {

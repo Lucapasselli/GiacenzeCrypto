@@ -538,7 +538,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                   Tabelle.ColoraTabelladiGrigio(Tabella_MovimentiAbbinati);
     }
     
-        public void RiportaIDTransaSituazioneIniziale(String ID){
+    public static void RiportaIDTransaSituazioneIniziale(String ID){
+        
             String descrizione;
             String attuale[]=MappaCryptoWallet.get(ID);
             if (ID.split("_")[4].equalsIgnoreCase("DC")){

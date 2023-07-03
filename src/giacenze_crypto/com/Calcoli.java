@@ -907,6 +907,7 @@ public class Calcoli {
         try {      
             URL url = new URI("https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD").toURL();
             URLConnection connection = url.openConnection();
+            System.out.println(url);
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(connection.getInputStream())))
             {

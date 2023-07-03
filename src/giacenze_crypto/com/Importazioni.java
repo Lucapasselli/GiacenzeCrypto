@@ -566,7 +566,7 @@ progressb.setVisible(true);
                                     RT[12] = "Crypto";
                                     RT[13] = movimentoSplittato[3];
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                    String valoreEuro = "";
+                                    String valoreEuro = "0";
                                     
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) {
                                         valoreEuro = movimentoSplittato[7];
@@ -576,7 +576,15 @@ progressb.setVisible(true);
                                     }
                                     //System.out.println("-"+valoreEuro+"-");
                                     //valoreEuro=new BigDecimal(1).toString();
+                                 //   if (valoreEuro!=null){
                                     valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
+                                 //   }
+                                 //   else {
+                                  //      valoreEuro="0";
+                                     //   System.out.println(movimentoSplittato[7]);
+                                     //   System.out.println(data.split(" ")[0]);
+                                      //  System.out.println("------");
+                                //    }
                                     RT[15] = valoreEuro;
                                     BigDecimal QTA = new BigDecimal(movimentoSplittato[3]);
                                     String plus;
@@ -1547,13 +1555,13 @@ progressb.setVisible(true);
                 String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(hash)==null){
+                if (MappaTransazioniDefi.get(walletAddress+"."+hash)==null){
                     trans=new TransazioneDefi();
-                    MappaTransazioniDefi.put(hash, trans);
+                    MappaTransazioniDefi.put(walletAddress+"."+hash, trans);
                 }else 
                     {
                    //     System.out.println("arghhhhh "+hash);
-                    trans=MappaTransazioniDefi.get(hash);
+                    trans=MappaTransazioniDefi.get(walletAddress+"."+hash);
                     }
                 trans.Rete="BSC";
                 trans.Blocco=transaction.getString("blockNumber");
@@ -1639,12 +1647,12 @@ progressb.setVisible(true);
                 String to = transaction.getString("to");
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(hash)==null){
+                if (MappaTransazioniDefi.get(walletAddress+"."+hash)==null){
                     trans=new TransazioneDefi();
-                    MappaTransazioniDefi.put(hash, trans);
+                    MappaTransazioniDefi.put(walletAddress+"."+hash, trans);
                 }else 
                     {
-                    trans=MappaTransazioniDefi.get(hash);
+                    trans=MappaTransazioniDefi.get(walletAddress+"."+hash);
                     }
                     trans.Rete="BSC";
                     if (from.equalsIgnoreCase(walletAddress)){
@@ -1724,12 +1732,12 @@ progressb.setVisible(true);
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
                 
-                if (MappaTransazioniDefi.get(hash)==null){
+                if (MappaTransazioniDefi.get(walletAddress+"."+hash)==null){
                     trans=new TransazioneDefi();
-                    MappaTransazioniDefi.put(hash, trans);
+                    MappaTransazioniDefi.put(walletAddress+"."+hash, trans);
                 }else 
                     {
-                    trans=MappaTransazioniDefi.get(hash);
+                    trans=MappaTransazioniDefi.get(walletAddress+"."+hash);
                     }
                 trans.Rete="BSC";
                     if (from.equalsIgnoreCase(walletAddress)){

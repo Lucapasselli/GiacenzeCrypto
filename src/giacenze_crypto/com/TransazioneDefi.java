@@ -256,7 +256,7 @@ public class TransazioneDefi {
       String RT[];
       List<String[]> righe=new ArrayList<>();
       String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
-      String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+HashTransazione;
+      String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+Wallet+"."+HashTransazione;
       if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
       if(!TransazioneOK){
            //Transazione non andata a buon fine

@@ -470,6 +470,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         CDC.addTab("Transazioni Crypto", TransazioniCrypto);
 
+        Analisi_Crypto.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                Analisi_CryptoComponentShown(evt);
+            }
+        });
+
         AnalisiCrypto.setTabPlacement(javax.swing.JTabbedPane.LEFT);
 
         DepositiPrelievi.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -1293,7 +1299,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 671, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(CDC_OpzioniLayout.createSequentialGroup()
                                 .addGroup(CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 301, Short.MAX_VALUE)
+                                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                                     .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                                     .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(36, 36, 36)
@@ -2756,7 +2762,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //disabilito il filtro e poi lo riabilito finito l'eleaborazione
         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         int movimentiCancellati=0;
-        List<String> Cancellare=new ArrayList<String>();
+        List<String> Cancellare=new ArrayList<>();
         if (risposta==0)
         {
         for (String v : MappaCryptoWallet.keySet()) {
@@ -2769,13 +2775,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
         Iterator I=Cancellare.iterator();
         while (I.hasNext()){
-            MappaCryptoWallet.remove(I.next().toString());
+            String daRimuovere=I.next().toString();
+            String controparte[]=MappaCryptoWallet.get(daRimuovere);
+            if (controparte[20]!=null && !controparte[20].equalsIgnoreCase("")){
+                ClassificazioneTrasf_Modifica.RiportaIDTransaSituazioneIniziale(controparte[20]);
+            }
+            MappaCryptoWallet.remove(daRimuovere);
         }
         }
            // MappaCryptoWallet.clear();
         Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
         JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
            if (movimentiCancellati>0){
+                  TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
                 this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
@@ -2918,7 +2930,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     private void DepositiPrelieviComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DepositiPrelieviComponentShown
         // TODO add your handling code here:
-        DepositiPrelievi_Caricatabella();
+      //  DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelieviComponentShown
 
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
@@ -2949,16 +2961,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 //3- stessa moneta
                 //4- exchange diverso
                 //5- importo uguale o comunque non deve differire di più del 2% ma uno deve essere un deposito e l'altro un prelievo
-                BigDecimal Sommaqta=new BigDecimal(qta).add(new BigDecimal (qta2)).abs().stripTrailingZeros();
-                BigDecimal PercentualeDifferenza=new BigDecimal(100);
+                //6- un movimento deve essere in negativo e l'altro in positivo
+                BigDecimal Sommaqta=new BigDecimal(qta).add(new BigDecimal (qta2)).stripTrailingZeros().abs();
+                BigDecimal PercentualeDifferenza=new BigDecimal(100);                
                 if (Double.parseDouble(qta)!=0){
-                    PercentualeDifferenza=Sommaqta.abs().divide(new BigDecimal(qta).abs(),RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
-                }
+                    PercentualeDifferenza=Sommaqta.divide(new BigDecimal(qta),4,RoundingMode.HALF_UP).multiply(new BigDecimal(100)).abs(); 
+                    }
                 if (MappaCryptoWallet.get(id2)[18].equalsIgnoreCase("")&&//1
                         Funzioni_Date_DifferenzaDateSecondi(data2,data)<3600 &&//2
                         moneta.equalsIgnoreCase(moneta2)&&//3
                         !wallet.equalsIgnoreCase(wallet2)&&//4
-                        PercentualeDifferenza.compareTo(new BigDecimal(2))==-1)//5
+                        PercentualeDifferenza.compareTo(new BigDecimal(2))==-1 //5
+                        )     //6  
                 
                 {
                     String tipo;
@@ -3129,6 +3143,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
     }//GEN-LAST:event_formWindowGainedFocus
+
+    private void Analisi_CryptoComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_Analisi_CryptoComponentShown
+        // TODO add your handling code here:
+        DepositiPrelievi_Caricatabella();
+    }//GEN-LAST:event_Analisi_CryptoComponentShown
 
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {

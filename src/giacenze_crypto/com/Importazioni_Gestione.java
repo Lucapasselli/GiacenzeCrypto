@@ -257,17 +257,18 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
 
             Component c=this;
-
+            Download progressb=new Download();
+                Bottone_SelezionaFile.setEnabled(false);
+                Bottone_Annulla.setEnabled(false);
+                JFileChooser fc = new JFileChooser();
+                int returnVal = fc.showOpenDialog(c);
          
           Thread thread;
             thread = new Thread() {
             public void run() {
             try {
                      
-                Bottone_SelezionaFile.setEnabled(false);
-                Bottone_Annulla.setEnabled(false);
-                JFileChooser fc = new JFileChooser();
-                int returnVal = fc.showOpenDialog(c);
+
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     selezioneok[0]=true;
                     String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
@@ -285,7 +286,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         //System.out.println(nomewallet);
                         }
                         else nomewallet=ComboBox_Exchanges.getSelectedItem().toString().trim();
-                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet,c,PrezzoZero);
+                    Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti,nomewallet,c,PrezzoZero,progressb);
+                    
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
                     res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                     res.setLocationRelativeTo(c);
@@ -295,6 +297,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 }
                 Bottone_SelezionaFile.setEnabled(true);
                 Bottone_Annulla.setEnabled(true);
+                progressb.dispose();
                 
                 
                 
@@ -305,7 +308,10 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
             
             };
-            thread.start();  
+            thread.start();
+            progressb.setDefaultCloseOperation(0);
+            progressb.setLocationRelativeTo(this);   
+            progressb.setVisible(true);
             /* else {
 
                 //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista

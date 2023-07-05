@@ -7,6 +7,7 @@ package giacenze_crypto.com;
 
 
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Timer;
@@ -24,7 +25,7 @@ public class Download extends javax.swing.JDialog {
      */
 public int Massimo;
 public int avanzamento;
-public boolean FineThread=false;
+public static boolean FineThread=false;
 
 //    static boolean DownloadTerminato=false;
    // static boolean finito=false;
@@ -54,6 +55,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
       //  finestra.setEnabled(false);
   
          initComponents();
+         Download.FineThread=false;
         // this.setVisible(true);
 
               
@@ -65,7 +67,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     }
     
     public Boolean FineThread(){
-        return FineThread;
+        return Download.FineThread;
     }
     
     
@@ -137,7 +139,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         Bottone_Interrompi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setAlwaysOnTop(true);
+        setModal(true);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
@@ -199,7 +201,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
         // TODO add your handling code here:
-        FineThread=true;
+        Download.FineThread=true;
+        Bottone_Interrompi.setBackground(Color.red);
+        Bottone_Interrompi.setText("Interruzione in corso ...");
 
     }//GEN-LAST:event_Bottone_InterrompiActionPerformed
 

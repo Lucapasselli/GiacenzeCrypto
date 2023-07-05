@@ -33,12 +33,17 @@ import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
 import java.util.Collections;
 import java.awt.Component;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JOptionPane;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -280,7 +285,7 @@ public class Importazioni {
         
         
     
-public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c,boolean PrezzoZero) {
+public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c,boolean PrezzoZero,Download progressb ) {
         
 
          //   Download progressb=new Download();
@@ -299,10 +304,8 @@ public static void Importa_Crypto_CoinTracking(String fileCoinTracking,boolean S
                 }
             }
         });*/
-    Download progressb=new Download();
-    progressb.setDefaultCloseOperation(0);
-         progressb.setLocationRelativeTo(c);   
-progressb.setVisible(true);
+    
+  
  AzzeraContatori();        
         String fileDaImportare = fileCoinTracking;
 
@@ -354,7 +357,7 @@ progressb.setVisible(true);
         for (String str : Mappa_MovimentiTemporanea.keySet()) {
             if (progressb.FineThread()){
             //se è stato interrotta la finestra di progresso interrompo il ciclo
-                progressb.ChiudiFinestra();
+                return false;
                 }
             riga=Mappa_MovimentiTemporanea.get(str);
            // System.out.println(riga);
@@ -424,8 +427,8 @@ progressb.setVisible(true);
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
         Calcoli.ScriviFileConversioneXXXEUR();
-        progressb.dispose();
-       // return true;
+        
+        return true;
        
                    
                  
@@ -614,31 +617,43 @@ progressb.setVisible(true);
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
-                                RT[4]="Crypto Wallet";
+                                RT[4]="Crypto Wallet";                                
                                 RT[5]="DEPOSITO FIAT";
-                                RT[6]="-> "+movimentoSplittato[2];                                
-                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
-                               /* RT[8]="";
-                                RT[9]="";
-                                RT[10]="";*/
-                                RT[11]=movimentoSplittato[2];                                                               
-                                RT[12]="FIAT";
-                                RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();
-                                RT[14]=movimentoSplittato[2]+" "+movimentoSplittato[3];///////
-                                String valoreEuro="";
-                                if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[3];
-                                if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
+                                String valoreEuro="0";
+                                if (movimentoSplittato[9].trim().equalsIgnoreCase("viban_purchase")){
+                                    if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[3];
+                                    if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
                                     }
-                                valoreEuro=new BigDecimal(valoreEuro).abs().toString();                                
+                                    valoreEuro=new BigDecimal(valoreEuro).abs().toString(); 
+                                    
+                                    RT[6]="-> "+movimentoSplittato[2]; 
+                                    RT[11]=movimentoSplittato[2]; 
+                                    RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();
+                                    RT[14]=movimentoSplittato[2]+" "+movimentoSplittato[3];
+                                }
+                                else 
+                                    {
+                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
+                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                    {
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                    }
+                                    valoreEuro=new BigDecimal(valoreEuro).abs().toString();
+                                    
+                                    RT[6]="-> EUR";
+                                    RT[11]="EUR";
+                                    RT[13]=valoreEuro;
+                                    RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
+                                    
+                                    }
+                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";                                                   
+                                RT[12]="FIAT";
                                 RT[15]=valoreEuro;
-                               // RT[16]="";
                                 RT[17]=valoreEuro;
                                 RT[18]="";
                                 RT[19]="0.00";
-                              /*  RT[20]="";
-                                RT[21]="";*/
                                 RT[22]="A";                              
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
@@ -652,22 +667,28 @@ progressb.setVisible(true);
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="ACQUISTO CRYPTO";
-                                RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                               
-                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
-                                RT[8]=movimentoSplittato[2];
-                                RT[9]="FIAT";
-                                RT[10]=new BigDecimal(movimentoSplittato[3]).toString();                                 
-                                RT[11]=movimentoSplittato[4];
+                                if (movimentoSplittato[9].trim().equalsIgnoreCase("viban_purchase"))
+                                {
+                                    RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];
+                                    RT[8]=movimentoSplittato[2];
+                                    RT[10]=new BigDecimal(movimentoSplittato[3]).toString();
+                                    RT[11]=movimentoSplittato[4];
+                                    RT[13]=new BigDecimal(movimentoSplittato[5]).abs().toString();
+                                    
+                                }
+                                else
+                                {
+                                    RT[6]="EUR -> "+movimentoSplittato[2];
+                                    RT[8]="EUR";
+                                    RT[10]="-"+valoreEuro;
+                                    RT[11]=movimentoSplittato[2];
+                                    RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();
+                                    RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
+                                }
+                                                              
+                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";                               
+                                RT[9]="FIAT";                                                                                              
                                 RT[12]="Crypto";
-                                RT[13]=new BigDecimal(movimentoSplittato[5]).abs().toString();                                                                                            
-                                RT[14]=movimentoSplittato[2]+" "+movimentoSplittato[3];///////
-                                valoreEuro="";
-                                if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[3];
-                                if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
-                                    {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
-                                    }
-                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]=valoreEuro;
@@ -1478,19 +1499,52 @@ progressb.setVisible(true);
     }   
     
         
+    public static String vespa(String strToDecrypt, String secret) 
+    {
+        try
+        {
+            SecretKeySpec secretKey=setKey(secret);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
+        } 
+        catch (Exception e) 
+        {
+            System.out.println("Error while decrypting: " + e.toString());
+        }
+        return null;
+    }  
+        
+    
+    public static SecretKeySpec setKey(String myKey) 
+    {
+        MessageDigest sha = null;
+        SecretKeySpec secretKey=null;
+        try {
+            byte[] key;
+            
+            key = myKey.getBytes("UTF-8");
+            sha = MessageDigest.getInstance("SHA-1");
+            key = sha.digest(key);
+            key = Arrays.copyOf(key, 16); 
+            secretKey = new SecretKeySpec(key, "AES");
+        } 
+        catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } 
+        catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return secretKey;
+    }   
         
         
-        
-        
-        
-     public static Map<String,TransazioneDefi> RitornaTransazioniBSC( List<String> Portafogli,String apiKey,Component c)
+     public static Map<String,TransazioneDefi> RitornaTransazioniBSC( List<String> Portafogli,Component c,Download progressb)
          {   
-            apiKey="1QGRE39IVDX92HNUJWVXIYPECD3STWRBSF";
-            Download progressb=new Download();
-            progressb.setDefaultCloseOperation(0);
-            progressb.setLocationRelativeTo(c); 
+            String apiKey="6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6";
+            String vespa=vespa(apiKey,"paperino");
+            progressb.setDefaultCloseOperation(0);            
             progressb.Titolo("Importazione da rete BSC");
-            progressb.setVisible(true);
             progressb.SetMassimo(Portafogli.size()*3);
             AzzeraContatori(); 
             Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -1509,8 +1563,12 @@ progressb.setVisible(true);
             
             //PARTE 1 : Recupero la lista delle transazioni
             
-            
-            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey=" + apiKey).toURL();
+                            if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                 //   progressb.ChiudiFinestra();
+                    return null;
+                }
+            URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey=" + vespa).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -1540,11 +1598,6 @@ progressb.setVisible(true);
            // System.out.println(response);
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-                if (progressb.FineThread()){
-                    //se è stato interrotta la finestra di progresso interrompo il ciclo
-                    progressb.ChiudiFinestra();
-                    return null;
-                }
                 String AddressNoWallet;
                 String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
@@ -1595,9 +1648,13 @@ progressb.setVisible(true);
   
             
           
-                        //PARTE 3: Recupero la lista delle transazioni dei token bsc20   
-           
-            url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey="+apiKey).toURL();
+                        //PARTE 2: Recupero la lista delle transazioni dei token bsc20   
+                           if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                 //   progressb.ChiudiFinestra();
+                    return null;
+                }
+            url=new URI("https://api.bscscan.com/api?module=account&action=tokentx&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey="+vespa).toURL();
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -1627,11 +1684,6 @@ progressb.setVisible(true);
             
             transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-                if (progressb.FineThread()){
-                    //se è stato interrotta la finestra di progresso interrompo il ciclo
-                    progressb.ChiudiFinestra();
-                    return null;
-                }
                 //System.out.println("sono qui");
                 String AddressNoWallet;
                 String qta;
@@ -1685,8 +1737,12 @@ progressb.setVisible(true);
             
             
             //PARTE 2: Recupero delle transazioni interne
-            
-            url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey=" + apiKey).toURL();
+                            if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                 //   progressb.ChiudiFinestra();
+                    return null;
+                }
+            url=new URI("https://api.bscscan.com/api?module=account&action=txlistinternal&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey=" + vespa).toURL();
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             
@@ -1716,11 +1772,7 @@ progressb.setVisible(true);
             
             transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-                if (progressb.FineThread()){
-                    //se è stato interrotta la finestra di progresso interrompo il ciclo
-                    progressb.ChiudiFinestra();
-                    return null;
-                }
+
                 
                 String qta;
                 String AddressNoWallet;
@@ -1810,7 +1862,6 @@ progressb.setVisible(true);
         
         }
         Calcoli.ScriviFileConversioneXXXEUR();
-        progressb.dispose();
         return MappaTransazioniDefi;
         }    
     

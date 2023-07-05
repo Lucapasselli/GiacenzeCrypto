@@ -39,16 +39,13 @@ public class GestioneWallets extends javax.swing.JDialog {
     /**
      * Creates new form GestioneWallets
      */
-    public Component h;
+
     public boolean TabellaDaAggiornare=false;
-    public GestioneWallets(Component comp) {
+    public GestioneWallets() {
         initComponents();
-        h=comp;
+
     }
 
-    private GestioneWallets() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -70,7 +67,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Bottone_Aggiorna = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setAlwaysOnTop(true);
+        setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
             public void windowGainedFocus(java.awt.event.WindowEvent evt) {
                 formWindowGainedFocus(evt);
@@ -270,16 +267,11 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     
     
-        public void AggiornaWallets(String walletAddress,String apiKey) {
+        public void AggiornaWallets() {
         Component c=giacenze_crypto.com.GestioneWallets.this;
-        
-       this.setEnabled(false);
-       this.setAlwaysOnTop(false);
-    // this.setModal(false);
-    // this.setModalityType(DEFAULT_MODALITY_TYPE);
-    // this.setModalExclusionType(ModalExclusionType.NO_EXCLUDE);
-     //this.setEnabled(false);
-        //this.setDefaultCloseOperation(0);
+        Download progress=new Download();
+        progress.setLocationRelativeTo(this);
+
         Thread thread;
             thread = new Thread() {
             public void run() {
@@ -297,7 +289,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                 Portafogli.add(splittata[0]+";"+blocco);
             }
         }
-        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, apiKey,c);
+        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli,c,progress);
         if (MappaTransazioniDefi != null) {
 
            
@@ -309,21 +301,25 @@ public class GestioneWallets extends javax.swing.JDialog {
             }
             Calcoli.ScriviFileConversioneXXXEUR();
             Importazioni.TransazioniAggiunte=i;
-            TabellaDaAggiornare=true;
+            if (Importazioni.TransazioniAggiunte!=0){
+            CDC_Grafica.TabellaCryptodaAggiornare=true;
+        }
         }
              
+        progress.dispose();
+
         
-        JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti "+i+" nuovi movimenti",
-                            "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-        c.setCursor(Cursor.getDefaultCursor());
-        c.setEnabled(true);
-        PopolaTabella();
-        c.requestFocus();
         
 
         }
             };
-        thread.start();          
+        thread.start();   
+        progress.setVisible(true);
+                JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti "+Importazioni.TransazioniAggiunte+" nuovi movimenti",
+                            "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        PopolaTabella();
+        c.setCursor(Cursor.getDefaultCursor());
+        
     }
         
         
@@ -357,7 +353,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                //System.out.println(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
              int movEliminati=CDC_Grafica.Funzioni_CancellaMovimentazioniWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
              if (movEliminati>0){
-                 TabellaDaAggiornare=true;
+                 CDC_Grafica.TabellaCryptodaAggiornare=true;
                  Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";
                 JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
                 }
@@ -374,21 +370,18 @@ public class GestioneWallets extends javax.swing.JDialog {
 
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed
         // TODO add your handling code here:
-        AggiornaWallets("0x235De84ce69E04675b0afa3dd9594c726008C9B1","");
+        AggiornaWallets();
         
     }//GEN-LAST:event_Bottone_AggiornaActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         // TODO add your handling code here:
-        h.setEnabled(true);
        // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
-        CDC_Grafica.TabellaCryptodaAggiornare=TabellaDaAggiornare;
-        h.requestFocus();
+        
     }//GEN-LAST:event_formWindowClosed
 
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
-        this.setAlwaysOnTop(true);
     }//GEN-LAST:event_formWindowGainedFocus
 
     /**

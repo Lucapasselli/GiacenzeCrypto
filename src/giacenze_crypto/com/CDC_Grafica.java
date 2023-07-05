@@ -86,7 +86,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.07 Beta");
+            this.setTitle("Giacenze_Crypto.com 1.08 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -156,7 +156,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Bottone_Annulla = new javax.swing.JButton();
         TransazioniCrypto_Label_Plusvalenza = new javax.swing.JLabel();
         TransazioniCrypto_Text_Plusvalenza = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
         TransazioniCrypto_Bottone_InserisciWallet = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
@@ -379,13 +378,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         TransazioniCrypto_Bottone_InserisciWallet.setText("Inserisci Wallet");
         TransazioniCrypto_Bottone_InserisciWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -432,7 +424,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                     .addComponent(TransazioniCrypto_Text_Plusvalenza)
                                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
                             .addComponent(TransazioniCrypto_CheckBox_EscludiTI, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton1)
                             .addComponent(jButton2))
                         .addContainerGap())))
         );
@@ -454,9 +445,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(TransazioniCrypto_Label_Plusvalenza)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(73, 73, 73)
-                        .addComponent(jButton1)
-                        .addGap(10, 10, 10)
+                        .addGap(106, 106, 106)
                         .addComponent(jButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
@@ -3095,37 +3084,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     
     
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       
-        
-        
-              String Messaggio = "Il Wallet è stato cancellato \nVuoi cancellare anche tutte le movimentazioni importate finora?";
-      int a=      JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"SI","NO"}, "OK");
-         System.out.println(a);
-//Calcoli.RecuperaTassidiCambiodaAddress("2020-01-01", "2020-01-01","0xc748673057861a797275cd8a068abb95a902e8de","BSC");
-//Calcoli.RecuperaCoinsCoingecko();
-
-
-    //    System.out.println(System.currentTimeMillis()); 
-    //   TransazioniCrypto_Funzioni_AggiornaDefi();
-        //https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0XC748673057861A797275CD8A068ABB95A902E8DE/market_chart/range?vs_currency=EUR&from=1623794400&to=1631570400
-        //Verificare quello sopra, viene messo nelle monete non supportate
-      
-
-
-//  String a=Calcoli.DammiIDCoingeckodaAddress("0xc748673057861a797275CD8A068AbB95A902e8de", "BSC");
-     //           System.out.println("aaa - "+a);
-    // String a=Calcoli.ConvertiAddressEUR("1",Long.parseLong("1672531260000"), "0x168e3b1746aa249a9b3603b70605924fe255ee1a", "BSC");
- //    String a=Calcoli.ConvertiAddressEUR("1",Long.parseLong("1672531260000"), "0xc748673057861a797275cd8a068abb95a902e8de", "BSC");
-
- //    System.out.println("aaa - "+a);
-//
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void TransazioniCrypto_Bottone_InserisciWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_InserisciWalletActionPerformed
         // TODO add your handling code here:
-        this.setEnabled(false);
-        GestioneWallets a =new GestioneWallets(this);
+        GestioneWallets a =new GestioneWallets();
         a.setLocationRelativeTo(this);
         a.setTitle("Gestione dei Wallet Defi");
         a.setVisible(true);
@@ -3156,7 +3117,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
+      //  System.out.println("Focus");
         if (TabellaCryptodaAggiornare) {
+          //  System.out.println("AggiornoTabella");
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             TabellaCryptodaAggiornare = false;
             TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
@@ -3176,12 +3139,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
         Component c=this;
+        Download progress=new Download();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        progress.setLocationRelativeTo(this);
+        
         Thread thread;
             thread = new Thread() {
             public void run() {
-        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); 
-        c.setEnabled(false);
-        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, apiKey,c);
+        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli,c,progress);
         if (MappaTransazioniDefi != null) {
 
             int i=0;
@@ -3192,23 +3157,20 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
             }
             Calcoli.ScriviFileConversioneXXXEUR();
-
            
             TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
-            JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti "+i+" nuovi movimenti",
-                            "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             Importazioni.TransazioniAggiunte=i;
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-             
-        }
-        c.setEnabled(true);
-        c.requestFocus();
-        c.setCursor(Cursor.getDefaultCursor());
-        
-       // TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            progress.dispose();
+                       
+        }       
         }
             };
-        thread.start();          
+        thread.start();  
+        progress.setVisible(true);
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        JOptionPane.showConfirmDialog(this, "Importazione Terminata \nSono stati inseriti "+Importazioni.TransazioniAggiunte+" nuovi movimenti",
+                "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        this.setCursor(Cursor.getDefaultCursor());
     }
             
     
@@ -3987,7 +3949,6 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

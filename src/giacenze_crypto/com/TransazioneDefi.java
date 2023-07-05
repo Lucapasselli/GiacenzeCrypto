@@ -293,6 +293,7 @@ public class TransazioneDefi {
               RT[28]="";
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               //chiudo il cilco perchè questa è una transazione unica
               return righe;
@@ -331,6 +332,7 @@ public class TransazioneDefi {
               RT[28]="";
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               //chiudo il ciclo perchè questa è una transazione unica
               return righe;
@@ -372,6 +374,7 @@ public class TransazioneDefi {
               RT[28]=token.MonetaAddress;
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
               }
@@ -411,6 +414,7 @@ public class TransazioneDefi {
               RT[28]="";
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
             
               int numeroPrelievi=MappaToken.size();
@@ -448,6 +452,7 @@ public class TransazioneDefi {
               RT[28]="";
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
               }
@@ -486,6 +491,7 @@ public class TransazioneDefi {
               RT[28]="";
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
           
             AssegnaPesiaPartiTransazione();  
@@ -532,6 +538,7 @@ public class TransazioneDefi {
               RT[28]=tokenE.MonetaAddress;
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
               }
@@ -584,6 +591,7 @@ public class TransazioneDefi {
               RT[28]=token.MonetaAddress;
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
       }
@@ -624,6 +632,7 @@ public class TransazioneDefi {
               RT[28]="";
               RT[29]=TimeStamp;
               RT[30]="";
+              Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
       }

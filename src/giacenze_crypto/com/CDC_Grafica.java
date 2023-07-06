@@ -3591,10 +3591,12 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }    
     
+       
+       
         private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         TransazioniCryptoTextPane.setText("");
-        
+        Mappa_Wallet.clear();
         
        //da verificare se va bene, serve per evitare problemi di sorting nel caso in cui la richiesta arrivi da un thread
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(TransazioniCryptoTabella.getModel());

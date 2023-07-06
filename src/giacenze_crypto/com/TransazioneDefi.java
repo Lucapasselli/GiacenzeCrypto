@@ -67,12 +67,16 @@ public class TransazioneDefi {
                 //se non esiste lo inserisco
             monete=new ValoriToken();
             monete.IndirizzoNoWallet=AddressNoWallet;
+            if (Moneta.trim().equalsIgnoreCase("cake-lp")){
+                Moneta=Moneta+" ("+MonetaAddress+")";
+                MonetaName=MonetaName+" ("+MonetaAddress+")";
+            }
             monete.Moneta=Moneta;
             monete.MonetaAddress=MonetaAddress;
             monete.MonetaName=MonetaName;
             monete.Qta=Qta;
             MappaToken.put(MonetaAddress,monete);
-           // System.out.println(dataAlMinuto+" - "+Moneta);
+            //System.out.println(dataAlMinuto+" - "+MonetaAddress);
             monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,monete.MonetaAddress,null,Rete);
             if (Calcoli.MappaConversioneAddressCoin.get(MonetaAddress+"_"+Rete)!=null) {          
                 for (String Coppia : CoppiePrioritarie) {

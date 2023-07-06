@@ -215,7 +215,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                             "Rete non valida",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);            
         }else{
             //Se arrivo qui i dati sono corretti adesso devo
-            //1 - Controllare se non esiste già un wallet della stessa rte con lo stesso indirizzo
+            //1 - Controllare se non esiste già un wallet della stessa rete con lo stesso indirizzo
             if (MappaWallets.get(Wallet+"_"+Rete)!=null){
                 JOptionPane.showConfirmDialog(this, "Attenzione! \nWallet gia' prensente nella lista",
                             "Wallet gia' presente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);  
@@ -267,61 +267,58 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     
     
-        public void AggiornaWallets() {
-        Component c=giacenze_crypto.com.GestioneWallets.this;
-        Download progress=new Download();
+    public void AggiornaWallets() {
+        Component c = giacenze_crypto.com.GestioneWallets.this;
+        Download progress = new Download();
         progress.setLocationRelativeTo(this);
 
         Thread thread;
-            thread = new Thread() {
+        thread = new Thread() {
             public void run() {
-                 int i=0;
-        List<String> Portafogli=new ArrayList<>();
-        for (String riga:MappaWallets.values())
-        {
-            String splittata[] = riga.split(";");
-            String blocco=Mappa_Wallet.get(splittata[0]+" ("+splittata[1]+")");
-            if (blocco!=null){
-                blocco=blocco.split(";")[1];
-            }else blocco="0";
-                    
-            if (splittata[1].equalsIgnoreCase("BSC")){
-                Portafogli.add(splittata[0]+";"+blocco);
-            }
-        }
-        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli,c,progress);
-        if (MappaTransazioniDefi != null) {
+                int i = 0;
+                List<String> Portafogli = new ArrayList<>();
+                for (String riga : MappaWallets.values()) {
+                    String splittata[] = riga.split(";");
+                    String blocco = Mappa_Wallet.get(splittata[0] + " (" + splittata[1] + ")");
+                    if (blocco != null) {
+                        blocco = blocco.split(";")[1];
+                    } else {
+                        blocco = "0";
+                    }
 
-           
-            for (TransazioneDefi v : MappaTransazioniDefi.values()) {
-                for (String[] st : v.RitornaRigheTabella()) {
-                    MappaCryptoWallet.put(st[0], st);
-                    i++;
+                    if (splittata[1].equalsIgnoreCase("BSC")) {
+                        Portafogli.add(splittata[0] + ";" + blocco);
+                    }
                 }
+                Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, c, progress);
+                if (MappaTransazioniDefi != null) {
+
+                    for (TransazioneDefi v : MappaTransazioniDefi.values()) {
+                        for (String[] st : v.RitornaRigheTabella()) {
+                            MappaCryptoWallet.put(st[0], st);
+                            i++;
+                        }
+                    }
+                    Calcoli.ScriviFileConversioneXXXEUR();
+                    Importazioni.TransazioniAggiunte = i;
+                    if (Importazioni.TransazioniAggiunte != 0) {
+                        CDC_Grafica.TabellaCryptodaAggiornare = true;
+                    }
+                }
+
+                progress.dispose();
+
             }
-            Calcoli.ScriviFileConversioneXXXEUR();
-            Importazioni.TransazioniAggiunte=i;
-            if (Importazioni.TransazioniAggiunte!=0){
-            CDC_Grafica.TabellaCryptodaAggiornare=true;
-        }
-        }
-             
-        progress.dispose();
-
-        
-        
-
-        }
-            };
-        thread.start();   
+        };
+        thread.start();
         progress.setVisible(true);
-                JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti "+Importazioni.TransazioniAggiunte+" nuovi movimenti",
-                            "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti",
+                "Importazione Terminata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         PopolaTabella();
         c.setCursor(Cursor.getDefaultCursor());
-        
+
     }
-        
+ 
         
     
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened

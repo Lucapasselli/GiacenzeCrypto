@@ -1563,11 +1563,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             
             //PARTE 1 : Recupero la lista delle transazioni
             
-                            if (progressb.FineThread()){
-                    //se è stato interrotta la finestra di progresso interrompo il ciclo
-                 //   progressb.ChiudiFinestra();
-                    return null;
-                }
+            if (progressb.FineThread()) {
+                return null;
+            }
             URL url = new URI("https://api.bscscan.com/api?module=account&action=txlist&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey=" + vespa).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -1598,6 +1596,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
            // System.out.println(response);
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
+                            if (progressb.FineThread()) {
+                return null;
+            }
                 String AddressNoWallet;
                 String qta;
                 JSONObject transaction = transactions.getJSONObject(i);
@@ -1684,6 +1685,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             
             transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
+                            if (progressb.FineThread()) {
+                return null;
+            }
                 //System.out.println("sono qui");
                 String AddressNoWallet;
                 String qta;
@@ -1772,7 +1776,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             
             transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
-
+            if (progressb.FineThread()) {
+                return null;
+            }
                 
                 String qta;
                 String AddressNoWallet;

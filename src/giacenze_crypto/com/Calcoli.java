@@ -775,13 +775,13 @@ public class Calcoli {
         if (MappaConversioneAddressCoin.isEmpty()) {
             GeneraMappaConversioneAddressCoin();
         }
-        if (MappaSimboliCoingecko.isEmpty()) {
+       /* if (MappaSimboliCoingecko.isEmpty()) {
             RecuperaCoinsCoingecko();
         }
         if (Simbolo != null && MappaSimboliCoingecko.get(Simbolo.toUpperCase().trim()) == null) {
             //Se ho un simbolo e questo non è nella lista allora termino subito il ciclo che tanto mi restituirebbe null lo stesso
             return null;
-        }
+        }*/
         if (MappaConversioneAddressCoin.get(Address + "_" + Rete) != null && MappaConversioneAddressCoin.get(Address + "_" + Rete).equalsIgnoreCase("nullo")) {
             //se il token non è gestito da coingecko ritorno null immediatamente
             //non ha senso andare avanti con le richieste
@@ -943,13 +943,13 @@ public class Calcoli {
         public static String RecuperaTassidiCambiodaAddress(String DataIniziale, String DataFinale,String Address,String Rete,String Simbolo) {
         
         
-        if(MappaSimboliCoingecko.isEmpty())    {
+    /*    if(MappaSimboliCoingecko.isEmpty())    {
             RecuperaCoinsCoingecko();
         }
         if (Simbolo!=null && MappaSimboliCoingecko.get(Simbolo.toUpperCase().trim())==null){
             //Se ho un simbolo e questo non è nella lista allora termino subito il ciclo che tanto mi restituirebbe null lo stesso
             return null;
-        }
+        }*/
             
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
@@ -1330,6 +1330,18 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     public static String DammiPrezzoTransazione(String Moneta1, String Moneta2, String Qta1, String Qta2, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
         String PrezzoTransazione;
+     /*   System.out.println(Moneta1);
+        System.out.println(Moneta2);
+        System.out.println(Qta1);
+        System.out.println(Qta2);
+        System.out.println(Data);
+        System.out.println(Prezzo);
+        System.out.println(PrezzoZero);
+        System.out.println(Decimali);
+        System.out.println(Address1);
+        System.out.println(Address2);
+        System.out.println(Rete);
+        System.out.println("-------");*/
         Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         MappaReteCoin.put("BSC", "BNB");
         // boolean trovato1=false;
@@ -1667,14 +1679,16 @@ for (int i=0;i<ArraydataIni.size();i++){
     
    static void ScriviFileConversioneXXXEUR() { //CDC_FileDatiDB
    // Devo lanciare questa funzione alla fine di ogni conversione per aggiornare i dati sul database dei prezzi
+   //questo serve per recuperare prima sempre tutti i dati della mappa
+   GeneraMappaCambioXXXEUR();
    try { 
        FileWriter w=new FileWriter("cambioXXXEUR.db");
        BufferedWriter b=new BufferedWriter (w);
        
        Object DateCambi[]=MappaConversioneXXXEUR.keySet().toArray();
        
-       for (int i=0;i<DateCambi.length;i++){
-           b.write(DateCambi[i].toString()+","+MappaConversioneXXXEUR.get(DateCambi[i].toString())+"\n");
+       for (Object DateCambi1 : DateCambi) {
+           b.write(DateCambi1.toString() + "," + MappaConversioneXXXEUR.get(DateCambi1.toString()) + "\n");
        }
        
       // b.write("DataIniziale="+CDC_DataIniziale+"\n");

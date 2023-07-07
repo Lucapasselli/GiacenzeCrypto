@@ -1328,13 +1328,16 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    public static String DammiPrezzoTransazione(String Moneta1, String Moneta2, String Qta1, String Qta2, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
+    public static String DammiPrezzoTransazione(String Moneta1, String Moneta2, String Qta1, String Qta2,
+            long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
+        
+        
         String PrezzoTransazione;
      /*   System.out.println(Moneta1);
         System.out.println(Moneta2);
         System.out.println(Qta1);
         System.out.println(Qta2);
-        System.out.println(Data);
+        System.out.println(Data);0xEadAa45fC7e8912d8AabF415205830f6b567610b
         System.out.println(Prezzo);
         System.out.println(PrezzoZero);
         System.out.println(Decimali);
@@ -1684,7 +1687,6 @@ for (int i=0;i<ArraydataIni.size();i++){
    try { 
        FileWriter w=new FileWriter("cambioXXXEUR.db");
        BufferedWriter b=new BufferedWriter (w);
-       
        Object DateCambi[]=MappaConversioneXXXEUR.keySet().toArray();
        
        for (Object DateCambi1 : DateCambi) {

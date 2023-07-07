@@ -1545,7 +1545,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String vespa=vespa(apiKey,"paperino");
             progressb.setDefaultCloseOperation(0);            
             progressb.Titolo("Importazione da rete BSC");
-            progressb.SetMassimo(Portafogli.size()*3);
+            progressb.SetMassimo(Portafogli.size()*4);
             AzzeraContatori(); 
             Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             int ava=0;
@@ -1594,6 +1594,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 }
             }
            // System.out.println(response);
+         
             JSONArray transactions = jsonObject.getJSONArray("result");
             for (int i = 0; i < transactions.length(); i++) {
                             if (progressb.FineThread()) {
@@ -1639,7 +1640,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                         qta=value;
                     }
                 progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
-                trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
+                trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta,"Crypto");
                
                 }
             }
@@ -1731,16 +1732,109 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 trans.QtaCommissioni="-"+qtaCommissione;
                 progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
-                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta);                   
+                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta,"Crypto");                   
          }             
             ava++;
              progressb.SetAvanzamento(ava);  
           TimeUnit.SECONDS.sleep(3); 
             
             
+          
+          
+           //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT)  
+                           if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                 //   progressb.ChiudiFinestra();
+                    return null;
+                }
+            url=new URI("https://api.bscscan.com/api?module=account&action=tokennfttx&address=" + walletAddress + "&startblock="+Blocco+"&sort=asc" +"&apikey="+vespa).toURL();
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            
+            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            inputLine="";
+            response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            jsonObject = new JSONObject(response.toString());
+            status = Integer.parseInt(jsonObject.getString("status"));
+            if (status==0){
+                //in questo caso la richiesta è anda in errore
+                //scrivo il messaggio, e chiudo la progress bar
+               // System.out.println(jsonObject.getString("result"));
+               if (!jsonObject.getString("message").trim().equalsIgnoreCase("No transactions found"))
+                   {
+                progressb.ChiudiFinestra();
+                JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+jsonObject.getString("message"),
+                    "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
+                return null;
+                }
+            }
+            
+            transactions = jsonObject.getJSONArray("result");
+            for (int i = 0; i < transactions.length(); i++) {
+                            if (progressb.FineThread()) {
+                return null;
+            }
+                //System.out.println("sono qui");
+                String AddressNoWallet;
+                String qta;
+                JSONObject transaction = transactions.getJSONObject(i);
+            //    System.out.println(transaction.toString());
+                String tokenSymbol=transaction.getString("tokenID");
+                String tokenName=transaction.getString("tokenName");
+                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
+                String tokenAddress=transaction.getString("contractAddress");
+               // String tokenDecimal=transaction.getString("tokenDecimal");
+                String hash = transaction.getString("hash");
+                String from = transaction.getString("from");
+                String to = transaction.getString("to");
+              //  String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
+                 String value = "1";
+                TransazioneDefi trans;
+                if (MappaTransazioniDefi.get(walletAddress+"."+hash)==null){
+                    trans=new TransazioneDefi();
+                    MappaTransazioniDefi.put(walletAddress+"."+hash, trans);
+                }else 
+                    {
+                    trans=MappaTransazioniDefi.get(walletAddress+"."+hash);
+                    }
+                    trans.Rete="BSC";
+                    if (from.equalsIgnoreCase(walletAddress)){
+                        AddressNoWallet=to;
+                        qta="-"+value;
+                    }else {
+                        AddressNoWallet=from;
+                        qta=value;
+                    }
+                
+                trans.Blocco=transaction.getString("blockNumber");
+                trans.Wallet=walletAddress;
+                trans.DataOra=Data;//Da modificare con data e ora reale
+                trans.TimeStamp=transaction.getString("timeStamp");
+                trans.HashTransazione=hash;
+                
+                trans.MonetaCommissioni="BNB";
+               // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                BigDecimal gasUsed=new BigDecimal (transaction.getString("gasUsed"));
+                BigDecimal gasPrice=new BigDecimal (transaction.getString("gasPrice"));
+                String qtaCommissione=gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                trans.QtaCommissioni="-"+qtaCommissione;
+                progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
+                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta,"NFT");                   
+         }             
+            ava++;
+             progressb.SetAvanzamento(ava);  
+          TimeUnit.SECONDS.sleep(3); 
+          
+          
             
             
-            //PARTE 2: Recupero delle transazioni interne
+            //PARTE 4: Recupero delle transazioni interne
                             if (progressb.FineThread()){
                     //se è stato interrotta la finestra di progresso interrompo il ciclo
                  //   progressb.ChiudiFinestra();
@@ -1823,7 +1917,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     }
                 else {
                     progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del "+Data.split(" ")[0]+" in corso");
-                    trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta);
+                    trans.InserisciMonete("BNB", "BNB", "BNB", AddressNoWallet, qta,"Crypto");
                  //   System.out.println(trans.HashTransazione+ " - "+ qta);
                 }
 

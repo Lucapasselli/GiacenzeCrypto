@@ -53,7 +53,7 @@ public class TransazioneDefi {
        return MappaTokenEntrata.size();
    }
     
-    public void InserisciMonete(String Moneta,String MonetaName,String MonetaAddress,String AddressNoWallet,String Qta){
+    public void InserisciMonete(String Moneta,String MonetaName,String MonetaAddress,String AddressNoWallet,String Qta, String Tipologia){
         ValoriToken monete;
         //le monete in uscita avranno il meno davanti alla qta mentre quelle in ingresso no
 //DA FARE!!!!!!Se i BNB arrivano dai movimenti interni sarebbe da verificarli prima di inserirli qua dentro
@@ -71,13 +71,16 @@ public class TransazioneDefi {
                 Moneta=Moneta+" ("+MonetaAddress+")";
                 MonetaName=MonetaName+" ("+MonetaAddress+")";
             }
+            monete.Tipo=Tipologia;
             monete.Moneta=Moneta;
             monete.MonetaAddress=MonetaAddress;
             monete.MonetaName=MonetaName;
             monete.Qta=Qta;
             MappaToken.put(MonetaAddress,monete);
             //System.out.println(dataAlMinuto+" - "+MonetaAddress);
+            if (Tipologia.equalsIgnoreCase("Crypto")){
             monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,monete.MonetaAddress,null,Rete);
+             }
             if (Calcoli.MappaConversioneAddressCoin.get(MonetaAddress+"_"+Rete)!=null) {          
                 for (String Coppia : CoppiePrioritarie) {
                     if ((monete.Moneta+"USDT").equalsIgnoreCase(Coppia)||monete.Moneta.equalsIgnoreCase("USDT"))
@@ -92,8 +95,9 @@ public class TransazioneDefi {
             monete=MappaToken.get(MonetaAddress);
             monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
             //System.out.println(dataAlMinuto+" - "+Moneta);
+            if (Tipologia.equalsIgnoreCase("Crypto")){
             monete.Prezzo=Calcoli.DammiPrezzoTransazione(Moneta,null,monete.Qta,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,monete.MonetaAddress,null,Rete);
-            }
+            }}
     }
     
 
@@ -359,7 +363,7 @@ public class TransazioneDefi {
               RT[9]="";
               RT[10]="";
               RT[11]=token.Moneta;
-              RT[12]="Crypto";
+              RT[12]=token.Tipo;
               RT[13]=token.Qta;
               RT[14]="";
               RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,token.MonetaAddress,Rete);//calcolare con numero contratto
@@ -434,7 +438,7 @@ public class TransazioneDefi {
               RT[6]=token.MonetaName+" ->";
               RT[7]=TipoTransazione;
               RT[8]=token.Moneta;
-              RT[9]="Crypto";
+              RT[9]=token.Tipo;
               RT[10]=token.Qta;
               RT[11]="";
               RT[12]="";
@@ -520,10 +524,10 @@ public class TransazioneDefi {
               RT[6]=tokenU.MonetaName+" -> "+tokenE.MonetaName;
               RT[7]=TipoTransazione;
               RT[8]=tokenU.Moneta;
-              RT[9]="Crypto";
+              RT[9]=tokenU.Tipo;
               RT[10]=new BigDecimal(tokenU.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
               RT[11]=tokenE.Moneta;
-              RT[12]="Crypto";
+              RT[12]=tokenE.Tipo;
               RT[13]=new BigDecimal(tokenE.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
               RT[14]="";
               RT[15]=PrezzoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();//calcolare con numero contratto
@@ -576,7 +580,7 @@ public class TransazioneDefi {
               RT[9]="";
               RT[10]="";
               RT[11]=token.Moneta;
-              RT[12]="Crypto";
+              RT[12]=token.Tipo;
               RT[13]=token.Qta;
               RT[14]="";
               RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,token.MonetaAddress,Rete);//calcolare con numero contratto
@@ -614,7 +618,7 @@ public class TransazioneDefi {
               RT[6]=token.MonetaName+" ->";
               RT[7]=TipoTransazione;
               RT[8]=token.Moneta;
-              RT[9]="Crypto";
+              RT[9]=token.Tipo;
               RT[10]=token.Qta;
               RT[11]="";
               RT[12]="";
@@ -656,6 +660,7 @@ public class TransazioneDefi {
   public String IndirizzoNoWallet;
   public String Prezzo;
   public String Peso;
+  public String Tipo; //NFT, FIAT o CRYPTO
   
 }
  

@@ -1328,7 +1328,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    public static String DammiPrezzoTransazione(String Moneta1, String Moneta2, String Qta1, String Qta2,
+    public static String DammiPrezzoTransazioneOLD(String Moneta1, String Moneta2, String Qta1, String Qta2,
             long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
         
         
@@ -1479,9 +1479,161 @@ for (int i=0;i<ArraydataIni.size();i++){
  
     
     
-    
-    
-        
+    public static String DammiPrezzoTransazione(Moneta Moneta1, Moneta Moneta2, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
+
+        String PrezzoTransazione;
+        /*   System.out.println(Moneta1);
+        System.out.println(Moneta2);
+        System.out.println(Qta1);
+        System.out.println(Qta2);
+        System.out.println(Data);0xEadAa45fC7e8912d8AabF415205830f6b567610b
+        System.out.println(Prezzo);
+        System.out.println(PrezzoZero);
+        System.out.println(Decimali);
+        System.out.println(Address1);
+        System.out.println(Address2);
+        System.out.println(Rete);
+        System.out.println("-------");*/
+        Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        MappaReteCoin.put("BSC", "BNB");
+        // boolean trovato1=false;
+        // boolean trovato2=false;
+        //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
+        //metto anche la condizione che address sia null perchè ci sono delle monete che hanno simbolo eur ma non lo sono
+        //e se hanno un address sicuramente non sono fiat
+        //se almeno una delle 2 monete è una FIAT prendo il prezzo da quella
+        if ((Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("FIAT")) || (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("FIAT"))) {
+            //per ora gestisco solo eruo ma sarà da aggiungere anche la parte USD
+            if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("EUR")) {
+                PrezzoTransazione = Moneta1.Qta;
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("EUR")) {
+                PrezzoTransazione = Moneta2.Qta;
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            }
+
+        } //se non sono FIAT controllo se una delle coppie è USDT in quel caso prendo il prezzo di quello 
+
+        else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USDT") && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
+                //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
+                //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
+                if (Moneta1.MonetaAddress == null) {
+                    PrezzoTransazione = ConvertiUSDTEUR(Moneta1.Qta, Data);
+                } else {
+                    PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                }
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USDT") && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
+                if (Moneta2.MonetaAddress == null) {
+                    PrezzoTransazione = ConvertiUSDTEUR(Moneta2.Qta, Data);
+                } else {
+                    PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);
+                }
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            }
+         else {
+
+            //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
+            for (String CoppiePrioritarie1 : CoppiePrioritarie) {
+                if (Moneta1 != null &&  (Moneta1.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1) && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
+                    // trovato1=true;
+                  //  System.out.println("aaa"+Moneta1.MonetaAddress);
+                    if (Moneta1.MonetaAddress == null || MappaReteCoin.get(Rete).equalsIgnoreCase(Moneta1.MonetaAddress)) {
+                        PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
+                    } else {
+                        PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                    }
+                    if (PrezzoTransazione != null) {
+                        PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                        return PrezzoTransazione;
+                    }//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
+                    //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+
+                }
+                if (Moneta2 != null && (Moneta2.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1)&& Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
+                    // trovato2=true;
+                    if (Moneta2.MonetaAddress == null || MappaReteCoin.get(Rete).equalsIgnoreCase(Moneta2.MonetaAddress)) {
+                        PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
+                    } else {
+                        PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);
+                    }
+                    if (PrezzoTransazione != null) {
+                        PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                        return PrezzoTransazione;
+                    }
+
+                    //se trovo la condizione ritorno il prezzo e interrnompo la funzione
+                }
+            }
+            //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
+            //a questo punto controllo se ho l'address delle monetee controllo su coingecko.
+            //a questo punto la cerco tra tutte le coppie che binance riconosce
+            if (MappaCoppieBinance.isEmpty()) {
+                RecuperaCoppieBinance();
+                //se non ho la mappa delle coppie di binance la recupero
+            }
+            if (Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
+                //se trovo la moneta su binance e non ho l'address cerco il prezzo su binance
+                //altrimenti lo prendo da coingecko se ho l'address e ho anche la rete
+                //in alternativa restituisco null
+                if(MappaCoppieBinance.get(Moneta1 + "USDT") != null && Moneta1.MonetaAddress == null){
+                    PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
+                }
+                else if(Moneta1.MonetaAddress!= null && Rete != null)
+                  {
+                      PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                  }  
+                else
+                   { 
+                    PrezzoTransazione=null;
+                    }
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    //   trovato1=true;
+                    return PrezzoTransazione;
+                }
+            }
+            if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
+                
+                if(MappaCoppieBinance.get(Moneta2 + "USDT") != null && Moneta2.MonetaAddress == null){
+                    PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
+                }
+                else if(Moneta2.MonetaAddress!= null && Rete != null)
+                  {
+                      PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);
+                  }  
+                else
+                   { 
+                    PrezzoTransazione=null;
+                    }
+                
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            }
+
+        }
+        if (PrezzoZero) {
+            return "0.00";
+        } else {
+            return Prezzo;
+        }
+    }
+
+      
     //questa funzione la chiamo sempre una sola volta per verificare quali sono le coppie di trading di cui binance mi fornisce i dati    
     public static String RecuperaCoppieBinance() {
         String ok = "ok";

@@ -1,0 +1,49 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package giacenze_crypto.com;
+
+import static giacenze_crypto.com.Calcoli.CoppiePrioritarie;
+import java.math.BigDecimal;
+
+/**
+ *
+ * @author luca.passelli
+ */
+public class Moneta {
+  public String Moneta;
+  public String Qta;
+  public String MonetaAddress;
+//  public String MonetaNomeCompleto;
+ // public String IndirizzoNoWallet;
+//  public String Prezzo;
+  public String Tipo; //NFT, FIAT o CRYPTO
+  
+  
+  
+public void InserisciValori(String Nome,String Quantita,String Address,String Tipologia){
+    Moneta=Nome;
+    Qta=Quantita;
+    MonetaAddress=Address;
+    Tipo=Tipologia;
+}
+
+public String GetNome(){
+    return Moneta;
+}
+public String GetQta(){
+    return Qta;
+}
+public String GetAddress(){
+    return MonetaAddress;
+}
+public String GetTipologia(){
+    return Tipo;
+}
+
+  
+  
+}
+
+

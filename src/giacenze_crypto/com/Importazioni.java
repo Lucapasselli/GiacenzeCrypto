@@ -493,14 +493,21 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
      public static List<String[]> ConsolidaMovimenti_CDCAPP(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
-         //TC=Trasferimento Crypto
+         //TC=Trasferimento Crypto  -> non dovrebbe essere utilizzato
          //DC=Deposito Crypto
          //PC=Prelievo Crypto
-         //TF=Trasferimento Fiat
+         //DF=Deposito Fiat
+         //PF=Prelievo Fiat
+         //SF=Scambio Fiat -> Non utilizzato
+         //TF=Trasferimento Fiat  -> non dovrebbe essere utilizzato
          //AC=Acquisto Crypto (con FIAT)
          //VC=Vendita Crypto (per FIAT)
          //SC=Scambio Crypto
+         //AN=Acquisto NFT (con fiat o crypto)
+         //VN=Vendita NFT (per Fiat o Crypto)
+         //SN=Scambio NFT
          //RW=Staking/caschback/airdrop etc....
+         //CM=Commissioni/Fees
          
          List<String[]> lista=new ArrayList<>();
          int numMovimenti=listaMovimentidaConsolidare.size();
@@ -1069,15 +1076,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         public static List<String[]> ConsolidaMovimenti_CoinTracking(List<String> listaMovimentidaConsolidare,String Exchange,boolean PrezzoZero){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
-         //TC=Trasferimento Crypto
+         //TC=Trasferimento Crypto  -> non dovrebbe essere utilizzato
          //DC=Deposito Crypto
          //PC=Prelievo Crypto
          //DF=Deposito Fiat
          //PF=Prelievo Fiat
-         //TF=Trasferimento Fiat
+         //SF=Scambio Fiat -> Mai usato
+         //TF=Trasferimento Fiat  -> non dovrebbe essere utilizzato
          //AC=Acquisto Crypto (con FIAT)
          //VC=Vendita Crypto (per FIAT)
          //SC=Scambio Crypto
+         //AN=Acquisto NFT (con fiat o crypto)
+         //VN=Vendita NFT (per Fiat o Crypto)
+         //SN=Scambio NFT
          //RW=Staking/caschback/airdrop etc....
          //CM=Commissioni/Fees
          
@@ -1122,7 +1133,11 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 else prezzoTrans=movimentoSplittato[4];
                                 RT[14] = "EUR "+prezzoTrans;
                                 //questo è il primo movimento fatto, mancano gli altri
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                Moneta M1=new Moneta();
+                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                Moneta M2=new Moneta();
+                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1152,7 +1167,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[13] = movimentoSplittato[1];
                                 String prezzoTrans=new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[14] = "EUR "+movimentoSplittato[5];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                Moneta M1=new Moneta();
+                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                Moneta M2=new Moneta();
+                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                              //  RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1184,7 +1204,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[1];
                                 String prezzoTrans=new BigDecimal(movimentoSplittato[1]).setScale(2, RoundingMode.HALF_UP).toString();
-                                RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                Moneta M1=new Moneta();
+                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                Moneta M2=new Moneta();
+                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                               // RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1216,7 +1241,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[4];
                                 String prezzoTrans= movimentoSplittato[4];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                              //  Moneta M1=new Moneta();
+                             //   M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                Moneta M2=new Moneta();
+                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(null,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                               // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1247,7 +1277,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[13] = movimentoSplittato[1];
                                 RT[14] = "EUR "+movimentoSplittato[4];
                                 String prezzoTrans= movimentoSplittato[4];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                //Moneta M1=new Moneta();
+                                //M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                Moneta M2=new Moneta();
+                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(null,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1280,7 +1315,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[13] = "";
                                 RT[14] = "EUR "+movimentoSplittato[8];
                                 String prezzoTrans= movimentoSplittato[8];
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                Moneta M1=new Moneta();
+                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                //Moneta M2=new Moneta();
+                                //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                               // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";
                                 RT[18] = "";
@@ -1312,7 +1352,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[13] = "";
                                 RT[14] = "EUR "+movimentoSplittato[5];
                                 String prezzoTrans= new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
-                                RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                Moneta M1=new Moneta();
+                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                //Moneta M2=new Moneta();
+                                //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
                                 RT[18] = "";
@@ -1426,8 +1471,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[1];else valoreEur =movimentoSplittato[4];
                                         RT[14] = "EUR "+valoreEur;
                                         String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
-                                        
-                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                      //  Moneta M1=new Moneta();
+                               // M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                Moneta M2=new Moneta();
+                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(null,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                       // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
@@ -1467,7 +1516,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[5];else valoreEur =movimentoSplittato[8];
                                         RT[14] = "EUR "+valoreEur;
                                         String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
-                                        RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                        Moneta M1=new Moneta();
+                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                               // Moneta M2=new Moneta();
+                               // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                        //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
                                         RT[17] = "Da Calcolare";
                                         RT[18] = "";
@@ -1537,7 +1591,84 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         }
         return secretKey;
     }   
-        
+     
+    
+     public static String RitornaTipologiaTransazione(String TipoUscita,String TipoEntrata,int valore)
+         {   
+             String Tipologia=null;
+             String CodiceTipologia=null;
+             if(TipoUscita==null){
+                 //ora gestisco le varie casistiche se M1 è una crypto
+                 if(TipoEntrata==null){
+                     Tipologia=null;
+                     CodiceTipologia=null;
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
+                     Tipologia="DEPOSITO CRYPTO";
+                     CodiceTipologia="DC";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
+                     Tipologia="DEPOSITO NFT";
+                     CodiceTipologia="DN";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
+                     Tipologia="DEPOSITO FIAT";
+                     CodiceTipologia="DF";
+                    }
+                }
+             else if(TipoUscita.trim().equalsIgnoreCase("Crypto")){
+                 //ora gestisco le varie casistiche se M1 è una crypto
+                 if(TipoEntrata==null){
+                     Tipologia="PRELIEVO CRYPTO";
+                     CodiceTipologia="PC";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
+                     Tipologia="SCAMBIO CRYPTO";
+                     CodiceTipologia="SC";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
+                     Tipologia="ACQUISTO NFT";
+                     CodiceTipologia="AN";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
+                     Tipologia="VENDITA CRYPTO";
+                     CodiceTipologia="VC";
+                    }
+                }
+             else if(TipoUscita.trim().equalsIgnoreCase("NFT")){
+                 //ora gestisco le varie casistiche se M1 è una crypto
+                 if(TipoEntrata==null){
+                     Tipologia="PRELIEVO NFT";
+                     CodiceTipologia="PN";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
+                     Tipologia="VENDITA NFT";
+                     CodiceTipologia="VN";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
+                     Tipologia="SCAMBIO NFT";
+                     CodiceTipologia="SN";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
+                     Tipologia="VENDITA NFT";
+                     CodiceTipologia="VN";
+                    }
+                }
+             else if(TipoUscita.trim().equalsIgnoreCase("FIAT")){
+                 //ora gestisco le varie casistiche se M1 è una crypto
+                 if(TipoEntrata==null){
+                     Tipologia="PRELIEVO FIAT";
+                     CodiceTipologia="PF";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
+                     Tipologia="ACQUISTO CRYPTO";
+                     CodiceTipologia="AC";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
+                     Tipologia="ACQUISTO NFT";
+                     CodiceTipologia="AN";
+                 }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
+                     Tipologia="SCAMBIO FIAT";
+                     CodiceTipologia="SF";
+                    }
+                }
+             if (valore==1){
+             return Tipologia;}
+             else return CodiceTipologia;
+         }
+    
+    
+    
+    
         
      public static Map<String,TransazioneDefi> RitornaTransazioniBSC( List<String> Portafogli,Component c,Download progressb)
          {   
@@ -1907,7 +2038,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 
                 trans.MonetaCommissioni="BNB";  
                 if (trans.QtaCommissioni!=null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs())==1 &&
-                        !(trans.TipoTransazione.toLowerCase().contains("swap")&&(trans.RitornaNumeroTokenUscita()==0||trans.RitornaNumeroTokenentrata()==0)))
+                        !(trans.TipoTransazione!=null && trans.TipoTransazione.toLowerCase().contains("swap")&&(trans.RitornaNumeroTokenUscita()==0||trans.RitornaNumeroTokenentrata()==0)))
                     {
                         // se il valore della commissione è maggiore del bnb di ritorno allora lo sottraggo dalle commissioni
                         //anzichè metterlo come importo dei trasferimenti

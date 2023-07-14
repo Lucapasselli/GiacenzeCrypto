@@ -68,10 +68,10 @@ public class TransazioneDefi {
                 //se non esiste lo inserisco
             monete=new ValoriToken();
             monete.IndirizzoNoWallet=AddressNoWallet;
-            if (Moneta.trim().equalsIgnoreCase("cake-lp")){
+         /*   if (Moneta.trim().equalsIgnoreCase("cake-lp")){
                 Moneta=Moneta+" ("+MonetaAddress+")";
                 MonetaName=MonetaName+" ("+MonetaAddress+")";
-            }
+            }*/
             monete.Tipo=Tipologia;
             monete.Moneta=Moneta;
             monete.MonetaAddress=MonetaAddress;
@@ -262,8 +262,15 @@ public class TransazioneDefi {
  public void IdentificaScam(List<String[]> Lista){
      
  }   
-    
-     
+  //Parte nuova per la Defi
+  // RT[23]=Blocco Transazione
+  // RT[24]=Hash Transazione
+  // RT[25]=Nome Token Uscita
+  // RT[26]=Address Token Uscita
+  // RT[27]=Nome Token Entrata
+  // RT[28]=Address Token Entrata
+  // RT[29]=Timestamp
+  // RT[30]=Address Controparte
   public List<String[]> RitornaRigheTabella(){
       String RT[];
       List<String[]> righe=new ArrayList<>();
@@ -370,12 +377,12 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]=Importazioni.RitornaTipologiaTransazione(null, token.Tipo,1);
-              RT[6]="-> "+token.MonetaName;
+              RT[6]="-> "+token.RitornaNomeToken();
               RT[7]=TipoTransazione;
               RT[8]="";
               RT[9]="";
               RT[10]="";
-              RT[11]=token.Moneta;
+              RT[11]=token.RitornaIDToken();
               RT[12]=token.Tipo;
               RT[13]=token.Qta;
               RT[14]="";
@@ -399,7 +406,7 @@ public class TransazioneDefi {
               RT[27]=token.MonetaName;
               RT[28]=token.MonetaAddress;
               RT[29]=TimeStamp;
-              RT[30]="";
+              RT[30]=token.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
@@ -458,9 +465,9 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]=Importazioni.RitornaTipologiaTransazione(token.Tipo, null,1);
-              RT[6]=token.MonetaName+" ->";
+              RT[6]=token.RitornaNomeToken()+" ->";
               RT[7]=TipoTransazione;
-              RT[8]=token.Moneta;
+              RT[8]=token.RitornaIDToken();
               RT[9]=token.Tipo;
               RT[10]=token.Qta;
               RT[11]="";
@@ -487,7 +494,7 @@ public class TransazioneDefi {
               RT[27]="";
               RT[28]="";
               RT[29]=TimeStamp;
-              RT[30]="";
+              RT[30]=token.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
@@ -558,12 +565,12 @@ public class TransazioneDefi {
               RT[3]=Wallet+" ("+Rete+")";
               RT[4]=Rete+" Transaction";
               RT[5]=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo,1);
-              RT[6]=tokenU.MonetaName+" -> "+tokenE.MonetaName;
+              RT[6]=tokenU.RitornaNomeToken()+" -> "+tokenE.RitornaNomeToken();
               RT[7]=TipoTransazione;
-              RT[8]=tokenU.Moneta;
+              RT[8]=tokenU.RitornaIDToken();
               RT[9]=tokenU.Tipo;
               RT[10]=new BigDecimal(tokenU.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
-              RT[11]=tokenE.Moneta;
+              RT[11]=tokenE.RitornaIDToken();
               RT[12]=tokenE.Tipo;
               RT[13]=new BigDecimal(tokenE.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
               RT[14]="";
@@ -582,7 +589,7 @@ public class TransazioneDefi {
               RT[27]=tokenE.MonetaName;
               RT[28]=tokenE.MonetaAddress;
               RT[29]=TimeStamp;
-              RT[30]="";
+              RT[30]=tokenU.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
@@ -639,7 +646,7 @@ public class TransazioneDefi {
               RT[27]=token.MonetaName;
               RT[28]=token.MonetaAddress;
               RT[29]=TimeStamp;
-              RT[30]="";
+              RT[30]=token.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
@@ -684,7 +691,7 @@ public class TransazioneDefi {
               RT[27]="";
               RT[28]="";
               RT[29]=TimeStamp;
-              RT[30]="";
+              RT[30]=token.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
               righe.add(RT);
               i++;
@@ -707,6 +714,29 @@ public class TransazioneDefi {
   public String Peso;
   public String Tipo; //NFT, FIAT o CRYPTO
   
+  public String RitornaNomeToken(){
+      String nome;
+      if (MonetaName==null || MonetaName.trim().equalsIgnoreCase("")){
+          nome=Moneta;
+      }
+      else if (Moneta.trim().equalsIgnoreCase("cake-lp")){
+                nome=MonetaName+" ("+MonetaAddress+")";
+            }
+      else nome=MonetaName;
+      return nome;
+  }
+  
+    public String RitornaIDToken(){
+      String nome;
+      if (Tipo.equalsIgnoreCase("NFT")){
+          nome=Moneta+" ("+MonetaAddress+")";
+      }
+      else if (Moneta.trim().equalsIgnoreCase("cake-lp")){
+                nome=Moneta+" ("+MonetaAddress+")";
+            }
+      else nome=Moneta;
+      return nome;
+  }
 }
  
 }

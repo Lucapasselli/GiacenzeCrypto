@@ -3222,7 +3222,7 @@ public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
             String IDTS[]=IDTransazione.split("_");
             //per questa prima fase intanto ignoro tutti i prelievi, una volta finito di scrivere la funzione
             //riprenderò in mano questa parte per aggiungere tutte le casistiche
-            if (IDTS[4].equalsIgnoreCase("DC")){//FARE PARTE PIU' COMPLESSA!!!!!!!!!!!!!
+            if (IDTS[4].equalsIgnoreCase("DC")||IDTS[4].equalsIgnoreCase("DN")){//questo vale sia per deposito crypto che per nft
                 //QUI VANNO GESTITI I DEPOSITI CRYPTO IN BASE ALLA TIPOLOGIA
                 //Le tipologie sono:
                 //DTW -> Trasferimento tra Wallet (deposito) (plusvalenza 0 e solo calcolo costo carico, nessun movimento sullo stack)
@@ -3246,7 +3246,7 @@ public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
                     TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,"0.00");                    
                 }
                 //System.out.println(v[18]);
-            }else if (IDTS[4].equalsIgnoreCase("PC")){ //FARE PARTE PIU' COMPLESSA!!!!!!!!!!!!!
+            }else if (IDTS[4].equalsIgnoreCase("PC")||IDTS[4].equalsIgnoreCase("PN")){ //questo vale sia per crypto che nft
              //QUI VANNO GESTITI I PRELIEVI CRYPTO IN BASE ALLA TIPOLOGIA  
                 //Le tipologie sono:
                 //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo) (lo elimino dai calcoli e non genero plusvalenze)
@@ -3273,16 +3273,36 @@ public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
                // System.out.println(v[18]);
 
             }else if (IDTS[4].equalsIgnoreCase("DF")){ //Deposito Fiat
-             //IN QUESTO CASO NON DEVO FARE NULLA   
+             //IN QUESTO CASO NON DEVO FARE NULLA
             }else if (IDTS[4].equalsIgnoreCase("PF")){ //Prelievo Fiat
              //IN QUESTO CASO NON DEVO FARE NULLA   
-            }else if (IDTS[4].equalsIgnoreCase("AC")){ //Acquisto Crypto
-                String Moneta=v[11];
-                String Qta=v[13];
-                String Valore=v[15];
-                TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+            }else if (IDTS[4].equalsIgnoreCase("AC")||IDTS[4].equalsIgnoreCase("AN")){ //Acquisto Crypto o NFT
+                //se compro tramite FIAT non genero plusvalenza
+                if (v[9].trim().equalsIgnoreCase("FIAT")){
+                    String Moneta=v[11];
+                    String Qta=v[13];
+                    String Valore=v[15];
+                    TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                    v[17]=v[15];
+                    v[19]="0.00";
+                }else{
+                   //in questo caso vuol dire che l'acquisto in realtà è uno scambio eterogeneo che genera plusvalenza
+                   //e devo gestirlo
+                    String Moneta=v[8];
+                    String Qta=new BigDecimal(v[10]).abs().toPlainString();
+                    String PrzCarico;
+                    String Plusvalenza;
+                    String Valore=v[15];
+                    PrzCarico=TransazioniCrypto_Stack_TogliQta(CryptoStack,Moneta,Qta,true); 
+                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
+                    v[17]=PrzCarico;
+                    v[19]=Plusvalenza;
+                    String Moneta2=v[11];
+                    String Qta2=v[13];
+                    TransazioniCrypto_Stack_InserisciValore(CryptoStack, Moneta2,Qta2,PrzCarico);
+                }
                 
-            }else if (IDTS[4].equalsIgnoreCase("VC")){ //Vendita Crypto
+            }else if (IDTS[4].equalsIgnoreCase("VC")||IDTS[4].equalsIgnoreCase("VN")){ //Vendita Crypto o NFT
                 String Moneta=v[8];
                 String Qta=v[10];
                 String Valore=v[15];
@@ -3293,7 +3313,7 @@ public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
                 v[17]=PrzCarico;
                 v[19]=Plusvalenza;
                 
-            }else if (IDTS[4].equalsIgnoreCase("SC")){ //Scambio Crypto FARE!!!!!!!!!!!!!!!!!!!!!!!!!!
+            }else if (IDTS[4].equalsIgnoreCase("SC")||IDTS[4].equalsIgnoreCase("SN")){//Scambio Crypto o NFT
                 //nel caso degli scambi, prima recupero il valore dallo stack per la moneta venduta
                 //poi quel valore lo metto nello stack per la moneta acquistata
                 //e quindi lo stesso vaolre lo scrivo sulla riga dello scambio

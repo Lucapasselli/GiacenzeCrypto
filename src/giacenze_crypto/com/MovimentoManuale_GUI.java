@@ -4,17 +4,22 @@
  */
 package giacenze_crypto.com;
 
+import static giacenze_crypto.com.CDC_Grafica.Funzioni_isNumeric;
+import java.awt.Color;
+import java.util.Date;
+
 /**
  *
  * @author luca.passelli
  */
-public class MovimentoManuale_GUI extends javax.swing.JFrame {
+public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     /**
      * Creates new form MovimentoManuale_GUI
      */
     public MovimentoManuale_GUI() {
         initComponents();
+        EvidenziaProblemi();
     }
 
     /**
@@ -26,104 +31,179 @@ public class MovimentoManuale_GUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jDateChooser1 = new com.toedter.calendar.JDateChooser();
-        jLabel3 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jLabel4 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jComboBox3 = new javax.swing.JComboBox<>();
-        jComboBox4 = new javax.swing.JComboBox<>();
-        jLabel9 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
-        jLabel10 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        ID_Label = new javax.swing.JLabel();
+        Data_Label = new javax.swing.JLabel();
+        Data_Datachooser = new com.toedter.calendar.JDateChooser();
+        Ora_Label = new javax.swing.JLabel();
+        Ora_ComboBox = new javax.swing.JComboBox<>();
+        Minuto_Label = new javax.swing.JLabel();
+        Minuto_ComboBox = new javax.swing.JComboBox<>();
+        MonetaUscita_Label = new javax.swing.JLabel();
+        MonetaEntrata_Label = new javax.swing.JLabel();
+        MonetaUscita_TextField = new javax.swing.JTextField();
+        MonetaEntrata_TextField = new javax.swing.JTextField();
+        MonetaUscitaTipo_Label = new javax.swing.JLabel();
+        MonetaEntrataTipo_Label = new javax.swing.JLabel();
+        MonetaEntrataTipo_ComboBox = new javax.swing.JComboBox<>();
+        MonetaUscitaTipo_ComboBox = new javax.swing.JComboBox<>();
+        MonetaUscitaQuantita_Label = new javax.swing.JLabel();
+        MonetaUscitaQuantita_TextField = new javax.swing.JTextField();
+        MonetaEntrataQuantita_Label = new javax.swing.JLabel();
+        MonetaEntrataQuantita_TextField = new javax.swing.JTextField();
+        Freccia1_Label = new javax.swing.JLabel();
+        Freccia2_Label = new javax.swing.JLabel();
+        Freccia3_Label = new javax.swing.JLabel();
+        Note_Label = new javax.swing.JLabel();
+        Note_ScrollPane = new javax.swing.JScrollPane();
+        Note_TextArea = new javax.swing.JTextArea();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
-        jLabel15 = new javax.swing.JLabel();
-        jTextField5 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jTextField6 = new javax.swing.JTextField();
+        ValoreTransazione_Label = new javax.swing.JLabel();
+        ValoreTransazione_TextField = new javax.swing.JTextField();
+        Bottone_CalcolaAutomaticamente = new javax.swing.JButton();
+        Bottone_Ok = new javax.swing.JButton();
+        Bottone_Annulla = new javax.swing.JButton();
+        ID_TextField = new javax.swing.JTextField();
+        jSeparator3 = new javax.swing.JSeparator();
+        Wallet_Label = new javax.swing.JLabel();
+        WalletDettaglio_Label = new javax.swing.JLabel();
+        Wallet_TextField = new javax.swing.JTextField();
+        WalletDettaglio_TextField = new javax.swing.JTextField();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jComboBox2 = new javax.swing.JComboBox<>();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setText("ID Transazione : ");
+        ID_Label.setText("ID Transazione : ");
 
-        jLabel2.setText("Data : ");
+        Data_Label.setText("Data : ");
 
-        jLabel3.setText("Ora : ");
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23" }));
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
+        Data_Datachooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                Data_DatachooserPropertyChange(evt);
             }
         });
 
-        jLabel4.setText("Minuto : ");
+        Ora_Label.setText("Ora : ");
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59" }));
-
-        jLabel5.setText("Moneta Uscita : ");
-
-        jLabel6.setText("Moneta Entrata : ");
-
-        jLabel7.setText("Tipo Moneta Uscita : ");
-
-        jLabel8.setText("Tipo Moneta Entrata : ");
-
-        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto", "NFT", "FIAT" }));
-
-        jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto", "NFT", "FIAT" }));
-
-        jLabel9.setText("Quantità Uscita : ");
-
-        jTextField3.addActionListener(new java.awt.event.ActionListener() {
+        Ora_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23" }));
+        Ora_ComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField3ActionPerformed(evt);
+                Ora_ComboBoxActionPerformed(evt);
             }
         });
 
-        jLabel10.setText("Quantità Entrata : ");
+        Minuto_Label.setText("Minuto : ");
 
-        jLabel11.setText("->");
+        Minuto_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59" }));
 
-        jLabel12.setText("->");
+        MonetaUscita_Label.setText("Moneta Uscita : ");
 
-        jLabel13.setText("->");
+        MonetaEntrata_Label.setText("Moneta Entrata : ");
 
-        jLabel14.setText("Note : ");
+        MonetaUscita_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                MonetaUscita_TextFieldKeyReleased(evt);
+            }
+        });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        MonetaEntrata_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                MonetaEntrata_TextFieldKeyReleased(evt);
+            }
+        });
 
-        jLabel15.setText("Valore Transazione in EURO : ");
+        MonetaUscitaTipo_Label.setText("Tipo Moneta Uscita : ");
 
-        jTextField5.setText("0");
+        MonetaEntrataTipo_Label.setText("Tipo Moneta Entrata : ");
 
-        jButton1.setText("Calcola Automaticamente");
+        MonetaEntrataTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT" }));
+        MonetaEntrataTipo_ComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                MonetaEntrataTipo_ComboBoxItemStateChanged(evt);
+            }
+        });
 
-        jButton2.setText("OK");
+        MonetaUscitaTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT" }));
+        MonetaUscitaTipo_ComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                MonetaUscitaTipo_ComboBoxItemStateChanged(evt);
+            }
+        });
 
-        jButton3.setText("Annulla");
+        MonetaUscitaQuantita_Label.setText("Quantità Uscita : ");
 
-        jTextField6.setEnabled(false);
+        MonetaUscitaQuantita_TextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MonetaUscitaQuantita_TextFieldActionPerformed(evt);
+            }
+        });
+        MonetaUscitaQuantita_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                MonetaUscitaQuantita_TextFieldKeyReleased(evt);
+            }
+        });
+
+        MonetaEntrataQuantita_Label.setText("Quantità Entrata : ");
+
+        MonetaEntrataQuantita_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                MonetaEntrataQuantita_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Freccia1_Label.setText("->");
+
+        Freccia2_Label.setText("->");
+
+        Freccia3_Label.setText("->");
+
+        Note_Label.setText("Note : ");
+
+        Note_TextArea.setColumns(20);
+        Note_TextArea.setRows(5);
+        Note_ScrollPane.setViewportView(Note_TextArea);
+
+        ValoreTransazione_Label.setText("Valore Transazione in EURO : ");
+
+        ValoreTransazione_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                ValoreTransazione_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Bottone_CalcolaAutomaticamente.setText("Calcola Automaticamente");
+
+        Bottone_Ok.setText("OK");
+        Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_OkActionPerformed(evt);
+            }
+        });
+
+        Bottone_Annulla.setText("Annulla");
+
+        ID_TextField.setEnabled(false);
+
+        Wallet_Label.setText("Exchange / Wallet : ");
+
+        WalletDettaglio_Label.setText("Dettagli Wallet : ");
+
+        Wallet_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Wallet_TextFieldKeyReleased(evt);
+            }
+        });
+
+        WalletDettaglio_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                WalletDettaglio_TextFieldKeyReleased(evt);
+            }
+        });
+
+        jComboBox1.setEditable(true);
+
+        jComboBox2.setEditable(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -134,153 +214,347 @@ public class MovimentoManuale_GUI extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(Bottone_Ok)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Bottone_Annulla))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ValoreTransazione_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ValoreTransazione_TextField)
+                                .addGap(18, 18, 18)
+                                .addComponent(Bottone_CalcolaAutomaticamente))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(Note_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Note_ScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 518, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(19, 19, 19))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator2)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel1)
+                                        .addComponent(ID_Label)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(ID_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                            .addGroup(layout.createSequentialGroup()
-                                                                .addComponent(jLabel7)
-                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                            .addGroup(layout.createSequentialGroup()
-                                                                .addComponent(jLabel5)
-                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                                        .addGap(57, 57, 57))
+                                                        .addComponent(MonetaUscitaTipo_Label)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                        .addComponent(MonetaUscita_Label)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                                                     .addGroup(layout.createSequentialGroup()
                                                         .addGap(21, 21, 21)
-                                                        .addComponent(jLabel9)
+                                                        .addComponent(MonetaUscitaQuantita_Label)
                                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addGap(57, 57, 57)))
+                                                        .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addGap(57, 57, 57)
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(jLabel13)
-                                                    .addComponent(jLabel11)
-                                                    .addComponent(jLabel12)))
+                                                    .addComponent(Freccia3_Label)
+                                                    .addComponent(Freccia1_Label)
+                                                    .addComponent(Freccia2_Label)))
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGap(49, 49, 49)
-                                                .addComponent(jLabel2)
+                                                .addComponent(Data_Label)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(Data_Datachooser, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(jLabel3)
+                                                .addComponent(Ora_Label)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGap(24, 24, 24)
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                    .addComponent(jLabel6)
-                                                    .addComponent(jLabel8)
-                                                    .addComponent(jLabel10))
+                                                    .addComponent(MonetaEntrata_Label)
+                                                    .addComponent(MonetaEntrataTipo_Label)
+                                                    .addComponent(MonetaEntrataQuantita_Label))
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                    .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(MonetaEntrata_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                                 .addGap(18, 18, 18)
-                                                .addComponent(jLabel4)
+                                                .addComponent(Minuto_Label)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                                .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING))
                         .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButton3))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel15)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField5)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton1))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel14)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 518, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(19, 19, 19))))
+                            .addComponent(Wallet_Label)
+                            .addComponent(WalletDettaglio_Label))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jComboBox1, 0, 269, Short.MAX_VALUE)
+                            .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Wallet_TextField, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                            .addComponent(WalletDettaglio_TextField))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ID_Label)
+                    .addComponent(ID_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Data_Label)
+                    .addComponent(Data_Datachooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel3)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel4)
-                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(13, 13, 13)
+                        .addComponent(Ora_Label)
+                        .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Minuto_Label)
+                        .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Wallet_Label)
+                    .addComponent(Wallet_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(WalletDettaglio_Label)
+                    .addComponent(WalletDettaglio_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel11))
+                    .addComponent(MonetaUscita_Label)
+                    .addComponent(MonetaEntrata_Label)
+                    .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaEntrata_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Freccia1_Label))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel8)
-                    .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel12))
+                    .addComponent(MonetaUscitaTipo_Label)
+                    .addComponent(MonetaEntrataTipo_Label)
+                    .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Freccia2_Label))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel10)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel13))
+                    .addComponent(MonetaUscitaQuantita_Label)
+                    .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaEntrataQuantita_Label)
+                    .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Freccia3_Label))
                 .addGap(13, 13, 13)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel15)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1))
+                    .addComponent(ValoreTransazione_Label)
+                    .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Bottone_CalcolaAutomaticamente))
                 .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel14))
+                    .addComponent(Note_ScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Note_Label))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3))
+                    .addComponent(Bottone_Ok)
+                    .addComponent(Bottone_Annulla))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
+    private void MonetaUscitaQuantita_TextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MonetaUscitaQuantita_TextFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField3ActionPerformed
+        EvidenziaProblemi();
+    }//GEN-LAST:event_MonetaUscitaQuantita_TextFieldActionPerformed
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+    private void Ora_ComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Ora_ComboBoxActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox1ActionPerformed
+        EvidenziaProblemi();
+    }//GEN-LAST:event_Ora_ComboBoxActionPerformed
 
+    private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+        
+    }//GEN-LAST:event_Bottone_OkActionPerformed
+
+    private void Wallet_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Wallet_TextFieldKeyReleased
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+        
+    }//GEN-LAST:event_Wallet_TextFieldKeyReleased
+
+    private void WalletDettaglio_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_WalletDettaglio_TextFieldKeyReleased
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_WalletDettaglio_TextFieldKeyReleased
+
+    private void MonetaUscita_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MonetaUscita_TextFieldKeyReleased
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_MonetaUscita_TextFieldKeyReleased
+
+    private void MonetaUscitaQuantita_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MonetaUscitaQuantita_TextFieldKeyReleased
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_MonetaUscitaQuantita_TextFieldKeyReleased
+
+    private void MonetaEntrata_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MonetaEntrata_TextFieldKeyReleased
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_MonetaEntrata_TextFieldKeyReleased
+
+    private void MonetaEntrataQuantita_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MonetaEntrataQuantita_TextFieldKeyReleased
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_MonetaEntrataQuantita_TextFieldKeyReleased
+
+    private void ValoreTransazione_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_ValoreTransazione_TextFieldKeyReleased
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_ValoreTransazione_TextFieldKeyReleased
+
+    private void MonetaUscitaTipo_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_MonetaUscitaTipo_ComboBoxItemStateChanged
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_MonetaUscitaTipo_ComboBoxItemStateChanged
+
+    private void MonetaEntrataTipo_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_MonetaEntrataTipo_ComboBoxItemStateChanged
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_MonetaEntrataTipo_ComboBoxItemStateChanged
+
+    private void Data_DatachooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Data_DatachooserPropertyChange
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_Data_DatachooserPropertyChange
+
+    private boolean EvidenziaProblemi() {                                           
+        // TODO add your handling code here:
+        
+        //per prima cosa sostituisco le virgole con i punti nei campi numerici
+        MonetaUscitaQuantita_TextField.setText(MonetaUscitaQuantita_TextField.getText().replace(",", "."));
+        MonetaEntrataQuantita_TextField.setText(MonetaEntrataQuantita_TextField.getText().replace(",", "."));
+        ValoreTransazione_TextField.setText(ValoreTransazione_TextField.getText().replace(",", "."));
+        
+        //adesso leggo tutti gli oggetti e li metto in stringhe
+        Date Data=this.Data_Datachooser.getDate();
+        String MonetaU=this.MonetaUscita_TextField.getText().trim();
+        String MonetaUQta=this.MonetaUscitaQuantita_TextField.getText().trim();
+        String MonetaUTipo=this.MonetaUscitaTipo_ComboBox.getSelectedItem().toString();
+        String MonetaE=this.MonetaEntrata_TextField.getText().trim();
+        String MonetaEQta=this.MonetaEntrataQuantita_TextField.getText().trim();
+        String MonetaETipo=this.MonetaEntrataTipo_ComboBox.getSelectedItem().toString();
+        String ValoreTransazione=this.ValoreTransazione_TextField.getText().trim();
+        String Wallet=this.Wallet_TextField.getText().trim();
+        String WalletDettaglio=this.WalletDettaglio_TextField.getText().trim();
+        
+        //adesso testo tutti i campi e vedo se manca qualcosa, in quel caso evidenzio i campi mancanti
+        boolean nonCompleto=false;
+        if (Wallet.equalsIgnoreCase("")){
+            nonCompleto=true;
+            this.Wallet_TextField.setBackground(Color.getHSBColor(20, 20, 20));
+        }else {
+            this.Wallet_TextField.setBackground(Color.white);
+        }
+        
+       if (WalletDettaglio.equalsIgnoreCase("")){
+            nonCompleto=true;
+            this.WalletDettaglio_TextField.setBackground(Color.getHSBColor(20, 20, 20));
+        }else {
+            this.WalletDettaglio_TextField.setBackground(Color.white);
+        }
+       
+        if (ValoreTransazione.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(ValoreTransazione)){
+            nonCompleto=true;
+            this.ValoreTransazione_TextField.setBackground(Color.getHSBColor(20, 20, 20));
+        }else {
+            this.ValoreTransazione_TextField.setBackground(Color.white);
+        }
+        
+        if (Data==null){
+            nonCompleto=true;
+            this.Data_Datachooser.setBackground(Color.orange);
+        }else {
+            this.Data_Datachooser.setBackground(this.getBackground());
+        }
+        
+        
+        //in questa prima parte esamino se i blocchi sono interamente compilati o interamente vuoti
+        boolean tuttoCompilatoE=false;
+        boolean tuttoCompilatoU=false;
+        boolean tuttoVuotoE=false;
+        boolean tuttoVuotoU=false;
+        if (MonetaU.equalsIgnoreCase("")&&MonetaUQta.equalsIgnoreCase("")&&MonetaUTipo.equalsIgnoreCase("-----"))
+            {
+            tuttoVuotoU=true;
+            tuttoCompilatoU=false;
+            }
+        if (!MonetaU.equalsIgnoreCase("")&&!MonetaUQta.equalsIgnoreCase("")&&!MonetaUTipo.equalsIgnoreCase("-----"))
+            {
+            tuttoVuotoU=false;
+            tuttoCompilatoU=true;
+            }
+        
+        if (MonetaE.equalsIgnoreCase("")&&MonetaEQta.equalsIgnoreCase("")&&MonetaETipo.equalsIgnoreCase("-----"))
+            {
+            tuttoVuotoE=true;
+            tuttoCompilatoE=false;
+            }
+        if (!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&!MonetaETipo.equalsIgnoreCase("-----"))
+            {
+            tuttoVuotoE=false;
+            tuttoCompilatoE=true;
+            }
+        //se trovo delle compilazioni a metà in uno dei 2 blocchi devo evidenziare il problema
+        //se trovo che nessuno dei 2 blocchi è compilato devo evidenziare il problema
+        //se invece le 2 situazioni di prima non sono vere vuol dire che va tutto bene
+
+        
+        //se trovo delle compilazioni a metà in uno dei 2 blocchi devo evidenziare il problema
+        //oppure se trovo che nessuno dei 2 blocchi è compilato devo evidenziare il problema
+        //oppure se i campi numerici non sono numerici devo evidenziare il problema
+        if (((tuttoVuotoE==false&&tuttoCompilatoE==false)||(tuttoVuotoU==false&&tuttoCompilatoU==false))||
+                (tuttoVuotoE==true&&tuttoVuotoU==true)||
+                (!CDC_Grafica.Funzioni_isNumeric(MonetaUQta)||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta))){
+            nonCompleto=true;
+            if (MonetaU.equalsIgnoreCase(""))MonetaUscita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscita_TextField.setBackground(Color.white);
+            if (MonetaUQta.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(MonetaUQta))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
+            if (MonetaUTipo.equalsIgnoreCase("-----"))MonetaUscitaTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaTipo_ComboBox.setBackground(Color.white);
+            if (MonetaE.equalsIgnoreCase(""))MonetaEntrata_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrata_TextField.setBackground(Color.white);
+            if (MonetaEQta.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
+            if (MonetaETipo.equalsIgnoreCase("-----"))MonetaEntrataTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataTipo_ComboBox.setBackground(Color.white);
+        } 
+        //se invece le 2 situazioni di prima non sono vere vuol dire che va tutto bene
+        else{
+            MonetaUscita_TextField.setBackground(Color.white);
+            MonetaUscitaQuantita_TextField.setBackground(Color.white);
+            MonetaUscitaTipo_ComboBox.setBackground(Color.white);
+            MonetaEntrata_TextField.setBackground(Color.white);
+            MonetaEntrataQuantita_TextField.setBackground(Color.white);
+            MonetaEntrataTipo_ComboBox.setBackground(Color.white);
+            
+            }
+        
+               if (!nonCompleto)Bottone_Ok.setEnabled(true);
+        else Bottone_Ok.setEnabled(false);
+    return nonCompleto;
+    
+    }  
     /**
      * @param args the command line arguments
      */
@@ -317,38 +591,45 @@ public class MovimentoManuale_GUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton Bottone_Annulla;
+    private javax.swing.JButton Bottone_CalcolaAutomaticamente;
+    private javax.swing.JButton Bottone_Ok;
+    private com.toedter.calendar.JDateChooser Data_Datachooser;
+    private javax.swing.JLabel Data_Label;
+    private javax.swing.JLabel Freccia1_Label;
+    private javax.swing.JLabel Freccia2_Label;
+    private javax.swing.JLabel Freccia3_Label;
+    private javax.swing.JLabel ID_Label;
+    private javax.swing.JTextField ID_TextField;
+    private javax.swing.JComboBox<String> Minuto_ComboBox;
+    private javax.swing.JLabel Minuto_Label;
+    private javax.swing.JLabel MonetaEntrataQuantita_Label;
+    private javax.swing.JTextField MonetaEntrataQuantita_TextField;
+    private javax.swing.JComboBox<String> MonetaEntrataTipo_ComboBox;
+    private javax.swing.JLabel MonetaEntrataTipo_Label;
+    private javax.swing.JLabel MonetaEntrata_Label;
+    private javax.swing.JTextField MonetaEntrata_TextField;
+    private javax.swing.JLabel MonetaUscitaQuantita_Label;
+    private javax.swing.JTextField MonetaUscitaQuantita_TextField;
+    private javax.swing.JComboBox<String> MonetaUscitaTipo_ComboBox;
+    private javax.swing.JLabel MonetaUscitaTipo_Label;
+    private javax.swing.JLabel MonetaUscita_Label;
+    private javax.swing.JTextField MonetaUscita_TextField;
+    private javax.swing.JLabel Note_Label;
+    private javax.swing.JScrollPane Note_ScrollPane;
+    private javax.swing.JTextArea Note_TextArea;
+    private javax.swing.JComboBox<String> Ora_ComboBox;
+    private javax.swing.JLabel Ora_Label;
+    private javax.swing.JLabel ValoreTransazione_Label;
+    private javax.swing.JTextField ValoreTransazione_TextField;
+    private javax.swing.JLabel WalletDettaglio_Label;
+    private javax.swing.JTextField WalletDettaglio_TextField;
+    private javax.swing.JLabel Wallet_Label;
+    private javax.swing.JTextField Wallet_TextField;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox3;
-    private javax.swing.JComboBox<String> jComboBox4;
-    private com.toedter.calendar.JDateChooser jDateChooser1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
-    private javax.swing.JTextField jTextField6;
+    private javax.swing.JSeparator jSeparator3;
     // End of variables declaration//GEN-END:variables
 }

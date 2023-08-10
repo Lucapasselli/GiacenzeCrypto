@@ -7,6 +7,9 @@ package giacenze_crypto.com;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_isNumeric;
 import java.awt.Color;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -17,6 +20,9 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     /**
      * Creates new form MovimentoManuale_GUI
      */
+    Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    
+    
     public MovimentoManuale_GUI() {
         initComponents();
         EvidenziaProblemi();
@@ -69,8 +75,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         WalletDettaglio_Label = new javax.swing.JLabel();
         Wallet_TextField = new javax.swing.JTextField();
         WalletDettaglio_TextField = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        Wallet_ComboBox = new javax.swing.JComboBox<>();
+        WalletDettaglio_ComboBox = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -201,9 +207,14 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
-        jComboBox1.setEditable(true);
+        Wallet_ComboBox.setEditable(true);
+        Wallet_ComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                Wallet_ComboBoxItemStateChanged(evt);
+            }
+        });
 
-        jComboBox2.setEditable(true);
+        WalletDettaglio_ComboBox.setEditable(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -296,11 +307,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                             .addComponent(WalletDettaglio_Label))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jComboBox1, 0, 269, Short.MAX_VALUE)
-                            .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(Wallet_ComboBox, 0, 324, Short.MAX_VALUE)
+                            .addComponent(WalletDettaglio_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Wallet_TextField, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                            .addComponent(Wallet_TextField, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
                             .addComponent(WalletDettaglio_TextField))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
@@ -326,12 +337,12 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Wallet_Label)
                     .addComponent(Wallet_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(WalletDettaglio_Label)
                     .addComponent(WalletDettaglio_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(WalletDettaglio_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -443,6 +454,34 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         EvidenziaProblemi();
     }//GEN-LAST:event_Data_DatachooserPropertyChange
 
+    private void Wallet_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_Wallet_ComboBoxItemStateChanged
+        //Se cambiano le proprietà di questo oggetto devo cambiare di conseguenza l'oggetto del dettaglio del wallet
+        this.WalletDettaglio_ComboBox.removeAllItems();
+        List<String> Dettagli = Wallets_e_Dettagli.get(Wallet_ComboBox.getSelectedItem().toString());
+        if (Dettagli != null) {
+            this.WalletDettaglio_ComboBox.addItem("");
+            for (String v : Dettagli) {
+                this.WalletDettaglio_ComboBox.addItem(v);
+            }
+        }
+    }//GEN-LAST:event_Wallet_ComboBoxItemStateChanged
+
+    public void CompilaComboBoxWallet(Map<String, List<String>> wallet){
+        Wallets_e_Dettagli=wallet;
+        this.Wallet_ComboBox.removeAllItems();
+        this.Wallet_ComboBox.addItem("");
+        for (String v : Wallets_e_Dettagli.keySet()) {
+              this.Wallet_ComboBox.addItem(v);
+          }
+    }
+    /*public void CompilaComboBoxWalletDettagli(List<String> walletDettagli){
+        this.WalletDettaglio_ComboBox.removeAllItems();
+        this.WalletDettaglio_ComboBox.addItem("");
+               for (String v : walletDettagli) {
+              this.WalletDettaglio_ComboBox.addItem(v);
+          } 
+    }   */
+    
     private boolean EvidenziaProblemi() {                                           
         // TODO add your handling code here:
         
@@ -460,7 +499,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         String MonetaEQta=this.MonetaEntrataQuantita_TextField.getText().trim();
         String MonetaETipo=this.MonetaEntrataTipo_ComboBox.getSelectedItem().toString();
         String ValoreTransazione=this.ValoreTransazione_TextField.getText().trim();
-        String Wallet=this.Wallet_TextField.getText().trim();
+      //  if (this.Wallet_ComboBox.)
+        String Wallet=this.Wallet_ComboBox.getSelectedItem().toString().trim();
         String WalletDettaglio=this.WalletDettaglio_TextField.getText().trim();
         
         //adesso testo tutti i campi e vedo se manca qualcosa, in quel caso evidenzio i campi mancanti
@@ -622,12 +662,12 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     private javax.swing.JLabel Ora_Label;
     private javax.swing.JLabel ValoreTransazione_Label;
     private javax.swing.JTextField ValoreTransazione_TextField;
+    private javax.swing.JComboBox<String> WalletDettaglio_ComboBox;
     private javax.swing.JLabel WalletDettaglio_Label;
     private javax.swing.JTextField WalletDettaglio_TextField;
+    private javax.swing.JComboBox<String> Wallet_ComboBox;
     private javax.swing.JLabel Wallet_Label;
     private javax.swing.JTextField Wallet_TextField;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;

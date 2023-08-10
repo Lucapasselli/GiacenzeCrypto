@@ -3159,8 +3159,33 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        //Creo una lista con i Wallet disponibili
+          Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+          for (String[] v : MappaCryptoWallet.values()) {
+              String Wallet=v[3];
+              String WalletDettaglio=v[4];
+              if(Wallets_e_Dettagli.get(v[3])==null)
+                  {
+                      List<String> Lista=new ArrayList();
+                      Lista.add(WalletDettaglio);
+                      Wallets_e_Dettagli.put(Wallet, Lista);
+                  }
+              else{
+                  List<String> Lista;
+                  Lista=Wallets_e_Dettagli.get(Wallet);
+                  if (!Lista.contains(WalletDettaglio))Lista.add(WalletDettaglio);
+              }
+          }
+          //Creo una lista con i dettagli dei wallet disponibili
+      /*    Mappa_Wallet.clear();
+          for (String[] v : MappaCryptoWallet.values()) {
+                Mappa_Wallet.put(v[3], v[1]);
+          }*/
+        
         MovimentoManuale_GUI a= new MovimentoManuale_GUI();
+        a.CompilaComboBoxWallet(Wallets_e_Dettagli);//questo compila il combobox principale e popola la mappa wallet e dettagli della classe
         a.setVisible(true);
+        //Mappa_Wallet
     }//GEN-LAST:event_jButton1ActionPerformed
 
  

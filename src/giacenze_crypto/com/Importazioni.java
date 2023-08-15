@@ -441,9 +441,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
     
     
         public static String[] RiempiVuotiArray(String[] array){
-            for (String v : array) {
-                if(v==null){
-                    v="";
+            for (int i=0;i<array.length;i++) {
+                if(array[i]==null){
+                    array[i]="";
                 }
             }
             return array;
@@ -618,8 +618,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO"))
                             {
-                                //trasferimento FIAT
-                                
+                                //trasferimento FIAT                              
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_DF";
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+2;

@@ -4,12 +4,16 @@
  */
 package giacenze_crypto.com;
 
-import static giacenze_crypto.com.CDC_Grafica.Funzioni_isNumeric;
+import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
+import static giacenze_crypto.com.Importazioni.RitornaTipologiaTransazione;
 import java.awt.Color;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -25,6 +29,29 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     
     public MovimentoManuale_GUI() {
         initComponents();
+        this.setTitle("Inserimento Manuale Movimenti");
+        ImageIcon icon = new ImageIcon("logo.png");
+        this.setIconImage(icon.getImage());
+        //adesso recupero i vari wallet dalla lista e li metto nella combobox
+        Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+          for (String[] v : MappaCryptoWallet.values()) {
+              String Wallet=v[3];
+              String WalletDettaglio=v[4];
+              if(Wallets_e_Dettagli.get(v[3])==null)
+                  {
+                      List<String> Lista=new ArrayList();
+                      Lista.add(WalletDettaglio);
+                      Wallets_e_Dettagli.put(Wallet, Lista);
+                  }
+              else{
+                  List<String> Lista;
+                  Lista=Wallets_e_Dettagli.get(Wallet);
+                  if (!Lista.contains(WalletDettaglio))Lista.add(WalletDettaglio);
+              }
+          }
+        CompilaComboBoxWallet();
+        
+        //ora lancio EvidenziaProblemi che mi colora di giallo le parti da compilare
         EvidenziaProblemi();
     }
 
@@ -73,10 +100,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         jSeparator3 = new javax.swing.JSeparator();
         Wallet_Label = new javax.swing.JLabel();
         WalletDettaglio_Label = new javax.swing.JLabel();
-        Wallet_TextField = new javax.swing.JTextField();
-        WalletDettaglio_TextField = new javax.swing.JTextField();
         Wallet_ComboBox = new javax.swing.JComboBox<>();
         WalletDettaglio_ComboBox = new javax.swing.JComboBox<>();
+        Secondo_Label = new javax.swing.JLabel();
+        Secondo_ComboBox = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -90,7 +117,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
-        Ora_Label.setText("Ora : ");
+        Ora_Label.setText("Ora :");
 
         Ora_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23" }));
         Ora_ComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -99,7 +126,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
-        Minuto_Label.setText("Minuto : ");
+        Minuto_Label.setText("Minuto :");
 
         Minuto_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59" }));
 
@@ -188,6 +215,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         });
 
         Bottone_Annulla.setText("Annulla");
+        Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_AnnullaActionPerformed(evt);
+            }
+        });
 
         ID_TextField.setEnabled(false);
 
@@ -195,26 +227,23 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         WalletDettaglio_Label.setText("Dettagli Wallet : ");
 
-        Wallet_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                Wallet_TextFieldKeyReleased(evt);
-            }
-        });
-
-        WalletDettaglio_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                WalletDettaglio_TextFieldKeyReleased(evt);
-            }
-        });
-
         Wallet_ComboBox.setEditable(true);
-        Wallet_ComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                Wallet_ComboBoxItemStateChanged(evt);
+        Wallet_ComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Wallet_ComboBoxActionPerformed(evt);
             }
         });
 
         WalletDettaglio_ComboBox.setEditable(true);
+        WalletDettaglio_ComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                WalletDettaglio_ComboBoxActionPerformed(evt);
+            }
+        });
+
+        Secondo_Label.setText("Secondo : ");
+
+        Secondo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -247,58 +276,62 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(ID_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(ID_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                        .addComponent(MonetaUscitaTipo_Label)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                        .addComponent(MonetaUscita_Label)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                    .addGroup(layout.createSequentialGroup()
-                                                        .addGap(21, 21, 21)
-                                                        .addComponent(MonetaUscitaQuantita_Label)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                                .addGap(57, 57, 57)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(Freccia3_Label)
-                                                    .addComponent(Freccia1_Label)
-                                                    .addComponent(Freccia2_Label)))
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(49, 49, 49)
-                                                .addComponent(Data_Label)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(Data_Datachooser, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(Ora_Label)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(MonetaUscitaTipo_Label)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(MonetaUscita_Label)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(21, 21, 21)
+                                                .addComponent(MonetaUscitaQuantita_Label)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGap(57, 57, 57)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(Freccia3_Label)
+                                            .addComponent(Freccia1_Label)
+                                            .addComponent(Freccia2_Label)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(49, 49, 49)
+                                        .addComponent(Data_Label)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(Data_Datachooser, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(Ora_Label)))
+                                .addGap(23, 23, 23)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGap(33, 33, 33)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(24, 24, 24)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                    .addComponent(MonetaEntrata_Label)
-                                                    .addComponent(MonetaEntrataTipo_Label)
-                                                    .addComponent(MonetaEntrataQuantita_Label))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(MonetaEntrata_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                                .addGap(18, 18, 18)
-                                                .addComponent(Minuto_Label)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                                .addGap(0, 0, Short.MAX_VALUE))
+                                            .addComponent(MonetaEntrata_Label)
+                                            .addComponent(MonetaEntrataTipo_Label)
+                                            .addComponent(MonetaEntrataQuantita_Label))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(MonetaEntrata_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(60, 60, 60)
+                                        .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(Secondo_Label)
+                                        .addGap(78, 78, 78))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(Minuto_Label)
+                                    .addGap(131, 131, 131)
+                                    .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(ID_Label)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(ID_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING))
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
@@ -307,12 +340,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                             .addComponent(WalletDettaglio_Label))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Wallet_ComboBox, 0, 324, Short.MAX_VALUE)
+                            .addComponent(Wallet_ComboBox, 0, 446, Short.MAX_VALUE)
                             .addComponent(WalletDettaglio_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Wallet_TextField, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
-                            .addComponent(WalletDettaglio_TextField))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -330,18 +359,18 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                         .addComponent(Ora_Label)
                         .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(Minuto_Label)
-                        .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Secondo_Label)
+                        .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Wallet_Label)
-                    .addComponent(Wallet_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(WalletDettaglio_Label)
-                    .addComponent(WalletDettaglio_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(WalletDettaglio_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -399,20 +428,28 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
         // TODO add your handling code here:
-        EvidenziaProblemi();
+        if(!EvidenziaProblemi()){
+            //se non trovo problemi nella compilazione allora procedo con l'inserimento del movimento
+            
+            //prima cosa genero l'id della transazione
+            String ID=CalcolaID();
+            //verifico che non esista già una transazione non lo stesso id in quel caso chiedo se sovrascriverla o aggiungerla
+            //per trovare l'id ovviamente devo cercarla nella mappa delle transazioni
+            //TUTTO DA COMPLETARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if(MappaCryptoWallet.get(ID)!=null){
+              //se entro qua significa che ho già un movimento con lo stesso id 
+              //adesso devo far scegliere che fare
+            }else{
+              //se invece arrivo qua posso inserire il movimento nella mappa  
+              ScriviMovimento();//anche questa funzione è da fare
+            }
+                
+            
+            
+        }
+        
         
     }//GEN-LAST:event_Bottone_OkActionPerformed
-
-    private void Wallet_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Wallet_TextFieldKeyReleased
-        // TODO add your handling code here:
-        EvidenziaProblemi();
-        
-    }//GEN-LAST:event_Wallet_TextFieldKeyReleased
-
-    private void WalletDettaglio_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_WalletDettaglio_TextFieldKeyReleased
-        // TODO add your handling code here:
-        EvidenziaProblemi();
-    }//GEN-LAST:event_WalletDettaglio_TextFieldKeyReleased
 
     private void MonetaUscita_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MonetaUscita_TextFieldKeyReleased
         // TODO add your handling code here:
@@ -454,8 +491,9 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         EvidenziaProblemi();
     }//GEN-LAST:event_Data_DatachooserPropertyChange
 
-    private void Wallet_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_Wallet_ComboBoxItemStateChanged
-        //Se cambiano le proprietà di questo oggetto devo cambiare di conseguenza l'oggetto del dettaglio del wallet
+    private void Wallet_ComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Wallet_ComboBoxActionPerformed
+        // TODO add your handling code here:
+                //Se cambiano le proprietà di questo oggetto devo cambiare di conseguenza l'oggetto del dettaglio del wallet
         this.WalletDettaglio_ComboBox.removeAllItems();
         List<String> Dettagli = Wallets_e_Dettagli.get(Wallet_ComboBox.getSelectedItem().toString());
         if (Dettagli != null) {
@@ -464,27 +502,35 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                 this.WalletDettaglio_ComboBox.addItem(v);
             }
         }
-    }//GEN-LAST:event_Wallet_ComboBoxItemStateChanged
+        EvidenziaProblemi();
+    }//GEN-LAST:event_Wallet_ComboBoxActionPerformed
 
-    public void CompilaComboBoxWallet(Map<String, List<String>> wallet){
-        Wallets_e_Dettagli=wallet;
+    private void WalletDettaglio_ComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_WalletDettaglio_ComboBoxActionPerformed
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_WalletDettaglio_ComboBoxActionPerformed
+
+    private void Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AnnullaActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_Bottone_AnnullaActionPerformed
+
+    private void CompilaComboBoxWallet(){
         this.Wallet_ComboBox.removeAllItems();
         this.Wallet_ComboBox.addItem("");
         for (String v : Wallets_e_Dettagli.keySet()) {
               this.Wallet_ComboBox.addItem(v);
           }
     }
-    /*public void CompilaComboBoxWalletDettagli(List<String> walletDettagli){
-        this.WalletDettaglio_ComboBox.removeAllItems();
-        this.WalletDettaglio_ComboBox.addItem("");
-               for (String v : walletDettagli) {
-              this.WalletDettaglio_ComboBox.addItem(v);
-          } 
-    }   */
+
+    private void ScriviMovimento() {  
+        //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
+    }
     
     private boolean EvidenziaProblemi() {                                           
         // TODO add your handling code here:
-        
+       // System.out.println(Data_Datachooser.getDate());
+
         //per prima cosa sostituisco le virgole con i punti nei campi numerici
         MonetaUscitaQuantita_TextField.setText(MonetaUscitaQuantita_TextField.getText().replace(",", "."));
         MonetaEntrataQuantita_TextField.setText(MonetaEntrataQuantita_TextField.getText().replace(",", "."));
@@ -499,24 +545,30 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         String MonetaEQta=this.MonetaEntrataQuantita_TextField.getText().trim();
         String MonetaETipo=this.MonetaEntrataTipo_ComboBox.getSelectedItem().toString();
         String ValoreTransazione=this.ValoreTransazione_TextField.getText().trim();
-      //  if (this.Wallet_ComboBox.)
-        String Wallet=this.Wallet_ComboBox.getSelectedItem().toString().trim();
-        String WalletDettaglio=this.WalletDettaglio_TextField.getText().trim();
+        
+
+      String Wallet;
+      if (Wallet_ComboBox.getSelectedItem()!=null)Wallet=this.Wallet_ComboBox.getSelectedItem().toString().trim();
+      else Wallet="";
+      String WalletDettaglio;
+      if (WalletDettaglio_ComboBox.getSelectedItem()!=null)WalletDettaglio=this.WalletDettaglio_ComboBox.getSelectedItem().toString().trim();
+      else WalletDettaglio="";
+
         
         //adesso testo tutti i campi e vedo se manca qualcosa, in quel caso evidenzio i campi mancanti
         boolean nonCompleto=false;
         if (Wallet.equalsIgnoreCase("")){
             nonCompleto=true;
-            this.Wallet_TextField.setBackground(Color.getHSBColor(20, 20, 20));
+            this.Wallet_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));
         }else {
-            this.Wallet_TextField.setBackground(Color.white);
+            this.Wallet_ComboBox.setBackground(Color.white);
         }
         
        if (WalletDettaglio.equalsIgnoreCase("")){
             nonCompleto=true;
-            this.WalletDettaglio_TextField.setBackground(Color.getHSBColor(20, 20, 20));
+            this.WalletDettaglio_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));
         }else {
-            this.WalletDettaglio_TextField.setBackground(Color.white);
+            this.WalletDettaglio_ComboBox.setBackground(Color.white);
         }
        
         if (ValoreTransazione.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(ValoreTransazione)){
@@ -595,6 +647,48 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     return nonCompleto;
     
     }  
+    
+    
+    
+    private String CalcolaID() {
+        String ID="";
+        if (Data_Datachooser.getDate()!=null)
+            {
+            SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
+            String Data=f.format(Data_Datachooser.getDate());
+            ID=ID+Data+Ora_ComboBox.getSelectedItem().toString()+
+                    Minuto_ComboBox.getSelectedItem().toString()+
+                    Secondo_ComboBox.getSelectedItem().toString()+
+                    "_";         
+            }
+        if (Wallet_ComboBox.getSelectedItem()!=null)
+            ID=ID+Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").trim()+".";
+        
+        if (WalletDettaglio_ComboBox.getSelectedItem()!=null)
+            ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").trim()+"_1_1_";
+        //Adesso devo individuare la tipologia di movimento quindi possono essere le seguenti
+        //DC->Deposito Crypto
+        //PC->Prelievo Crypto
+        //DF->Deposito FIAT
+        //PF->Prelievo FIAT
+        //DN->Deposito NFT
+        //PN->Prelievo NFT
+        //AN->Acquisto NFT (con crypto o fiat)
+        //VN->Vendita NFT (per crypto o fiat)
+        //SC->Scambio crypto
+        //SN->Scambio NFT
+        //AC->Acquisto Crypto (Con FIAT)
+        //VC->Vendita Crypto (per FIAT)
+        String TipoUscita;
+        String TipoEntrata;
+        TipoUscita=MonetaUscitaTipo_ComboBox.getSelectedItem().toString().trim();
+        TipoEntrata=MonetaEntrataTipo_ComboBox.getSelectedItem().toString().trim();
+        if (TipoUscita.contains("---"))TipoUscita=null;
+        if (TipoEntrata.contains("---"))TipoEntrata=null;
+        ID=ID+RitornaTipologiaTransazione(TipoUscita,TipoEntrata,0);
+        System.out.println(ID);
+        return ID;
+    }
     /**
      * @param args the command line arguments
      */
@@ -660,14 +754,14 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     private javax.swing.JTextArea Note_TextArea;
     private javax.swing.JComboBox<String> Ora_ComboBox;
     private javax.swing.JLabel Ora_Label;
+    private javax.swing.JComboBox<String> Secondo_ComboBox;
+    private javax.swing.JLabel Secondo_Label;
     private javax.swing.JLabel ValoreTransazione_Label;
     private javax.swing.JTextField ValoreTransazione_TextField;
     private javax.swing.JComboBox<String> WalletDettaglio_ComboBox;
     private javax.swing.JLabel WalletDettaglio_Label;
-    private javax.swing.JTextField WalletDettaglio_TextField;
     private javax.swing.JComboBox<String> Wallet_ComboBox;
     private javax.swing.JLabel Wallet_Label;
-    private javax.swing.JTextField Wallet_TextField;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;

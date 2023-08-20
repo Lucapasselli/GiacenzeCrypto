@@ -5,8 +5,12 @@
 package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
+import static giacenze_crypto.com.Importazioni.ColonneTabella;
+import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
 import static giacenze_crypto.com.Importazioni.RitornaTipologiaTransazione;
 import java.awt.Color;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -28,7 +33,9 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     
     
     public MovimentoManuale_GUI() {
+        setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
+        this.Bottone_CalcolaAutomaticamente.setVisible(false);//momentaneamente lo disabilito, implementerò questa funzione più avanti
         this.setTitle("Inserimento Manuale Movimenti");
         ImageIcon icon = new ImageIcon("logo.png");
         this.setIconImage(icon.getImage());
@@ -206,6 +213,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         });
 
         Bottone_CalcolaAutomaticamente.setText("Calcola Automaticamente");
+        Bottone_CalcolaAutomaticamente.setEnabled(false);
 
         Bottone_Ok.setText("OK");
         Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
@@ -261,8 +269,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(ValoreTransazione_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ValoreTransazione_TextField)
-                                .addGap(18, 18, 18)
+                                .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(Bottone_CalcolaAutomaticamente))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(Note_Label)
@@ -435,13 +443,16 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             String ID=CalcolaID();
             //verifico che non esista già una transazione non lo stesso id in quel caso chiedo se sovrascriverla o aggiungerla
             //per trovare l'id ovviamente devo cercarla nella mappa delle transazioni
-            //TUTTO DA COMPLETARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if(MappaCryptoWallet.get(ID)!=null){
               //se entro qua significa che ho già un movimento con lo stesso id 
               //adesso devo far scegliere che fare
+              //la cosa più semplice per ora è inserire un messaggio in cui si chiede di cambiare l'orario
+              //o qualcosa del genere
+              JOptionPane.showConfirmDialog(this, "Attenzione!\nEsiste un movimento con lo stesso ID Transsazione\nProvare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema",
+                    "Movimento con Stesso ID",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             }else{
               //se invece arrivo qua posso inserire il movimento nella mappa  
-              ScriviMovimento();//anche questa funzione è da fare
+              ScriviMovimento(ID);//anche questa funzione è da fare
             }
                 
             
@@ -523,8 +534,46 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
           }
     }
 
-    private void ScriviMovimento() {  
+    private void ScriviMovimento(String ID) {  
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
+         String RT[]=new String[ColonneTabella];
+         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
+         String Data=f.format(Data_Datachooser.getDate())+
+                 Ora_ComboBox.getSelectedItem().toString()+":"+
+                    Minuto_ComboBox.getSelectedItem().toString();   
+        String TipoUscita=MonetaUscitaTipo_ComboBox.getSelectedItem().toString().trim();
+        String TipoEntrata=MonetaEntrataTipo_ComboBox.getSelectedItem().toString().trim();
+        if (TipoUscita.contains("---"))TipoUscita=null;
+        if (TipoEntrata.contains("---"))TipoEntrata=null;
+        String TipoTransazione=RitornaTipologiaTransazione(TipoUscita,TipoEntrata,1);
+         RT[0] = ID;
+         RT[1] = Data;
+         RT[2] = 1 + " di " + 1;
+         RT[3] = Wallet_ComboBox.getSelectedItem().toString().replace(";", "").trim();
+         RT[4] = WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").trim();
+         RT[5] = TipoTransazione;
+         RT[6] = (MonetaUscita_TextField.getText().trim()+" -> "+MonetaEntrata_TextField.getText().trim()).trim();                                
+         RT[7] = "";
+         RT[8] = MonetaUscita_TextField.getText().trim();
+         RT[9] = TipoUscita;
+         RT[10] = MonetaUscitaQuantita_TextField.getText().trim();
+         RT[11] = MonetaEntrata_TextField.getText().trim();
+         RT[12] = TipoUscita;
+         RT[13] = MonetaEntrataQuantita_TextField.getText().trim();
+         RT[14] = "";
+         RT[15] = new BigDecimal(ValoreTransazione_TextField.getText().trim()).setScale(2, RoundingMode.HALF_UP).toString();
+         RT[16] ="";
+         RT[17] ="";
+         RT[18] ="";
+         RT[19] ="";
+         RT[20] ="";
+         RT[21] =this.Note_TextArea.getText().replace(";", "").replace("\n", "<br>");
+         RT[22] ="M";
+         RiempiVuotiArray(RT);
+         MappaCryptoWallet.put(RT[0], RT);
+         CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+         this.dispose();
+         
     }
     
     private boolean EvidenziaProblemi() {                                           
@@ -533,7 +582,9 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         //per prima cosa sostituisco le virgole con i punti nei campi numerici
         MonetaUscitaQuantita_TextField.setText(MonetaUscitaQuantita_TextField.getText().replace(",", "."));
+        MonetaUscita_TextField.setText(MonetaUscita_TextField.getText().toUpperCase().replace(";", ""));
         MonetaEntrataQuantita_TextField.setText(MonetaEntrataQuantita_TextField.getText().replace(",", "."));
+        MonetaEntrata_TextField.setText(MonetaEntrata_TextField.getText().toUpperCase().replace(";", ""));
         ValoreTransazione_TextField.setText(ValoreTransazione_TextField.getText().replace(",", "."));
         
         //adesso leggo tutti gli oggetti e li metto in stringhe
@@ -548,10 +599,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         
 
       String Wallet;
-      if (Wallet_ComboBox.getSelectedItem()!=null)Wallet=this.Wallet_ComboBox.getSelectedItem().toString().trim();
+      if (Wallet_ComboBox.getSelectedItem()!=null)Wallet=this.Wallet_ComboBox.getSelectedItem().toString().replace(";", "").trim();
       else Wallet="";
       String WalletDettaglio;
-      if (WalletDettaglio_ComboBox.getSelectedItem()!=null)WalletDettaglio=this.WalletDettaglio_ComboBox.getSelectedItem().toString().trim();
+      if (WalletDettaglio_ComboBox.getSelectedItem()!=null)WalletDettaglio=this.WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").trim();
       else WalletDettaglio="";
 
         
@@ -686,7 +737,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         if (TipoUscita.contains("---"))TipoUscita=null;
         if (TipoEntrata.contains("---"))TipoEntrata=null;
         ID=ID+RitornaTipologiaTransazione(TipoUscita,TipoEntrata,0);
-        System.out.println(ID);
+       // System.out.println(ID);
         return ID;
     }
     /**

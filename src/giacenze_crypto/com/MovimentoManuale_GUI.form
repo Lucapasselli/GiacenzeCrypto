@@ -36,8 +36,8 @@
                           <Group type="102" attributes="0">
                               <Component id="ValoreTransazione_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="ValoreTransazione_TextField" max="32767" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="ValoreTransazione_TextField" min="-2" pref="120" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Component id="Bottone_CalcolaAutomaticamente" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
@@ -504,6 +504,7 @@
     <Component class="javax.swing.JButton" name="Bottone_CalcolaAutomaticamente">
       <Properties>
         <Property name="text" type="java.lang.String" value="Calcola Automaticamente"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_Ok">

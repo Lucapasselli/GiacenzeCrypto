@@ -159,6 +159,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Bottone_InserisciWallet = new javax.swing.JButton();
         TransazioniCrypto_Bottone_DettaglioDefi = new javax.swing.JButton();
         TransazioniCrypto_Bottone_NuovoMovimento = new javax.swing.JButton();
+        TransazioniCrypto_Bottone_EliminaMovimenti = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -400,6 +401,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        TransazioniCrypto_Bottone_EliminaMovimenti.setText("Elimina Movimento Selezionato");
+        TransazioniCrypto_Bottone_EliminaMovimenti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -424,6 +432,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(jScrollPane1)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addComponent(TransazioniCrypto_Bottone_NuovoMovimento)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(TransazioniCrypto_Bottone_EliminaMovimenti)
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -454,7 +464,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza)
-                    .addComponent(TransazioniCrypto_Bottone_NuovoMovimento))
+                    .addComponent(TransazioniCrypto_Bottone_NuovoMovimento)
+                    .addComponent(TransazioniCrypto_Bottone_EliminaMovimenti))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -3156,7 +3167,29 @@ public class CDC_Grafica extends javax.swing.JFrame {
         MovimentoManuale_GUI a= new MovimentoManuale_GUI();
         a.setLocationRelativeTo(this);
         a.setVisible(true);
+        TransazioniCrypto_Funzioni_AbilitaBottoneSalva();
+        TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
     }//GEN-LAST:event_TransazioniCrypto_Bottone_NuovoMovimentoActionPerformed
+
+    private void TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed
+        // TODO add your handling code here:
+        if (TransazioniCryptoTabella.getSelectedRow()>=0){
+        int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+        String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+        int risposta=JOptionPane.showOptionDialog(this,"Sicuro di voler cancellare la transazione con ID "+IDTransazione+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+        MappaCryptoWallet.remove(IDTransazione);
+        TransazioniCrypto_DaSalvare=true;
+        TransazioniCrypto_Funzioni_AbilitaBottoneSalva();
+        TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        JOptionPane.showConfirmDialog(this, "Transazione con ID"+IDTransazione+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
+        "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null); 
+        }
+        }
+        
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed
 
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
@@ -3558,7 +3591,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
         String Plusvalenza=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 19).toString();
         String Note="";
         if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21)!=null)
-            Note=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21).toString().replace("|&£|","<br>&#9");
+            Note=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 21).toString().replace("<br>","<br>&#9");
         String Riferimenti="";
         if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20)!=null)
             Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20).toString();
@@ -3681,6 +3714,15 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
          Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }       
     
+        
+    private void TransazioniCrypto_Funzioni_AbilitaBottoneSalva() { 
+         TransazioniCrypto_Bottone_Salva.setEnabled(TransazioniCrypto_DaSalvare);
+         TransazioniCrypto_Bottone_Annulla.setEnabled(TransazioniCrypto_DaSalvare);
+         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(TransazioniCrypto_DaSalvare);
+         TransazioniCrypto_DaSalvare=false;
+        
+    }
+        
     public static List<String[]> Funzioni_Tabelle_ListaTabella(JTable tabella) {
             int numeroRighe=tabella.getModel().getRowCount();
             int numeroColonne=tabella.getModel().getColumnCount();
@@ -3993,6 +4035,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JTextPane TransazioniCryptoTextPane;
     private javax.swing.JButton TransazioniCrypto_Bottone_Annulla;
     private javax.swing.JButton TransazioniCrypto_Bottone_DettaglioDefi;
+    private javax.swing.JButton TransazioniCrypto_Bottone_EliminaMovimenti;
     private javax.swing.JButton TransazioniCrypto_Bottone_Importa;
     private javax.swing.JButton TransazioniCrypto_Bottone_InserisciWallet;
     private javax.swing.JButton TransazioniCrypto_Bottone_NuovoMovimento;

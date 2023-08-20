@@ -90,7 +90,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             this.ComboBox_TipoMovimento.setModel(model);
             this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
             String v[]=MappaCryptoWallet.get(ID);
-            TextArea_Note.setText(v[21].replace("|&£|" ,"\n"));
+            TextArea_Note.setText(v[21].replace("<br>" ,"\n"));
             CompilaTabellaMovimetiAssociabili(ID);
 
         
@@ -337,7 +337,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String descrizione = "";
         String dettaglio = "";
         //String Note=jTextField1.getText();
-        String Note=TextArea_Note.getText().replace("\n", "|&£|");
+        String Note=TextArea_Note.getText().replace("\n", "<br>");
         String attuale[] = MappaCryptoWallet.get(IDTrans);
         String controparte = attuale[20];
         String PrzCarico="Da calcolare";

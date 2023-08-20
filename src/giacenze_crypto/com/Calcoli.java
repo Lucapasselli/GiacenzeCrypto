@@ -1261,8 +1261,41 @@ for (int i=0;i<ArraydataIni.size();i++){
             difData=dataFin-dataIni;    
            // i++;
         }
+        
+        
+        
+        
 
 for (int i=0;i<ArraydataIni.size();i++){
+    
+                    //come prima cosa imposto il valore di tutte le ore a zero
+                    //poi quelle che verranno invece realmente valorizzate sovrasscriveranno questo valore ocn quello reale
+                    //quaesto serve per avere un valore anche se dalle api non dovesse risultare
+                    //e per evitare che future richieste api vengano ripetute a vuoto
+                    long timestampIniziale=ArraydataIni.get(i);
+                    long timestampFinale=ArraydataFin.get(i);
+                    while (timestampIniziale<timestampFinale)
+                        {
+                        Date date = new java.util.Date(timestampIniziale);
+                        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                        String DataconOra = sdf.format(date);
+                        //nel caso in cui non trovo il prezzo di usdc lo stesso lo equiparo a usdt
+                        //questo perchè per un periodo binance non ha fornito i prezzi di usdc
+                        if (CoppiaCrypto.equalsIgnoreCase("USDCUSDT")||
+                               CoppiaCrypto.equalsIgnoreCase("BUSDUSDT")||
+                                CoppiaCrypto.equalsIgnoreCase("DAIUSDT")){
+                                    String Prezzo=ConvertiUSDTEUR("1",timestampIniziale);
+                                    MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, Prezzo);
+                                }
+                                else
+                                    {
+                                MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, "0");
+                                }
+                        timestampIniziale=timestampIniziale+3600000;//aggiungo 1 ora
+                        }  
+    
+    
         try {
             String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + CoppiaCrypto + "&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i)+ "&limit=1000";
             URL url = new URI(apiUrl).toURL();
@@ -1285,41 +1318,13 @@ for (int i=0;i<ArraydataIni.size();i++){
                 //JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
                 //  List<PrezzoData> prezzoDataList = new ArrayList<>();
                 if (pricesArray != null) {
-                    int contatore=0;
                     for (JsonElement element : pricesArray) {
                         JsonArray priceArray = element.getAsJsonArray();
                         //System.out.println(priceArray);
                         
                         if (priceArray.size()==12)
                     {
-                        long timestampIniziale=ArraydataIni.get(i);
                         long timestamp = priceArray.get(0).getAsLong();
-                        //adesso controllo se il timestamp corrisponde a quello iniziale che gli avevo richiesto
-                        //se invece è più alto di più di 1 ora allora metto il prezzo a zero fino a che non arrivo
-                        //al timestamp dove comincio ad avere i prezzi
-                        if (timestamp-timestampIniziale > 3600000 && contatore==0){
-                          //  System.out.println(timestampIniziale);
-                            while (timestampIniziale<timestamp)
-                            {
-                                //se vedo che la moneta è USDC allora la equiparo a USDT
-                                //questo perchè binance per un periodo non ha fornito info riguardo a USDC
-                                //questa cosa la devo ancora fare
-                                Date date = new java.util.Date(timestampIniziale);
-                                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                                String DataconOra = sdf.format(date);
-                                if (CoppiaCrypto.equalsIgnoreCase("USDCUSDT")){
-                                    String Prezzo=ConvertiUSDTEUR("1",timestampIniziale);
-                                    MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, Prezzo);
-                                }
-                                else
-                                    {
-                                MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, "0");
-                                }
-                                timestampIniziale=timestampIniziale+3600000;//aggiungo 1 ora
-                            }
-                        }
-                        contatore++;
                         String price = priceArray.get(4).getAsString();
                         Date date = new java.util.Date(timestamp);
                         SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
@@ -1335,33 +1340,6 @@ for (int i=0;i<ArraydataIni.size();i++){
                         //ora devo gestire l'inserimento nella mappa
                         }
 
-                    }
-                    if (pricesArray.size()==0) {
-                    //se arrivo qua significa che binance non mi fornisce i prezzi di questa moneta
-                    //a questo punto quello che mi conviene fare è comunque salvarmi i relativi timestamp con il dato a zero in modo che
-                    //per le volte successive ce lo abbia già memorizzato e non faccia ulteriori richieste inutili
-                    //il valore lo salvo a zero dopo di che la funzione che richiama questa sa che se il prezzo è a zero vuol dire che non è stato recuperato
-                    long timestampIniziale=ArraydataIni.get(i);
-                    long timestampFinale=ArraydataFin.get(i);
-                    while (timestampIniziale<timestampFinale)
-                        {
-                        Date date = new java.util.Date(timestampIniziale);
-                        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                        String DataconOra = sdf.format(date);
-                        //nel caso in cui non trovo il prezzo di usdc lo stesso lo equiparo a usdt
-                        //questo perchè per un periodo binance non ha fornito i prezzi di usdc
-                        if (CoppiaCrypto.equalsIgnoreCase("USDCUSDT")){
-                                    String Prezzo=ConvertiUSDTEUR("1",timestampIniziale);
-                                    MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, Prezzo);
-                                }
-                                else
-                                    {
-                                MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, "0");
-                                }
-                        timestampIniziale=timestampIniziale+3600000;//aggiungo 1 ora
-                        }
-                    ok = null;                    
                     }
                 } else {
                     ok = null;

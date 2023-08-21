@@ -5,6 +5,7 @@
 package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
+import static giacenze_crypto.com.CDC_Grafica.TabellaCryptodaAggiornare;
 import static giacenze_crypto.com.Importazioni.ColonneTabella;
 import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
 import static giacenze_crypto.com.Importazioni.RitornaTipologiaTransazione;
@@ -30,7 +31,9 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
      * Creates new form MovimentoManuale_GUI
      */
     Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    
+    Map<String, String> Mappa_Cryptovalute = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    Map<String, String> Mappa_NFT = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    Map<String, String> Mappa_FIAT = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     public MovimentoManuale_GUI() {
         setModalityType(ModalityType.APPLICATION_MODAL);
@@ -40,23 +43,12 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         ImageIcon icon = new ImageIcon("logo.png");
         this.setIconImage(icon.getImage());
         //adesso recupero i vari wallet dalla lista e li metto nella combobox
-        Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-          for (String[] v : MappaCryptoWallet.values()) {
-              String Wallet=v[3];
-              String WalletDettaglio=v[4];
-              if(Wallets_e_Dettagli.get(v[3])==null)
-                  {
-                      List<String> Lista=new ArrayList();
-                      Lista.add(WalletDettaglio);
-                      Wallets_e_Dettagli.put(Wallet, Lista);
-                  }
-              else{
-                  List<String> Lista;
-                  Lista=Wallets_e_Dettagli.get(Wallet);
-                  if (!Lista.contains(WalletDettaglio))Lista.add(WalletDettaglio);
-              }
-          }
+        CreaMappeXComboBox();
         CompilaComboBoxWallet();
+        //Compilo la mappa delle FIAT
+        //Compilo la mappa delle Crypto
+        //Compilo la mappa degli NFT
+        
         
         //ora lancio EvidenziaProblemi che mi colora di giallo le parti da compilare
         EvidenziaProblemi();
@@ -111,6 +103,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         WalletDettaglio_ComboBox = new javax.swing.JComboBox<>();
         Secondo_Label = new javax.swing.JLabel();
         Secondo_ComboBox = new javax.swing.JComboBox<>();
+        MonetaUscita_ComboBox = new javax.swing.JComboBox<>();
+        MonetaEntrata_ComboBox = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -253,6 +247,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         Secondo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59" }));
 
+        MonetaUscita_ComboBox.setEditable(true);
+
+        MonetaEntrata_ComboBox.setEditable(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -281,66 +279,80 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator2)
+                            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                .addComponent(MonetaUscitaTipo_Label)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                .addComponent(MonetaUscita_Label)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                                             .addGroup(layout.createSequentialGroup()
-                                                .addGap(21, 21, 21)
-                                                .addComponent(MonetaUscitaQuantita_Label)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addGap(57, 57, 57)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                            .addGroup(layout.createSequentialGroup()
+                                                                .addGap(21, 21, 21)
+                                                                .addComponent(MonetaUscitaQuantita_Label)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                                .addComponent(MonetaUscitaTipo_Label)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                        .addGap(57, 57, 57))
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(MonetaUscita_Label)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGap(3, 3, 3)
+                                                        .addComponent(MonetaUscita_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGap(18, 18, 18)))
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(Freccia3_Label)
+                                                    .addComponent(Freccia1_Label)
+                                                    .addComponent(Freccia2_Label)))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(49, 49, 49)
+                                                .addComponent(Data_Label)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(Data_Datachooser, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(Ora_Label)))
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(Freccia3_Label)
-                                            .addComponent(Freccia1_Label)
-                                            .addComponent(Freccia2_Label)))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(49, 49, 49)
-                                        .addComponent(Data_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(Data_Datachooser, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Ora_Label)))
-                                .addGap(23, 23, 23)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGap(33, 33, 33)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(MonetaEntrata_Label)
-                                            .addComponent(MonetaEntrataTipo_Label)
-                                            .addComponent(MonetaEntrataQuantita_Label))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(MonetaEntrata_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(60, 60, 60)
-                                        .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(Secondo_Label)
-                                        .addGap(78, 78, 78))))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(Minuto_Label)
-                                    .addGap(131, 131, 131)
-                                    .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(ID_Label)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(ID_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(83, 83, 83)
+                                                .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(Secondo_Label))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addGap(27, 27, 27)
+                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                            .addComponent(MonetaEntrataQuantita_Label)
+                                                            .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(MonetaEntrata_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(MonetaEntrata_Label)))
+                                                        .addGap(4, 4, 4))
+                                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(MonetaEntrataTipo_Label)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                    .addComponent(MonetaEntrataTipo_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                    .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                                                    .addComponent(MonetaEntrata_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(Minuto_Label)
+                                            .addGap(131, 131, 131)
+                                            .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                            .addComponent(ID_Label)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(ID_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 467, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -384,26 +396,28 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Freccia1_Label)
+                    .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaUscitaTipo_Label)
+                    .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaEntrataTipo_Label))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Freccia2_Label)
+                    .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(MonetaUscita_Label)
                     .addComponent(MonetaEntrata_Label)
-                    .addComponent(MonetaUscita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(MonetaEntrata_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Freccia1_Label))
+                    .addComponent(MonetaUscita_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaEntrata_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(MonetaUscitaTipo_Label)
-                    .addComponent(MonetaEntrataTipo_Label)
-                    .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Freccia2_Label))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(MonetaUscitaQuantita_Label)
-                    .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(MonetaEntrataQuantita_Label)
                     .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Freccia3_Label))
-                .addGap(13, 13, 13)
+                    .addComponent(MonetaEntrataQuantita_Label)
+                    .addComponent(Freccia3_Label)
+                    .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaUscitaQuantita_Label))
+                .addGap(29, 29, 29)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -424,6 +438,92 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void CreaMappeXComboBox(){
+                Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+          for (String[] v : MappaCryptoWallet.values()) {
+              //PARTE 1: Recupero Wallet e dettagli del wallet
+              String Wallet=v[3];
+              String WalletDettaglio=v[4];
+              if(Wallets_e_Dettagli.get(v[3])==null)
+                  {
+                      List<String> Lista=new ArrayList();
+                      Lista.add(WalletDettaglio);
+                      Wallets_e_Dettagli.put(Wallet, Lista);
+                  }
+              else{
+                  List<String> Lista;
+                  Lista=Wallets_e_Dettagli.get(Wallet);
+                  if (!Lista.contains(WalletDettaglio))Lista.add(WalletDettaglio);
+              }
+              //Parte 2 recupero della lista delle crypto, lista nft etc...
+              String TipoUscita=v[9];
+              String MonetaUscita=v[8];
+              String TipoEntrata=v[12];
+              String MonetaEntrata=v[11];
+              //qui elenco le monete in uscita
+              if (TipoUscita.equalsIgnoreCase("Crypto")){
+                  Mappa_Cryptovalute.put(MonetaUscita, MonetaUscita);
+              }else if (TipoUscita.equalsIgnoreCase("NFT")){
+                  Mappa_NFT.put(MonetaUscita, MonetaUscita);
+              }else if (TipoUscita.equalsIgnoreCase("FIAT")){
+                  Mappa_FIAT.put(MonetaUscita, MonetaUscita);
+              }
+              //qui quelle in entrata mettendole ovviamente nella stessa mappa chemi servirà solo per avere poi l'elenco
+              if (TipoEntrata.equalsIgnoreCase("Crypto")){
+                  Mappa_Cryptovalute.put(MonetaEntrata, MonetaEntrata);
+              }else if (TipoEntrata.equalsIgnoreCase("NFT")){
+                  Mappa_NFT.put(MonetaEntrata, MonetaEntrata);
+              }else if (TipoEntrata.equalsIgnoreCase("FIAT")){
+                  Mappa_FIAT.put(MonetaEntrata, MonetaEntrata);
+              }
+          }
+    }
+    
+    private void CompilaComboBoxMoneteUscite(){
+    
+        String TipoUscita=MonetaUscitaTipo_ComboBox.getSelectedItem().toString();
+        this.MonetaUscita_ComboBox.removeAllItems();
+        this.MonetaUscita_ComboBox.addItem("");
+        
+        if (TipoUscita.equalsIgnoreCase("Crypto")) {
+            for (String v : Mappa_Cryptovalute.keySet()) {
+                this.MonetaUscita_ComboBox.addItem(v);
+            }
+        } else if (TipoUscita.equalsIgnoreCase("NFT")) {
+            for (String v : Mappa_NFT.keySet()) {
+                this.MonetaUscita_ComboBox.addItem(v);
+            }
+        } else if (TipoUscita.equalsIgnoreCase("FIAT")) {
+            for (String v : Mappa_FIAT.keySet()) {
+                this.MonetaUscita_ComboBox.addItem(v);
+            }
+        }
+        
+
+    }
+    
+    private void CompilaComboBoxMoneteEntrate(){
+    
+        String TipoEntrata=MonetaEntrataTipo_ComboBox.getSelectedItem().toString();
+        this.MonetaEntrata_ComboBox.removeAllItems();
+        this.MonetaEntrata_ComboBox.addItem("");
+        
+        if (TipoEntrata.equalsIgnoreCase("Crypto")) {
+            for (String v : Mappa_Cryptovalute.keySet()) {
+                this.MonetaEntrata_ComboBox.addItem(v);
+            }
+        } else if (TipoEntrata.equalsIgnoreCase("NFT")) {
+            for (String v : Mappa_NFT.keySet()) {
+                this.MonetaEntrata_ComboBox.addItem(v);
+            }
+        } else if (TipoEntrata.equalsIgnoreCase("FIAT")) {
+            for (String v : Mappa_FIAT.keySet()) {
+                this.MonetaEntrata_ComboBox.addItem(v);
+            }
+        }
+
+    }
+    
     private void MonetaUscitaQuantita_TextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MonetaUscitaQuantita_TextFieldActionPerformed
         // TODO add your handling code here:
         EvidenziaProblemi();
@@ -452,9 +552,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                     "Movimento con Stesso ID",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             }else{
               //se invece arrivo qua posso inserire il movimento nella mappa  
-              ScriviMovimento(ID);//anche questa funzione è da fare
+              ScriviMovimento(ID);
             }
-                
+            CDC_Grafica.TabellaCryptodaAggiornare=true;
+            this.dispose();   
             
             
         }
@@ -489,11 +590,15 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void MonetaUscitaTipo_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_MonetaUscitaTipo_ComboBoxItemStateChanged
         // TODO add your handling code here:
+        //Se cambio la tipologia per prima cosa carico la mappa per la combobox
+        this.CompilaComboBoxMoneteUscite();
+        //come seconda cosa faccio il controllo che tutto sia compilato correttamente
         EvidenziaProblemi();
     }//GEN-LAST:event_MonetaUscitaTipo_ComboBoxItemStateChanged
 
     private void MonetaEntrataTipo_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_MonetaEntrataTipo_ComboBoxItemStateChanged
         // TODO add your handling code here:
+        this.CompilaComboBoxMoneteEntrate();
         EvidenziaProblemi();
     }//GEN-LAST:event_MonetaEntrataTipo_ComboBoxItemStateChanged
 
@@ -571,8 +676,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
          RT[22] ="M";
          RiempiVuotiArray(RT);
          MappaCryptoWallet.put(RT[0], RT);
-         CDC_Grafica.TransazioniCrypto_DaSalvare=true;
-         this.dispose();
+
          
     }
     
@@ -792,12 +896,14 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     private javax.swing.JTextField MonetaEntrataQuantita_TextField;
     private javax.swing.JComboBox<String> MonetaEntrataTipo_ComboBox;
     private javax.swing.JLabel MonetaEntrataTipo_Label;
+    private javax.swing.JComboBox<String> MonetaEntrata_ComboBox;
     private javax.swing.JLabel MonetaEntrata_Label;
     private javax.swing.JTextField MonetaEntrata_TextField;
     private javax.swing.JLabel MonetaUscitaQuantita_Label;
     private javax.swing.JTextField MonetaUscitaQuantita_TextField;
     private javax.swing.JComboBox<String> MonetaUscitaTipo_ComboBox;
     private javax.swing.JLabel MonetaUscitaTipo_Label;
+    private javax.swing.JComboBox<String> MonetaUscita_ComboBox;
     private javax.swing.JLabel MonetaUscita_Label;
     private javax.swing.JTextField MonetaUscita_TextField;
     private javax.swing.JLabel Note_Label;

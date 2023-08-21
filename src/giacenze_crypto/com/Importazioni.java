@@ -226,6 +226,7 @@ public class Importazioni {
         Transazioni=numeromov;
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
+        if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
         
     }
     
@@ -427,6 +428,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
         Calcoli.ScriviFileConversioneXXXEUR();
+        if (TransazioniAggiunte>0) CDC_Grafica.TransazioniCrypto_DaSalvare=true;
         
         return true;
        

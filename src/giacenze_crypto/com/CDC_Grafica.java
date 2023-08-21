@@ -54,7 +54,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     /**
      * Creates new form com
      */
-    static public boolean TabellaCryptodaAggiornare=false;
+   
     static Map<String, String> CDC_FiatWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -77,6 +77,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
     static List<String>[] CDC_CardWallet_ListaSaldi;
     static public List<String>[] CDC_FiatWallet_ListaSaldi;
+    static public boolean TabellaCryptodaAggiornare=false;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     
     //static String Appoggio="";
@@ -2639,10 +2640,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void TransazioniCrypto_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
         // TODO add your handling code here:
         Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet);
-        this.TransazioniCrypto_Bottone_Salva.setEnabled(false);
-        TransazioniCrypto_Bottone_Annulla.setEnabled(false);
-        this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
         Importazioni.TransazioniAggiunte=0;
+        TransazioniCrypto_DaSalvare=false;
+        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
 
@@ -2654,9 +2654,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (risposta == 0) {
             MappaCryptoWallet.clear();
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-            TransazioniCrypto_Bottone_Annulla.setEnabled(true);
-            TransazioniCrypto_Bottone_Salva.setEnabled(true);
-            TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+            TransazioniCrypto_DaSalvare=true;
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
             Messaggio = "Sono state cancellate tutte le movimentazioni crypto \nRicordarsi di Salvare per non perdere le modifiche fatte.";
             JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
         }
@@ -2747,17 +2746,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void TransazioniCrypto_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        TransazioniCrypto_DaSalvare=false;
         try {
 
             // TODO add your handling code here:
             this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-            TransazioniCrypto_Bottone_Salva.setEnabled(false);
-            TransazioniCrypto_Bottone_Annulla.setEnabled(false);
-            TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         } catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.setCursor(Cursor.getDefaultCursor());
+        
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
 
     private void Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
@@ -2774,9 +2773,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                Opzioni_RicreaListaWalletDisponibili();
                 TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-                TransazioniCrypto_Bottone_Annulla.setEnabled(true);
-                TransazioniCrypto_Bottone_Salva.setEnabled(true);
-                TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+                TransazioniCrypto_DaSalvare=true;
+                TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
                 }
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
         Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
@@ -2853,9 +2851,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         mod.setVisible(true);
         //System.out.println(mod.getModificaEffettuata());
         if (mod.getModificaEffettuata()){
-         this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
-         this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
-         this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+            TransazioniCrypto_DaSalvare=true;
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
          
          TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
          this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
@@ -3030,9 +3027,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (numeromodifiche>0){
         JOptionPane.showConfirmDialog(this, "Sono stati individuati e aggiornati "+numeromodifiche+" coppie di transazioni, ricordarsi di salvare le modifiche!!",
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-        this.TransazioniCrypto_Bottone_Salva.setEnabled(true);
-        this.TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
-        this.TransazioniCrypto_Bottone_Annulla.setEnabled(true);
+       
+                    TransazioniCrypto_DaSalvare=true;
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         }
         else{
         JOptionPane.showConfirmDialog(this, "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente",
@@ -3142,16 +3139,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
-      //  System.out.println("Focus");
+        System.out.println("Focus");
+      
         if (TabellaCryptodaAggiornare) {
           //  System.out.println("AggiornoTabella");
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             TabellaCryptodaAggiornare = false;
+            TransazioniCrypto_DaSalvare = true;
             TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-            TransazioniCrypto_Bottone_Annulla.setEnabled(true);
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+           /* TransazioniCrypto_Bottone_Annulla.setEnabled(true);
             TransazioniCrypto_Bottone_Salva.setEnabled(true);
-            TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
+            TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);*/
             this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_formWindowGainedFocus
@@ -3167,9 +3167,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         MovimentoManuale_GUI a= new MovimentoManuale_GUI();
         a.setLocationRelativeTo(this);
         a.setVisible(true);
-        TransazioniCrypto_Funzioni_AbilitaBottoneSalva();
-        TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        //Le seguenti 3 funzioni sono commentate perchè ci pensa il gain focus della finestra a generare l'aggiornamento della tabella
+      //  TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+       // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+      //  TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
     }//GEN-LAST:event_TransazioniCrypto_Bottone_NuovoMovimentoActionPerformed
 
     private void TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed
@@ -3180,10 +3181,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         int risposta=JOptionPane.showOptionDialog(this,"Sicuro di voler cancellare la transazione con ID "+IDTransazione+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta==0){
         MappaCryptoWallet.remove(IDTransazione);
-        TransazioniCrypto_DaSalvare=true;
-        TransazioniCrypto_Funzioni_AbilitaBottoneSalva();
-        TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        TabellaCryptodaAggiornare=true;
+       // TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+       // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+       // TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         JOptionPane.showConfirmDialog(this, "Transazione con ID"+IDTransazione+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
         "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null); 
         }
@@ -3702,11 +3703,7 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
                 }
             }
        }
-         if (Importazioni.TransazioniAggiunte!=0){
-         TransazioniCrypto_Bottone_Salva.setEnabled(true);
-         TransazioniCrypto_Bottone_Annulla.setEnabled(true);
-         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);
-        }
+         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
          TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
          Color verde=new Color (45, 155, 103);
         Color rosso=new Color(166,16,34);
@@ -3715,11 +3712,11 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     }       
     
         
-    private void TransazioniCrypto_Funzioni_AbilitaBottoneSalva() { 
-         TransazioniCrypto_Bottone_Salva.setEnabled(TransazioniCrypto_DaSalvare);
-         TransazioniCrypto_Bottone_Annulla.setEnabled(TransazioniCrypto_DaSalvare);
-         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(TransazioniCrypto_DaSalvare);
-         TransazioniCrypto_DaSalvare=false;
+    private void TransazioniCrypto_Funzioni_AbilitaBottoneSalva(boolean Attivo) { 
+         TransazioniCrypto_Bottone_Salva.setEnabled(Attivo);
+         TransazioniCrypto_Bottone_Annulla.setEnabled(Attivo);
+         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(Attivo);
+         
         
     }
         

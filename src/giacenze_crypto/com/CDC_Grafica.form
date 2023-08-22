@@ -109,10 +109,11 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane1" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="TransazioniCrypto_Bottone_NuovoMovimento" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="TransazioniCrypto_Bottone_EliminaMovimenti" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="TransazioniCrypto_Bottone_MovimentoModifica" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="TransazioniCrypto_Bottone_MovimentoElimina" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -153,8 +154,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_NuovoMovimento" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_EliminaMovimenti" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -502,20 +504,28 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_DettaglioDefiActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_NuovoMovimento">
+            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoNuovo">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Nuovo Movimento"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_NuovoMovimentoActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_EliminaMovimenti">
+            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoElimina">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Elimina Movimento Selezionato"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoModifica">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Modifica Movimento Selezionato"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_MovimentoModificaActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

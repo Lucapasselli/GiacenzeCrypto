@@ -4,15 +4,15 @@
  */
 package giacenze_crypto.com;
 
+
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
-import static giacenze_crypto.com.Importazioni.ColonneTabella;
-import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
-import static giacenze_crypto.com.Importazioni.RitornaTipologiaTransazione;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -34,12 +36,20 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
      * Creates new form MovimentoManuale_GUI
      */
     Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-   // Map<String, String> Mappa_Cryptovalute = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     List<String> Lista_Cryptovalute = new ArrayList<>();
-    //Map<String, String> Mappa_NFT = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     List<String> Lista_NFT = new ArrayList<>();
-    //Map<String, String> Mappa_FIAT = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     List<String> Lista_FIAT = new ArrayList<>();
+    boolean ModificaMovimento=false;
+    String MonetaE="";
+    String MonetaU="";
+    String MonetaETipo="";
+    String MonetaUTipo="";
+    String MonetaEQta="";
+    String MonetaUQta="";
+    String ValoreTransazione="";
+    String Wallet="";
+    String WalletDettaglio="";
+    long DataLong=0;
     
     public MovimentoManuale_GUI() {
         setModalityType(ModalityType.APPLICATION_MODAL);
@@ -59,7 +69,6 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
                  
-        this.Bottone_CalcolaAutomaticamente.setVisible(false);//momentaneamente lo disabilito, implementerò questa funzione più avanti
         this.setTitle("Inserimento Manuale Movimenti");
         ImageIcon icon = new ImageIcon("logo.png");
         this.setIconImage(icon.getImage());
@@ -131,7 +140,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         Data_Label.setText("Data : ");
 
-        Data_Datachooser.setDateFormatString("dd/MM/yy");
+        Data_Datachooser.setDateFormatString("dd/MM/yyyy");
         Data_Datachooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 Data_DatachooserPropertyChange(evt);
@@ -141,6 +150,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         Ora_Label.setText("Ora :");
 
         Ora_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23" }));
+        Ora_ComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                Ora_ComboBoxItemStateChanged(evt);
+            }
+        });
         Ora_ComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Ora_ComboBoxActionPerformed(evt);
@@ -150,6 +164,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         Minuto_Label.setText("Minuto :");
 
         Minuto_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59" }));
+        Minuto_ComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                Minuto_ComboBoxItemStateChanged(evt);
+            }
+        });
 
         MonetaUscita_Label.setText("Moneta Uscita : ");
 
@@ -214,8 +233,12 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
-        Bottone_CalcolaAutomaticamente.setText("Calcola Automaticamente");
-        Bottone_CalcolaAutomaticamente.setEnabled(false);
+        Bottone_CalcolaAutomaticamente.setText("Cerca di recuperare automaticamente il Valore della Transazione");
+        Bottone_CalcolaAutomaticamente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_CalcolaAutomaticamenteActionPerformed(evt);
+            }
+        });
 
         Bottone_Ok.setText("OK");
         Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
@@ -288,8 +311,9 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                                 .addComponent(ValoreTransazione_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Bottone_CalcolaAutomaticamente))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Bottone_CalcolaAutomaticamente)
+                                .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(Note_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -323,12 +347,12 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                                                 .addGap(21, 21, 21)
                                                 .addComponent(MonetaUscitaQuantita_Label)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(MonetaUscitaTipo_Label)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(MonetaUscitaTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addGap(0, 0, Short.MAX_VALUE)))
+                                        .addGap(0, 100, Short.MAX_VALUE)))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(32, 32, 32)
@@ -354,7 +378,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addComponent(MonetaEntrata_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                            .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(ID_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -447,18 +471,18 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                 Lista_FIAT.add("EUR");
           for (String[] v : MappaCryptoWallet.values()) {
               //PARTE 1: Recupero Wallet e dettagli del wallet
-              String Wallet=v[3];
-              String WalletDettaglio=v[4];
+              String WalletTemp=v[3];
+              String WalletDettaglioTemp=v[4];
               if(Wallets_e_Dettagli.get(v[3])==null)
                   {
                       List<String> Lista=new ArrayList();
-                      Lista.add(WalletDettaglio);
-                      Wallets_e_Dettagli.put(Wallet, Lista);
+                      Lista.add(WalletDettaglioTemp);
+                      Wallets_e_Dettagli.put(WalletTemp, Lista);
                   }
               else{
                   List<String> Lista;
-                  Lista=Wallets_e_Dettagli.get(Wallet);
-                  if (!Lista.contains(WalletDettaglio))Lista.add(WalletDettaglio);
+                  Lista=Wallets_e_Dettagli.get(WalletTemp);
+                  if (!Lista.contains(WalletDettaglioTemp))Lista.add(WalletDettaglioTemp);
               }
               //Parte 2 recupero della lista delle crypto, lista nft etc...
               String TipoUscita=v[9];
@@ -556,7 +580,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             String ID=CalcolaID();
             //verifico che non esista già una transazione non lo stesso id in quel caso chiedo se sovrascriverla o aggiungerla
             //per trovare l'id ovviamente devo cercarla nella mappa delle transazioni
-            if(MappaCryptoWallet.get(ID)!=null){
+            if(MappaCryptoWallet.get(ID)!=null && !ModificaMovimento){
               //se entro qua significa che ho già un movimento con lo stesso id 
               //adesso devo far scegliere che fare
               //la cosa più semplice per ora è inserire un messaggio in cui si chiede di cambiare l'orario
@@ -566,9 +590,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }else{
               //se invece arrivo qua posso inserire il movimento nella mappa  
               ScriviMovimento(ID);
+              CDC_Grafica.TabellaCryptodaAggiornare=true;
+            this.dispose(); 
             }
-            CDC_Grafica.TabellaCryptodaAggiornare=true;
-            this.dispose();   
+  
             
             
         }
@@ -576,6 +601,36 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         
     }//GEN-LAST:event_Bottone_OkActionPerformed
 
+    public void CompilaCampidaID(String IDTransazione){
+        try {
+            String riga[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+            String DataOraMinutiSecondo=riga[0].split("_")[0];
+            SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
+            Date d = f.parse(DataOraMinutiSecondo.substring(0,8));
+            this.Data_Datachooser.setDate(d);
+            this.Ora_ComboBox.setSelectedItem(DataOraMinutiSecondo.substring(8,10));
+            this.Minuto_ComboBox.setSelectedItem(DataOraMinutiSecondo.substring(10,12));
+            this.Secondo_ComboBox.setSelectedItem(DataOraMinutiSecondo.substring(12,14));
+            this.ID_TextField.setText(riga[0]);
+            this.Wallet_ComboBox.setSelectedItem(riga[3]);
+            this.WalletDettaglio_ComboBox.setSelectedItem(riga[4]);
+            this.MonetaUscitaTipo_ComboBox.setSelectedItem(riga[9]);
+            this.MonetaUscita_ComboBox.setSelectedItem(riga[8]);
+            this.MonetaUscitaQuantita_TextField.setText(riga[10]);
+            this.MonetaEntrataTipo_ComboBox.setSelectedItem(riga[12]);
+            this.MonetaEntrata_ComboBox.setSelectedItem(riga[11]);
+            this.MonetaEntrataQuantita_TextField.setText(riga[13]);
+            this.ValoreTransazione_TextField.setText(riga[15]);
+            ModificaMovimento=true;
+            
+            EvidenziaProblemi();
+        } catch (ParseException ex) {
+            Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    
+    
     private void MonetaUscitaQuantita_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MonetaUscitaQuantita_TextFieldKeyReleased
         // TODO add your handling code here:
         EvidenziaProblemi();
@@ -646,6 +701,41 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         EvidenziaProblemi();
     }//GEN-LAST:event_MonetaEntrata_ComboBoxItemStateChanged
 
+    private void Ora_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_Ora_ComboBoxItemStateChanged
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_Ora_ComboBoxItemStateChanged
+
+    private void Minuto_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_Minuto_ComboBoxItemStateChanged
+        // TODO add your handling code here:
+        EvidenziaProblemi();
+    }//GEN-LAST:event_Minuto_ComboBoxItemStateChanged
+
+    private void Bottone_CalcolaAutomaticamenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CalcolaAutomaticamenteActionPerformed
+        // TODO add your handling code here:
+              setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+       Moneta MonetaUscita=null;
+       Moneta MonetaEntrata=null;
+       if(!MonetaU.equalsIgnoreCase("")&&!MonetaUQta.equalsIgnoreCase("")&&MonetaUTipo!=null){
+       MonetaUscita=new Moneta();
+       MonetaUscita.Moneta=MonetaU;
+       MonetaUscita.Qta=MonetaUQta;
+       MonetaUscita.Tipo=MonetaUTipo;
+        }
+       if(!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&MonetaETipo!=null){
+       MonetaEntrata=new Moneta();
+       MonetaEntrata.Moneta=MonetaE;
+       MonetaEntrata.Qta=MonetaEQta;
+       MonetaEntrata.Tipo=MonetaETipo;
+        }
+       String Prezzo=Calcoli.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, null);
+        ValoreTransazione_TextField.setText(Prezzo);
+       EvidenziaProblemi();
+     // System.out.println("Prezzo");
+       setCursor(Cursor.getDefaultCursor());
+ 
+    }//GEN-LAST:event_Bottone_CalcolaAutomaticamenteActionPerformed
+
     private void CompilaComboBoxWallet(){
         this.Wallet_ComboBox.removeAllItems();
         this.Wallet_ComboBox.addItem("");
@@ -656,34 +746,17 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void ScriviMovimento(String ID) {
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
-        String MonetaU = "";
-        if (MonetaUscita_ComboBox.getSelectedItem() != null) {
-            MonetaU = this.MonetaUscita_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-        }
-        String MonetaE = "";
-        if (MonetaEntrata_ComboBox.getSelectedItem() != null) {
-            MonetaU = this.MonetaEntrata_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-        }
         String Note = this.Note_TextArea.getText().replace(";", "").replace("\n", "<br>");
-        String Wallet=Wallet_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-        String WalletDettaglio=WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-        String ValoreTransazione=new BigDecimal(ValoreTransazione_TextField.getText().trim()).setScale(2, RoundingMode.HALF_UP).toString();
+        ValoreTransazione=new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
         
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
         String Data = f.format(Data_Datachooser.getDate())
                 + Ora_ComboBox.getSelectedItem().toString() + ":"
                 + Minuto_ComboBox.getSelectedItem().toString();
-        String TipoUscita = MonetaUscitaTipo_ComboBox.getSelectedItem().toString().trim();
-        String TipoEntrata = MonetaEntrataTipo_ComboBox.getSelectedItem().toString().trim();
-        if (TipoUscita.contains("---")) {
-            TipoUscita = null;
-        }
-        if (TipoEntrata.contains("---")) {
-            TipoEntrata = null;
-        }
-        String TipoTransazione = RitornaTipologiaTransazione(TipoUscita, TipoEntrata, 1);
+
+        String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
         
-        String RT[] = new String[ColonneTabella];
+        String RT[] = new String[Importazioni.ColonneTabella];
         RT[0] = ID;
         RT[1] = Data;
         RT[2] = 1 + " di " + 1;
@@ -693,13 +766,13 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         RT[6] = (MonetaU + " -> " + MonetaE).trim();
         RT[7] = "";
         RT[8] = MonetaU;
-        RT[9] = TipoUscita;
-        RT[10] = MonetaUscitaQuantita_TextField.getText().trim();
+        RT[9] = MonetaUTipo;
+        RT[10] = MonetaUQta;
         RT[11] = MonetaE;
-        RT[12] = TipoUscita;
-        RT[13] = MonetaEntrataQuantita_TextField.getText().trim();
+        RT[12] = MonetaETipo;
+        RT[13] = MonetaEQta;
         RT[14] = "";
-        RT[15] = ValoreTransazione;
+        RT[15] = ValoreTransazione.replace("-", "");
         RT[16] = "";
         RT[17] = "";
         RT[18] = "";
@@ -707,7 +780,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         RT[20] = "";
         RT[21] = Note;
         RT[22] = "M";
-        RiempiVuotiArray(RT);
+        Importazioni.RiempiVuotiArray(RT);
         MappaCryptoWallet.put(RT[0], RT);
 
     }
@@ -726,21 +799,19 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         //adesso leggo tutti gli oggetti e li metto in stringhe
         Date Data=this.Data_Datachooser.getDate();
         //String MonetaU=this.MonetaUscita_TextField.getText().trim();
-        String MonetaU="";
         if (MonetaUscita_ComboBox.getSelectedItem()!=null)MonetaU=this.MonetaUscita_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-        String MonetaUQta=this.MonetaUscitaQuantita_TextField.getText().trim();
-        String MonetaUTipo=this.MonetaUscitaTipo_ComboBox.getSelectedItem().toString();
+        MonetaUQta=this.MonetaUscitaQuantita_TextField.getText().trim();
+        MonetaUTipo=this.MonetaUscitaTipo_ComboBox.getSelectedItem().toString();
         //String MonetaE=this.MonetaEntrata_TextField.getText().trim();
-        String MonetaE="";
         if (MonetaEntrata_ComboBox.getSelectedItem()!=null)MonetaE=this.MonetaEntrata_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-        String MonetaEQta=this.MonetaEntrataQuantita_TextField.getText().trim();
-        String MonetaETipo=this.MonetaEntrataTipo_ComboBox.getSelectedItem().toString();
-        String ValoreTransazione=this.ValoreTransazione_TextField.getText().trim();
+        MonetaEQta=this.MonetaEntrataQuantita_TextField.getText().trim();
+        MonetaETipo=this.MonetaEntrataTipo_ComboBox.getSelectedItem().toString();
+        if (MonetaUTipo.equalsIgnoreCase("-----"))MonetaUTipo=null;
+        if (MonetaETipo.equalsIgnoreCase("-----"))MonetaETipo=null;
+        ValoreTransazione=this.ValoreTransazione_TextField.getText().trim();
         
 
-      String Wallet="";
       if (Wallet_ComboBox.getSelectedItem()!=null)Wallet=this.Wallet_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-      String WalletDettaglio="";
       if (WalletDettaglio_ComboBox.getSelectedItem()!=null)WalletDettaglio=this.WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").trim();
 
         
@@ -772,6 +843,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             this.Data_Datachooser.setBackground(Color.orange);
         }else {
             this.Data_Datachooser.setBackground(this.getBackground());
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            String DataString=f.format(Data_Datachooser.getDate())+" "+Ora_ComboBox.getSelectedItem().toString()+":"+
+            Minuto_ComboBox.getSelectedItem().toString();
+            DataLong=Calcoli.ConvertiDatainLongMinuto(DataString);
         }
         
         
@@ -780,27 +855,35 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         boolean tuttoCompilatoU=false;
         boolean tuttoVuotoE=false;
         boolean tuttoVuotoU=false;
-        if (MonetaU.equalsIgnoreCase("")&&MonetaUQta.equalsIgnoreCase("")&&MonetaUTipo.equalsIgnoreCase("-----"))
+        if (MonetaU.equalsIgnoreCase("")&&MonetaUQta.equalsIgnoreCase("")&&MonetaUTipo==null)
             {
             tuttoVuotoU=true;
             tuttoCompilatoU=false;
             }
-        if (!MonetaU.equalsIgnoreCase("")&&!MonetaUQta.equalsIgnoreCase("")&&!MonetaUTipo.equalsIgnoreCase("-----"))
+        if (!MonetaU.equalsIgnoreCase("")&&!MonetaUQta.equalsIgnoreCase("")&&MonetaUTipo!=null)
             {
             tuttoVuotoU=false;
             tuttoCompilatoU=true;
             }
         
-        if (MonetaE.equalsIgnoreCase("")&&MonetaEQta.equalsIgnoreCase("")&&MonetaETipo.equalsIgnoreCase("-----"))
+        if (MonetaE.equalsIgnoreCase("")&&MonetaEQta.equalsIgnoreCase("")&&MonetaETipo==null)
             {
             tuttoVuotoE=true;
             tuttoCompilatoE=false;
             }
-        if (!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&!MonetaETipo.equalsIgnoreCase("-----"))
+        if (!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&MonetaETipo!=null)
             {
             tuttoVuotoE=false;
             tuttoCompilatoE=true;
             }
+      /*  System.out.println(tuttoCompilatoU);
+        System.out.println(tuttoCompilatoE);
+        System.out.println(tuttoVuotoU);
+        System.out.println(tuttoVuotoE);
+        System.out.println(MonetaUQta);
+        System.out.println(MonetaU);
+        System.out.println(MonetaUTipo);
+        System.out.println("----");*/
         //se trovo delle compilazioni a metà in uno dei 2 blocchi devo evidenziare il problema
         //se trovo che nessuno dei 2 blocchi è compilato devo evidenziare il problema
         //se invece le 2 situazioni di prima non sono vere vuol dire che va tutto bene
@@ -815,10 +898,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             nonCompleto=true;
             if (MonetaU.equalsIgnoreCase(""))MonetaUscita_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscita_ComboBox.setBackground(Color.white);
             if (MonetaUQta.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(MonetaUQta))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
-            if (MonetaUTipo.equalsIgnoreCase("-----"))MonetaUscitaTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaTipo_ComboBox.setBackground(Color.white);
+            if (MonetaUTipo==null)MonetaUscitaTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaTipo_ComboBox.setBackground(Color.white);
             if (MonetaE.equalsIgnoreCase(""))MonetaEntrata_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrata_ComboBox.setBackground(Color.white);
             if (MonetaEQta.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
-            if (MonetaETipo.equalsIgnoreCase("-----"))MonetaEntrataTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataTipo_ComboBox.setBackground(Color.white);
+            if (MonetaETipo==null)MonetaEntrataTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataTipo_ComboBox.setBackground(Color.white);
         } 
         //se invece le 2 situazioni di prima non sono vere vuol dire che va tutto bene
         else{
@@ -833,6 +916,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         
                if (!nonCompleto)Bottone_Ok.setEnabled(true);
         else Bottone_Ok.setEnabled(false);
+               if(CDC_Grafica.Funzioni_isNumeric(MonetaUQta))MonetaUQta="-"+MonetaUQta.replace("-","");
     return nonCompleto;
     
     }  
@@ -868,15 +952,13 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         //SN->Scambio NFT
         //AC->Acquisto Crypto (Con FIAT)
         //VC->Vendita Crypto (per FIAT)
-        String TipoUscita;
-        String TipoEntrata;
-        TipoUscita=MonetaUscitaTipo_ComboBox.getSelectedItem().toString().trim();
-        TipoEntrata=MonetaEntrataTipo_ComboBox.getSelectedItem().toString().trim();
-        if (TipoUscita.contains("---"))TipoUscita=null;
-        if (TipoEntrata.contains("---"))TipoEntrata=null;
-        ID=ID+RitornaTipologiaTransazione(TipoUscita,TipoEntrata,0);
+        ID=ID+Importazioni.RitornaTipologiaTransazione(MonetaUTipo,MonetaETipo,0);
        // System.out.println(ID);
+       String IDScritto=this.ID_TextField.getText();
+       //se ho recuperato l'id dalla transazione tengo quello
+       if (IDScritto.equalsIgnoreCase(""))
         return ID;
+       else return IDScritto;
     }
     /**
      * @param args the command line arguments

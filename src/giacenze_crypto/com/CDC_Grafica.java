@@ -159,8 +159,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Text_Plusvalenza = new javax.swing.JTextField();
         TransazioniCrypto_Bottone_InserisciWallet = new javax.swing.JButton();
         TransazioniCrypto_Bottone_DettaglioDefi = new javax.swing.JButton();
-        TransazioniCrypto_Bottone_NuovoMovimento = new javax.swing.JButton();
-        TransazioniCrypto_Bottone_EliminaMovimenti = new javax.swing.JButton();
+        TransazioniCrypto_Bottone_MovimentoNuovo = new javax.swing.JButton();
+        TransazioniCrypto_Bottone_MovimentoElimina = new javax.swing.JButton();
+        TransazioniCrypto_Bottone_MovimentoModifica = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -395,17 +396,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        TransazioniCrypto_Bottone_NuovoMovimento.setText("Nuovo Movimento");
-        TransazioniCrypto_Bottone_NuovoMovimento.addActionListener(new java.awt.event.ActionListener() {
+        TransazioniCrypto_Bottone_MovimentoNuovo.setText("Nuovo Movimento");
+        TransazioniCrypto_Bottone_MovimentoNuovo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                TransazioniCrypto_Bottone_NuovoMovimentoActionPerformed(evt);
+                TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(evt);
             }
         });
 
-        TransazioniCrypto_Bottone_EliminaMovimenti.setText("Elimina Movimento Selezionato");
-        TransazioniCrypto_Bottone_EliminaMovimenti.addActionListener(new java.awt.event.ActionListener() {
+        TransazioniCrypto_Bottone_MovimentoElimina.setText("Elimina Movimento Selezionato");
+        TransazioniCrypto_Bottone_MovimentoElimina.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed(evt);
+                TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed(evt);
+            }
+        });
+
+        TransazioniCrypto_Bottone_MovimentoModifica.setText("Modifica Movimento Selezionato");
+        TransazioniCrypto_Bottone_MovimentoModifica.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_Bottone_MovimentoModificaActionPerformed(evt);
             }
         });
 
@@ -432,10 +440,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane1)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_Bottone_NuovoMovimento)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_Bottone_EliminaMovimenti)
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo)
+                                .addGap(18, 18, 18)
+                                .addComponent(TransazioniCrypto_Bottone_MovimentoModifica)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(TransazioniCrypto_Bottone_MovimentoElimina)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -465,8 +474,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza)
-                    .addComponent(TransazioniCrypto_Bottone_NuovoMovimento)
-                    .addComponent(TransazioniCrypto_Bottone_EliminaMovimenti))
+                    .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo)
+                    .addComponent(TransazioniCrypto_Bottone_MovimentoElimina)
+                    .addComponent(TransazioniCrypto_Bottone_MovimentoModifica))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -3161,7 +3171,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_Analisi_CryptoComponentShown
 
-    private void TransazioniCrypto_Bottone_NuovoMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_NuovoMovimentoActionPerformed
+    private void TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
         // TODO add your handling code here:
         
         MovimentoManuale_GUI a= new MovimentoManuale_GUI();
@@ -3171,9 +3181,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
       //  TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
        // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
       //  TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-    }//GEN-LAST:event_TransazioniCrypto_Bottone_NuovoMovimentoActionPerformed
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
 
-    private void TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed
+    private void TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
         // TODO add your handling code here:
         if (TransazioniCryptoTabella.getSelectedRow()>=0){
         int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
@@ -3190,7 +3200,22 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
         }
         
-    }//GEN-LAST:event_TransazioniCrypto_Bottone_EliminaMovimentiActionPerformed
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
+
+    private void TransazioniCrypto_Bottone_MovimentoModificaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
+        // TODO add your handling code here:
+                
+
+        if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
+            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+            int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+            String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            a.CompilaCampidaID(IDTransazione);
+            a.setLocationRelativeTo(this);
+            a.setVisible(true);
+        }
+
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
  
     public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
@@ -4032,10 +4057,11 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
     private javax.swing.JTextPane TransazioniCryptoTextPane;
     private javax.swing.JButton TransazioniCrypto_Bottone_Annulla;
     private javax.swing.JButton TransazioniCrypto_Bottone_DettaglioDefi;
-    private javax.swing.JButton TransazioniCrypto_Bottone_EliminaMovimenti;
     private javax.swing.JButton TransazioniCrypto_Bottone_Importa;
     private javax.swing.JButton TransazioniCrypto_Bottone_InserisciWallet;
-    private javax.swing.JButton TransazioniCrypto_Bottone_NuovoMovimento;
+    private javax.swing.JButton TransazioniCrypto_Bottone_MovimentoElimina;
+    private javax.swing.JButton TransazioniCrypto_Bottone_MovimentoModifica;
+    private javax.swing.JButton TransazioniCrypto_Bottone_MovimentoNuovo;
     private javax.swing.JButton TransazioniCrypto_Bottone_Salva;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_EscludiTI;
     private javax.swing.JLabel TransazioniCrypto_Label_Filtro;

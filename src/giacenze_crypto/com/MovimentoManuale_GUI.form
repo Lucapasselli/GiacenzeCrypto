@@ -33,12 +33,13 @@
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="Bottone_Annulla" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
                               <Component id="ValoreTransazione_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="ValoreTransazione_TextField" min="-2" pref="120" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="Bottone_CalcolaAutomaticamente" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="Note_Label" min="-2" max="-2" attributes="0"/>
@@ -78,7 +79,7 @@
                                               <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                                               <Component id="MonetaUscitaQuantita_Label" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="MonetaUscitaQuantita_TextField" min="-2" pref="100" max="-2" attributes="0"/>
+                                              <Component id="MonetaUscitaQuantita_TextField" min="-2" pref="150" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="MonetaUscitaTipo_Label" min="-2" max="-2" attributes="0"/>
@@ -86,7 +87,7 @@
                                               <Component id="MonetaUscitaTipo_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="100" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -117,7 +118,7 @@
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="MonetaEntrataTipo_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
                                           <Component id="MonetaEntrata_ComboBox" min="-2" pref="250" max="-2" attributes="0"/>
-                                          <Component id="MonetaEntrataQuantita_TextField" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
+                                          <Component id="MonetaEntrataQuantita_TextField" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -241,7 +242,7 @@
     </Component>
     <Component class="com.toedter.calendar.JDateChooser" name="Data_Datachooser">
       <Properties>
-        <Property name="dateFormatString" type="java.lang.String" value="dd/MM/yy"/>
+        <Property name="dateFormatString" type="java.lang.String" value="dd/MM/yyyy"/>
       </Properties>
       <Events>
         <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="Data_DatachooserPropertyChange"/>
@@ -284,6 +285,7 @@
         </Property>
       </Properties>
       <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="Ora_ComboBoxItemStateChanged"/>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Ora_ComboBoxActionPerformed"/>
       </Events>
       <AuxValues>
@@ -362,6 +364,9 @@
           </StringArray>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="Minuto_ComboBoxItemStateChanged"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
       </AuxValues>
@@ -494,9 +499,11 @@
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_CalcolaAutomaticamente">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Calcola Automaticamente"/>
-        <Property name="enabled" type="boolean" value="false"/>
+        <Property name="text" type="java.lang.String" value="Cerca di recuperare automaticamente il Valore della Transazione"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_CalcolaAutomaticamenteActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_Ok">
       <Properties>

@@ -1131,6 +1131,24 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     
     public static String RecuperaTassidiCambioUSDT(String DataIniziale, String DataFinale) {
+        
+        
+             //  Object DateCambi[]=MappaConversioneUSDTEUR.keySet().toArray();
+   /*     long adesso=System.currentTimeMillis();
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+        String DataAttuale = sdf.format(adesso).trim();*/
+      //  if(DataAttuale.equalsIgnoreCase(DataIniziale))
+        
+      // for (int i=0;i<DateCambi.length;i++){
+           //devo fare in modo di non scrivere mai i dati della data odierna sul file dei cambi perchè potrebbero essere incompleti
+         //  String Giorno=DateCambi[i].toString().split(" ")[0].trim();
+          // if (!Giorno.equalsIgnoreCase(DataAttuale)){
+                
+        //   }
+     //  }
+        
+        
         String ok = "ok";
         long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
         long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
@@ -1163,7 +1181,9 @@ for (int i=0;i<ArraydataIni.size();i++){
 
 
 for (int i=0;i<ArraydataIni.size();i++){
+   // if(DataAttuale.equalsIgnoreCase(DataIniziale))
         try {
+            
             TimeUnit.SECONDS.sleep(3);//il timeout serve per evitare di fare troppe richieste all'API
             URL url = new URI("https://api.coingecko.com/api/v3/coins/tether/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
             URLConnection connection = url.openConnection();
@@ -1214,7 +1234,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             ScriviFileConversioneUSDTEUR();
            // TimeUnit.SECONDS.sleep(2);
-        } 
+        } //}
 
         catch (MalformedURLException ex) {
             ok = null;
@@ -1234,6 +1254,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     
         public static String RecuperaTassidiCambioXXXUSDT(String Crypto,String DataIniziale, String DataFinale) {
+                      
         String ok = null;
         String CoppiaCrypto=Crypto+"USDT";
         long dataIni = ConvertiDatainLong(DataIniziale) ;
@@ -1266,105 +1287,107 @@ for (int i=0;i<ArraydataIni.size();i++){
         
         
 
-for (int i=0;i<ArraydataIni.size();i++){
-    
-                    //come prima cosa imposto il valore di tutte le ore a zero
-                    //poi quelle che verranno invece realmente valorizzate sovrasscriveranno questo valore ocn quello reale
-                    //quaesto serve per avere un valore anche se dalle api non dovesse risultare
-                    //e per evitare che future richieste api vengano ripetute a vuoto
-                    long timestampIniziale=ArraydataIni.get(i);
-                    long timestampFinale=ArraydataFin.get(i);
-                    while (timestampIniziale<timestampFinale)
-                        {
-                        Date date = new java.util.Date(timestampIniziale);
-                        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                        String DataconOra = sdf.format(date);
-                        //nel caso in cui non trovo il prezzo di usdc lo stesso lo equiparo a usdt
-                        //questo perchè per un periodo binance non ha fornito i prezzi di usdc
-                        if (CoppiaCrypto.equalsIgnoreCase("USDCUSDT")||
-                               CoppiaCrypto.equalsIgnoreCase("BUSDUSDT")||
-                                CoppiaCrypto.equalsIgnoreCase("DAIUSDT")){
-                                    String Prezzo=ConvertiUSDTEUR("1",timestampIniziale);
-                                    MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, Prezzo);
-                                }
-                                else
-                                    {
-                                MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, "0");
-                                }
-                        timestampIniziale=timestampIniziale+3600000;//aggiungo 1 ora
-                        }  
-    
-    
-        try {
-            String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + CoppiaCrypto + "&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i)+ "&limit=1000";
-            URL url = new URI(apiUrl).toURL();
-            URLConnection connection = url.openConnection();
-            System.out.println(url);
-            try ( BufferedReader in = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
+        for (int i = 0; i < ArraydataIni.size(); i++) {
 
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
+            //come prima cosa imposto il valore di tutte le ore a zero
+            //poi quelle che verranno invece realmente valorizzate sovrasscriveranno questo valore ocn quello reale
+            //quaesto serve per avere un valore anche se dalle api non dovesse risultare
+            //e per evitare che future richieste api vengano ripetute a vuoto
+            long timestampIniziale = ArraydataIni.get(i);
+            long timestampFinale = ArraydataFin.get(i);
+            while (timestampIniziale < timestampFinale) {
+                Date date = new java.util.Date(timestampIniziale);
+                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                String DataconOra = sdf.format(date);
+                //nel caso in cui non trovo il prezzo di usdc lo stesso lo equiparo a usdt
+                //questo perchè per un periodo binance non ha fornito i prezzi di usdc
 
+                if (CoppiaCrypto.equalsIgnoreCase("USDCUSDT")
+                        || CoppiaCrypto.equalsIgnoreCase("BUSDUSDT")
+                        || CoppiaCrypto.equalsIgnoreCase("DAIUSDT")) {
+                        String Prezzo = ConvertiUSDTEUR("1", timestampIniziale);
+                        MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, Prezzo);
+                } else {
+                    MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, "0");
                 }
+                timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
+            }
 
-                Gson gson = new Gson();
-                //System.out.println(response.toString());
-               // JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
-                JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
-                //JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
-                //  List<PrezzoData> prezzoDataList = new ArrayList<>();
-                if (pricesArray != null) {
-                    for (JsonElement element : pricesArray) {
-                        JsonArray priceArray = element.getAsJsonArray();
-                        //System.out.println(priceArray);
-                        
-                        if (priceArray.size()==12)
-                    {
-                        long timestamp = priceArray.get(0).getAsLong();
-                        String price = priceArray.get(4).getAsString();
-                        Date date = new java.util.Date(timestamp);
-                        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                        String DataconOra = sdf.format(date);
-                        String Prezzo=ConvertiUSDTEUR(price,timestamp);
-                       // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
-                       MappaConversioneXXXEUR_temp.put(DataconOra+" "+Crypto, Prezzo);
-                       ok="ok";
-                        //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
-                        //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
-                        //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
-                        //ora devo gestire l'inserimento nella mappa
-                        }
+            try {
+                String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + CoppiaCrypto + "&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i) + "&limit=1000";
+                URL url = new URI(apiUrl).toURL();
+                URLConnection connection = url.openConnection();
+                System.out.println(url);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
 
                     }
-                } else {
+
+                    Gson gson = new Gson();
+                    //System.out.println(response.toString());
+                    // JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                    JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
+                    //JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
+                    //  List<PrezzoData> prezzoDataList = new ArrayList<>();
+                    if (pricesArray != null) {
+                        for (JsonElement element : pricesArray) {
+                            JsonArray priceArray = element.getAsJsonArray();
+                            //System.out.println(priceArray);
+
+                            if (priceArray.size() == 12) {
+                                long timestamp = priceArray.get(0).getAsLong();
+                                String price = priceArray.get(4).getAsString();
+                                Date date = new java.util.Date(timestamp);
+                                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                                String DataconOra = sdf.format(date);
+                                //  System.out.println("DataAttuale : "+DataAttualeLong);
+                                //  System.out.println("timestamp : "+timestamp);
+                                //  System.out.println(CercaPrezziDataAttuale);
+                                //Questo if server per evitare di cercare i dati della data odierna se non sono proprio strettamente necessari
+                                //perchè i dati della data odfierna non vengono salvati nel file di conversione dei valori di usdt
+                                //e questo genererebbe una richiesta inutile su coingecko
+                              
+                                    String Prezzo = ConvertiUSDTEUR(price, timestamp);
+                                    // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
+                                    MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, Prezzo);
+                                
+                                ok = "ok";
+                                //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
+                                //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
+                                //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
+                                //ora devo gestire l'inserimento nella mappa
+                            }
+
+                        }
+                    } else {
+                        ok = null;
+                    }
+                } catch (IOException ex) {
                     ok = null;
                 }
-            } catch (IOException ex) {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
                 ok = null;
-            }
-            TimeUnit.SECONDS.sleep(1);
-        } 
-
-        catch (MalformedURLException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            ok = null;
-        } catch (IOException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-            ok = null;
-        } catch (InterruptedException ex) {
-            ok = null;
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        }   catch (URISyntaxException ex) {
+            } catch (IOException ex) {
+                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (InterruptedException ex) {
+                ok = null;
+                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (URISyntaxException ex) {
                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-     //   ScriviFileConversioneUSDTEUR();
-     //System.out.println(ok);
+        //   ScriviFileConversioneUSDTEUR();
+        //System.out.println(ok);
         return ok;
     }
     

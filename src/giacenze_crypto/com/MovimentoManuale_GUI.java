@@ -49,6 +49,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     String ValoreTransazione="";
     String Wallet="";
     String WalletDettaglio="";
+    String TipoMovimentoAM="M";//M se è un movimento inserito a mano, A se deriva da importazioni
     long DataLong=0;
     
     public MovimentoManuale_GUI() {
@@ -621,7 +622,29 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             this.MonetaEntrata_ComboBox.setSelectedItem(riga[11]);
             this.MonetaEntrataQuantita_TextField.setText(riga[13]);
             this.ValoreTransazione_TextField.setText(riga[15]);
+            this.Note_TextArea.setText(riga[21].replace("<br>", "\n"));
+            TipoMovimentoAM=riga[22];
+            //System.out.println(riga[22]);
             ModificaMovimento=true;
+            //Adesso se è un movimento automatico do la possibilità di variarne solo il valore in euro
+            //Altrimenti potrei dare la possibilità di variare tutto ma questo dovrebbe comportare  
+            //che dovrò eseguire la cancellazione del vecchio elemento e l'inserimento del nuovo con un nuovo possibile IDTransazione
+            //Per ora direi che è sufficiente dare la possibilita di variare i solo valore della transazione o le note
+            //quindi
+            this.Data_Datachooser.setEnabled(false);
+            this.Ora_ComboBox.setEnabled(false);
+            this.Minuto_ComboBox.setEnabled(false);
+            this.Secondo_ComboBox.setEnabled(false);
+            this.ID_TextField.setEnabled(false);
+            this.Wallet_ComboBox.setEnabled(false);
+            this.WalletDettaglio_ComboBox.setEnabled(false);
+            this.MonetaUscitaTipo_ComboBox.setEnabled(false);
+            this.MonetaUscita_ComboBox.setEnabled(false);
+            this.MonetaUscitaQuantita_TextField.setEnabled(false);
+            this.MonetaEntrataTipo_ComboBox.setEnabled(false);
+            this.MonetaEntrata_ComboBox.setEnabled(false);
+            this.MonetaEntrataQuantita_TextField.setEnabled(false);
+                       
             
             EvidenziaProblemi();
         } catch (ParseException ex) {
@@ -748,6 +771,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
         String Note = this.Note_TextArea.getText().replace(";", "").replace("\n", "<br>");
         ValoreTransazione=new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
+        if(CDC_Grafica.Funzioni_isNumeric(MonetaUQta)&&!MonetaUQta.equalsIgnoreCase("0"))MonetaUQta="-"+MonetaUQta.replace("-","");
+        MonetaEQta=MonetaEQta.replace("-","");
         
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
         String Data = f.format(Data_Datachooser.getDate())
@@ -772,14 +797,14 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         RT[12] = MonetaETipo;
         RT[13] = MonetaEQta;
         RT[14] = "";
-        RT[15] = ValoreTransazione.replace("-", "");
+        RT[15] = ValoreTransazione;
         RT[16] = "";
         RT[17] = "";
         RT[18] = "";
         RT[19] = "";
         RT[20] = "";
         RT[21] = Note;
-        RT[22] = "M";
+        RT[22] = TipoMovimentoAM;
         Importazioni.RiempiVuotiArray(RT);
         MappaCryptoWallet.put(RT[0], RT);
 
@@ -916,7 +941,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         
                if (!nonCompleto)Bottone_Ok.setEnabled(true);
         else Bottone_Ok.setEnabled(false);
-               if(CDC_Grafica.Funzioni_isNumeric(MonetaUQta))MonetaUQta="-"+MonetaUQta.replace("-","");
+               
     return nonCompleto;
     
     }  

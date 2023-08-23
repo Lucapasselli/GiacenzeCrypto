@@ -2,6 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
+/*
+NOTE:
+Attualmente la ricerca del prezzo con il tasto in basso avviene solo dal nome della coin e solo tramite binance
+Questo comporta 2 cose:
+1 - Se la coin non è listata da binance di conseguenza non avrà nessun prezzo
+2 - Potrebbero esserci in defi delle coin con lo stesso nome di quelle ufficiali ma con prezzi differenti, in questo caso mi restituirà un prezzo errato
+*/
+
 package giacenze_crypto.com;
 
 
@@ -824,11 +832,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         //adesso leggo tutti gli oggetti e li metto in stringhe
         Date Data=this.Data_Datachooser.getDate();
         //String MonetaU=this.MonetaUscita_TextField.getText().trim();
-        if (MonetaUscita_ComboBox.getSelectedItem()!=null)MonetaU=this.MonetaUscita_ComboBox.getSelectedItem().toString().replace(";", "").trim();
+        if (MonetaUscita_ComboBox.getSelectedItem()!=null)MonetaU=this.MonetaUscita_ComboBox.getSelectedItem().toString().replace(";", "").replace(",", "").trim();
         MonetaUQta=this.MonetaUscitaQuantita_TextField.getText().trim();
         MonetaUTipo=this.MonetaUscitaTipo_ComboBox.getSelectedItem().toString();
         //String MonetaE=this.MonetaEntrata_TextField.getText().trim();
-        if (MonetaEntrata_ComboBox.getSelectedItem()!=null)MonetaE=this.MonetaEntrata_ComboBox.getSelectedItem().toString().replace(";", "").trim();
+        if (MonetaEntrata_ComboBox.getSelectedItem()!=null)MonetaE=this.MonetaEntrata_ComboBox.getSelectedItem().toString().replace(";", "").replace(",", "").trim();
         MonetaEQta=this.MonetaEntrataQuantita_TextField.getText().trim();
         MonetaETipo=this.MonetaEntrataTipo_ComboBox.getSelectedItem().toString();
         if (MonetaUTipo.equalsIgnoreCase("-----"))MonetaUTipo=null;
@@ -836,8 +844,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         ValoreTransazione=this.ValoreTransazione_TextField.getText().trim();
         
 
-      if (Wallet_ComboBox.getSelectedItem()!=null)Wallet=this.Wallet_ComboBox.getSelectedItem().toString().replace(";", "").trim();
-      if (WalletDettaglio_ComboBox.getSelectedItem()!=null)WalletDettaglio=this.WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").trim();
+      if (Wallet_ComboBox.getSelectedItem()!=null)Wallet=this.Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(",", "").trim();
+      if (WalletDettaglio_ComboBox.getSelectedItem()!=null)WalletDettaglio=this.WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(",", "").trim();
 
         
         //adesso testo tutti i campi e vedo se manca qualcosa, in quel caso evidenzio i campi mancanti
@@ -960,10 +968,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                     "_";         
             }
         if (Wallet_ComboBox.getSelectedItem()!=null)
-            ID=ID+Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").trim()+".";
+            ID=ID+Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").trim()+".";
         
         if (WalletDettaglio_ComboBox.getSelectedItem()!=null)
-            ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").trim()+"_1_1_";
+            ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").trim()+"_1_1_";
         //Adesso devo individuare la tipologia di movimento quindi possono essere le seguenti
         //DC->Deposito Crypto
         //PC->Prelievo Crypto

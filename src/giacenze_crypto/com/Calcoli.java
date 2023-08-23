@@ -643,14 +643,25 @@ public class Calcoli {
         //come prima cosa devo controllare che la data analizzata sia nel range delle date di cui ho il cambio usd/eur
         Object dateDisponibili[] = MappaConversioneUSDEUR.keySet().toArray();
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        String PrimaData;
-        String UltimaData;
-        String DatadiOggi = f.format(System.currentTimeMillis());
+        String PrimaData;//è la prima data disponibile nel file delle conversioni
+        String UltimaData;//e' l'ultima data disponibile nel file delle conversioni
+        String DatadiOggi = f.format(System.currentTimeMillis());                   
+                    
+                    
         if (dateDisponibili.length > 0) {// se il file ha dei dati recupero prima e ultima data      
             PrimaData = (String) dateDisponibili[0];
             UltimaData = (String) dateDisponibili[dateDisponibili.length - 1];
+            long DataOggiLong=ConvertiDatainLong(DatadiOggi);
+            long DataUltimaLong=ConvertiDatainLong(UltimaData);
+            long diffDate=DataOggiLong-DataUltimaLong;//86400000 di differenza significa 1 giorno
+            //a questo punto siccome non posso ottenere i dati della giornata odierna
+            //se sto cercando di ottenere quelli e l'ultimo dato che ho è inferiore a 10gg prendo quello come dato valido per la giornata
+            //metto 10gg invece che 1 perchè potrebbero esserci delle feste e banchitalia non restituisce valori in quel caso
+            if(ConvertiDatainLong(Data)==ConvertiDatainLong(DatadiOggi)&&diffDate<864000000){
+                risultato=MappaConversioneUSDEUR.get(UltimaData);
+            }
             //se la data di cui cerco il valore è compreso tra i range cerco il tasso di cambio corretto
-            if (ConvertiDatainLong(Data) >= ConvertiDatainLong(PrimaData) && ConvertiDatainLong(Data) <= ConvertiDatainLong(UltimaData)) {
+            else if (ConvertiDatainLong(Data) >= ConvertiDatainLong(PrimaData) && ConvertiDatainLong(Data) <= ConvertiDatainLong(UltimaData)) {
                 for (int i = 0; i < 10; i++) {
                     risultato = MappaConversioneUSDEUR.get(Data);
                     if (risultato == null) {
@@ -659,7 +670,8 @@ public class Calcoli {
                         break;
                     }
                 }
-            } else if (ConvertiDatainLong(Data) >= ConvertiDatainLong("2017-01-01") && ConvertiDatainLong(Data) <= ConvertiDatainLong(DatadiOggi)) {
+            }
+            else if (ConvertiDatainLong(Data) >= ConvertiDatainLong("2017-01-01") && ConvertiDatainLong(Data) <= ConvertiDatainLong(DatadiOggi)) {
                 if (ConvertiDatainLong(Data) < ConvertiDatainLong(PrimaData)) {
                     //in questo caso richiedo i 90 gg precedenti la data richiesta
                     //anche perchè in questo modo comincio a compilare la tabella dei cambi
@@ -910,7 +922,8 @@ public class Calcoli {
     
     public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {      
         String ok="ok";
-        try {      
+        try {     
+            TimeUnit.SECONDS.sleep(1);
             URL url = new URI("https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD").toURL();
             URLConnection connection = url.openConnection();
             System.out.println(url);
@@ -938,6 +951,8 @@ public class Calcoli {
           //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             ok=null;
         } catch (URISyntaxException ex) {
+            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
 

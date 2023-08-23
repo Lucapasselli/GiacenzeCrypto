@@ -84,6 +84,10 @@ public class Importazioni {
     
     
     public static void Importa_Crypto_CDCApp(String fileCDCapp,boolean SovrascriEsistenti) {
+        //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
+        //Da sistemare problema con conversione dust su secondi diversi che da problemi
+        //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
+        //mettere almeno 1 secondo di tempo tra una richiesta e l'altra verso banchitalia
         
         AzzeraContatori();
         
@@ -116,6 +120,9 @@ public class Importazioni {
 //        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
         Mappa_Conversione_Causali.put("lockup_upgrade", "TRASFERIMENTO-CRYPTO-INTERNO");       //CRO Stake per la MCO Card. (Upgrade)
         Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING");                       //Interessi che la MCO Card matura. Da (Jade in su)
+        Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING");    //Nuovo Staking di Crypto.com
+        Mappa_Conversione_Causali.put("finance.dpos.staking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");    //Nuovo Staking di Crypto.com
+        Mappa_Conversione_Causali.put("finance.dpos.unstaking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");      //unstake
         Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
         Mappa_Conversione_Causali.put("referral_gift", "REWARD");                         //Bonus di iscrizione sbloccato
         Mappa_Conversione_Causali.put("reimbursement", "REWARD");                         //Rimborsi (Es. Netflix, Promozioni)
@@ -165,10 +172,19 @@ public class Importazioni {
                 String splittata[] = riga.split(",");
                 if (Funzioni_Date_ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
-                    //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
+                    //se trovo movimento con stessa data oppure la data differisce di un solo secondosolo se è un dust conversion allora lo aggiungo alla lista che compone il movimento e vado avanti
+                    //ho dovuto aggiungere la parte del secondo perchè quando fa i dust conversion può capitare che ci metta 1 secondo a fare tutti i movimenti
+                    String secondo=splittata[0].split(":")[2];
+                    int secondoInt=Integer.parseInt(secondo)-1;
+                    secondo=String.valueOf(secondoInt);
+                    if (secondo.length()==1)secondo="0"+secondo;
+                    String DataMeno1Secondo=splittata[0].split(":")[0]+":"+splittata[0].split(":")[1]+":"+secondo;
                     if (splittata[0].equalsIgnoreCase(ultimaData)) {
                         listaMovimentidaConsolidare.add(riga);
-                    } else //altrimenti consolido il movimento precedente
+                    }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[9].contains("dust_")){//SOLO per i dust conversion
+                        listaMovimentidaConsolidare.add(riga);
+                        }
+                    else //altrimenti consolido il movimento precedente
                     {
                        // System.out.println(riga);
                         List<String[]> listaConsolidata = ConsolidaMovimenti_CDCAPP(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
@@ -832,9 +848,11 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         dust_sommaaddebiti=new BigDecimal(dust_sommaaddebiti).abs().add(new BigDecimal(movimentoSplittato[7])).abs().toString();
                                        // System.out.println(dust_sommaaddebiti+ " "+movimentoSplittato[7]);
                                         numeroAddebiti++;
+                                       // System.out.println("ADDEBITI : "+movimento);
                                     }
                                     else
                                     {
+                                       // System.out.println("ACCREDITI : "+movimento);
                                        dust_accreditati=movimento;
                                     }   
                                 
@@ -851,6 +869,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         RT[3] = "Crypto.com App";
                                         RT[4] = "Crypto Wallet";
                                         RT[5] = "SCAMBIO CRYPTO";
+                                        //System.out.println(splittata[0]);
+                                        //System.out.println(dust_accreditati);
+                                       // System.out.println("-------");
                                         RT[6] = splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
                                         RT[7] = splittata[9] + "(" + splittata[1] + ")";
                                         RT[8] = splittata[2];
@@ -910,6 +931,18 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     else
                                     {
                                         WalletPartenza="Supercharger";
+                                        WalletDestinazione="Crypto Wallet";                                        
+                                    }
+                                }else if (movimentoSplittato[9].toLowerCase().contains("staking"))
+                                {
+                                    if (movimentoSplittato[3].contains("-"))
+                                    {
+                                        WalletPartenza="Crypto Wallet";
+                                        WalletDestinazione="Staking";
+                                    }
+                                    else
+                                    {
+                                        WalletPartenza="Staking";
                                         WalletDestinazione="Crypto Wallet";                                        
                                     }
                                 }else if (movimentoSplittato[9].toLowerCase().contains("earn"))

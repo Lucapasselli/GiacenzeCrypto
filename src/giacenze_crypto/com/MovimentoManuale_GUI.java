@@ -968,10 +968,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                     "_";         
             }
         if (Wallet_ComboBox.getSelectedItem()!=null)
-            ID=ID+Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").trim()+".";
+            ID=ID+Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+".";
         
         if (WalletDettaglio_ComboBox.getSelectedItem()!=null)
-            ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").trim()+"_1_1_";
+            ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+"_1_1_";
         //Adesso devo individuare la tipologia di movimento quindi possono essere le seguenti
         //DC->Deposito Crypto
         //PC->Prelievo Crypto

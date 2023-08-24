@@ -87,7 +87,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto.com 1.09 Beta");
+            this.setTitle("Giacenze_Crypto 1.10 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -390,6 +390,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         TransazioniCrypto_Bottone_DettaglioDefi.setText("DettaglioDefi");
+        TransazioniCrypto_Bottone_DettaglioDefi.setEnabled(false);
         TransazioniCrypto_Bottone_DettaglioDefi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_DettaglioDefiActionPerformed(evt);
@@ -3547,10 +3548,46 @@ public String TransazioniCrypto_Stack_TogliQta(Map<String, ArrayDeque> CryptoSta
    // System.out.println(Moneta +" - "+stack.size());
 }
     
+    
+    public String RitornaReteDefi(String ID) {
+        String Transazione[]=MappaCryptoWallet.get(ID);
+        String Wallet=Transazione[3].trim();
+        String appoggio[]=Wallet.split(" ");
+        String Rete="";
+        // Se soddisfa le seguenti condizioni significa che ho trovato un wallet in defi e posso tornare il nome della Rete DEFI
+        // Quindi restituisco il nome della rete oltre le condizioni principali solo se hop la transaction hash
+        if (appoggio.length==2&&appoggio[1].contains("(")&&
+                appoggio[1].contains(")")&&
+                appoggio[0].contains("0x")&&
+                ID.split("_")[1].startsWith("BC.")){
+            Rete=ID.split("_")[1].split("\\.")[1];
+        }
+        return Rete;
+    }
+    
+    
         public void TransazioniCrypto_CompilaTextPaneDatiMovimento() {
         if (TransazioniCryptoTabella.getSelectedRow()>=0){
         int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
         String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+        
+        //come prima cosa mi occupo del pulsante defi, deve essere attivo se abbiamo movimenti in defi e disattivo in caso contrario 
+        //per controllare verifico di avere il transaction hash e il nome della rete quindi
+        String Transazione[]=MappaCryptoWallet.get(IDTransazione);
+        String ReteDefi=RitornaReteDefi(IDTransazione);
+        String THash="";
+        if (Transazione.length>24)THash=Transazione[24];
+            if(!THash.isEmpty()&&!ReteDefi.isEmpty()){
+                this.TransazioniCrypto_Bottone_DettaglioDefi.setEnabled(true);
+            }else{
+                this.TransazioniCrypto_Bottone_DettaglioDefi.setEnabled(false);
+            }
+        
+        
+        
+        //adesso mi occupo di tutto il resto
+        
+        
         
         String DataOra = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 1).toString();
         

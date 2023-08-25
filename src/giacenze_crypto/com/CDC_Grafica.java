@@ -3280,7 +3280,353 @@ public class CDC_Grafica extends javax.swing.JFrame {
           }
     }
     
-public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
+
+    public void TransazioniCrypto_Funzioni_AggiornaPlusvalenzeNEW(){
+        
+    }
+    public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlus(String[] movimento){
+        /*
+        In questa funzione suddivido gli scambi crypto per categorie in modo da poter più facilmente poi gestire il calcolo della plusvalenza etc...
+        Per Ogni tipologia gli andrò a dire come comportarsi con le seguenti situazioni:
+            - Calcolo Plusvalenza
+            - Valore del Nuovo Costo di Carico
+            - Se Togliere o meno dallo stack del lifo della moneta uscente il vecchio costo di carico
+            - Se mettere e con che valore mettere nello stack lifo relativo alla moneta entrante il valore del nuovo costo di carico
+        
+        In questa funzione in particolare divito gli scambi in 10 categorie:
+            1 - Scambio tra Criptoattività Omogenee
+                Comprende:  NFT -> NFT
+                            Crypto -> Crypto     
+            2 - Scambio tra Criptoattività non omogenee
+                Comprende:  Crypto -> NFT
+                            NFT -> Crypto       
+            3 - Acquisto Criptoattività
+                Comprende:  FIAT -> NFT
+                            FIAT -> Crypto         
+            4 - Vendita Criptoattività
+                Comprende:  NFT -> FIAT
+                            Crypto -> FIAT                 
+            5 - Deposito Criptoattività x spostamento tra wallet
+                Comprende:  -> NFT          (Tipologia TI su IDTrans oppure Tipologia Vuota o DTW su quella della Transazione)
+                            -> Crypto       (Tipologia TI su IDTrans oppure Tipologia Vuota o DTW su quella della Transazione)                         
+            6 - Prelievo Criptoattività x spostamento tra wallet
+                Comprende:  NFT ->          (Tipologia TI su IDTrans oppure Tipologia Vuota o PTW su quella della Transazione)
+                            Crypto ->       (Tipologia TI su IDTrans oppure Tipologia Vuota o PTW su quella della Transazione) 
+            7 - Deposito Criptoattività x rewards, stacking,cashback etc...
+                Comprende:  -> NFT          (Tipologia RW su IDTrans oppure Tipologia DAI su quella della Transazione)
+                            -> Crypto       (Tipologia RW su IDTrans oppure Tipologia DAI su quella della Transazione)
+            8 - Prelievo Criptoattività x servizi, acquisto beni etc...
+                Comprende:  NFT ->          (Tipologia CM su IDTrans oppure Tipologia PCO su quella della Transazione)
+                            Crypto ->       (Tipologia CM su IDTrans oppure Tipologia PCO su quella della Transazione)
+            9 - Deposito Criptoattività DCZ         (Deposito a costo di carico zero)
+                Comprende:  -> NFT          (Tipologia DCZ su quella della Transazione)
+                            -> Crypto       (Tipologia DCZ su quella della Transazione)
+            10 - Prelievo Criptoattività PWN        (Prelievo a plusvalenza Zero ma toglie dal Lifo) 
+                Comprende:  NFT ->          (Tipologia PWN su quella della Transazione)
+                            Crypto ->       (Tipologia PWN su quella della Transazione)
+        
+        
+        
+        Per ogni tipologia trovata devo indicare le seguenti caratteristiche:
+        
+        TipologiaPlus -> Indica come va calcolata la Plusvalenza per ogni tipologia di scambio (Va messo poi nel Campo 19 della tabella)
+            TipologiaPlus=0 :   Il campo plusvalenza va compilato con valore Zero 
+                    Cosa rientra :  Tipologia 1 (Scambio criptoatt. omogenee)
+                                    Tipologia 3 (Acquisto criptoattivita)
+                                    Tipologia 5 (Deposito x spostamento tra Wallet di Proprietà)
+                                    Tipologia 6 (Prelievo x spostamento tra Wallet di Proprietà)
+                                    Tipologia 9 (Deposito forzato a costo di carico zero)
+                                    Tipologia 10(Prelievo a plus zero che movimenta il solo lifo... Caso molto particolare)
+            TipologiaPlus=1 :   Il campo plusvalenza va compilato con il ValoreTransazione
+                    Cosa rientra :  Tipologia 7 (Deposito criptoattività derivanti da Stacking,cashback,rewards,earn etc...)
+            TipologiaPlus=2 :   Plusvalenza=Valore Transazione - Costo di Carico Moneta Uscita (Vecchio Costo di carico)
+                    Cosa rientra :  Tipologia 2 (Scambio CriptoAttività non omogeneo)
+                                    Tipologia 4 (Vendita criptoattività)
+                                    Tipologia 8 (Prelievo/Vendita di Criptoattività in cambio di beni o servizi)
+        
+        TipologiaNCC -> Indica come va calcolato il nuovo costo di carico per ogni tipologia di scambio (Va messo poi nel Campo 17 della tabella)
+            TipologiaNCC=0 :    Il campo relativo al Nuovo Costo di Carico va valorizzato a Zero    
+                    Cosa rientra :  Tipologia 4 (Vendita criptoattività)
+                                    Tipologia 9 (Deposito forzato a costo di carico zero)
+                                    Tipologia 8 (Prelievo/Vendita di Criptoattività in cambio di beni o servizi)
+                                    Tipologia 10(Prelievo a plus zero che movimenta il solo lifo... Caso molto particolare)
+            TipologiaNCC=1 :    Nuovo Costo di Carico = Costo di Carico preso tramite lifo da moneta Uscita (Vecchio costo di carico)   
+                    Cosa rientra :  Tipologia 1 (Scambio criptoatt. omogenee)
+                                    Tipologia 5 (Deposito x spostamento tra Wallet di Proprietà)
+                                    Tipologia 6 (Prelievo x spostamento tra Wallet di Proprietà)
+            TipologiaNCC=2 :    Nuovo Costo di Carico = Valore Transazione   
+                    Cosa rientra :  Tipologia 2 (Scambio CriptoAttività non omogeneo)
+                                    Tipologia 3 (Acquisto criptoattivita)
+                                    Tipologia 7 (Deposito criptoattività derivanti da Stacking,cashback,rewards,earn etc...)
+        
+        TipologiaStackLIFOVecchioCosto -> Indica se devo togliero o meno dallo stack il vecchio costo di carico della moneta uscente
+            TipologiaStackLIFOVecchioCosto=0 :  Non tolgo dallo stack il vecchio costo di carico
+                    Cosa rientra :  Tipologia 3 (Acquisto criptoattivita)
+                                    Tipologia 5 (Deposito x spostamento tra Wallet di Proprietà)
+                                    Tipologia 6 (Prelievo x spostamento tra Wallet di Proprietà)
+                                    Tipologia 7 (Deposito criptoattività derivanti da Stacking,cashback,rewards,earn etc...)
+                                    Tipologia 9 (Deposito forzato a costo di carico zero)
+            TipologiaStackLIFOVecchioCosto=1 :  Tolgo dallo stack il vecchio costo di carico
+                    Cosa rientra :  Tipologia 1 (Scambio criptoatt. omogenee)
+                                    Tipologia 2 (Scambio CriptoAttività non omogeneo)
+                                    Tipologia 4 (Vendita criptoattività)
+                                    Tipologia 8 (Prelievo/Vendita di Criptoattività in cambio di beni o servizi)
+                                    Tipologia 10(Prelievo a plus zero che movimenta il solo lifo... Caso molto particolare)
+        
+        TipologiaStackLIFONuovoCosto -> Indica che valore devo o se devo inserire nello stack del Lifo sulla moneta entrante
+            TipologiaStackLIFONuovoCosto=0 :   Costo Lifo Moneta Entrante = Zero
+                    Cosa rientra :  Tipologia 9 (Deposito forzato a costo di carico zero)
+            TipologiaStackLIFONuovoCosto=1 :   Non faccio nulla (non inserisco nessun valore)
+                    Cosa rientra :  Tipologia 4 (Vendita criptoattività)
+                                    Tipologia 5 (Deposito x spostamento tra Wallet di Proprietà)
+                                    Tipologia 6 (Prelievo x spostamento tra Wallet di Proprietà)
+                                    Tipologia 8 (Prelievo/Vendita di Criptoattività in cambio di beni o servizi
+                                    Tipologia 10(Prelievo a plus zero che movimenta il solo lifo... Caso molto particolare))
+            TipologiaStackLIFONuovoCosto=2 :   Costo Lifo Moneta Entrante = Costo Lifo Moneta Uscente
+                    Cosa rientra :  Tipologia 1 (Scambio criptoatt. omogenee)
+            TipologiaStackLIFONuovoCosto=3 :   Costo Lifo Moneta Entrante = Valore Transazione
+                    Cosa rientra :  Tipologia 2 (Scambio CriptoAttività non omogeneo)
+                                    Tipologia 3 (Acquisto criptoattivita)
+                                    Tipologia 7 (Deposito criptoattività derivanti da Stacking,cashback,rewards,earn etc...)
+        */
+
+            String TipoMU = movimento[9].trim();
+            String TipoME = movimento[12].trim();
+            String IDTransazione=movimento[0];
+            String IDTS[]=IDTransazione.split("_");
+            int Tipologia = 0;
+            int TipologiaPlus=0;
+            int TipologiaNCC=0;//Valore nuovo costo di carico
+            int TipologiaStackLIFOVecchioCosto=0;
+            int TipologiaStackLIFONuovoCosto=0;
+            
+            //TIPOLOGIA = 1 
+            if ((TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("Crypto"))
+                    || (TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("NFT"))) 
+            {
+                Tipologia = 1; //ScambioCryptoAttività medesime caratteristiche
+            } 
+            
+            //TIPOLOGIA = 2
+            else if ((TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("Crypto"))
+                    || (TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("NFT"))) 
+            {
+                Tipologia = 2; //Scambio CryptoAttività dicverse Caratteristiche
+            }
+            
+            //TIPOLOGIA = 3
+            else if (((TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("NFT"))
+                    || (TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("Crypto")))) 
+            {
+                Tipologia = 3; //Acquisto CriptoAttività
+            }
+            
+            //TIPOLOGIA = 4
+            else if ((TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("FIAT"))
+                    || (TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("FIAT"))) 
+            {
+                Tipologia = 4; //Vendita CryptoAttività
+            } 
+            
+            
+            ////Da sistemare tutta questa parte sotto perchè è sbagliata,sono invertiti depositi e prelievi
+            //TIPOLOGIA = 5 -> Deposito Criptoattività x spostamento tra wallet
+            else if (   (IDTS[4].equalsIgnoreCase("TI"))
+                                            ||
+                    (
+                        ((TipoME.equalsIgnoreCase("Crypto") && TipoMU.equalsIgnoreCase(""))|| (TipoME.equalsIgnoreCase("NFT") && TipoMU.equalsIgnoreCase("")))
+                                                 &&
+                        (movimento[18].contains("DTW")|| movimento[18].equalsIgnoreCase(""))                    
+                    )
+                    ) 
+            {
+                Tipologia = 5; //Prelievo Criptoattività x spostamento tra wallet
+            } 
+            
+            //TIPOLOGIA = 6
+            else if (   (IDTS[4].equalsIgnoreCase("TI"))
+                                            ||
+                    (
+                    ((TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("Crypto"))|| (TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("NFT")))
+                                            &&
+                        (movimento[18].contains("PTW")|| movimento[18].equalsIgnoreCase("")) 
+                    )
+                    ) 
+            {
+                Tipologia = 6; //Deposito CriptoAttività x spostamento tra wallet
+            } 
+            
+            //TIPOLOGIA = 7
+            else if (   (IDTS[4].equalsIgnoreCase("RW"))
+                                            ||
+                    (
+                        ((TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase(""))|| (TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("")))
+                                                 &&
+                        movimento[18].contains("DAI")                    
+                    )
+                    ) 
+            {
+                Tipologia = 5; //Prelievo Criptoattività x spostamento tra wallet
+            } 
+            
+            //TIPOLOGIA = 8
+            else if (   (IDTS[4].equalsIgnoreCase("CM"))
+                                            ||
+                    (
+                    ((TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("Crypto"))|| (TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("NFT")))
+                                            &&
+                        movimento[18].contains("PCO")
+                    )
+                    ) 
+            {
+                Tipologia = 6; //Deposito CriptoAttività x spostamento tra wallet
+            } 
+            
+            //TIPOLOGIA = 9
+            else if (
+                        (TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase(""))|| (TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase(""))
+                                                 &&
+                        movimento[18].contains("DCZ")                    
+                    
+                    ) 
+            {
+                Tipologia = 5; //Prelievo Criptoattività x spostamento tra wallet
+            }
+            
+            //TIPOLOGIA = 10
+            else if (
+                    (TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("Crypto"))|| (TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("NFT"))
+                                            &&
+                        movimento[18].contains("PWN")
+                    
+                    ) 
+            {
+                Tipologia = 6; //Deposito CriptoAttività x spostamento tra wallet
+            }             
+            
+            
+            //da completare con le altre casistiche
+            else {
+                System.out.println("Nessuna Tipologia Individuata");
+            }
+
+            System.out.println(movimento[18]+" : Tipologia Transazione : " + Tipologia);
+
+       // }
+    }
+    public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
+     /* Questa funzione si occupa di categorizzare i movimenti in 6 macrocategorie che ne identificano il modo in cui :
+        - Verrà calcolata la plusvalenza
+        - Verrà calcolato il nuovo costo di carico
+        - verrà gestito lo stack per il calcolo del lifo
+        
+        Le categorie in questione saranno le seguenti e saranno valorizzate con un numero:
+        1 - Scambio tra Criptoattività Omogenee (medesime caratteristiche e funzioni)
+            Mebri del gruppo:
+                - Scambio NFT -> NFT
+                - Scambio Crypto -> Crypto
+            Caratteristiche : 
+                - Plusvalenza = 0
+                - Stack lifo : tolgo valore da moneta venduta e lo aggiungo a moneta entrata
+                - Nuovo Costo di carico : Riporto costo di carico calcolato con il lifo dalla moneta uscita sulla moneta entrata
+        2 - Scambio tra CriptoAttività non Omogenee
+            Membri del gruppo:
+                - Scambio NFT -> Crypto
+                - Scambio Crypto -> NFT
+            Caratteristiche :
+                - Plusvalenza=Valore Transazione - Costo di carico moneta uscente calcolato con Lifo
+                - Stack Lifo : - Rimuovo da stack costo moneta uscente
+                               - Inserisco nello stack della moneta entrante il valore della transazione
+                - Nuovo Costo di Carico = Valore della Transazione
+        3 - Spostamenti tra wallet di proprietà
+            Membri del gruppo:
+                - NFT ->                (Spostamento verso wallet proprio)
+                - Crypto ->             (Spostamento verso wallet proprio)
+                -     -> NFT            (Spostamento verso wallet proprio)
+                -     -> Crypto         (Spostamento verso wallet proprio)
+            Caratteristiche :
+                - Plusvalenza = 0
+                - Stack Lifo : Non tocco nulla
+                - Nuovo Costo di Carico = Vecchio costo di carico preso con il lifo 
+        4 - Vendita CriptoAttività per FIAT o Servizi
+            Membri del gruppo:
+                - Scambio NFT -> FIAT
+                - Scambio Crypto -> FIAT
+                - NFT -> Servizio/Wallet non nostro
+                - Crypto -> Servizio/Wallet non nostro
+            Caratteristiche :
+                - Plusvalenza=Valore Transazione - Costo di carico moneta uscente calcolato con Lifo
+                - Stack Lifo : - Rimuovo da stack costo moneta uscente
+                - Nuovo Costo di Carico = 0
+        5 - Acquisto Crypto con Fiat
+            Membri del gruppo:
+                - Scambio FIAT -> NFT
+                - Scambio FIAT -> Crypto 
+            Caratteristiche :
+                - Plusvalenza=0
+                - Stack Lifo :  - Inserisco nello stack della moneta entrante il valore della transazione
+                - Nuovo Costo di Carico = Valore FIAT o Transazione (Dovrebbero sempre equivalersi)
+        5 - Proventi da detenzione
+            Membri del gruppo:
+                -      -> NFT           (Mining,Staking,rewards,cashback etc...)
+                -      -> Crypto        (Mining,Staking,rewards,cashback etc...)
+            Caratteristiche :
+                - Plusvalenza = Valore Transazione
+                - Stack Lifo :  - Inserisco nello stack della moneta entrante il Valore Transazione
+                - Nuovo Costo di Carico = Valore Transazione
+        */ 
+     for (String[] v : MappaCryptoWallet.values()) {
+         String TipoMU=v[9].trim();
+         String TipoME=v[12].trim();
+         int Tipologia=0;
+         if((TipoMU.equalsIgnoreCase("Crypto")&&TipoME.equalsIgnoreCase("Crypto")) || 
+                 (TipoMU.equalsIgnoreCase("NFT")&&TipoME.equalsIgnoreCase("NFT"))){
+            Tipologia=1; //ScambioCryptoAttività medesime caratteristiche
+         }
+         else if((TipoMU.equalsIgnoreCase("NFT")&&TipoME.equalsIgnoreCase("Crypto")) || 
+                 (TipoMU.equalsIgnoreCase("Crypto")&&TipoME.equalsIgnoreCase("NFT"))){
+            Tipologia=2; //Scambio CryptoAttività dicverse Caratteristiche
+         }
+         else if(((TipoMU.equalsIgnoreCase("NFT")&&TipoME.equalsIgnoreCase("")) || 
+                 (TipoMU.equalsIgnoreCase("Crypto")&&TipoME.equalsIgnoreCase("")) ||
+                 (TipoMU.equalsIgnoreCase("")&&TipoME.equalsIgnoreCase("NFT")) ||
+                 (TipoMU.equalsIgnoreCase("")&&TipoME.equalsIgnoreCase("Crypto"))) 
+                 &&
+                 ((v[18].contains("DTW")||v[18].contains("PTW"))||v[18].isBlank())){  
+              Tipologia=3; //Spostamenti tra Wallet Propri
+         }
+         else if((TipoMU.equalsIgnoreCase("NFT")&&TipoME.equalsIgnoreCase("FIAT")) 
+                 || 
+                 (TipoMU.equalsIgnoreCase("Crypto")&&TipoME.equalsIgnoreCase("FIAT")) 
+                 ||
+                 (((TipoMU.equalsIgnoreCase("Crypto")&&TipoME.equalsIgnoreCase("")) || (TipoMU.equalsIgnoreCase("NFT")&&TipoME.equalsIgnoreCase(""))) && v[18].contains("PCO"))){  
+              Tipologia=4; //Vendita per Fiat o Servizi
+         }
+         else if((TipoMU.equalsIgnoreCase("FIAT")&&TipoME.equalsIgnoreCase("Crypto")) 
+                 || 
+                 (TipoMU.equalsIgnoreCase("FIAT")&&TipoME.equalsIgnoreCase("NFT")) )
+         {
+             
+             Tipologia=5; //Acquisto Crypto con Fiat
+         }else if(((TipoMU.equalsIgnoreCase("")&&TipoME.equalsIgnoreCase("Crypto")) || (TipoMU.equalsIgnoreCase("")&&TipoME.equalsIgnoreCase("NFT")))
+                 &&
+                 v[18].contains("DAI"))
+         {
+             
+             Tipologia=6; //Acquisto Crypto con Fiat
+         }else System.out.println("Nessuna Tipologia Individuata");
+         
+         System.out.println("Tipologia Transazione : "+Tipologia);
+           
+         }
+     
+     
+    }
+    public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
+      //il comando seguente è da eliminare una volta appurato che la categorizzazione funziona
+      //per ora mancano ancora delle cosucce da sistemare
+        
+        
             Deque<String[]> stack = new ArrayDeque<String[]>();
        // stack.push("a");
        // stack.push("b");
@@ -3289,6 +3635,7 @@ public void TransazioniCrypto_Funzioni_AggiornaPlusvalenze(){
        // System.out.println(stack.pop());
         Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String[] v : MappaCryptoWallet.values()) {
+            TransazioniCrypto_Funzioni_CategorizzaTransazionixPlus(v);
             //Se deposito crypto non associato o prelievo crypto non associato non lo considero e lo salto - DC-PC()
             //Se è un trasferimento interno lo salto - TI
             //se è un trasferimento tra wallet lo salto - PC-DC(PTW-DTW)

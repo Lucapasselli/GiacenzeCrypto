@@ -209,7 +209,7 @@
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore &lt;br&gt;transazione&lt;br&gt;come da CSV&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Non Utilizzata&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo Acquisto&lt;br&gt;al Prz di Carico&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Nuovo&lt;br&gt;Costo di Carico&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;html&gt;&lt;center&gt;Non Utilizzata&lt;/html&gt;&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plusvalenza&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Riferimento&lt;br&gt;Trasferimento&lt;/html&gt;" type="java.lang.Object"/>

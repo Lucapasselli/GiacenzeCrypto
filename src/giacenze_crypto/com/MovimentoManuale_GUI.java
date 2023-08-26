@@ -48,6 +48,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     List<String> Lista_NFT = new ArrayList<>();
     List<String> Lista_FIAT = new ArrayList<>();
     boolean ModificaMovimento=false;
+    String MovimentoRiportato[]=new String[Importazioni.ColonneTabella];
     String MonetaE="";
     String MonetaU="";
     String MonetaETipo="";
@@ -613,6 +614,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     public void CompilaCampidaID(String IDTransazione){
         try {
             String riga[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+            MovimentoRiportato=riga;
             String DataOraMinutiSecondo=riga[0].split("_")[0];
             SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
             Date d = f.parse(DataOraMinutiSecondo.substring(0,8));
@@ -744,7 +746,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void Bottone_CalcolaAutomaticamenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CalcolaAutomaticamenteActionPerformed
         // TODO add your handling code here:
-              setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
        Moneta MonetaUscita=null;
        Moneta MonetaEntrata=null;
        if(!MonetaU.equalsIgnoreCase("")&&!MonetaUQta.equalsIgnoreCase("")&&MonetaUTipo!=null){
@@ -778,44 +780,52 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     private void ScriviMovimento(String ID) {
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
         String Note = this.Note_TextArea.getText().replace(";", "").replace("\n", "<br>");
-        ValoreTransazione=new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
-        if(CDC_Grafica.Funzioni_isNumeric(MonetaUQta)&&!MonetaUQta.equalsIgnoreCase("0"))MonetaUQta="-"+MonetaUQta.replace("-","");
-        MonetaEQta=MonetaEQta.replace("-","");
-        
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
-        String Data = f.format(Data_Datachooser.getDate())
-                + Ora_ComboBox.getSelectedItem().toString() + ":"
-                + Minuto_ComboBox.getSelectedItem().toString();
+        ValoreTransazione = new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
+        if (ModificaMovimento) {
+            //Se sto modificando un movimento gli unici campi che posso modificare sono quelli del valore e delle note
+            MovimentoRiportato[15]=ValoreTransazione;
+            MovimentoRiportato[21] = Note;
+        } else {
+            MonetaUQta = MonetaUQta.replace("-", "");
+            if (CDC_Grafica.Funzioni_isNumeric(MonetaUQta) && !MonetaUQta.equalsIgnoreCase("0") && !MonetaUQta.isBlank()) {
+                MonetaUQta = "-" + MonetaUQta;
+            }
+            MonetaEQta = MonetaEQta.replace("-", "");
 
-        String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
-        
-        String RT[] = new String[Importazioni.ColonneTabella];
-        RT[0] = ID;
-        RT[1] = Data;
-        RT[2] = 1 + " di " + 1;
-        RT[3] = Wallet;
-        RT[4] = WalletDettaglio;
-        RT[5] = TipoTransazione;
-        RT[6] = (MonetaU + " -> " + MonetaE).trim();
-        RT[7] = "";
-        RT[8] = MonetaU;
-        RT[9] = MonetaUTipo;
-        RT[10] = MonetaUQta;
-        RT[11] = MonetaE;
-        RT[12] = MonetaETipo;
-        RT[13] = MonetaEQta;
-        RT[14] = "";
-        RT[15] = ValoreTransazione;
-        RT[16] = "";
-        RT[17] = "";
-        RT[18] = "";
-        RT[19] = "";
-        RT[20] = "";
-        RT[21] = Note;
-        RT[22] = TipoMovimentoAM;
-        Importazioni.RiempiVuotiArray(RT);
-        MappaCryptoWallet.put(RT[0], RT);
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
+            String Data = f.format(Data_Datachooser.getDate())
+                    + Ora_ComboBox.getSelectedItem().toString() + ":"
+                    + Minuto_ComboBox.getSelectedItem().toString();
 
+            String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
+
+            String RT[] = new String[Importazioni.ColonneTabella];
+            RT[0] = ID;
+            RT[1] = Data;
+            RT[2] = 1 + " di " + 1;
+            RT[3] = Wallet;
+            RT[4] = WalletDettaglio;
+            RT[5] = TipoTransazione;
+            RT[6] = (MonetaU + " -> " + MonetaE).trim();
+            RT[7] = "";
+            RT[8] = MonetaU;
+            RT[9] = MonetaUTipo;
+            RT[10] = MonetaUQta;
+            RT[11] = MonetaE;
+            RT[12] = MonetaETipo;
+            RT[13] = MonetaEQta;
+            RT[14] = "";
+            RT[15] = ValoreTransazione;
+            RT[16] = "";
+            RT[17] = "";
+            RT[18] = "";
+            RT[19] = "";
+            RT[20] = "";
+            RT[21] = Note;
+            RT[22] = TipoMovimentoAM;
+            Importazioni.RiempiVuotiArray(RT);
+            MappaCryptoWallet.put(RT[0], RT);
+        }
     }
     
     private boolean EvidenziaProblemi() {                                           
@@ -973,18 +983,16 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         if (WalletDettaglio_ComboBox.getSelectedItem()!=null)
             ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+"_1_1_";
         //Adesso devo individuare la tipologia di movimento quindi possono essere le seguenti
-        //DC->Deposito Crypto
-        //PC->Prelievo Crypto
-        //DF->Deposito FIAT
-        //PF->Prelievo FIAT
-        //DN->Deposito NFT
-        //PN->Prelievo NFT
-        //AN->Acquisto NFT (con crypto o fiat)
-        //VN->Vendita NFT (per crypto o fiat)
-        //SC->Scambio crypto
-        //SN->Scambio NFT
-        //AC->Acquisto Crypto (Con FIAT)
-        //VC->Vendita Crypto (per FIAT)
+         //TI=Trasferimento Interno
+         //DC=Deposito Criptoattività
+         //PC=Prelievo Criptoattività
+         //DF=Deposito Fiat
+         //PF=Prelievo Fiat
+         //AC=Acquisto Criptoattività (con FIAT)
+         //VC=Vendita Criptoattività (per FIAT)
+         //SC=Scambio Criptoattività
+         //RW=Staking/caschback/airdrop etc....
+         //CM=Commissioni/Fees
         ID=ID+Importazioni.RitornaTipologiaTransazione(MonetaUTipo,MonetaETipo,0);
        // System.out.println(ID);
        String IDScritto=this.ID_TextField.getText();

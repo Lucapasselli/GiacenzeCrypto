@@ -558,19 +558,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
      public static List<String[]> ConsolidaMovimenti_CDCAPP(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
-         //TC=Trasferimento Crypto  -> non dovrebbe essere utilizzato
-         //DC=Deposito Crypto
-         //PC=Prelievo Crypto
+         //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
+         //DC=Deposito Criptoattività
+         //PC=Prelievo Criptoattività
          //DF=Deposito Fiat
          //PF=Prelievo Fiat
-         //SF=Scambio Fiat -> Non utilizzato
-         //TF=Trasferimento Fiat  -> non dovrebbe essere utilizzato
-         //AC=Acquisto Crypto (con FIAT)
-         //VC=Vendita Crypto (per FIAT)
-         //SC=Scambio Crypto
-         //AN=Acquisto NFT (con fiat o crypto)
-         //VN=Vendita NFT (per Fiat o Crypto)
-         //SN=Scambio NFT
+         //SF=Scambio Fiat                          -> Non utilizzato
+         //TF=Trasferimento Fiat                    -> non dovrebbe essere utilizzato
+         //AC=Acquisto Criptoattività (con FIAT)
+         //VC=Vendita Criptoattività (per FIAT)
+         //SC=Scambio Criptoattività
+         //AN=Acquisto NFT (con fiat o crypto)  //non più utilizzata, viene utilizzata la stessa nomenclatura delle crypto essendo entrambe criptoattività
+         //VN=Vendita NFT (per Fiat o Crypto)   //non più utilizzata, viene utilizzata la stessa nomenclatura delle crypto essendo entrambe criptoattività
+         //SN=Scambio NFT                       //non più utilizzata, viene utilizzata la stessa nomenclatura delle crypto essendo entrambe criptoattività
          //RW=Staking/caschback/airdrop etc....
          //CM=Commissioni/Fees
          
@@ -1157,19 +1157,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         public static List<String[]> ConsolidaMovimenti_CoinTracking(List<String> listaMovimentidaConsolidare,String Exchange,boolean PrezzoZero){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
-         //TC=Trasferimento Crypto  -> non dovrebbe essere utilizzato
-         //DC=Deposito Crypto
-         //PC=Prelievo Crypto
+         //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
+         //DC=Deposito Criptoattività
+         //PC=Prelievo Criptoattività
          //DF=Deposito Fiat
          //PF=Prelievo Fiat
-         //SF=Scambio Fiat -> Mai usato
-         //TF=Trasferimento Fiat  -> non dovrebbe essere utilizzato
-         //AC=Acquisto Crypto (con FIAT)
-         //VC=Vendita Crypto (per FIAT)
-         //SC=Scambio Crypto
-         //AN=Acquisto NFT (con fiat o crypto)
-         //VN=Vendita NFT (per Fiat o Crypto)
-         //SN=Scambio NFT
+         //SF=Scambio Fiat                          -> Non utilizzato
+         //TF=Trasferimento Fiat                    -> non dovrebbe essere utilizzato
+         //AC=Acquisto Criptoattività (con FIAT)
+         //VC=Vendita Criptoattività (per FIAT)
+         //SC=Scambio Criptoattività
+         //AN=Acquisto NFT (con fiat o crypto)  //non più utilizzata, viene utilizzata la stessa nomenclatura delle crypto essendo entrambe criptoattività
+         //VN=Vendita NFT (per Fiat o Crypto)   //non più utilizzata, viene utilizzata la stessa nomenclatura delle crypto essendo entrambe criptoattività
+         //SN=Scambio NFT                       //non più utilizzata, viene utilizzata la stessa nomenclatura delle crypto essendo entrambe criptoattività
          //RW=Staking/caschback/airdrop etc....
          //CM=Commissioni/Fees
          
@@ -1688,7 +1688,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                      CodiceTipologia="DC";
                  }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
                      Tipologia="DEPOSITO NFT";
-                     CodiceTipologia="DN";
+                     CodiceTipologia="DC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                  }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
                      Tipologia="DEPOSITO FIAT";
                      CodiceTipologia="DF";
@@ -1704,7 +1704,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                      CodiceTipologia="SC";
                  }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
                      Tipologia="ACQUISTO NFT";
-                     CodiceTipologia="AN";
+                     CodiceTipologia="SC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                  }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
                      Tipologia="VENDITA CRYPTO";
                      CodiceTipologia="VC";
@@ -1714,16 +1714,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                  //ora gestisco le varie casistiche se M1 è una crypto
                  if(TipoEntrata==null){
                      Tipologia="PRELIEVO NFT";
-                     CodiceTipologia="PN";
+                     CodiceTipologia="PC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                  }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
                      Tipologia="VENDITA NFT";
-                     CodiceTipologia="VN";
+                     CodiceTipologia="SC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                  }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
                      Tipologia="SCAMBIO NFT";
-                     CodiceTipologia="SN";
+                     CodiceTipologia="SC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                  }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
                      Tipologia="VENDITA NFT";
-                     CodiceTipologia="VN";
+                     CodiceTipologia="VC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                     }
                 }
              else if(TipoUscita.trim().equalsIgnoreCase("FIAT")){
@@ -1736,7 +1736,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                      CodiceTipologia="AC";
                  }else if (TipoEntrata.trim().equalsIgnoreCase("NFT")){
                      Tipologia="ACQUISTO NFT";
-                     CodiceTipologia="AN";
+                     CodiceTipologia="AC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                  }else if (TipoEntrata.trim().equalsIgnoreCase("FIAT")){
                      Tipologia="SCAMBIO FIAT";
                      CodiceTipologia="SF";

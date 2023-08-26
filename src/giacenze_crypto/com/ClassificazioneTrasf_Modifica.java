@@ -365,7 +365,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     trasferimento = true;
                 }
                 default ->{
-                    descrizione = "DEPOSITO CRYPTO";
+                 /*   descrizione = "DEPOSITO CRYPTO";
+                    System.out.println(attuale[9]);
+                    System.out.println(attuale[12]);
+                    System.out.println(Importazioni.RitornaTipologiaTransazione(attuale[9], attuale[12],1));*/
+                    descrizione=Importazioni.RitornaTipologiaTransazione(null, attuale[12],1);
                     }
                 //qui si va solo in caso la scelata sia nessuna
             }
@@ -388,7 +392,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     trasferimento = true;
                 }
                 default ->
-                    descrizione = "PRELIEVO CRYPTO";
+                    //descrizione = "PRELIEVO CRYPTO";
+                    descrizione=Importazioni.RitornaTipologiaTransazione(attuale[9], null,1);
             }
         }
 

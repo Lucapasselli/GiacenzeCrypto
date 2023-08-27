@@ -149,7 +149,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("crypto_earn_program_withdrawn", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo di una Crypto dall'Earn
         Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
         Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("crypto_payment", "PAGAMENTO-CRYPTO");              //Pagamento in Crypto (Es.: Crypto Pay in CRO)
+
         Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
         Mappa_Conversione_Causali.put("crypto_to_exchange_transfer", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
         Mappa_Conversione_Causali.put("crypto_viban_exchange", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
@@ -191,8 +191,13 @@ public class Importazioni {
 //        Mappa_Conversione_Causali.put("crypto_credit_repayment_created", fileDaImportare);//Crypto Loan        
 //        Mappa_Conversione_Causali.put("crypto_credit_loan_credited", fileDaImportare);    //Crypto Loan
 //        Mappa_Conversione_Causali.put("crypto_credit_program_created", fileDaImportare);  //Crypto Loan 
-        Mappa_Conversione_Causali.put("admin_wallet_credited", "ALTRE-REWARD");//es. aggiustamenti luna  
-
+        Mappa_Conversione_Causali.put("admin_wallet_credited", "ALTRE-REWARD");//es. aggiustamenti luna 
+        Mappa_Conversione_Causali.put("transfer_cashback", "CASHBACK");              //Cashback su trasferimento crypto tra portafogli
+        Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
+        
+        //QUESTE 2 SOTTO SONO ANCORA DA GESTIRE
+        Mappa_Conversione_Causali.put("crypto_payment", "VENDITA CRYPTO");              //Pagamento in Crypto (Es.: Crypto Pay in CRO)
+        Mappa_Conversione_Causali.put("recurring_buy_order", "ACQUISTO CRYPTO");//Acquisto Crypto tramite acquisti ricorrenti
         
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
@@ -738,7 +743,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="ACQUISTO CRYPTO";
-                                if (movimentoSplittato[9].trim().equalsIgnoreCase("viban_purchase"))
+                                //recurring_buy_order e viban_purcase vanno gestite diversamente
+                                if (movimentoSplittato[9].trim().equalsIgnoreCase("viban_purchase")||movimentoSplittato[9].trim().equalsIgnoreCase("recurring_buy_order"))
                                 {
                                     RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];
                                     RT[8]=movimentoSplittato[2];
@@ -774,8 +780,41 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("VENDITA CRYPTO"))
                             {
-                                //Vendita Crypto x Euro
-                                
+                                //Vendita Crypto x Servizio
+                                if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment")){
+                                RT=new String[ColonneTabella];
+                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC"; 
+                                RT[1]=dataa;
+                                RT[2]=1+" di "+2;
+                                RT[3]="Crypto.com App";
+                                RT[4]="Crypto Wallet";
+                                RT[5]="VENDITA CRYPTO";
+                                RT[6]=movimentoSplittato[2]+" -> (Acquisto con Crypto)";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
+                                RT[8]=movimentoSplittato[2];
+                                RT[9]="Crypto";
+                                RT[10]=new BigDecimal(movimentoSplittato[3]).toString();                                                                                                                            
+                                RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];///////
+                                String valoreEuro="";
+                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
+                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                    {
+                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                    }
+                                valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                RT[15]=valoreEuro;
+                                RT[16]="";
+                                RT[17]="Da calcolare";
+                                RT[18]="";
+                                RT[19]="Da calcolare";
+                                RT[20]="";
+                                RT[21]="";
+                                RT[22]="A";
+                                RiempiVuotiArray(RT);
+                                lista.add(RT);   
+                                }
+                                else
+                                {//Vendita Crypto x Euro
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC"; 
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+2;
@@ -845,7 +884,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[21]="";
                                 RT[22]="A";
                                 RiempiVuotiArray(RT);
-                                lista.add(RT);                
+                                lista.add(RT);
+                                }
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO-CRYPTO"))
                             {

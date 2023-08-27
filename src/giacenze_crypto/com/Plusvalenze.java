@@ -56,6 +56,8 @@ public class Plusvalenze {
      *       10 - Prelievo Criptoattività PWN        (Prelievo a plusvalenza Zero ma toglie dal Lifo) <br>
      *           Comprende:  NFT ->          (Tipologia PWN su quella della Transazione)<br>
      *                       Crypto ->       (Tipologia PWN su quella della Transazione)<br>
+     *       11 - Deposito FIAT
+     *           Comprende:    -> FIAT
      */
     
     public static int CategorizzaTransazione(String[] movimento){
@@ -67,10 +69,10 @@ public class Plusvalenze {
             String IDTransazione=movimento[0];
             String IDTS[]=IDTransazione.split("_");
             int Tipologia = 0;
-            int TipologiaPlus=0;
+         /*   int TipologiaPlus=0;
             int TipologiaNCC=0;//Valore nuovo costo di carico
             int TipologiaStackLIFOVecchioCosto=0;
-            int TipologiaStackLIFONuovoCosto=0;
+            int TipologiaStackLIFONuovoCosto=0;*/
             
             //TIPOLOGIA = 1 
             if ((TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("Crypto"))
@@ -107,8 +109,8 @@ public class Plusvalenze {
             {
                 //Se arrivo qua vuol dire che questo è un deposito, poi a secondo di che tipo di deposito è
                 //valorizzo la tipologia corretta
-                if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("DTW")) Tipologia = 5; //Deposito Criptoattività x spostamento tra wallet
-                else if(IDTS[4].equalsIgnoreCase("RW")||movimento[18].contains("DAI")) Tipologia = 7;//Deposito Criptoattività x rewards, stacking,cashback etc...
+                if(IDTS[4].equalsIgnoreCase("RW")||movimento[18].contains("DAI")) Tipologia = 7;//Deposito Criptoattività x rewards, stacking,cashback etc...
+                else if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("DTW")) Tipologia = 5; //Deposito Criptoattività x spostamento tra wallet
                 else if(movimento[18].contains("DCZ")) Tipologia = 9;//Deposito a costo di carico zero
             } 
             
@@ -118,15 +120,20 @@ public class Plusvalenze {
                 //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
                 //valorizzo la tipologia corretta
                 Tipologia = 6; //Deposito CriptoAttività x spostamento tra wallet
-                if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("PTW")) Tipologia = 6; //Prelievo Criptoattività x spostamento tra wallet
-                else if(IDTS[4].equalsIgnoreCase("CM")||movimento[18].contains("PCO")) Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc...
+                if(IDTS[4].equalsIgnoreCase("CM")||movimento[18].contains("PCO")) Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc...
+                else if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("PTW")) Tipologia = 6; //Prelievo Criptoattività x spostamento tra wallet
                 else if(movimento[18].contains("PWN")) Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) 
-            }          
-
-            else {
-                System.out.println("Nessuna Tipologia Individuata");
+            } 
+            //TIPOLOGIA = 11 -> Deposito FIAT
+            else if (TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("FIAT")) 
+            {
+                Tipologia = 11;
             }
-
+            else {
+                System.out.println("Classe:Plusvalenze - Funzione:CategorizzaTransazione - Nessuna Tipologia Individuata");
+                System.out.println(TipoMU+" - "+TipoME);
+            }
+//System.out.println(Tipologia);
        return Tipologia;
        }
  
@@ -224,6 +231,12 @@ public class Plusvalenze {
                 tipoPlus = 0;
                 tipoNCC = 0;
                 tipoRimuovoStack = 1;
+                tipoInseriscoStack = 1;
+            }
+            case 11 -> {
+                tipoPlus = 0;
+                tipoNCC = 0;
+                tipoRimuovoStack = 0;
                 tipoInseriscoStack = 1;
             }
             default -> {

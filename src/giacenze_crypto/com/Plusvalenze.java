@@ -124,8 +124,8 @@ public class Plusvalenze {
                 else if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("PTW")) Tipologia = 6; //Prelievo Criptoattività x spostamento tra wallet
                 else if(movimento[18].contains("PWN")) Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) 
             } 
-            //TIPOLOGIA = 11 -> Deposito FIAT
-            else if (TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("FIAT")) 
+            //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
+            else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
             {
                 Tipologia = 11;
             }
@@ -166,79 +166,94 @@ public class Plusvalenze {
      * int[3]=1 :   Non faccio nulla (non inserisco nessun valore)<br>
      * int[3]=2 :   Costo Lifo Moneta Entrante = Costo Lifo Moneta Uscente<br>
      * int[3]=3 :   Costo Lifo Moneta Entrante = Valore Transazione<br>
+     * int[4]=0 :   Vecchio Costo di Carico=0<br>
+     * int[4]=1 :   Vecchio Costo di carico=""<br>
+     * int[4]=2 :   Vecchio Costo di carico=preso da lifo moneta<br>
      */
     public static int[] RitornaTipologieCalcoli(int Tipologia) {
-        int tipo[] = new int[4];
+        int tipo[] = new int[5];
         int tipoPlus=0;
         int tipoNCC=0;
         int tipoRimuovoStack=0;
         int tipoInseriscoStack=0;
+        int tipoVecchioCostoCarico=0;
         switch (Tipologia) {
             case 1 -> {
                 tipoPlus = 0;
                 tipoNCC = 2;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 2;
+                tipoVecchioCostoCarico=2;
             }
             case 2 -> {
                 tipoPlus = 2;
                 tipoNCC = 3;
                 tipoRimuovoStack = 1;
-                tipoInseriscoStack = 3;                
+                tipoInseriscoStack = 3; 
+                tipoVecchioCostoCarico=2;
             }
             case 3 -> {
                 tipoPlus = 0;
                 tipoNCC = 3;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 3;
+                tipoVecchioCostoCarico=1;
             }
             case 4 -> {
                 tipoPlus = 2;
                 tipoNCC = 1;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 1;
+                tipoVecchioCostoCarico=2;
             }
             case 5 -> {
                 tipoPlus = 0;
-                tipoNCC = 2;
+                tipoNCC = 1;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 1;
+                tipoVecchioCostoCarico=1;
             }
             case 6 -> {
                 tipoPlus = 0;
-                tipoNCC = 2;
+                tipoNCC = 1;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 1;
+                tipoVecchioCostoCarico=1;
             }
             case 7 -> {
                 tipoPlus = 1;
                 tipoNCC = 3;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 3;
+                tipoVecchioCostoCarico=1;
             }
             case 8 -> {
                 tipoPlus = 2;
                 tipoNCC = 1;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 1;
+                tipoVecchioCostoCarico=2;
             }
             case 9 -> {
                 tipoPlus = 0;
                 tipoNCC = 0;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 0;
+                tipoVecchioCostoCarico=1;
             }
             case 10 -> {
                 tipoPlus = 0;
                 tipoNCC = 1;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 1;
+                tipoVecchioCostoCarico=2;
             }
             case 11 -> {
                 tipoPlus = 0;
                 tipoNCC = 1;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 1;
+                tipoVecchioCostoCarico=1;
             }
             default -> {
                
@@ -249,6 +264,7 @@ public class Plusvalenze {
         tipo[1]=tipoNCC;
         tipo[2]=tipoRimuovoStack;
         tipo[3]=tipoInseriscoStack;
+        tipo[4]=tipoVecchioCostoCarico;
         return tipo;
     }
     
@@ -313,7 +329,7 @@ public class Plusvalenze {
 
     }
     ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
-    }
+    }else return "";
     
     return ritorno;
    // System.out.println(Moneta +" - "+stack.size());
@@ -356,7 +372,10 @@ public class Plusvalenze {
 
             switch (TipologieCalcoli[2]) {//Qui analizzo se devo o meno cancellare dallo stack il vecchio costo
                 case 0 -> {//Non tolgo dallo stack il vecchio costo di carico
+                   
                     VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,false);
+                    //questa seconda casistica succede solo in presenza di depositi
+                    if (VecchioPrezzoCarico.isBlank())VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaE,QtaE,false);
                 }
                 case 1 -> {//Tolgo dallo stack il vecchio costo di carico
                     VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
@@ -369,6 +388,7 @@ public class Plusvalenze {
                     Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                 }
                 case 1 -> {
+                    NuovoPrezzoCarico="";
                 }
                 case 2 -> {
                     NuovoPrezzoCarico=VecchioPrezzoCarico;
@@ -404,8 +424,23 @@ public class Plusvalenze {
                     NuovoPrezzoCarico=Valore;
                 }
             }
+            switch (TipologieCalcoli[4]) {//Qui decido il Vecchio Costo di carico
+                case 0 -> {
+                    VecchioPrezzoCarico="0.00";
+                }
+                case 1 -> {
+                    VecchioPrezzoCarico="";
+                }
+                case 2 -> {
+                    //non faccio nulla resta valorizzato così com'è
+                }
+
+            }
+                   // System.out.println("-"+VecchioPrezzoCarico+"-"+TipologieCalcoli[4]);
+                    v[16]=VecchioPrezzoCarico;
                     v[17]=NuovoPrezzoCarico;
                     v[19]=Plusvalenza;
+                    //System.out.println("--------------------------");
 
         }
     }

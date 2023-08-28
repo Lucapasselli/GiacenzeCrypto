@@ -935,9 +935,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         //se trovo delle compilazioni a metà in uno dei 2 blocchi devo evidenziare il problema
         //oppure se trovo che nessuno dei 2 blocchi è compilato devo evidenziare il problema
         //oppure se i campi numerici non sono numerici devo evidenziare il problema
+       // System.out.println(CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false));
         if (((tuttoVuotoE==false&&tuttoCompilatoE==false)||(tuttoVuotoU==false&&tuttoCompilatoU==false))||
                 (tuttoVuotoE==true&&tuttoVuotoU==true)||
-                (!CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false)||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta,false))){
+                (!CDC_Grafica.Funzioni_isNumeric(MonetaUQta,true)||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta,true))){
             nonCompleto=true;
             if (MonetaU.equalsIgnoreCase(""))MonetaUscita_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscita_ComboBox.setBackground(Color.white);
             if (/*MonetaUQta.equalsIgnoreCase("")||*/!CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);

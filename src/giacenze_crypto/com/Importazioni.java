@@ -25,7 +25,7 @@
 13 - Quantità Acq./Ricevuta -> es. 10
 14 - Valore di Mercato transazione (come da csv) -> es. 10 USD
 15 - Valore di Mercato Transazione in EURO -> es. 9
-16 - VUOTO
+16 - Vecchio Costo di Carico
 17 - Prezzo di Carico Totale Transazione in EUR -> es. 8
 18 - Tipo Trasferimento
 19 - Plusvalenza in EUR della Transazione -> es 3
@@ -766,6 +766,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";                               
                                 RT[9]="FIAT";                                                                                              
                                 RT[12]="Crypto";
+                                valoreEuro=new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]=valoreEuro;

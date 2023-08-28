@@ -20,10 +20,8 @@ import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -87,7 +85,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.10 Beta");
+            this.setTitle("Giacenze_Crypto 1.11 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -3398,17 +3396,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //Bisognerebbe usare le stesse casistiche utilizzate per il calcolo delle plussvalenze
         //Ad ogni modo il Vecchio costo di carico non è presente per
         //
-                String VecchioCostoCarico="";
-        int categoriaTransazione=Plusvalenze.CategorizzaTransazione(Transazione);
-        System.out.println(categoriaTransazione);
-        // se categoriaTransazione=3 o 7 o 9 o 11 il vecchio costo di carico non va valorizzato
-        if(categoriaTransazione==3&&categoriaTransazione==7&&categoriaTransazione==9&&categoriaTransazione==11){
-            VecchioCostoCarico="";
-       }else if(categoriaTransazione==2&&categoriaTransazione==4&&categoriaTransazione==8&&categoriaTransazione==4){
-            VecchioCostoCarico=new BigDecimal(ValoreTransazione).subtract(new BigDecimal(Plusvalenza)).toPlainString();
-        }else{//Manca da valorizzare il movimento  con codice 10
-           VecchioCostoCarico=ValoreTransazionePrezzoCarico;
-       }
+              
+
+        String VecchioCostoCarico=Transazione[16];
+
       //  String MacAddress = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
         
         String daAppendere="ID TRANSAZIONE :&#9&#9&#9<b>"+IDTransazione+"</b><br>"+
@@ -3420,8 +3411,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "MONETA RICEVUTA :&#9&#9&#9<b>"+MonetaRicevuta+"</b><br>"+
                 "VALORE TRANSAZIONE da CSV :&#9&#9<b>"+ValoreTransazioneCSV+"</b><br>"+
                 "VALORE TRANSAZIONE :&#9&#9&#9<b>"+ValoreTransazione+"</b><br>"+
-                "VECCHIO COSTO DI CARICO TRANSAZIONE :&#9<b>"+VecchioCostoCarico+"</b><br>"+
-                "NUOVO COSTO DI CARICO TRANSAZIONE :&#9<b>"+ValoreTransazionePrezzoCarico+"</b><br>"+
+                "VECCHIO COSTO DI CARICO :&#9&#9<b>"+VecchioCostoCarico+"</b><br>"+
+                "NUOVO COSTO DI CARICO :&#9&#9<b>"+ValoreTransazionePrezzoCarico+"</b><br>"+
                 "PLUSVALENZA :&#9&#9&#9<b>"+Plusvalenza+"</b><br>"+
                 "RIFERIMENTI TRASFERIMENTO :&#9&#9<b>"+Riferimenti+"</b><br>"+
                 "NOTE :&#9<b>"+Note+"</b><br>";

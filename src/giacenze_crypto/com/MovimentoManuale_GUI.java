@@ -787,7 +787,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             MovimentoRiportato[21] = Note;
         } else {
             MonetaUQta = MonetaUQta.replace("-", "");
-            if (CDC_Grafica.Funzioni_isNumeric(MonetaUQta) && !MonetaUQta.equalsIgnoreCase("0") && !MonetaUQta.isBlank()) {
+            if (CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false) && !MonetaUQta.equalsIgnoreCase("0")) {
                 MonetaUQta = "-" + MonetaUQta;
             }
             MonetaEQta = MonetaEQta.replace("-", "");
@@ -874,7 +874,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             this.WalletDettaglio_ComboBox.setBackground(Color.white);
         }
        
-        if (ValoreTransazione.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(ValoreTransazione)){
+        if (/*ValoreTransazione.equalsIgnoreCase("")||*/!CDC_Grafica.Funzioni_isNumeric(ValoreTransazione,false)){
             nonCompleto=true;
             this.ValoreTransazione_TextField.setBackground(Color.getHSBColor(20, 20, 20));
         }else {
@@ -937,13 +937,13 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         //oppure se i campi numerici non sono numerici devo evidenziare il problema
         if (((tuttoVuotoE==false&&tuttoCompilatoE==false)||(tuttoVuotoU==false&&tuttoCompilatoU==false))||
                 (tuttoVuotoE==true&&tuttoVuotoU==true)||
-                (!CDC_Grafica.Funzioni_isNumeric(MonetaUQta)||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta))){
+                (!CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false)||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta,false))){
             nonCompleto=true;
             if (MonetaU.equalsIgnoreCase(""))MonetaUscita_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscita_ComboBox.setBackground(Color.white);
-            if (MonetaUQta.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(MonetaUQta))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
+            if (/*MonetaUQta.equalsIgnoreCase("")||*/!CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
             if (MonetaUTipo==null)MonetaUscitaTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaTipo_ComboBox.setBackground(Color.white);
             if (MonetaE.equalsIgnoreCase(""))MonetaEntrata_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrata_ComboBox.setBackground(Color.white);
-            if (MonetaEQta.equalsIgnoreCase("")||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
+            if (/*MonetaEQta.equalsIgnoreCase("")||*/!CDC_Grafica.Funzioni_isNumeric(MonetaEQta,false))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
             if (MonetaETipo==null)MonetaEntrataTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataTipo_ComboBox.setBackground(Color.white);
         } 
         //se invece le 2 situazioni di prima non sono vere vuol dire che va tutto bene

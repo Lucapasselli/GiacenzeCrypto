@@ -157,8 +157,9 @@ public class Plusvalenze {
      * int[0]=1 :   Il campo plusvalenza va compilato con il ValoreTransazione<br>
      * int[0]=2 :   Plusvalenza=Valore Transazione - Costo di Carico Moneta Uscita (Vecchio Costo di carico)<br><br>
      * int[1]=0 :   Il campo relativo al Nuovo Costo di Carico va valorizzato a Zero <br>
-     * int[1]=1 :   Nuovo Costo di Carico = Costo di Carico preso tramite lifo da moneta Uscita (Vecchio costo di carico)<br>
-     * int[1]=2 :   Nuovo Costo di Carico = Valore Transazione<br><br>
+     * int[1]=1 :   Nuovo Costo di Carico= "" <br>
+     * int[1]=2 :   Nuovo Costo di Carico = Costo di Carico preso tramite lifo da moneta Uscita (Vecchio costo di carico)<br>
+     * int[1]=3 :   Nuovo Costo di Carico = Valore Transazione<br><br>
      * int[2]=0 :   Non tolgo dallo stack il vecchio costo di carico <br>
      * int[2]=1 :   Tolgo dallo stack il vecchio costo di carico<br><br>
      * int[3]=0 :   Costo Lifo Moneta Entrante = Zero <br><
@@ -175,49 +176,49 @@ public class Plusvalenze {
         switch (Tipologia) {
             case 1 -> {
                 tipoPlus = 0;
-                tipoNCC = 1;
+                tipoNCC = 2;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 2;
             }
             case 2 -> {
                 tipoPlus = 2;
-                tipoNCC = 2;
+                tipoNCC = 3;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 3;                
             }
             case 3 -> {
                 tipoPlus = 0;
-                tipoNCC = 2;
+                tipoNCC = 3;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 3;
             }
             case 4 -> {
                 tipoPlus = 2;
-                tipoNCC = 0;
+                tipoNCC = 1;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 1;
             }
             case 5 -> {
                 tipoPlus = 0;
-                tipoNCC = 1;
+                tipoNCC = 2;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 1;
             }
             case 6 -> {
                 tipoPlus = 0;
-                tipoNCC = 1;
+                tipoNCC = 2;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 1;
             }
             case 7 -> {
                 tipoPlus = 1;
-                tipoNCC = 2;
+                tipoNCC = 3;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 3;
             }
             case 8 -> {
                 tipoPlus = 2;
-                tipoNCC = 0;
+                tipoNCC = 1;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 1;
             }
@@ -229,13 +230,13 @@ public class Plusvalenze {
             }
             case 10 -> {
                 tipoPlus = 0;
-                tipoNCC = 0;
+                tipoNCC = 1;
                 tipoRimuovoStack = 1;
                 tipoInseriscoStack = 1;
             }
             case 11 -> {
                 tipoPlus = 0;
-                tipoNCC = 0;
+                tipoNCC = 1;
                 tipoRimuovoStack = 0;
                 tipoInseriscoStack = 1;
             }
@@ -364,6 +365,7 @@ public class Plusvalenze {
             switch (TipologieCalcoli[3]) {//Qui analizzo se devo e che valore devo inserire nello stack come nuovo costo di carico
                 case 0 -> {
                     //il nuovo prezzo di carico ovviamente è valorizzato a Zero
+                    NuovoPrezzoCarico="0.00";
                     Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                 }
                 case 1 -> {
@@ -393,9 +395,12 @@ public class Plusvalenze {
                     NuovoPrezzoCarico="0.00";
                 }
                 case 1 -> {
-                    NuovoPrezzoCarico=VecchioPrezzoCarico;
+                    NuovoPrezzoCarico="";
                 }
                 case 2 -> {
+                    NuovoPrezzoCarico=VecchioPrezzoCarico;
+                }
+                case 3 -> {
                     NuovoPrezzoCarico=Valore;
                 }
             }
@@ -759,6 +764,8 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
             10 - Prelievo Criptoattività PWN        (Prelievo a plusvalenza Zero ma toglie dal Lifo) 
                 Comprende:  NFT ->          (Tipologia PWN su quella della Transazione)
                             Crypto ->       (Tipologia PWN su quella della Transazione)
+            11 - Deposito FIAT
+                Comprende:    -> FIAT
         
         
         
@@ -828,37 +835,37 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
         Quindi ricapitolanto per tipologia abbiamo le seguenti caratteristiche
         Tipologia 1 (Scambio criptoatt. omogenee) :
                 TipologiaPlus=0 (Plusvalenza=0)
-                TipologiaNCC=1 (Nuovo Costo di Carico = Costo di Carico preso tramite lifo da moneta Uscita)
+                TipologiaNCC=2 (Nuovo Costo di Carico = Costo di Carico preso tramite lifo da moneta Uscita)
                 TipologiaStackLIFOVecchioCosto=1  (Tolgo dallo stack il vecchio costo di carico)
                 TipologiaStackLIFONuovoCosto=2  (Costo Lifo Moneta Entrante = Costo Lifo Moneta Uscente)
         Tipologia 2 (Scambio CriptoAttività non omogeneo) :
                 TipologiaPlus=2 :   Plusvalenza=Valore Transazione - Costo di Carico Moneta Uscita (Vecchio Costo di carico)
-                TipologiaNCC=2 :    Nuovo Costo di Carico = Valore Transazione
+                TipologiaNCC=3 :    Nuovo Costo di Carico = Valore Transazione
                 TipologiaStackLIFOVecchioCosto=1 :  Tolgo dallo stack il vecchio costo di carico
                 TipologiaStackLIFONuovoCosto=3 :   Costo Lifo Moneta Entrante = Valore Transazione
         Tipologia 3 (Acquisto criptoattivita)
                 TipologiaPlus=0 :   Il campo plusvalenza va compilato con valore Zero
-                TipologiaNCC=2 :    Nuovo Costo di Carico = Valore Transazione 
+                TipologiaNCC=3 :    Nuovo Costo di Carico = Valore Transazione 
                 TipologiaStackLIFOVecchioCosto=0 :  Non tolgo dallo stack il vecchio costo di carico
                 TipologiaStackLIFONuovoCosto=3 :   Costo Lifo Moneta Entrante = Valore Transazione
         Tipologia 4 (Vendita criptoattività)
                 TipologiaPlus=2 :   Plusvalenza=Valore Transazione - Costo di Carico Moneta Uscita (Vecchio Costo di carico)
-                TipologiaNCC=0 :    Il campo relativo al Nuovo Costo di Carico va valorizzato a Zero 
+                TipologiaNCC=1 :    Il campo relativo al Nuovo Costo di Carico va valorizzato a "" 
                 TipologiaStackLIFOVecchioCosto=1 :  Tolgo dallo stack il vecchio costo di carico
                 TipologiaStackLIFONuovoCosto=1 :   Non faccio nulla (non inserisco nessun valore)
         Tipologia 5 o 6 (Deposito o Prelievo x spostamento tra Wallet di Proprietà)
                 TipologiaPlus=0 :   Il campo plusvalenza va compilato con valore Zero
-                TipologiaNCC=1 :    Nuovo Costo di Carico = Costo di Carico preso tramite lifo da moneta Uscita (Vecchio costo di carico)
+                TipologiaNCC=2 :    Nuovo Costo di Carico = Costo di Carico preso tramite lifo da moneta Uscita (Vecchio costo di carico)
                 TipologiaStackLIFOVecchioCosto=0 :  Non tolgo dallo stack il vecchio costo di carico
                 TipologiaStackLIFONuovoCosto=1 :   Non faccio nulla (non inserisco nessun valore)
         Tipologia 7 (Deposito criptoattività derivanti da Stacking,cashback,rewards,earn etc...)
                 TipologiaPlus=1 :   Il campo plusvalenza va compilato con il ValoreTransazione
-                TipologiaNCC=2 :    Nuovo Costo di Carico = Valore Transazione 
+                TipologiaNCC=3 :    Nuovo Costo di Carico = Valore Transazione 
                 TipologiaStackLIFOVecchioCosto=0 :  Non tolgo dallo stack il vecchio costo di carico
                 TipologiaStackLIFONuovoCosto=3 :   Costo Lifo Moneta Entrante = Valore Transazione
         Tipologia 8 (Prelievo/Vendita di Criptoattività in cambio di beni o servizi)
                 TipologiaPlus=2 :   Plusvalenza=Valore Transazione - Costo di Carico Moneta Uscita (Vecchio Costo di carico)
-                TipologiaNCC=0 :    Il campo relativo al Nuovo Costo di Carico va valorizzato a Zero  
+                TipologiaNCC=1 :    Il campo relativo al Nuovo Costo di Carico va valorizzato a ""  
                 TipologiaStackLIFOVecchioCosto=1 :  Tolgo dallo stack il vecchio costo di carico
                 TipologiaStackLIFONuovoCosto=1 :   Non faccio nulla (non inserisco nessun valore)
         Tipologia 9 (Deposito forzato a costo di carico zero)
@@ -868,7 +875,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 TipologiaStackLIFONuovoCosto=0 :   Costo Lifo Moneta Entrante = Zero
         Tipologia 10(Prelievo a plus zero che movimenta il solo lifo... Caso molto particolare))
                 TipologiaPlus=0 :   Il campo plusvalenza va compilato con valore Zero
-                TipologiaNCC=0 :    Il campo relativo al Nuovo Costo di Carico va valorizzato a Zero 
+                TipologiaNCC=1 :    Il campo relativo al Nuovo Costo di Carico va valorizzato a "" 
                 TipologiaStackLIFOVecchioCosto=1 :  Tolgo dallo stack il vecchio costo di carico
                 TipologiaStackLIFONuovoCosto=1 :   Non faccio nulla (non inserisco nessun valore)
         

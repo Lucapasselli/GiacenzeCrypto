@@ -2413,7 +2413,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Text_GiacenzaInizialeKeyReleased
         // TODO add your handling code here:
 
-        if (!CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())&&Funzioni_isNumeric(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())){
+        if (!CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText())&&Funzioni_isNumeric(this.CDC_FiatWallet_Text_GiacenzaIniziale.getText(),true)){
             CDC_FiatWallet_SaldoIniziale=this.CDC_FiatWallet_Text_GiacenzaIniziale.getText().replaceFirst("^0+(?!$)", "");
 
             //if (CDC_FiatWallet_Text_GiacenzaIniziale.getText().equalsIgnoreCase("")) CDC_FiatWallet_SaldoIniziale="0";
@@ -2467,7 +2467,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void CDC_CardWallet_Text_GiacenzaInizialeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Text_GiacenzaInizialeKeyReleased
         // TODO add your handling code here:
-        if (!CDC_CardWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())&&Funzioni_isNumeric(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())){
+        if (!CDC_CardWallet_SaldoIniziale.equalsIgnoreCase(this.CDC_CardWallet_Text_GiacenzaIniziale.getText())&&Funzioni_isNumeric(this.CDC_CardWallet_Text_GiacenzaIniziale.getText(),true)){
             if (CDC_CardWallet_Text_GiacenzaIniziale.getText().equalsIgnoreCase(""))CDC_CardWallet_Text_GiacenzaIniziale.setText("0");
             CDC_CardWallet_SaldoIniziale=this.CDC_CardWallet_Text_GiacenzaIniziale.getText().replaceFirst("^0+(?!$)", "");
 
@@ -3353,31 +3353,31 @@ public class CDC_Grafica extends javax.swing.JFrame {
         String MonUsc="";
         if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8)!=null)
             MonUsc=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 8).toString().trim();
-        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazione,false)&&Funzioni_isNumeric(QTARic,false)&&!MonRic.equalsIgnoreCase("EUR")){
             if (new BigDecimal(QTARic).compareTo(new BigDecimal(0))!=0)
             unitarioValoreRic="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
-        if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico)&&Funzioni_isNumeric(QTARic)&&!QTARic.equalsIgnoreCase("")&&!MonRic.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico,false)&&Funzioni_isNumeric(QTARic,false)&&!MonRic.equalsIgnoreCase("EUR")){
             if (new BigDecimal(QTARic).compareTo(new BigDecimal(0))!=0)
             unitarioPrzCaricoRic="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTARic).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
-        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazione,false)&&Funzioni_isNumeric(QTAUsc,false)&&!MonUsc.equalsIgnoreCase("EUR")){
             if (new BigDecimal(QTAUsc).compareTo(new BigDecimal(0))!=0)
             unitarioValoreUsc="</b>&#9("+new BigDecimal(ValoreTransazione).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ V.M. cad)";
         }
-        if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico)&&Funzioni_isNumeric(QTAUsc)&&!QTAUsc.equalsIgnoreCase("")&&!MonUsc.equalsIgnoreCase("EUR")){
+        if (Funzioni_isNumeric(ValoreTransazionePrezzoCarico,false)&&Funzioni_isNumeric(QTAUsc,false)&&!MonUsc.equalsIgnoreCase("EUR")){
             if (new BigDecimal(QTAUsc).compareTo(new BigDecimal(0))!=0)
             unitarioPrzCaricoUsc="</b>  ("+new BigDecimal(ValoreTransazionePrezzoCarico).divide(new BigDecimal(QTAUsc).abs(),12, RoundingMode.HALF_UP).stripTrailingZeros().toString()+"€ PdC cad)";
         }
         String MonetaRicevuta="";
         String MonetaUscita="";
-        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTARic)){
+        if (Funzioni_isNumeric(ValoreTransazione,false)&&Funzioni_isNumeric(QTARic,false)){
         MonetaRicevuta=QTARic+
                 " "+MonRic+
                 "  "+unitarioValoreRic+" "+
                 "  "+unitarioPrzCaricoRic;
         }
-        if (Funzioni_isNumeric(ValoreTransazione)&&Funzioni_isNumeric(QTAUsc)){
+        if (Funzioni_isNumeric(ValoreTransazione,false)&&Funzioni_isNumeric(QTAUsc,false)){
         MonetaUscita=QTAUsc+
                 " "+MonUsc+
                 "  "+unitarioValoreUsc+" "+
@@ -3393,6 +3393,22 @@ public class CDC_Grafica extends javax.swing.JFrame {
         String Riferimenti="";
         if (TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20)!=null)
             Riferimenti=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 20).toString();
+        
+        //ADESSO BISOGNA CAPIRE BENE COME E QUANDO VALORIZZAREIL VECCHIO COSTO DI CARICO
+        //Bisognerebbe usare le stesse casistiche utilizzate per il calcolo delle plussvalenze
+        //Ad ogni modo il Vecchio costo di carico non è presente per
+        //
+                String VecchioCostoCarico="";
+        int categoriaTransazione=Plusvalenze.CategorizzaTransazione(Transazione);
+        System.out.println(categoriaTransazione);
+        // se categoriaTransazione=3 o 7 o 9 o 11 il vecchio costo di carico non va valorizzato
+        if(categoriaTransazione==3&&categoriaTransazione==7&&categoriaTransazione==9&&categoriaTransazione==11){
+            VecchioCostoCarico="";
+       }else if(categoriaTransazione==2&&categoriaTransazione==4&&categoriaTransazione==8&&categoriaTransazione==4){
+            VecchioCostoCarico=new BigDecimal(ValoreTransazione).subtract(new BigDecimal(Plusvalenza)).toPlainString();
+        }else{//Manca da valorizzare il movimento  con codice 10
+           VecchioCostoCarico=ValoreTransazionePrezzoCarico;
+       }
       //  String MacAddress = TransazioniCryptoTabella.getModel().getValueAt(TransazioniCryptoTabella.getSelectedRow(), 1).toString();
         
         String daAppendere="ID TRANSAZIONE :&#9&#9&#9<b>"+IDTransazione+"</b><br>"+
@@ -3404,7 +3420,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "MONETA RICEVUTA :&#9&#9&#9<b>"+MonetaRicevuta+"</b><br>"+
                 "VALORE TRANSAZIONE da CSV :&#9&#9<b>"+ValoreTransazioneCSV+"</b><br>"+
                 "VALORE TRANSAZIONE :&#9&#9&#9<b>"+ValoreTransazione+"</b><br>"+
-                "VALORE TRANSAZIONE AL PREZZO DI CARICO :&#9<b>"+ValoreTransazionePrezzoCarico+"</b><br>"+
+                "VECCHIO COSTO DI CARICO TRANSAZIONE :&#9<b>"+VecchioCostoCarico+"</b><br>"+
+                "NUOVO COSTO DI CARICO TRANSAZIONE :&#9<b>"+ValoreTransazionePrezzoCarico+"</b><br>"+
                 "PLUSVALENZA :&#9&#9&#9<b>"+Plusvalenza+"</b><br>"+
                 "RIFERIMENTI TRASFERIMENTO :&#9&#9<b>"+Riferimenti+"</b><br>"+
                 "NOTE :&#9<b>"+Note+"</b><br>";
@@ -3452,7 +3469,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
               if (EscludiTI==true&&!splittata[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
                   if (Funzioni_Date_ConvertiDatainLong(splittata[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(splittata[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                      ModelloTabellaCrypto.addRow(splittata);
-                                     if (Funzioni_isNumeric(splittata[19]))
+                                     if (Funzioni_isNumeric(splittata[19],false))
                 {
                     Plusvalenza=Plusvalenza.add(new BigDecimal(splittata[19]));
                 }
@@ -3493,7 +3510,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
           if (EscludiTI==true&&!v[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
                 if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                 ModelloTabellaCrypto.addRow(v);
-                if (Funzioni_isNumeric(v[19]))
+                if (Funzioni_isNumeric(v[19],false))
                 {
                     Plusvalenza=Plusvalenza.add(new BigDecimal(v[19]));
                 }
@@ -3536,9 +3553,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
      
     
     
-    public static boolean Funzioni_isNumeric(String str) {
+    public static boolean Funzioni_isNumeric(String str,boolean CampoVuotoContacomeNumero) {
         //ritorna vero se il campo è vuoto oppure è un numero
-     if (str.isBlank()) return true;
+  if(CampoVuotoContacomeNumero&&str.isBlank()) return true;
         try  
   {  
     double d = Double.parseDouble(str);  

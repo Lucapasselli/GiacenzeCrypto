@@ -120,7 +120,8 @@ public class Plusvalenze {
                 //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
                 //valorizzo la tipologia corretta
                 Tipologia = 6; //Deposito CriptoAttività x spostamento tra wallet
-                if(IDTS[4].equalsIgnoreCase("CM")||movimento[18].contains("PCO")) Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc...
+                if(IDTS[4].equalsIgnoreCase("RW"))Tipologia = 4;//Significa che sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
+                else if(IDTS[4].equalsIgnoreCase("CM")||movimento[18].contains("PCO")) Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc...
                 else if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("PTW")) Tipologia = 6; //Prelievo Criptoattività x spostamento tra wallet
                 else if(movimento[18].contains("PWN")) Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) 
             } 

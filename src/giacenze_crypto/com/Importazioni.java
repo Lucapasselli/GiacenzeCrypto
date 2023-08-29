@@ -620,6 +620,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[5] = Mappa_Conversione_Causali.get(movimentoSplittato[9]);
                                 RT[6] = "-> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                String valoreEuro = "0";
+                                    
+                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) {
+                                        valoreEuro = movimentoSplittato[7];
+                                    }
+                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
+                                        valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);                                        
+                                    }
+                                    
+                                    valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
                                 
                                 if (movimentoSplittato[3].contains("-")) {
                                     RT[5] = "RIMBORSO " + Mappa_Conversione_Causali.get(movimentoSplittato[9]);
@@ -646,7 +656,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[12] = "Crypto";
                                     RT[13] = movimentoSplittato[3];
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                    String valoreEuro = "0";
+                             /*       String valoreEuro = "0";
                                     
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) {
                                         valoreEuro = movimentoSplittato[7];
@@ -657,14 +667,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     //System.out.println("-"+valoreEuro+"-");
                                     //valoreEuro=new BigDecimal(1).toString();
                                  //   if (valoreEuro!=null){
-                                    valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
-                                 //   }
-                                 //   else {
-                                  //      valoreEuro="0";
-                                     //   System.out.println(movimentoSplittato[7]);
-                                     //   System.out.println(data.split(" ")[0]);
-                                      //  System.out.println("------");
-                                //    }
+                                    valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();*/
+
                                     RT[15] = valoreEuro;
                                     BigDecimal QTA = new BigDecimal(movimentoSplittato[3]);
                                     String plus;

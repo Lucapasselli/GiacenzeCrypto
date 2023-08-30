@@ -746,6 +746,9 @@ public class Calcoli {
         //come prima cosa devo decidere il formato data
        // long adesso=System.currentTimeMillis();
         //long inizio2019=ConvertiDatainLong("2019-01-01");
+        long adesso=System.currentTimeMillis();
+        if (Datalong>adesso) return null;//se la data è maggiore di quella attuale non recupero nessun prezzo
+        if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         String DataOra=ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=ConvertiDatadaLong(Datalong);
         //String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
@@ -861,6 +864,9 @@ public class Calcoli {
             RecuperaCoppieBinance();
         }*/
         String risultato;// = null;
+        long adesso=System.currentTimeMillis();
+        if (Datalong>adesso) return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi
+        if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         String DataOra=ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=ConvertiDatadaLong(Datalong);
         //risultato = MappaConversioneXXXEUR.get(DataOra+" "+Crypto);
@@ -875,15 +881,17 @@ public class Calcoli {
                      //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
         }
         //se il risultato è zero devo equipararlo ad un risultato nullo
-        //infatti se ritorna zero vuol dire che per quella data binance non mi fornisce nessun prezzo
-        if (risultato.equalsIgnoreCase("0")) {
-            risultato=null;
-                     }
-        if (risultato != null) {
-            //questa è la mappa che al termine della conversione devo scrivere nel file;
-            MappaConversioneXXXEUR.put(DataOra+" "+Crypto, risultato);
-            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
-        }
+
+           if (risultato != null) {
+               //infatti se ritorna zero vuol dire che per quella data binance non mi fornisce nessun prezzo
+               if (risultato.equalsIgnoreCase("0")) {
+                   risultato = null;
+               } else {
+                   //questa è la mappa che al termine della conversione devo scrivere nel file;
+                   MappaConversioneXXXEUR.put(DataOra + " " + Crypto, risultato);
+                   risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+               }
+           }
       //  System.out.println(risultato);
         return risultato;
     } 
@@ -1167,6 +1175,8 @@ for (int i=0;i<ArraydataIni.size();i++){
         String ok = "ok";
         long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
         long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
+        long adesso=System.currentTimeMillis()/1000;
+        //    if(adesso<timestampFinale)timestampFinale=adesso;
         
         //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
         long difData=dataFin-dataIni;
@@ -1186,7 +1196,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         //7776000 secondi equivalgono a 3 mesi (90giorni per la precisione).
         //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
       // System.out.println(dataIni+" - "+dataFin);
-        while (difData>0){
+        while (difData>0&&dataIni<adesso){//se la fifferenza tra le date è <0 e la data iniziale è minore della data attuale allora creo l'array
             ArraydataIni.add(dataIni);
             ArraydataFin.add(dataIni+7776000);
             dataIni=dataIni+7776000;
@@ -1287,7 +1297,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         //e tutti gli altri valori per gli orari.
         //se ho più di 40 giorni devo dividere le richieste in multipli di 40 giorni fino ad arrivare alla data iniziale che desidero.
         //i multipli devono partire dalla data finale e andare indietro.
-        //3456000 secondi equivalgono a 3 mesi (40giorni per la precisione).
+        //3456000 secondi equivalgono a 40gg (40giorni per la precisione).
         //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
       // System.out.println(dataIni+" - "+dataFin);
         while (difData>0){
@@ -1311,6 +1321,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             long timestampIniziale = ArraydataIni.get(i);
             long timestampFinale = ArraydataFin.get(i);
             long adesso=System.currentTimeMillis();
+            ConvertiUSDTEUR("1", timestampIniziale);//Questo serve solo per generare la tabella con i prezzi di USDT qualora non vi dovessero essere
             if(adesso<timestampFinale)timestampFinale=adesso;
             while (timestampIniziale < timestampFinale) {
                 Date date = new java.util.Date(timestampIniziale);
@@ -1322,9 +1333,14 @@ for (int i=0;i<ArraydataIni.size();i++){
                 MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, "0");
                 if (CoppiaCrypto.equalsIgnoreCase("USDCUSDT")
                         || CoppiaCrypto.equalsIgnoreCase("BUSDUSDT")
-                        || CoppiaCrypto.equalsIgnoreCase("DAIUSDT")) {
-                        String Prezzo = ConvertiUSDTEUR("1", timestampIniziale);
-                        MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, Prezzo);
+                        || CoppiaCrypto.equalsIgnoreCase("DAIUSDT")) 
+                {
+                        String Prezzo=MappaConversioneUSDTEUR.get(DataconOra);
+                        if(MappaConversioneUSDTEUR.get(DataconOra)!=null)
+                            {
+                          //  String Prezzo = ConvertiUSDTEUR("1", timestampIniziale);
+                            MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, Prezzo);
+                            }
                 }
                 timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
             }

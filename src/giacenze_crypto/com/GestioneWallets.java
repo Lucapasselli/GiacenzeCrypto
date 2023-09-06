@@ -348,7 +348,7 @@ public class GestioneWallets extends javax.swing.JDialog {
             r=JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"SI","NO"}, "OK");
            if(r==0){
                //System.out.println(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
-             int movEliminati=CDC_Grafica.Funzioni_CancellaMovimentazioniWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
+             int movEliminati=Funzioni.CancellaMovimentazioniXWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
              if (movEliminati>0){
                  CDC_Grafica.TabellaCryptodaAggiornare=true;
                  Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";

@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -85,7 +84,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.11 Beta");
+            this.setTitle("Giacenze_Crypto 1.12 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -2778,7 +2777,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
          if (risposta==0)
         {
             Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-            int movimentiCancellati=Funzioni_CancellaMovimentazioniWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString());
+            int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString());
             if (movimentiCancellati>0){
                Opzioni_RicreaListaWalletDisponibili();
                 Plusvalenze.AggiornaPlusvalenze();
@@ -2796,38 +2795,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
 
     
-    public static int Funzioni_CancellaMovimentazioniWallet(String Wallet){
-         
-        int movimentiCancellati=0;
-       //this.TransazioniCryptoFiltro_Text.setText("");
-        //questo server per velocizzare la ricerca
-        //disabilito il filtro e poi lo riabilito finito l'eleaborazione
-        
-        List<String> Cancellare=new ArrayList<>();
-        
 
-        for (String v : MappaCryptoWallet.keySet()) {
-            if (MappaCryptoWallet.get(v)[3].trim().equalsIgnoreCase(Wallet.trim()))
-            {
-                //MappaCryptoWallet.remove(v);
-                Cancellare.add(v);
-                movimentiCancellati++;
-            }
-        }
-        Iterator I=Cancellare.iterator();
-        while (I.hasNext()){
-            String daRimuovere=I.next().toString();
-            String controparte[]=MappaCryptoWallet.get(daRimuovere);
-            if (controparte[20]!=null && !controparte[20].equalsIgnoreCase("")){
-                ClassificazioneTrasf_Modifica.RiportaIDTransaSituazioneIniziale(controparte[20]);
-            }
-            MappaCryptoWallet.remove(daRimuovere);
-        }
-        
-           // MappaCryptoWallet.clear();
-   
-        return movimentiCancellati;
-    }
     
     private void CDC_OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_CDC_OpzioniComponentShown
         // TODO add your handling code here:
@@ -3190,7 +3158,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
         int risposta=JOptionPane.showOptionDialog(this,"Sicuro di voler cancellare la transazione con ID "+IDTransazione+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta==0){
-        MappaCryptoWallet.remove(IDTransazione);
+        //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
+        Funzioni.RimuoviMovimentazioneXID(IDTransazione);
         TabellaCryptodaAggiornare=true;
        // TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
        // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();

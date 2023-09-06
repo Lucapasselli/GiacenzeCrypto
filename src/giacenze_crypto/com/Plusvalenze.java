@@ -112,6 +112,7 @@ public class Plusvalenze {
                 if(IDTS[4].equalsIgnoreCase("RW")||movimento[18].contains("DAI")) Tipologia = 7;//Deposito Criptoattività x rewards, stacking,cashback etc...
                 else if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("DTW")) Tipologia = 5; //Deposito Criptoattività x spostamento tra wallet
                 else if(movimento[18].contains("DCZ")) Tipologia = 9;//Deposito a costo di carico zero
+                else if(movimento[18].contains("DAC")) Tipologia = 3;//Acquisto Crypto
             } 
             
             //TIPOLOGIA = 6 , 8 e 10 -> Prelievo Criptoattività di vario tipo

@@ -56,4 +56,13 @@ public class Funzioni {
              
          }
         
+         
+        public static void CompilaMappaChain(){
+            //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko
+            String BSC[]=new String[]{"https://api.bscscan.com","6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6","BNB","binance-smart-chain"};
+            String CRO[]=new String[]{"https://api.cronoscan.com","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
+            CDC_Grafica.Mappa_ChainExplorer.put("CRO", CRO);
+            CDC_Grafica.Mappa_ChainExplorer.put("BSC", BSC); 
+        }  
+         
 }

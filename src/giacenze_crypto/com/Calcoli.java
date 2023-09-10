@@ -54,7 +54,7 @@ public class Calcoli {
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaSimboliCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  //  static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
@@ -785,7 +785,7 @@ public class Calcoli {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
-            MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
+           // MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
         }
         if (MappaConversioneAddressCoin.isEmpty()) {
             GeneraMappaConversioneAddressCoin();
@@ -982,7 +982,7 @@ public class Calcoli {
             
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
-            MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
+         //   MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
         }
         if (MappaConversioneAddressCoin.isEmpty())
             {
@@ -990,7 +990,7 @@ public class Calcoli {
             }
         
         //come prima cosa vedo se la rete è gestita altrimenti chiudo immediatamente il ciclo    
-         if (MappaConversioneSimboloReteCoingecko.get(Rete)==null)   {
+         if (CDC_Grafica.Mappa_ChainExplorer.get(Rete)==null)   {
              return null;
          }
         
@@ -1039,7 +1039,13 @@ public class Calcoli {
 for (int i=0;i<ArraydataIni.size();i++){
         try {
             TimeUnit.SECONDS.sleep(7);//il timeout serve per evitare di fare troppe richieste all'API
-            URL url = new URI("https://api.coingecko.com/api/v3/coins/"+MappaConversioneSimboloReteCoingecko.get(Rete)+"/contract/"+Address+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
+            URL url;
+            //DA RIVEDERE!!!!!!!!!!!!!!
+           // https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=1644879600&to=1648335600
+            if (!Address.equalsIgnoreCase("CRO"))
+                url = new URI("https://api.coingecko.com/api/v3/coins/"+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]+"/contract/"+Address+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
+            else
+                url = new URI("https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();               
             System.out.println(url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -1589,8 +1595,10 @@ for (int i=0;i<ArraydataIni.size();i++){
         System.out.println(Address2);
         System.out.println(Rete);
         System.out.println("-------");*/
-        Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        MappaReteCoin.put("BSC", "BNB");
+    ///   // Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    ///   // MappaReteCoin.put("BSC", "BNB");
+    String MonetaRete=null;
+    if (Rete!=null)MonetaRete=CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
         // boolean trovato1=false;
         // boolean trovato2=false;
         //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
@@ -1645,10 +1653,11 @@ for (int i=0;i<ArraydataIni.size();i++){
                 if (Moneta1 != null &&  (Moneta1.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1) && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                     // trovato1=true;
                   //  System.out.println("aaa"+Moneta1.MonetaAddress);
-                    if (Moneta1.MonetaAddress == null || MappaReteCoin.get(Rete).equalsIgnoreCase(Moneta1.MonetaAddress)) {
+                    if (Moneta1.MonetaAddress == null || MonetaRete.equalsIgnoreCase(Moneta1.MonetaAddress)) {
                         PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                     } else {
                         PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                        
                     }
                     if (PrezzoTransazione != null) {
                         PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
@@ -1659,7 +1668,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
                 if (Moneta2 != null && (Moneta2.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1)&& Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                     // trovato2=true;
-                    if (Moneta2.MonetaAddress == null || MappaReteCoin.get(Rete).equalsIgnoreCase(Moneta2.MonetaAddress)) {
+                    if (Moneta2.MonetaAddress == null || MonetaRete.equalsIgnoreCase(Moneta2.MonetaAddress)) {
                         PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                     } else {
                         PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);

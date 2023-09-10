@@ -58,6 +58,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
     static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
     static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
     static String CDC_FileDatiDB="crypto.com.dati.db";
@@ -102,6 +103,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             UIManager.setLookAndFeel( new FlatIntelliJLaf() );
         
         initComponents();
+        Funzioni.CompilaMappaChain();
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
@@ -3187,7 +3189,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
  
-    public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
+/*    public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
         Component c=this;
         Download progress=new Download();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -3221,7 +3223,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         JOptionPane.showConfirmDialog(this, "Importazione Terminata \nSono stati inseriti "+Importazioni.TransazioniAggiunte+" nuovi movimenti",
                 "Importazione Terminata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
         this.setCursor(Cursor.getDefaultCursor());
-    }
+    }*/
             
     
     

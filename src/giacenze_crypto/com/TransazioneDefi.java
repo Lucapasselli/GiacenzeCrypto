@@ -719,10 +719,13 @@ public class TransazioneDefi {
       if (MonetaName==null || MonetaName.trim().equalsIgnoreCase("")){
           nome=Moneta;
       }
-      else if (Moneta.trim().equalsIgnoreCase("cake-lp")){
+      else if (Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length()).equals("-LP")){
+      //    else if (Moneta.trim().contains("-LP")){
                 nome=MonetaName+" ("+MonetaAddress+")";
             }
       else nome=MonetaName;
+      //.out.println(Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length())+" ("+MonetaAddress+")");
+      //System.out.println(nome);
       return nome;
   }
   
@@ -731,7 +734,7 @@ public class TransazioneDefi {
       if (Tipo.equalsIgnoreCase("NFT")){
           nome=Moneta+" ("+MonetaAddress+")";
       }
-      else if (Moneta.trim().equalsIgnoreCase("cake-lp")){
+      else if (Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length()).equals("-LP")){
                 nome=Moneta+" ("+MonetaAddress+")";
             }
       else nome=Moneta;

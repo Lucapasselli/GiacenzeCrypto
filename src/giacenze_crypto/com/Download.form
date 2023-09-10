@@ -72,6 +72,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JProgressBar" name="ProgressBarDownload">
+      <Properties>
+        <Property name="stringPainted" type="boolean" value="true"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="LabelAvanzamento">
       <Properties>

@@ -96,6 +96,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
  //           public void run() {
          avanzamento=Avanzamento;
          ProgressBarDownload.setValue(Avanzamento);
+        // ProgressBarDownload.setStringPainted(true);
          LabelAvanzamento.setText("Elaborazione "+Avanzamento+" di "+Massimo);
  //}      };
 // thread.start();
@@ -148,6 +149,8 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
         LabelScaricamento.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         LabelScaricamento.setText("Importazione del file in corso....");
+
+        ProgressBarDownload.setStringPainted(true);
 
         LabelAvanzamento.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         LabelAvanzamento.setText("Avanzamento");

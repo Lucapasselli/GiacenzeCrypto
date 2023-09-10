@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -40,6 +41,7 @@ public class GestioneWallets extends javax.swing.JDialog {
      * Creates new form GestioneWallets
      */
 
+    
     public boolean TabellaDaAggiornare=false;
     public GestioneWallets() {
         initComponents();
@@ -137,7 +139,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)" }));
 
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -286,8 +288,8 @@ public class GestioneWallets extends javax.swing.JDialog {
                         blocco = "0";
                     }
 
-                    if (splittata[1].equalsIgnoreCase("BSC")) {
-                        Portafogli.add(splittata[0] + ";" + blocco);
+                    if (splittata[1].equalsIgnoreCase("BSC")||splittata[1].equalsIgnoreCase("CRO")) {
+                        Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
                     }
                 }
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, c, progress);

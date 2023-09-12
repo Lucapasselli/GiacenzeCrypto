@@ -82,9 +82,12 @@ public class TransazioneDefi {
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,Qta,MonetaAddress,Tipologia);
             monete.Prezzo=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,Rete);
-            
+            //System.out.println("Import - "+Moneta+" - "+MonetaAddress+" - "+monete.Prezzo);
+            //Se trovo l'indirizzo nella mappa significa che non è gestito da coingecko
             if (Calcoli.MappaConversioneAddressCoin.get(MonetaAddress+"_"+Rete)!=null) {          
                 for (String Coppia : CoppiePrioritarie) {
+                    //Se non è gestito da coingecko ma è il nome di una coin importante significa che probabilmente è scam e quindi
+                    //dopo il nome della moneta ci metto 2 asterischi
                     if ((monete.Moneta+"USDT").equalsIgnoreCase(Coppia)||monete.Moneta.equalsIgnoreCase("USDT"))
                         monete.Moneta=monete.Moneta+" **";
                 }                
@@ -297,7 +300,9 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+              if(RT[8].equalsIgnoreCase("CRO")){
+                M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
+              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
              // Moneta M2=new Moneta();
              // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto
@@ -340,10 +345,13 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+              if(RT[8].equalsIgnoreCase("CRO")){
+                M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
+              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
              // Moneta M2=new Moneta();
              // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto
+             // System.out.println(M1.Moneta+" - "+M1.MonetaAddress+" - "+RT[15]);
              // RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
@@ -432,7 +440,9 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+              if(RT[8].equalsIgnoreCase("CRO")){
+                M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
+              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
              // Moneta M2=new Moneta();
              // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto              
@@ -519,7 +529,9 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+              if(RT[8].equalsIgnoreCase("CRO")){
+                M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
+              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
              // Moneta M2=new Moneta();
              // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto

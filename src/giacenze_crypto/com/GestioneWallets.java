@@ -292,9 +292,10 @@ public class GestioneWallets extends javax.swing.JDialog {
                         Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
                     }
                 }
+                //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, c, progress);
                 if (MappaTransazioniDefi != null) {
-
+                    //Scrivo tutte le nuove transazioni nella mappa principale
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {
                         for (String[] st : v.RitornaRigheTabella()) {
                             MappaCryptoWallet.put(st[0], st);

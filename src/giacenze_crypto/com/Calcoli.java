@@ -1695,10 +1695,12 @@ for (int i=0;i<ArraydataIni.size();i++){
                 //in alternativa restituisco null
                 if(MappaCoppieBinance.get(Moneta1 + "USDT") != null && Moneta1.MonetaAddress == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
+                  //  System.out.println("ConvertiXXXEUR "+Moneta1.Moneta+" - "+Data);
                 }
                 else if(Moneta1.MonetaAddress!= null && Rete != null)
                   {
                       PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                    //  System.out.println("ConvertiAddressEUR "+Moneta1.Moneta+" - "+Data+" - "+PrezzoTransazione);
                   }  
                 else
                    { 
@@ -1706,6 +1708,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                     }
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                  //  System.out.println(Moneta1.Moneta+" - "+Data+" - "+PrezzoTransazione);
                     //   trovato1=true;
                     return PrezzoTransazione;
                 }
@@ -1714,10 +1717,12 @@ for (int i=0;i<ArraydataIni.size();i++){
                 
                 if(MappaCoppieBinance.get(Moneta2 + "USDT") != null && Moneta2.MonetaAddress == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
+                   // System.out.println("ConvertiXXXEUR "+Moneta2.Moneta+" - "+Data);
                 }
                 else if(Moneta2.MonetaAddress!= null && Rete != null)
                   {
                       PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);
+                    //  System.out.println(Moneta2.Moneta+" - "+Data+" - "+PrezzoTransazione);
                   }  
                 else
                    { 
@@ -1726,6 +1731,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                  //  System.out.println(Moneta2.Moneta+" - "+Data+" - "+PrezzoTransazione);
                     return PrezzoTransazione;
                 }
             }

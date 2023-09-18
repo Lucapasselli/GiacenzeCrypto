@@ -59,10 +59,16 @@ public class Funzioni {
          
         public static void CompilaMappaChain(){
             //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko
+            //System.out.println("Compilo Mappe integrate nel codice");
             String BSC[]=new String[]{"https://api.bscscan.com","6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6","BNB","binance-smart-chain"};
             String CRO[]=new String[]{"https://api.cronoscan.com","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
             CDC_Grafica.Mappa_ChainExplorer.put("CRO", CRO);
-            CDC_Grafica.Mappa_ChainExplorer.put("BSC", BSC); 
+            CDC_Grafica.Mappa_ChainExplorer.put("BSC", BSC);             
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0xC74D59A548ecf7fc1754bb7810D716E9Ac3e3AE5_CRO", "BUSD");
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0xF2001B145b43032AAF5Ee2884e456CCd805F677D_CRO", "DAI");
+            
         }  
          
 }

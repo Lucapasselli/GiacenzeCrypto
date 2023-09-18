@@ -59,6 +59,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
+    static public Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
     static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
     static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
     static String CDC_FileDatiDB="crypto.com.dati.db";

@@ -249,12 +249,17 @@ public class Calcoli {
                  while((riga=bure.readLine())!=null)
                  {
                      String rigaSplittata[]=riga.split(",");
-                     if (rigaSplittata.length==2)
+                    // System.out.println(riga);
+                     if (rigaSplittata.length==2&&CDC_Grafica.Mappa_AddressRete_Nome.get(rigaSplittata[0])==null)
                          //se lunghezza=2 significa che non ho l'id di coingecko della moneta
+                         //inserisco il dato anche solo se lo stesso non è presente nella tabella delle coin listate su Binance
+                         //in quel caso non mi interessa inserirlo qua perchè il prezzo lo prenderò direttamente da binance
+                         //e quelle coin sono sicuramente legali e non serve contraddesgnare con gli sterischi
                      {
+                        // System.out.println(riga);
                          MappaConversioneAddressCoin.put(rigaSplittata[0], rigaSplittata[1]);
                      }
-                     else if (rigaSplittata.length==3)
+                     else if (rigaSplittata.length==3&&CDC_Grafica.Mappa_AddressRete_Nome.get(rigaSplittata[0])==null)
                          //se lunghezza=3 significa che ho anche l'id di coingecko della moneta
                          //utile nel caso mi servissero i prezzi di una shitcoin listata da coingecko
                      {
@@ -1582,21 +1587,36 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     public static String DammiPrezzoTransazione(Moneta Moneta1, Moneta Moneta2, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
 
+        /*Questa funzione si divide in 4 punti fondamentali:
+        1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
+        2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
+        3 - Verifico se una delle 2 monete non faccia parte di uno specifico gruppo delle monete più capitalizzate presenti su binance, in quel caso prendo quello come
+        prezzo della transazione in quanto il prezzo risulta sicuramente più preciso di quello di una shitcoin o comunque di una moneta con bassa liquidità
+        4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
+        */
         String PrezzoTransazione;
-        /*   System.out.println(Moneta1);
-        System.out.println(Moneta2);
-        System.out.println(Qta1);
-        System.out.println(Qta2);
-        System.out.println(Data);0xEadAa45fC7e8912d8AabF415205830f6b567610b
-        System.out.println(Prezzo);
-        System.out.println(PrezzoZero);
-        System.out.println(Decimali);
-        System.out.println(Address1);
-        System.out.println(Address2);
-        System.out.println(Rete);
-        System.out.println("-------");*/
-    ///   // Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    ///   // MappaReteCoin.put("BSC", "BNB");
+        
+        //come prima cosa prima di iniziare controllo che la moneta in questione non sia già una di quelle in lista
+        //tra quelle in defi importanti di cui conosco l'address e listate da binance, in quel caso il prezzo lo prenderò da li e non da coingecko
+        //dato le limitazioni che quest'ultimo comporta
+        //per far questo se trovo le suddette monete nella lista elimino address e rete per farle prendere da binance
+        String AddressMoneta1=null;
+                if(Moneta1!=null)AddressMoneta1=Moneta1.MonetaAddress;
+        String AddressMoneta2=null;
+                if(Moneta2!=null)AddressMoneta2=Moneta2.MonetaAddress;
+        if (Moneta1!=null&&CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta1.MonetaAddress+"_"+Rete)!=null){
+            //Rete=null;
+            AddressMoneta1=null;
+            //System.out.println(CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta1.MonetaAddress+"_"+Rete));
+            Moneta1.Moneta=CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta1.MonetaAddress+"_"+Rete);
+        }
+        if (Moneta2!=null&&CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta2.MonetaAddress+"_"+Rete)!=null){
+           // Rete=null;
+            AddressMoneta2=null;
+            //System.out.println(CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta2.MonetaAddress+"_"+Rete));
+            Moneta2.Moneta=CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta2.MonetaAddress+"_"+Rete);
+        }
+        
     String MonetaRete=null;
     if (Rete!=null)MonetaRete=CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
         // boolean trovato1=false;
@@ -1605,6 +1625,8 @@ for (int i=0;i<ArraydataIni.size();i++){
         //metto anche la condizione che address sia null perchè ci sono delle monete che hanno simbolo eur ma non lo sono
         //e se hanno un address sicuramente non sono fiat
         //se almeno una delle 2 monete è una FIAT prendo il prezzo da quella
+        
+        //PARTE 1 - VERIFICO SE FIAT
         if ((Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("FIAT")) || (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("FIAT"))) {
             //per ora gestisco solo eruo ma sarà da aggiungere anche la parte USD
             if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("EUR")) {
@@ -1623,23 +1645,24 @@ for (int i=0;i<ArraydataIni.size();i++){
 
         } //se non sono FIAT controllo se una delle coppie è USDT in quel caso prendo il prezzo di quello 
 
+        //PARTE 2 VERIFICO SE USDT
         else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USDT") && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
                 //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
-                if (Moneta1.MonetaAddress == null) {
+                if (AddressMoneta1 == null) {
                     PrezzoTransazione = ConvertiUSDTEUR(Moneta1.Qta, Data);
                 } else {
-                    PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                    PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
                 }
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     return PrezzoTransazione;
                 }
             } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USDT") && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
-                if (Moneta2.MonetaAddress == null) {
+                if (AddressMoneta2 == null) {
                     PrezzoTransazione = ConvertiUSDTEUR(Moneta2.Qta, Data);
                 } else {
-                    PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);
+                    PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
                 }
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
@@ -1647,16 +1670,16 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
             }
          else {
-
+            //PARTE 3 - VERIFICO SE COPPIE PRIORITARIE
             //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
             for (String CoppiePrioritarie1 : CoppiePrioritarie) {
                 if (Moneta1 != null &&  (Moneta1.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1) && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                     // trovato1=true;
                   //  System.out.println("aaa"+Moneta1.MonetaAddress);
-                    if (Moneta1.MonetaAddress == null || MonetaRete.equalsIgnoreCase(Moneta1.MonetaAddress)) {
+                    if (AddressMoneta1 == null || MonetaRete.equalsIgnoreCase(AddressMoneta1)) {
                         PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                     } else {
-                        PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                        PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
                         
                     }
                     if (PrezzoTransazione != null) {
@@ -1668,10 +1691,10 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
                 if (Moneta2 != null && (Moneta2.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1)&& Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                     // trovato2=true;
-                    if (Moneta2.MonetaAddress == null || MonetaRete.equalsIgnoreCase(Moneta2.MonetaAddress)) {
+                    if (AddressMoneta2 == null || MonetaRete.equalsIgnoreCase(AddressMoneta2)) {
                         PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                     } else {
-                        PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);
+                        PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
                     }
                     if (PrezzoTransazione != null) {
                         PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
@@ -1689,17 +1712,18 @@ for (int i=0;i<ArraydataIni.size();i++){
                 
                 //se non ho la mappa delle coppie di binance la recupero
             }
+            //PARTE 4 - Prendo il prezzo della prima moneta disponibile
             if (Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 //se trovo la moneta su binance e non ho l'address cerco il prezzo su binance
                 //altrimenti lo prendo da coingecko se ho l'address e ho anche la rete
                 //in alternativa restituisco null
-                if(MappaCoppieBinance.get(Moneta1 + "USDT") != null && Moneta1.MonetaAddress == null){
+                if(MappaCoppieBinance.get(Moneta1 + "USDT") != null && AddressMoneta1 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                   //  System.out.println("ConvertiXXXEUR "+Moneta1.Moneta+" - "+Data);
                 }
-                else if(Moneta1.MonetaAddress!= null && Rete != null)
+                else if(AddressMoneta1!= null && Rete != null)
                   {
-                      PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, Moneta1.MonetaAddress, Rete, Moneta1.Moneta);
+                      PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
                     //  System.out.println("ConvertiAddressEUR "+Moneta1.Moneta+" - "+Data+" - "+PrezzoTransazione);
                   }  
                 else
@@ -1715,13 +1739,13 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 
-                if(MappaCoppieBinance.get(Moneta2 + "USDT") != null && Moneta2.MonetaAddress == null){
+                if(MappaCoppieBinance.get(Moneta2 + "USDT") != null && AddressMoneta2 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                    // System.out.println("ConvertiXXXEUR "+Moneta2.Moneta+" - "+Data);
                 }
-                else if(Moneta2.MonetaAddress!= null && Rete != null)
+                else if(AddressMoneta2!= null && Rete != null)
                   {
-                      PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, Moneta2.MonetaAddress, Rete, Moneta2.Moneta);
+                      PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
                     //  System.out.println(Moneta2.Moneta+" - "+Data+" - "+PrezzoTransazione);
                   }  
                 else

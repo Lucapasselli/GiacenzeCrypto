@@ -3104,10 +3104,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
             int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
 
             String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 24).toString();
+            String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Rete=Funzioni.TrovaReteDaID(ID);
             if (IDTransazione != null) {
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     try {
-                        Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
+                        if (Rete.equalsIgnoreCase("BSC")){
+                            Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
+                           }
+                        else if(Rete.equalsIgnoreCase("CRO")){
+                           Desktop.getDesktop().browse(new URI("https://cronoscan.com//tx/" + IDTransazione)); 
+                        }
                     } catch (URISyntaxException | IOException ex) {
                         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                     }

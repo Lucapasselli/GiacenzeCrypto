@@ -746,6 +746,13 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void Bottone_CalcolaAutomaticamenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CalcolaAutomaticamenteActionPerformed
         // TODO add your handling code here:
+        String ID=CalcolaID();
+        String RT[]=null;
+        String Rete=Funzioni.TrovaReteDaID(ID);
+        //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
+        if (ModificaMovimento) {
+            RT=MappaCryptoWallet.get(ID);
+        }
        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
        Moneta MonetaUscita=null;
        Moneta MonetaEntrata=null;
@@ -754,14 +761,24 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
        MonetaUscita.Moneta=MonetaU;
        MonetaUscita.Qta=MonetaUQta;
        MonetaUscita.Tipo=MonetaUTipo;
+       if(RT!=null&&!RT[26].equals("")){
+           MonetaUscita.MonetaAddress=RT[26];
+         //  System.out.println(MonetaUscita.MonetaAddress);
+          } 
         }
        if(!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&MonetaETipo!=null){
        MonetaEntrata=new Moneta();
        MonetaEntrata.Moneta=MonetaE;
        MonetaEntrata.Qta=MonetaEQta;
        MonetaEntrata.Tipo=MonetaETipo;
+       if(RT!=null&&!RT[28].equals("")){
+           MonetaEntrata.MonetaAddress=RT[28];
+          // System.out.println(MonetaEntrata.MonetaAddress);
+           }
         }
-       String Prezzo=Calcoli.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, null);
+       
+       
+       String Prezzo=Calcoli.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete);
         ValoreTransazione_TextField.setText(Prezzo);
        EvidenziaProblemi();
      // System.out.println("Prezzo");
@@ -778,6 +795,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     }
 
     private void ScriviMovimento(String ID) {
+        
+
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
         String Note = this.Note_TextArea.getText().replace(";", "").replace("\n", "<br>");
         ValoreTransazione = new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
@@ -799,32 +818,39 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
             String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
 
-            String RT[] = new String[Importazioni.ColonneTabella];
-            RT[0] = ID;
-            RT[1] = Data;
-            RT[2] = 1 + " di " + 1;
-            RT[3] = Wallet;
-            RT[4] = WalletDettaglio;
-            RT[5] = TipoTransazione;
-            RT[6] = (MonetaU + " -> " + MonetaE).trim();
-            RT[7] = "";
-            RT[8] = MonetaU;
-            RT[9] = MonetaUTipo;
-            RT[10] = MonetaUQta;
-            RT[11] = MonetaE;
-            RT[12] = MonetaETipo;
-            RT[13] = MonetaEQta;
-            RT[14] = "";
-            RT[15] = ValoreTransazione;
-            RT[16] = "";
-            RT[17] = "";
-            RT[18] = "";
-            RT[19] = "";
-            RT[20] = "";
-            RT[21] = Note;
-            RT[22] = TipoMovimentoAM;
-            Importazioni.RiempiVuotiArray(RT);
-            MappaCryptoWallet.put(RT[0], RT);
+            
+            
+            
+            //come prima cosa recupero la riga della transazione originale qualora vi fosse
+            String RT[];
+            if (ModificaMovimento) {
+                //Se sto facendo una modifica di un movimento esistente come prima cosa recupero tutte le informazioni del movimento
+                RT = MappaCryptoWallet.get(ID);
+                RT[15] = ValoreTransazione;
+                RT[21] = Note;
+            } else {
+                //in alternativa creo un nuovo array di dati
+                RT = new String[Importazioni.ColonneTabella];
+                RT[0] = ID;
+                RT[1] = Data;
+                RT[2] = 1 + " di " + 1;
+                RT[3] = Wallet;
+                RT[4] = WalletDettaglio;
+                RT[5] = TipoTransazione;
+                RT[6] = (MonetaU + " -> " + MonetaE).trim();
+                RT[8] = MonetaU;
+                RT[9] = MonetaUTipo;
+                RT[10] = MonetaUQta;
+                RT[11] = MonetaE;
+                RT[12] = MonetaETipo;
+                RT[13] = MonetaEQta;
+                RT[15] = ValoreTransazione;
+                RT[21] = Note;
+                RT[22] = TipoMovimentoAM;
+                Importazioni.RiempiVuotiArray(RT);
+                MappaCryptoWallet.put(RT[0], RT);
+            }
+            
         }
     }
     

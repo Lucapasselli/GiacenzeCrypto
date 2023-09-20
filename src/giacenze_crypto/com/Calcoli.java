@@ -1599,7 +1599,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         //come prima cosa prima di iniziare controllo che la moneta in questione non sia già una di quelle in lista
         //tra quelle in defi importanti di cui conosco l'address e listate da binance, in quel caso il prezzo lo prenderò da li e non da coingecko
         //dato le limitazioni che quest'ultimo comporta
-        //per far questo se trovo le suddette monete nella lista elimino address e rete per farle prendere da binance
+        //per far questo se trovo le suddette monete nella lista elimino address per farle prendere da binance
         String AddressMoneta1=null;
                 if(Moneta1!=null)AddressMoneta1=Moneta1.MonetaAddress;
         String AddressMoneta2=null;

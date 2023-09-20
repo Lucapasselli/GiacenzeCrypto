@@ -112,8 +112,10 @@ public class TransazioneDefi {
           boolean trovataEntrata=false;
           boolean trovataUscita=false;
           List<String> daEliminare=new ArrayList<>();
+        //  System.out.println();
           for(ValoriToken token : MappaToken.values())
               {
+               //   System.out.print(token.MonetaName+" _ "+token.Qta+" - ");
                 //  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==1)
                   if (!token.Qta.contains("-"))
                    {
@@ -121,6 +123,7 @@ public class TransazioneDefi {
                        if (token.IndirizzoNoWallet.equalsIgnoreCase("0x0000000000000000000000000000000000000000")&&token.Moneta.toUpperCase().contains("DIVIDEND_TRACKER")){
                             //se trovo un movimento tecnico lo tolgo dalla lista generica e lo metto nelle movimentazioni specifiche tecniche
                             MappaTokenTecniciEntrata.put(token.MonetaAddress, token);
+                            //System.out.println(token.MonetaAddress);
                            // MappaToken.remove(token.MonetaAddress);
                             daEliminare.add(token.MonetaAddress);
                        }
@@ -137,6 +140,7 @@ public class TransazioneDefi {
                             //se trovo un movimento tecnico lo tolgo dalla lista generica e lo metto nelle movimentazioni specifiche tecniche
                             MappaTokenTecniciUscita.put(token.MonetaAddress, token);
                             daEliminare.add(token.MonetaAddress);
+                            //System.out.println(token.MonetaAddress);
                            // MappaToken.remove(token.MonetaAddress);
                        }
                        else{
@@ -175,8 +179,8 @@ public class TransazioneDefi {
             if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
                 //Se trovo un prezzo a zero valorizzo il booleano a false
                 trovatoValoreTransazione = false;
-                // numEntrateSenzaPrezzo++;
-                ValoreTransazioneEntrata = ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
+
+             //   ValoreTransazioneEntrata = ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
             }
             ValoreTransazioneEntrata = ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
         }
@@ -184,14 +188,13 @@ public class TransazioneDefi {
         {
             ValoreTransazione = ValoreTransazioneEntrata;
 
-        } //se non trovo il valore della transazione allora lo cerco nei valori in entrata
+        } //se non trovo il valore della transazione allora lo cerco nei valori in uscita
         else {
             for (ValoriToken a : MappaTokenUscita.values()) {
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
                     //Se trovo un prezzo a zero valorizzo il booleano a false
                     trovatoValoreTransazione = false;
-                    // numUsciteSenzaPrezzo++;
-                    ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
+            //        ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
                 }
                 ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
             }
@@ -300,11 +303,9 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              if(RT[8].equalsIgnoreCase("CRO")){
+           //   if(RT[8].equalsIgnoreCase("CRO")){
                 M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
-              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-             // Moneta M2=new Moneta();
-             // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+             // }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
@@ -316,7 +317,7 @@ public class TransazioneDefi {
               RT[23]=Blocco;
               RT[24]=HashTransazione;
               RT[25]="";
-              RT[26]="";
+              RT[26]=MonetaCommissioni;
               RT[27]="";
               RT[28]="";
               RT[29]=TimeStamp;
@@ -345,11 +346,9 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              if(RT[8].equalsIgnoreCase("CRO")){
+           //   if(RT[8].equalsIgnoreCase("CRO")){
                 M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
-              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-             // Moneta M2=new Moneta();
-             // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+            //  }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto
              // System.out.println(M1.Moneta+" - "+M1.MonetaAddress+" - "+RT[15]);
              // RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
@@ -363,7 +362,7 @@ public class TransazioneDefi {
               RT[23]=Blocco;
               RT[24]=HashTransazione;
               RT[25]="";
-              RT[26]="";
+              RT[26]=MonetaCommissioni;
               RT[27]="";
               RT[28]="";
               RT[29]=TimeStamp;
@@ -440,11 +439,10 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              if(RT[8].equalsIgnoreCase("CRO")){
+ //             if(RT[8].equalsIgnoreCase("CRO")){
                 M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
-              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-             // Moneta M2=new Moneta();
-             // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+           //   }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto              
               //RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
@@ -457,7 +455,7 @@ public class TransazioneDefi {
               RT[23]=Blocco;
               RT[24]=HashTransazione;
               RT[25]="";
-              RT[26]="";
+              RT[26]=MonetaCommissioni;
               RT[27]="";
               RT[28]="";
               RT[29]=TimeStamp;
@@ -529,11 +527,9 @@ public class TransazioneDefi {
               RT[13]="";
               RT[14]="";
               Moneta M1=new Moneta();
-              if(RT[8].equalsIgnoreCase("CRO")){
+         //     if(RT[8].equalsIgnoreCase("CRO")){
                 M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
-              }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-             // Moneta M2=new Moneta();
-             // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+          //    }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
               RT[15]=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete);//calcolare con numero contratto
              // RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
@@ -546,7 +542,7 @@ public class TransazioneDefi {
               RT[23]=Blocco;
               RT[24]=HashTransazione;
               RT[25]="";
-              RT[26]="";
+              RT[26]=MonetaCommissioni;
               RT[27]="";
               RT[28]="";
               RT[29]=TimeStamp;
@@ -561,15 +557,16 @@ public class TransazioneDefi {
           for (ValoriToken tokenE : MappaTokenEntrata.values()) {
               for (ValoriToken tokenU : MappaTokenUscita.values()) {
                   //peso transazione                  
-              BigDecimal PesoTransazione=new BigDecimal(tokenE.Peso).multiply(new BigDecimal(tokenU.Peso));
-              if (MappaTokenEntrata.size()==1&&MappaTokenUscita.size()==1) PesoTransazione=new BigDecimal(1);
+             /* BigDecimal PesoTransazione=new BigDecimal(tokenE.Peso).multiply(new BigDecimal(tokenU.Peso));
+              if (MappaTokenEntrata.size()==1&&MappaTokenUscita.size()==1) PesoTransazione=new BigDecimal(1);*/
              // System.out.println(PesoTransazione + " - "+HashTransazione);
+              String QuantitaEntrata=new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
+              String QuantitaUscita=new BigDecimal(tokenU.Qta).multiply(new BigDecimal(tokenE.Peso)).stripTrailingZeros().toPlainString();
               M1=new Moneta();
-              M1.InserisciValori(tokenU.Moneta,tokenU.Qta,tokenU.MonetaAddress,tokenU.Tipo);
+              M1.InserisciValori(tokenU.Moneta,QuantitaUscita,tokenU.MonetaAddress,tokenU.Tipo);
               Moneta M2=new Moneta();
-              M2.InserisciValori(tokenE.Moneta,tokenE.Qta,tokenE.MonetaAddress,tokenE.Tipo);
-              BigDecimal PrezzoTransazione=new BigDecimal (Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete))
-                .multiply(PesoTransazione);
+              M2.InserisciValori(tokenE.Moneta,QuantitaEntrata,tokenE.MonetaAddress,tokenE.Tipo);
+              BigDecimal PrezzoTransazione=new BigDecimal (Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete));
               RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_1_"+Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo,0);
               RT[1]=dataAlMinuto;
@@ -581,10 +578,10 @@ public class TransazioneDefi {
               RT[7]=TipoTransazione;
               RT[8]=tokenU.RitornaIDToken();
               RT[9]=tokenU.Tipo;
-              RT[10]=new BigDecimal(tokenU.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
+              RT[10]=QuantitaUscita;
               RT[11]=tokenE.RitornaIDToken();
               RT[12]=tokenE.Tipo;
-              RT[13]=new BigDecimal(tokenE.Qta).multiply(PesoTransazione).stripTrailingZeros().toPlainString();
+              RT[13]=QuantitaEntrata;
               RT[14]="";
               RT[15]=PrezzoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere

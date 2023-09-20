@@ -68,7 +68,23 @@ public class Funzioni {
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xC74D59A548ecf7fc1754bb7810D716E9Ac3e3AE5_CRO", "BUSD");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xF2001B145b43032AAF5Ee2884e456CCd805F677D_CRO", "DAI");
+            CDC_Grafica.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
             
-        }  
+        }
+        
+        public static String TrovaReteDaID(String ID){
+
+
+        String Rete=null;
+        //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
+
+            String IDSplittato[]=ID.split("_");
+            String IDDettSplittato[]=IDSplittato[1].split("\\.");
+            if (IDDettSplittato.length==4 && IDDettSplittato[0].equalsIgnoreCase("BC")){
+                Rete=IDDettSplittato[1];
+
+            }
+        return Rete;
+        }
          
 }

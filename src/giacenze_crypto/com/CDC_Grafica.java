@@ -173,6 +173,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
+        GiacenzeaData = new javax.swing.JPanel();
+        GiacenzeaData_Wallet_Label = new javax.swing.JLabel();
+        GiacenzeaData_Wallet_ComboBox = new javax.swing.JComboBox<>();
+        GiacenzeaData_Data_Label = new javax.swing.JLabel();
+        GiacenzeaData_Data_DataChooser = new com.toedter.calendar.JDateChooser();
+        GiacenzeaData_ScrollPane = new javax.swing.JScrollPane();
+        GiacenzeaData_Tabella = new javax.swing.JTable();
+        GiacenzeaData_Totali_Label = new javax.swing.JLabel();
+        GiacenzeaData_Totali_TextField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -652,6 +662,87 @@ public class CDC_Grafica extends javax.swing.JFrame {
         );
 
         AnalisiCrypto.addTab("Sitazione Import Crypto", SituazioneImport);
+
+        GiacenzeaData_Wallet_Label.setText("Wallet : ");
+
+        GiacenzeaData_Wallet_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
+
+        GiacenzeaData_Data_Label.setText("Data : ");
+
+        GiacenzeaData_Tabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Nome", "Tipo", "Qta", "Valore in Euro"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        GiacenzeaData_ScrollPane.setViewportView(GiacenzeaData_Tabella);
+
+        GiacenzeaData_Totali_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        GiacenzeaData_Totali_Label.setText("TOTALE in EURO : ");
+
+        GiacenzeaData_Totali_TextField.setEditable(false);
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
+        GiacenzeaData.setLayout(GiacenzeaDataLayout);
+        GiacenzeaDataLayout.setHorizontalGroup(
+            GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(GiacenzeaData_ScrollPane)
+                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                        .addComponent(GiacenzeaData_Wallet_Label)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 274, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_Data_Label)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                        .addComponent(GiacenzeaData_Totali_Label)
+                        .addGap(1, 1, 1)
+                        .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton1)
+                        .addGap(209, 209, 209))))
+        );
+        GiacenzeaDataLayout.setVerticalGroup(
+            GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(GiacenzeaData_Wallet_Label)
+                        .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(GiacenzeaData_Data_Label))
+                    .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(GiacenzeaData_Totali_Label)
+                    .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1)))
+        );
+
+        AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
 
         javax.swing.GroupLayout Analisi_CryptoLayout = new javax.swing.GroupLayout(Analisi_Crypto);
         Analisi_Crypto.setLayout(Analisi_CryptoLayout);
@@ -3196,6 +3287,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
+
  
 /*    public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
         Component c=this;
@@ -3805,6 +3902,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneManuale;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;
+    private javax.swing.JPanel GiacenzeaData;
+    private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
+    private javax.swing.JLabel GiacenzeaData_Data_Label;
+    private javax.swing.JScrollPane GiacenzeaData_ScrollPane;
+    private javax.swing.JTable GiacenzeaData_Tabella;
+    private javax.swing.JLabel GiacenzeaData_Totali_Label;
+    private javax.swing.JTextField GiacenzeaData_Totali_TextField;
+    private javax.swing.JComboBox<String> GiacenzeaData_Wallet_ComboBox;
+    private javax.swing.JLabel GiacenzeaData_Wallet_Label;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
@@ -3828,6 +3934,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

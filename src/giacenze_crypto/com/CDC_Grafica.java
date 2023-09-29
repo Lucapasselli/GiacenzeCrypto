@@ -3290,7 +3290,41 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         
+        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+        //in futuro dovrò mettere anche un limite per data e un limite per wallet
+        Map<String, BigDecimal> QtaCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (String[] movimento :MappaCryptoWallet.values()){
+            //Faccio la somma dei movimenti in usicta
+            if (!movimento[8].isBlank()&&QtaCrypto.get(movimento[8])!=null){
+              BigDecimal qta=QtaCrypto.get(movimento[8]).add(new BigDecimal(movimento[10]));
+              QtaCrypto.put(movimento[8], qta);             
+            }
+            else if (!movimento[8].isBlank())
+            {
+              QtaCrypto.put(movimento[8], new BigDecimal(movimento[10]));  
+            }
+            //Faccio la somma dei movimenti in entrata
+            if (!movimento[11].isBlank()&&QtaCrypto.get(movimento[11])!=null){
+              BigDecimal qta=QtaCrypto.get(movimento[11]).add(new BigDecimal(movimento[13]));
+              QtaCrypto.put(movimento[11], qta);                
+            }
+            else if (!movimento[11].isBlank())
+            {
+              QtaCrypto.put(movimento[11], new BigDecimal(movimento[13]));  
+            }        
+        }
         
+        //Adesso elenco tutte le monete e le metto in tabella
+        DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
+        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+        for (String moneta :QtaCrypto.keySet()){
+            String riga[]=new String[4];
+            riga[0]=moneta;
+            riga[1]=QtaCrypto.get(moneta).toPlainString();
+            riga[2]=QtaCrypto.get(moneta).toPlainString();
+            riga[3]=QtaCrypto.get(moneta).toPlainString();
+            GiacenzeaData_ModelloTabella.addRow(riga);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
  

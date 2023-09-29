@@ -129,6 +129,7 @@ public class TransazioneDefi {
                        }
                        else{
                             MappaTokenEntrata.put(token.MonetaAddress, token);
+                           // System.out.println(token.Moneta+" - "+token.Qta);
                             trovataEntrata=true;
                        }
                    }  
@@ -227,7 +228,13 @@ public class TransazioneDefi {
                 //il peso lo calcolo dividendo il prezzo per il valore della transazione
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))!=0) {
                     numTokenRimenenti--;
-                    a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
+                    if (MappaTokenEntrata.size()==1){
+                        a.Peso="1";
+                    }else   
+                    {                 
+                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
+                    }
+                    
                     PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
                 }
             }
@@ -249,9 +256,14 @@ public class TransazioneDefi {
                 //il peso lo calcolo dividendo il prezzo per il valore della transazione
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))!=0) {
                     numTokenRimenenti--;
-                    a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
+                    if (MappaTokenUscita.size()==1){
+                        a.Peso="1";
+                    }else   
+                    {                 
+                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
+                    }
                     PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
-                }
+               }
             }
             //secondo ciclo do i pesi ai token senza prezzo
             for (ValoriToken a : MappaTokenUscita.values()) {
@@ -556,6 +568,11 @@ public class TransazioneDefi {
           int totMov=MappaTokenEntrata.size()*MappaTokenUscita.size();
           for (ValoriToken tokenE : MappaTokenEntrata.values()) {
               for (ValoriToken tokenU : MappaTokenUscita.values()) {
+                  //PESOOOOOOOOOOOOOOOOOOOOO
+              /*    if (new BigDecimal(tokenU.Peso).compareTo(new BigDecimal(1))!=0||new BigDecimal(tokenE.Peso).compareTo(new BigDecimal(1))!=0){
+                  System.out.print(tokenU.Moneta+" - "+tokenU.Peso+" - "+tokenU.Qta+" _____ ");
+                  System.out.println(tokenE.Moneta+" - "+tokenE.Peso+" - "+tokenE.Qta);
+                  }*/
                   //peso transazione                  
              /* BigDecimal PesoTransazione=new BigDecimal(tokenE.Peso).multiply(new BigDecimal(tokenU.Peso));
               if (MappaTokenEntrata.size()==1&&MappaTokenUscita.size()==1) PesoTransazione=new BigDecimal(1);*/
@@ -725,10 +742,11 @@ public class TransazioneDefi {
   
   public String RitornaNomeToken(){
       String nome;
+     // System.out.println("aa-"+Moneta+"-aa");
       if (MonetaName==null || MonetaName.trim().equalsIgnoreCase("")){
           nome=Moneta;
       }
-      else if (Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length()).equals("-LP")){
+      else if (Moneta.trim().length()>2&&Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length()).equals("-LP")){
       //    else if (Moneta.trim().contains("-LP")){
                 nome=MonetaName+" ("+MonetaAddress+")";
             }
@@ -743,7 +761,7 @@ public class TransazioneDefi {
       if (Tipo.equalsIgnoreCase("NFT")){
           nome=Moneta+" ("+MonetaAddress+")";
       }
-      else if (Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length()).equals("-LP")){
+      else if (Moneta.trim().length()>2&&Moneta.trim().substring(Moneta.trim().length()-3, Moneta.trim().length()).equals("-LP")){
                 nome=Moneta+" ("+MonetaAddress+")";
             }
       else nome=Moneta;

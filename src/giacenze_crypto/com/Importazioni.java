@@ -2239,6 +2239,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 return null;
             }
             String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            System.out.println(urls);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -2272,7 +2273,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                    numeroTransTemp++;
             }
             transactionsArray.putAll(transactionsArrayTemp);           
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(1);
             if (progressb!=null&&progressb.FineThread()) {
                 return null;
             }
@@ -2455,6 +2456,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 trans.QtaCommissioni = "-" + qtaCommissione;
                 progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
+               // System.out.println(tokenSymbol+" - "+qta);
+               //0x235de84ce69e04675b0afa3dd9594c726008c9b1
                 ava++;
                 progressb.SetAvanzamento(ava);
             }

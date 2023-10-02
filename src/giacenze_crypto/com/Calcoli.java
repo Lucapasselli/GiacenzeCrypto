@@ -802,7 +802,12 @@ public class Calcoli {
             //Se ho un simbolo e questo non è nella lista allora termino subito il ciclo che tanto mi restituirebbe null lo stesso
             return null;
         }*/
-        if (MappaConversioneAddressCoin.get(Address + "_" + Rete) != null && MappaConversioneAddressCoin.get(Address + "_" + Rete).equalsIgnoreCase("nullo")) {
+               //la mappa MappaConversioneAddressCoin contiene gli address non gestiti da coingecko e la data in cui è stata fatta l'ultima richiesta
+        //percui se in questa mappa il dato esiste e se la data di richiesta è inferiore alla data sulla mappa ritorno null
+        Address = Address.toUpperCase();
+        long DataRiferimento=Datalong/1000;
+        if (MappaConversioneAddressCoin.get(Address + "_" + Rete) != null &&
+                (MappaConversioneAddressCoin.get(Address+"_"+Rete).equals("nullo")||DataRiferimento<Long.parseLong(MappaConversioneAddressCoin.get(Address+"_"+Rete)))) {
             //se il token non è gestito da coingecko ritorno null immediatamente
             //non ha senso andare avanti con le richieste
             return null;
@@ -814,7 +819,7 @@ public class Calcoli {
         
         
         
-        Address = Address.toUpperCase();
+        //Address = Address.toUpperCase();
         String risultato;// = null;
         //come prima cosa devo decidere il formato data
         String DataOra = ConvertiDatadaLongallOra(Datalong);
@@ -832,10 +837,15 @@ public class Calcoli {
         } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 //ora controllo che l'indirizzo sia gestito, in caso contrario termino il ciclo
 //questo perchè con la richiesta che ho appena fatto potrebbe essersi generata una nuova voce nella mappa
-        if (MappaConversioneAddressCoin.get(Address+"_"+Rete)!=null&&MappaConversioneAddressCoin.get(Address+"_"+Rete).equalsIgnoreCase("nullo"))
+        //long dataAdesso= System.currentTimeMillis() / 1000;
+       
+        //la mappa MappaConversioneAddressCoin contiene gli address non gestiti da coingecko e la data in cui è stata fatta l'ultima richiesta
+  /*      //percui se in questa mappa il dato esiste e se la data di richiesta è inferiore alla data sulla mappa ritorno null
+        if (MappaConversioneAddressCoin.get(Address+"_"+Rete)!=null&&
+                (MappaConversioneAddressCoin.get(Address+"_"+Rete).equals("nullo")||DataRiferimento<Long.parseLong(MappaConversioneAddressCoin.get(Address+"_"+Rete))))
         {
             return null;
-        }
+        }*/
         
   //se è gestito controllo se lo avevo già nel file ein caso contrario lo inserisco      
         if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
@@ -847,7 +857,9 @@ public class Calcoli {
         }
         //quindi se il risultato non è nullo faccio i calcoli
         if (risultato != null && risultato.equalsIgnoreCase("nullo")) risultato=null;
+        else if (risultato != null && risultato.equalsIgnoreCase("null")) risultato=null;
         else if (risultato != null) {
+           // System.out.println(Qta+" - "+risultato);
             risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
             }
         return risultato;
@@ -976,7 +988,7 @@ public class Calcoli {
  
         public static String RecuperaTassidiCambiodaAddress(String DataIniziale, String DataFinale,String Address,String Rete,String Simbolo) {
         
-        
+        //ATTENZIONE SIMBOLO NON VIENE UTILIZZATO E SI PUO' TOGLIERE!!!!!!!
     /*    if(MappaSimboliCoingecko.isEmpty())    {
             RecuperaCoinsCoingecko();
         }
@@ -1099,8 +1111,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                 if (errore!=null && errore.toString().contains("coin not found"))
                     {
                     //Se arrivo qua vuol dire che la coin non è gestita da coingecko e la salvo nella lista degli address esclusi
-                    MappaConversioneAddressCoin.put(Address+"_"+Rete, "nullo");
-                    ScriviFileConversioneAddressCoin(Address+"_"+Rete+",nullo");
+                    //AL POSTO DI NULLO METTO LA DATA DI OGGI IL CHE SIGNIFICA CHE ALMENO FINO AD OGGI IL TOKEN IN QUESTIONE NON E' GESTITO IN NESSUN MODO
+                    MappaConversioneAddressCoin.put(Address+"_"+Rete, String.valueOf(dataAdesso));
+                    ScriviFileConversioneAddressCoin(Address+"_"+Rete+","+dataAdesso);
                     return null;  
                     }
             }

@@ -2554,12 +2554,14 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
                 trans.MonetaCommissioni = MonetaRete;
                 if (trans.QtaCommissioni != null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs()) == 1
-                        && !(trans.TipoTransazione != null && trans.TipoTransazione.toLowerCase().contains("swap") && (trans.RitornaNumeroTokenUscita() == 0 || trans.RitornaNumeroTokenentrata() == 0))) {
+                        && !(trans.TipoTransazione != null && trans.TipoTransazione.toLowerCase().contains("swap") && (trans.RitornaNumeroTokenUscita() > 0 && trans.RitornaNumeroTokenentrata() > 0))) {
                     // se il valore della commissione è maggiore del bnb di ritorno allora lo sottraggo dalle commissioni
                     //anzichè metterlo come importo dei trasferimenti
                     // questo non deve essere fatto però se è uno swap di cui questi bnb sono gli unici in ritorno
                     //questa cosa la devo gestire
-                    trans.QtaCommissioni = new BigDecimal(trans.QtaCommissioni).subtract(new BigDecimal(qta)).toPlainString();
+                    //System.out.println(trans.QtaCommissioni +" ---- "+qta);
+                    //faccio somma e non sottrazione perchè le commissioni sono già negative
+                    trans.QtaCommissioni = new BigDecimal(trans.QtaCommissioni).add(new BigDecimal(qta)).toPlainString();
                 } else {
                     progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
                     trans.InserisciMonete(MonetaRete, MonetaRete, MonetaRete, AddressNoWallet, qta, "Crypto");

@@ -84,7 +84,11 @@ public class TransazioneDefi {
             monete.Prezzo=Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,Rete);
             //System.out.println("Import - "+Moneta+" - "+MonetaAddress+" - "+monete.Prezzo);
             //Se trovo l'indirizzo nella mappa significa che non è gestito da coingecko
-            if (Calcoli.MappaConversioneAddressCoin.get(MonetaAddress+"_"+Rete)!=null) {          
+            
+            long DataRiferimento=Calcoli.ConvertiDatainLong(DataOra.split(" ")[0])/1000;
+           // System.out.println("89 TransazioniDefi "+DataRiferimento);
+            if (DatabaseH2.AddressSenzaPrezzo_Leggi(MonetaAddress+"_"+Rete)!=null&&
+                (DataRiferimento<Long.parseLong(DatabaseH2.AddressSenzaPrezzo_Leggi(MonetaAddress+"_"+Rete)))) {          
                 for (String Coppia : CoppiePrioritarie) {
                     //Se non è gestito da coingecko ma è il nome di una coin importante significa che probabilmente è scam e quindi
                     //dopo il nome della moneta ci metto 2 asterischi

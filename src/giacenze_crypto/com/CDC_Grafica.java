@@ -115,6 +115,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        DatabaseH2.CreaoCollegaDatabase();
         //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
@@ -3292,7 +3293,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
         //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
         //in futuro dovrò mettere anche un limite per data e un limite per wallet
-        Map<String, BigDecimal> QtaCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+       // DatabaseH2.CreaoCollegaDatabase();
+      /*  DatabaseH2.AddressSenzaPrezzo_Scrivi("meni", "toni");
+        DatabaseH2.AddressSenzaPrezzo_Scrivi("aa", "sss");
+        DatabaseH2.AddressSenzaPrezzo_Leggi("menis");*/
+                Map<String, BigDecimal> QtaCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String[] movimento :MappaCryptoWallet.values()){
             //Faccio la somma dei movimenti in usicta
             if (!movimento[8].isBlank()&&QtaCrypto.get(movimento[8])!=null){

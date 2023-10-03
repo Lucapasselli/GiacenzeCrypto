@@ -53,7 +53,7 @@ public class Calcoli {
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaSimboliCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    //static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   //  static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
@@ -238,7 +238,7 @@ public class Calcoli {
     } 
     
         
-    public static void GeneraMappaConversioneAddressCoin(){
+ /*   public static void GeneraMappaConversioneAddressCoin(){
          try {
              File file=new File ("conversioneAddressCoin.db");
              if (!file.exists()) file.createNewFile();
@@ -277,7 +277,7 @@ public class Calcoli {
          } catch (IOException ex) {        
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
-    } 
+    } */
     
     
     
@@ -788,13 +788,14 @@ public class Calcoli {
     
     public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
+        //QUESTA SARA' DA CANCELLARE IN PREVISIONE DEL PASSAGGIO AL DATABASE
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
            // MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
         }
-        if (MappaConversioneAddressCoin.isEmpty()) {
+/*        if (MappaConversioneAddressCoin.isEmpty()) {
             GeneraMappaConversioneAddressCoin();
-        }
+        }*/
        /* if (MappaSimboliCoingecko.isEmpty()) {
             RecuperaCoinsCoingecko();
         }
@@ -806,8 +807,8 @@ public class Calcoli {
         //percui se in questa mappa il dato esiste e se la data di richiesta è inferiore alla data sulla mappa ritorno null
         Address = Address.toUpperCase();
         long DataRiferimento=Datalong/1000;
-        if (MappaConversioneAddressCoin.get(Address + "_" + Rete) != null &&
-                (MappaConversioneAddressCoin.get(Address+"_"+Rete).equals("nullo")||DataRiferimento<Long.parseLong(MappaConversioneAddressCoin.get(Address+"_"+Rete)))) {
+        if (DatabaseH2.AddressSenzaPrezzo_Leggi(Address + "_" + Rete) != null &&
+                (DataRiferimento<Long.parseLong(DatabaseH2.AddressSenzaPrezzo_Leggi(Address+"_"+Rete)))) {
             //se il token non è gestito da coingecko ritorno null immediatamente
             //non ha senso andare avanti con le richieste
             return null;
@@ -996,15 +997,12 @@ public class Calcoli {
             //Se ho un simbolo e questo non è nella lista allora termino subito il ciclo che tanto mi restituirebbe null lo stesso
             return null;
         }*/
-            
+        
+//DA SOSTITUIRE CON DATABASE    
         if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
-         //   MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
         }
-        if (MappaConversioneAddressCoin.isEmpty())
-            {
-                GeneraMappaConversioneAddressCoin();               
-            }
+
         
         //come prima cosa vedo se la rete è gestita altrimenti chiudo immediatamente il ciclo    
          if (CDC_Grafica.Mappa_ChainExplorer.get(Rete)==null)   {
@@ -1077,8 +1075,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 Date data;
                 String Data;
                 SimpleDateFormat sdfx = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-             //    System.out.println(DataProggressiva);
-              //   System.out.println(ArraydataFin.get(i));
+              //DA CAPIRE SE QUESTO CICLO SERVE CON IL NUOVO SISTEMA
                  while (DataProggressiva < ArraydataFin.get(i)*1000) {                    
                     data = new java.util.Date(DataProggressiva);                   
                     sdfx.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
@@ -1112,8 +1109,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                     {
                     //Se arrivo qua vuol dire che la coin non è gestita da coingecko e la salvo nella lista degli address esclusi
                     //AL POSTO DI NULLO METTO LA DATA DI OGGI IL CHE SIGNIFICA CHE ALMENO FINO AD OGGI IL TOKEN IN QUESTIONE NON E' GESTITO IN NESSUN MODO
-                    MappaConversioneAddressCoin.put(Address+"_"+Rete, String.valueOf(dataAdesso));
-                    ScriviFileConversioneAddressCoin(Address+"_"+Rete+","+dataAdesso);
+                   // MappaConversioneAddressCoin.put(Address+"_"+Rete, String.valueOf(dataAdesso));
+                    DatabaseH2.AddressSenzaPrezzo_Scrivi(Address+"_"+Rete, String.valueOf(dataAdesso));
+                   // ScriviFileConversioneAddressCoin();
                     return null;  
                     }
             }
@@ -1147,6 +1145,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                         sdf2.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                         String DataconOra = sdf.format(date);
                         String Data = sdf2.format(date);
+                        //QUESTO SECONDO ME E' SBAGLIATO E DA RIVEDERE
                         if (MappaConversioneAddressEUR.get(Data)==null) MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, price);
                         MappaConversioneAddressEUR.put(DataconOra+"_"+Address+"_"+Rete, price);
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
@@ -1447,7 +1446,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    public static String DammiPrezzoTransazioneOLD(String Moneta1, String Moneta2, String Qta1, String Qta2,
+    /*public static String DammiPrezzoTransazioneOLD(String Moneta1, String Moneta2, String Qta1, String Qta2,
             long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
         
         
@@ -1463,7 +1462,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         System.out.println(Address1);
         System.out.println(Address2);
         System.out.println(Rete);
-        System.out.println("-------");*/
+        System.out.println("-------");
         Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         MappaReteCoin.put("BSC", "BNB");
         // boolean trovato1=false;
@@ -1594,7 +1593,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         } else {
             return Prezzo;
         }
-    }
+    }*/
  
     
     
@@ -1905,7 +1904,33 @@ for (int i=0;i<ArraydataIni.size();i++){
    }
      
      
-        static void ScriviFileConversioneAddressCoin(String Riga) { //CDC_FileDatiDB
+    /*    static void ScriviFileConversioneAddressCoin() { //CDC_FileDatiDB
+           
+            
+               try { 
+       FileWriter w=new FileWriter("conversioneAddressCoin.db");
+       BufferedWriter b=new BufferedWriter (w);
+       
+       Object DateCambi[]=MappaConversioneAddressCoin.keySet().toArray();
+       
+       for (String keyset:MappaConversioneAddressCoin.keySet()){
+           
+           b.write(keyset+","+MappaConversioneAddressCoin.get(keyset)+"\n");
+       }
+       
+      // b.write("DataIniziale="+CDC_DataIniziale+"\n");
+       //System.out.println(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+       b.close();
+       w.close();
+
+    }catch (IOException ex) {
+                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+               }
+            
+            
+            
+            
+  /*          
    // CDC_FileDatiDB
    try { 
        FileWriter w=new FileWriter("conversioneAddressCoin.db",true);
@@ -1925,8 +1950,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     }catch (IOException ex) {
                  //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
                }
-   
-   }
+   }*/
    
         
    

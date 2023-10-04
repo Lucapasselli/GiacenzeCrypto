@@ -670,6 +670,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_Data_Label.setText("Data : ");
 
+        GiacenzeaData_Data_DataChooser.setDateFormatString("yyyy-MM-dd");
+
         GiacenzeaData_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -687,13 +689,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
         GiacenzeaData_ScrollPane.setViewportView(GiacenzeaData_Tabella);
+        if (GiacenzeaData_Tabella.getColumnModel().getColumnCount() > 0) {
+            GiacenzeaData_Tabella.getColumnModel().getColumn(1).setMinWidth(100);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(1).setPreferredWidth(100);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(1).setMaxWidth(100);
+        }
 
         GiacenzeaData_Totali_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         GiacenzeaData_Totali_Label.setText("TOTALE in EURO : ");
 
         GiacenzeaData_Totali_TextField.setEditable(false);
 
-        jButton1.setText("jButton1");
+        jButton1.setText("Calcola");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -722,7 +729,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton1)
-                        .addGap(209, 209, 209))))
+                        .addContainerGap())))
         );
         GiacenzeaDataLayout.setVerticalGroup(
             GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1677,6 +1684,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             this.CDC_DataChooser_Iniziale.setDate(d);
             d= f.parse(CDC_DataFinale);
             this.CDC_DataChooser_Finale.setDate(d);
+            this.GiacenzeaData_Data_DataChooser.setDate(d);
             this.CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.setSelected(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
             this.CDC_CardWallet_Checkbox_ConsideraValoreMaggiore.setSelected(CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
         } catch (ParseException ex) {
@@ -3293,41 +3301,55 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
         //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
         //in futuro dovrò mettere anche un limite per data e un limite per wallet
-       // DatabaseH2.CreaoCollegaDatabase();
-      /*  DatabaseH2.AddressSenzaPrezzo_Scrivi("meni", "toni");
-        DatabaseH2.AddressSenzaPrezzo_Scrivi("aa", "sss");
-        DatabaseH2.AddressSenzaPrezzo_Leggi("menis");*/
-                Map<String, BigDecimal> QtaCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        long DataRiferimento=0;
+          if (this.GiacenzeaData_Data_DataChooser.getDate()!=null){
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
+            DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data);
+        } 
+        Map<String, Moneta> QtaCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
         for (String[] movimento :MappaCryptoWallet.values()){
+            //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
+            //altrimenti non vado avanti
+            String Rete=Funzioni.TrovaReteDaID(movimento[0]);
+            long DataMovimento=OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+            if (DataMovimento<=DataRiferimento){
             //Faccio la somma dei movimenti in usicta
-            if (!movimento[8].isBlank()&&QtaCrypto.get(movimento[8])!=null){
-              BigDecimal qta=QtaCrypto.get(movimento[8]).add(new BigDecimal(movimento[10]));
-              QtaCrypto.put(movimento[8], qta);             
+            if (!movimento[8].isBlank()&&QtaCrypto.get(movimento[8]+";"+movimento[9])!=null){
+              QtaCrypto.get(movimento[8]+";"+movimento[9]).Qta=new BigDecimal(QtaCrypto.get(movimento[8]+";"+movimento[9]).Qta)
+                      .add(new BigDecimal(movimento[10])).stripTrailingZeros().toPlainString();
+           
             }
             else if (!movimento[8].isBlank())
             {
-              QtaCrypto.put(movimento[8], new BigDecimal(movimento[10]));  
+              Moneta M1=new Moneta();
+              M1.InserisciValori(movimento[8],movimento[10],movimento[26],movimento[9]);
+              M1.Rete=Rete;
+              QtaCrypto.put(movimento[8]+";"+movimento[9], M1);  
             }
             //Faccio la somma dei movimenti in entrata
-            if (!movimento[11].isBlank()&&QtaCrypto.get(movimento[11])!=null){
-              BigDecimal qta=QtaCrypto.get(movimento[11]).add(new BigDecimal(movimento[13]));
-              QtaCrypto.put(movimento[11], qta);                
+            if (!movimento[11].isBlank()&&QtaCrypto.get(movimento[11]+";"+movimento[12])!=null){
+              QtaCrypto.get(movimento[11]+";"+movimento[12]).Qta=new BigDecimal(QtaCrypto.get(movimento[11]+";"+movimento[12]).Qta)
+                      .add(new BigDecimal(movimento[13])).stripTrailingZeros().toPlainString();                
             }
             else if (!movimento[11].isBlank())
             {
-              QtaCrypto.put(movimento[11], new BigDecimal(movimento[13]));  
+              Moneta M1=new Moneta();
+              M1.InserisciValori(movimento[11],movimento[13],movimento[28],movimento[12]);
+              M1.Rete=Rete;
+              QtaCrypto.put(movimento[11]+";"+movimento[12], M1);  
             }        
-        }
+        }}
         
         //Adesso elenco tutte le monete e le metto in tabella
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
         for (String moneta :QtaCrypto.keySet()){
             String riga[]=new String[4];
-            riga[0]=moneta;
-            riga[1]=QtaCrypto.get(moneta).toPlainString();
-            riga[2]=QtaCrypto.get(moneta).toPlainString();
-            riga[3]=QtaCrypto.get(moneta).toPlainString();
+            riga[0]=QtaCrypto.get(moneta).Moneta;
+            riga[1]=QtaCrypto.get(moneta).Tipo;
+            riga[2]=QtaCrypto.get(moneta).Qta;
+            riga[3]=Prezzi.DammiPrezzoTransazione(QtaCrypto.get(moneta),null,DataRiferimento+86400000, null,true,2,QtaCrypto.get(moneta).Rete);
             GiacenzeaData_ModelloTabella.addRow(riga);
         }
     }//GEN-LAST:event_jButton1ActionPerformed

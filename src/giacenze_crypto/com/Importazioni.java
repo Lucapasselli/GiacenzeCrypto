@@ -1796,7 +1796,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
     
     
         
-     public static Map<String,TransazioneDefi> RitornaTransazioniBSCold( List<String> Portafogli,Component c,Download progressb)
+    /* public static Map<String,TransazioneDefi> RitornaTransazioniBSCold( List<String> Portafogli,Component c,Download progressb)
          {   
             String apiKey="6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6";
             String vespa=vespa(apiKey,"paperino");
@@ -2221,7 +2221,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         Prezzi.ScriviFileConversioneXXXEUR();
         return MappaTransazioniDefi;
         }    
-    
+    */
 
      public static Object[] RitornaArrayJsonBSC(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
          //L'oogetto in ritorno è un array di 2 oggetti

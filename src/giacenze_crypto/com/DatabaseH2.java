@@ -21,7 +21,7 @@ public class DatabaseH2 {
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;
-    
+    //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
     public static void CreaoCollegaDatabase(){
             try {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);

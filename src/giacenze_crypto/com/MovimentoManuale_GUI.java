@@ -778,7 +778,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         }
        
        
-       String Prezzo=Calcoli.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete);
+       String Prezzo=Prezzi.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete);
         ValoreTransazione_TextField.setText(Prezzo);
        EvidenziaProblemi();
      // System.out.println("Prezzo");
@@ -915,7 +915,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String DataString=f.format(Data_Datachooser.getDate())+" "+Ora_ComboBox.getSelectedItem().toString()+":"+
             Minuto_ComboBox.getSelectedItem().toString();
-            DataLong=Calcoli.ConvertiDatainLongMinuto(DataString);
+            DataLong=OperazioniSuDate.ConvertiDatainLongMinuto(DataString);
         }
         
         

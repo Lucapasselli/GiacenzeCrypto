@@ -495,7 +495,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         Transazioni=numeromov;
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
-        Calcoli.ScriviFileConversioneXXXEUR();
+        Prezzi.ScriviFileConversioneXXXEUR();
         if (TransazioniAggiunte>0) CDC_Grafica.TransazioniCrypto_DaSalvare=true;
         
         return true;
@@ -626,7 +626,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         valoreEuro = movimentoSplittato[7];
                                     }
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
-                                        valoreEuro = Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);                                        
+                                        valoreEuro = Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);                                        
                                     }
                                     
                                     valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
@@ -704,7 +704,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[3];
                                     if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
                                     }
                                     valoreEuro=new BigDecimal(valoreEuro).abs().toString(); 
                                     
@@ -718,7 +718,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                     valoreEuro=new BigDecimal(valoreEuro).abs().toString();
                                     
@@ -804,7 +804,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -840,7 +840,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -877,7 +877,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 if (movimentoSplittato[4].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[5];
                                 if (movimentoSplittato[4].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[5], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[5], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();                                
                                 RT[15]=valoreEuro;
@@ -916,7 +916,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[15]=valoreEuro;
@@ -991,7 +991,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             valoreEuro = splittata[7];
                                         }
                                         if (splittata[6].trim().equalsIgnoreCase("USD")) {
-                                            valoreEuro = Calcoli.ConvertiUSDEUR(splittata[7], splittata[0].split(" ")[0]);
+                                            valoreEuro = Prezzi.ConvertiUSDEUR(splittata[7], splittata[0].split(" ")[0]);
                                         }
                                         valoreEuro = new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
                                         RT[15] = valoreEuro;
@@ -1087,7 +1087,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -1172,7 +1172,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
-                                        valoreEuro=Calcoli.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -1263,7 +1263,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
@@ -1297,7 +1297,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                               //  RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
@@ -1334,7 +1334,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                // RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
@@ -1371,7 +1371,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                              //   M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(null,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(null,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
@@ -1407,7 +1407,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 //M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(null,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(null,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                 //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
@@ -1445,7 +1445,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 //Moneta M2=new Moneta();
                                 //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";
@@ -1482,7 +1482,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 //Moneta M2=new Moneta();
                                 //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                 //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
                                 RT[17] = RT[15];
@@ -1601,7 +1601,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                // M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(null,M2,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(null,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                        // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
@@ -1646,7 +1646,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                // Moneta M2=new Moneta();
                                // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                RT[15] = Calcoli.DammiPrezzoTransazione(M1,null,Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
+                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null);
                                         //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
                                         RT[17] = "Da Calcolare";
@@ -1864,7 +1864,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
-                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
+                String Data=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
                 if (MappaTransazioniDefi.get(walletAddress+"."+hash)==null){
@@ -1953,7 +1953,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             //    System.out.println(transaction.toString());
                 String tokenSymbol=transaction.getString("tokenSymbol");
                 String tokenName=transaction.getString("tokenName");
-                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
+                String Data=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String tokenAddress=transaction.getString("contractAddress");
                 String tokenDecimal=transaction.getString("tokenDecimal");
                 String hash = transaction.getString("hash");
@@ -2044,7 +2044,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             //    System.out.println(transaction.toString());
                 String tokenSymbol=transaction.getString("tokenID");
                 String tokenName=transaction.getString("tokenName");
-                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
+                String Data=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String tokenAddress=transaction.getString("contractAddress");
                // String tokenDecimal=transaction.getString("tokenDecimal");
                 String hash = transaction.getString("hash");
@@ -2135,7 +2135,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 String AddressNoWallet;
                 JSONObject transaction = transactions.getJSONObject(i);
                 String hash = transaction.getString("hash");
-                String Data=Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
+                String Data=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp"))*1000);
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
@@ -2195,30 +2195,30 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
          //   TimeUnit.SECONDS.sleep(1);
                     
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null,"AAA"+ ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null,"AAA"+ ex);
             progressb.dispose();
-            Calcoli.ScriviFileConversioneXXXEUR();
+            Prezzi.ScriviFileConversioneXXXEUR();
             JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         } catch (IOException | URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null,"AAA"+  ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null,"AAA"+  ex);
             progressb.dispose();
-            Calcoli.ScriviFileConversioneXXXEUR();
+            Prezzi.ScriviFileConversioneXXXEUR();
                         JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         } catch (InterruptedException ex) {
             Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null,"AAA"+  ex);
             progressb.dispose();
-            Calcoli.ScriviFileConversioneXXXEUR();
+            Prezzi.ScriviFileConversioneXXXEUR();
                         JOptionPane.showConfirmDialog(c, "Errore durante l'importazione dei dati\n"+ex,
                     "Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             return null;
         }
         
         }
-        Calcoli.ScriviFileConversioneXXXEUR();
+        Prezzi.ScriviFileConversioneXXXEUR();
         return MappaTransazioniDefi;
         }    
     
@@ -2370,7 +2370,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
-                String Data = Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
                 if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
@@ -2420,7 +2420,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 //    System.out.println(transaction.toString());
                 String tokenSymbol = transaction.getString("tokenSymbol");
                 String tokenName = transaction.getString("tokenName");
-                String Data = Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                 String tokenAddress = transaction.getString("contractAddress");
                 String tokenDecimal = transaction.getString("tokenDecimal");
                 String hash = transaction.getString("hash");
@@ -2474,7 +2474,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 //    System.out.println(transaction.toString());
                 String tokenSymbol = transaction.getString("tokenID");
                 String tokenName = transaction.getString("tokenName");
-                String Data = Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                 String tokenAddress = transaction.getString("contractAddress");
                 // String tokenDecimal=transaction.getString("tokenDecimal");
                 String hash = transaction.getString("hash");
@@ -2526,7 +2526,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 String AddressNoWallet;
                 JSONObject transaction = transactionsTxlistinternal.getJSONObject(i);
                 String hash = transaction.getString("hash");
-                String Data = Calcoli.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
@@ -2575,7 +2575,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
             //   TimeUnit.SECONDS.sleep(1);
         }
-        Calcoli.ScriviFileConversioneXXXEUR();
+        Prezzi.ScriviFileConversioneXXXEUR();
         return MappaTransazioniDefi;
     }    
     

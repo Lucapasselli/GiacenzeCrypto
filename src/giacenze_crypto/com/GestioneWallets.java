@@ -7,7 +7,7 @@ package giacenze_crypto.com;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import static giacenze_crypto.com.CDC_Grafica.Mappa_Wallet;
-import static giacenze_crypto.com.Calcoli.MappaWallets;
+import static giacenze_crypto.com.Prezzi.MappaWallets;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -301,7 +301,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                             i++;
                         }
                     }
-                    Calcoli.ScriviFileConversioneXXXEUR();
+                    Prezzi.ScriviFileConversioneXXXEUR();
                     Importazioni.TransazioniAggiunte = i;
                     if (Importazioni.TransazioniAggiunte != 0) {
                         CDC_Grafica.TabellaCryptodaAggiornare = true;
@@ -439,13 +439,13 @@ public class GestioneWallets extends javax.swing.JDialog {
                 // bure.close();
                 // fire.close();        
              } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              } catch (IOException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              }
 
          } catch (IOException ex) {        
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }    
     

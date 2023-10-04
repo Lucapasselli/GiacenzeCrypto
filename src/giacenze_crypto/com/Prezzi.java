@@ -4,8 +4,6 @@
  */
 package giacenze_crypto.com;
 
-
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -43,18 +41,14 @@ import org.json.*;
  *
  * @author luca.passelli
  */
-public class Calcoli {
+public class Prezzi {
     static Map<String, String> MappaWallets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneAddressEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneAddressEURtemp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa di appoggio per scrivere il file correttamente
     static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaSimboliCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    //static Map<String, String> MappaConversioneAddressCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-  //  static Map<String, String> MappaConversioneSimboloReteCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+//    static Map<String, String> MappaSimboliCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
@@ -88,13 +82,13 @@ public class Calcoli {
                  bure.close();
                  fire.close();        
              } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              } catch (IOException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              }
              
          } catch (IOException ex) {        
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }   
@@ -122,13 +116,13 @@ public class Calcoli {
                  bure.close();
                  fire.close();        
              } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              } catch (IOException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              }
              
          } catch (IOException ex) {        
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }  
@@ -152,13 +146,13 @@ public class Calcoli {
                  bure.close();
                  fire.close();        
              } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              } catch (IOException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              }
 
          } catch (IOException ex) {        
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
     
@@ -168,7 +162,7 @@ public class Calcoli {
         
         
         
-             public static void GeneraMappaCambioAddressEUR(){
+ /*            public static void GeneraMappaCambioAddressEUR(){
          try {
              File file=new File ("cambioAddressEUR.db");
              if (!file.exists()) file.createNewFile();
@@ -196,7 +190,7 @@ public class Calcoli {
          } catch (IOException ex) {        
             Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }    
+    }    */
         
         
         
@@ -227,13 +221,13 @@ public class Calcoli {
                  bure.close();
                  fire.close();        
              } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              } catch (IOException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              }
 
          } catch (IOException ex) {        
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
     
@@ -586,9 +580,9 @@ public class Calcoli {
            
            
         } catch (URISyntaxException | IOException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
             }
        // return null;
@@ -631,7 +625,7 @@ public class Calcoli {
            
            
         } catch (URISyntaxException | IOException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
       }
@@ -656,36 +650,36 @@ public class Calcoli {
         if (dateDisponibili.length > 0) {// se il file ha dei dati recupero prima e ultima data      
             PrimaData = (String) dateDisponibili[0];
             UltimaData = (String) dateDisponibili[dateDisponibili.length - 1];
-            long DataOggiLong=ConvertiDatainLong(DatadiOggi);
-            long DataUltimaLong=ConvertiDatainLong(UltimaData);
+            long DataOggiLong=OperazioniSuDate.ConvertiDatainLong(DatadiOggi);
+            long DataUltimaLong=OperazioniSuDate.ConvertiDatainLong(UltimaData);
             long diffDate=DataOggiLong-DataUltimaLong;//86400000 di differenza significa 1 giorno
             //a questo punto siccome non posso ottenere i dati della giornata odierna
             //se sto cercando di ottenere quelli e l'ultimo dato che ho è inferiore a 10gg prendo quello come dato valido per la giornata
             //metto 10gg invece che 1 perchè potrebbero esserci delle feste e banchitalia non restituisce valori in quel caso
-            if(ConvertiDatainLong(Data)==ConvertiDatainLong(DatadiOggi)&&diffDate<864000000){
+            if(OperazioniSuDate.ConvertiDatainLong(Data)==OperazioniSuDate.ConvertiDatainLong(DatadiOggi)&&diffDate<864000000){
                 risultato=MappaConversioneUSDEUR.get(UltimaData);
             }
             //se la data di cui cerco il valore è compreso tra i range cerco il tasso di cambio corretto
-            else if (ConvertiDatainLong(Data) >= ConvertiDatainLong(PrimaData) && ConvertiDatainLong(Data) <= ConvertiDatainLong(UltimaData)) {
+            else if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong(PrimaData) && OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(UltimaData)) {
                 for (int i = 0; i < 10; i++) {
                     risultato = MappaConversioneUSDEUR.get(Data);
                     if (risultato == null) {
-                        Data = GiornoMenoUno(Data);//questo appunto serve per andare a prendere i sabati e le domeniche dove non ho dati
+                        Data = OperazioniSuDate.GiornoMenoUno(Data);//questo appunto serve per andare a prendere i sabati e le domeniche dove non ho dati
                     } else {
                         break;
                     }
                 }
             }
-            else if (ConvertiDatainLong(Data) >= ConvertiDatainLong("2017-01-01") && ConvertiDatainLong(Data) <= ConvertiDatainLong(DatadiOggi)) {
-                if (ConvertiDatainLong(Data) < ConvertiDatainLong(PrimaData)) {
+            else if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong("2017-01-01") && OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(DatadiOggi)) {
+                if (OperazioniSuDate.ConvertiDatainLong(Data) < OperazioniSuDate.ConvertiDatainLong(PrimaData)) {
                     //in questo caso richiedo i 90 gg precedenti la data richiesta
                     //anche perchè in questo modo comincio a compilare la tabella dei cambi
-                    String DataMeno10 = ConvertiDatadaLong(ConvertiDatainLong(Data) - Long.parseLong("7776000000"));
+                    String DataMeno10 = OperazioniSuDate.ConvertiDatadaLong(OperazioniSuDate.ConvertiDatainLong(Data) - Long.parseLong("7776000000"));
                     if(RecuperaTassidiCambio(DataMeno10, PrimaData)!=null)risultato = ConvertiUSDEUR("1", Data);
-                } else if (ConvertiDatainLong(Data) > ConvertiDatainLong(UltimaData)) {
+                } else if (OperazioniSuDate.ConvertiDatainLong(Data) > OperazioniSuDate.ConvertiDatainLong(UltimaData)) {
                     //in questo caso richiedo i 90 gg successivi la data richiesta
                     //anche perchè in questo modo comincio a compilare la tabella dei cambi
-                    String DataPiu10 = ConvertiDatadaLong(ConvertiDatainLong(Data) + Long.parseLong("7776000000"));
+                    String DataPiu10 = OperazioniSuDate.ConvertiDatadaLong(OperazioniSuDate.ConvertiDatainLong(Data) + Long.parseLong("7776000000"));
                     if(RecuperaTassidiCambio(UltimaData, DataPiu10)!=null)risultato = ConvertiUSDEUR("1", Data);
                 }
                 //  risultato = "Fuori range di date";
@@ -754,8 +748,8 @@ public class Calcoli {
         long adesso=System.currentTimeMillis();
         if (Datalong>adesso) return null;//se la data è maggiore di quella attuale non recupero nessun prezzo
         if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
-        String DataOra=ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno=ConvertiDatadaLong(Datalong);
+        String DataOra=OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
         //String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
         //String DataFine=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datafine=la data+45gg
         risultato = MappaConversioneUSDTEUR.get(DataOra);
@@ -789,20 +783,11 @@ public class Calcoli {
     public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
         //QUESTA SARA' DA CANCELLARE IN PREVISIONE DEL PASSAGGIO AL DATABASE
-        if (MappaConversioneAddressEUR.isEmpty()) {
+  /*      if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
            // MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
-        }
-/*        if (MappaConversioneAddressCoin.isEmpty()) {
-            GeneraMappaConversioneAddressCoin();
         }*/
-       /* if (MappaSimboliCoingecko.isEmpty()) {
-            RecuperaCoinsCoingecko();
-        }
-        if (Simbolo != null && MappaSimboliCoingecko.get(Simbolo.toUpperCase().trim()) == null) {
-            //Se ho un simbolo e questo non è nella lista allora termino subito il ciclo che tanto mi restituirebbe null lo stesso
-            return null;
-        }*/
+
                //la mappa MappaConversioneAddressCoin contiene gli address non gestiti da coingecko e la data in cui è stata fatta l'ultima richiesta
         //percui se in questa mappa il dato esiste e se la data di richiesta è inferiore alla data sulla mappa ritorno null
         Address = Address.toUpperCase();
@@ -823,41 +808,37 @@ public class Calcoli {
         //Address = Address.toUpperCase();
         String risultato;// = null;
         //come prima cosa devo decidere il formato data
-        String DataOra = ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno = ConvertiDatadaLong(Datalong);
-        risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
+        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
+      //  risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
+        risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
 
         if (risultato == null) {
 
             //solo in questo caso vado a prendere il valore del giorno e non quello orario
             RecuperaTassidiCambiodaAddress(DataGiorno, DataGiorno, Address, Rete ,Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-            risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
+            risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
             if (risultato == null) {
-                risultato = MappaConversioneAddressEUR.get(DataGiorno + "_" + Address + "_" + Rete);
+                risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataGiorno + "_" + Address + "_" + Rete);
             }
         } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 //ora controllo che l'indirizzo sia gestito, in caso contrario termino il ciclo
 //questo perchè con la richiesta che ho appena fatto potrebbe essersi generata una nuova voce nella mappa
-        //long dataAdesso= System.currentTimeMillis() / 1000;
        
         //la mappa MappaConversioneAddressCoin contiene gli address non gestiti da coingecko e la data in cui è stata fatta l'ultima richiesta
-  /*      //percui se in questa mappa il dato esiste e se la data di richiesta è inferiore alla data sulla mappa ritorno null
-        if (MappaConversioneAddressCoin.get(Address+"_"+Rete)!=null&&
-                (MappaConversioneAddressCoin.get(Address+"_"+Rete).equals("nullo")||DataRiferimento<Long.parseLong(MappaConversioneAddressCoin.get(Address+"_"+Rete))))
-        {
-            return null;
-        }*/
+
         
   //se è gestito controllo se lo avevo già nel file ein caso contrario lo inserisco      
-        if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
+   /*     if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
            // if (risultato!=null) MappaConversioneAddressEUR.put(DataOra + "_" + Address + "_" + Rete, risultato);
            // if (risultato==null) risultato="nullo";
             MappaConversioneAddressEURtemp.put(DataOra + "_" + Address + "_" + Rete, risultato);
        
             ScriviFileConversioneAddressEUR(DataOra + "_" + Address + "_" + Rete + "," + risultato);
-        }
+        }*/
         //quindi se il risultato non è nullo faccio i calcoli
-        if (risultato != null && risultato.equalsIgnoreCase("nullo")) risultato=null;
+        //DA CAPIRE SE MANTENERE LA DICITURA "nullo" per i prezzi non gestiti o mettere direttamente "0" oppure ancora "ND" che sta per non disponibile
+        if (risultato != null && risultato.equalsIgnoreCase("ND")) risultato=null;
         else if (risultato != null && risultato.equalsIgnoreCase("null")) risultato=null;
         else if (risultato != null) {
            // System.out.println(Qta+" - "+risultato);
@@ -885,8 +866,8 @@ public class Calcoli {
         long adesso=System.currentTimeMillis();
         if (Datalong>adesso) return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi
         if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
-        String DataOra=ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno=ConvertiDatadaLong(Datalong);
+        String DataOra=OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
         //risultato = MappaConversioneXXXEUR.get(DataOra+" "+Crypto);
         risultato = MappaConversioneXXXEUR_temp.get(DataOra+" "+Crypto);
         if (risultato == null) {
@@ -916,35 +897,7 @@ public class Calcoli {
     
     
      
-    public static long ConvertiDatainLong(String Data1) {
-           long m1=0;
-        try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            Date d = f.parse(Data1);
-            m1 = d.getTime();
-            
-            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
-        } catch (ParseException ex) {
-           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            //System.out.println(Data1+" non è una data");
-        }
-        return m1;
-    } 
-     
-        public static long ConvertiDatainLongMinuto(String Data1) {
-           long m1=0;
-        try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            Date d = f.parse(Data1);
-            m1 = d.getTime();
-            
-            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
-        } catch (ParseException ex) {
-           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            //System.out.println(Data1+" non è una data");
-        }
-        return m1;
-    } 
+
     
     public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {      
         String ok="ok";
@@ -977,9 +930,9 @@ public class Calcoli {
           //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             ok=null;
         } catch (URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return ok;
@@ -999,9 +952,9 @@ public class Calcoli {
         }*/
         
 //DA SOSTITUIRE CON DATABASE    
-        if (MappaConversioneAddressEUR.isEmpty()) {
+   /*     if (MappaConversioneAddressEUR.isEmpty()) {
             GeneraMappaCambioAddressEUR();
-        }
+        }*/
 
         
         //come prima cosa vedo se la rete è gestita altrimenti chiudo immediatamente il ciclo    
@@ -1010,8 +963,8 @@ public class Calcoli {
          }
         
         long dataAdesso= System.currentTimeMillis() / 1000;  
-        long dataIni = ( ConvertiDatainLong(DataIniziale) / 1000 ) - 86400;
-        long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
+        long dataIni = ( OperazioniSuDate.ConvertiDatainLong(DataIniziale) / 1000 ) - 86400;
+        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataFinale) / 1000 + 86400;
         if (dataFin>dataAdesso) dataFin=dataAdesso;
       //  String ID=DammiIDCoingeckodaAddress(Address,Rete);
         
@@ -1080,7 +1033,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                     data = new java.util.Date(DataProggressiva);                   
                     sdfx.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                     Data = sdfx.format(data);
-                    MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, "nullo");
+                    DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, "ND");
+                 //   MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, "ND");
                     DataProggressiva=DataProggressiva+3600000;
                 }
                  
@@ -1146,8 +1100,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String DataconOra = sdf.format(date);
                         String Data = sdf2.format(date);
                         //QUESTO SECONDO ME E' SBAGLIATO E DA RIVEDERE
-                        if (MappaConversioneAddressEUR.get(Data)==null) MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, price);
-                        MappaConversioneAddressEUR.put(DataconOra+"_"+Address+"_"+Rete, price);
+                        if (DatabaseH2.PrezzoAddressChain_Leggi(Data+"_"+Address+"_"+Rete)==null) DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, price);
+                        DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra+"_"+Address+"_"+Rete, price);
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
                         //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
                         //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
@@ -1196,8 +1150,8 @@ for (int i=0;i<ArraydataIni.size();i++){
         
         
         String ok = "ok";
-        long dataIni = ConvertiDatainLong(DataIniziale) / 1000;
-        long dataFin = ConvertiDatainLong(DataFinale) / 1000 + 86400;
+        long dataIni = OperazioniSuDate.ConvertiDatainLong(DataIniziale) / 1000;
+        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataFinale) / 1000 + 86400;
         long adesso=System.currentTimeMillis()/1000;
         //    if(adesso<timestampFinale)timestampFinale=adesso;
         
@@ -1289,7 +1243,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         } catch (IOException ex) {
             ok = null;
         } catch (InterruptedException | URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
         }
        // ScriviFileConversioneUSDTEUR();
@@ -1305,8 +1259,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                       
         String ok = null;
         String CoppiaCrypto=Crypto+"USDT";
-        long dataIni = ConvertiDatainLong(DataIniziale) ;
-        long dataFin = ConvertiDatainLong(DataFinale) + 86400000;
+        long dataIni = OperazioniSuDate.ConvertiDatainLong(DataIniziale) ;
+        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataFinale) + 86400000;
         
         //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
         long difData=dataFin-dataIni;
@@ -1428,16 +1382,16 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
                 TimeUnit.SECONDS.sleep(1);
             } catch (MalformedURLException ex) {
-                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
                 ok = null;
             } catch (IOException ex) {
-                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
                 ok = null;
             } catch (InterruptedException ex) {
                 ok = null;
-                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             } catch (URISyntaxException ex) {
-                Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         //   ScriviFileConversioneUSDTEUR();
@@ -1819,13 +1773,13 @@ for (int i=0;i<ArraydataIni.size();i++){
         } catch (JsonSyntaxException | IOException | InterruptedException ex) {
             ok = null;
         } catch (URISyntaxException ex) {
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
         return ok;
     }
         
     //questa funzione la chiamo sempre una sola volta per verificare quali sono le coin gestite da coingecko    
-    public static String RecuperaCoinsCoingecko() {
+ /*   public static String RecuperaCoinsCoingecko() {
 
         try {
             TimeUnit.SECONDS.sleep(7);
@@ -1876,7 +1830,7 @@ for (int i=0;i<ArraydataIni.size();i++){
 
         return "ok";
         //solo se il comando va a buon fine ritorno ok altrimenti ritorno null
-    }
+    }*/
     
     
     
@@ -1955,7 +1909,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         
    
         
-    static void ScriviFileConversioneAddressEUR(String Riga) { 
+  /*  static void ScriviFileConversioneAddressEUR(String Riga) { 
 
    try { 
        FileWriter w=new FileWriter("cambioAddressEUR.db",true);
@@ -1976,7 +1930,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                  //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
                }
    
-   }      
+   }      */
         
         
         
@@ -2064,61 +2018,7 @@ for (int i=0;i<ArraydataIni.size();i++){
      
     
     
-    public static String ConvertiDatadaLong(long Data1) {
 
-  
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            Date d = new Date(Data1);
-            //d=f.format(d);
-            String m1=f.format(d);
-            
-            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
-
-        return m1;
-    } 
-    
-        public static String ConvertiDatadaLongAlSecondo(long Data1) {
-
-  
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date d = new Date(Data1);
-            //d=f.format(d);
-            String m1=f.format(d);
-            
-            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
-
-        return m1;
-    } 
-    
-    
-        public static String ConvertiDatadaLongallOra(long Data1) {
-
-  
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
-            Date d = new Date(Data1);
-            //d=f.format(d);
-            String m1=f.format(d);
-            
-            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
-
-        return m1;
-    } 
-             
-        public static String GiornoMenoUno(String Data1) {
-        String giorno="";
-        try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            Date d = f.parse(Data1+" 00:00");
-            long m1 = d.getTime();
-            long giornomenouno=m1-86400000;            
-            SimpleDateFormat f2 = new SimpleDateFormat("yyyy-MM-dd");
-            Date d1 = new Date(giornomenouno);
-            giorno=f2.format(d1);
-        } catch (ParseException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return giorno;
-    }
     
 
 }

@@ -2746,7 +2746,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Importazioni.TransazioniAggiunte=0;
         TransazioniCrypto_DaSalvare=false;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-        Calcoli.ScriviFileConversioneXXXEUR();
+        Prezzi.ScriviFileConversioneXXXEUR();
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
 

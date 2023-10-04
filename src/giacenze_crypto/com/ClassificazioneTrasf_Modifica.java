@@ -699,7 +699,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         String attuale[]=MappaCryptoWallet.get(ID);
-        long DataOraAttuale=Calcoli.ConvertiDatainLong(attuale[1]);
+        long DataOraAttuale=OperazioniSuDate.ConvertiDatainLong(attuale[1]);
         String TipoMovimentoAttuale=attuale[0].split("_")[4].trim();
         String TipoMovimentoRichiesto;
         String MonetaAttuale;
@@ -750,7 +750,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
            if (TipoMovimento.equalsIgnoreCase("DC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
           {  
               BigDecimal Qta=new BigDecimal(v[13]).abs();
-              long DataOra=Calcoli.ConvertiDatainLong(v[1]);
+              long DataOra=OperazioniSuDate.ConvertiDatainLong(v[1]);
              // System.out.println(DataOra+" - "+DataOraAttuale);
               if (MonetaAttuale.equalsIgnoreCase(v[11].trim())&&//v[11] è appunto la moneta
                       TipoMovimentoRichiesto.equalsIgnoreCase(TipoMovimento)&&
@@ -764,7 +764,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
            else if (TipoMovimento.equalsIgnoreCase("PC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
           {  
               BigDecimal Qta=new BigDecimal(v[10]).abs();
-              long DataOra=Calcoli.ConvertiDatainLong(v[1]);
+              long DataOra=OperazioniSuDate.ConvertiDatainLong(v[1]);
              // System.out.println(DataOra+" - "+DataOraAttuale);
               if (MonetaAttuale.equalsIgnoreCase(v[8].trim())&&//v[11] è appunto la moneta
                       TipoMovimentoRichiesto.equalsIgnoreCase(TipoMovimento)&&

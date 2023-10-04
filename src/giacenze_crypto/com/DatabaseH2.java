@@ -105,7 +105,7 @@ public class DatabaseH2 {
         String Risultato = null;
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE address_chain = '" + ora_address_chain + "'";
+            String checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {

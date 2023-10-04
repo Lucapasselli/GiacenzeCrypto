@@ -4,8 +4,6 @@
  */
 package giacenze_crypto.com;
 
-import static giacenze_crypto.com.Calcoli.CoppiePrioritarie;
-import java.math.BigDecimal;
 
 /**
  *

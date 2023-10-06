@@ -495,7 +495,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         Transazioni=numeromov;
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
-        Prezzi.ScriviFileConversioneXXXEUR();
+     //   Prezzi.ScriviFileConversioneXXXEUR();
         if (TransazioniAggiunte>0) CDC_Grafica.TransazioniCrypto_DaSalvare=true;
         
         return true;
@@ -2575,7 +2575,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
             //   TimeUnit.SECONDS.sleep(1);
         }
-        Prezzi.ScriviFileConversioneXXXEUR();
+//        Prezzi.ScriviFileConversioneXXXEUR();
         return MappaTransazioniDefi;
     }    
     

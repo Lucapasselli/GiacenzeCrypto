@@ -17,40 +17,48 @@ import java.util.logging.Logger;
  * @author luca.passelli
  */
 public class DatabaseH2 {
+
     static String jdbcUrl = "jdbc:h2:./test";
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;
+
     //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
-    public static void CreaoCollegaDatabase(){
-            try {
+    public static void CreaoCollegaDatabase() {
+        try {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
             String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
-            PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL); 
+            PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
-            
+
             createTableSQL = "CREATE TABLE IF NOT EXISTS Prezzo_ora_Address_Chain  (ora_address_chain VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
-            preparedStatement = connection.prepareStatement(createTableSQL); 
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute();
+
+            createTableSQL = "CREATE TABLE IF NOT EXISTS USDTEUR  (data VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
+            preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
-          //DROP TABLE IF EXISTS " + tableName;
-                
-          /*  String insertSQL = "INSERT INTO AddressSenzaPrezzo (address_chain, data) VALUES (?, ?)";
+            createTableSQL = "CREATE TABLE IF NOT EXISTS XXXEUR  (dataSimbolo VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute();            
+
+            //DROP TABLE IF EXISTS " + tableName;
+            /*  String insertSQL = "INSERT INTO AddressSenzaPrezzo (address_chain, data) VALUES (?, ?)";
             preparedStatement = connection.prepareStatement(insertSQL);
                 preparedStatement.setString(1, "Mario");
                 preparedStatement.setString(2, "Pippo");
                 preparedStatement.executeUpdate();*/
-            
-    }   catch (SQLException ex) {
+        } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void AddressSenzaPrezzo_Scrivi(String address_chain, String data) {
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM Address_Senza_Prezzo WHERE address_chain = '"+address_chain+"'";
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM Address_Senza_Prezzo WHERE address_chain = '" + address_chain + "'";
             //System.out.println(checkIfExistsSQL);
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             //checkStatement.setString(1, address_chain);
@@ -62,28 +70,28 @@ public class DatabaseH2 {
             }
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE Address_Senza_Prezzo SET data = '"+data+"' WHERE address_chain = '"+address_chain+"'";
+                String updateSQL = "UPDATE Address_Senza_Prezzo SET data = '" + data + "' WHERE address_chain = '" + address_chain + "'";
                 PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
-               // updateStatement.setString(1, data);
+                // updateStatement.setString(1, data);
                 //updateStatement.setString(2, address_chain);
                 updateStatement.executeUpdate();
-               // System.out.println("Riga aggiornata con successo.");
-                
+                // System.out.println("Riga aggiornata con successo.");
+
             } else {
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO Address_Senza_Prezzo (address_chain, data) VALUES ('"+address_chain+"','"+data+"')";
+                String insertSQL = "INSERT INTO Address_Senza_Prezzo (address_chain, data) VALUES ('" + address_chain + "','" + data + "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 //insertStatement.setString(1, address_chain);
                 //insertStatement.setString(2, data);
                 insertStatement.executeUpdate();
-               // System.out.println("Nuova riga inserita con successo.");
-                
-            }   
+                // System.out.println("Nuova riga inserita con successo.");
+
+            }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static String AddressSenzaPrezzo_Leggi(String address_chain) {
         String Risultato = null;
         try {
@@ -100,8 +108,8 @@ public class DatabaseH2 {
         }
         return Risultato;
     }
-    
-        public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
+
+    public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
         String Risultato = null;
         try {
             // Connessione al database
@@ -117,11 +125,11 @@ public class DatabaseH2 {
         }
         return Risultato;
     }
-        
-            public static void PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo) {
+
+    public static void PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo) {
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '"+ora_address_chain+"'";
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
             //System.out.println(checkIfExistsSQL);
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             //checkStatement.setString(1, address_chain);
@@ -133,26 +141,114 @@ public class DatabaseH2 {
             }
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE Prezzo_ora_Address_Chain SET prezzo = '"+prezzo+"' WHERE ora_address_chain = '"+ora_address_chain+"'";
+                String updateSQL = "UPDATE Prezzo_ora_Address_Chain SET prezzo = '" + prezzo + "' WHERE ora_address_chain = '" + ora_address_chain + "'";
                 PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
-               // updateStatement.setString(1, data);
+                // updateStatement.setString(1, data);
                 //updateStatement.setString(2, address_chain);
                 updateStatement.executeUpdate();
-               // System.out.println("Riga aggiornata con successo.");
-                
+                // System.out.println("Riga aggiornata con successo.");
+
             } else {
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO Prezzo_ora_Address_Chain (ora_address_chain, prezzo) VALUES ('"+ora_address_chain+"','"+prezzo+"')";
+                String insertSQL = "INSERT INTO Prezzo_ora_Address_Chain (ora_address_chain, prezzo) VALUES ('" + ora_address_chain + "','" + prezzo + "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 //insertStatement.setString(1, address_chain);
                 //insertStatement.setString(2, data);
                 insertStatement.executeUpdate();
-               // System.out.println("Nuova riga inserita con successo.");
-                
-            }   
+                // System.out.println("Nuova riga inserita con successo.");
+
+            }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public static String USDTEUR_Leggi(String data) {
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT data,prezzo FROM USDTEUR WHERE data = '" + data + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("prezzo");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    }
+
+    public static void USDTEUR_Scrivi(String data, String prezzo) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM USDTEUR WHERE data = '" + data + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE USDTEUR SET prezzo = '" + prezzo + "' WHERE data = '" + data + "'";
+                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO USDTEUR (data, prezzo) VALUES ('" + data + "','" + prezzo + "')";
+                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+       public static String XXXEUR_Leggi(String dataSimbolo) {
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("prezzo");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    }
+
+    public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE XXXEUR SET prezzo = '" + prezzo + "' WHERE dataSimbolo = '" + dataSimbolo + "'";
+                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO XXXEUR (dataSimbolo, prezzo) VALUES ('" + dataSimbolo + "','" + prezzo + "')";
+                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
     
 }

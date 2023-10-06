@@ -44,9 +44,9 @@ import org.json.*;
 public class Prezzi {
     static Map<String, String> MappaWallets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  //  static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+ //   static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+ //   static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 //    static Map<String, String> MappaSimboliCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -127,7 +127,7 @@ public class Prezzi {
 
     }  
     
-        public static void GeneraMappaCambioUSDTEUR(){
+     /*   public static void GeneraMappaCambioUSDTEUR(){
          try {
              File file=new File ("cambioUSDTEUR.db");
              if (!file.exists()) file.createNewFile();
@@ -154,7 +154,7 @@ public class Prezzi {
          } catch (IOException ex) {        
             Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
-    } 
+    } */
     
         
         
@@ -201,7 +201,7 @@ public class Prezzi {
         
         
         
-        public static void GeneraMappaCambioXXXEUR(){
+ /*       public static void GeneraMappaCambioXXXEUR(){
          try {
              File file=new File ("cambioXXXEUR.db");
              if (!file.exists()) file.createNewFile();
@@ -229,7 +229,7 @@ public class Prezzi {
          } catch (IOException ex) {        
             Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
-    } 
+    } */
     
         
  /*   public static void GeneraMappaConversioneAddressCoin(){
@@ -736,10 +736,10 @@ public class Prezzi {
     
     public static String ConvertiUSDTEUR(String Qta, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-        if (MappaConversioneUSDTEUR.isEmpty())
+  /*      if (MappaConversioneUSDTEUR.isEmpty())
             {
                 GeneraMappaCambioUSDTEUR();
-            }
+            }*/
         
         String risultato;// = null;
         //come prima cosa devo decidere il formato data
@@ -752,19 +752,23 @@ public class Prezzi {
         String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
         //String DataInizio=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datainizio=la data-45gg
         //String DataFine=ConvertiDatadaLong(Datalong-Long.parseLong("3888000000"));//datafine=la data+45gg
-        risultato = MappaConversioneUSDTEUR.get(DataOra);
+ //       risultato = MappaConversioneUSDTEUR.get(DataOra);
+        risultato = DatabaseH2.USDTEUR_Leggi(DataOra);
        /* SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
         String DatadiOggi = f.format(System.currentTimeMillis());*/
         if (risultato == null) {
 
                 //solo in questo caso vado a prendere il valore del giorno e non quello orario
-                risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+  //              risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+                risultato = DatabaseH2.USDTEUR_Leggi(DataGiorno);
                  if (risultato==null)  //se non trovo nenache il valore del giorno allora richiamo l'api coingecko per l'aggiornamento dei prezzi
                 {
                      RecuperaTassidiCambioUSDT(DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                     risultato = MappaConversioneUSDTEUR.get(DataOra);
+   //                  risultato = MappaConversioneUSDTEUR.get(DataOra);
+                     risultato = DatabaseH2.USDTEUR_Leggi(DataOra);
                      if (risultato == null) {
-                         risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+   //                      risultato = MappaConversioneUSDTEUR.get(DataGiorno);
+                         risultato = DatabaseH2.USDTEUR_Leggi(DataGiorno);
                      }
                  }//non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 
@@ -854,10 +858,10 @@ public class Prezzi {
     
        public static String ConvertiXXXEUR(String Crypto,String Qta, long Datalong) {
         //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-        if (MappaConversioneXXXEUR.isEmpty())
+      /*  if (MappaConversioneXXXEUR.isEmpty())
             {
                 GeneraMappaCambioXXXEUR();
-            }
+            }*/
      /*   if (MappaCoppieBinance.isEmpty())
         {
             RecuperaCoppieBinance();
@@ -869,11 +873,12 @@ public class Prezzi {
         String DataOra=OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
         //risultato = MappaConversioneXXXEUR.get(DataOra+" "+Crypto);
-        risultato = MappaConversioneXXXEUR_temp.get(DataOra+" "+Crypto);
+      //  risultato = MappaConversioneXXXEUR_temp.get(DataOra+" "+Crypto);
+        risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
         if (risultato == null) {
 
                      RecuperaTassidiCambioXXXUSDT(Crypto,DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                     risultato = MappaConversioneXXXEUR_temp.get(DataOra+" "+Crypto);
+                     risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
 
                  //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
 
@@ -883,11 +888,11 @@ public class Prezzi {
 
            if (risultato != null) {
                //infatti se ritorna zero vuol dire che per quella data binance non mi fornisce nessun prezzo
-               if (risultato.equalsIgnoreCase("0")) {
+               if (risultato.equalsIgnoreCase("ND")) {
                    risultato = null;
                } else {
                    //questa è la mappa che al termine della conversione devo scrivere nel file;
-                   MappaConversioneXXXEUR.put(DataOra + " " + Crypto, risultato);
+                   //MappaConversioneXXXEUR.put(DataOra + " " + Crypto, risultato);
                    risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
                }
            }
@@ -1220,8 +1225,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                         sdf2.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                         String DataconOra = sdf.format(date);
                         String Data = sdf2.format(date);
-                        if (MappaConversioneUSDTEUR.get(Data)==null) MappaConversioneUSDTEUR.put(Data, price);
-                        MappaConversioneUSDTEUR.put(DataconOra, price);
+                        //DatabaseH2.USDTEUR_Scrivi(Data)
+                        if (DatabaseH2.USDTEUR_Leggi(Data)==null) DatabaseH2.USDTEUR_Scrivi(Data, price);
+                        DatabaseH2.USDTEUR_Scrivi(DataconOra, price);
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
                         //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
                         //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
@@ -1234,7 +1240,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             } catch (IOException ex) {
                 ok = null;
             }
-            ScriviFileConversioneUSDTEUR();
+    //        ScriviFileConversioneUSDTEUR();
            // TimeUnit.SECONDS.sleep(2);
         } //}
 
@@ -1307,16 +1313,21 @@ for (int i=0;i<ArraydataIni.size();i++){
                 String DataconOra = sdf.format(date);
                 //nel caso in cui non trovo il prezzo di usdc lo stesso lo equiparo a usdt
                 //questo perchè per un periodo binance non ha fornito i prezzi di usdc
-                MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, "0");
+                DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, "ND");
+                //DatabaseH2.XXXEUR_Scrivi
+                //Da rivedere, questa cosa è messa nel posto sbagliato
+                //prima devo verificare di avere il prezzo, se poi non ce l'ho solo allora prendo il prezzo di USDT, non prima
                 if (CoppiaCrypto.equalsIgnoreCase("USDCUSDT")
                         || CoppiaCrypto.equalsIgnoreCase("BUSDUSDT")
                         || CoppiaCrypto.equalsIgnoreCase("DAIUSDT")) 
                 {
-                        String Prezzo=MappaConversioneUSDTEUR.get(DataconOra);
-                        if(MappaConversioneUSDTEUR.get(DataconOra)!=null)
+                    //Forse meglio prendere il valore con il converti USDTEUR piuttosto !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
+                    String Prezzo=ConvertiUSDTEUR("1",OperazioniSuDate.ConvertiDatainLongMinuto(DataconOra+":01"));
+                    //String Prezzo=DatabaseH2.USDTEUR_Leggi(DataconOra);
+                        if(Prezzo!=null)
                             {
                           //  String Prezzo = ConvertiUSDTEUR("1", timestampIniziale);
-                            MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, Prezzo);
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
                             }
                 }
                 timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
@@ -1364,7 +1375,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                               
                                     String Prezzo = ConvertiUSDTEUR(price, timestamp);
                                     // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
-                                    MappaConversioneXXXEUR_temp.put(DataconOra + " " + Crypto, Prezzo);
+                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
                                 
                                 ok = "ok";
                                 //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
@@ -1566,6 +1577,13 @@ for (int i=0;i<ArraydataIni.size();i++){
         //tra quelle in defi importanti di cui conosco l'address e listate da binance, in quel caso il prezzo lo prenderò da li e non da coingecko
         //dato le limitazioni che quest'ultimo comporta
         //per far questo se trovo le suddette monete nella lista elimino address per farle prendere da binance
+        if (Moneta1!=null&&Moneta2==null&&Moneta1.MonetaAddress==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
+            //Questo serve solo nel caso interroghi i prezzi dalla funzione delle giacenze
+            //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
+            //e per far si di farlo devo mettere un indirizzo e usare la rete cRO
+            Moneta1.MonetaAddress="CRO";
+            Rete="CRO";
+        }
         String AddressMoneta1=null;
                 if(Moneta1!=null)AddressMoneta1=Moneta1.MonetaAddress;
         String AddressMoneta2=null;
@@ -1585,6 +1603,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         
     String MonetaRete=null;
     if (Rete!=null)MonetaRete=CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
+    if (MonetaRete==null)MonetaRete="";
         // boolean trovato1=false;
         // boolean trovato2=false;
         //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
@@ -1683,14 +1702,12 @@ for (int i=0;i<ArraydataIni.size();i++){
                 //se trovo la moneta su binance e non ho l'address cerco il prezzo su binance
                 //altrimenti lo prendo da coingecko se ho l'address e ho anche la rete
                 //in alternativa restituisco null
-                if(MappaCoppieBinance.get(Moneta1 + "USDT") != null && AddressMoneta1 == null){
+                if(MappaCoppieBinance.get(Moneta1.Moneta + "USDT") != null && AddressMoneta1 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
-                  //  System.out.println("ConvertiXXXEUR "+Moneta1.Moneta+" - "+Data);
                 }
                 else if(AddressMoneta1!= null && Rete != null)
                   {
                       PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
-                    //  System.out.println("ConvertiAddressEUR "+Moneta1.Moneta+" - "+Data+" - "+PrezzoTransazione);
                   }  
                 else
                    { 
@@ -1705,7 +1722,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 
-                if(MappaCoppieBinance.get(Moneta2 + "USDT") != null && AddressMoneta2 == null){
+                if(MappaCoppieBinance.get(Moneta2.Moneta + "USDT") != null && AddressMoneta2 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                    // System.out.println("ConvertiXXXEUR "+Moneta2.Moneta+" - "+Data);
                 }
@@ -1958,7 +1975,7 @@ for (int i=0;i<ArraydataIni.size();i++){
    
    }
     
-   static void ScriviFileConversioneXXXEUR() { //CDC_FileDatiDB
+ /*  static void ScriviFileConversioneXXXEUR() { //CDC_FileDatiDB
    // Devo lanciare questa funzione alla fine di ogni conversione per aggiornare i dati sul database dei prezzi
    //questo serve per recuperare prima sempre tutti i dati della mappa
    GeneraMappaCambioXXXEUR();
@@ -1980,11 +1997,11 @@ for (int i=0;i<ArraydataIni.size();i++){
                  //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
                }
    
-   } 
+   } */
      
      
      
-        static void ScriviFileConversioneUSDTEUR() { //CDC_FileDatiDB
+  /*      static void ScriviFileConversioneUSDTEUR() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    try { 
 //devo fare in modo di non scrivere mai i dati della data odierna sul file dei cambi perchè potrebbero essere incompleti
@@ -2014,7 +2031,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                  //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
                }
    
-   }
+   }*/
      
     
     

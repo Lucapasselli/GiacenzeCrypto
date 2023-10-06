@@ -301,7 +301,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                             i++;
                         }
                     }
-                    Prezzi.ScriviFileConversioneXXXEUR();
+                 //   Prezzi.ScriviFileConversioneXXXEUR();
                     Importazioni.TransazioniAggiunte = i;
                     if (Importazioni.TransazioniAggiunte != 0) {
                         CDC_Grafica.TabellaCryptodaAggiornare = true;

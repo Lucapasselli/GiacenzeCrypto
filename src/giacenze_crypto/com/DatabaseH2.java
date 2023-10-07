@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,13 +19,14 @@ import java.util.logging.Logger;
  */
 public class DatabaseH2 {
 
-    static String jdbcUrl = "jdbc:h2:./test";
+    static String jdbcUrl = "jdbc:h2:./database";
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;
 
     //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
-    public static void CreaoCollegaDatabase() {
+    public static boolean CreaoCollegaDatabase() {
+        boolean successo=false;
         try {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
@@ -42,7 +44,8 @@ public class DatabaseH2 {
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS XXXEUR  (dataSimbolo VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();            
+            preparedStatement.execute(); 
+            successo=true;
 
             //DROP TABLE IF EXISTS " + tableName;
             /*  String insertSQL = "INSERT INTO AddressSenzaPrezzo (address_chain, data) VALUES (?, ?)";
@@ -52,7 +55,9 @@ public class DatabaseH2 {
                 preparedStatement.executeUpdate();*/
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            
         }
+        return successo;
     }
 
     public static void AddressSenzaPrezzo_Scrivi(String address_chain, String data) {

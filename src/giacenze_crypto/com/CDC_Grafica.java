@@ -86,7 +86,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.12 Beta");
+            this.setTitle("Giacenze_Crypto 1.13 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -115,7 +115,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-        DatabaseH2.CreaoCollegaDatabase();
+        //boolean successo=DatabaseH2.CreaoCollegaDatabase();
+        if (!DatabaseH2.CreaoCollegaDatabase()){
+            JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            System.exit(0);
+        }
         //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
@@ -183,7 +187,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Tabella = new javax.swing.JTable();
         GiacenzeaData_Totali_Label = new javax.swing.JLabel();
         GiacenzeaData_Totali_TextField = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        GiacenzeaData_Calcola_Bottone = new javax.swing.JButton();
+        GiacenzeaData_ScrollPaneDettaglioMovimenti = new javax.swing.JScrollPane();
+        GiacenzeaData_TabellaDettaglioMovimenti = new javax.swing.JTable();
+        Giacenzeadata_Dettaglio_Label = new javax.swing.JLabel();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -673,6 +680,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Wallet_Label.setText("Wallet : ");
 
         GiacenzeaData_Wallet_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
+        GiacenzeaData_Wallet_ComboBox.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                GiacenzeaData_Wallet_ComboBoxMouseClicked(evt);
+            }
+        });
 
         GiacenzeaData_Data_Label.setText("Data : ");
 
@@ -695,6 +707,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        GiacenzeaData_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                GiacenzeaData_TabellaMouseReleased(evt);
+            }
+        });
+        GiacenzeaData_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                GiacenzeaData_TabellaKeyReleased(evt);
+            }
+        });
         GiacenzeaData_ScrollPane.setViewportView(GiacenzeaData_Tabella);
         if (GiacenzeaData_Tabella.getColumnModel().getColumnCount() > 0) {
             GiacenzeaData_Tabella.getColumnModel().getColumn(1).setMinWidth(100);
@@ -707,12 +729,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_Totali_TextField.setEditable(false);
 
-        jButton1.setText("Calcola");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        GiacenzeaData_Calcola_Bottone.setText("Calcola");
+        GiacenzeaData_Calcola_Bottone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                GiacenzeaData_Calcola_BottoneActionPerformed(evt);
             }
         });
+
+        GiacenzeaData_TabellaDettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data", "Wallet", "Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        GiacenzeaData_ScrollPaneDettaglioMovimenti.setViewportView(GiacenzeaData_TabellaDettaglioMovimenti);
+
+        Giacenzeadata_Dettaglio_Label.setText("Dettaglio Movimenti : ");
 
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
@@ -735,8 +777,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGap(1, 1, 1)
                         .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1)
-                        .addContainerGap())))
+                        .addComponent(GiacenzeaData_Calcola_Bottone)
+                        .addContainerGap())
+                    .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti)
+                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                        .addComponent(Giacenzeadata_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         GiacenzeaDataLayout.setVerticalGroup(
             GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -749,12 +795,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(GiacenzeaData_Data_Label))
                     .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Giacenzeadata_Dettaglio_Label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label)
                     .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)))
+                    .addComponent(GiacenzeaData_Calcola_Bottone)))
         );
 
         AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
@@ -2764,6 +2814,49 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
 
+    private void GiacenzeaData_CompilaTabellaMovimenti() {
+      //  TableRowSorter<TableModel> sorter = new TableRowSorter<>(this.GiacenzeaData_TabellaDettaglioMovimenti.getModel());
+     //   GiacenzeaData_TabellaDettaglioMovimenti.setRowSorter(sorter);
+        if (GiacenzeaData_Tabella.getSelectedRow()>=0){
+        int rigaselezionata = GiacenzeaData_Tabella.getSelectedRow();
+        String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+        DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+        long DataRiferimento=0;
+          if (GiacenzeaData_Data_DataChooser.getDate()!=null){
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
+            DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data);
+        } 
+        //Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+        for (String[] movimento :MappaCryptoWallet.values()){
+            long DataMovimento=OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+             if (DataMovimento<=DataRiferimento){
+               // adesso verifico il wallet
+               if (GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim().equalsIgnoreCase("tutti")||GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim().equalsIgnoreCase(movimento[3].trim())){
+                   if (movimento[8].equals(mon)) {
+                       String riga[] = new String[6];
+                       riga[0] = movimento[1];
+                       riga[1] = movimento[3];
+                       riga[2] = movimento[8];
+                       riga[3] = movimento[5];
+                       riga[4] = movimento[10];
+                       riga[5] = movimento[15];
+                       GiacenzeaData_ModelloTabella.addRow(riga);
+                   }
+                    if (movimento[11].equals(mon)) {
+                       String riga[] = new String[6];
+                       riga[0] = movimento[1];
+                       riga[1] = movimento[3];
+                       riga[2] = movimento[11];
+                       riga[3] = movimento[5];
+                       riga[4] = movimento[13];
+                       riga[5] = movimento[15];
+                       GiacenzeaData_ModelloTabella.addRow(riga);
+                   }              
+               }}}}
+    }
+    
     private void Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
         // TODO add your handling code here:
         // TODO add your handling code here:
@@ -3243,6 +3336,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             Plusvalenze.AggiornaPlusvalenze();
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+            //GiacenzeaData_AggiornaComboBoxWallet();
            /* TransazioniCrypto_Bottone_Annulla.setEnabled(true);
             TransazioniCrypto_Bottone_Salva.setEnabled(true);
             TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);*/
@@ -3302,10 +3396,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void GiacenzeaData_Calcola_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Calcola_BottoneActionPerformed
         // TODO add your handling code here:
+        GiacenzeaData_Calcolo();
 
-        //questo serve per evitare errori di sorting nel thread
+    }//GEN-LAST:event_GiacenzeaData_Calcola_BottoneActionPerformed
+
+    private void GiacenzeaData_Calcolo(){
+            
+                    //questo serve per evitare errori di sorting nel thread
         //azzera il sort ogni volta in sostanza ed evita errori
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
         GiacenzeaData_Tabella.setRowSorter(sorter);
@@ -3327,7 +3426,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
             DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data);
         } 
-        Map<String, Moneta> QtaCrypto = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+        Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
         for (String[] movimento :MappaCryptoWallet.values()){
             //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
             //altrimenti non vado avanti
@@ -3380,6 +3479,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 {
                     
                     Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
+                    GiacenzeaData_Tabella.setRowSorter(sorter);
                     GiacenzeaData_Totali_TextField.setText("");
                     JOptionPane.showConfirmDialog(progress, "Elaborazione Interrotta!",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
@@ -3411,13 +3512,27 @@ public class CDC_Grafica extends javax.swing.JFrame {
             };
         
         thread.start();
-        progress.setVisible(true);
-    }//GEN-LAST:event_jButton1ActionPerformed
-
+        progress.setVisible(true);}
+    
     private void GiacenzeaDataComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GiacenzeaDataComponentShown
         // TODO add your handling code here:
         GiacenzeaData_AggiornaComboBoxWallet();
     }//GEN-LAST:event_GiacenzeaDataComponentShown
+
+    private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
+        // TODO add your handling code here:
+       // this.GiacenzeaData_AggiornaComboBoxWallet();
+    }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
+
+    private void GiacenzeaData_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaKeyReleased
+        // TODO add your handling code here:
+        this.GiacenzeaData_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_GiacenzeaData_TabellaKeyReleased
+
+    private void GiacenzeaData_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaMouseReleased
+        // TODO add your handling code here:
+        this.GiacenzeaData_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_GiacenzeaData_TabellaMouseReleased
 
     private void GiacenzeaData_AggiornaComboBoxWallet() {
         GiacenzeaData_Wallet_ComboBox.removeAllItems();
@@ -3726,6 +3841,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Color rosso=new Color(166,16,34);
         if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-"))TransazioniCrypto_Text_Plusvalenza.setForeground(verde);else TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
          Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+         //Adesso aggiorno i componenti delle funzioni secondarie
+         GiacenzeaData_AggiornaComboBoxWallet();
     }       
     
         
@@ -4039,14 +4156,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JPanel GiacenzeaData;
+    private javax.swing.JButton GiacenzeaData_Calcola_Bottone;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
     private javax.swing.JLabel GiacenzeaData_Data_Label;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPane;
+    private javax.swing.JScrollPane GiacenzeaData_ScrollPaneDettaglioMovimenti;
     private javax.swing.JTable GiacenzeaData_Tabella;
+    private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti;
     private javax.swing.JLabel GiacenzeaData_Totali_Label;
     private javax.swing.JTextField GiacenzeaData_Totali_TextField;
     private javax.swing.JComboBox<String> GiacenzeaData_Wallet_ComboBox;
     private javax.swing.JLabel GiacenzeaData_Wallet_Label;
+    private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
@@ -4070,7 +4191,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

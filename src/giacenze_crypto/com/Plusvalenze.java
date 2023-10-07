@@ -358,7 +358,8 @@ public class Plusvalenze {
     
      public static void AggiornaPlusvalenze(){
         Deque<String[]> stack = new ArrayDeque<String[]>();
-        Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+       // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, ArrayDeque> CryptoStack = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
             int TipoMovimento=Plusvalenze.CategorizzaTransazione(v);
             int TipologieCalcoli[]=Plusvalenze.RitornaTipologieCalcoli(TipoMovimento);

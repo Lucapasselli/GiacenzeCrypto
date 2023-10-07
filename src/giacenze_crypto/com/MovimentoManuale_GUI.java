@@ -761,7 +761,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
        MonetaUscita.Moneta=MonetaU;
        MonetaUscita.Qta=MonetaUQta;
        MonetaUscita.Tipo=MonetaUTipo;
-       if(RT!=null&&!RT[26].equals("")){
+       if(RT!=null&&RT.length>23&&!RT[26].equals("")){
            MonetaUscita.MonetaAddress=RT[26];
          //  System.out.println(MonetaUscita.MonetaAddress);
           } 
@@ -771,7 +771,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
        MonetaEntrata.Moneta=MonetaE;
        MonetaEntrata.Qta=MonetaEQta;
        MonetaEntrata.Tipo=MonetaETipo;
-       if(RT!=null&&!RT[28].equals("")){
+       if(RT!=null&&RT.length>23&&!RT[28].equals("")){
            MonetaEntrata.MonetaAddress=RT[28];
           // System.out.println(MonetaEntrata.MonetaAddress);
            }

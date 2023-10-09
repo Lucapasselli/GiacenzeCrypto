@@ -25,17 +25,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.*;
 
 /**
  *
@@ -44,11 +43,7 @@ import org.json.*;
 public class Prezzi {
     static Map<String, String> MappaWallets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneUSDEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-  //  static Map<String, String> MappaConversioneUSDTEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
- //   static Map<String, String> MappaConversioneXXXEUR = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
- //   static Map<String, String> MappaConversioneXXXEUR_temp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-//    static Map<String, String> MappaSimboliCoingecko = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+//    static Map<String, String> MappaCoppieBinance = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
@@ -1692,17 +1687,18 @@ for (int i=0;i<ArraydataIni.size();i++){
             //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
             //a questo punto controllo se ho l'address delle monetee controllo su coingecko.
             //a questo punto la cerco tra tutte le coppie che binance riconosce
-            if (MappaCoppieBinance.isEmpty()) {
-                RecuperaCoppieBinance();
+           // if (MappaCoppieBinance.isEmpty()) {
+                RecuperaCoppieBinance();//il test sulla data lo fà già il programma
                 
                 //se non ho la mappa delle coppie di binance la recupero
-            }
+          //  }
             //PARTE 4 - Prendo il prezzo della prima moneta disponibile
             if (Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 //se trovo la moneta su binance e non ho l'address cerco il prezzo su binance
                 //altrimenti lo prendo da coingecko se ho l'address e ho anche la rete
                 //in alternativa restituisco null
-                if(MappaCoppieBinance.get(Moneta1.Moneta + "USDT") != null && AddressMoneta1 == null){
+               // if(MappaCoppieBinance.get(Moneta1.Moneta + "USDT") != null && AddressMoneta1 == null){
+                if(DatabaseH2.CoppieBinance_Leggi(Moneta1.Moneta + "USDT") != null && AddressMoneta1 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                 }
                 else if(AddressMoneta1!= null && Rete != null)
@@ -1722,7 +1718,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 
-                if(MappaCoppieBinance.get(Moneta2.Moneta + "USDT") != null && AddressMoneta2 == null){
+                if(DatabaseH2.CoppieBinance_Leggi(Moneta2.Moneta + "USDT") != null && AddressMoneta2 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                    // System.out.println("ConvertiXXXEUR "+Moneta2.Moneta+" - "+Data);
                 }
@@ -1755,42 +1751,57 @@ for (int i=0;i<ArraydataIni.size();i++){
     //questa funzione la chiamo sempre una sola volta per verificare quali sono le coppie di trading di cui binance mi fornisce i dati    
     public static String RecuperaCoppieBinance() {
         String ok = "ok";
-
-        try {
-            String apiUrl = "https://api.binance.com/api/v3/exchangeInfo";
-            URL url = new URI(apiUrl).toURL();
-            URLConnection connection = url.openConnection();
-            System.out.println(url);
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                response.append(line);
-            }
-
-            Gson gson = new Gson();
-            JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
-            JsonArray pricesArray = jsonObject.getAsJsonArray("symbols");
-            if (pricesArray != null) {
-                for (JsonElement element : pricesArray) {
-
-                    JsonObject Coppie = element.getAsJsonObject();
-                    String symbol = Coppie.get("symbol").getAsString();
-                    if (symbol.substring(symbol.length()-4).equals("USDT")) 
-                        {
-                        //System.out.println(symbol);
-                        MappaCoppieBinance.put(symbol, symbol);
-                        }
+        //come prima cosa recupero l'ora atuale
+        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
+        //altrimenti tengo buona quella presente nel database
+        long adesso = System.currentTimeMillis();
+        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_Binance");
+        long dataUltimoScarico = 0;
+        if (dataUltimoScaricoString != null) {
+            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
+        }
+        if (adesso > (dataUltimoScarico + 86400000)) {
+            try {
+                String apiUrl = "https://api.binance.com/api/v3/exchangeInfo";
+                URL url = new URI(apiUrl).toURL();
+                URLConnection connection = url.openConnection();
+                System.out.println(url);
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
                 }
-            } else {
-                ok = null;
-            }
 
-            TimeUnit.SECONDS.sleep(1);
-        } catch (JsonSyntaxException | IOException | InterruptedException ex) {
-            ok = null;
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                JsonArray pricesArray = jsonObject.getAsJsonArray("symbols");
+                List<String> simboli = new ArrayList<>();
+                if (pricesArray != null) {
+                    for (JsonElement element : pricesArray) {
+
+                        JsonObject Coppie = element.getAsJsonObject();
+                        String symbol = Coppie.get("symbol").getAsString();
+                        if (symbol.substring(symbol.length() - 4).equals("USDT")) {
+                            //System.out.println(symbol);
+                            //     DatabaseH2.CoppieBinance_Leggi
+                            //  MappaCoppieBinance.put(symbol, symbol);
+                            // DatabaseH2.CoppieBinance_ScriviNuovaTabella(symbol, symbol);
+                            simboli.add(symbol);
+                        }
+                    }
+                    DatabaseH2.CoppieBinance_ScriviNuovaTabella(simboli);
+                    DatabaseH2.Opzioni_Scrivi("Data_Lista_Binance", String.valueOf(adesso));
+                } else {
+                    ok = null;
+                }
+
+                TimeUnit.SECONDS.sleep(1);
+            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
+                ok = null;
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         return ok;
     }

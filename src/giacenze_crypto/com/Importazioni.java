@@ -2457,7 +2457,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
                // System.out.println(tokenSymbol+" - "+qta);
-               //0x235de84ce69e04675b0afa3dd9594c726008c9b1
+              
                 ava++;
                 progressb.SetAvanzamento(ava);
             }

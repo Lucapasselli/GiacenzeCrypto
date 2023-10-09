@@ -114,6 +114,86 @@ public class Tabelle {
         return table;
     }
     
+
+        public static JTable ColoraRigheTabella0GiacenzeaData(final JTable table) {
+
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            
+            public Component getTableCellRendererComponent(JTable table,
+                    Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                
+             
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+
+            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+ 
+            if (isSelected) {
+
+                    c.setBackground(table.getSelectionBackground());
+                    //c.revalidate();
+                }
+                else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(row, 2).toString().contains("-")) {
+                    c.setBackground(bg);
+                    c.setForeground(Color.RED);
+                }
+                else {
+                    setForeground(Color.black);
+                  c.setBackground(bg);
+                  
+
+                }
+                return this;
+            }
+        });
+        return table;
+    }
+
+    
+        public static JTable ColoraRigheTabella1GiacenzeaData(final JTable table) {
+
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            
+            public Component getTableCellRendererComponent(JTable table,
+                    Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                
+             
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+
+            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+ 
+            if (isSelected) {
+
+                    c.setBackground(table.getSelectionBackground());
+                    //c.revalidate();
+                }
+            else if (col==6 && !value.toString().toLowerCase().contains("-")) {
+                    setForeground(Color.black);
+                  c.setBackground(bg);
+                }
+                else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 4).toString().contains("-")) {
+                    setBackground(bg);
+                    setForeground(verdeScuro);
+                } 
+                else if (table.getModel().getColumnCount()>4 && table.getModel().getValueAt(row, 4).toString().contains("-")) {
+                    c.setBackground(bg);
+                    c.setForeground(Color.RED);
+                }
+                else {
+                    setForeground(Color.black);
+                  c.setBackground(bg);
+                  
+
+                }
+                return this;
+            }
+        });
+        return table;
+    }
+    
     
    public static JTable ColoraTabelladiGrigio(final JTable table) {
       //  bg=grigioChiaro;

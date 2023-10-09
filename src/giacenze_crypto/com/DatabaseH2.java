@@ -9,9 +9,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -45,7 +45,19 @@ public class DatabaseH2 {
             createTableSQL = "CREATE TABLE IF NOT EXISTS XXXEUR  (dataSimbolo VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
+            
+             
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITIBINANCE  (Coppia VARCHAR(255) PRIMARY KEY)";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute(); 
+                       
+            createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute();           
+            
+            
             successo=true;
+            
 
             //DROP TABLE IF EXISTS " + tableName;
             /*  String insertSQL = "INSERT INTO AddressSenzaPrezzo (address_chain, data) VALUES (?, ?)";
@@ -248,6 +260,90 @@ public class DatabaseH2 {
             } else {
                 // La riga non esiste, esegui l'inserimento
                 String insertSQL = "INSERT INTO XXXEUR (dataSimbolo, prezzo) VALUES ('" + dataSimbolo + "','" + prezzo + "')";
+                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
+    
+    
+        public static String CoppieBinance_Leggi(String Coppia) {
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Coppia FROM GESTITIBINANCE WHERE Coppia = '" + Coppia + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("Coppia");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    }
+        
+        
+        public static void CoppieBinance_ScriviNuovaTabella(List<String> Coppie) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITIBINANCE";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute();
+            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITIBINANCE  (Coppia VARCHAR(255) PRIMARY KEY)";
+            checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute(); 
+            for (String coppia:Coppie){
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO GESTITIBINANCE (Coppia) VALUES ('" + coppia + "')";
+                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
+        
+        public static String Opzioni_Leggi(String Opzione) {
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Opzione,valore FROM OPZIONI WHERE Opzione = '" + Opzione + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("valore");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    }
+        
+        
+        public static void Opzioni_Scrivi(String Opzione, String Valore) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM OPZIONI WHERE Opzione = '" + Opzione + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE OPZIONI SET Valore = '" + Valore + "' WHERE dataSimbolo = '" + Opzione + "'";
+                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO OPZIONI (Opzione, Valore) VALUES ('" + Opzione + "','" + Valore + "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 insertStatement.executeUpdate();
             }

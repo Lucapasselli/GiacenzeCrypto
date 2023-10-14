@@ -134,7 +134,7 @@ public class Tabelle {
                     c.setBackground(table.getSelectionBackground());
                     //c.revalidate();
                 }
-                else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(row, 2).toString().contains("-")) {
+                else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(row, 4).toString().contains("-")) {
                     c.setBackground(bg);
                     c.setForeground(Color.RED);
                 }
@@ -170,15 +170,15 @@ public class Tabelle {
                     c.setBackground(table.getSelectionBackground());
                     //c.revalidate();
                 }
-            else if (col==6 && !value.toString().toLowerCase().contains("-")) {
+            else if (col==7 && !value.toString().toLowerCase().contains("-")) {
                     setForeground(Color.black);
                   c.setBackground(bg);
                 }
-                else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 4).toString().contains("-")) {
+                else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 5).toString().contains("-")) {
                     setBackground(bg);
                     setForeground(verdeScuro);
                 } 
-                else if (table.getModel().getColumnCount()>4 && table.getModel().getValueAt(row, 4).toString().contains("-")) {
+                else if (table.getModel().getColumnCount()>4 && table.getModel().getValueAt(row, 5).toString().contains("-")) {
                     c.setBackground(bg);
                     c.setForeground(Color.RED);
                 }

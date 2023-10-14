@@ -338,7 +338,7 @@ public class DatabaseH2 {
             }
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE OPZIONI SET Valore = '" + Valore + "' WHERE dataSimbolo = '" + Opzione + "'";
+                String updateSQL = "UPDATE OPZIONI SET Valore = '" + Valore + "' WHERE Opzione = '" + Opzione + "'";
                 PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
                 updateStatement.executeUpdate();
             } else {

@@ -39,6 +39,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZoneId;
 import java.util.List;
 
 
@@ -194,6 +195,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Giacenzeadata_Walleta_Label = new javax.swing.JLabel();
         GiacenzeaData_WalletEsame_Label = new javax.swing.JLabel();
         GiacenzeaData_Bottone_ModificaValore = new javax.swing.JButton();
+        GiacenzeaData_Bottone_MovimentiDefi = new javax.swing.JButton();
+        GiacenzeaData_Bottone_GiacenzeExplorer = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jSeparator5 = new javax.swing.JSeparator();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -740,6 +745,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_Totali_TextField.setEditable(false);
 
+        GiacenzeaData_Bottone_Calcola.setBackground(new java.awt.Color(255, 240, 195));
         GiacenzeaData_Bottone_Calcola.setText("Calcola");
         GiacenzeaData_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -777,9 +783,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setMaxWidth(1);
         }
 
-        Giacenzeadata_Dettaglio_Label.setText("Dettaglio Movimenti sul token selezionato ");
+        Giacenzeadata_Dettaglio_Label.setText("Tabella dettaglio movimenti :");
 
         Giacenzeadata_Walleta_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Giacenzeadata_Walleta_Label.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                Giacenzeadata_Walleta_LabelPropertyChange(evt);
+            }
+        });
 
         GiacenzeaData_WalletEsame_Label.setText("Wallet in Esame :");
 
@@ -790,6 +801,26 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 GiacenzeaData_Bottone_ModificaValoreMouseClicked(evt);
             }
         });
+
+        GiacenzeaData_Bottone_MovimentiDefi.setText("Movimenti Defi");
+        GiacenzeaData_Bottone_MovimentiDefi.setEnabled(false);
+        GiacenzeaData_Bottone_MovimentiDefi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_MovimentiDefiActionPerformed(evt);
+            }
+        });
+
+        GiacenzeaData_Bottone_GiacenzeExplorer.setText("<html>\nVedi situazione <br>\nWallet ad Oggi\n</html>");
+        GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
+        GiacenzeaData_Bottone_GiacenzeExplorer.setMaximumSize(new java.awt.Dimension(72, 23));
+        GiacenzeaData_Bottone_GiacenzeExplorer.setMinimumSize(new java.awt.Dimension(72, 23));
+        GiacenzeaData_Bottone_GiacenzeExplorer.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked(evt);
+            }
+        });
+
+        jButton1.setText("Sistema Qta Residua");
 
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
@@ -803,30 +834,35 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                .addComponent(Giacenzeadata_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(GiacenzeaData_Bottone_ModificaValore))
+                                .addComponent(GiacenzeaData_Wallet_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(GiacenzeaData_Data_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                        .addComponent(GiacenzeaData_Wallet_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(61, 61, 61)
-                                        .addComponent(GiacenzeaData_Data_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                        .addComponent(GiacenzeaData_Totali_Label)
-                                        .addGap(1, 1, 1)
-                                        .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                        .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
-                                .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())))
+                                .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(7, 7, 7)
+                        .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                        .addComponent(GiacenzeaData_Totali_Label)
+                        .addGap(1, 1, 1)
+                        .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton1))
+                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                        .addComponent(Giacenzeadata_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jSeparator5)
+                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                        .addComponent(GiacenzeaData_Bottone_MovimentiDefi)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_Bottone_ModificaValore))))
         );
         GiacenzeaDataLayout.setVerticalGroup(
             GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -843,20 +879,26 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)))
+                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Giacenzeadata_Dettaglio_Label)
-                    .addComponent(GiacenzeaData_Bottone_ModificaValore))
+                    .addComponent(GiacenzeaData_Bottone_ModificaValore)
+                    .addComponent(GiacenzeaData_Bottone_MovimentiDefi))
+                .addGap(4, 4, 4)
+                .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                .addComponent(Giacenzeadata_Dettaglio_Label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label)
-                    .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1)))
         );
 
         AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
@@ -2880,6 +2922,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
                 Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
             }
+            
+                    //ABILITO BOTTONE DEFI SE CI SONO LE CONDIZIONI
+        String Wallet=Giacenzeadata_Walleta_Label.getText().trim();           
+        if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")&&!Address.equalsIgnoreCase("")) {
+                this.GiacenzeaData_Bottone_MovimentiDefi.setEnabled(true);
+            }
+        else{
+            this.GiacenzeaData_Bottone_MovimentiDefi.setEnabled(false);
+        }
 
             long DataRiferimento = 0;
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
@@ -2892,7 +2943,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
             }
             //Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
-            String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
+            //String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
             BigDecimal TotaleQta = new BigDecimal(0);
             for (String[] movimento : MappaCryptoWallet.values()) {
                 long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
@@ -3479,11 +3530,166 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
+    private void GiacenzeaDataComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GiacenzeaDataComponentShown
+        // TODO add your handling code here:
+        GiacenzeaData_AggiornaComboBoxWallet();
+    }//GEN-LAST:event_GiacenzeaDataComponentShown
+
+    private void GiacenzeaData_Bottone_ModificaValoreMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ModificaValoreMouseClicked
+        // TODO add your handling code here:
+
+        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
+            long DataRiferimento = 0;
+            if (GiacenzeaData_Data_DataChooser.getDate() != null) {
+                SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
+                DataRiferimento = OperazioniSuDate.ConvertiDatainLong(Data) + 86400000;
+                long DatadiOggi = System.currentTimeMillis();
+                if (DatadiOggi < DataRiferimento) {
+                    DataRiferimento = DatadiOggi;
+                }
+                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                String DataconOra = sdf.format(DataRiferimento);
+
+                int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
+                String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+                String Rete = null;
+                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
+                    Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+                }
+                String Address = null;
+                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
+                    Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString().toUpperCase();
+                }
+                BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
+                String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
+                String m = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " : ", Prezzo);
+                if (m != null) {
+                    m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                    if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
+                        //Se è un numero inserisco il prezzo e lo salvo a sistema
+                        BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, 30, RoundingMode.HALF_UP).stripTrailingZeros();
+                        if (Address != null && Rete != null) {
+                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString());
+                        } else {
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString());
+                        }
+                    } else {
+                        JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+                }
+                //Una volta cambiato il prezzo aggiorno la tabella
+                GiacenzeaData_CompilaTabellaToken();
+            }
+        }
+    }//GEN-LAST:event_GiacenzeaData_Bottone_ModificaValoreMouseClicked
+
     private void GiacenzeaData_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
         GiacenzeaData_CompilaTabellaToken();
-
     }//GEN-LAST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
+
+    private void GiacenzeaData_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaKeyReleased
+        // TODO add your handling code here:
+        this.GiacenzeaData_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_GiacenzeaData_TabellaKeyReleased
+
+    private void GiacenzeaData_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaMouseReleased
+        // TODO add your handling code here:
+        this.GiacenzeaData_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_GiacenzeaData_TabellaMouseReleased
+
+    private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
+        // TODO add your handling code here:
+        // this.GiacenzeaData_AggiornaComboBoxWallet();
+    }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
+
+    private void GiacenzeaData_Wallet_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
+        // TODO add your handling code here:
+        //   System.out.println("cambio item");
+    }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
+
+    private void GiacenzeaData_Bottone_MovimentiDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_MovimentiDefiActionPerformed
+        // TODO add your handling code here:
+                if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
+            String Rete = null;
+            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
+                Rete=GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Address = null;
+            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2)!=null)
+                Address=GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();            
+            String Wallet=Giacenzeadata_Walleta_Label.getText();
+            
+            if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")&&Address!=null&&Rete!=null) {
+                Wallet=Wallet.split("\\(")[0].trim();
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        if (Rete.equalsIgnoreCase("BSC")){
+                            Desktop.getDesktop().browse(new URI("https://bscscan.com/token/"+Address +"?a="+ Wallet));
+                           }
+                        else if(Rete.equalsIgnoreCase("CRO")){
+                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/token/"+Address +"?a="+ Wallet)); 
+                        }
+                    } catch (URISyntaxException | IOException ex) {
+                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+            else
+              {
+                JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+              }  
+        }
+    }//GEN-LAST:event_GiacenzeaData_Bottone_MovimentiDefiActionPerformed
+
+    private void Giacenzeadata_Walleta_LabelPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Giacenzeadata_Walleta_LabelPropertyChange
+        // TODO add your handling code here:
+        //System.out.println("Cambiato Wallet");
+                    String Wallet=Giacenzeadata_Walleta_Label.getText();
+            
+        if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")) {
+                this.GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(true);
+            }
+        else{
+            this.GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
+            this.GiacenzeaData_Bottone_MovimentiDefi.setEnabled(false);
+        }
+    }//GEN-LAST:event_Giacenzeadata_Walleta_LabelPropertyChange
+
+    private void GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked
+        // TODO add your handling code here:
+
+            String Rete;        
+            String Wallet=Giacenzeadata_Walleta_Label.getText().trim();
+            
+            if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")) {
+                Rete=Wallet.split("\\(")[1].split("\\)")[0];
+                Wallet=Wallet.split("\\(")[0].trim();
+                
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        if (Rete.equalsIgnoreCase("BSC")){
+                            Desktop.getDesktop().browse(new URI("https://bscscan.com/tokenholdings?a="+ Wallet));
+                           }
+                        else if(Rete.equalsIgnoreCase("CRO")){
+                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/tokenholdings?a="+ Wallet)); 
+                        }
+                    } catch (URISyntaxException | IOException ex) {
+                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+            else
+              {
+                JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+              }  
+        
+    }//GEN-LAST:event_GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked
 
     private void GiacenzeaData_CompilaTabellaToken(){
             
@@ -3594,7 +3800,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 }
-            progress.SetAvanzamento(i);
+            if (i<=progress.Massimo) progress.SetAvanzamento(i);
             Moneta M1=QtaCrypto.get(moneta);
             String Rete=M1.Rete;
             String Address=M1.MonetaAddress;
@@ -3605,6 +3811,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             riga[4]=M1.Qta;
             riga[1]=M1.Rete;
             if (!M1.Qta.equals("0")){
+                //System.out.println(Address);
                 riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
                 if (riga[4].contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
                 GiacenzeaData_ModelloTabella.addRow(riga);
@@ -3624,66 +3831,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         thread.start();
         progress.setVisible(true);}
     
-    private void GiacenzeaDataComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GiacenzeaDataComponentShown
-        // TODO add your handling code here:
-        GiacenzeaData_AggiornaComboBoxWallet();
-    }//GEN-LAST:event_GiacenzeaDataComponentShown
-
-    private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
-        // TODO add your handling code here:
-       // this.GiacenzeaData_AggiornaComboBoxWallet();
-    }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
-
-    private void GiacenzeaData_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaKeyReleased
-        // TODO add your handling code here:
-        this.GiacenzeaData_CompilaTabellaMovimenti();
-    }//GEN-LAST:event_GiacenzeaData_TabellaKeyReleased
-
-    private void GiacenzeaData_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaMouseReleased
-        // TODO add your handling code here:
-        this.GiacenzeaData_CompilaTabellaMovimenti();
-    }//GEN-LAST:event_GiacenzeaData_TabellaMouseReleased
-
-    private void GiacenzeaData_Wallet_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
-        // TODO add your handling code here:
-     //   System.out.println("cambio item");
-    }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
-
-    private void GiacenzeaData_Bottone_ModificaValoreMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ModificaValoreMouseClicked
-        // TODO add your handling code here:
-        if (GiacenzeaData_Tabella.getSelectedRow()>=0){
-        long DataRiferimento=0;
-        if (GiacenzeaData_Data_DataChooser.getDate()!=null){
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
-            DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86400000;
-            long DatadiOggi = System.currentTimeMillis();
-            if (DatadiOggi<DataRiferimento) DataRiferimento=DatadiOggi;
-        } 
-        int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
-        String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-        BigDecimal Qta=new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
-        String Prezzo=GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
-        String m = JOptionPane.showInputDialog(this,"Indica il valore in Euro per "+Qta+" "+mon+" : ",Prezzo);
-                //    completato = m!=null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
-                    if (m!=null){
-                        m=m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (CDC_Grafica.Funzioni_isNumeric(m, false))
-                    {
-                        //trovare prezzo unitario ed inserire nel database
-                        BigDecimal PrezzoUnitario=new BigDecimal(m).divide(Qta,30, RoundingMode.HALF_UP);
-                        System.out.println(PrezzoUnitario.stripTrailingZeros().toPlainString());
-                      //  PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo);
-                        //bisogna indicare il prezzo metterlo nel database e ricalcolare il tutto
-                       // Prezzo=m;
-                    }else
-                    {
-                        JOptionPane.showConfirmDialog(this, "Attenzione, "+m+" non è un numero valido!",
-                    "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
-        }}
-    }//GEN-LAST:event_GiacenzeaData_Bottone_ModificaValoreMouseClicked
-
     private void GiacenzeaData_AggiornaComboBoxWallet() {
         GiacenzeaData_Wallet_ComboBox.removeAllItems();
         GiacenzeaData_Wallet_ComboBox.addItem("Tutti");
@@ -4307,7 +4454,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
+    private javax.swing.JButton GiacenzeaData_Bottone_GiacenzeExplorer;
     private javax.swing.JButton GiacenzeaData_Bottone_ModificaValore;
+    private javax.swing.JButton GiacenzeaData_Bottone_MovimentiDefi;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
     private javax.swing.JLabel GiacenzeaData_Data_Label;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPane;
@@ -4344,6 +4493,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -4358,5 +4508,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
     // End of variables declaration//GEN-END:variables
 }

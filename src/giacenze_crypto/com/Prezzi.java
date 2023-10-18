@@ -780,67 +780,36 @@ public class Prezzi {
     
     
     public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
-        //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-        //QUESTA SARA' DA CANCELLARE IN PREVISIONE DEL PASSAGGIO AL DATABASE
-  /*      if (MappaConversioneAddressEUR.isEmpty()) {
-            GeneraMappaCambioAddressEUR();
-           // MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
-        }*/
 
-               //la mappa MappaConversioneAddressCoin contiene gli address non gestiti da coingecko e la data in cui è stata fatta l'ultima richiesta
-        //percui se in questa mappa il dato esiste e se la data di richiesta è inferiore alla data sulla mappa ritorno null
         Address = Address.toUpperCase();
-        long DataRiferimento=Datalong/1000;
-        if (DatabaseH2.AddressSenzaPrezzo_Leggi(Address + "_" + Rete) != null &&
-                (DataRiferimento<Long.parseLong(DatabaseH2.AddressSenzaPrezzo_Leggi(Address+"_"+Rete)))) {
-            //se il token non è gestito da coingecko ritorno null immediatamente
-            //non ha senso andare avanti con le richieste
-            return null;
-        }
-
-        
-        
-        
-        
-        
-        
-        //Address = Address.toUpperCase();
+        long DataRiferimento=Datalong/1000;       
         String risultato;// = null;
-        //come prima cosa devo decidere il formato data
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
-      //  risultato = MappaConversioneAddressEUR.get(DataOra + "_" + Address + "_" + Rete);
         risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
 
         if (risultato == null) {
-
-            //solo in questo caso vado a prendere il valore del giorno e non quello orario
+            //se il token non è gestito da coingecko e non è già nel database ritorno null
+            String AddressNoPrezzo=DatabaseH2.AddressSenzaPrezzo_Leggi(Address + "_" + Rete);
+            if (AddressNoPrezzo != null && (DataRiferimento < Long.parseLong(AddressNoPrezzo))) {
+                return null;
+            }
+            else
+            {
             RecuperaTassidiCambiodaAddress(DataGiorno, DataGiorno, Address, Rete ,Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
             risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
             if (risultato == null) {
+                //solo in questo caso vado a prendere il valore del giorno e non quello orario
                 risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataGiorno + "_" + Address + "_" + Rete);
             }
-        } //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
-//ora controllo che l'indirizzo sia gestito, in caso contrario termino il ciclo
-//questo perchè con la richiesta che ho appena fatto potrebbe essersi generata una nuova voce nella mappa
-       
-        //la mappa MappaConversioneAddressCoin contiene gli address non gestiti da coingecko e la data in cui è stata fatta l'ultima richiesta
+            }
+        } 
 
-        
-  //se è gestito controllo se lo avevo già nel file ein caso contrario lo inserisco      
-   /*     if (MappaConversioneAddressEURtemp.get(DataOra + "_" + Address + "_" + Rete) == null) {
-           // if (risultato!=null) MappaConversioneAddressEUR.put(DataOra + "_" + Address + "_" + Rete, risultato);
-           // if (risultato==null) risultato="nullo";
-            MappaConversioneAddressEURtemp.put(DataOra + "_" + Address + "_" + Rete, risultato);
-       
-            ScriviFileConversioneAddressEUR(DataOra + "_" + Address + "_" + Rete + "," + risultato);
-        }*/
         //quindi se il risultato non è nullo faccio i calcoli
         //DA CAPIRE SE MANTENERE LA DICITURA "nullo" per i prezzi non gestiti o mettere direttamente "0" oppure ancora "ND" che sta per non disponibile
         if (risultato != null && risultato.equalsIgnoreCase("ND")) risultato=null;
         else if (risultato != null && risultato.equalsIgnoreCase("null")) risultato=null;
         else if (risultato != null) {
-           // System.out.println(Qta+" - "+risultato);
             risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
             }
         return risultato;
@@ -852,26 +821,23 @@ public class Prezzi {
     
     
        public static String ConvertiXXXEUR(String Crypto,String Qta, long Datalong) {
-        //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
-      /*  if (MappaConversioneXXXEUR.isEmpty())
-            {
-                GeneraMappaCambioXXXEUR();
-            }*/
-     /*   if (MappaCoppieBinance.isEmpty())
-        {
-            RecuperaCoppieBinance();
-        }*/
+
         String risultato;// = null;
         long adesso=System.currentTimeMillis();
         if (Datalong>adesso) return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi
         if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         String DataOra=OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
-        //risultato = MappaConversioneXXXEUR.get(DataOra+" "+Crypto);
-      //  risultato = MappaConversioneXXXEUR_temp.get(DataOra+" "+Crypto);
         risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
         if (risultato == null) {
-
+                //se non trovo un prezzo recupero le coppie gestite da binance
+                RecuperaCoppieBinance();//il test sulla data lo fà già il programma
+  
+                if(DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") == null ){
+                    //se la coppia non è gestita da binance termino il ciclo
+                    return null;
+                    }
+            
                      RecuperaTassidiCambioXXXUSDT(Crypto,DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
                      risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
 
@@ -1572,17 +1538,23 @@ for (int i=0;i<ArraydataIni.size();i++){
         //tra quelle in defi importanti di cui conosco l'address e listate da binance, in quel caso il prezzo lo prenderò da li e non da coingecko
         //dato le limitazioni che quest'ultimo comporta
         //per far questo se trovo le suddette monete nella lista elimino address per farle prendere da binance
+        //CREDO SIA IL CASO DI SPOSTARE STA COSA NELLA GESTIONE DEI PREZZI SINGOLI
         if (Moneta1!=null&&Moneta2==null&&Moneta1.MonetaAddress==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
             //Questo serve solo nel caso interroghi i prezzi dalla funzione delle giacenze
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
-            //e per far si di farlo devo mettere un indirizzo e usare la rete cRO
+            //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
             Moneta1.MonetaAddress="CRO";
             Rete="CRO";
         }
+        
         String AddressMoneta1=null;
                 if(Moneta1!=null)AddressMoneta1=Moneta1.MonetaAddress;
         String AddressMoneta2=null;
                 if(Moneta2!=null)AddressMoneta2=Moneta2.MonetaAddress;
+                
+        //Questa parte impone la ricerca su binance per determinati token salvati nella mappa
+        //questo rende più veloce la ricerca e più affiabile
+        //es. USDT su rete BSC o su rete CRO li cerco in ogni caso su Binance rendendo anche univoco il prezzo tra le varie chain
         if (Moneta1!=null&&CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta1.MonetaAddress+"_"+Rete)!=null){
             //Rete=null;
             AddressMoneta1=null;
@@ -1687,21 +1659,14 @@ for (int i=0;i<ArraydataIni.size();i++){
             //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
             //a questo punto controllo se ho l'address delle monetee controllo su coingecko.
             //a questo punto la cerco tra tutte le coppie che binance riconosce
-           // if (MappaCoppieBinance.isEmpty()) {
-                RecuperaCoppieBinance();//il test sulla data lo fà già il programma
-                
-                //se non ho la mappa delle coppie di binance la recupero
-          //  }
+
             //PARTE 4 - Prendo il prezzo della prima moneta disponibile
             if (Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
-                //se trovo la moneta su binance e non ho l'address cerco il prezzo su binance
-                //altrimenti lo prendo da coingecko se ho l'address e ho anche la rete
-                //in alternativa restituisco null
-               // if(MappaCoppieBinance.get(Moneta1.Moneta + "USDT") != null && AddressMoneta1 == null){
-                if(DatabaseH2.CoppieBinance_Leggi(Moneta1.Moneta + "USDT") != null && AddressMoneta1 == null){
+                //Se non ho l'address cerco su binance altrimenti cerco su coingecko
+                if(AddressMoneta1 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                 }
-                else if(AddressMoneta1!= null && Rete != null)
+                else if(Rete != null)
                   {
                       PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
                   }  
@@ -1718,11 +1683,11 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 
-                if(DatabaseH2.CoppieBinance_Leggi(Moneta2.Moneta + "USDT") != null && AddressMoneta2 == null){
+                if(AddressMoneta2 == null){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                    // System.out.println("ConvertiXXXEUR "+Moneta2.Moneta+" - "+Data);
                 }
-                else if(AddressMoneta2!= null && Rete != null)
+                else if(Rete != null)
                   {
                       PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
                     //  System.out.println(Moneta2.Moneta+" - "+Data+" - "+PrezzoTransazione);

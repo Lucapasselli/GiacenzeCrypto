@@ -803,44 +803,48 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="GiacenzeaData_ScrollPane" max="32767" attributes="0"/>
                                   <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
-                                              <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="238" max="-2" attributes="0"/>
-                                              <EmptySpace max="32767" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" max="-2" attributes="0"/>
+                                              <Component id="GiacenzeaData_Wallet_Label" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="GiacenzeaData_Wallet_ComboBox" min="-2" pref="332" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="GiacenzeaData_Data_Label" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="GiacenzeaData_Data_DataChooser" min="-2" pref="148" max="-2" attributes="0"/>
                                           </Group>
-                                          <Group type="102" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="GiacenzeaData_Wallet_Label" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="GiacenzeaData_Wallet_ComboBox" min="-2" pref="332" max="-2" attributes="0"/>
-                                                      <EmptySpace min="-2" pref="61" max="-2" attributes="0"/>
-                                                      <Component id="GiacenzeaData_Data_Label" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="GiacenzeaData_Data_DataChooser" min="-2" pref="148" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="GiacenzeaData_Totali_Label" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                                                      <Component id="GiacenzeaData_Totali_TextField" min="-2" pref="117" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="GiacenzeaData_WalletEsame_Label" min="-2" pref="102" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="Giacenzeadata_Walleta_Label" min="-2" pref="272" max="-2" attributes="0"/>
-                                                  </Group>
-                                              </Group>
-                                              <EmptySpace pref="66" max="32767" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_Calcola" min="-2" pref="141" max="-2" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="GiacenzeaData_WalletEsame_Label" min="-2" pref="96" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="Giacenzeadata_Walleta_Label" min="-2" pref="340" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <EmptySpace pref="22" max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" min="-2" pref="117" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_Calcola" min="-2" pref="122" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="GiacenzeaData_Totali_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Totali_TextField" min="-2" pref="117" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="163" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="jSeparator5" alignment="0" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="GiacenzeaData_Bottone_MovimentiDefi" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -849,9 +853,9 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Group type="102" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                                               <Component id="GiacenzeaData_Wallet_Label" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -863,24 +867,30 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="Giacenzeadata_Walleta_Label" max="32767" attributes="0"/>
-                                          <Component id="GiacenzeaData_WalletEsame_Label" max="32767" attributes="0"/>
+                                          <Component id="GiacenzeaData_WalletEsame_Label" pref="23" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <Component id="GiacenzeaData_Bottone_Calcola" max="32767" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_Calcola" pref="52" max="32767" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" alignment="0" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPane" pref="241" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPane" pref="232" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="Giacenzeadata_Dettaglio_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_ModificaValore" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_MovimentiDefi" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                              <Component id="jSeparator5" min="-2" pref="4" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="172" max="32767" attributes="0"/>
+                              <Component id="Giacenzeadata_Dettaglio_Label" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="142" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Totali_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -998,6 +1008,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_Calcola">
                       <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="c3" green="f0" red="ff" type="rgb"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Calcola"/>
                       </Properties>
                       <Events>
@@ -1084,7 +1097,7 @@
                     </Container>
                     <Component class="javax.swing.JLabel" name="Giacenzeadata_Dettaglio_Label">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Dettaglio Movimenti sul token selezionato "/>
+                        <Property name="text" type="java.lang.String" value="Tabella dettaglio movimenti :"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JLabel" name="Giacenzeadata_Walleta_Label">
@@ -1093,6 +1106,9 @@
                           <Font name="Segoe UI" size="12" style="1"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="Giacenzeadata_Walleta_LabelPropertyChange"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_WalletEsame_Label">
                       <Properties>
@@ -1107,6 +1123,37 @@
                       <Events>
                         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="GiacenzeaData_Bottone_ModificaValoreMouseClicked"/>
                       </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_MovimentiDefi">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Movimenti Defi"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_MovimentiDefiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_GiacenzeExplorer">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;Vedi situazione &lt;br&gt;&#xa;Wallet ad Oggi&#xa;&lt;/html&gt;"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[72, 23]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[72, 23]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="jButton1">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Sistema Qta Residua"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JSeparator" name="jSeparator5">
                     </Component>
                   </SubComponents>
                 </Container>

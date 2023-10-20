@@ -821,6 +821,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         jButton1.setText("Sistema Qta Residua");
+        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                jButton1MouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
@@ -3690,6 +3695,43 @@ public class CDC_Grafica extends javax.swing.JFrame {
               }  
         
     }//GEN-LAST:event_GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked
+
+    private void jButton1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseReleased
+        // TODO add your handling code here:
+        //  boolean completato;
+          String IDTrans="00000";
+          BigDecimal GiacenzaAttuale=new BigDecimal(3333);
+          BigDecimal GiacenzaVoluta=new BigDecimal (0);
+          BigDecimal QtaNuovoMovimento;
+          String m = JOptionPane.showInputDialog(this,"<html>Il saldo alla data selezionata è : <b>"+GiacenzaAttuale+"</b> <br>"+
+                  "Indicare nel riquadro sottostante la giacenza che il token <b>PIPPO</b> dovrà avere al termine dell'operazione: </html>",GiacenzaVoluta);
+                  //  completato = m!=null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
+                    if (m!=null){
+                        m=m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                    if (CDC_Grafica.Funzioni_isNumeric(m, false))
+                    {
+                        GiacenzaVoluta=new BigDecimal(m);
+                        QtaNuovoMovimento=GiacenzaVoluta.subtract(GiacenzaAttuale);
+                        String SQta=QtaNuovoMovimento.toPlainString();
+                        if (SQta.contains("-")){
+                            //Gestisco i movimenti di scarico (Prelievi)
+                        }
+                        else
+                        {
+                            //Gestisco i movimenti di Carico (Depositi)
+                        }    
+                        //A questo punto devo vedere se l'importo della differenza tra giacenza voluta e giacenza attuale è negativo o positivo e agire di conseguenza
+                    /*    attuale[15]=m;
+                        PrzCarico=attuale[15];
+                        plusvalenza="0.00";*/
+                    }else
+                    {
+                      //  completato=false;
+                        JOptionPane.showConfirmDialog(this, "Attenzione, "+m+" non è un numero valido!",
+                    "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+             }       
+    }//GEN-LAST:event_jButton1MouseReleased
 
     private void GiacenzeaData_CompilaTabellaToken(){
             

@@ -1152,6 +1152,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Sistema Qta Residua"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jButton1MouseReleased"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JSeparator" name="jSeparator5">
                     </Component>

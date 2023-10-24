@@ -6,6 +6,8 @@ package giacenze_crypto.com;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
+import static giacenze_crypto.com.Importazioni.ColonneTabella;
+import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -87,7 +89,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.13 Beta");
+            this.setTitle("Giacenze_Crypto 1.14 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -824,6 +826,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 jButton1MouseReleased(evt);
+            }
+        });
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
             }
         });
 
@@ -3699,39 +3706,165 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void jButton1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseReleased
         // TODO add your handling code here:
         //  boolean completato;
-          String IDTrans="00000";
-          BigDecimal GiacenzaAttuale=new BigDecimal(3333);
-          BigDecimal GiacenzaVoluta=new BigDecimal (0);
-          BigDecimal QtaNuovoMovimento;
-          String m = JOptionPane.showInputDialog(this,"<html>Il saldo alla data selezionata è : <b>"+GiacenzaAttuale+"</b> <br>"+
-                  "Indicare nel riquadro sottostante la giacenza che il token <b>PIPPO</b> dovrà avere al termine dell'operazione: </html>",GiacenzaVoluta);
-                  //  completato = m!=null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
-                    if (m!=null){
-                        m=m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (CDC_Grafica.Funzioni_isNumeric(m, false))
-                    {
-                        GiacenzaVoluta=new BigDecimal(m);
-                        QtaNuovoMovimento=GiacenzaVoluta.subtract(GiacenzaAttuale);
-                        String SQta=QtaNuovoMovimento.toPlainString();
-                        if (SQta.contains("-")){
-                            //Gestisco i movimenti di scarico (Prelievi)
+        if (GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow() >= 0) {
+            int rigaselezionataTabPrincipale = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
+            String TipoMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionataTabPrincipale, 3).toString();
+            int rigaselezionata = GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow();
+            String IDTrans = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 8).toString();
+            String GiacenzaAttualeS=GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
+            String Moneta=GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 2).toString();
+            String AddressMoneta=null;
+            if (GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 3)!=null)
+                AddressMoneta=GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 3).toString();
+            long DataRiferimento=0;
+            BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
+            BigDecimal GiacenzaVoluta = new BigDecimal(0);
+            BigDecimal QtaNuovoMovimento;
+            String m = JOptionPane.showInputDialog(this, "<html>Il saldo alla data selezionata è : <b>" + GiacenzaAttuale + "</b> <br>"
+                    + "Indicare nel riquadro sottostante la giacenza che il token <b>"+Moneta+"</b> dovrà avere al termine dell'operazione: </html>", GiacenzaVoluta);
+            //  completato = m!=null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
+            if (m != null) {
+                m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
+                    GiacenzaVoluta = new BigDecimal(m);
+                    QtaNuovoMovimento = GiacenzaVoluta.subtract(GiacenzaAttuale);
+                    String SQta = QtaNuovoMovimento.toPlainString();
+                    if (SQta.contains("-")) {
+                        //Gestisco i movimenti di scarico (Prelievi)
+                        String Testo="<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
+                                + "di prelievo di <b>"+SQta.replace("-", "")+"</b> unità<br><br>"
+                                + "Come classifichiamo il movimento?<br><br>"
+                                + "<b>1</b> - <b>Non classifico il movimento</b>, dovrò gestirlo successivamente<br>"
+                                + "    nella sezione 'Classificazione Trasferimenti Crypto'<br><br>"
+                                + "<b>2</b> - Lo considero alla stregua di un <b>CashOut</b> <br>"
+                                + "    (Verrà generata l'eventuale plusvalenza sul movimento)<br><br>"
+                                + "<b>3</b> - Lo considero alla stregua di una <b>Commissione</b><br><br>"
+                                + "<b>4</b> - Lo inserisco con descrizione <b>Rettifica Giacenza</b><br>"
+                                + "    (Non verranno calcolate le eventuali plusvalenze)<br><br></html>";
+                        Object[] Bottoni = {"Annulla","1","2","3","4"};
+                        int scelta=JOptionPane.showOptionDialog(this,Testo,
+                                "Classificazione del movimento",
+                                JOptionPane.YES_NO_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE,
+                                null,
+                                Bottoni,
+                                null);
+                        //Adesso genero il movimento a seconda della scelta
+                        //0 o 1 significa che non bisogna fare nulla
+                        if (scelta!=0&&scelta!=-1){
+                            
+                            //ora chiedo di inserire una nota
+                            String Nota = JOptionPane.showInputDialog(this, 
+                                    "<html>Inserire un eventuale nota sul movimento :</html>", "Rettifica di Giacenza");
+                            if (Nota!=null){
+                            
+                            //adesso compilo la parte comune del movimento
+                            
+                            String RTOri[]=MappaCryptoWallet.get(IDTrans);
+                            DataRiferimento=OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
+                            //il movimento in questo caso deve finire successivamente a quello selezionato
+                            //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
+                            long NuovoOrario=Long.parseLong(RTOri[0].split("_")[0])+1;
+                            String RT[]=new String[ColonneTabella];
+                            RT[0]="";//questo può variare in caso di movimento di commissione per cui lo metto nel capitolo successivo
+                            RT[1]=RTOri[1];
+                            RT[2]="1 di 1";
+                            RT[3]=RTOri[3];
+                            RT[4]=RTOri[4];
+                            RT[5]="";//dipende dalla scelta
+                            RT[6]=Moneta+" ->";
+                            RT[7]="";
+                            RT[8]=Moneta;
+                            RT[9]=TipoMoneta;//da prendere dalla tabella prima
+                            RT[10]=SQta;
+                            RT[11]="";
+                            RT[12]="";
+                            RT[13]="";
+                            RT[14]="";
+                            //riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
+                            Moneta M1=new Moneta();
+                            M1.Moneta=Moneta;
+                            M1.MonetaAddress=AddressMoneta;
+                            M1.Qta=SQta;
+                            M1.Tipo=TipoMoneta;
+                            M1.Rete=Funzioni.TrovaReteDaID(RTOri[0]);
+                            RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,M1.Rete);
+                            RT[16]="";
+                            RT[17]="";
+                            RT[18]="";//dipende dalla scelta
+                            RT[19]="";
+                            RT[20]="";
+                            RT[21]=Nota;
+                            RT[22]="M";
+                            RT[23]="";
+                            RT[24]="";
+                            RT[25]="";
+                            RT[26]=AddressMoneta;
+                            RT[27]="";
+                            RT[28]="";
+                            RT[29]="";
+                            RT[30]="";
+                            RiempiVuotiArray(RT);
+                            
+                               
+                        String IDOriSplittato[]=RTOri[0].split("_");
+                        switch (scelta) {
+                            case 1 -> {
+                                //Non Classifico Movimento                                
+                                RT[0]=NuovoOrario+"_"+IDOriSplittato[1]+".Rettifica_1_1_PC";
+                                RT[5]="PRELIEVO CRYPTO";
+                                RT[18]="";
+                                }
+                            case 2 -> {
+                                //CashOut
+                                RT[0]=NuovoOrario+"_"+IDOriSplittato[1]+".Rettifica_1_1_PC";
+                                RT[5]="CASHOUT O SIMILARE";
+                                RT[18]="PCO - CASHOUT O SIMILARE";
+                                }
+                            case 3 -> {
+                                //Commissione
+                                RT[0]=NuovoOrario+"_"+IDOriSplittato[1]+".Rettifica_1_1_CM";
+                                RT[5]="COMMISSIONE";
+                                RT[18]="";
+                                }
+                            case 4 -> {
+                                //Rettifica Giacenza
+                                RT[0]=NuovoOrario+"_"+IDOriSplittato[1]+".Rettifica_1_1_PC";
+                                RT[5]="RETTIFICA";
+                                RT[18]="PWN - RETTIFICA GIACENZA";
+                                }
+                            default -> {
+                                }
                         }
-                        else
-                        {
-                            //Gestisco i movimenti di Carico (Depositi)
-                        }    
-                        //A questo punto devo vedere se l'importo della differenza tra giacenza voluta e giacenza attuale è negativo o positivo e agire di conseguenza
+                           //Adesso scrivo il movimento
+                           MappaCryptoWallet.put(RT[0], RT);
+                           
+                           //Adesso avviso che il movimento è inserito e ricarico l'intera pagina
+                           JOptionPane.showConfirmDialog(this, "Movimento di rettifica generato con successo!",
+                            "Movimento Creato", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                           GiacenzeaData_CompilaTabellaToken();
+                           //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
+                           TabellaCryptodaAggiornare=true;
+                           
+                                                }}} else {
+                        //Gestisco i movimenti di Carico (Depositi)
+                    }
+                    //A questo punto devo vedere se l'importo della differenza tra giacenza voluta e giacenza attuale è negativo o positivo e agire di conseguenza
                     /*    attuale[15]=m;
                         PrzCarico=attuale[15];
                         plusvalenza="0.00";*/
-                    }else
-                    {
-                      //  completato=false;
-                        JOptionPane.showConfirmDialog(this, "Attenzione, "+m+" non è un numero valido!",
-                    "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
-             }       
+                } else {
+                    //  completato=false;
+                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                }
+            }
+        }
     }//GEN-LAST:event_jButton1MouseReleased
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void GiacenzeaData_CompilaTabellaToken(){
             
@@ -3741,8 +3874,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();       
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
         GiacenzeaData_Tabella.setRowSorter(sorter);
-        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
-        
+        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);       
+        sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
+        GiacenzeaData_Tabella.setRowSorter(sorter);
         //Fase 2 Preparazione thead
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
@@ -3786,6 +3920,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             if (movimento.length > 23) {
                                 Monete[0].MonetaAddress = movimento[26];
                                 Monete[1].MonetaAddress = movimento[28];
+                            }
+                            else
+                            {
+                                Monete[0].MonetaAddress = "";
+                                Monete[1].MonetaAddress = "";  
                             }
                             //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
                             Monete[0].Moneta = movimento[8];

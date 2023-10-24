@@ -787,6 +787,7 @@ public class Prezzi {
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
         risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
+        
 
         if (risultato == null) {
             //se il token non è gestito da coingecko e non è già nel database ritorno null
@@ -923,7 +924,8 @@ public class Prezzi {
         }*/
 
         
-        //come prima cosa vedo se la rete è gestita altrimenti chiudo immediatamente il ciclo    
+        //come prima cosa vedo se la rete è gestita altrimenti chiudo immediatamente il ciclo   
+   //     System.out.println(DataIniziale+"_"+Address+"_"+Rete);
          if (CDC_Grafica.Mappa_ChainExplorer.get(Rete)==null)   {
              return null;
          }
@@ -1534,23 +1536,35 @@ for (int i=0;i<ArraydataIni.size();i++){
         */
         String PrezzoTransazione;
         
+        //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
+        String AddressMoneta1 = null;
+        if (Moneta1 != null) {
+            if (Moneta1.MonetaAddress!=null&&!Moneta1.MonetaAddress.equals("")) {
+                AddressMoneta1 = Moneta1.MonetaAddress;
+            }
+        }
+        String AddressMoneta2 = null;
+        if (Moneta2 != null) {
+            if (Moneta2.MonetaAddress!=null&&!Moneta2.MonetaAddress.equals("")) {
+                AddressMoneta2 = Moneta2.MonetaAddress;
+            }
+        }
         //come prima cosa prima di iniziare controllo che la moneta in questione non sia già una di quelle in lista
         //tra quelle in defi importanti di cui conosco l'address e listate da binance, in quel caso il prezzo lo prenderò da li e non da coingecko
         //dato le limitazioni che quest'ultimo comporta
         //per far questo se trovo le suddette monete nella lista elimino address per farle prendere da binance
         //CREDO SIA IL CASO DI SPOSTARE STA COSA NELLA GESTIONE DEI PREZZI SINGOLI
-        if (Moneta1!=null&&Moneta2==null&&Moneta1.MonetaAddress==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
+      //  System.out.println(Moneta1.Moneta+" - "+AddressMoneta1);
+        if (Moneta1!=null&&Moneta2==null&&AddressMoneta1==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
             //Questo serve solo nel caso interroghi i prezzi dalla funzione delle giacenze
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
             //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
             Moneta1.MonetaAddress="CRO";
+            AddressMoneta1="CRO";
             Rete="CRO";
         }
         
-        String AddressMoneta1=null;
-                if(Moneta1!=null)AddressMoneta1=Moneta1.MonetaAddress;
-        String AddressMoneta2=null;
-                if(Moneta2!=null)AddressMoneta2=Moneta2.MonetaAddress;
+
                 
         //Questa parte impone la ricerca su binance per determinati token salvati nella mappa
         //questo rende più veloce la ricerca e più affiabile

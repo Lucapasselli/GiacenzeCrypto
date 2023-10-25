@@ -174,7 +174,11 @@ public class Tabelle {
                     setForeground(Color.black);
                   c.setBackground(bg);
                 }
-                else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 5).toString().contains("-")) {
+            else if (col==7 && value.toString().toLowerCase().contains("-")) {
+                    setForeground(Color.RED);
+                  c.setBackground(bg);
+                }
+            else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 5).toString().contains("-")) {
                     setBackground(bg);
                     setForeground(verdeScuro);
                 } 

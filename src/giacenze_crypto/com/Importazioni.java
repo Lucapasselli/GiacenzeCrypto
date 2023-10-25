@@ -1234,7 +1234,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                            // System.out.println(movimentoSplittato[9]);
                             String data=Formatta_Data_CoinTracking(movimentoSplittato[12]);
                             String dataa=data.substring(0, data.length()-3).trim();
-                            if (movimentoSplittato[0].trim().equalsIgnoreCase("Trade"))
+                            if (movimentoSplittato[0].trim().equalsIgnoreCase("Trade")||movimentoSplittato[0].trim().equalsIgnoreCase("Operazione"))
                             {
                                 if (!movimentoSplittato[6].trim().equalsIgnoreCase("EUR")&&!movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))
                                     {

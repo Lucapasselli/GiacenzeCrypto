@@ -1555,15 +1555,22 @@ for (int i=0;i<ArraydataIni.size();i++){
         //per far questo se trovo le suddette monete nella lista elimino address per farle prendere da binance
         //CREDO SIA IL CASO DI SPOSTARE STA COSA NELLA GESTIONE DEI PREZZI SINGOLI
       //  System.out.println(Moneta1.Moneta+" - "+AddressMoneta1);
-        if (Moneta1!=null&&Moneta2==null&&AddressMoneta1==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
-            //Questo serve solo nel caso interroghi i prezzi dalla funzione delle giacenze
+        if (Moneta1!=null&&Rete==null&&AddressMoneta1==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
+            //Questo serve solo nel caso interroghi i prezzi di CRO
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
             //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
             Moneta1.MonetaAddress="CRO";
             AddressMoneta1="CRO";
             Rete="CRO";
         }
-        
+        if (Moneta2!=null&&Rete==null&&AddressMoneta2==null&&Moneta2.Moneta.equalsIgnoreCase("CRO")){
+            //Questo serve solo nel caso interroghi interroghi i prezzi di CRO
+            //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
+            //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
+            Moneta2.MonetaAddress="CRO";
+            AddressMoneta2="CRO";
+            Rete="CRO";
+        }
 
                 
         //Questa parte impone la ricerca su binance per determinati token salvati nella mappa

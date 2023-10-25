@@ -20,15 +20,18 @@ import java.util.logging.Logger;
 public class DatabaseH2 {
 
     static String jdbcUrl = "jdbc:h2:./database";
+  //  static String jdbcUrl2 = "jdbc:h2:./personale";
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;
+  //  static Connection connectionPersonale;
 
     //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
     public static boolean CreaoCollegaDatabase() {
         boolean successo=false;
         try {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
+         //   connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
             String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
             PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
@@ -53,8 +56,7 @@ public class DatabaseH2 {
                        
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();           
-            
+            preparedStatement.execute();                       
             
             successo=true;
             
@@ -76,9 +78,7 @@ public class DatabaseH2 {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM Address_Senza_Prezzo WHERE address_chain = '" + address_chain + "'";
-            //System.out.println(checkIfExistsSQL);
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            //checkStatement.setString(1, address_chain);
             int rowCount = 0;
             // Esegui la query e controlla il risultato
             var resultSet = checkStatement.executeQuery();
@@ -92,7 +92,6 @@ public class DatabaseH2 {
                 // updateStatement.setString(1, data);
                 //updateStatement.setString(2, address_chain);
                 updateStatement.executeUpdate();
-                // System.out.println("Riga aggiornata con successo.");
 
             } else {
                 // La riga non esiste, esegui l'inserimento
@@ -101,7 +100,6 @@ public class DatabaseH2 {
                 //insertStatement.setString(1, address_chain);
                 //insertStatement.setString(2, data);
                 insertStatement.executeUpdate();
-                // System.out.println("Nuova riga inserita con successo.");
 
             }
         } catch (SQLException ex) {

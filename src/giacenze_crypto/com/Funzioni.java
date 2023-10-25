@@ -83,7 +83,7 @@ public class Funzioni {
 
             String IDSplittato[]=ID.split("_");
             String IDDettSplittato[]=IDSplittato[1].split("\\.");
-            if (IDDettSplittato.length==4 && IDDettSplittato[0].equalsIgnoreCase("BC")){
+            if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && IDDettSplittato[0].equalsIgnoreCase("BC")){
                 Rete=IDDettSplittato[1];
 
             }

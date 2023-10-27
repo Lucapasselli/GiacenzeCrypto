@@ -202,6 +202,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Bottone_RettificaQta = new javax.swing.JButton();
         jSeparator5 = new javax.swing.JSeparator();
         GiacenzeaData_CheckBox_MostraQtaZero = new javax.swing.JCheckBox();
+        GiacenzeaData_Bottone_Scam = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -857,6 +858,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        GiacenzeaData_Bottone_Scam.setText("Identifica come SCAM");
+        GiacenzeaData_Bottone_Scam.setEnabled(false);
+
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
         GiacenzeaDataLayout.setHorizontalGroup(
@@ -899,7 +903,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(GiacenzeaData_Bottone_ModificaValore))))
+                        .addComponent(GiacenzeaData_Bottone_Scam)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
         GiacenzeaDataLayout.setVerticalGroup(
             GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -925,7 +931,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Bottone_ModificaValore)
                     .addComponent(GiacenzeaData_Bottone_MovimentiDefi)
-                    .addComponent(GiacenzeaData_CheckBox_MostraQtaZero))
+                    .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
+                    .addComponent(GiacenzeaData_Bottone_Scam))
                 .addGap(4, 4, 4)
                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2948,6 +2955,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void GiacenzeaData_CompilaTabellaMovimenti() {
         
+        //Gestisco i bottoni
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
 
         //PULIZIA TABELLA
@@ -2961,7 +2969,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
             String Address = "";
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
                 Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+                
             }
+            //gestione bottone scam token da abilitare solo in presenza di un token in defi
+            if (Address.contains("0x"))GiacenzeaData_Bottone_Scam.setEnabled(true);
+            else GiacenzeaData_Bottone_Scam.setEnabled(false);
             
                     //ABILITO BOTTONE DEFI SE CI SONO LE CONDIZIONI
         String Wallet=Giacenzeadata_Walleta_Label.getText().trim();           
@@ -4004,7 +4016,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                                             Movimento di rettifica generato con successo!
                                                             Ricordarsi di salvare i movimenti nella sezione 'Transazioni Crypto'.""",
                                 "Movimento Creato", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        GiacenzeaData_CompilaTabellaToken();
+                        //Ora sistemo i valori sulla tabella principale
+                        GiacenzeaData_Tabella.getModel().setValueAt(GiacenzaVoluta, rigaselezionataTabPrincipale, 4);
+                        GiacenzeaData_CompilaTabellaMovimenti();
+                        //E ricarico la tabella secondaria
+                        
+                       // GiacenzeaData_CompilaTabellaToken();
+                       
                         //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
                         TabellaCryptodaAggiornare = true;
                 } else {
@@ -4057,7 +4075,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     
     private void GiacenzeaData_CompilaTabellaToken(){
+        
+        //Gestisco i bottoni
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
+
             
         //FASE 1 PULIZIA TABELLA
         //questo serve per evitare errori di sorting nel thread
@@ -4838,6 +4859,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JButton GiacenzeaData_Bottone_ModificaValore;
     private javax.swing.JButton GiacenzeaData_Bottone_MovimentiDefi;
     private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta;
+    private javax.swing.JButton GiacenzeaData_Bottone_Scam;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
     private javax.swing.JLabel GiacenzeaData_Data_Label;

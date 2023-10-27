@@ -846,7 +846,9 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_Scam" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" pref="150" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -882,6 +884,7 @@
                                   <Component id="GiacenzeaData_Bottone_ModificaValore" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_MovimentiDefi" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_CheckBox_MostraQtaZero" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_Scam" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                               <Component id="jSeparator5" min="-2" pref="4" max="-2" attributes="0"/>
@@ -1174,6 +1177,12 @@
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed"/>
                       </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_Scam">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Identifica come SCAM"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>

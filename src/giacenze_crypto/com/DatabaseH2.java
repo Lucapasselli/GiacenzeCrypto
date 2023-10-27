@@ -56,7 +56,11 @@ public class DatabaseH2 {
                        
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();                       
+            preparedStatement.execute();    
+            
+         /*   createTableSQL = "CREATE TABLE IF NOT EXISTS RINOMINATOKEN (address_chain VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute();  */          
             
             successo=true;
             

@@ -75,6 +75,26 @@ public class Funzioni {
             
         }
         
+        
+        public static boolean isSCAM(String Nome){
+            boolean SCAM=false;
+            int Lnome=Nome.length();
+            //verifico se la moneta è già considerata come scam
+            if (Lnome>3 && " **".equals(Nome.substring(Lnome-3, Lnome))){
+                SCAM=true;
+            }
+            return SCAM;
+        }
+        
+        public static boolean noData(String Valore){
+            boolean noData=false;
+            //verifico se la moneta è già considerata come scam
+            if (Valore==null||Valore.trim().equals("")){
+                noData=true;
+            }
+            return noData;
+        }
+        
         public static String TrovaReteDaID(String ID){
 
 

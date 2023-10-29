@@ -60,7 +60,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
     static public Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
     static public Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
     static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
@@ -107,6 +107,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
             UIManager.setLookAndFeel( new FlatIntelliJLaf() );
         
         initComponents();
+        if (!DatabaseH2.CreaoCollegaDatabase()){
+            JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            System.exit(0);
+        }
         Funzioni.CompilaMappaChain();
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
@@ -119,10 +123,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
-        if (!DatabaseH2.CreaoCollegaDatabase()){
-            JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-            System.exit(0);
-        }
+
         //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
@@ -809,6 +810,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_Bottone_ModificaValore.setText("Modifica Valore");
         GiacenzeaData_Bottone_ModificaValore.setToolTipText("<html>Modifica il valore globale della giacenza del token evidenziato<br><\\html>");
+        GiacenzeaData_Bottone_ModificaValore.setMaximumSize(new java.awt.Dimension(144, 22));
+        GiacenzeaData_Bottone_ModificaValore.setMinimumSize(new java.awt.Dimension(144, 22));
+        GiacenzeaData_Bottone_ModificaValore.setPreferredSize(new java.awt.Dimension(144, 22));
         GiacenzeaData_Bottone_ModificaValore.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 GiacenzeaData_Bottone_ModificaValoreMouseClicked(evt);
@@ -860,6 +864,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_Bottone_Scam.setText("Identifica come SCAM");
         GiacenzeaData_Bottone_Scam.setEnabled(false);
+        GiacenzeaData_Bottone_Scam.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_ScamActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
@@ -926,19 +935,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
                     .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(GiacenzeaData_Bottone_ModificaValore)
-                    .addComponent(GiacenzeaData_Bottone_MovimentiDefi)
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE, false)
                     .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
-                    .addComponent(GiacenzeaData_Bottone_Scam))
+                    .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_Bottone_MovimentiDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(4, 4, 4)
                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label)
@@ -2957,6 +2966,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
         //Gestisco i bottoni
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
+       
 
         //PULIZIA TABELLA
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
@@ -2966,6 +2976,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            //Cambio il nome sul Bottone SCAM a seconda se il token è scam o meno
+            if (Funzioni.isSCAM(mon))
+                GiacenzeaData_Bottone_Scam.setText("Rimuovi da SCAM");
+            else
+                GiacenzeaData_Bottone_Scam.setText("Identifica come SCAM");
             String Address = "";
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
                 Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
@@ -4073,7 +4088,77 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Funzione_ModificaValore();
     }//GEN-LAST:event_GiacenzeaData_Bottone_ModificaValoreActionPerformed
 
-    
+    private void GiacenzeaData_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ScamActionPerformed
+        // TODO add your handling code here:
+        //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
+        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
+            String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+            String Rete= GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Testo;
+            if (!Funzioni.isSCAM(NomeMoneta)){
+                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> con Address <b>"+Address+"</b> come SCAM?<br><br>"
+                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
+                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br></html>";
+                }
+            else {
+                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
+                + "</html>";
+            }
+                        Object[] Bottoni = {"Si", "No"};
+                        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                                "Classificazione del movimento",
+                                JOptionPane.YES_NO_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE,
+                                null,
+                                Bottoni,
+                                null);
+                        if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
+                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
+                            //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
+                            //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
+                            //e aggiungergli gli asterisci recupero il suo nome originale
+                            //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
+                            if (nomi[0] == null)
+                                {
+                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NomeMoneta + " **");
+                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
+                                DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                                GiacenzeaData_Tabella.getModel().setValueAt(NomeMoneta + " **", rigaselezionata, 0);
+                                }
+                            else
+                                {
+                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], nomi[0] + " **");
+                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
+                                DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                                GiacenzeaData_Tabella.getModel().setValueAt(nomi[0] + " **", rigaselezionata, 0);
+                                }
+                            //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
+                            //Lancio la funzione rinomina token
+                            TabellaCryptodaAggiornare = true;
+                           
+                        }
+                        else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
+                            //Da gestire parte di descammizzazione
+                            //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
+                            //vada nuovamente a cercare il prezzo del token
+                            DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                            //leggo la riga per individuare il nome originale del token
+                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
+                            //lo scrivo nel database
+                            DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], nomi[0]);
+                            GiacenzeaData_Tabella.getModel().setValueAt(nomi[0], rigaselezionata, 0);
+                            //aggiorno l'intera tabella crypto
+                            TabellaCryptodaAggiornare = true;
+                         //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
+                        }
+            }
+    }//GEN-LAST:event_GiacenzeaData_Bottone_ScamActionPerformed
+
+
     private void GiacenzeaData_CompilaTabellaToken(){
         
         //Gestisco i bottoni
@@ -4457,6 +4542,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         MappaCryptoWallet.clear();
         Mappa_Wallet.clear();
         BigDecimal Plusvalenza=new BigDecimal("0");
+        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
         
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
@@ -4479,8 +4565,35 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
                 //---------------------------------------------------------------------------------------------------               
                 Mappa_Wallet.put(splittata[3], splittata[1]);
-                MappaCryptoWallet.put(splittata[0], splittata);
+               
               //  this.TransazioniCryptoTabella.add(splittata);
+              
+                              //questo rinomina i token con nomi personalizzati
+                if (splittata.length > 23) {
+                    String Rete = Funzioni.TrovaReteDaID(splittata[0]);
+                    String AddressU = splittata[26];
+                    String AddressE = splittata[28];
+                    if (!Funzioni.noData(Rete)) {
+                        if (!Funzioni.noData(AddressU)) {
+                            //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                            String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
+                            if (valore != null) {
+                                splittata[8] = valore;
+                            }
+                        }
+                        if (!Funzioni.noData(AddressE)) {
+                            //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                            String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
+                            if (valore != null) {
+                                splittata[11] = valore;
+                            }
+
+                        }
+                    }
+
+                }
+                 MappaCryptoWallet.put(splittata[0], splittata);
+              
               if (EscludiTI==true&&!splittata[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
                   if (Funzioni_Date_ConvertiDatainLong(splittata[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(splittata[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                      ModelloTabellaCrypto.addRow(splittata);
@@ -4490,6 +4603,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
               }
                   }
+
+
              //   MappaCryptoWallet.put(splittata[0], splittata);
                 
             }
@@ -4516,6 +4631,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(TransazioniCryptoTabella.getModel());
         TransazioniCryptoTabella.setRowSorter(sorter);
         
+        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
+        
         
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) TransazioniCryptoTabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
@@ -4523,6 +4640,33 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
          for (String[] v : MappaCryptoWallet.values()) {
           Mappa_Wallet.put(v[3], v[1]);
+          
+                    //questo rinomina i token con nomi personalizzati
+             if (v.length > 23) {
+                 String Rete = Funzioni.TrovaReteDaID(v[0]);
+                 String AddressU = v[26];
+                 String AddressE = v[28];
+                 if (!Funzioni.noData(Rete)) {
+                     if (!Funzioni.noData(AddressU)) {
+                         //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                         String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
+                         if (valore != null) {
+                             v[8] = valore;
+                         }
+                     }
+                     if (!Funzioni.noData(AddressE)) {
+                         //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                         String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
+                         if (valore != null) {
+                             v[11] = valore;
+                         }
+
+                     }
+                 }
+
+             }
+          
+          //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
           if (EscludiTI==true&&!v[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
                 if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                 ModelloTabellaCrypto.addRow(v);
@@ -4532,6 +4676,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
                 }
             }
+
        }
          TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
          TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());

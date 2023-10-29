@@ -307,7 +307,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                         CDC_Grafica.TabellaCryptodaAggiornare = true;
                     }
                 }
-
+                
                 progress.dispose();
 
             }

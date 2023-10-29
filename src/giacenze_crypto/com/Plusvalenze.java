@@ -299,12 +299,12 @@ public class Plusvalenze {
             ultimoRecupero=stack.pop();
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]);
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]);
-        /*   if (Moneta.equalsIgnoreCase("usdt")){ 
+         /*  if (Moneta.equalsIgnoreCase("usdt")){ 
                 System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
                 System.out.println(qtaRimanente);
                 }*/
             //System.out.println(qtaEstratta+" - "+costoEstratta);
-            if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta e minore o uguale alla qta rimanente allore
+            if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta è minore o uguale alla qta rimanente allora
                 {
                 //imposto il nuovo valore su qtarimanente che è uguale a qtarimanente-qtaestratta
                 qtaRimanente=qtaRimanente.subtract(qtaEstratta);
@@ -342,7 +342,7 @@ public class Plusvalenze {
     ArrayDeque<String[]> stack;
     String valori[]=new String[3];
     valori[0]=Moneta;
-    valori[1]=Qta;
+    valori[1]=new BigDecimal(Qta).abs().toPlainString();
     valori[2]=Valore;
     if (CryptoStack.get(Moneta)==null){
         stack = new ArrayDeque<String[]>();

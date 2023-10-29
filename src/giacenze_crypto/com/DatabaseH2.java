@@ -10,6 +10,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,9 +60,9 @@ public class DatabaseH2 {
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();    
             
-         /*   createTableSQL = "CREATE TABLE IF NOT EXISTS RINOMINATOKEN (address_chain VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
+            createTableSQL = "CREATE TABLE IF NOT EXISTS RINOMINATOKEN (address_chain VARCHAR(255) PRIMARY KEY, VecchioNome VARCHAR(255), NuovoNome VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();  */          
+            preparedStatement.execute();            
             
             successo=true;
             
@@ -78,6 +80,89 @@ public class DatabaseH2 {
         return successo;
     }
 
+    
+        public static void RinominaToken_Scrivi(String address_chain, String VecchioNome,String NuovoNome) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM RINOMINATOKEN WHERE address_chain = '" + address_chain + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE RINOMINATOKEN SET NuovoNome = '" + NuovoNome + "' WHERE address_chain = '" + address_chain + "'";
+                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = 
+                    "INSERT INTO RINOMINATOKEN (address_chain, VecchioNome,NuovoNome ) VALUES ('" + address_chain + "','" + VecchioNome + "','" +NuovoNome+ "')";
+                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
+        public static String[] RinominaToken_Leggi(String address_chain) {
+                String Risultato[] = new String[2];
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT address_chain,VecchioNome,NuovoNome FROM RINOMINATOKEN WHERE address_chain = '" + address_chain + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato[0] = resultSet.getString("VecchioNome");
+                Risultato[1] = resultSet.getString("NuovoNome");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+        public static Map<String, String> RinominaToken_LeggiTabella() {
+        Map<String, String> Mappa_NomiToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT * FROM RINOMINATOKEN";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            while (resultSet.next()) {
+                String Nome = resultSet.getString("NuovoNome");
+                String ID = resultSet.getString("address_chain");
+                Mappa_NomiToken.put(ID, Nome);
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Mappa_NomiToken;
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+        
+        public static void RinominaToken_CancellaRiga(String address_chain) {
+               //completamente da gestire
+            Map<String, String> Mappa_NomiToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try {
+            String checkIfExistsSQL = "DELETE FROM RINOMINATOKEN WHERE address_chain='"+address_chain+"'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.executeQuery();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+    
     public static void AddressSenzaPrezzo_Scrivi(String address_chain, String data) {
         try {
             // Connessione al database

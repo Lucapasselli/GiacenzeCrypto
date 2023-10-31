@@ -319,7 +319,7 @@ public class Plusvalenze {
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,20,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).stripTrailingZeros().toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).stripTrailingZeros().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));

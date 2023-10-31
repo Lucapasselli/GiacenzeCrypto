@@ -308,7 +308,7 @@ public class Importazioni {
             try {
             SimpleDateFormat originale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
             
-            Date d = originale.parse(Data+":30");
+            Date d = originale.parse(Data+":00");
             originale.applyPattern("yyyy-MM-dd HH:mm:ss");
             DataFormattata = originale.format(d);
         } catch (ParseException ex) {
@@ -384,11 +384,61 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
         
+         String riga;
+         boolean OrdineInverso=false;
+         long primaData=0;
+         long UltimaData=0;
+        // 1- come prima cosa metto in una lista il file
+        // e creo una mappa che mi permetterà di analizzare il file ed eliminare le righe doppie
+        List<String> lista=new ArrayList<>();
+        Map<String, String> Mappa_EliminaDoppioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
+                while ((riga = bure.readLine()) != null) {
+                    riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
+                    String splittata[] = riga.split(","); 
+                    if (splittata.length==13){
+                        String data = Formatta_Data_CoinTracking(splittata[12]);
+                        if (!data.equalsIgnoreCase("")&&Mappa_EliminaDoppioni.get(riga)==null) {
+                            Mappa_EliminaDoppioni.put(riga, "");
+                            lista.add(riga);
+                            if (primaData==0){
+                                primaData=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                            }
+                            UltimaData=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                       } 
+                        }
+                }
+              } catch (FileNotFoundException ex) {  
+            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        //2 - adesso verifico se l'ordine della lista è decrescente o crescente, quindi se parte dalla data più prossima o da quella più lontana
+        //    e ordino la lista nel caso in cui abbia l'ordine inverso ovvero in cui la data più recente sia la prima
+        //voglio che come primo record ci sia sempre la dfata più vecchia
+        if (primaData>UltimaData) OrdineInverso=true;
+        List<String> listaProv=new ArrayList<>();
+        if (OrdineInverso){
+            for (int i = lista.size(); i-- > 0; ) {
+                System.out.println(lista.get(i));
+                listaProv.add(lista.get(i));
+                }
+            lista=listaProv;
+        }
+        
+        //3 - Adesso scorro la lista e se trovo date identiche incremento di un secondo la data del movimento
+        //DA FAREEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        
+    /*    for (int i = list.size(); i-- > 0; ) {
+    System.out.println(list.get(i));
+}*/
         //come prima cosa creo una mappa con i movimenti per poi averli in ordine di data e così elimino anche i movimenti doppi
         //ho infatti notato che importando i dati ad esempio da binance, cointracking crea movimenti doppi
         Map<String, String> Mappa_MovimentiTemporanea = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
        // Map<String, String> Mappa_MovimentiTemporanea = new HashMap<>();
-               String riga;
+              
 
 
             try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {

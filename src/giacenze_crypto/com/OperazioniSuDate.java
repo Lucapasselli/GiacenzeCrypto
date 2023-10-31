@@ -103,4 +103,19 @@ public class OperazioniSuDate {
         }
         return m1;
     } 
+        
+                public static long ConvertiDatainLongSecondo(String Data1) {
+           long m1=0;
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date d = f.parse(Data1);
+            m1 = d.getTime();
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+        } catch (ParseException ex) {
+           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            //System.out.println(Data1+" non è una data");
+        }
+        return m1;
+    } 
 }

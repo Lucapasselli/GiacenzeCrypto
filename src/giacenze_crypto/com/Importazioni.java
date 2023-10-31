@@ -89,6 +89,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -385,6 +387,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         //come prima cosa creo una mappa con i movimenti per poi averli in ordine di data e così elimino anche i movimenti doppi
         //ho infatti notato che importando i dati ad esempio da binance, cointracking crea movimenti doppi
         Map<String, String> Mappa_MovimentiTemporanea = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+       // Map<String, String> Mappa_MovimentiTemporanea = new HashMap<>();
                String riga;
 
 
@@ -1419,7 +1422,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
-                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Fee"))
+                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Fee") || movimentoSplittato[0].trim().equalsIgnoreCase("Altra commissione"))
                             {
                                 //Commissioni
                                 

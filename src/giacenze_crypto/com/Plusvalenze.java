@@ -297,8 +297,8 @@ public class Plusvalenze {
            // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
             String ultimoRecupero[];
             ultimoRecupero=stack.pop();
-            BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]);
-            BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]);
+            BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();
+            BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
          /*  if (Moneta.equalsIgnoreCase("usdt")){ 
                 System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
                 System.out.println(qtaRimanente);
@@ -317,8 +317,9 @@ public class Plusvalenze {
                 //recuperare il prezzo della qta rimanente e la qta rimanente e riaggiungerla allo stack
                 //non ho più qta rimanente
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
+                //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,20,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).stripTrailingZeros().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
@@ -332,7 +333,7 @@ public class Plusvalenze {
     }
     ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }else return "";
-    
+   // System.out.println(ritorno);
     return ritorno;
    // System.out.println(Moneta +" - "+stack.size());
 }      

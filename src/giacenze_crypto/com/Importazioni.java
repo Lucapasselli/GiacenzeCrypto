@@ -429,7 +429,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         }
         
         //3 - Adesso scorro la lista e se trovo date identiche incremento di un secondo la data del movimento
-        //DA FAREEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //DA FAREEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!
         
     /*    for (int i = list.size(); i-- > 0; ) {
     System.out.println(list.get(i));

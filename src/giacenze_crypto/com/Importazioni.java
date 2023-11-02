@@ -121,7 +121,21 @@ public class Importazioni {
                 movimentiSconosciuti="";
             }
            
-    
+    class TransazioneBinance {
+        String entrata;
+        String uscita;
+        String fee;
+        // 0 -> non utilizzato
+        // 1 -> data
+        // 2 -> wallet
+        // 3 -> tipo operazione
+        // 4 -> nome moneta
+        // 5 -> qta
+        private void AggiungiRigo(String riga[]){
+            
+        }
+        
+    }
     //23->Blocco Transazione
     //24->Hash Transazione
     //25->Nome Moneta Uscita
@@ -130,6 +144,185 @@ public class Importazioni {
     //28->Contratto Moneta Entrata
     //29->Timestamp
     //
+    
+    
+        public static void Importa_Crypto_Binance(String fileBinance,boolean SovrascriEsistenti) {
+        //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
+        //Da sistemare problema con conversione dust su secondi diversi che da problemi
+        //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
+        //mettere almeno 1 secondo di tempo tra una richiesta e l'altra verso banchitalia
+        
+        AzzeraContatori();
+        
+        String fileDaImportare = fileBinance;
+        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        //fee,sell,buy,Transaction Fee,Transaction Spend,Transaction Buy,Transaction Revenue,Transaction Sold
+        //Sono tutte descrizioni che fanno parte di uno scambio tra crypto
+        //in quel caso il movimento si compone di tre parti principali che però possono essee multiple e sono
+        //le fee, la moneta venduta e la moneta acquistata
+        //per gestire la transazione dovremmo prendere tutte le righe con lo stesso orario e sommarle per ottenere
+        //i dati della transazione di scambio
+        //le tipologie sono alla posizione 3
+        
+        //Faccio una lista di causali per la conversione dei dati del csv
+        Mappa_Conversione_Causali.put("card_cashback_reverted", "SCAMBIO");              //Cashback ripristinato
+        Mappa_Conversione_Causali.put("referral_card_cashback", "CASHBACK");              //Cashback della Carta MCO
+        Mappa_Conversione_Causali.put("crypto_earn_interest_paid", "EARN");               //Interessi maturati da una Crypto in Earn
+        Mappa_Conversione_Causali.put("crypto_earn_program_created", "TRASFERIMENTO-CRYPTO-INTERNO");//Inserimento di una Crypto in Earn
+        Mappa_Conversione_Causali.put("crypto_earn_program_withdrawn", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo di una Crypto dall'Earn
+        Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
+        Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
+
+        Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
+        Mappa_Conversione_Causali.put("crypto_to_exchange_transfer", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
+        Mappa_Conversione_Causali.put("crypto_viban_exchange", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
+//        Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", fileDaImportare);    //Scambio MCO in CRO (MCO liberi nel portafoglio). Acquisto dei CRO
+//        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", fileDaImportare);     //Scambio MCO in CRO (MCO liberi nel portafoglio). Vendita degli MCO
+        Mappa_Conversione_Causali.put("crypto_withdrawal", "TRASFERIMENTO-CRYPTO");       //Prelievo di una Crypto verso portafogli esterni
+        Mappa_Conversione_Causali.put("dust_conversion_credited", "DUST-CONVERSION");//Conversione di Crypto in CRO. CRO Ricevuti dalla conversione.
+        Mappa_Conversione_Causali.put("dust_conversion_debited", "DUST-CONVERSION");//Conversione di Crypto in CRO. Crypto da convertire in CRO.
+//        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", fileDaImportare);//Bonus Swap MCO/CRO
+//        Mappa_Conversione_Causali.put("dynamic_coin_swap_credited", fileDaImportare);     //Scambio MCO in CRO (MCO in Earn). Acquisto dei CRO
+//        Mappa_Conversione_Causali.put("dynamic_coin_swap_debited", fileDaImportare);      //Scambio MCO in CRO (MCO in Earn). Vendita degli MCO
+        Mappa_Conversione_Causali.put("exchange_to_crypto_transfer", "TRASFERIMENTO-CRYPTO");    //Trasferimenti dall'Exchange verso l'App
+        Mappa_Conversione_Causali.put("lockup_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
+//        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
+//        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
+        Mappa_Conversione_Causali.put("lockup_upgrade", "TRASFERIMENTO-CRYPTO-INTERNO");       //CRO Stake per la MCO Card. (Upgrade)
+        Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING");                       //Interessi che la MCO Card matura. Da (Jade in su)
+        Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING");    //Nuovo Staking di Crypto.com
+        Mappa_Conversione_Causali.put("finance.dpos.staking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");    //Nuovo Staking di Crypto.com
+        Mappa_Conversione_Causali.put("finance.dpos.unstaking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");      //unstake
+        Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
+        Mappa_Conversione_Causali.put("referral_gift", "REWARD");                         //Bonus di iscrizione sbloccato
+        Mappa_Conversione_Causali.put("reimbursement", "REWARD");                         //Rimborsi (Es. Netflix, Promozioni)
+        Mappa_Conversione_Causali.put("reimbursement_reverted", "REWARD");                //Annullamento di un rimborso (o parte)
+        Mappa_Conversione_Causali.put("supercharger_deposit", "TRASFERIMENTO-CRYPTO-INTERNO"); //Deposito dei CRO nel supercharger
+        Mappa_Conversione_Causali.put("supercharger_withdrawal", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo dei CRO dal supercharger
+        Mappa_Conversione_Causali.put("viban_purchase", "ACQUISTO CRYPTO");           //Acquisto di Crypto dal portafoglio EUR 
+//        Mappa_Conversione_Causali.put("nft_payout_credited", fileDaImportare);            //Vendita NFT 
+        Mappa_Conversione_Causali.put("staking_reward", "STAKING");                       //Reward (Es. NEO Gas) 
+        Mappa_Conversione_Causali.put("campaign_reward", "REWARD");                       //Vincita di una campagna (Es.: Telegram Madness
+        Mappa_Conversione_Causali.put("crypto_payment_refund", "REWARD");                 //Rimborso in Crypto. (Es. Rimborso Offerta per un NFT)
+        Mappa_Conversione_Causali.put("referral_bonus", "REWARD");                        //Bonus Referral 
+        Mappa_Conversione_Causali.put("crypto_earn_extra_interest_paid", "REWARD");//Earn Extra Reward 
+        Mappa_Conversione_Causali.put("supercharger_reward_to_app_credited", "REWARD");//Supercharger Reward in App
+        Mappa_Conversione_Causali.put("rewards_platform_deposit_credited", "REWARD");//Mission Reward
+        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_fund_lock", "TRASFERIMENTO-CRYPTO-INTERNO");//Blocca i fondi destinati ad un'ordine Limit 
+        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito         
+//        Mappa_Conversione_Causali.put("crypto_credit_withdrawal_created", fileDaImportare);//Crypto Loan
+//        Mappa_Conversione_Causali.put("crypto_credit_repayment_created", fileDaImportare);//Crypto Loan        
+//        Mappa_Conversione_Causali.put("crypto_credit_loan_credited", fileDaImportare);    //Crypto Loan
+//        Mappa_Conversione_Causali.put("crypto_credit_program_created", fileDaImportare);  //Crypto Loan 
+        Mappa_Conversione_Causali.put("admin_wallet_credited", "ALTRE-REWARD");//es. aggiustamenti luna 
+        Mappa_Conversione_Causali.put("transfer_cashback", "CASHBACK");              //Cashback su trasferimento crypto tra portafogli
+        Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
+        
+        //QUESTE 2 SOTTO SONO ANCORA DA GESTIRE
+        Mappa_Conversione_Causali.put("crypto_payment", "VENDITA CRYPTO");              //Pagamento in Crypto (Es.: Crypto Pay in CRO)
+        Mappa_Conversione_Causali.put("recurring_buy_order", "ACQUISTO CRYPTO");//Acquisto Crypto tramite acquisti ricorrenti
+        
+        //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
+        //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
+        //ad esempio questo succede per i dust conversion etc....
+        Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+       // Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        String riga;
+        String ultimaData = "";
+        List<String> listaMovimentidaConsolidare = new ArrayList<>();
+        try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
+        List<String> righeFile = new ArrayList<>();
+
+            //in questo modo butto tutto il file in un array che poi verrà riordinato in modo da avere i movimenti in ordine di data
+            while ((riga = bure.readLine()) != null) {
+                righeFile.add(riga);
+                }
+            Collections.sort(righeFile);
+            Collections.sort(righeFile);
+            
+            for (int w=0;w<righeFile.size();w++){
+                
+                riga=righeFile.get(w);
+                //System.out.println(riga);
+                String splittata[] = riga.split(",");
+                if (Funzioni_Date_ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
+                {
+                    //se trovo movimento con stessa data oppure la data differisce di un solo secondosolo se è un dust conversion allora lo aggiungo alla lista che compone il movimento e vado avanti
+                    //ho dovuto aggiungere la parte del secondo perchè quando fa i dust conversion può capitare che ci metta 1 secondo a fare tutti i movimenti
+                    String secondo=splittata[0].split(":")[2];
+                    int secondoInt=Integer.parseInt(secondo)-1;
+                    secondo=String.valueOf(secondoInt);
+                    if (secondo.length()==1)secondo="0"+secondo;
+                    String DataMeno1Secondo=splittata[0].split(":")[0]+":"+splittata[0].split(":")[1]+":"+secondo;
+                    if (splittata[0].equalsIgnoreCase(ultimaData)) {
+                        listaMovimentidaConsolidare.add(riga);
+                    }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[9].contains("dust_")){//SOLO per i dust conversion
+                        listaMovimentidaConsolidare.add(riga);
+                        }
+                    else //altrimenti consolido il movimento precedente
+                    {
+                       // System.out.println(riga);
+                        List<String[]> listaConsolidata = ConsolidaMovimenti_CDCAPP(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
+                        int nElementi = listaConsolidata.size();
+                        for (int i = 0; i < nElementi; i++) {
+                            String consolidata[] = listaConsolidata.get(i);
+                            Mappa_Movimenti.put(consolidata[0], consolidata);
+                        }
+
+                        //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
+                        listaMovimentidaConsolidare = new ArrayList<>();
+                        listaMovimentidaConsolidare.add(riga);
+                    }
+                    ultimaData = splittata[0];
+
+                }
+
+            }
+            List<String[]> listaConsolidata = ConsolidaMovimenti_CDCAPP(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
+            int nElementi = listaConsolidata.size();
+            for (int i = 0; i < nElementi; i++) {
+                String consolidata[] = listaConsolidata.get(i);
+                //System.out.println(consolidata[2].split(" di ")[0].trim());               
+                Mappa_Movimenti.put(consolidata[0], consolidata);
+               // 
+            }
+
+         //   bure.close();
+          //  fire.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }     
+
+        
+       int numeromov=0; 
+       int numeroscartati=0;
+       int numeroaggiunti=0;
+       for (String v : Mappa_Movimenti.keySet()) {
+           numeromov++;
+           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
+           {
+
+               MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               numeroaggiunti++;
+           }else {
+            //   System.out.println("Movimento Duplicato " + v);
+               numeroscartati++;
+           }
+       }
+     //  System.out.println("TotaleMovimenti="+numeromov);
+     //  System.out.println("TotaleScartati="+numeroscartati);
+//////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+        Transazioni=numeromov;
+        TransazioniAggiunte=numeroaggiunti;
+        TrasazioniScartate=numeroscartati;
+        if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+        
+    }
+    
+    
+    
     
     
     public static void Importa_Crypto_CDCApp(String fileCDCapp,boolean SovrascriEsistenti) {
@@ -1037,7 +1230,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             }
                                         BigDecimal totCRO=new BigDecimal(dust_accreditati.split(",")[3]);
                                         BigDecimal operazione;                                        
-                                        operazione=(valoreTrans.divide(sumAddebiti,8, RoundingMode.HALF_UP));
+                                        operazione=(valoreTrans.divide(sumAddebiti,30, RoundingMode.HALF_UP));
                                         String numCRO=operazione.multiply(totCRO).stripTrailingZeros().abs().toString();//da sistemare calcolo errato
                                         RT[13] =numCRO;//dust_accreditati.split(",")[3];//bisogna fare i calcoli
                                         RT[14] = splittata[6] + " " + splittata[7];///////
@@ -1402,7 +1595,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 lista.add(RT);
                                     }
                             }
-                           else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Income"))
+                           else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Income")
+                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Altri redditi")
+                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Reddito (non imponibile)"))
                             {
                                 //Rewards di vario tipo
                                 

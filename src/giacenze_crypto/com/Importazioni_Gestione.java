@@ -77,7 +77,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "CoinTracking.info CSV" }));
+        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Binance CSV (Presto Disponibile)", "CoinTracking.info CSV" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -324,8 +324,22 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }*/
 
 
-        } else {
-        }
+        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV (Presto Disponibile)")) {
+            JFileChooser fc = new JFileChooser();
+            int returnVal = fc.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                selezioneok[0]=true;
+                String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+                Importazioni.AzzeraContatori();
+                Importazioni.Importa_Crypto_CDCApp(FileDaImportare, SovrascriEsistenti);
+                Importazioni_Resoconto res = new Importazioni_Resoconto();
+                res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+                res.setLocationRelativeTo(this);
+                res.setVisible(true);
+            }
+            }
+        
         if (selezioneok[0]) this.dispose();
     }//GEN-LAST:event_Bottone_SelezionaFileActionPerformed
 

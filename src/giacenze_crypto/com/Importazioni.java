@@ -408,6 +408,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                        } 
                         }
                 }
+                bure.close();
+                fire.close();
               } catch (FileNotFoundException ex) {  
             Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -422,48 +424,46 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         List<String> listaProv=new ArrayList<>();
         if (OrdineInverso){
             for (int i = lista.size(); i-- > 0; ) {
-                System.out.println(lista.get(i));
                 listaProv.add(lista.get(i));
                 }
             lista=listaProv;
         }
         
         //3 - Adesso scorro la lista e se trovo date identiche incremento di un secondo la data del movimento
-        //DA FAREEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!
-        
-    /*    for (int i = list.size(); i-- > 0; ) {
-    System.out.println(list.get(i));
-}*/
-        //come prima cosa creo una mappa con i movimenti per poi averli in ordine di data e così elimino anche i movimenti doppi
-        //ho infatti notato che importando i dati ad esempio da binance, cointracking crea movimenti doppi
         Map<String, String> Mappa_MovimentiTemporanea = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-       // Map<String, String> Mappa_MovimentiTemporanea = new HashMap<>();
-              
-
-
-            try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
-                while ((riga = bure.readLine()) != null) {
-                    riga=riga.replaceAll("\"", "");
-                    String splittata[] = riga.split(",");
-                    if (splittata.length==13){
-                        String data = Formatta_Data_CoinTracking(splittata[12]);
-                        if (!data.equalsIgnoreCase("")) {
-                            if (Mappa_MovimentiTemporanea.get(riga) == null) {
-                                Mappa_MovimentiTemporanea.put(data+" "+riga, riga);
-                                //System.out.println(riga);
-                            } else {
-                            //System.out.println("Movimento doppio - " + riga);
-                            }
-                        }
-                    }
+        long DataUltima=0;
+        long DataUltimaRiferimento=0;
+        for (Object rigas : lista.toArray() ) {
+            riga=rigas.toString();
+            String splittata[] = riga.split(",");            
+            //controllo se la data è uguiale a quella del movimento precedente, così fosse agiungo 1 secondo al movimento
+            String data = Formatta_Data_CoinTracking(splittata[12]);
+            long DataAttuale=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+            if (DataAttuale==DataUltimaRiferimento){
+                DataAttuale=DataUltima+1000;
+            }
+            else{
+                DataUltimaRiferimento=DataAttuale;
+            }
+            DataUltima=DataAttuale;
+            data=OperazioniSuDate.ConvertiDatadaLongAlSecondo(DataAttuale);
+            
+            //adesso ricreo la riga che andrà sulla mappa
+            riga="";
+            for(int i=0;i<13;i++){
+                if(i==12){
+                    riga=riga+data;
+                    
                 }
-           //     bure.close();
-           // fire.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        }     
+                else{
+                riga=riga+splittata[i]+",";
+                        }
+            }
+            //metto la data nel keyset in modo da mettere in ordine cronologico qualora ancora non lo fossero, i movimenti
+            Mappa_MovimentiTemporanea.put(data+" "+riga, riga);
+           // System.out.println(rigas);
+        }
+    
         
         
         
@@ -481,13 +481,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             //se è stato interrotta la finestra di progresso interrompo il ciclo
                 return false;
                 }
+         //   System.out.println("aa");
             riga=Mappa_MovimentiTemporanea.get(str);
            // System.out.println(riga);
             String splittata[] = riga.split(",");
-            String data=Formatta_Data_CoinTracking(splittata[12]);
+            String data=splittata[12];
             //System.out.println(data+" "+ultimaData);
-            if (Funzioni_Date_ConvertiDatainLong(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
+         // System.out.println(data);
+            if (OperazioniSuDate.ConvertiDatainLongSecondo(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
             {
+              //  System.out.println("aaa");
                 //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
                 if (data.equalsIgnoreCase(ultimaData)) {
                     listaMovimentidaConsolidare.add(riga);
@@ -507,7 +510,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     listaMovimentidaConsolidare = new ArrayList<>();
                     listaMovimentidaConsolidare.add(riga);
                 }
-                ultimaData = Formatta_Data_CoinTracking(splittata[12]);
+                ultimaData = splittata[12];
                 
             }
             avanzamento++;
@@ -517,8 +520,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange,PrezzoZero);
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
-                String consolidata[] = listaConsolidata.get(i);
-                //System.out.println(consolidata[2].split(" di ")[0].trim());               
+                String consolidata[] = listaConsolidata.get(i);             
                 Mappa_Movimenti.put(consolidata[0], consolidata);
                // 
             }
@@ -1285,7 +1287,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
                            // System.out.println(movimentoSplittato[9]);
-                            String data=Formatta_Data_CoinTracking(movimentoSplittato[12]);
+                            String data=movimentoSplittato[12];
                             String dataa=data.substring(0, data.length()-3).trim();
                             if (movimentoSplittato[0].trim().equalsIgnoreCase("Trade")||movimentoSplittato[0].trim().equalsIgnoreCase("Operazione"))
                             {

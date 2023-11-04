@@ -332,7 +332,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                 boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                 Importazioni.AzzeraContatori();
-                Importazioni.Importa_Crypto_CDCApp(FileDaImportare, SovrascriEsistenti);
+                Importazioni.Importa_Crypto_Binance(FileDaImportare, SovrascriEsistenti);
                 Importazioni_Resoconto res = new Importazioni_Resoconto();
                 res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                 res.setLocationRelativeTo(this);

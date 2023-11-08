@@ -15,7 +15,7 @@ public class Moneta {
   public String MonetaAddress;
 //  public String MonetaNomeCompleto;
  // public String IndirizzoNoWallet;
-//  public String Prezzo;
+  public String Prezzo;
   public String Tipo; //NFT, FIAT o CRYPTO
   public String Rete;//da gestire, anzi forse conviene gestire rete e address come tipologia multipla
   

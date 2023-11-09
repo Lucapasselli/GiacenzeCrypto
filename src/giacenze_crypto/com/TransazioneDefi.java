@@ -53,6 +53,12 @@ public class TransazioneDefi {
       public int RitornaNumeroTokenentrata() {
        return MappaTokenEntrata.size();
    }
+   public Map<String,ValoriToken> RitornaMappaTokenEntrata(){
+       return MappaTokenEntrata;
+   }
+   public Map<String,ValoriToken> RitornaMappaTokenUscita(){
+       return MappaTokenUscita;
+   }
     
     public void InserisciMonete(String Moneta,String MonetaName,String MonetaAddress,String AddressNoWallet,String Qta, String Tipologia){
         ValoriToken monete;
@@ -81,7 +87,7 @@ public class TransazioneDefi {
             //System.out.println(dataAlMinuto+" - "+MonetaAddress);
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,Qta,MonetaAddress,Tipologia);
-            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,Rete);
+            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,30,Rete);
             //System.out.println("Import - "+Moneta+" - "+MonetaAddress+" - "+monete.Prezzo);
             //Se trovo l'indirizzo nella mappa significa che non è gestito da coingecko
             
@@ -106,10 +112,39 @@ public class TransazioneDefi {
             //System.out.println(dataAlMinuto+" - "+Moneta);
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,Qta,MonetaAddress,Tipologia);
-            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,6,Rete);
+            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,30,Rete);
             }
     }
     
+     //FUNZIONE TUTTA DA VERIFICARE   
+    public void InserisciMoneteCEX(String Moneta,String Qta, String Tipologia, long Datalong){
+        ValoriToken monete;
+        //le monete in uscita avranno il meno davanti alla qta mentre quelle in ingresso no
+        //conviene forse verificare la cosa già prima di cercare di buttare i token qua dentro
+        
+        if (MappaToken.get(Moneta)==null)
+            {
+            //se non esiste lo inserisco
+            monete=new ValoriToken();
+            monete.Tipo=Tipologia;
+            monete.Moneta=Moneta;
+            monete.Qta=Qta;
+            MappaToken.put(Moneta,monete);
+            Moneta M1=new Moneta();
+            M1.InserisciValori(Moneta,Qta,"",Tipologia);
+            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,Datalong, "0",true,30,Rete);
+            }
+        else 
+            {
+            //altrimenti faccio la somma
+            monete=MappaToken.get(Moneta);
+            monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
+            Moneta M1=new Moneta();
+            M1.InserisciValori(Moneta,Qta,"",Tipologia);
+            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,Datalong, "0",true,30,Rete);
+            }
+    }
+        
 
       public String IdentificaTipoTransazione(){
           String Tipo;
@@ -735,7 +770,7 @@ public class TransazioneDefi {
 
   
   
- private class ValoriToken {
+ public class ValoriToken {
 
   public String Moneta;
   public String Qta;

@@ -77,6 +77,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
+import giacenze_crypto.com.TransazioneDefi.ValoriToken;
 import java.util.Collections;
 import java.awt.Component;
 import java.io.InputStreamReader;
@@ -1471,7 +1472,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
          
          List<String[]> lista=new ArrayList<>();
          int numMovimenti=listaMovimentidaConsolidare.size();
-         Map<String, Moneta> Mappa_ScambiToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+         TransazioneDefi Scambio=new TransazioneDefi();
          Moneta dust_accreditati=new Moneta();
          Moneta dust_addebitati[]=new Moneta[1];
          if (numMovimenti>1) {dust_addebitati=new Moneta[numMovimenti-1];}
@@ -1797,79 +1798,60 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION"))
                             {
+                                System.out.println(Mon.Moneta);
                                 // serve solo per il calcolo della percentuale di cro da attivare
+                                    Scambio.InserisciMoneteCEX(Mon.Moneta, Mon.Qta, Mon.Tipo,Datalong);
 
-                                    // se è un movimento negativo lo inserisco tra gli addebiti
-                                    valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 30, null);
-                                    Mon.Prezzo = valoreEuro;
-                                    if (Mon.Qta.contains("-")){
-                                        dust_addebitati[numeroAddebiti]=movimento;
-                                        //da rivedere somma addebiti
-                                        //somma addebiti è il valore in euro della transazione
-                                        dust_sommaaddebiti=new BigDecimal(dust_sommaaddebiti).abs().add(new BigDecimal(valoreEuro)).abs().toString();
-                                        numeroAddebiti++;
-                                    }
-                                    else
-                                    {
-                                       dust_accreditati=movimento;
-                                    }   
-                                
                            // se è l'ultimo movimento allora creo anche le righe
-                                if (k==numMovimenti-1){
-                                    for (int w = 0; w < numeroAddebiti; w++) {
-                                        String splittata[]=dust_addebitati[w].split(",");
-                                        RT = new String[ColonneTabella];
-                                        RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
-                                        RT[1] = dataa;
-                                        RT[2] = w+1 + " di " + numeroAddebiti;
-                                        RT[3] = "Binance";
-                                        RT[4] = movimentoSplittato[2];
-                                        RT[5] = "SCAMBIO CRYPTO";
-                                        RT[6] = splittata[4]+" -> "+dust_accreditati.split(",")[4];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
-                                        RT[7] = splittata[3];
-                                        RT[8] = splittata[4];
-                                        RT[9] = "Crypto";
-                                        RT[10] = splittata[5];
-                                        RT[11] = dust_accreditati.split(",")[4];
-                                        RT[12] = "Crypto";
-                                        Moneta Mona=new Moneta();
-                                        Mona.Moneta=splittata[4];
-                                        Mona.Tipo="Crypto";//potrebbero essere anche euro bisogna rivedere tutto
-                                        String ValoreTrans=valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 30, null);
-                                        BigDecimal valoreTrans=new BigDecimal(splittata[7]);
-                                        BigDecimal sumAddebiti;
-                                        //System.out.println(dust_sommaaddebiti);
-                                        if (new BigDecimal(dust_sommaaddebiti).compareTo(new BigDecimal("0"))!=0){
-                                            sumAddebiti=new BigDecimal(dust_sommaaddebiti);
-                                        }else
-                                            {
-                                               sumAddebiti=new BigDecimal("0.000000001"); 
+                                if (k == numMovimenti - 1) {
+                                    Scambio.AssegnaPesiaPartiTransazione();
+                                    Map<String, ValoriToken> MappaTokenUscita=Scambio.RitornaMappaTokenUscita();
+                                    Map<String, ValoriToken> MappaTokenEntrata=Scambio.RitornaMappaTokenEntrata();
+                                    System.out.println(MappaTokenUscita.size());
+                                    System.out.println(MappaTokenEntrata.size());
+                                    int i = 1;
+                                    int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
+                                    //  RT = new String[ColonneTabella];
+                                    //  RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
+                                    for (ValoriToken tokenE : MappaTokenEntrata.values()) {
+                                        for (ValoriToken tokenU : MappaTokenUscita.values()) {
+                                            //PESOOOOOOOOOOOOOOOOOOOOO
+                                            if (new BigDecimal(tokenU.Peso).compareTo(new BigDecimal(1)) != 0 || new BigDecimal(tokenE.Peso).compareTo(new BigDecimal(1)) != 0) {
+                                                System.out.print(tokenU.Moneta + " - " + tokenU.Peso + " - " + tokenU.Qta + " _____ ");
+                                                System.out.println(tokenE.Moneta + " - " + tokenE.Peso + " - " + tokenE.Qta);
                                             }
-                                        BigDecimal totCRO=new BigDecimal(dust_accreditati.split(",")[3]);
-                                        BigDecimal operazione;                                        
-                                        operazione=(valoreTrans.divide(sumAddebiti,30, RoundingMode.HALF_UP));
-                                        String numCRO=operazione.multiply(totCRO).stripTrailingZeros().abs().toString();//da sistemare calcolo errato
-                                        RT[13] =numCRO;//dust_accreditati.split(",")[3];//bisogna fare i calcoli
-                                        RT[14] = splittata[6] + " " + splittata[7];///////
-                                        valoreEuro = "";
-                                        if (splittata[6].trim().equalsIgnoreCase("EUR")) {
-                                            valoreEuro = splittata[7];
+                                            //peso transazione                  
+                                            String QuantitaEntrata = new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
+                                            String QuantitaUscita = new BigDecimal(tokenU.Qta).multiply(new BigDecimal(tokenE.Peso)).stripTrailingZeros().toPlainString();
+                                            Moneta M1 = new Moneta();
+                                            M1.InserisciValori(tokenU.Moneta, QuantitaUscita, tokenU.MonetaAddress, tokenU.Tipo);
+                                            Moneta M2 = new Moneta();
+                                            M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
+                                            BigDecimal PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null));
+                                            RT = new String[ColonneTabella];
+                                            RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_"+i+"_SC";
+                                            RT[1] = dataa;
+                                            RT[2] = i + " di " + totMov;
+                                            RT[3] = "Binance";
+                                            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                            RT[4] = "DA FARE";//ATTENZIONE NON è DETTO CHE SIA SPOT, BISOGNEREBBE PRENDERE QUELLO CORRETTO
+                                            RT[5] = Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 1);
+                                            RT[6] = tokenU.RitornaNomeToken() + " -> " + tokenE.RitornaNomeToken();
+                                            RT[7] = "DA FARE";
+                                            RT[8] = tokenU.Moneta;
+                                            RT[9] = tokenU.Tipo;
+                                            RT[10] = QuantitaUscita;
+                                            RT[11] = tokenE.Moneta;
+                                            RT[12] = tokenE.Tipo;
+                                            RT[13] = QuantitaEntrata;
+                                            RT[14] = "";
+                                            RT[15] = PrezzoTransazione.toPlainString();
+                                            RT[22] = "A";
+                                            Importazioni.RiempiVuotiArray(RT);
+                                            lista.add(RT);
+                                            i++;
                                         }
-                                        if (splittata[6].trim().equalsIgnoreCase("USD")) {
-                                            valoreEuro = Prezzi.ConvertiUSDEUR(splittata[7], splittata[0].split(" ")[0]);
-                                        }
-                                        valoreEuro = new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
-                                        RT[15] = valoreEuro;
-                                        RT[16] = "";
-                                        RT[17] = "Da calcolare";
-                                        RT[18] = "";
-                                        RT[19] = "0.00";
-                                        RT[20] = "";
-                                        RT[21] = "";
-                                        RT[22] = "A";
-                                        RiempiVuotiArray(RT);
-                                        lista.add(RT);
-                                    }
+                                   }   
                                 }
                                 }
                                 else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))

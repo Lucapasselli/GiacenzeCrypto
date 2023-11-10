@@ -109,39 +109,36 @@ public class TransazioneDefi {
                 //altrimenti faccio la somma
             monete=MappaToken.get(MonetaAddress);
             monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
-            //System.out.println(dataAlMinuto+" - "+Moneta);
             Moneta M1=new Moneta();
-            M1.InserisciValori(Moneta,Qta,MonetaAddress,Tipologia);
+            M1.InserisciValori(Moneta,monete.Qta,MonetaAddress,Tipologia);
             monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,30,Rete);
             }
     }
     
      //FUNZIONE TUTTA DA VERIFICARE   
-    public void InserisciMoneteCEX(String Moneta,String Qta, String Tipologia, long Datalong){
+    public void InserisciMoneteCEX(Moneta Moneta,String Wallet,String CausaleOriginale){
         ValoriToken monete;
         //le monete in uscita avranno il meno davanti alla qta mentre quelle in ingresso no
         //conviene forse verificare la cosa già prima di cercare di buttare i token qua dentro
         
-        if (MappaToken.get(Moneta)==null)
+        if (MappaToken.get(Moneta.Moneta)==null)
             {
             //se non esiste lo inserisco
             monete=new ValoriToken();
-            monete.Tipo=Tipologia;
-            monete.Moneta=Moneta;
-            monete.Qta=Qta;
-            MappaToken.put(Moneta,monete);
-            Moneta M1=new Moneta();
-            M1.InserisciValori(Moneta,Qta,"",Tipologia);
-            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,Datalong, "0",true,30,Rete);
+            monete.Tipo=Moneta.Tipo;
+            monete.Moneta=Moneta.Moneta;
+            monete.Qta=Moneta.Qta;
+            MappaToken.put(Moneta.Moneta,monete);
+            monete.Prezzo=Moneta.Prezzo;
+            monete.WalletSecondario=Wallet;//poi sarà da vedere se esistono casi di monete identiche presi da wallet dioversi, in quel caso bisognerà differenziarli
+            monete.CausaleOriginale=CausaleOriginale;
             }
         else 
             {
             //altrimenti faccio la somma
-            monete=MappaToken.get(Moneta);
-            monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
-            Moneta M1=new Moneta();
-            M1.InserisciValori(Moneta,Qta,"",Tipologia);
-            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,Datalong, "0",true,30,Rete);
+            monete=MappaToken.get(Moneta.Moneta);
+            monete.Qta=new BigDecimal(Moneta.Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
+            monete.Prezzo=new BigDecimal(Moneta.Prezzo).add(new BigDecimal(monete.Prezzo)).stripTrailingZeros().toPlainString();
             }
     }
         
@@ -159,7 +156,7 @@ public class TransazioneDefi {
                   if (!token.Qta.contains("-"))
                    {
                        
-                       if (token.IndirizzoNoWallet.equalsIgnoreCase("0x0000000000000000000000000000000000000000")&&token.Moneta.toUpperCase().contains("DIVIDEND_TRACKER")){
+                       if (token.IndirizzoNoWallet!=null&&token.IndirizzoNoWallet.equalsIgnoreCase("0x0000000000000000000000000000000000000000")&&token.Moneta.toUpperCase().contains("DIVIDEND_TRACKER")){
                             //se trovo un movimento tecnico lo tolgo dalla lista generica e lo metto nelle movimentazioni specifiche tecniche
                             MappaTokenTecniciEntrata.put(token.MonetaAddress, token);
                             //System.out.println(token.MonetaAddress);
@@ -205,7 +202,38 @@ public class TransazioneDefi {
           return Tipo;
     }   
      
-      
+           public String IdentificaTipoTransazioneCEX(){
+          String Tipo;
+          boolean trovataEntrata=false;
+          boolean trovataUscita=false;
+          for(ValoriToken token : MappaToken.values())
+              {
+               //   System.out.print(token.MonetaName+" _ "+token.Qta+" - ");
+                //  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==1)
+                  if (!token.Qta.contains("-"))
+                   {
+                     
+                            MappaTokenEntrata.put(token.Moneta, token);
+                           // System.out.println(token.Moneta+" - "+token.Qta);
+                            trovataEntrata=true;
+                       
+                   }  
+                  //if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==-1)
+                  if (token.Qta.contains("-"))
+                   {
+                     
+                            MappaTokenUscita.put(token.Moneta, token);
+                            trovataUscita=true;
+                       
+                   } 
+             //     System.out.println(token.Moneta+" - "+token.Qta);
+              }
+          if(trovataEntrata&&trovataUscita)Tipo="Scambio";
+          else if(trovataEntrata&&!trovataUscita)Tipo="Deposito";
+          else if(!trovataEntrata&&trovataUscita)Tipo="Prelievo";
+          else Tipo="Commissioni";     
+          return Tipo;
+    }    
       
       
     public void AssegnaPesiaPartiTransazione() {
@@ -242,16 +270,35 @@ public class TransazioneDefi {
                 ValoreTransazione = ValoreTransazioneUscita;
             }
         }
-
+        //System.out.println("APPT "+MappaTokenUscita.size());
+        //System.out.println("APPT "+MappaTokenEntrata.size());
         //Ora calcolo i pesi dei vari token
         //La funzione si divide in 2, se non trovo il valore transazione allora do lo stesso peso ai vari token
         if (!trovatoValoreTransazione)// se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo
         {
+            int numTokenRimenenti = MappaTokenEntrata.size();
+            BigDecimal PesoRimanente = new BigDecimal(1);
             for (ValoriToken a : MappaTokenEntrata.values()) {
-                a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenEntrata.size()), 10, RoundingMode.HALF_UP).toPlainString();
+                numTokenRimenenti--;
+                if (numTokenRimenenti==0){
+                    a.Peso=PesoRimanente.toPlainString(); 
+                }
+                else{
+                    a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenEntrata.size()), 10, RoundingMode.HALF_UP).toPlainString();
+                }
+                PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
             }
+            numTokenRimenenti = MappaTokenUscita.size();
+            PesoRimanente = new BigDecimal(1);
             for (ValoriToken a : MappaTokenUscita.values()) {
-                a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenUscita.size()), 10, RoundingMode.HALF_UP).toPlainString();
+                numTokenRimenenti--;
+                if (numTokenRimenenti==0){
+                    a.Peso=PesoRimanente.toPlainString();
+                }
+                else{
+                    a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenUscita.size()), 10, RoundingMode.HALF_UP).toPlainString();
+                }
+                PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
             }
         } else // se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo e rifaccio i pesi in base ai valori
         //bisogna capire ora come sviluppare questo ciclo
@@ -267,11 +314,15 @@ public class TransazioneDefi {
                 //il peso lo calcolo dividendo il prezzo per il valore della transazione
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))!=0) {
                     numTokenRimenenti--;
-                    if (MappaTokenEntrata.size()==1){
-                        a.Peso="1";
+                    if (numTokenRimenenti==0){
+                        a.Peso=PesoRimanente.toPlainString();
                     }else   
                     {                 
-                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
+                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 10, RoundingMode.HALF_UP).toPlainString();
+                        //Se a.peso è maggiore di pesoRimanente allora a.Peso=Pesorimanente
+                        if (new BigDecimal(a.Peso).compareTo(PesoRimanente)==1){
+                            a.Peso=PesoRimanente.toPlainString();
+                        }
                     }
                     
                     PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
@@ -282,26 +333,30 @@ public class TransazioneDefi {
                 // New BigDecimal pesi;
                 if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
                     // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
-                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 15, RoundingMode.HALF_UP).toPlainString();
-                    System.out.println(a.Moneta+" - "+a.Peso);
+                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
+                   // System.out.println("Siamo a zero"+a.Moneta+" - "+a.Peso);
                 }
             }
             
             numTokenRimenenti = MappaTokenUscita.size();
             PesoRimanente = new BigDecimal(1);
-
             //primo ciclo do i pesi ai token con i prezzi
             for (ValoriToken a : MappaTokenUscita.values()) {
                 //Se ha prezzo riduco di 1 il numero dei token rimanenti e faccio il calcolo del peso
                 //il peso lo calcolo dividendo il prezzo per il valore della transazione
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))!=0) {
                     numTokenRimenenti--;
-                    if (MappaTokenUscita.size()==1){
-                        a.Peso="1";
-                    }else   
+                    if (numTokenRimenenti==0){
+                        a.Peso=PesoRimanente.toPlainString();
+                       // System.out.println("Siamo a zero"+a.Moneta+" - "+a.Peso);
+                    }
+                    else   
                     {                 
-                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 15, RoundingMode.HALF_UP).toPlainString();
-                        System.out.println(a.Moneta+" - "+a.Peso);
+                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 10, RoundingMode.HALF_UP).toPlainString();
+                        if (new BigDecimal(a.Peso).compareTo(PesoRimanente)==1){
+                            a.Peso=PesoRimanente.toPlainString();
+                        }
+                        //System.out.println(a.Moneta+" - "+a.Peso);
                     }
                     PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
                }
@@ -311,7 +366,8 @@ public class TransazioneDefi {
                 // New BigDecimal pesi;
                 if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
                     // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
-                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 15, RoundingMode.HALF_UP).toPlainString();
+                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
+                  //  System.out.println("Siamo a zero"+a.Moneta+" - "+a.Peso);
                 }
             }
         }
@@ -772,6 +828,8 @@ public class TransazioneDefi {
   
  public class ValoriToken {
 
+  public String WalletSecondario;//utilizzato solo per i cex per identificare da dove movimentano i token
+  public String CausaleOriginale;//utilizzato solo per i cex per identificare da dove movimentano i token
   public String Moneta;
   public String Qta;
   public String MonetaAddress;

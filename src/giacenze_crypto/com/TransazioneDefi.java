@@ -127,11 +127,11 @@ public class TransazioneDefi {
             monete=new ValoriToken();
             monete.Tipo=Moneta.Tipo;
             monete.Moneta=Moneta.Moneta;
-            monete.Qta=Moneta.Qta;
-            MappaToken.put(Moneta.Moneta,monete);
+            monete.Qta=Moneta.Qta;            
             monete.Prezzo=Moneta.Prezzo;
             monete.WalletSecondario=Wallet;//poi sarà da vedere se esistono casi di monete identiche presi da wallet dioversi, in quel caso bisognerà differenziarli
             monete.CausaleOriginale=CausaleOriginale;
+            MappaToken.put(Moneta.Moneta,monete);
             }
         else 
             {
@@ -333,7 +333,8 @@ public class TransazioneDefi {
                 // New BigDecimal pesi;
                 if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
                     // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
-                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
+                    if(numTokenRimenenti==0) System.out.println(a.Moneta);
+                    else a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
                    // System.out.println("Siamo a zero"+a.Moneta+" - "+a.Peso);
                 }
             }
@@ -366,7 +367,8 @@ public class TransazioneDefi {
                 // New BigDecimal pesi;
                 if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
                     // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
-                    a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
+                    if(numTokenRimenenti==0) System.out.println(a.Moneta +"-"+ ValoreTransazione);
+                    else a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
                   //  System.out.println("Siamo a zero"+a.Moneta+" - "+a.Peso);
                 }
             }

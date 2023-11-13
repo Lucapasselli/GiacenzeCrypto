@@ -154,16 +154,20 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
         Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING");//
         Mappa_Conversione_Causali.put("Distribution",                               "REWARD");//
+        Mappa_Conversione_Causali.put("BNB Vault Rewards",                          "REWARD");//
+        Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING");//
         Mappa_Conversione_Causali.put("Simple Earn Flexible Subscription",          "TRASFERIMENTO-CRYPTO-INTERNO");//
         Mappa_Conversione_Causali.put("Simple Earn Flexible Redemption",            "TRASFERIMENTO-CRYPTO-INTERNO");//
         Mappa_Conversione_Causali.put("Simple Earn Locked Subscription",            "TRASFERIMENTO-CRYPTO-INTERNO");//
         Mappa_Conversione_Causali.put("Simple Earn Locked Redemption",              "TRASFERIMENTO-CRYPTO-INTERNO");//
-        Mappa_Conversione_Causali.put("Transfer Between Main and Funding Wallet",   "TRASFERIMENTO-CRYPTO-INTERNO");
-       // Mappa_Conversione_Causali.put("Main and Funding Account Transfer",          "TRASFERIMENTO-CRYPTO-INTERNO");       
+        Mappa_Conversione_Causali.put("Transfer Between Main and Funding Wallet",   "TRASFERIMENTO-CRYPTO-INTERNO");      
         Mappa_Conversione_Causali.put("Staking Purchase",                           "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Staking Redemption",                         "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
+        // La causale di autoinvestimento la dovrò poi convertire in Scambio Crypto Differito
+        // Possono passare infatti anche diversi minuti tra il movimento di uscita e quello di entrata
+        Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
@@ -174,6 +178,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Buy",                                        "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Sell",                                       "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Related",                        "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("ETH 2.0 Staking",                            "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fiat Deposit",                               "DEPOSITO FIAT");
@@ -251,6 +256,7 @@ public class Importazioni {
 
             }
             List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
+          //  List<String> listaAutoinvestimenti=new ArrayList()<>;
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
                 String consolidata[] = listaConsolidata.get(i);
@@ -290,7 +296,9 @@ public class Importazioni {
     }
     
     
-    
+    public static void ImportaMovimentidaBinanceAPI(){
+       
+    }
     
     
     public static void Importa_Crypto_CDCApp(String fileCDCapp,boolean SovrascriEsistenti) {
@@ -1590,8 +1598,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             else if (movimentoConvertito.trim().equalsIgnoreCase("COMMISSIONI"))
                             {
                                 //Scambio Crypto Crypto
-                                
-                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_CM";
+                                //il C dopo binance mi serve per far si che le commissioni le metta per ultime
+                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_C"+String.valueOf(k+1)+ "_1_CM";
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+1;
                                 RT[3]="Binance";
@@ -1642,6 +1650,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[9]=Mon.Tipo;
                                     RT[10]=Mon.Qta;
                                 }else{
+                                    // i movimenti di rientro vanno sempre dopo e li distinguo con la A
+                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_A"+String.valueOf(k+1)+ "_1_TI";
                                     RT[6]="-> "+Mon.Moneta;                                   
                                     RT[11]=Mon.Moneta;
                                     RT[12]=Mon.Tipo;

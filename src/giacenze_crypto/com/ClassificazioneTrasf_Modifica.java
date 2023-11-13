@@ -32,6 +32,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     //DAI -> Airdrop o similare (deposito)
     //DCZ -> Costo di carico 0 (deposito)
     //DAC -> Acquisto Crypto (deposito)   
+    //SCC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Completamente da gestire)
     
     
     static String IDTrans="";

@@ -55,6 +55,10 @@ public class DatabaseH2 {
             createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITIBINANCE  (Coppia VARCHAR(255) PRIMARY KEY)";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
+            
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINGECKO  (Address_Chain VARCHAR(255) PRIMARY KEY)";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute(); 
                        
             createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
@@ -373,6 +377,22 @@ public class DatabaseH2 {
         return Risultato;
     }
         
+            public static String GestitiCoingecko_Leggi(String Gestito) {
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Address_Chain FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("Address_Chain");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    }    
         
         public static void CoppieBinance_ScriviNuovaTabella(List<String> Coppie) {
         try {
@@ -393,6 +413,25 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
+        public static void GestitiCoingecko_ScriviNuovaTabella(List<String> Gestiti) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITICOINGECKO";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute();
+            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINGECKO  (Address_Chain VARCHAR(255) PRIMARY KEY)";
+            checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute(); 
+            for (String gestito:Gestiti){
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO GESTITICOINGECKO (Address_Chain) VALUES ('" + gestito + "')";
+                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
         
         public static String Opzioni_Leggi(String Opzione) {
         String Risultato = null;

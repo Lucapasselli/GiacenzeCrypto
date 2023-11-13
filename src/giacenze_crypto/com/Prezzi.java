@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -122,151 +123,7 @@ public class Prezzi {
 
     }  
     
-     /*   public static void GeneraMappaCambioUSDTEUR(){
-         try {
-             File file=new File ("cambioUSDTEUR.db");
-             if (!file.exists()) file.createNewFile();
-             String riga;
-             try (FileReader fire = new FileReader("cambioUSDTEUR.db");
-                     BufferedReader bure = new BufferedReader(fire);)
-             {
-                 while((riga=bure.readLine())!=null)
-                 {
-                     String rigaSplittata[]=riga.split(",");
-                     if (rigaSplittata.length==2)
-                     {
-                         MappaConversioneUSDTEUR.put(rigaSplittata[0], rigaSplittata[1]);
-                     }
-                 }
-                 bure.close();
-                 fire.close();        
-             } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-             } catch (IOException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-             }
 
-         } catch (IOException ex) {        
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    } */
-    
-        
-        
-        
-        
-        
-        
- /*            public static void GeneraMappaCambioAddressEUR(){
-         try {
-             File file=new File ("cambioAddressEUR.db");
-             if (!file.exists()) file.createNewFile();
-             String riga;
-             try (FileReader fire = new FileReader("cambioAddressEUR.db");
-                     BufferedReader bure = new BufferedReader(fire);)
-             {
-                 while((riga=bure.readLine())!=null)
-                 {
-                     String rigaSplittata[]=riga.split(",");
-                     if (rigaSplittata.length==2)
-                     {
-                         MappaConversioneAddressEUR.put(rigaSplittata[0], rigaSplittata[1]);
-                         MappaConversioneAddressEURtemp.put(rigaSplittata[0], rigaSplittata[1]);
-                     }
-                 }
-                 bure.close();
-                 fire.close();        
-             } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-             } catch (IOException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-             }
-
-         } catch (IOException ex) {        
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }    */
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
- /*       public static void GeneraMappaCambioXXXEUR(){
-         try {
-             File file=new File ("cambioXXXEUR.db");
-             if (!file.exists()) file.createNewFile();
-             String riga;
-             try (FileReader fire = new FileReader("cambioXXXEUR.db");
-                     BufferedReader bure = new BufferedReader(fire);)
-             {
-                 while((riga=bure.readLine())!=null)
-                 {
-                     String rigaSplittata[]=riga.split(",");
-                     if (rigaSplittata.length==2)
-                     {
-                         MappaConversioneXXXEUR.put(rigaSplittata[0], rigaSplittata[1]);
-                         MappaConversioneXXXEUR_temp.put(rigaSplittata[0], rigaSplittata[1]);
-                     }
-                 }
-                 bure.close();
-                 fire.close();        
-             } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-             } catch (IOException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-             }
-
-         } catch (IOException ex) {        
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    } */
-    
-        
- /*   public static void GeneraMappaConversioneAddressCoin(){
-         try {
-             File file=new File ("conversioneAddressCoin.db");
-             if (!file.exists()) file.createNewFile();
-             String riga;
-             try (FileReader fire = new FileReader("conversioneAddressCoin.db");
-                     BufferedReader bure = new BufferedReader(fire);)
-             {
-                 while((riga=bure.readLine())!=null)
-                 {
-                     String rigaSplittata[]=riga.split(",");
-                    // System.out.println(riga);
-                     if (rigaSplittata.length==2&&CDC_Grafica.Mappa_AddressRete_Nome.get(rigaSplittata[0])==null)
-                         //se lunghezza=2 significa che non ho l'id di coingecko della moneta
-                         //inserisco il dato anche solo se lo stesso non è presente nella tabella delle coin listate su Binance
-                         //in quel caso non mi interessa inserirlo qua perchè il prezzo lo prenderò direttamente da binance
-                         //e quelle coin sono sicuramente legali e non serve contraddesgnare con gli sterischi
-                     {
-                        // System.out.println(riga);
-                         MappaConversioneAddressCoin.put(rigaSplittata[0], rigaSplittata[1]);
-                     }
-                     else if (rigaSplittata.length==3&&CDC_Grafica.Mappa_AddressRete_Nome.get(rigaSplittata[0])==null)
-                         //se lunghezza=3 significa che ho anche l'id di coingecko della moneta
-                         //utile nel caso mi servissero i prezzi di una shitcoin listata da coingecko
-                     {
-                         MappaConversioneAddressCoin.put(rigaSplittata[0], rigaSplittata[1]+","+rigaSplittata[2]);
-                     }
-                 }
-                 bure.close();
-                 fire.close();        
-             } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-             } catch (IOException ex) {
-                 Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-             }
-
-         } catch (IOException ex) {        
-            Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    } */
     
     
     
@@ -791,8 +648,11 @@ public class Prezzi {
 
         if (risultato == null) {
             //se il token non è gestito da coingecko e non è già nel database ritorno null
-            String AddressNoPrezzo=DatabaseH2.AddressSenzaPrezzo_Leggi(Address + "_" + Rete);
-            if (AddressNoPrezzo != null && (DataRiferimento < Long.parseLong(AddressNoPrezzo))) {
+            RecuperaCoinsCoingecko();
+            //String AddressNoPrezzo=DatabaseH2.AddressSenzaPrezzo_Leggi(Address + "_" + Rete);
+            String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
+            //System.out.println(Address + "_" + Rete);
+            if (AddressNoPrezzo == null) {
                 return null;
             }
             else
@@ -974,7 +834,7 @@ public class Prezzi {
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
-            TimeUnit.SECONDS.sleep(7);//il timeout serve per evitare di fare troppe richieste all'API
+            TimeUnit.SECONDS.sleep(10);//il timeout serve per evitare di fare troppe richieste all'API
             URL url;
             //DA RIVEDERE!!!!!!!!!!!!!!
            // https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=1644879600&to=1648335600
@@ -1374,154 +1234,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    /*public static String DammiPrezzoTransazioneOLD(String Moneta1, String Moneta2, String Qta1, String Qta2,
-            long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Address1, String Address2, String Rete) {
-        
-        
-        String PrezzoTransazione;
-     /*   System.out.println(Moneta1);
-        System.out.println(Moneta2);
-        System.out.println(Qta1);
-        System.out.println(Qta2);
-        System.out.println(Data);0xEadAa45fC7e8912d8AabF415205830f6b567610b
-        System.out.println(Prezzo);
-        System.out.println(PrezzoZero);
-        System.out.println(Decimali);
-        System.out.println(Address1);
-        System.out.println(Address2);
-        System.out.println(Rete);
-        System.out.println("-------");
-        Map<String, String> MappaReteCoin = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        MappaReteCoin.put("BSC", "BNB");
-        // boolean trovato1=false;
-        // boolean trovato2=false;
-        //come prima cosa controllo se sto scambiando usdt e prendo quel prezzo come valido
-        //metto anche la condizione che address sia null perchè ci sono delle monete che hanno simbolo eur ma non lo sono
-        //e se hanno un address sicuramente non sono fiat
-        if (Moneta1 != null && Moneta1.equalsIgnoreCase("EUR") && Address1 == null) {
-            PrezzoTransazione = Qta1;
-            if (PrezzoTransazione != null) {
-                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                return PrezzoTransazione;
-            }
-        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("EUR") && Address2 == null) {
-            PrezzoTransazione = Qta2;
-            if (PrezzoTransazione != null) {
-                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                return PrezzoTransazione;
-            }
-        } else if (Moneta1 != null && Moneta1.equalsIgnoreCase("USDT")) {
-            //se l'address è uguale alla moneta di riferimento della rete vuol dire che sto chiedendo il prezzo della coin nativa
-            if (Address1==null){
-                PrezzoTransazione = ConvertiUSDTEUR(Qta1, Data);
-            }                    
-            else
-                {
-                PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete,Moneta1);
-                } 
-            if (PrezzoTransazione != null) {
-                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                return PrezzoTransazione;
-            }
-        } else if (Moneta2 != null && Moneta2.equalsIgnoreCase("USDT")) {
-            if (Address2==null){
-                PrezzoTransazione = ConvertiUSDTEUR(Qta2, Data);
-                 }                    
-            else
-                {
-                PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete,Moneta2);
-                } 
-            if (PrezzoTransazione != null) {
-                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                return PrezzoTransazione;
-            }
-        } else {
 
-            //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
-            for (String CoppiePrioritarie1 : CoppiePrioritarie) {
-                if (Qta1 != null && Moneta1 != null && (Moneta1 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
-                    // trovato1=true;
-                    if (Address1==null  || MappaReteCoin.get(Rete).equalsIgnoreCase(Address1)){
-                        PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
-                    }
-                    else
-                       {
-                        PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete,Moneta1);
-                       } 
-                    if (PrezzoTransazione != null) {
-                        PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                        return PrezzoTransazione;
-                    }//ovviamente se il prezzo è null vado a cercarlo sull'altra coppia
-                    //se trovo la condizione ritorno il prezzo e interrnompo la funzione
-                    
-                }
-                if (Qta2 != null && Moneta2 != null && (Moneta2 + "USDT").toUpperCase().equals(CoppiePrioritarie1)) {
-                    // trovato2=true;
-                    if (Address2==null  || MappaReteCoin.get(Rete).equalsIgnoreCase(Address2)){
-                        PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
-                    }
-                    else
-                       {
-                        PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete,Moneta2);
-                       } 
-                    if (PrezzoTransazione != null) {
-                        PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                        return PrezzoTransazione;
-                    }
-                    
-                    //se trovo la condizione ritorno il prezzo e interrnompo la funzione
-                }
-            }
-            //Se arrivo qua vuol dire che non ho trovato il prezzo tra le coppie prioritarie
-            //a questo punto controllo se ho l'address delle monetee controllo su coingecko.
-
-            if (Qta1 != null && Moneta1 != null && Address1 != null && Rete != null) {
-                PrezzoTransazione = ConvertiAddressEUR(Qta1, Data, Address1, Rete,Moneta1);
-                if (PrezzoTransazione != null) {
-                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                    //   trovato1=true;
-                    return PrezzoTransazione;
-                }
-            }
-            if (Qta2 != null && Moneta2 != null && Address2 != null && Rete != null) {
-                PrezzoTransazione = ConvertiAddressEUR(Qta2, Data, Address2, Rete,Moneta2);
-                if (PrezzoTransazione != null) {
-                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                    return PrezzoTransazione;
-                }
-            }
-
-            //a questo punto la cerco tra tutte le coppie che binance riconosce
-            if (MappaCoppieBinance.isEmpty()) {
-                RecuperaCoppieBinance();
-                //se non ho la mappa delle coppie di binance la recupero
-            }
-            //Se ho gli address non cerco in binance i dati che potrei incorrere in errori di omonimia
-            //utilizzo l'address che è molto più preciso
-            if (Qta1 != null && Moneta1 != null && MappaCoppieBinance.get(Moneta1 + "USDT") != null && Address1==null) {
-                PrezzoTransazione = ConvertiXXXEUR(Moneta1, Qta1, Data);
-                if (PrezzoTransazione != null) {
-                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                    return PrezzoTransazione;
-                }
-                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
-            }
-            if (Qta2 != null && Moneta2 != null && MappaCoppieBinance.get(Moneta2 + "USDT") != null && Address2==null) {
-                PrezzoTransazione = ConvertiXXXEUR(Moneta2, Qta2, Data);
-                // System.out.println("prezzo.."+PrezzoTransazione);
-                if (PrezzoTransazione != null) {
-                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                    return PrezzoTransazione;
-                }
-                //se trovo la condizione ritorno il prezzo e interrnompo la funzione
-            }
-        }
-        if (PrezzoZero) {
-            return "0.00";
-        } else {
-            return Prezzo;
-        }
-    }*/
  
     
     
@@ -1792,6 +1505,75 @@ for (int i=0;i<ArraydataIni.size();i++){
         return ok;
     }
         
+    
+    
+        public static String RecuperaCoinsCoingecko() {
+        String ok = "ok";
+        //come prima cosa recupero l'ora atuale
+        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
+        //altrimenti tengo buona quella presente nel database
+        long adesso = System.currentTimeMillis();
+        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_Coingecko");
+        long dataUltimoScarico = 0;
+        if (dataUltimoScaricoString != null) {
+            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
+        }
+        if (adesso > (dataUltimoScarico + 86400000)) {
+            try {
+                String apiUrl = "https://api.coingecko.com/api/v3/coins/list?include_platform=true";
+                URL url = new URI(apiUrl).toURL();
+                URLConnection connection = url.openConnection();
+                System.out.println(url);
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+                    //System.out.println(line);
+                }
+                List<String> gestiti = new ArrayList<>();
+                String jsonString=response.toString();
+               // String jsonString=in.readLine();
+               JsonElement jsonElement = JsonParser.parseString(jsonString);
+
+                if (jsonElement.isJsonArray()) {
+                    JsonArray jsonArray = jsonElement.getAsJsonArray();
+                    for (JsonElement element : jsonArray) {
+                        JsonObject jsonObject = element.getAsJsonObject();
+                   //    String id = jsonObject.get("id").getAsString();
+                        JsonObject platformsObject = jsonObject.getAsJsonObject("platforms");
+                        String BSCAddress = platformsObject.has("binance-smart-chain") ? platformsObject.get("binance-smart-chain").getAsString() : null;
+                        String cronosAddress = platformsObject.has("cronos") ? platformsObject.get("cronos").getAsString() : null;
+                        
+                        if (cronosAddress!=null&&!cronosAddress.isEmpty()){
+                            gestiti.add((cronosAddress+"_CRO").toUpperCase());
+                        }
+                        if (BSCAddress!=null&&!BSCAddress.isEmpty()){
+                            gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
+                        }
+
+                    }
+                   // System.out.println("sono qui");
+                    gestiti.add("CRO_CRO");
+                    DatabaseH2.GestitiCoingecko_ScriviNuovaTabella(gestiti);
+                    DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", String.valueOf(adesso));
+                }else {
+                    ok=null;
+                        }
+                TimeUnit.SECONDS.sleep(8);
+            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return ok;
+    }
+    
+    
+    
+    
     //questa funzione la chiamo sempre una sola volta per verificare quali sono le coin gestite da coingecko    
  /*   public static String RecuperaCoinsCoingecko() {
 

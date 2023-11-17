@@ -6,6 +6,7 @@ package giacenze_crypto.com;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
+import com.sun.net.httpserver.Request;
 import static giacenze_crypto.com.Importazioni.ColonneTabella;
 import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
 import java.awt.Color;
@@ -39,10 +40,19 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.*;
 import java.awt.*;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.List;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.binary.Hex;
 
 
 /**
@@ -3380,8 +3390,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 //3- stessa moneta
                 //4- exchange diverso
                 //5- importo uguale o comunque non deve differire di più del 2% ma uno deve essere un deposito e l'altro un prelievo
-                //6- un movimento deve essere in negativo e l'altro in positivo
-                BigDecimal Sommaqta=new BigDecimal(qta).add(new BigDecimal (qta2)).stripTrailingZeros().abs();
+                //6- un movimento deve essere in negativo e l'altro in positivo                
+                //7 - La qta uscita deve essere sempre maggiore o uguale di quella ricevuta
+                BigDecimal Sommaqta2=new BigDecimal(qta).add(new BigDecimal (qta2)).stripTrailingZeros();
+                //Se sommaQta è maggiore di zero significa che sono entrati più soldi di quelli usciti e questo è impossibile
+                //per cui non posso eseguire il movimento
+                //vado avanti solo se sommaqta è minore o uguale a zero
+                BigDecimal Sommaqta=Sommaqta2.abs();
                 BigDecimal PercentualeDifferenza=new BigDecimal(100);                
                 if (Double.parseDouble(qta)!=0){
                     PercentualeDifferenza=Sommaqta.divide(new BigDecimal(qta),4,RoundingMode.HALF_UP).multiply(new BigDecimal(100)).abs(); 
@@ -3390,28 +3405,31 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         Funzioni_Date_DifferenzaDateSecondi(data2,data)<3600 &&//2
                         moneta.equalsIgnoreCase(moneta2)&&//3
                         !wallet.equalsIgnoreCase(wallet2)&&//4
-                        PercentualeDifferenza.compareTo(new BigDecimal(2))==-1 //5
+                        PercentualeDifferenza.compareTo(new BigDecimal(2))==-1 &&//5
+                        Sommaqta2.compareTo(new BigDecimal(0))<=0//7
                         )     //6  
                 
                 {
-                    String tipo;
-                    String aggiornata2[]=MappaCryptoWallet.get(id2);
-                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    aggiornata2[18]=tipo;
-                    if(id2.split("_")[4].equalsIgnoreCase("DC")) aggiornata2[5]="TRASFERIMENTO TRA WALLET";else aggiornata2[5]="TRASFERIMENTO TRA WALLET";
-                    aggiornata2[19]="0";
-                    aggiornata2[20]=id;
-                    String aggiornata[]=MappaCryptoWallet.get(id);
-                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    aggiornata[18]=tipo;
-                    if(id.split("_")[4].equalsIgnoreCase("DC")) aggiornata[5]="TRASFERIMENTO TRA WALLET";else aggiornata[5]="TRASFERIMENTO TRA WALLET";
-                    aggiornata[19]="0";
-                    aggiornata[20]=id2;
-                    MappaCryptoWallet.put(id, aggiornata);
-                    MappaCryptoWallet.put(id2, aggiornata2);
+                    String IDDeposito=null;
+                    String IDPrelievo=null;
+                    if(id.split("_")[4].equalsIgnoreCase("DC")){
+                        IDDeposito=id;
+                    }
+                    else if(id.split("_")[4].equalsIgnoreCase("PC")){
+                        IDPrelievo=id;
+                    }
+                    if(id2.split("_")[4].equalsIgnoreCase("DC")){
+                        IDDeposito=id2;
+                    }
+                    else if(id2.split("_")[4].equalsIgnoreCase("PC")){
+                        IDPrelievo=id2;
+                    }
+                    if (IDPrelievo!=null && IDDeposito!=null)
+                        {
+                    ClassificazioneTrasf_Modifica.CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo,IDDeposito);
                     numeromodifiche++;
-                   // System.out.println(data+" ; "+data2+" ; "+Differenza_Date_secondi(data2,data));
                     break;
+                    }
                 }
             }
         }
@@ -4170,13 +4188,71 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }//GEN-LAST:event_GiacenzeaData_Bottone_ScamActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        
-        
-        
+        BufferedReader reader = null;
+        HttpURLConnection connection = null;
+        try {
+            // TODO add your handling code here:
+            String timestamp = Long.toString(System.currentTimeMillis());
+            String data = "recvWindow=60000&timestamp="+timestamp;
+            String signature = generateSignature(data, "");
+            String richiesta="https://api.binance.com/sapi/v1/asset/assetDividend?"+data+ "&signature=" + signature;
+            System.out.println(richiesta);
+            URL apiUrl = new URL(richiesta);
+            connection = (HttpURLConnection) apiUrl.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("X-MBX-APIKEY", "");
+                        int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+            
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String line;
+                StringBuilder response = new StringBuilder();
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                System.out.println(response.toString());
+            } else {
+                System.out.println("Request failed. Response Code: " + responseCode);
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ProtocolException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            if (connection != null) {
+                connection.disconnect();
+            }
+            //System.out.println(signature);
+         //   System.out.println(timestamp);
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
-
+    public static String generateSignature(String data, String apiSecret) {
+        try {
+            Mac sha256Hmac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(apiSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            sha256Hmac.init(secretKey);
+            byte[] encodedBytes = sha256Hmac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            return Hex.encodeHexString(encodedBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
     private void GiacenzeaData_CompilaTabellaToken(){
         
         //Gestisco i bottoni

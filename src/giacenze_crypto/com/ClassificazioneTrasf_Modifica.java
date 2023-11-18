@@ -783,8 +783,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String TipoMovimentoRichiesto;
         String MonetaAttuale;
         BigDecimal QtaAttuale;
-
-        if (ComboBox_TipoMovimento.getSelectedItem().toString().contains("TRASFERIMENTO TRA WALLET")) {
+        System.out.println(ComboBox_TipoMovimento);
+        if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().contains("TRASFERIMENTO TRA WALLET")) {
             if (TipoMovimentoAttuale.equalsIgnoreCase("PC")) {
                 MonetaAttuale = attuale[8].trim();
                 QtaAttuale = new BigDecimal(attuale[10]).stripTrailingZeros();
@@ -831,7 +831,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     }
 
                     if (QtanoABS != null && Qta != null && SommaQta != null && Moneta != null
-                            && MonetaAttuale.equalsIgnoreCase(Moneta)
+                            && MonetaAttuale.equals(Moneta)
                             && Qta.compareTo(QtaAttualeMax) == -1 && Qta.compareTo(QtaAttualeMin) == 1
                             && DataOra < (DataOraAttuale + 86400000)
                             && DataOra > (DataOraAttuale - 86400000)
@@ -852,7 +852,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 }
             }
 
-        }else if (ComboBox_TipoMovimento.getSelectedItem().toString().contains("SCAMBIO CRYPTO DIFFERITO")) {
+        }else if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().contains("SCAMBIO CRYPTO DIFFERITO")) {
            // System.out.println("Differito");
            long DataMinima=0;
            long DataMassima=0;

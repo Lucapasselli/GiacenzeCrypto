@@ -52,7 +52,7 @@ import java.time.ZoneId;
 import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.commons.codec.binary.Hex;
+//import org.apache.commons.codec.binary.Hex;
 
 
 /**
@@ -3403,7 +3403,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     }
                 if (MappaCryptoWallet.get(id2)[18].equalsIgnoreCase("")&&//1
                         Funzioni_Date_DifferenzaDateSecondi(data2,data)<3600 &&//2
-                        moneta.equalsIgnoreCase(moneta2)&&//3
+                        moneta.equals(moneta2)&&//3
                         !wallet.equalsIgnoreCase(wallet2)&&//4
                         PercentualeDifferenza.compareTo(new BigDecimal(2))==-1 &&//5
                         Sommaqta2.compareTo(new BigDecimal(0))<=0//7
@@ -4241,7 +4241,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     public static String generateSignature(String data, String apiSecret) {
-        try {
+ /*       try {
             Mac sha256Hmac = Mac.getInstance("HmacSHA256");
             SecretKeySpec secretKey = new SecretKeySpec(apiSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             sha256Hmac.init(secretKey);
@@ -4250,7 +4250,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }
+        }*/
+ return null;
     }
     
     private void GiacenzeaData_CompilaTabellaToken(){

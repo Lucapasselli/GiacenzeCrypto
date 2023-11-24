@@ -28,15 +28,15 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
     //PCO -> Cashout o similare (prelievo)
     //PTW -> Trasferimento tra Wallet (prelievo)
+    /////////////PSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Non Utilizzato per ora)
     //DTW -> Trasferimento tra Wallet (deposito)
     //DAI -> Airdrop o similare (deposito)
     //DCZ -> Costo di carico 0 (deposito)
     //DAC -> Acquisto Crypto (deposito)   
-    //DSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Completamente da gestire)
-    //PSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Completamente da gestire)
+   //////////// //DSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Non Utilizzato per ora)
+
     
     static String IDTrans="";
-    static int UltimaScelta=0;
     boolean ModificaEffettuata=false;
     public ClassificazioneTrasf_Modifica(String ID) {
         ModificaEffettuata=false;
@@ -58,12 +58,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             TransferNO();
         } else if (tipomov.equalsIgnoreCase("PTW")) {
             ntipo = 3;
-            TransferSI();
-        } else if (tipomov.equalsIgnoreCase("PSC")) {
-            ntipo = 4;
+            if (riga[6].contains("Scambio"))ntipo=4;
             TransferSI();
         } else if (tipomov.equalsIgnoreCase("DTW")) {
             ntipo = 3;
+            if (riga[6].contains("Scambio"))ntipo=5;
             TransferSI();
         } else if (tipomov.equalsIgnoreCase("DAI")) {
             ntipo = 1;
@@ -74,11 +73,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         } else if (tipomov.equalsIgnoreCase("DAC")) {
             ntipo = 4;
             TransferNO();
-        } else if (tipomov.equalsIgnoreCase("DSC")) {
-            ntipo = 5;
-            TransferSI();
         } else {
-            // jTable2.setEnabled(false);
             TransferNO();
         }
         String papele[];
@@ -402,6 +397,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     
 
                 }
+                case 5 -> {
+                    descrizione = "SCAMBIO CRYPTO DIFFERITO";
+                    trasferimento = true;
+
+                }
                 default ->{
                  /*   descrizione = "DEPOSITO CRYPTO";
                     System.out.println(attuale[9]);
@@ -429,6 +429,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     plusvalenza="0";
                     trasferimento = true;
                 }
+                case 4 -> {
+                    descrizione = "SCAMBIO CRYPTO DIFFERITO";
+                    trasferimento = true;
+                }
                 default ->
                     //descrizione = "PRELIEVO CRYPTO";
                     descrizione=Importazioni.RitornaTipologiaTransazione(attuale[9], null,1);
@@ -454,68 +458,59 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
             ModificaEffettuata = true;
             this.dispose();
-        } else {
-
-            if (Tabella_MovimentiAbbinati.getSelectedRow() >= 0) {
-                int rigaselezionata = Tabella_MovimentiAbbinati.getSelectedRow();
-                String IDTransazioneControparte = Tabella_MovimentiAbbinati.getValueAt(rigaselezionata, 0).toString();
-
-                //devo aggiungere che dettaglioTrasferimento deve essere vuoto!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                String attualeControparte[] = MappaCryptoWallet.get(IDTransazioneControparte);
-                String IDPrelievo;
-                String IDDeposito;
-                //se il movimento selezionato non è associato a nulla alloro lo associo, altrimenti faccio uscire un messaggio di errore
-                if (attualeControparte[20].equalsIgnoreCase("")) {
-
-                    if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
-                       // tipoControparte = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                        IDDeposito=IDTrans;
-                        IDPrelievo=IDTransazioneControparte;
-                        //creo movimento di commissione etc
-                        CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo,IDDeposito);
-                    } else {
-                        IDDeposito=IDTransazioneControparte;
-                        IDPrelievo=IDTrans;
-                        //creo movimento di commissione e valori
-                        CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo,IDDeposito);
-
-                    }
-                    attuale[21] = Note;
-
-                    JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-                            "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    ModificaEffettuata = true;
-                    this.dispose();
-
-                } else {
-                    JOptionPane.showConfirmDialog(this, "Il movimento selezionato dalla tabella è già abbinato ad un altro movimento!\n"
-                            + "Scegliere altro movimento oppure disabbinare dal movimento precedentemente associato e ripetere la procedura.",
-                        "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
-                }
             } else {
-                //in questo caso mando fuori un messaggio che dice di selezionare un movimento di conroparte per andare avanti
-                JOptionPane.showConfirmDialog(this, "Per questo tipo di movimentazione è obbligatorio selezionare il movimento corrispondente nella tabella!",
-                        "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+
+                if (Tabella_MovimentiAbbinati.getSelectedRow() >= 0) {
+                    int rigaselezionata = Tabella_MovimentiAbbinati.getSelectedRow();
+                    String IDTransazioneControparte = Tabella_MovimentiAbbinati.getValueAt(rigaselezionata, 0).toString();
+                    //devo aggiungere che dettaglioTrasferimento deve essere vuoto!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    String attualeControparte[] = MappaCryptoWallet.get(IDTransazioneControparte);
+                    String IDPrelievo;
+                    String IDDeposito;
+                    //se il movimento selezionato non è associato a nulla alloro lo associo, altrimenti faccio uscire un messaggio di errore
+                    if (attualeControparte[20].equalsIgnoreCase("")) {
+
+                        if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
+                            // tipoControparte = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                            IDDeposito = IDTrans;
+                            IDPrelievo = IDTransazioneControparte;
+                            //creo movimento di commissione etc
+                            if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
+                                CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
+                            } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
+                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
+                            }
+                        } else {
+                            IDDeposito = IDTransazioneControparte;
+                            IDPrelievo = IDTrans;
+                            //creo movimento di commissione e valori
+                            if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
+                                CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
+                            } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
+                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
+                            }
+
+                        }
+                        attuale[21] = Note;
+
+                        JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                                "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        ModificaEffettuata = true;
+                        this.dispose();
+
+                    } else {
+                        JOptionPane.showConfirmDialog(this, "Il movimento selezionato dalla tabella è già abbinato ad un altro movimento!\n"
+                                + "Scegliere altro movimento oppure disabbinare dal movimento precedentemente associato e ripetere la procedura.",
+                                "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                    }
+                } else {
+                    //in questo caso mando fuori un messaggio che dice di selezionare un movimento di conroparte per andare avanti
+                    JOptionPane.showConfirmDialog(this, "Per questo tipo di movimentazione è obbligatorio selezionare il movimento corrispondente nella tabella!",
+                            "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
+
             }
 
-        }
-
-        // this.dispose();
-        /*            String tipo;
-                    String aggiornata2[]=MappaCryptoWallet.get(id2);
-                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    aggiornata2[18]=tipo;
-                    aggiornata2[5]="TRASFERIMENTO TRA WALLET";
-                    aggiornata2[19]="0";
-                    aggiornata2[20]=id;
-                    String aggiornata[]=MappaCryptoWallet.get(id);
-                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    aggiornata[18]=tipo;
-                    aggiornata[5]="TRASFERIMENTO TRA WALLET";
-                    aggiornata[19]="0";
-                    aggiornata[20]=id2;
-                    MappaCryptoWallet.put(id, aggiornata);
-                    MappaCryptoWallet.put(id2, aggiornata2);*/
 
     }//GEN-LAST:event_Bottone_OKActionPerformed
 
@@ -583,59 +578,101 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     
     public static void CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
         //come prima cosa devo generare un nuovo id per il prelievo
-       // System.out.println("Creo commissione");
+        System.out.println("Creo 3 movimenti");
         String MovimentoPrelievo[]=MappaCryptoWallet.get(IDPrelievo);
         String MovimentoDeposito[]=MappaCryptoWallet.get(IDDeposito);
-        BigDecimal QtaPrelievoValoreAssoluto=new BigDecimal(MovimentoPrelievo[10]).stripTrailingZeros().abs();
-        BigDecimal QtaDepositoValoreAssoluto=new BigDecimal(MovimentoDeposito[13]).stripTrailingZeros().abs();
+       // BigDecimal QtaPrelievoValoreAssoluto=new BigDecimal(MovimentoPrelievo[10]).stripTrailingZeros().abs();
+       // BigDecimal QtaDepositoValoreAssoluto=new BigDecimal(MovimentoDeposito[13]).stripTrailingZeros().abs();
         //Vado avanti solo se la qta prelevata è maggiore o uguale di quelòla ricevuta
-        if (QtaPrelievoValoreAssoluto.compareTo(QtaDepositoValoreAssoluto)>=0){
+     //   if (QtaPrelievoValoreAssoluto.compareTo(QtaDepositoValoreAssoluto)>=0){
             
         MovimentoPrelievo[5]="TRASFERIMENTO INTERNO";
         MovimentoDeposito[5]="TRASFERIMENTO INTERNO";
-        MovimentoPrelievo[18]="PTW - Trasferimento Interno";
-        MovimentoDeposito[18]="DTW - Trasferimento Interno"; 
+
+         
         
-        String IDCommissione;
-        String QtaCommissione;
-        String ValoreTransazione;
-        String MovimentoCommissione[]=new String[Importazioni.ColonneTabella];
-        String IDPrelivoSpezzato[]=IDPrelievo.split("_");
-        int numTransazione=Integer.parseInt(IDPrelivoSpezzato[2])+1;
-        IDCommissione=IDPrelivoSpezzato[0]+"_"+IDPrelivoSpezzato[1]+"_"+numTransazione+"_1_CM";
-        QtaCommissione=new BigDecimal(MovimentoPrelievo[10]).abs().subtract(new BigDecimal(MovimentoDeposito[13]).abs()).toPlainString();
-        ValoreTransazione=new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(),15, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaCommissione)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-        MovimentoCommissione[0]=IDCommissione;
-        MovimentoCommissione[1]=MovimentoPrelievo[1];
-        MovimentoCommissione[2]="1 di 1";
-        MovimentoCommissione[3]=MovimentoPrelievo[3];
-        MovimentoCommissione[4]=MovimentoPrelievo[4];
-        MovimentoCommissione[5]="COMMISSIONE";
-        MovimentoCommissione[6]=MovimentoPrelievo[6];
-        MovimentoCommissione[8]=MovimentoPrelievo[8];
-        MovimentoCommissione[9]=MovimentoPrelievo[9];
-        MovimentoCommissione[10]="-"+QtaCommissione;
-        MovimentoCommissione[15]=ValoreTransazione;
-        MovimentoCommissione[20]=IDPrelievo+","+IDDeposito;
-        MovimentoCommissione[22]="AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
-        //quindi se decadono le condizioni che lo hanno generato va eliminato
-        //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
-        Importazioni.RiempiVuotiArray(MovimentoCommissione);
-        //Se movimento di Prelievo è uguale a movimento di deposito allora non devo creare nessuna commissione
-        if (QtaPrelievoValoreAssoluto.compareTo(QtaDepositoValoreAssoluto)==1){           
-            MappaCryptoWallet.put(IDCommissione, MovimentoCommissione);
-            MovimentoPrelievo[10]=new BigDecimal(MovimentoPrelievo[10]).subtract(new BigDecimal(MovimentoCommissione[10])).toPlainString();
-            MovimentoPrelievo[15]=new BigDecimal(MovimentoPrelievo[15]).subtract(new BigDecimal(MovimentoCommissione[15])).toPlainString();
-            MovimentoPrelievo[20]=IDDeposito+","+IDCommissione;
-            MovimentoDeposito[20]=IDPrelievo+","+IDCommissione; 
-        }else
-            {
-            MovimentoPrelievo[20]=IDDeposito;
-            MovimentoDeposito[20]=IDPrelievo;
-            }
-        //Parte che modifica i movimenti preesistenti
-  
-         }
+        String IDTrasferimento1;
+        String IDScambio;
+        String IDTrasferimento2;
+        String MT1[]=new String[Importazioni.ColonneTabella];
+        String MS[]=new String[Importazioni.ColonneTabella];
+        String MT2[]=new String[Importazioni.ColonneTabella];
+        String IDSpezzato[]=IDPrelievo.split("_");
+        IDTrasferimento1=IDSpezzato[0]+"_"+IDSpezzato[1]+"_20_1_DC";
+        IDSpezzato=IDDeposito.split("_");
+        IDScambio=IDSpezzato[0]+"_"+IDSpezzato[1]+"_001_1_SC";
+        IDTrasferimento2=IDSpezzato[0]+"_"+IDSpezzato[1]+"_01_1_PC";
+        MT1[0]=IDTrasferimento1;
+        MS[0]=IDScambio;
+        MT2[0]=IDTrasferimento2;
+        MT1[1]=MovimentoPrelievo[1];
+        MS[1]=MovimentoDeposito[1];
+        MT2[1]=MovimentoDeposito[1];
+        MT1[2]="1 di 1";
+        MS[2]="1 di 1";
+        MT2[2]="1 di 1";
+        MT1[3]=MovimentoPrelievo[3];
+        MS[3]=MovimentoPrelievo[3];
+        MT2[3]=MovimentoPrelievo[3];
+        MT1[4]="In fase di Scambio";
+        MS[4]="In fase di Scambio";
+        MT2[4]="In fase di Scambio";
+        MT1[5]="TRASFERIMENTO INTERNO";
+        MS[5]="SCAMBIO CRYPTO";
+        MT2[5]="TRASFERIMENTO INTERNO";
+        MT1[6]="-> "+MovimentoPrelievo[8];
+        MS[6]=MovimentoPrelievo[8]+" -> "+MovimentoDeposito[11];
+        MT2[6]=MovimentoDeposito[11] +" ->";
+        
+        MS[8]=MovimentoPrelievo[8];
+        MT2[8]=MovimentoDeposito[11];        
+        MS[9]=MovimentoPrelievo[9];
+        MT2[9]=MovimentoDeposito[12];        
+        MS[10]=MovimentoPrelievo[10];
+        MT2[10]=new BigDecimal(MovimentoDeposito[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        
+        MT1[11]=MovimentoPrelievo[8];
+        MS[11]=MovimentoDeposito[11];
+        MT1[12]=MovimentoPrelievo[9];
+        MS[12]=MovimentoDeposito[12];
+        MT1[13]=new BigDecimal(MovimentoPrelievo[10]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        MS[13]=MovimentoDeposito[13];
+
+        MT1[15]=MovimentoPrelievo[15];
+        MS[15]=MovimentoDeposito[15];
+        MT2[15]=MovimentoDeposito[15];
+        
+        MovimentoPrelievo[18]="PTW - Scambio Differito";
+        MT1[18]="DTW - Trasferimento Interno";
+        MT2[18]="PTW - Trasferimento Interno";
+        MovimentoDeposito[18]="DTW - Scambio Differito"; 
+        
+        MovimentoPrelievo[20]=IDTrasferimento1+","+IDScambio+","+IDTrasferimento2+","+IDDeposito;
+        MT1[20]=IDPrelievo+","+IDScambio+","+IDTrasferimento2+","+IDDeposito;
+        MS[20]=IDPrelievo+","+IDTrasferimento1+","+IDTrasferimento2+","+IDDeposito;
+        MT2[20]=IDPrelievo+","+IDTrasferimento1+","+IDScambio+","+IDDeposito;
+        MovimentoDeposito[20]=IDPrelievo+","+IDTrasferimento1+","+IDScambio+","+IDTrasferimento2;
+        
+        MT1[22]="AU";
+        MS[22]="AU";
+        MT2[22]="AU";
+        
+        if (MovimentoDeposito.length>27){ 
+            MS[28]=MovimentoDeposito[28];//Entra
+            MT2[26]=MovimentoDeposito[28];//Esce
+        }
+        if (MovimentoPrelievo.length>25){ 
+            MT1[28]=MovimentoPrelievo[26];//Entra
+            MS[26]=MovimentoPrelievo[26];//Esce
+        }
+
+            Importazioni.RiempiVuotiArray(MT1);
+            Importazioni.RiempiVuotiArray(MS);
+            Importazioni.RiempiVuotiArray(MT2);       
+            MappaCryptoWallet.put(IDTrasferimento1, MT1);
+            MappaCryptoWallet.put(IDScambio, MS);
+            MappaCryptoWallet.put(IDTrasferimento2, MT2);
+      //   }
         
         
         
@@ -648,9 +685,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         
        
         int scelta=this.ComboBox_TipoMovimento.getSelectedIndex();
-        if (UltimaScelta!=scelta){
-           //  System.out.println("cambio "+scelta);
-        UltimaScelta=scelta;
+        if (evt.getItem().toString().equals(ComboBox_TipoMovimento.getSelectedItem().toString())){
+         //    System.out.println("cambio "+scelta);
         String descrizione,dettaglio;
                 if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
           //in questo caso sono in presenza di un movimento di deposito
@@ -680,6 +716,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
                     dettaglio = "DSC - Scambio Crypto Differito";
                     TransferSI();
+                 //   System.out.println("Scambio");
 
                 }
               default -> {descrizione="DEPOSITO CRYPTO";
@@ -708,6 +745,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
                     dettaglio = "PSC - Scambio Crypto Differito";
                     TransferSI();
+                   // System.out.println("Scambio");
 
                 }
               default -> {descrizione="PRELIEVO CRYPTO";
@@ -731,8 +769,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     public static void RiportaTransazioniASituazioneIniziale(String IDPartiConvolte[]){
         BigDecimal QtaCommissione=null;
         BigDecimal PrezzoCommissione=null;
-        String IDCommissione=null;
+
         for (String ID:IDPartiConvolte){
+           // System.out.println(ID);
             //come prima cosa cerco movimenti AC con e classificati come CM (Commissione)
             //Se lo trovo recupero i dati che mi servono e cancello la transazione
             //i dati sono la qta e il prezzo che dovrò andare a sommarli al movimento di prelievo per far tornare tutto alla situazione originale
@@ -740,37 +779,39 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             if (ID.split("_")[4].equalsIgnoreCase("CM")&&attuale[22].equalsIgnoreCase("AU")){
                 QtaCommissione=new BigDecimal(attuale[10]);
                 PrezzoCommissione=new BigDecimal(attuale[15]);
-                IDCommissione=ID;
-                MappaCryptoWallet.remove(IDCommissione);
+                MappaCryptoWallet.remove(ID);
+            }else if (attuale[22].equalsIgnoreCase("AU")){
+                MappaCryptoWallet.remove(ID);
             }
         }
-        //La Parte qua sotto è tutta da rivedere!!!!!!!AAAAAAAAAAAAAAAAAAA
-        for (String ID:IDPartiConvolte){
-            String descrizione=null;
-            String attuale[]=MappaCryptoWallet.get(ID);
-            if (ID.split("_")[4].equalsIgnoreCase("DC")){
-                descrizione="DEPOSITO CRYPTO";
-                attuale[5]=descrizione;
-                attuale[18]="";
-                attuale[19]="";
-                attuale[20]="";
-            }else if (ID.split("_")[4].equalsIgnoreCase("PC"))
-             {
-                //Essendo questo il prelievo devo farci delle modifiche sopra
-                 //ovvero sistemare un pò di qta e prezzo transazione (posizione 10 e 15)
-                descrizione="PRELIEVO CRYPTO";
-                attuale[5]=descrizione;
-                if (QtaCommissione!=null) attuale[10]=new BigDecimal(attuale[10]).add(QtaCommissione).toPlainString();
-                if (QtaCommissione!=null) attuale[15]=new BigDecimal(attuale[15]).add(PrezzoCommissione).toPlainString();
-                attuale[18]="";
-                attuale[19]="";
-                attuale[20]="";
-                 
-             }
 
-        //MappaCryptoWallet.put(ID, attuale);
+        for (String ID : IDPartiConvolte) {
+
+            String attuale[] = MappaCryptoWallet.get(ID);
+            if (attuale != null) {
+                if (ID.split("_")[4].equalsIgnoreCase("DC")) {
+
+                    attuale[5] = "DEPOSITO CRYPTO";
+
+                } else if (ID.split("_")[4].equalsIgnoreCase("PC")) {
+                    //Essendo questo il prelievo devo farci delle modifiche sopra
+                    //ovvero sistemare un pò di qta e prezzo transazione (posizione 10 e 15)
+
+                    attuale[5] = "PRELIEVO CRYPTO";
+                    if (QtaCommissione != null) {
+                        attuale[10] = new BigDecimal(attuale[10]).add(QtaCommissione).toPlainString();
+                    }
+                    if (QtaCommissione != null) {
+                        attuale[15] = new BigDecimal(attuale[15]).add(PrezzoCommissione).toPlainString();
+                    }
+
+                }
+                attuale[18] = "";
+                attuale[19] = "";
+                attuale[20] = "";
+            }
         }
-        }
+    }
 
 
     public void CompilaTabellaMovimetiAssociabili(String ID) {
@@ -783,7 +824,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String TipoMovimentoRichiesto;
         String MonetaAttuale;
         BigDecimal QtaAttuale;
-        System.out.println(ComboBox_TipoMovimento);
+       // System.out.println(ComboBox_TipoMovimento);
         if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().contains("TRASFERIMENTO TRA WALLET")) {
             if (TipoMovimentoAttuale.equalsIgnoreCase("PC")) {
                 MonetaAttuale = attuale[8].trim();
@@ -806,7 +847,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //5 - La qta uscita non deve essere ami inferiore alla qta ricevuta
             for (String[] v : MappaCryptoWallet.values()) {
                 String TipoMovimento = v[0].split("_")[4].trim();
-                if (TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
+                if (v[22]!=null&&!v[22].equalsIgnoreCase("AU")&&TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
 
                     BigDecimal Qta = null;
                     BigDecimal QtanoABS = null;
@@ -878,7 +919,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             for (String[] v : MappaCryptoWallet.values()) {
                // System.out.println("Differito");
                 String TipoMovimento = v[0].split("_")[4].trim();
-                if (TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
+                if (v[22]!=null&&!v[22].equalsIgnoreCase("AU")&&TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
                     
                     BigDecimal QtanoABS = null;
                     String Moneta = null;

@@ -137,6 +137,7 @@ public class Importazioni {
         //mettere almeno 1 secondo di tempo tra una richiesta e l'altra verso banchitalia
         
         AzzeraContatori();
+        List<String[]> listaScambiDifferiti=new ArrayList<>();
         
         String fileDaImportare = fileBinance;
        // System.out.println(fileBinance);
@@ -167,7 +168,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
         // La causale di autoinvestimento la dovrò poi convertire in Scambio Crypto Differito
         // Possono passare infatti anche diversi minuti tra il movimento di uscita e quello di entrata
-        Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "SCAMBIO DIFFERITO");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
@@ -239,7 +240,7 @@ public class Importazioni {
                     else //altrimenti consolido il movimento precedente
                     {
                      //   System.out.println(riga);
-                        List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
+                        List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
                         int nElementi = listaConsolidata.size();
                         for (int i = 0; i < nElementi; i++) {
                             String consolidata[] = listaConsolidata.get(i);
@@ -255,7 +256,7 @@ public class Importazioni {
                 }
 
             }
-            List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
+            List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
           //  List<String> listaAutoinvestimenti=new ArrayList()<>;
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
@@ -1423,7 +1424,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         return lista;
     }   
      
-          public static List<String[]> ConsolidaMovimenti_Binance(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
+          public static List<String[]> ConsolidaMovimenti_Binance(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
@@ -1491,7 +1492,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = "Binance";
-                                RT[4] = WalletSecondario;
+                                //RT[4] = WalletSecondario;
+                                RT[4] = "Principale";
                                 RT[5] = movimentoConvertito;
                                 RT[6] = "-> "+Mon.Moneta;                                
                                 RT[7] = CausaleOriginale;
@@ -1539,7 +1541,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+1;
                                 RT[3]="Binance";
-                                RT[4]=WalletSecondario;                                
+                               // RT[4]=WalletSecondario;
+                                RT[4] = "Principale";
                                 RT[5]="DEPOSITO FIAT";
                                 RT[6]="-> "+Mon.Moneta;
                                 RT[7]=CausaleOriginale;
@@ -1572,7 +1575,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+1;
                                 RT[3]="Binance";
-                                RT[4]=WalletSecondario;                                
+                                //RT[4]=WalletSecondario;
+                                RT[4] = "Principale";                                
                                 RT[5]=Descrizione;
                                 RT[7]=CausaleOriginale; 
                                 if (Mon.Qta.contains("-")) {
@@ -1603,7 +1607,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+1;
                                 RT[3]="Binance";
-                                RT[4]=WalletSecondario;
+                                //RT[4]=WalletSecondario;
+                                RT[4] = "Principale";
                                 RT[5]="COMMISSIONI";
                                 RT[6]=Mon.Moneta+" -> ";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                                
                                 RT[7]=CausaleOriginale;
@@ -1629,7 +1634,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                            // se è l'ultimo movimento allora creo anche le righe
 
                                 }
-                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
+                        /*        else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
                             {
                                
                                 //come prima cosa devo individuare il portafoglio nel quale vanno i token
@@ -1700,15 +1705,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 }
                                 
                                 
-                            }
-                               else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO"))
+                            }*/
+                               else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")||
+                                       movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
                             {
                                 RT = new String[ColonneTabella];
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+1;
                                 RT[3]="Binance";
-                                RT[4]=movimentoSplittato[2];                               
-                                
+                                //RT[4]=movimentoSplittato[2];
+                                RT[4] = "Principale";
                                 RT[7]=movimentoSplittato[3];
                                 if (Mon.Qta.contains("-")) {
                                     RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_PC";
@@ -1735,6 +1741,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[22]="A";
                                 RiempiVuotiArray(RT);
                                 lista.add(RT); 
+                                //La lista autoinvest serve per individuare i movimenti di autoinvest che sono degli scambi differiti e successivamente analizzarla e sistemarli
+                                if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))listaAutoinvest.add(RT);
                             }
                            else
                                     {

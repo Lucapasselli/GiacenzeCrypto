@@ -3294,7 +3294,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
         for (String[] v : MappaCryptoWallet.values()) {
           String TipoMovimento=v[0].split("_")[4].trim();
-          if (TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))
+          if ((TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))&&v[22]!=null&&!v[22].equalsIgnoreCase("AU"))
           {
             //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
             if (v[18].trim().equalsIgnoreCase("")||this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())

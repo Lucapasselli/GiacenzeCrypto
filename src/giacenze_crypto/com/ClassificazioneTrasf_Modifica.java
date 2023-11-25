@@ -598,10 +598,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String MS[]=new String[Importazioni.ColonneTabella];
         String MT2[]=new String[Importazioni.ColonneTabella];
         String IDSpezzato[]=IDPrelievo.split("_");
-        IDTrasferimento1=IDSpezzato[0]+"_"+IDSpezzato[1]+"_20_1_DC";
+        IDTrasferimento1=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
         IDSpezzato=IDDeposito.split("_");
-        IDScambio=IDSpezzato[0]+"_"+IDSpezzato[1]+"_001_1_SC";
-        IDTrasferimento2=IDSpezzato[0]+"_"+IDSpezzato[1]+"_01_1_PC";
+        IDScambio=IDSpezzato[0]+"_"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_SC";
+        IDTrasferimento2=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
         MT1[0]=IDTrasferimento1;
         MS[0]=IDScambio;
         MT2[0]=IDTrasferimento2;
@@ -668,10 +668,12 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
             Importazioni.RiempiVuotiArray(MT1);
             Importazioni.RiempiVuotiArray(MS);
-            Importazioni.RiempiVuotiArray(MT2);       
+            Importazioni.RiempiVuotiArray(MT2); 
+          //  MappaCryptoWallet.put(IDPrelievo, MovimentoPrelievo);
             MappaCryptoWallet.put(IDTrasferimento1, MT1);
             MappaCryptoWallet.put(IDScambio, MS);
             MappaCryptoWallet.put(IDTrasferimento2, MT2);
+          //  MappaCryptoWallet.put(IDDeposito, MovimentoDeposito);
       //   }
         
         

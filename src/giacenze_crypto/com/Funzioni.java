@@ -47,13 +47,15 @@ public class Funzioni {
         //ad esempio se devo rimuovere un movimento di prelievo che è associato ad un altro movimento di dieposito
         //prima di rimuovere il prelievo vado a torgliere dal deposito i riferimenti al prelievo che devo eliminare
          public static void RimuoviMovimentazioneXID(String ID){
+             
             String Annessi[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            if (Annessi!=null){
             String PartiCoinvolte[]=(ID+","+Annessi[20]).split(",");
             if (Annessi[20]!=null && !Annessi[20].equalsIgnoreCase("")){
                 ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
             }
             CDC_Grafica.MappaCryptoWallet.remove(ID);
-             
+            } 
          }
         
          

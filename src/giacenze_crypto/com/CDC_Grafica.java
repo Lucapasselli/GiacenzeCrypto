@@ -4468,15 +4468,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
           if (v[18]!=null&&(v[18].contains("DTW")||v[18].contains("PTW")))
           {
               String ID=v[0];
-              String riferimento=v[20];
-              String movimentoOpposto[]=MappaCryptoWallet.get(riferimento);
+              String riferimento=v[20];   
+              //FUNZIONE COMPLETAMENTE DA RIVEDERE, SERVE PER TROVARE MOVIMENTI ASSOCIATI NON PIU TALI E CANCELLARE LE ANOMALIE
+              //QUESTO PUò SUCCEDERE SE SI UTILIZZA LA FUNZIONE SOVRASCRIVI IN FASE DI IMPORTAZIONE DATI
+              //IN SOSTANZA SE NON TROVO TUTTI I RIFERIMENTI SU TUTTI I MOVIMENTI ASSOCIATI DEVO RIPORTARE IL TUTTO
+              //ALLA CONDIZIONE INIZIALE
+   /*           String movimentiOpposti[]=MappaCryptoWallet.get(riferimento)[20].split(",");
+              for (String IDmovimentoOpposto:movimentiOpposti){
+              //String movimentoOpposto
+              String movimentoOpposto[]=MappaCryptoWallet.get(IDmovimentoOpposto);
+              
+              
               if (movimentoOpposto==null || !movimentoOpposto[20].equalsIgnoreCase(ID)){
                 //se il movimento opposto non esiste oppure se sul movimento opposto non trovo l'id di questo movimento allora pulisco le righe
                 if (v[18].contains("DTW"))v[5]="DEPOSITO CRYPTO"; else v[5]="PRELIEVO CRYPTO";
                 v[18]="";
-                
+                }
                   
-              }
+              }*/
             
             }
           }

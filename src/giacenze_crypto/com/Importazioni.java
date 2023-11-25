@@ -265,6 +265,7 @@ public class Importazioni {
                 Mappa_Movimenti.put(consolidata[0], consolidata);
                // 
             }
+            
 
          //   bure.close();
           //  fire.close();
@@ -286,6 +287,11 @@ public class Importazioni {
                numeroscartati++;
            }
        }
+       //questo lo faccio alla fine perchè vado ad agire direttamente sulla mappa già compilata
+       //assengnado i movimenti aggiuntivi
+       ConsolidaMovimentiDifferiti(listaScambiDifferiti);
+    //   System.out.println(listaScambiDifferiti.get(0)[5]);
+    //   System.out.println(MappaCryptoWallet.get(listaScambiDifferiti.get(0)[0])[5]);
      //  System.out.println("TotaleMovimenti="+numeromov);
      //  System.out.println("TotaleScartati="+numeroscartati);
 //////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
@@ -1423,6 +1429,54 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                         }
         return lista;
     }   
+  
+        public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare){
+            Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            int nElementi = listaMovimentidaConsolidare.size();
+            //Con questo ordino i movimenti
+            for (int i = 0; i < nElementi; i++) {
+                String consolidata[] = listaMovimentidaConsolidare.get(i);             
+                Mappa_Movimenti.put(consolidata[0], consolidata);
+            }
+            
+            for(String[] riga:Mappa_Movimenti.values()){
+                //Se trovo un prelievo devo vedere se nei 10 minuti successivi c'è stato un deposito e lo associo
+               // System.out.println(riga[5]);
+                if (riga[5].contains("PRELIEVO")){
+                    //leggo l'ora
+                    long timestampPrelievo=OperazioniSuDate.ConvertiDatainLongMinuto(riga[1]);
+                    // una volta letto l'ora vado a vedere se nei 15 minuti successivi c'è un deposito, in quel caso
+                    // lo associo a questo movimenti di prelievo solo se il prezzo tra le due monete non si discosta di più del 10%
+                    // oppure se non riesco a trovare il prezzo
+                    // altrimenti lascio tutto com'è
+                    for(String[] rigaConfronto:Mappa_Movimenti.values()){
+                        if (rigaConfronto[5].contains("DEPOSITO")){                            
+                            BigDecimal PrezzoPrelievo=new BigDecimal(riga[15]);
+                            BigDecimal PrezzoDeposito=new BigDecimal(rigaConfronto[15]);
+                            BigDecimal Diecipercento=PrezzoPrelievo.divide(new BigDecimal(10));
+                            long timestampDeposito=OperazioniSuDate.ConvertiDatainLongMinuto(rigaConfronto[1]);
+                          /*  System.out.println(PrezzoPrelievo);
+                            System.out.println(PrezzoDeposito);
+                            System.out.println(Diecipercento);
+                            System.out.println(timestampPrelievo);
+                            System.out.println(timestampDeposito);*/
+                            //Se il tempo intercorso tra deposito e prelievo è inferiore di 15 minuti controllo il prezzo
+                            if (timestampDeposito-timestampPrelievo>0 && timestampDeposito-timestampPrelievo<900000&&
+                                    PrezzoPrelievo.subtract(PrezzoDeposito).abs().compareTo(Diecipercento)==-1){
+                                //Se la differenza tra il prezzo di prelievo e deposito è inferiore al 10% allora proseguo
+                                //e associo i movimenti e poi termino il ciclo
+                                    ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(riga[0], rigaConfronto[0]);
+                                    
+                                                               
+                            }
+                        }
+                    }
+                    
+                }
+            }
+                   
+        }
+     
      
           public static List<String[]> ConsolidaMovimenti_Binance(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
@@ -1634,10 +1688,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                            // se è l'ultimo movimento allora creo anche le righe
 
                                 }
-                        /*        else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
+                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
                             {
                                
-                                //come prima cosa devo individuare il portafoglio nel quale vanno i token
+                            /*    //come prima cosa devo individuare il portafoglio nel quale vanno i token
                                 String Wallet=movimentoSplittato[2];
                                 
                                 
@@ -1704,8 +1758,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 lista.add(RT);  
                                 }
                                 
-                                
-                            }*/
+                              */  
+                            }
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")||
                                        movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
                             {
@@ -1740,9 +1794,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[20]="";
                                 RT[22]="A";
                                 RiempiVuotiArray(RT);
-                                lista.add(RT); 
+                                lista.add(RT);
+                                if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
+                                {
+                                    //Gli scambi differiti li analizzarò poi alla fine di tutto
+                                  //  String RTcopy[]=new String[ColonneTabella];
+                                   // System.arraycopy(RT, 0, RTcopy, 0, ColonneTabella);
+                                listaAutoinvest.add(RT);
+                                }//else
+                                 // {
+                                      
+                                 // }  
                                 //La lista autoinvest serve per individuare i movimenti di autoinvest che sono degli scambi differiti e successivamente analizzarla e sistemarli
-                                if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))listaAutoinvest.add(RT);
+                               // else if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))listaAutoinvest.add(RT);
                             }
                            else
                                     {

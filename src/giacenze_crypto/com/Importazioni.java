@@ -77,10 +77,12 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
+import static giacenze_crypto.com.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
 import giacenze_crypto.com.TransazioneDefi.ValoriToken;
 //import giacenze_crypto.com.TransazioneDefi;
 import java.util.Collections;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -280,7 +282,8 @@ public class Importazioni {
            if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
            {
 
-               MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+             //  MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
                numeroaggiunti++;
            }else {
             //   System.out.println("Movimento Duplicato " + v);
@@ -289,7 +292,7 @@ public class Importazioni {
        }
        //questo lo faccio alla fine perchè vado ad agire direttamente sulla mappa già compilata
        //assengnado i movimenti aggiuntivi
-       ConsolidaMovimentiDifferiti(listaScambiDifferiti);
+       ConsolidaMovimentiDifferiti(listaScambiDifferiti,SovrascriEsistenti);
     //   System.out.println(listaScambiDifferiti.get(0)[5]);
     //   System.out.println(MappaCryptoWallet.get(listaScambiDifferiti.get(0)[0])[5]);
      //  System.out.println("TotaleMovimenti="+numeromov);
@@ -300,11 +303,21 @@ public class Importazioni {
         TrasazioniScartate=numeroscartati;
         if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
         
+        
+        
     }
     
     
-    public static void ImportaMovimentidaBinanceAPI(){
-       
+    public static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore) {
+        //Questa funzione inserisce il movimento in mappa ma prima di fare ciò elimina eventuali associazioni sul movimento precedente
+        //FASE 1 : VERIFICO SE IL MOVIMENTO ESISTE
+        if (MappaCryptoWallet.get(Chiave) != null) {
+            //FASE 2 : SE ESISTE IL MOVIMENTO ELIMINA EVENTUALI ASSOCIAZIONI VECCHIE SUL MOVIMENTO DA SOSTITUIRE
+            String PartiCoinvolte[] = (Chiave + "," + MappaCryptoWallet.get(Chiave)[20]).split(",");
+            RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
+        }
+        //FASE 3: Inserisocil movimento in mappa
+        MappaCryptoWallet.put(Chiave, Valore);
     }
     
     
@@ -459,7 +472,8 @@ public class Importazioni {
            if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
            {
 
-               MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               //MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
                numeroaggiunti++;
            }else {
             //   System.out.println("Movimento Duplicato " + v);
@@ -712,8 +726,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
            numeromov++;
            if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
            {
-
-               MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               //questa funzione prima di inserire i movimenti nuovi pulisce quelli vecchi e le associazioni
+               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
+              // MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
                numeroaggiunti++;
            }else {
             //   System.out.println("Movimento Duplicato " + v);
@@ -1430,13 +1445,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         return lista;
     }   
   
-        public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare){
+        public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti){
             Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             int nElementi = listaMovimentidaConsolidare.size();
             //Con questo ordino i movimenti
             for (int i = 0; i < nElementi; i++) {
-                String consolidata[] = listaMovimentidaConsolidare.get(i);             
-                Mappa_Movimenti.put(consolidata[0], consolidata);
+                String consolidata[] = listaMovimentidaConsolidare.get(i); 
+                if (SovrascrivoEsistenti||MappaCryptoWallet.get(consolidata[0])==null){ 
+                    //Aggiungo alla mappa da verificare solo i movimenti nuovi o se è attiva la spunta di sovrascrivere i movimenti esistenti
+                    Mappa_Movimenti.put(consolidata[0], consolidata);
+                }
             }
             
             for(String[] riga:Mappa_Movimenti.values()){

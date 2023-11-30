@@ -2955,7 +2955,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         gest.setLocationRelativeTo(this);
         gest.setVisible(true);
         
-        TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti();
+     //   TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti();
         Plusvalenze.AggiornaPlusvalenze();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
 
@@ -3365,6 +3365,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
         // TODO add your handling code here:
         //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int numeromodifiche=0;
         DefaultTableModel ModelloTabella1DepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
         //SituazioneImport_Tabella1.
@@ -3375,7 +3376,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             String data=ModelloTabella1DepositiPrelievi.getValueAt(i, 1).toString();
             String moneta=ModelloTabella1DepositiPrelievi.getValueAt(i, 4).toString();
             String qta=ModelloTabella1DepositiPrelievi.getValueAt(i, 5).toString();
-            String wallet=ModelloTabella1DepositiPrelievi.getValueAt(i, 2).toString();
+            //String wallet=ModelloTabella1DepositiPrelievi.getValueAt(i, 2).toString();
+            String wallet=MappaCryptoWallet.get(id)[3]+MappaCryptoWallet.get(id)[4];
             //come prima cosa verifico che il movimento non sia già abbinato/assegnato
         if (MappaCryptoWallet.get(id)!=null && MappaCryptoWallet.get(id)[18].equalsIgnoreCase(""))
             for (int k=i+1;k<numeroRighe;k++){ 
@@ -3383,7 +3385,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 String data2=ModelloTabella1DepositiPrelievi.getValueAt(k, 1).toString();
                 String moneta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 4).toString();
                 String qta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 5).toString();
-                String wallet2=ModelloTabella1DepositiPrelievi.getValueAt(k, 2).toString();
+                //String wallet2=ModelloTabella1DepositiPrelievi.getValueAt(k, 2).toString();
+                String wallet2=MappaCryptoWallet.get(id2)[3]+MappaCryptoWallet.get(id2)[4];
                 //le condizioni affinchè avvenga l'abbinamento automatico devono essere               
                 //1- il movimento non deve risultarte già abbinato
                 //2- differenza tra le date minore di 1 ora
@@ -3450,6 +3453,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Plusvalenze.AggiornaPlusvalenze();
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         DepositiPrelievi_Caricatabella();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
@@ -4461,7 +4465,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     
     
-    public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){
+/*    public void TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti(){
         //questa funziona va lanciata ad ogni fine importazione per verificare non vi siano modifiche
         //su movimenti già associati
         for (String[] v : MappaCryptoWallet.values()) {
@@ -4485,11 +4489,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 v[18]="";
                 }
                   
-              }*/
+              }
             
             }
           }
-    }
+    }*/
     
 
   

@@ -1,6 +1,7 @@
 package giacenze_crypto.com;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.util.ArrayList;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -331,9 +332,11 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 selezioneok[0]=true;
                 String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
                 boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 Importazioni.AzzeraContatori();
                 Importazioni.Importa_Crypto_Binance(FileDaImportare, SovrascriEsistenti);
                 Importazioni_Resoconto res = new Importazioni_Resoconto();
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                 res.setLocationRelativeTo(this);
                 res.setVisible(true);

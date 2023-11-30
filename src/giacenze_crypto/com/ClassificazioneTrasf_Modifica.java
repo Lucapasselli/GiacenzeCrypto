@@ -823,6 +823,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String attuale[] = MappaCryptoWallet.get(ID);
         long DataOraAttuale = OperazioniSuDate.ConvertiDatainLong(attuale[1]);
         String TipoMovimentoAttuale = attuale[0].split("_")[4].trim();
+        String WalletAttuale=attuale[3]+attuale[4];
         String TipoMovimentoRichiesto;
         String MonetaAttuale;
         BigDecimal QtaAttuale;
@@ -847,10 +848,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //3 - Qta deve essere compreso tra qtaMax e QtaMin che sono un 5%
             //4 - il movimento deve essere fatto nel giro di max 24 ore dopo quello analizzata e massimo 24 ore prima
             //5 - La qta uscita non deve essere ami inferiore alla qta ricevuta
+            //6 - Exchange+Wallet non deve essere lo stesso (DA FARE!!!!!!!!!!!!!!!!)
             for (String[] v : MappaCryptoWallet.values()) {
                 String TipoMovimento = v[0].split("_")[4].trim();
                 if (v[22]!=null&&!v[22].equalsIgnoreCase("AU")&&TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
-
+                    String WalletRiferimento=v[3]+v[4];
                     BigDecimal Qta = null;
                     BigDecimal QtanoABS = null;
                     BigDecimal SommaQta = null;
@@ -878,6 +880,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                             && Qta.compareTo(QtaAttualeMax) == -1 && Qta.compareTo(QtaAttualeMin) == 1
                             && DataOra < (DataOraAttuale + 86400000)
                             && DataOra > (DataOraAttuale - 86400000)
+                            && !WalletRiferimento.equals(WalletAttuale)
                             && SommaQta.compareTo(new BigDecimal(0)) <= 0) {
                         String riga[] = new String[7];
                         riga[0] = v[0];

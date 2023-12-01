@@ -132,7 +132,7 @@ public class Importazioni {
     //
     
     
-        public static void Importa_Crypto_Binance(String fileBinance,boolean SovrascriEsistenti) {
+        public static boolean Importa_Crypto_Binance(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
         //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
@@ -216,10 +216,22 @@ public class Importazioni {
             } catch (IOException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+            progressb.SetMassimo(righeFile.size());
+            progressb.SetAvanzamento(0);
+      /*  int avanzamento=0;
+        for (String str : Mappa_MovimentiTemporanea.keySet()) {
+            if (progressb.FineThread()){
+            //se è stato interrotta la finestra di progresso interrompo il ciclo
+                return false;
+                }*/
             //System.out.println(righeFile.size());
             for (int w=0;w<righeFile.size();w++){
-                
+                progressb.avanzamento++;
+                progressb.SetAvanzamento(progressb.avanzamento);
+                if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                    return false;
+                }
                 riga=righeFile.get(w);
                
                 String splittata[] = riga.split(",");
@@ -304,7 +316,7 @@ public class Importazioni {
         if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
         
         
-        
+    return true;    
     }
     
     

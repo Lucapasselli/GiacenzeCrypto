@@ -35,12 +35,12 @@ public class DatabaseH2 {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
          //   connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
+        /*    String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
             PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();
+            preparedStatement.execute();*/
 
-            createTableSQL = "CREATE TABLE IF NOT EXISTS Prezzo_ora_Address_Chain  (ora_address_chain VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
-            preparedStatement = connection.prepareStatement(createTableSQL);
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS Prezzo_ora_Address_Chain  (ora_address_chain VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
+            PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
 
             createTableSQL = "CREATE TABLE IF NOT EXISTS USDTEUR  (data VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
@@ -167,7 +167,7 @@ public class DatabaseH2 {
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
     
-    public static void AddressSenzaPrezzo_Scrivi(String address_chain, String data) {
+ /*   public static void AddressSenzaPrezzo_Scrivi(String address_chain, String data) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM Address_Senza_Prezzo WHERE address_chain = '" + address_chain + "'";
@@ -198,9 +198,9 @@ public class DatabaseH2 {
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
+    }*/
 
-    public static String AddressSenzaPrezzo_Leggi(String address_chain) {
+ /*   public static String AddressSenzaPrezzo_Leggi(String address_chain) {
         String Risultato = null;
         try {
             // Connessione al database
@@ -215,7 +215,7 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Risultato;
-    }
+    }*/
 
     public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
         String Risultato = null;

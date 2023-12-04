@@ -91,9 +91,12 @@ public class TransazioneDefi {
             //System.out.println("Import - "+Moneta+" - "+MonetaAddress+" - "+monete.Prezzo);
             //Se trovo l'indirizzo nella mappa significa che non è gestito da coingecko
             
-            long DataRiferimento=OperazioniSuDate.ConvertiDatainLong(DataOra.split(" ")[0])/1000;
-           // System.out.println("89 TransazioniDefi "+DataRiferimento);
-            if (DatabaseH2.AddressSenzaPrezzo_Leggi(MonetaAddress+"_"+Rete)!=null&&
+           
+
+           
+           //Adesso verifico se il nome della coin è nelle coppie prioritarie ma non è gestita da coingecko la identifico come scam
+           // long DataRiferimento=OperazioniSuDate.ConvertiDatainLong(DataOra.split(" ")[0])/1000;
+          /*  if (DatabaseH2.AddressSenzaPrezzo_Leggi(MonetaAddress+"_"+Rete)!=null&&
                 (DataRiferimento<Long.parseLong(DatabaseH2.AddressSenzaPrezzo_Leggi(MonetaAddress+"_"+Rete)))) {          
                 for (String Coppia : CoppiePrioritarie) {
                     //Se non è gestito da coingecko ma è il nome di una coin importante significa che probabilmente è scam e quindi
@@ -101,7 +104,7 @@ public class TransazioneDefi {
                     if ((monete.Moneta+"USDT").equalsIgnoreCase(Coppia)||monete.Moneta.equalsIgnoreCase("USDT"))
                         monete.Moneta=monete.Moneta+" **";
                 }                
-            }
+            }*/
 
             }
         else 

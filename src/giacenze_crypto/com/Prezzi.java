@@ -891,9 +891,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                     {
                     //Se arrivo qua vuol dire che la coin non è gestita da coingecko e la salvo nella lista degli address esclusi
                     //AL POSTO DI NULLO METTO LA DATA DI OGGI IL CHE SIGNIFICA CHE ALMENO FINO AD OGGI IL TOKEN IN QUESTIONE NON E' GESTITO IN NESSUN MODO
-                   // MappaConversioneAddressCoin.put(Address+"_"+Rete, String.valueOf(dataAdesso));
-                    DatabaseH2.AddressSenzaPrezzo_Scrivi(Address+"_"+Rete, String.valueOf(dataAdesso));
-                   // ScriviFileConversioneAddressCoin();
+                   // Questa parte nmon serve più adesso che prima di fare richieste a copingecko verifico se la moneta è nel loro database
+                  //  DatabaseH2.AddressSenzaPrezzo_Scrivi(Address+"_"+Rete, String.valueOf(dataAdesso));
                     return null;  
                     }
             }

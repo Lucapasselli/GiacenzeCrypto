@@ -297,7 +297,8 @@ public class GestioneWallets extends javax.swing.JDialog {
                     //Scrivo tutte le nuove transazioni nella mappa principale
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {
                         for (String[] st : v.RitornaRigheTabella()) {
-                            MappaCryptoWallet.put(st[0], st);
+                            Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
+                         //   MappaCryptoWallet.put(st[0], st);
                             i++;
                         }
                     }

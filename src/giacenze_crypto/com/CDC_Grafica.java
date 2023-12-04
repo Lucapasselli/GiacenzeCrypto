@@ -6,7 +6,6 @@ package giacenze_crypto.com;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
-import com.sun.net.httpserver.Request;
 import static giacenze_crypto.com.Importazioni.ColonneTabella;
 import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
 import java.awt.Color;
@@ -47,11 +46,8 @@ import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.List;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 //import org.apache.commons.codec.binary.Hex;
 
 
@@ -215,6 +211,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jSeparator5 = new javax.swing.JSeparator();
         GiacenzeaData_CheckBox_MostraQtaZero = new javax.swing.JCheckBox();
         GiacenzeaData_Bottone_Scam = new javax.swing.JButton();
+        GiacenzeaData_Bottone_CambiaNomeToken = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -891,6 +888,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        GiacenzeaData_Bottone_CambiaNomeToken.setText("Cambia Nome Token");
+        GiacenzeaData_Bottone_CambiaNomeToken.setEnabled(false);
+        GiacenzeaData_Bottone_CambiaNomeToken.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
         GiacenzeaDataLayout.setHorizontalGroup(
@@ -933,6 +938,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Bottone_Scam)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -962,7 +969,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Bottone_Scam, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Bottone_MovimentiDefi, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(GiacenzeaData_CheckBox_MostraQtaZero))
+                    .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
+                    .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(4, 4, 4)
                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -3008,8 +3016,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 
             }
             //gestione bottone scam token da abilitare solo in presenza di un token in defi
-            if (Address.contains("0x"))GiacenzeaData_Bottone_Scam.setEnabled(true);
-            else GiacenzeaData_Bottone_Scam.setEnabled(false);
+            if (Address.contains("0x"))
+                {
+                GiacenzeaData_Bottone_Scam.setEnabled(true);
+                GiacenzeaData_Bottone_CambiaNomeToken.setEnabled(true);
+                }
+            else
+            {
+                GiacenzeaData_Bottone_Scam.setEnabled(false);
+                GiacenzeaData_Bottone_CambiaNomeToken.setEnabled(false);
+                }
             
                     //ABILITO BOTTONE DEFI SE CI SONO LE CONDIZIONI
         String Wallet=Giacenzeadata_Walleta_Label.getText().trim();           
@@ -4123,72 +4139,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void GiacenzeaData_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ScamActionPerformed
         // TODO add your handling code here:
-        //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
-        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
-            String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
-            String Rete= GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
-            String Testo;
-            if (!Funzioni.isSCAM(NomeMoneta)){
-                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> con Address <b>"+Address+"</b> come SCAM?<br><br>"
-                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
-                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br></html>";
-                }
-            else {
-                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
-                + "</html>";
-            }
-                        Object[] Bottoni = {"Si", "No"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
-                                "Classificazione del movimento",
-                                JOptionPane.YES_NO_CANCEL_OPTION,
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                Bottoni,
-                                null);
-                        if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
-                            //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
-                            //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
-                            //e aggiungergli gli asterisci recupero il suo nome originale
-                            //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
-                            if (nomi[0] == null)
-                                {
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NomeMoneta + " **");
-                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                                DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
-                                GiacenzeaData_Tabella.getModel().setValueAt(NomeMoneta + " **", rigaselezionata, 0);
-                                }
-                            else
-                                {
-                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], nomi[0] + " **");
-                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
-                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
-                                DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
-                                GiacenzeaData_Tabella.getModel().setValueAt(nomi[0] + " **", rigaselezionata, 0);
-                                }
-                            //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
-                            //Lancio la funzione rinomina token
-                            TabellaCryptodaAggiornare = true;
-                           
-                        }
-                        else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
-                            //Da gestire parte di descammizzazione
-                            //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
-                            //vada nuovamente a cercare il prezzo del token
-                            DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
-                            //leggo la riga per individuare il nome originale del token
-                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
-                            //lo scrivo nel database
-                            DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], nomi[0]);
-                            GiacenzeaData_Tabella.getModel().setValueAt(nomi[0], rigaselezionata, 0);
-                            //aggiorno l'intera tabella crypto
-                            TabellaCryptodaAggiornare = true;
-                         //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
-                        }
-            }
+        GiacenzeaData_Funzione_IdentificaComeScam();
     }//GEN-LAST:event_GiacenzeaData_Bottone_ScamActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -4244,6 +4195,131 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
+        // TODO add your handling code here:
+            
+            GiacenzeaData_Funzione_CambiaNomeToken();
+
+    }//GEN-LAST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
+    
+    private void GiacenzeaData_Funzione_IdentificaComeScam() {
+                //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
+        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
+            String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+            String Rete= GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Testo;
+            if (!Funzioni.isSCAM(NomeMoneta)){
+                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> con Address <b>"+Address+"</b> come SCAM?<br><br>"
+                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
+                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br></html>";
+                }
+            else {
+                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
+                + "</html>";
+            }
+                        Object[] Bottoni = {"Si", "No"};
+                        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                                "Classificazione del movimento",
+                                JOptionPane.YES_NO_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE,
+                                null,
+                                Bottoni,
+                                null);
+                        if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
+                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
+                            //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
+                            //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
+                            //e aggiungergli gli asterisci recupero il suo nome originale
+                            //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
+                            if (nomi[0] == null)
+                                {
+                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NomeMoneta + " **");
+                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
+                             //   DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                                GiacenzeaData_Tabella.getModel().setValueAt(NomeMoneta + " **", rigaselezionata, 0);
+                                }
+                            else
+                                {
+                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], nomi[0] + " **");
+                                //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
+                                //ed eviterà verifiche sul prezzo e perdite di tempo in fase di calcolo
+                              //  DatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                                GiacenzeaData_Tabella.getModel().setValueAt(nomi[0] + " **", rigaselezionata, 0);
+                                }
+                            //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
+                            //Lancio la funzione rinomina token
+                            TabellaCryptodaAggiornare = true;
+                           
+                        }
+                        else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
+                            //Da gestire parte di descammizzazione
+                            //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
+                            //vada nuovamente a cercare il prezzo del token
+                            //RinominaToken_LeggiTabellaDatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
+                            //leggo la riga per individuare il nome originale del token
+                            String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
+                            //lo scrivo nel database
+                            DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], nomi[0]);
+                            GiacenzeaData_Tabella.getModel().setValueAt(nomi[0], rigaselezionata, 0);
+                            //aggiorno l'intera tabella crypto
+                            TabellaCryptodaAggiornare = true;
+                         //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
+                        }
+                                    NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (Funzioni.isSCAM(NomeMoneta)) {
+                GiacenzeaData_Bottone_Scam.setText("Rimuovi da SCAM");
+            } else {
+                GiacenzeaData_Bottone_Scam.setText("Identifica come SCAM");
+            }
+            }
+    }
+    
+    private void GiacenzeaData_Funzione_CambiaNomeToken() {
+        //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
+        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
+            String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+            String Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Testo;
+            String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+            Testo = "<html>Indica il nuovo nome della Moneta<b>" + NomeMoneta + "</b> con Address <b>" + Address + "</b><br>";
+            if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
+                Testo = Testo
+                        + "Il nome Originale da prima importazione era : <b>" + nomi[0] + "</b><br>";
+            }
+            Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br></html>";
+            String m = JOptionPane.showInputDialog(this, Testo, NomeMoneta).trim();
+            if (m != null) {
+                m = Funzioni.NormalizzaNome(m);//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                //Se il nome toke è di almeno 3 caratteri allora proseguo
+                if (m.length() > 2) {
+                    if (nomi[0] == null) {
+                        DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, m);
+                        GiacenzeaData_Tabella.getModel().setValueAt(m, rigaselezionata, 0);
+                    } else {
+                        DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], m);
+                        GiacenzeaData_Tabella.getModel().setValueAt(m, rigaselezionata, 0);
+                    }
+                    TabellaCryptodaAggiornare = true;
+                } else {
+                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                }
+            }
+            NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (Funzioni.isSCAM(NomeMoneta)) {
+                GiacenzeaData_Bottone_Scam.setText("Rimuovi da SCAM");
+            } else {
+                GiacenzeaData_Bottone_Scam.setText("Identifica come SCAM");
+            }
+        }
+
+    }
+    
     public static String generateSignature(String data, String apiSecret) {
  /*       try {
             Mac sha256Hmac = Mac.getInstance("HmacSHA256");
@@ -5108,6 +5184,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
+    private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;
     private javax.swing.JButton GiacenzeaData_Bottone_GiacenzeExplorer;
     private javax.swing.JButton GiacenzeaData_Bottone_ModificaValore;
     private javax.swing.JButton GiacenzeaData_Bottone_MovimentiDefi;

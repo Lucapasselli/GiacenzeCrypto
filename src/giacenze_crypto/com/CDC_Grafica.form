@@ -857,6 +857,8 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_CambiaNomeToken" min="-2" pref="148" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Scam" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" pref="150" max="-2" attributes="0"/>
@@ -896,6 +898,7 @@
                                   <Component id="GiacenzeaData_Bottone_Scam" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_MovimentiDefi" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_CambiaNomeToken" alignment="1" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                               <Component id="jSeparator5" min="-2" pref="4" max="-2" attributes="0"/>
@@ -1205,6 +1208,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_ScamActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_CambiaNomeToken">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Cambia Nome Token"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

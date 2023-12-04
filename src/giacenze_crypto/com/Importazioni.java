@@ -152,6 +152,7 @@ public class Importazioni {
         //i dati della transazione di scambio
         //le tipologie sono alla posizione 3
         Mappa_Conversione_Causali.put("Binance Card Cashback",                      "CASHBACK");              //Cashback
+        Mappa_Conversione_Causali.put("Card Cashback",                              "CASHBACK");              //Cashback        
         Mappa_Conversione_Causali.put("Simple Earn Flexible Interest",              "EARN");  
         Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
         Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
@@ -166,6 +167,10 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Transfer Between Main and Funding Wallet",   "TRASFERIMENTO-CRYPTO-INTERNO");      
         Mappa_Conversione_Causali.put("Staking Purchase",                           "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Staking Redemption",                         "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Main and Funding Account Transfer",          "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("transfer_in",                                "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("transfer_out",                               "TRASFERIMENTO-CRYPTO-INTERNO");
+
         Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
         // La causale di autoinvestimento la dovrò poi convertire in Scambio Crypto Differito
@@ -321,6 +326,15 @@ public class Importazioni {
     
     
     public static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore) {
+       //QUA DOVRO' INSERIRE ANCHE L'EVENTUALE CAMBIO NOME DEL TOKEN
+       //PER EVITARE DI FARLO AD OGNI CARICAMENTO DI TABELLA E AUMENTARE LA VELOCITA' MA LO VEDRO' CON CALMA PIU' AVANTI  
+       //POSSO ANCHE GESTIRE L'EVENTUALE IDENTIFICAZIONE DI UN TOKEN SCAM (DA VEDERE CON CALMA)
+      /*  String AddressUscita=Valore[25];
+        String AddressEntrata=Valore[27];
+        String Rete = Funzioni.TrovaReteDaID(Chiave);*/
+
+
+
         //Questa funzione inserisce il movimento in mappa ma prima di fare ciò elimina eventuali associazioni sul movimento precedente
         //FASE 1 : VERIFICO SE IL MOVIMENTO ESISTE
         if (MappaCryptoWallet.get(Chiave) != null) {

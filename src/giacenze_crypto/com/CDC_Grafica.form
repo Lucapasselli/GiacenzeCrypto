@@ -112,8 +112,6 @@
                                       <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_MovimentoModifica" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="62" max="-2" attributes="0"/>
-                                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_MovimentoElimina" min="-2" max="-2" attributes="0"/>
                                   </Group>
@@ -152,14 +150,13 @@
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="242" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="245" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -530,14 +527,6 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_MovimentoModificaActionPerformed"/>
-              </Events>
-            </Component>
-            <Component class="javax.swing.JButton" name="jButton1">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="jButton1"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

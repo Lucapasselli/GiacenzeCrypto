@@ -177,7 +177,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Bottone_MovimentoNuovo = new javax.swing.JButton();
         TransazioniCrypto_Bottone_MovimentoElimina = new javax.swing.JButton();
         TransazioniCrypto_Bottone_MovimentoModifica = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -457,13 +456,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -490,8 +482,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo)
                                 .addGap(18, 18, 18)
                                 .addComponent(TransazioniCrypto_Bottone_MovimentoModifica)
-                                .addGap(62, 62, 62)
-                                .addComponent(jButton1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(TransazioniCrypto_Bottone_MovimentoElimina)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -519,14 +509,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza)
                     .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo)
                     .addComponent(TransazioniCrypto_Bottone_MovimentoElimina)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoModifica)
-                    .addComponent(jButton1))
+                    .addComponent(TransazioniCrypto_Bottone_MovimentoModifica))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -3489,7 +3478,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }//GEN-LAST:event_TransazioniCrypto_Text_PlusvalenzaActionPerformed
 
     
-         private static boolean eseguiOperazioneConProgressbar() {
+   /*      private static boolean eseguiOperazioneConProgressbar() {
         JProgressBar progressBar = new JProgressBar(0, 100);
         progressBar.setPreferredSize(new Dimension(250, 30));
         progressBar.setStringPainted(true);
@@ -3533,7 +3522,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             e.printStackTrace();
             return false;
         }
-    }
+    }*/
     
     
     
@@ -4142,8 +4131,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Funzione_IdentificaComeScam();
     }//GEN-LAST:event_GiacenzeaData_Bottone_ScamActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        BufferedReader reader = null;
+    private void BinanceApi()
+         {   
+                    BufferedReader reader = null;
         HttpURLConnection connection = null;
         try {
             // TODO add your handling code here:
@@ -4192,9 +4182,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             //System.out.println(signature);
          //   System.out.println(timestamp);
         }
-
-    }//GEN-LAST:event_jButton1ActionPerformed
-
+ }
+    
     private void GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
         // TODO add your handling code here:
             
@@ -5227,7 +5216,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JScrollPane TransazioniCrypto_ScrollPane;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

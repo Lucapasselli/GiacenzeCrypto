@@ -185,6 +185,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_Bottone_AssegnazioneAutomatica = new javax.swing.JButton();
         DepositiPrelievi_Bottone_AssegnazioneManuale = new javax.swing.JButton();
         DepositiPrelievi_CheckBox_movimentiClassificati = new javax.swing.JCheckBox();
+        DepositiPrelievi_Bottone_DettaglioDefi = new javax.swing.JButton();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -609,6 +610,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        DepositiPrelievi_Bottone_DettaglioDefi.setText("Dettaglio Defi");
+        DepositiPrelievi_Bottone_DettaglioDefi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout DepositiPrelieviLayout = new javax.swing.GroupLayout(DepositiPrelievi);
         DepositiPrelievi.setLayout(DepositiPrelieviLayout);
         DepositiPrelieviLayout.setHorizontalGroup(
@@ -622,16 +630,20 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
                             .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)))
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         DepositiPrelieviLayout.setVerticalGroup(
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
+                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
+                    .addComponent(DepositiPrelievi_Bottone_DettaglioDefi))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
@@ -3542,9 +3554,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
             int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
 
-            String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 24).toString();
+            //String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 24).toString();
             String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String Rete=Funzioni.TrovaReteDaID(ID);
+           /* String Rete=Funzioni.TrovaReteDaID(ID);
             if (IDTransazione != null) {
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     try {
@@ -3558,12 +3570,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }
+            }*/
+        Funzioni.ApriExplorer(ID);
         }
 
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_DettaglioDefiActionPerformed
 
+
+    
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
         System.out.println("Focus");      
@@ -4190,6 +4205,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
             GiacenzeaData_Funzione_CambiaNomeToken();
 
     }//GEN-LAST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
+
+    private void DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
+        // TODO add your handling code here:
+        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
+        int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
+        String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+        if (!Funzioni.ApriExplorer(ID)){
+            JOptionPane.showConfirmDialog(this, """
+                                                Non è possibile aprire l'explorer per questa transazione.
+                                                        """,
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        }
+        
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5169,6 +5199,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JPanel DepositiPrelievi;
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneAutomatica;
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneManuale;
+    private javax.swing.JButton DepositiPrelievi_Bottone_DettaglioDefi;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JPanel GiacenzeaData;

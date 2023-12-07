@@ -591,7 +591,10 @@
                                           <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="0" min="-2" pref="245" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" max="32767" attributes="0"/>
+                                          <Component id="DepositiPrelievi_Bottone_DettaglioDefi" max="32767" attributes="0"/>
+                                      </Group>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -602,9 +605,12 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="471" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="470" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="DepositiPrelievi_Bottone_DettaglioDefi" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -704,6 +710,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_DettaglioDefi">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Dettaglio Defi"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_DettaglioDefiActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

@@ -4,9 +4,16 @@
  */
 package giacenze_crypto.com;
 
+import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -90,6 +97,34 @@ public class Funzioni {
             
         }
         
+        
+    public static boolean ApriExplorer (String ID){
+            
+
+            if (MappaCryptoWallet.get(ID).length<24)
+                {
+                    return false;
+                }
+            String IDTransazione = MappaCryptoWallet.get(ID)[24];
+           // String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Rete=Funzioni.TrovaReteDaID(ID);
+            if (IDTransazione != null) {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        if (Rete.equalsIgnoreCase("BSC")){
+                            Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
+                           }
+                        else if(Rete.equalsIgnoreCase("CRO")){
+                           Desktop.getDesktop().browse(new URI("https://cronoscan.com//tx/" + IDTransazione)); 
+                        }
+                    } catch (URISyntaxException | IOException ex) {
+                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        return true;
+
+    }
         
         public static boolean isSCAM(String Nome){
             boolean SCAM=false;

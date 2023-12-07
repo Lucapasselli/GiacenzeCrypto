@@ -4,7 +4,7 @@
  */
 package giacenze_crypto.com;
 
-import static giacenze_crypto.com.Prezzi.CoppiePrioritarie;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;

@@ -12,7 +12,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
-import java.awt.Component;
 import java.math.RoundingMode;
 
 /**
@@ -667,6 +666,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 ModificaEffettuata=true;  
             }
             
+            
+            //Adesso verifico se ci sono movimenti di rientro di denaro dal vault e chiedo se voglio sistemare anche quelli
+            //Questo lo faccio controllando contratto, moneta e tipo movimento, se contratto e moneta coincidono e tipo movimento è inverso allora ho 
+            //trovato movimenti papaili per la richiesta
+            //la richiesta la devo fare solo se alla domanda se volevo categorizzare tutti i movimenti è stato risposto si.
+            
+            
     }
     
     public static void CreaMovimentoTrasferimentoAVault(String ID,String Descrizione,String Dettaglio){
@@ -715,7 +721,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
             String Movimento[]=MappaCryptoWallet.get(ID);
             long DataOraMovimento=OperazioniSuDate.ConvertiDatainLongMinuto(Movimento[1]);
-            String Moneta=Movimento[8];
+            String Moneta=Movimento[11];
             String AddressContratto=null;
             long DataOra;
             if (Movimento.length>30)AddressContratto=Movimento[30];
@@ -729,23 +735,33 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                         DataOraMovimento>=DataOra){
                         //se trovo movimenti di prelievo non classificati con data inferiore al movimento di deposito
                         //avviso e interrompo il ciclo, devo essere sicuro che tutti i movimenti precedenti siano stati inseriti
-                        MovimentoOppostoNonClassificato=true;  
+                        MovimentoOppostoNonClassificato=true; //Questo boolean serve appunto per interrompere il ciclo
+                       // System.out.println("Arrivato Qua");
+                        }
                 if (v.length>30){
                     String AddContratto=v[30];
+                    
+                   /*     if (AddressContratto!=null&&AddContratto!=null&&
+                        AddressContratto.equalsIgnoreCase(AddContratto)&&
+                        !v[0].equals(ID)&&
+                        v[0].split("_")[4].equalsIgnoreCase("DC")){
+                               System.out.println("Arrivato Qua -"+AddressContratto+"-"+AddContratto);             
+                                        }*/
+                      // System.out.println(v[8]+"-"+Moneta);
                     if (AddressContratto!=null&&AddContratto!=null&&
                         AddressContratto.equalsIgnoreCase(AddContratto)&&
                         !v[0].equals(ID)&&
                         v[0].split("_")[4].equalsIgnoreCase("DC")&&
-                            v[8].equals(Moneta)&&
+                            v[11].equals(Moneta)&&
+                        DataOraMovimento>=DataOra&&
                             v[18].length()<1){//questo serve per trovare solo i movimenti non ancora classificati
-                        
                         //Sotto questa if ci sono tutti i movimenti di deposito
                         //che riguardano la stessa moneta e lo stesso contratto
                         ListaIDMovimentiUguali.add(v[0]);                       
                     }
                     
                 
-                    }
+                    
                     
                 }
             }
@@ -766,11 +782,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 //No=1
                 switch (risposta) {
                     case 0 -> {
-                        //FASE 3:modifico tutti i movimenti
-                        CreaMovimentoTrasferimentoAVault(ID,Descrizione,Dettaglio);
+                        //FASE 3:modifico tutti i movimenti                        
                         for (String IDMov:ListaIDMovimentiUguali){
                             CreaMovimentoTrasferimentoDaVault(IDMov,Descrizione,Dettaglio);
                         }
+                        CreaMovimentoTrasferimentoDaVault(ID,Descrizione,Dettaglio);
                         ModificaEffettuata=true;
                     }
                     case 1 -> {
@@ -789,7 +805,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                // System.out.println(risposta);
             }else{
                 //FASE 3:modifico il solo movimento interessato
-                CreaMovimentoTrasferimentoAVault(ID,Descrizione,Dettaglio);
+                CreaMovimentoTrasferimentoDaVault(ID,Descrizione,Dettaglio);
                 ModificaEffettuata=true;  
             }
                
@@ -808,7 +824,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             MonetaDettaglio=Movimento[27];
         }
         String MT[]=new String[Importazioni.ColonneTabella];
-        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+        String IDNuovoMov=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
         MT[0]=IDNuovoMov;
         MT[1]=Movimento[1];
         MT[2]="1 di 1";
@@ -821,14 +837,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT[10]=new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
         MT[15]=Movimento[15];
         MT[18]="PTW - Trasferimento Interno";
-        MT[20]=ID;
         MT[22]="AU";
         Importazioni.RiempiVuotiArray(MT);
-        MappaCryptoWallet.put(IDNuovoMov, MT);
-        //fase 2: modifico il movimento originale aggiungendogli qualcosina
-        Movimento[5]=Descrizione;
-        Movimento[18]=Dettaglio;
-        Movimento[20]=IDNuovoMov;
+
         
         
          long DataOraMovimento=OperazioniSuDate.ConvertiDatainLongMinuto(Movimento[1]);
@@ -857,11 +868,34 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             }
         }
         BigDecimal QtaResiduaVault=Somma.subtract(QtaMovimentata);
-        
+        String IDMovCorrettivo="";
         if (QtaResiduaVault.compareTo(new BigDecimal(0))==-1){
             //!!!!Se la qta residua sul vault è minore di zero allora creo il nuovo movimento per sistemare la giacenza negativa del vault
+        String MT2[]=new String[Importazioni.ColonneTabella];
+        IDMovCorrettivo=IDSpezzato[0]+"_"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_DC";
+        MT2[0]=IDMovCorrettivo;
+        MT2[1]=Movimento[1];
+        MT2[2]="1 di 1";
+        MT2[3]=Movimento[3];
+        MT2[4]="VAULT";
+        MT2[5]="REWARD";
+        MT2[6]="-> "+MonetaDettaglio;
+        MT2[11]=Movimento[11];
+        MT2[12]=Movimento[12];
+        MT2[13]=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]),30, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        MT2[18]="DAI - Reward";
+        MT2[20]=ID+","+IDNuovoMov;
+        MT2[22]="AU";
+        Importazioni.RiempiVuotiArray(MT2);
+        MappaCryptoWallet.put(IDMovCorrettivo, MT2);
         }
-
+        MT[20]=ID+","+IDMovCorrettivo;
+        MappaCryptoWallet.put(IDNuovoMov, MT);
+        //fase 2: modifico il movimento originale aggiungendogli qualcosina
+        Movimento[5]=Descrizione;
+        Movimento[18]=Dettaglio;
+        Movimento[20]=IDNuovoMov+","+IDMovCorrettivo;
         
     }
     

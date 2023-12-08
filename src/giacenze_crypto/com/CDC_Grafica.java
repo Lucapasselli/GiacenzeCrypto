@@ -582,7 +582,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMaxWidth(200);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMinWidth(60);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setPreferredWidth(60);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMaxWidth(120);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMaxWidth(240);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMinWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
@@ -3380,7 +3380,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }//GEN-LAST:event_DepositiPrelieviComponentShown
 
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
-        // TODO add your handling code here:
+        DepositiPrelievi_AssegnazioneAutomatica();
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
+
+    private void DepositiPrelievi_AssegnazioneAutomatica(){
+                // TODO add your handling code here:
         //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int numeromodifiche=0;
@@ -3454,6 +3458,23 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         }
 
+        
+        //Adesso gestisco tutta la parte delle reward da Defi
+        for (String[] Movimento:MappaCryptoWallet.values()){
+            if(Movimento[18].equalsIgnoreCase("")&&
+                  Movimento.length>30&&
+                  Movimento[0].split("_")[4].equalsIgnoreCase("DC")&&
+                  Movimento[7].trim().equalsIgnoreCase("getReward")){
+                
+                    Movimento[5] = "REWARD";
+                    Movimento[18] = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
+                    numeromodifiche++;
+            }
+        }
+        
+        
+        
+        
        // this.CDC.setSelectedIndex(0);
         if (numeromodifiche>0){
         JOptionPane.showConfirmDialog(this, "Sono stati individuati e aggiornati "+numeromodifiche+" coppie di transazioni, ricordarsi di salvare le modifiche!!",
@@ -3471,8 +3492,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         DepositiPrelievi_Caricatabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
-
+    }
+    
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
         // TODO add your handling code here:
         SituazioneImport_Caricatabella1();

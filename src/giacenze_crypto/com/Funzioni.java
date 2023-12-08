@@ -108,6 +108,7 @@ public class Funzioni {
             String IDTransazione = MappaCryptoWallet.get(ID)[24];
            // String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
             String Rete=Funzioni.TrovaReteDaID(ID);
+            if (Rete==null)return false;
             if (IDTransazione != null) {
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     try {

@@ -318,6 +318,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti",
                 "Importazione Terminata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         PopolaTabella();
+        Importazioni.ConvertiScambiLPinDepositiPrelievi();
         c.setCursor(Cursor.getDefaultCursor());
 
     }

@@ -161,4 +161,15 @@ public class Funzioni {
         return Rete;
         }
          
+        
+       public static String[] RiempiVuotiArray(String[] array){
+            for (int i=0;i<array.length;i++) {
+                if(array[i]==null){
+                    array[i]="";
+                }
+            }
+            return array;
+        }
+        
+        
 }

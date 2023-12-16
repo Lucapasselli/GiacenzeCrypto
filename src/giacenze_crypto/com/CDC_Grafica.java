@@ -37,7 +37,6 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.*;
 import java.awt.*;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -84,9 +83,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static boolean CDC_FiatWallet_ConsideroValoreMassimoGiornaliero=false;
     static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
     static List<String>[] CDC_CardWallet_ListaSaldi;
+    static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
     static public List<String>[] CDC_FiatWallet_ListaSaldi;
     static public boolean TabellaCryptodaAggiornare=false;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
+    public boolean tabDepositiPrelieviCaricataprimavolta=false;
     
     //static String Appoggio="";
     
@@ -142,6 +143,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         //m1 = d.getTime();
         this.CDC_DataChooser_Iniziale.setDate(d);*/
 }  catch( Exception ex ) {
+             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println( "Failed to initialize LaF" );
         }
         
@@ -551,17 +553,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DepositiPrelievi_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+
             },
             new String [] {
-                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "Qta", "Dettaglio Trasferimento"
+                "ID_Transazione", "Data e Ora", "Exchange / Wallet", "Tipo Transazione", "Moneta", "Qta", "Dettaglio Trasferimento", "Prezzo", "Dett. Defi/CSV", "Controparte"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -576,9 +575,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMinWidth(120);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setPreferredWidth(120);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMaxWidth(120);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMinWidth(200);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMinWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMaxWidth(400);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(200);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMaxWidth(200);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMinWidth(60);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setPreferredWidth(60);
@@ -586,6 +585,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMinWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(6).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(7).setMinWidth(70);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(7).setMaxWidth(70);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMaxWidth(200);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMinWidth(50);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMaxWidth(200);
         }
 
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("Assegnazione Automatica");
@@ -3055,7 +3061,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 if (DataMovimento < DataRiferimento) {
                     String AddressU = "";
                     String AddressE = "";
-                    if (movimento.length > 23) {
+                    if (movimento.length > 28) {
                         AddressU = movimento[26];
                         AddressE = movimento[28];
                     }
@@ -3268,7 +3274,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(IDTransazione);
         mod.setLocationRelativeTo(this);
         mod.setVisible(true);
-        //System.out.println(mod.getModificaEffettuata());
+
         if (mod.getModificaEffettuata()){
             TransazioniCrypto_DaSalvare=true;
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
@@ -3276,7 +3282,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
          Plusvalenze.AggiornaPlusvalenze();
          this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
-       // System.out.println(mod.getModificaEffettuata());        
+             
         DepositiPrelievi_Caricatabella();
         
         
@@ -3306,6 +3312,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void DepositiPrelievi_Caricatabella()
             {
+                
+                if (!tabDepositiPrelieviCaricataprimavolta){
+                    tabDepositiPrelieviCaricataprimavolta=true;
+                    //Questo serve per sistemare il pregresso prima della versione 1.15
+                    Importazioni.ConvertiScambiLPinDepositiPrelievi();
+                }
+        DepositiPrelieviDaCategorizzare=new ArrayList<>();
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
@@ -3316,7 +3329,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
             if (v[18].trim().equalsIgnoreCase("")||this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
               {
-            String riga[]=new String[7];
+            String riga[]=new String[10];
             riga[0]=v[0];
             riga[1]=v[1];
             riga[2]=v[3];
@@ -3332,7 +3345,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 riga[5]=new BigDecimal(v[13]).stripTrailingZeros().toPlainString();
                 }
             riga[6]=v[18];
+            riga[7]=v[15];
+            riga[8]=v[7];
+            riga[9]="";
+            if (v.length>30) riga[9]=v[30];
+            Funzioni.RiempiVuotiArray(riga);             
             ModelloTabellaDepositiPrelievi.addRow(riga);
+            //Se il movimento non è ancora categorizzato lo metto nella lista dei movimenti ancora non categorizzati
+            if (v[18].trim().equalsIgnoreCase(""))DepositiPrelieviDaCategorizzare.add(v[0]);
+           // System.out.println("a");
             }
           }
                   
@@ -3383,10 +3404,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_AssegnazioneAutomatica();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
+    
+
+    
     private void DepositiPrelievi_AssegnazioneAutomatica(){
                 // TODO add your handling code here:
         //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+       // Importazioni.ConvertiScambiLPinDepositiPrelievi();
         int numeromodifiche=0;
         DefaultTableModel ModelloTabella1DepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
         //SituazioneImport_Tabella1.
@@ -3459,8 +3484,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
 
         
-        //Adesso gestisco tutta la parte delle reward da Defi
-        for (String[] Movimento:MappaCryptoWallet.values()){
+        //FASE 2 : Adesso gestisco tutta la parte delle reward da Defi
+        for (String[] Movimento:MappaCryptoWallet.values()){//DA OTTIMIZZARE SCORRENDO I SOLI MOVIMENTI DA CLASSIFICARE
             if(Movimento[18].equalsIgnoreCase("")&&
                   Movimento.length>30&&
                   Movimento[0].split("_")[4].equalsIgnoreCase("DC")&&
@@ -3472,7 +3497,109 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         }
         
+        //FASE 3 : Cerco di Classificare i movimenti che entrano ed escono dalle piattaforme DEFI e le categorizzo
         
+        //Se è un prelievo di un token LP lo classifico come mandato in un vault e poi di conseguenza vado a classificare anche tutti i rientri, calcolo le reward etc...
+        for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+            //ad uno ad uno controllo tutti i movimenti non ancora categorizzati
+            String Movimento[]=MappaCryptoWallet.get(IDnc);
+            if (Movimento.length>30&&Movimento[18].equalsIgnoreCase("")&&//Verifico che il movimento sia in defi e non sia già classificato
+                    Movimento[0].split("_")[4].equals("PC")&&//che sia un movimento di prelievo
+                    Movimento[8].contains("-LP"))//che sia di un Token LP
+            {
+                //la funzione si occupa di trovare tutti i movimenti analoghi e classificarli
+                //nonchè classifica tutti i movimenti di rientro
+                numeromodifiche=numeromodifiche+ClassificazioneTrasf_Modifica.CreaMovimentiTrasferimentoAVaultNonPresidiati(IDnc);
+            }
+                
+            
+        }
+        
+        //FASE 4 : Cerco di classificare i movimenti delle piattoferme defi che riconosco come tali dai contratti (Completamente da vedere come fare la gestione)
+        
+        //FASE 5 : Categorizzo gli scambi differiti su stesso wallet in automatico
+        //Condizioni:
+            //-Movimento eseguito nello stesso secondo
+            //-almeno uno dei due movimenti contine swap nella sua causale
+            //-movimento non ancora categorizzato
+        for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+
+            String Movimento[] = MappaCryptoWallet.get(IDnc);
+            //Se non è un movimento in defi non gestisco nulla perchè non ho le bsi per farlo e devo gestirlo a mano
+            if (Movimento.length > 30 && Movimento[18].equalsIgnoreCase("")) {
+
+                String DataConfronto1 = IDnc.split("_")[0];
+                for (String IDnc2 : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+
+                    String Movimento2[] = MappaCryptoWallet.get(IDnc2);
+                    String DataConfronto2 = IDnc2.split("_")[0];
+                    if (DataConfronto1.equals(DataConfronto2)&&
+                            Movimento2.length>30&& Movimento2[18].equalsIgnoreCase("")&&
+                            (Movimento2[7].contains("swapExactTokens")||Movimento[7].contains("swapExactTokens"))&&
+                            IDnc.split("_")[4].equals("PC")&&
+                            IDnc2.split("_")[4].equals("DC")) {
+                        //Se arrivo qua ho i due dovimenti di cui devo creare lo scambio
+                        ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(IDnc,IDnc2);
+                        //mando avanti di 2 le modifiche perchè ne ho classificati 2
+                        numeromodifiche++;
+                        numeromodifiche++;
+                        
+                    }
+                }
+            }
+        }
+        
+        //FASE 6: Trasforma i movimenti di deposito di CRO che arrivano da un certo indirizzo in scambio tra WCRO e CRO
+        
+            for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+
+            String Movimento[] = MappaCryptoWallet.get(IDnc);
+            
+            //Se non è un movimento in defi non gestisco nulla perchè non ho le bsi per farlo e devo gestirlo a mano
+            if (Movimento.length > 30 && Movimento[18].equalsIgnoreCase("")
+                    &&//movimento non classificato e in defi
+                    IDnc.split("_")[4].equals("DC") && Movimento[11].equals("CRO")
+                    &&//movimento di deposito di CRO
+                    Movimento[7].trim().equalsIgnoreCase("withdraw")
+                    &&//Classificato come withdraw
+                    Movimento[30].equalsIgnoreCase("0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23")
+                    &&//Arriva da contratto WCRO
+                    Funzioni.TrovaReteDaID(IDnc).equalsIgnoreCase("CRO")) //Rete Cronos
+            {
+                //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
+                String MT[] = new String[Importazioni.ColonneTabella];
+                String IDSpezzato[]=IDnc.split("_");
+                String IDNuovoMov = IDSpezzato[0] + "_" + IDSpezzato[1] + "_0" + IDSpezzato[2] + "_" + IDSpezzato[3] + "_PC";
+                MT[0] = IDNuovoMov;
+                MT[1] = Movimento[1];
+                MT[2] = "1 di 1";
+                MT[3] = Movimento[3];
+                MT[4] = Movimento[4];
+                MT[5] = "PRELIEVO CRYPTO";
+                MT[6] = "WCRO ->";
+                MT[8] = "WCRO";
+                MT[9] = Movimento[12];
+                MT[10] = new BigDecimal(Movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+                MT[15] = Movimento[15];
+                MT[22] = "A";
+                if (Movimento.length > 30) {
+                    MT[23] = Movimento[23];
+                    MT[24] = Movimento[24];
+                    MT[25] = "WCRO";
+                    MT[26] = "0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23";
+                    MT[29] = Movimento[29];
+                    MT[30] = "nc";
+                }
+                Importazioni.RiempiVuotiArray(MT);
+                MappaCryptoWallet.put(IDNuovoMov, MT);
+              //  ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc);
+               // System.out.println("Trovato scambio con WCRO");
+                numeromodifiche++;
+            }
+        }
+
+            
+            
         
         
        // this.CDC.setSelectedIndex(0);
@@ -4432,7 +4559,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
                             Monete[0] = new Moneta();
                             Monete[1] = new Moneta();
-                            if (movimento.length > 23) {
+                            if (movimento.length > 28) {
                                 Monete[0].MonetaAddress = movimento[26];
                                 Monete[1].MonetaAddress = movimento[28];
                             }
@@ -4793,7 +4920,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
               //  this.TransazioniCryptoTabella.add(splittata);
               
                               //questo rinomina i token con nomi personalizzati
-                if (splittata.length > 23) {
+                if (splittata.length > 28) {
                     String Rete = Funzioni.TrovaReteDaID(splittata[0]);
                     String AddressU = splittata[26];
                     String AddressE = splittata[28];
@@ -4815,6 +4942,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         }
                     }
 
+                }
+                else{
+                    //DA RIVEDERE QUALI SONO E PERCHè SUCCEDE NONCHè SISTEMARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    //I MOVIMENTI IN DEFI DEVONO SEMPRE AVERE I CAMPI COMPILATI
+               //     System.out.println("Riga inforiore a 29 - "+riga);
                 }
                  MappaCryptoWallet.put(splittata[0], splittata);
               
@@ -4866,7 +4998,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
           Mappa_Wallet.put(v[3], v[1]);
           
                     //questo rinomina i token con nomi personalizzati
-             if (v.length > 23) {
+             if (v.length > 28) {
                  String Rete = Funzioni.TrovaReteDaID(v[0]);
                  String AddressU = v[26];
                  String AddressE = v[28];

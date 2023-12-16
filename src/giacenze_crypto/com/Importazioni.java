@@ -768,7 +768,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
      //   Prezzi.ScriviFileConversioneXXXEUR();
-        if (TransazioniAggiunte>0) CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+        if (TransazioniAggiunte>0) 
+            CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+            
         
         return true;
        
@@ -3300,5 +3302,99 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 //        Prezzi.ScriviFileConversioneXXXEUR();
         return MappaTransazioniDefi;
     }    
+    
+    
+    
+    
+        public static void ConvertiScambiLPinDepositiPrelievi(){
+        //Ci sono alcuni depositi su piattaforma defi che nel momento in cui fai il deposito
+        //ad esempio di un token lp sulla piattaforma poi ti restituiscono le reward accumulate fino a quel momento in altra moneta
+        //Questo fa si che il programma identifichi il movimento come uno scambio invec che come un deposito con una reward in rientro
+        //Questa funzione cancellerà il movimento di scambio e lo trasformerà in un prelievo/deposito
+        //Dove il prelievo viene fatto dal wallet verso una piattaforma defi
+        //mentre il deposito sul wallet verrà fatto figurare come una reward come è giusto che sia
+        
+        //Le conzioni perchè questo avvenga sono:
+        //Trovo il movimento di scambio crypto-crypto
+        //il token in uscita è un token LP
+        //il movimento viene classificato come "deposit" sulla defi
+        
+        //Cosa devo fare se le condizioni sono soddisfatte:
+        //Genero un movimento di prelievo del token LP
+        //Genero movimento di deposito dell'altro token
+        //Classifico il movimento di deposito come reward
+        //Cancello il vecchio movimento
+        
+        //Ovviamente tutto questo lo devo fare su tutto il database
+        //
+        //Questa funzione bisogna che vengaeseguita ad ogni fine importazione da defi
+        //Per Sistemare il pregresso invece bisognerà per il momento almeno prima del primo caricamento della tabella DepositiPrelievi
+        //Non lo farei fare ad ogni caricmaneto perchè diventa pesante
+        List<String> Trovati = new ArrayList<>();
+        
+        for (String Movimento[]:MappaCryptoWallet.values()){
+            if(Movimento[0].split("_")[4].equalsIgnoreCase("SC")&&
+                    Movimento[8].contains("-LP")&&
+                    Movimento.length>30&&
+                    Movimento[7].trim().equalsIgnoreCase("deposit")){
+                //Condizione tovata
+                //Faccio la lista degli id da modificare
+                Trovati.add(Movimento[0]);
+                }}
+            for(String idmov:Trovati){
+//1 - Genero il movimento di Prelievo
+                String Movimento[]=MappaCryptoWallet.get(idmov);
+                String RT[]=new String[ColonneTabella];
+                System.arraycopy(Movimento, 0, RT, 0, ColonneTabella); //ricopio tutti i movimenti
+                //adesso modifico quelli che mi interessano
+                String PartiID[];
+                PartiID=Movimento[0].split("_");
+                String ID=PartiID[0]+"_"+PartiID[1]+"_"+PartiID[2]+"_0"+PartiID[3]+"_PC";
+                RT[0]=ID;
+                RT[5]="PRELIEVO CRYPTO";
+                RT[6]=Movimento[8]+" ->";
+                RT[11]="";
+                RT[12]="";
+                RT[13]="";
+                RT[27]="";
+                RT[28]="";
+                Funzioni.RiempiVuotiArray(RT);
+                MappaCryptoWallet.put(ID, RT);
+                
+                //2 - Genero il movimento di Deposito e lo classifico come rimborso
+                RT=new String[ColonneTabella];
+                System.arraycopy(Movimento, 0, RT, 0, ColonneTabella); //ricopio tutti i movimenti
+                //adesso modifico quelli che mi interessano
+                PartiID=Movimento[0].split("_");
+                ID=PartiID[0]+"_"+PartiID[1]+"_"+PartiID[2]+"_"+PartiID[3]+"_DC";
+                RT[0]=ID;
+                RT[5]="REWARD";
+                RT[6]="-> "+Movimento[11];
+                RT[8]="";
+                RT[9]="";
+                RT[10]="";
+                RT[18]="DAI - Reward";
+                RT[25]="";
+                RT[26]="";
+                Funzioni.RiempiVuotiArray(RT);
+                MappaCryptoWallet.put(ID, RT);
+                
+                //3 - Cancello il vecchi movimento
+                MappaCryptoWallet.remove(Movimento[0]);
+                CDC_Grafica.TabellaCryptodaAggiornare=true;
+              /*  Plusvalenze.AggiornaPlusvalenze();
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                DepositiPrelievi_Caricatabella();*/
+                
+                
+            
+        }
+        
+    }
+    
+    
+    
+    
+    
     
 }

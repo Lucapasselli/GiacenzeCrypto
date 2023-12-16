@@ -3485,9 +3485,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         
         //FASE 2 : Adesso gestisco tutta la parte delle reward da Defi
-        for (String[] Movimento:MappaCryptoWallet.values()){//DA OTTIMIZZARE SCORRENDO I SOLI MOVIMENTI DA CLASSIFICARE
+        for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+            String Movimento[]=MappaCryptoWallet.get(IDnc);
             if(Movimento[18].equalsIgnoreCase("")&&
-                  Movimento.length>30&&
+                  Movimento.length>29&&
                   Movimento[0].split("_")[4].equalsIgnoreCase("DC")&&
                   Movimento[7].trim().equalsIgnoreCase("getReward")){
                 
@@ -3503,7 +3504,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
             //ad uno ad uno controllo tutti i movimenti non ancora categorizzati
             String Movimento[]=MappaCryptoWallet.get(IDnc);
-            if (Movimento.length>30&&Movimento[18].equalsIgnoreCase("")&&//Verifico che il movimento sia in defi e non sia già classificato
+            if (Movimento.length>29&&Movimento[18].equalsIgnoreCase("")&&//Verifico che il movimento sia in defi e non sia già classificato
                     Movimento[0].split("_")[4].equals("PC")&&//che sia un movimento di prelievo
                     Movimento[8].contains("-LP"))//che sia di un Token LP
             {
@@ -3526,7 +3527,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             String Movimento[] = MappaCryptoWallet.get(IDnc);
             //Se non è un movimento in defi non gestisco nulla perchè non ho le bsi per farlo e devo gestirlo a mano
-            if (Movimento.length > 30 && Movimento[18].equalsIgnoreCase("")) {
+            if (Movimento.length > 29 && Movimento[18].equalsIgnoreCase("")) {
 
                 String DataConfronto1 = IDnc.split("_")[0];
                 for (String IDnc2 : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
@@ -3534,7 +3535,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     String Movimento2[] = MappaCryptoWallet.get(IDnc2);
                     String DataConfronto2 = IDnc2.split("_")[0];
                     if (DataConfronto1.equals(DataConfronto2)&&
-                            Movimento2.length>30&& Movimento2[18].equalsIgnoreCase("")&&
+                            Movimento2.length>29&& Movimento2[18].equalsIgnoreCase("")&&
                             (Movimento2[7].contains("swapExactTokens")||Movimento[7].contains("swapExactTokens"))&&
                             IDnc.split("_")[4].equals("PC")&&
                             IDnc2.split("_")[4].equals("DC")) {
@@ -3569,7 +3570,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
                 String MT[] = new String[Importazioni.ColonneTabella];
                 String IDSpezzato[]=IDnc.split("_");
-                String IDNuovoMov = IDSpezzato[0] + "_" + IDSpezzato[1] + "_0" + IDSpezzato[2] + "_" + IDSpezzato[3] + "_PC";
+                String IDNuovoMov = IDSpezzato[0] + "_" + IDSpezzato[1] + "_0."+IDSpezzato[2]+"_" + IDSpezzato[3] + "_PC";
                 MT[0] = IDNuovoMov;
                 MT[1] = Movimento[1];
                 MT[2] = "1 di 1";
@@ -3588,17 +3589,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     MT[25] = "WCRO";
                     MT[26] = "0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23";
                     MT[29] = Movimento[29];
-                    MT[30] = "nc";
+                    
                 }
                 Importazioni.RiempiVuotiArray(MT);
                 MappaCryptoWallet.put(IDNuovoMov, MT);
-              //  ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc);
+                ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc);
                // System.out.println("Trovato scambio con WCRO");
                 numeromodifiche++;
             }
         }
 
-            
+          //FASE 7 : Classificare o eliminare i movimenti che passano da CRO a CRO su diversa chain  
             
         
         
@@ -4047,16 +4048,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 RT[2] = "1 di 1";
                                 RT[3] = RTOri[3];
                                 RT[4] = RTOri[4];
-                                RT[5] = "";//dipende dalla scelta
                                 RT[6] = Moneta + " ->";
-                                RT[7] = "";
                                 RT[8] = Moneta;
                                 RT[9] = TipoMoneta;//da prendere dalla tabella prima
                                 RT[10] = SQta;
-                                RT[11] = "";
-                                RT[12] = "";
-                                RT[13] = "";
-                                RT[14] = "";
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = Moneta;
                                 M1.MonetaAddress = AddressMoneta;
@@ -4068,21 +4063,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
                                 RT[15] = Prezzo.toPlainString();
-                                RT[16] = "";
-                                RT[17] = "";
-                                RT[18] = "";//dipende dalla scelta
-                                RT[19] = "";
-                                RT[20] = "";
                                 RT[21] = Nota;
                                 RT[22] = "M";
-                                RT[23] = "";
-                                RT[24] = "";
-                                RT[25] = "";
                                 RT[26] = AddressMoneta;
-                                RT[27] = "";
-                                RT[28] = "";
-                                RT[29] = RTOri[29];
-                                RT[30] = "";
+                                if (RTOri.length>29)RT[29] = RTOri[29];
                                 RiempiVuotiArray(RT);
 
                                 String IDOriSplittato[] = RTOri[0].split("_");
@@ -4161,16 +4145,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 RT[2] = "1 di 1";
                                 RT[3] = RTOri[3];
                                 RT[4] = RTOri[4];
-                                RT[5] = "";//dipende dalla scelta
                                 RT[6] = " ->" + Moneta;
-                                RT[7] = "";
-                                RT[8] = "";
-                                RT[9] = "";//da prendere dalla tabella prima
-                                RT[10] = "";
                                 RT[11] = Moneta;
                                 RT[12] = TipoMoneta;
                                 RT[13] = SQta;
-                                RT[14] = "";
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = Moneta;
                                 M1.MonetaAddress = AddressMoneta;
@@ -4182,21 +4160,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
                                 RT[15] = Prezzo.toPlainString();
-                                RT[16] = "";
-                                RT[17] = "";
-                                RT[18] = "";//dipende dalla scelta
-                                RT[19] = "";
-                                RT[20] = "";
                                 RT[21] = Nota;
                                 RT[22] = "M";
-                                RT[23] = "";
-                                RT[24] = "";
-                                RT[25] = "";
-                                RT[26] = "";
-                                RT[27] = "";
                                 RT[28] = AddressMoneta;
-                                RT[29] = "";
-                                RT[30] = "";
+                                if (RTOri.length>29)RT[29] = RTOri[29];
                                 RiempiVuotiArray(RT);
 
                                 switch (scelta) {

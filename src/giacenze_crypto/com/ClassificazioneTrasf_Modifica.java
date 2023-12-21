@@ -409,7 +409,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
                 }
                 case 6 -> {
-                    descrizione = "TRASFERIMENTO DA VAULT";
+                    descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
                     trasferimento = false;
                 }
@@ -445,7 +445,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     trasferimento = true;
                 }
                 case 5 -> {
-                    descrizione = "TRASFERIMENTO A VAULT";
+                    descrizione = "TRASFERIMENTO A PIATTAFORMA";
                     dettaglio = "PTW - Trasferimento a Vault/Piattaforma a Rendita";
                     trasferimento = true;
                 }
@@ -461,12 +461,12 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
         }
         if (completato) {
-            if (descrizione.equalsIgnoreCase("TRASFERIMENTO A VAULT")) {
+            if (descrizione.equalsIgnoreCase("TRASFERIMENTO A PIATTAFORMA")) {
                 //creo movimento di deposito su Vault e movifico il movimento originale
                 //in questa funzione non devo controllare nulla di particolare
                 CreaMovimentiTrasferimentoAVault(IDTrans, descrizione, dettaglio);
                 this.dispose();
-            } else if (descrizione.equalsIgnoreCase("TRASFERIMENTO DA VAULT")) {
+            } else if (descrizione.equalsIgnoreCase("TRASFERIMENTO DA PIATTAFORMA")) {
                 CreaMovimentiTrasferimentoDaVault(IDTrans, descrizione, dettaglio);
                 this.dispose();
             } else if (!trasferimento) {
@@ -711,7 +711,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 
                 
                if (!ListaIDMovimentiUguali.isEmpty()){
-                    Descrizione = "TRASFERIMENTO DA VAULT";
+                    Descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     Dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
                  String Messaggio="<html>Sono stati trovati "+ListaIDMovimentiUguali.size()+" movimenti di rientro da questo contratto non ancora classificati.<br>"
                          + "Vuoi che vengano classificati automaticamente?</html>";
@@ -749,7 +749,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //controllo se ho movimenti simili e chiedo se voglio classificarli nella stessa maniera
             //poi creo movimento di deposito su Vault e movifico il movimento originale
             int movimentimodificati=1;
-            String Descrizione="TRASFERIMENTO A VAULT";
+            String Descrizione="TRASFERIMENTO A PIATTAFORMA";
             String Dettaglio="PTW - Trasferimento a Vault/Piattaforma a Rendita";
             
             //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
@@ -826,7 +826,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 
                 
                if (!ListaIDMovimentiUguali.isEmpty()){
-                    Descrizione = "TRASFERIMENTO DA VAULT";
+                    Descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     Dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
 
                         //Classifico tutti i movimenti di rientro
@@ -854,8 +854,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT[1]=Movimento[1];
         MT[2]="1 di 1";
         MT[3]=Movimento[3];
-        MT[4]="VAULT";
-        MT[5]="TRASFERIMENTO A VAULT";
+        MT[4]="PIATTAFORMA/VAULT";
+        MT[5]="TRASFERIMENTO A PIATTAFORMA";
         MT[6]="-> "+MonetaDettaglio;
         MT[11]=Movimento[8];
         MT[12]=Movimento[9];
@@ -1043,8 +1043,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT[1]=Movimento[1];
         MT[2]="1 di 1";
         MT[3]=Movimento[3];
-        MT[4]="VAULT";
-        MT[5]="TRASFERIMENTO DA VAULT";
+        MT[4]="PIATTAFORMA/VAULT";
+        MT[5]="TRASFERIMENTO DA PIATTAFORMA";
         MT[6]=MonetaDettaglio+" ->";
         MT[8]=Movimento[11];
         MT[9]=Movimento[12];
@@ -1070,7 +1070,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //faccio la somma dei movimenti del vault di questa moneta/wallet
         //Mi serve sapere la giacenza residua e vedere se sottraendo il movimento in uscita va o meno sotto zero
         //qualora vada sotto zero devo creare un movimento che compensi la cosa
-        String CoppiaWalletVault=Movimento[3]+"VAULT";   
+        String CoppiaWalletVault=Movimento[3]+"PIATTAFORMA/VAULT";   
         for (String[] v : MappaCryptoWallet.values()) {
             DataOra=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
             String MonetaUscita=v[8];
@@ -1098,7 +1098,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT2[1]=Movimento[1];
         MT2[2]="1 di 1";
         MT2[3]=Movimento[3];
-        MT2[4]="VAULT";
+        MT2[4]="PIATTAFORMA/VAULT";
         MT2[5]="REWARD";
         MT2[6]="-> "+MonetaDettaglio;
         MT2[11]=Movimento[11];
@@ -1163,9 +1163,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT1[3]=MovimentoPrelievo[3];
         MS[3]=MovimentoPrelievo[3];
         MT2[3]=MovimentoPrelievo[3];
-        MT1[4]="PIATTAFORMA PER SCAMBIO";
-        MS[4]="PIATTAFORMA PER SCAMBIO";
-        MT2[4]="PIATTAFORMA PER SCAMBIO";
+        MT1[4]="PIATTAFORMA DI SCAMBIO";
+        MS[4]="PIATTAFORMA DI SCAMBIO";
+        MT2[4]="PIATTAFORMA DI SCAMBIO";
         MT1[5]="TRASFERIMENTO PER SCAMBIO";
         MS[5]="SCAMBIO CRYPTO";
         MT2[5]="TRASFERIMENTO PER SCAMBIO";

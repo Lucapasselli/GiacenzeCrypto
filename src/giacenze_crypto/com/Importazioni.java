@@ -2963,6 +2963,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 return null;
             }
             String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
             System.out.println(urls);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -3012,6 +3013,155 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
            return ritorno; 
      }
 
+     
+    public static String GiacenzeCRO_RimanzeBlocco(String Blocco, String walletAddress) {
+        //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
+        //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
+        String Valore = DatabaseH2.GiacenzeCRO_Leggi(walletAddress + "_" + Blocco);
+        if (Valore == null)
+         try {
+            String urls = "https://cronos.org/explorer/api?module=account&action=eth_get_balance&address=" + walletAddress + "&block=" + Blocco;
+
+            System.out.println(urls);
+            URL url = new URI(urls).toURL();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            StringBuilder responseTxlist = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                responseTxlist.append(inputLine);
+            }
+            in.close();
+            JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
+            Valore = jsonObjectTxlist.getString("result");
+            DatabaseH2.GiacenzeCRO_Scrivi(walletAddress + "_" + Blocco, Valore);
+            TimeUnit.SECONDS.sleep(1);
+
+        } catch (InterruptedException | URISyntaxException | IOException ex) {
+            // Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+        Valore = Long.toString(Funzioni.hexToDecimal(Valore));
+        Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
+        return Valore;
+    }
+     
+     private void GiacenzeCRO_CreaMovCorretivo(String IDrif,BigDecimal QtaTot,BigDecimal QtaVoluta) {
+         BigDecimal differenzaQta=QtaVoluta.subtract(QtaTot).stripTrailingZeros();
+            
+            String MV[]=MappaCryptoWallet.get(IDrif);
+            String IDSplit[]=MV[0].split("_");
+         if (differenzaQta.compareTo(new BigDecimal(0))==1){
+             //devo creare un movimento di deposito peri a differenzaQta
+             String RT[]=new String[ColonneTabella];
+             String ID=IDSplit[0]+"_"+IDSplit[1]+"_."+IDSplit[2]+"_"+IDSplit[3]+"_DC";
+             RT[0]=ID;
+             RT[1]=MV[1];
+             RT[2]="1 di 1";
+             RT[3]=MV[3];
+             RT[4]=MV[4];
+             RT[5]="DEPOSITO CRYPTO";
+             RT[11]="CRO";
+             RT[12]="CRYPTO";
+             RT[13]=differenzaQta.toPlainString();
+             Moneta mon=new Moneta();
+             mon.Moneta="CRO";
+             mon.MonetaAddress="CRO";
+             mon.Qta=differenzaQta.abs().toPlainString();
+             mon.Rete="CRO";
+             mon.Tipo="CRYPTO";
+             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 10, null);
+             RT[21]="RETTIFICA";
+             RT[22]="A";
+             if (MV.length>28)
+             {
+                RT[27]="CRO";
+                RT[28]="CRO";
+                if (MV.length>29)RT[29]=MV[29];
+             }
+             Funzioni.RiempiVuotiArray(RT);
+             MappaCryptoWallet.put(ID, RT);
+         }else if (differenzaQta.compareTo(new BigDecimal(0))==-1){
+             //devo creare un movimento di prelievo pari a differenzaQta
+             String RT[]=new String[ColonneTabella];
+             String ID=IDSplit[0]+"_"+IDSplit[1]+"_."+IDSplit[2]+"_"+IDSplit[3]+"_PC";
+             RT[0]=ID;
+             RT[1]=MV[1];
+             RT[2]="1 di 1";
+             RT[3]=MV[3];
+             RT[4]=MV[4];
+             RT[5]="PRELIEVO CRYPTO";
+             RT[8]="CRO";
+             RT[9]="CRYPTO";
+             RT[10]=differenzaQta.toPlainString();
+             RT[15]="";//da mettere il prezzo della transazione
+             RT[21]="RETTIFICA";
+             RT[22]="A";
+             if (MV.length>28){
+                RT[25]="CRO";
+                RT[26]="CRO";
+                if (MV.length>29)RT[29]=MV[29];
+              }
+             Funzioni.RiempiVuotiArray(RT);
+             MappaCryptoWallet.put(ID, RT);
+             
+         }
+     }
+        private void GiacenzeCRO_Sistema(String Wallet,Component ccc,Download progressb) {
+        
+
+            BigDecimal TotaleQta = new BigDecimal(0);
+            String UltimoBlocco="";
+            String PrimaTransBlocco="";
+            for (String[] movimento : MappaCryptoWallet.values()) {
+               // long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+                    String AddressU = "";
+                    String AddressE = "";
+                    if (movimento.length > 28) {
+                        AddressU = movimento[26];
+                        AddressE = movimento[28];
+                    }
+                    // adesso verifico il wallet
+                    //Deve essere lo stesso wallet
+                    //Deve chiamarsi CRO Transaction, per lo meno per il momento
+                    //La moneta movimentata deve essere CRO
+                    //Devo avere il numero di blocco
+                    //poi penso lo cambierò
+                    if (Wallet.equalsIgnoreCase(movimento[3].trim()) && movimento[4].trim().equalsIgnoreCase("CRO Transaction")) {
+                        if (AddressU.equalsIgnoreCase("CRO")||AddressE.equalsIgnoreCase("CRO")) {
+                            
+                            if (!movimento[23].equals(UltimoBlocco)&&!UltimoBlocco.isBlank()){
+                                //Se il blocco che sto analizzando è diverso dal blocco precedente allora posso fare le verifiche sulla giacenza del blocco precedente e sistemare le cose
+                                
+                                //DA FARE!!!!!!!!!!!!!!!!!!!!      
+                                BigDecimal TotaleVoluto=new BigDecimal(GiacenzeCRO_RimanzeBlocco(UltimoBlocco,Wallet));
+                                if (TotaleVoluto.compareTo(TotaleQta)!=0){//se i 2 totali non corrispondono creo il movimento che sistema le cose                                
+                                    GiacenzeCRO_CreaMovCorretivo(PrimaTransBlocco,TotaleQta,TotaleVoluto);
+                                    TotaleQta=TotaleVoluto;//A Questo punto il nuovo totale dovrà essere quello voluto
+                                }
+     
+                                
+                               
+                               
+                                
+                            }
+                            else if (!movimento[23].equals(UltimoBlocco)){
+                                PrimaTransBlocco=movimento[0];
+                            }
+                            //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
+                            if (AddressU.equalsIgnoreCase("CRO"))TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                            if (AddressE.equalsIgnoreCase("CRO")) TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                            UltimoBlocco=movimento[23];
+                        }
+                    }
+                
+            }
+
+        
+    }
+      
+      
     public static Map<String, TransazioneDefi> RitornaTransazioniBSC(List<String> Portafogli, Component ccc, Download progressb) {
         //Portafigli contiene la lista dei portafogli da analizzare e comprende indirizzo,ultimoblocco e rete
         //la mappa seguente va popolata per ogni chain explorer che viene implementato a programma 
@@ -3250,6 +3400,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 String AddressNoWallet;
                 JSONObject transaction = transactionsTxlistinternal.getJSONObject(i);
                 String hash = transaction.getString("hash");
+          //      String hash =transaction.getString("transactionHash");
                 String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                 String from = transaction.getString("from");
                 String to = transaction.getString("to");

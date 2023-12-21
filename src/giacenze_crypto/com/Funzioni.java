@@ -84,6 +84,7 @@ public class Funzioni {
             //System.out.println("Compilo Mappe integrate nel codice");
             String BSC[]=new String[]{"https://api.bscscan.com","6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6","BNB","binance-smart-chain"};
             String CRO[]=new String[]{"https://api.cronoscan.com","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
+           // String CRO[]=new String[]{"https://cronos.org/explorer","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
             CDC_Grafica.Mappa_ChainExplorer.put("CRO", CRO);
             CDC_Grafica.Mappa_ChainExplorer.put("BSC", BSC);             
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
@@ -96,6 +97,21 @@ public class Funzioni {
             CDC_Grafica.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
             
         }
+        
+    public static long hexToDecimal(String hexNumber) {
+        // Verifica se la stringa fornita è vuota o nulla
+        if (hexNumber == null || hexNumber.isEmpty()) {
+            throw new IllegalArgumentException("La stringa esadecimale non può essere vuota o nulla.");
+        }
+
+        // Rimuove il prefisso "0x" se presente
+        if (hexNumber.startsWith("0x")) {
+            hexNumber = hexNumber.substring(2);
+        }
+
+        // Converte la stringa esadecimale in decimale utilizzando il metodo parseLong della classe Long
+        return Long.parseLong(hexNumber, 16);
+    }
         
         
     public static boolean ApriExplorer (String ID){

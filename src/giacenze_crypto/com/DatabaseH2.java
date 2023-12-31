@@ -138,7 +138,7 @@ public class DatabaseH2 {
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
         
-        public static String GiacenzeCRO_Leggi(String wallet_blocco) {
+        public static String GiacenzeWalletMonetaBlockchain_Leggi(String wallet_blocco) {
                 String Valore = null;
         try {
             // Connessione al database
@@ -156,7 +156,7 @@ public class DatabaseH2 {
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }    
         
-        public static void GiacenzeCRO_Scrivi(String wallet_blocco, String Valore) {
+        public static void GiacenzeWalletMonetaBlockchain_Scrivi(String wallet_blocco, String Valore) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM GIACENZECRO WHERE Wallet_Blocco = '" + wallet_blocco + "'";

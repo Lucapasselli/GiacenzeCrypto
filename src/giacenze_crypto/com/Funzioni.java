@@ -7,6 +7,7 @@ package giacenze_crypto.com;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.awt.Desktop;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public class Funzioni {
             
         }
         
-    public static long hexToDecimal(String hexNumber) {
+    public static BigInteger hexToDecimal(String hexNumber) {
         // Verifica se la stringa fornita è vuota o nulla
         if (hexNumber == null || hexNumber.isEmpty()) {
             throw new IllegalArgumentException("La stringa esadecimale non può essere vuota o nulla.");
@@ -110,7 +111,8 @@ public class Funzioni {
         }
 
         // Converte la stringa esadecimale in decimale utilizzando il metodo parseLong della classe Long
-        return Long.parseLong(hexNumber, 16);
+        return new BigInteger(hexNumber , 16);
+        
     }
         
         

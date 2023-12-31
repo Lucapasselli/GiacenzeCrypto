@@ -204,6 +204,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
         // TODO add your handling code here:
+        //this.dispose();
         Download.FineThread=true;
         Bottone_Interrompi.setBackground(Color.red);
         Bottone_Interrompi.setText("Interruzione in corso ...");

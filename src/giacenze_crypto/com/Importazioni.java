@@ -3152,6 +3152,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 String rima=GiacenzeCRO_RimanzeBlocco(UltimoBlocco,Wallet);
   //DA FARE!!!!!!!!!!!!!!!!!!!!        //a questo punto dovrei fare il check e se il risultato è null annullare tutto
                                 //questo perchè altrimenti rischio di mandare avanti un conto sbagliato
+                                //Ovviamente annullo mandando fuori un errore
                                 BigDecimal TotaleVoluto=new BigDecimal(rima);
                                 if (TotaleVoluto.compareTo(TotaleQta)!=0){//se i 2 totali non corrispondono creo il movimento che sistema le cose                                
                                     GiacenzeCRO_CreaMovCorretivo(PrimaTransBlocco,TotaleQta,TotaleVoluto);

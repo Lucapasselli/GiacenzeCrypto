@@ -64,7 +64,7 @@ public class DatabaseH2 {
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();  
             
-            createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZECRO (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZEBLOCKCHAIN (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
@@ -142,7 +142,7 @@ public class DatabaseH2 {
                 String Valore = null;
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Valore FROM GIACENZECRO WHERE Wallet_Blocco = '" + wallet_blocco + "'";
+            String checkIfExistsSQL = "SELECT Valore FROM GIACENZEBLOCKCHAIN WHERE Wallet_Blocco = '" + wallet_blocco + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
@@ -159,7 +159,7 @@ public class DatabaseH2 {
         public static void GiacenzeWalletMonetaBlockchain_Scrivi(String wallet_blocco, String Valore) {
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM GIACENZECRO WHERE Wallet_Blocco = '" + wallet_blocco + "'";
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM GIACENZEBLOCKCHAIN WHERE Wallet_Blocco = '" + wallet_blocco + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             int rowCount = 0;
             // Esegui la query e controlla il risultato
@@ -169,12 +169,12 @@ public class DatabaseH2 {
             }
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE GIACENZECRO SET Valore = '" + Valore + "' WHERE Wallet_Blocco = '" + wallet_blocco + "'";
+                String updateSQL = "UPDATE GIACENZEBLOCKCHAIN SET Valore = '" + Valore + "' WHERE Wallet_Blocco = '" + wallet_blocco + "'";
                 PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
                 updateStatement.executeUpdate();
             } else {
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO GIACENZECRO (Wallet_Blocco, Valore) VALUES ('" + wallet_blocco + "','" + Valore + "')";
+                String insertSQL = "INSERT INTO GIACENZEBLOCKCHAIN (Wallet_Blocco, Valore) VALUES ('" + wallet_blocco + "','" + Valore + "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 insertStatement.executeUpdate();
             }

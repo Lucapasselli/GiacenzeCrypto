@@ -2465,6 +2465,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Map<String, String> CDC_FiatWallet_Descrizioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         String SaldoIniziale=this.CDC_FiatWallet_Text_GiacenzaIniziale.getText().replace("€", "").trim();
         BigDecimal Totale=new BigDecimal(SaldoIniziale);
+        BigDecimal SaldoInizioPeriodo=new BigDecimal (CDC_FiatWallet_Text_SaldoIniziale.getText().substring(2));
+        Totale=Totale.add(SaldoInizioPeriodo);
         for (String value : CDC_FiatWallet_Mappa.values()) {
 
             String splittata[] = value.split(",");
@@ -2609,6 +2611,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         BigDecimal TotaleTopUpCarta= new BigDecimal("0"); 
         String SaldoIniziale=this.CDC_CardWallet_Text_GiacenzaIniziale.getText().replace("€", "").trim();
         BigDecimal Totale=new BigDecimal(SaldoIniziale);
+        BigDecimal SaldoInizioPeriodo=new BigDecimal (CDC_CardWallet_Text_SaldoIniziale.getText().substring(2));
+        Totale=Totale.add(SaldoInizioPeriodo);
         Map<String, String> CDC_CardWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             for (String value : CDC_CardWallet_Mappa.values())
             {

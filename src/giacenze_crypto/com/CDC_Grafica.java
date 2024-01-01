@@ -4305,24 +4305,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        //System.out.println(Importazioni.RitornaRimanenzeCRO("460121", "0x7bfa44a6dad637e8416eabe568c285cc94c7e7a7", null, null));
-      //  System.out.println(Long.parseLong("8bc25c9de6768c00", 16));
-        
-       Component c = this;
-        Download progress = new Download();
-        progress.setLocationRelativeTo(this);
-                Thread thread;
-        thread = new Thread() {
-            public void run() {
-                //Importazioni.GiacenzeCRO_Sistema("", c, progress, thread);
-                Importazioni.GiacenzeCRO_Sistema("0xaadfgghh", c, progress);//da gestire il wallet
-                progress.dispose();
-                //in teoria dovrei trovarli e gestirli in automatico
-                //in qualche variabile dovrei avere l'elenco dei wallet da cui estrarre solo quelli su rete CRO
-            }
-         };
-        thread.start();
-        progress.setVisible(true);
+     
+      
 
     }//GEN-LAST:event_jButton1ActionPerformed
     

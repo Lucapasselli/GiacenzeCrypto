@@ -313,17 +313,44 @@ public class GestioneWallets extends javax.swing.JDialog {
 
             }
         };
+        progress.SetThread(thread);
         thread.start();
         progress.setVisible(true);
+        //progress parte in modalità esclusiva quindi le istruzioni qua sotto non vengono eseguite fino a che la finestra non viene chiusa
+        Importazioni.ConvertiScambiLPinDepositiPrelievi();
+        CorreggiGiacenzeCronos();
         JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti",
                 "Importazione Terminata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         PopolaTabella();
-        Importazioni.ConvertiScambiLPinDepositiPrelievi();
         c.setCursor(Cursor.getDefaultCursor());
 
     }
  
-        
+    private void CorreggiGiacenzeCronos() {
+         Component c = this;
+        Download progress = new Download();
+        progress.setLocationRelativeTo(this);
+                Thread thread;
+        thread = new Thread() {
+            public void run() {
+                //Importazioni.GiacenzeCRO_Sistema("", c, progress, thread);
+                        for (String v : Mappa_Wallet.keySet()) {
+                            if (v.contains("(CRO)")){
+                              //  System.out.println(v);
+                                Importazioni.GiacenzeCRO_Sistema(v, c, progress);
+                            }
+            //Mappa_Wallet.put(v[3], v[1]);
+        }
+             //   Importazioni.GiacenzeCRO_Sistema("0x7bfa44a6dad637e8416eabe568c285cc94c7e7a7", c, progress);//da gestire il wallet
+                progress.dispose();
+                //in teoria dovrei trovarli e gestirli in automatico
+                //in qualche variabile dovrei avere l'elenco dei wallet da cui estrarre solo quelli su rete CRO
+            }
+         };
+        progress.SetThread(thread);
+        thread.start();
+        progress.setVisible(true);
+    }
     
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:

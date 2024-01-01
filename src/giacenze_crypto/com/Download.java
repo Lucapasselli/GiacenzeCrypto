@@ -25,6 +25,7 @@ public class Download extends javax.swing.JDialog {
      */
 public int Massimo;
 public int avanzamento;
+public Thread thread;
 public static boolean FineThread=false;
 
 //    static boolean DownloadTerminato=false;
@@ -66,7 +67,15 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     }
     
+    public void SetThread(Thread T){
+        thread=T;
+    }
+    
     public Boolean FineThread(){
+        
+        if (thread!=null&&!thread.isAlive()){
+            this.dispose();
+        }
         return Download.FineThread;
     }
     

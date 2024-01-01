@@ -3036,6 +3036,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             in.close();
             JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
             Valore = jsonObjectTxlist.getString("result");
+            Valore = (Funzioni.hexToDecimal(Valore)).toString();
+            Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
             DatabaseH2.GiacenzeWalletMonetaBlockchain_Scrivi(walletAddress + "_CRO_CRO_" + Blocco, Valore);
             TimeUnit.SECONDS.sleep(2);
 
@@ -3043,19 +3045,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             // Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
-        Valore = (Funzioni.hexToDecimal(Valore)).toString();
-        Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
+
         return Valore;
     }
      
-     public static void GiacenzeCRO_CreaMovCorretivo(String IDrif,BigDecimal QtaTot,BigDecimal QtaVoluta) {
+     public static String[] GiacenzeCRO_CreaMovCorretivo(String IDrif,BigDecimal QtaTot,BigDecimal QtaVoluta) {
          BigDecimal differenzaQta=QtaVoluta.subtract(QtaTot).stripTrailingZeros();
             
             String MV[]=MappaCryptoWallet.get(IDrif);
             String IDSplit[]=MV[0].split("_");
+            String RT[]=null;
          if (differenzaQta.compareTo(new BigDecimal(0))==1){
-             //devo creare un movimento di deposito peri a differenzaQta
-             String RT[]=new String[ColonneTabella];
+             //devo creare un movimento di deposito peri a differenzaQta 
+             RT=new String[ColonneTabella];
              String ID=IDSplit[0]+"_"+IDSplit[1]+"_."+IDSplit[2]+"_"+IDSplit[3]+"_DC";
              RT[0]=ID;
              RT[1]=MV[1];
@@ -3064,16 +3066,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
              RT[4]=MV[4];
              RT[5]="DEPOSITO CRYPTO";
              RT[11]="CRO";
-             RT[12]="CRYPTO";
+             RT[12]="Crypto";
              RT[13]=differenzaQta.toPlainString();
              Moneta mon=new Moneta();
              mon.Moneta="CRO";
              mon.MonetaAddress="CRO";
              mon.Qta=differenzaQta.abs().toPlainString();
-             mon.Rete="CRO";
-             mon.Tipo="CRYPTO";
-             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, null);
-             RT[21]="RETTIFICA";
+            // mon.Rete=Funzioni.TrovaReteDaID(IDrif);
+             mon.Tipo="Crypto";
+             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, "CRO");
+             RT[7]="Rettifica Automatica";
              RT[22]="A";
                 RT[27]="CRO";
                 RT[28]="CRO";
@@ -3082,7 +3084,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
   //           MappaCryptoWallet.put(ID, RT);
          }else if (differenzaQta.compareTo(new BigDecimal(0))==-1){
              //devo creare un movimento di prelievo pari a differenzaQta
-             String RT[]=new String[ColonneTabella];
+             RT=new String[ColonneTabella];
              String ID=IDSplit[0]+"_"+IDSplit[1]+"_."+IDSplit[2]+"_"+IDSplit[3]+"_PC";
              RT[0]=ID;
              RT[1]=MV[1];
@@ -3091,36 +3093,45 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
              RT[4]=MV[4];
              RT[5]="PRELIEVO CRYPTO";
              RT[8]="CRO";
-             RT[9]="CRYPTO";
+             RT[9]="Crypto";
              RT[10]=differenzaQta.toPlainString();
              Moneta mon=new Moneta();
              mon.Moneta="CRO";
              mon.MonetaAddress="CRO";
              mon.Qta=differenzaQta.abs().toPlainString();
-             mon.Rete="CRO";
-             mon.Tipo="CRYPTO";
-             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, null);
-             RT[21]="RETTIFICA";
+             //mon.Rete="CRO";
+             mon.Tipo="Crypto";
+             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, "CRO");
+             RT[7]="Rettifica Automatica";
              RT[22]="A";
                 RT[25]="CRO";
                 RT[26]="CRO";
                 RT[29]=MV[29];
+                
+            if (differenzaQta.abs().compareTo(new BigDecimal(2))==-1){
+            //se la differenza è inferiore a 2 CRO considero il movimento come una commissione
+                RT[18]="PCO - Commissione";
+                RT[5]="COMMISSIONE";
+                }
              Funzioni.RiempiVuotiArray(RT);
  //            MappaCryptoWallet.put(ID, RT);
              
          }
+         //System.out.println(RT[0]);
+         return RT;
      }
         public static String GiacenzeCRO_Sistema(String Wallet,Component ccc,Download progressb) {
         
             progressb.setDefaultCloseOperation(0);
             progressb.Titolo("Sistemazione Giacenze CRO");
             progressb.SetLabel("La funzione potrebbe durare parecchi minuti");
-            progressb.Massimo=MappaCryptoWallet.size();
+            progressb.SetMassimo(MappaCryptoWallet.size());
             progressb.avanzamento=0;
             int avanzamento=0;
             BigDecimal TotaleQta = new BigDecimal(0);
             String UltimoBlocco="";
             String PrimaTransBlocco="";
+            List<String[]> RigheTabella=new ArrayList<>();
             for (String[] movimento : MappaCryptoWallet.values()) {
                 progressb.SetAvanzamento(avanzamento);
                 avanzamento++;
@@ -3133,7 +3144,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                // long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
-                        String WalletRiga=movimento[3].split("\\(")[0].trim();
+                        String WalletRiga=movimento[3];
                       //  System.out.println(movimento[3].trim());
                     // adesso verifico il wallet
                     //Deve essere lo stesso wallet
@@ -3149,13 +3160,22 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 //Se il blocco che sto analizzando è diverso dal blocco precedente allora posso fare le verifiche sulla giacenza del blocco precedente e sistemare le cose
                                 
                                   
-                                String rima=GiacenzeCRO_RimanzeBlocco(UltimoBlocco,Wallet);
+                                String rima=GiacenzeCRO_RimanzeBlocco(UltimoBlocco,Wallet.split(" ")[0]);
+                                if (rima==null){
+                                    String testoMessaggio="""
+                                                       Errore nello scaricamento delle rimanenze dei singoli blocchi di CRO
+                                                       Verra' interrotta l'analisi, riprovare pi\u00f9 tardi""";
+                                    JOptionPane.showConfirmDialog(ccc,testoMessaggio,"Errore",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
+                                    return null;
+                                    
+                                }
   //DA FARE!!!!!!!!!!!!!!!!!!!!        //a questo punto dovrei fare il check e se il risultato è null annullare tutto
                                 //questo perchè altrimenti rischio di mandare avanti un conto sbagliato
                                 //Ovviamente annullo mandando fuori un errore
                                 BigDecimal TotaleVoluto=new BigDecimal(rima);
                                 if (TotaleVoluto.compareTo(TotaleQta)!=0){//se i 2 totali non corrispondono creo il movimento che sistema le cose                                
-                                    GiacenzeCRO_CreaMovCorretivo(PrimaTransBlocco,TotaleQta,TotaleVoluto);
+                                    String RT[]=GiacenzeCRO_CreaMovCorretivo(PrimaTransBlocco,TotaleQta,TotaleVoluto);
+                                    if(RT!=null)RigheTabella.add(RT);
                                     TotaleQta=TotaleVoluto;//A Questo punto il nuovo totale dovrà essere quello voluto
                                     //break;
                                 }
@@ -3165,7 +3185,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                
                                 
                             }
-                            else if (!movimento[23].equals(UltimoBlocco)){
+                            if (!movimento[23].equals(UltimoBlocco)){
                                 PrimaTransBlocco=movimento[0];
                             }
                             //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
@@ -3176,6 +3196,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     }
                 
             }
+            
+            //Ora creo tutti i movimenti correttivi che ho messo da parte nella lista
+            for (String RT[]:RigheTabella){
+                MappaCryptoWallet.put(RT[0], RT);
+            }
+            if (!RigheTabella.isEmpty())CDC_Grafica.TabellaCryptodaAggiornare=true;
     return "Ok";
         
     }

@@ -241,7 +241,64 @@ public class Tabelle {
         return table;
     }  
     
+       public static JTable ColoraTabellaSemplice(final JTable table) {
+      //  bg=grigioChiaro;
+     //   Data="";
+
+     //System.out.println("test");
+
+     
+
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            
+            public Component getTableCellRendererComponent(JTable table,
+                    Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                
+             
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+
+            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+ 
+            if (isSelected) {
+
+                    c.setBackground(table.getSelectionBackground());
+                    c.revalidate();
+                }
+                 
+                else {
+                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
+                   // setForeground(Color.gray);
+                  c.setBackground(bg);
+                  
+                  
+
+                }
+
+              // riga=row;
+                return this;
+            }
+        });
+        return table;
+    }  
     
     
-    
+       public static void updateRowHeights(JTable table)
+{
+    for (int row = 0; row < table.getRowCount(); row++)
+    {
+        int rowHeight = table.getRowHeight();
+
+        for (int column = 0; column < table.getColumnCount(); column++)
+        {
+            Component comp = table.prepareRenderer(table.getCellRenderer(row, column), row, column);
+            rowHeight = Math.max(rowHeight, comp.getPreferredSize().height);
+        }
+
+        table.setRowHeight(row, rowHeight);
+    }
+}
+       
+       
 }

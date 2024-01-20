@@ -38,6 +38,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -64,6 +65,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, List<String>> Mappa_Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
     static public Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
@@ -943,7 +945,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_Wallet2_Label.setText("Dett.Wallet :");
 
-        GiacenzeaData_Wallet2_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        GiacenzeaData_Wallet2_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
 
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
@@ -3230,12 +3232,27 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_CDC_OpzioniComponentShown
 
+    public void Funzione_AggiornaMappaWallets(String[] v){
+                  Mappa_Wallet.put(v[3], v[1]);
+                  if(Mappa_Wallets_e_Dettagli.get(v[3])==null)
+                  {
+                      List<String> Lista=new ArrayList();
+                      Lista.add(v[4]);
+                      Mappa_Wallets_e_Dettagli.put(v[3], Lista);
+                  }
+              else{
+                  List<String> Lista;
+                  Lista=Mappa_Wallets_e_Dettagli.get(v[3]);
+                  if (!Lista.contains(v[4]))Lista.add(v[4]);
+              }
+    }
+    
     public void Opzioni_RicreaListaWalletDisponibili(){ 
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.removeAllItems();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.addItem("----------");
           Mappa_Wallet.clear();
           for (String[] v : MappaCryptoWallet.values()) {
-                Mappa_Wallet.put(v[3], v[1]);
+                Funzione_AggiornaMappaWallets(v);
           }
           for (String v : Mappa_Wallet.keySet()) {
               this.Opzioni_Combobox_CancellaTransazioniCryptoXwallet.addItem(v);
@@ -3728,11 +3745,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
         // TODO add your handling code here:
         // this.GiacenzeaData_AggiornaComboBoxWallet();
+      //  System.out.println("prrrrrrrrrrrrroroppopero");
     }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
 
     private void GiacenzeaData_Wallet_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
         // TODO add your handling code here:
-        //   System.out.println("cambio item");
+         if(evt.getStateChange() == ItemEvent.SELECTED && GiacenzeaData_Wallet_ComboBox.isShowing()) {
+             
+          // System.out.println("poroppopero");
+            GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
+           
+           
+           }
+          // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
     }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
 
     private void GiacenzeaData_Bottone_MovimentiDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_MovimentiDefiActionPerformed
@@ -4615,19 +4640,43 @@ public class CDC_Grafica extends javax.swing.JFrame {
         progress.setVisible(true);}
     
     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet() {
-        int Selezionata=GiacenzeaData_Wallet_ComboBox.getSelectedIndex();
+       // int Selezionata=GiacenzeaData_Wallet_ComboBox.getSelectedIndex();
+        String VecchioValore=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+        boolean VecchioTrovato=false;
+       // int Selezionata2=GiacenzeaData_Wallet2_ComboBox.getSelectedIndex();
         GiacenzeaData_Wallet_ComboBox.removeAllItems();
         GiacenzeaData_Wallet_ComboBox.addItem("Tutti");
-        Mappa_Wallet.clear();
+       /* Mappa_Wallet.clear();
         for (String[] v : MappaCryptoWallet.values()) {
-            Mappa_Wallet.put(v[3], v[1]);
-        }
+            Funzione_AggiornaMappaWallets(v);
+        }*/
         for (String v : Mappa_Wallet.keySet()) {
             this.GiacenzeaData_Wallet_ComboBox.addItem(v);
+            if (v.equals(VecchioValore)) {
+                VecchioTrovato=true;
+            }
         }
-        if (GiacenzeaData_Wallet_ComboBox.getItemCount()>Selezionata)
-            GiacenzeaData_Wallet_ComboBox.setSelectedIndex(Selezionata);
+        if (VecchioTrovato)
+            GiacenzeaData_Wallet_ComboBox.setSelectedItem(VecchioValore);
+        GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
     }
+     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet2() {
+         String VecchioValore=GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString();
+         boolean VecchioTrovato=false;
+           List<String> Lista=Mappa_Wallets_e_Dettagli.get(GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString());
+           GiacenzeaData_Wallet2_ComboBox.removeAllItems();
+           GiacenzeaData_Wallet2_ComboBox.addItem("Tutti");
+           if (Lista!=null){
+               for (String SottoWallet:Lista){
+                   GiacenzeaData_Wallet2_ComboBox.addItem(SottoWallet);
+               if (SottoWallet.equals(VecchioValore)) {
+                VecchioTrovato=true;
+            }
+               }
+                       if (VecchioTrovato)
+            GiacenzeaData_Wallet2_ComboBox.setSelectedItem(VecchioValore);
+           }
+     }
 /*    public void TransazioniCrypto_Funzioni_AggiornaDefi(List<String> Portafogli,String apiKey) {
         Component c=this;
         Download progress=new Download();
@@ -4919,7 +4968,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     if (splittata[kj]==null||splittata[kj].equals("null"))splittata[kj]="";
                 }
                 //---------------------------------------------------------------------------------------------------               
-                Mappa_Wallet.put(splittata[3], splittata[1]);
+                Funzione_AggiornaMappaWallets(splittata);
                
               //  this.TransazioniCryptoTabella.add(splittata);
               
@@ -4993,7 +5042,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         BigDecimal Plusvalenza=new BigDecimal("0");
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
          for (String[] v : MappaCryptoWallet.values()) {
-          Mappa_Wallet.put(v[3], v[1]);
+          Funzione_AggiornaMappaWallets(v);
           
                  //questo rinomina i token con nomi personalizzati
                  //Solo in caso di defi

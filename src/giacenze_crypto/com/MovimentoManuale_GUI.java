@@ -2,13 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-/*
-NOTE:
-Attualmente la ricerca del prezzo con il tasto in basso avviene solo dal nome della coin e solo tramite binance
-Questo comporta 2 cose:
-1 - Se la coin non è listata da binance di conseguenza non avrà nessun prezzo
-2 - Potrebbero esserci in defi delle coin con lo stesso nome di quelle ufficiali ma con prezzi differenti, in questo caso mi restituirà un prezzo errato
-*/
 
 package giacenze_crypto.com;
 
@@ -33,6 +26,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import static giacenze_crypto.com.CDC_Grafica.Mappa_Wallets_e_Dettagli;
 
 /**
  *
@@ -43,7 +37,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     /**
      * Creates new form MovimentoManuale_GUI
      */
-    Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    //Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     List<String> Lista_Cryptovalute = new ArrayList<>();
     List<String> Lista_NFT = new ArrayList<>();
     List<String> Lista_FIAT = new ArrayList<>();
@@ -477,11 +471,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void CreaMappeXComboBox(){
-                Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+      //          Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
                 Lista_FIAT.add("EUR");
           for (String[] v : MappaCryptoWallet.values()) {
               //PARTE 1: Recupero Wallet e dettagli del wallet
-              String WalletTemp=v[3];
+    /*          String WalletTemp=v[3];
               String WalletDettaglioTemp=v[4];
               if(Wallets_e_Dettagli.get(v[3])==null)
                   {
@@ -493,7 +487,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                   List<String> Lista;
                   Lista=Wallets_e_Dettagli.get(WalletTemp);
                   if (!Lista.contains(WalletDettaglioTemp))Lista.add(WalletDettaglioTemp);
-              }
+              }*/
               //Parte 2 recupero della lista delle crypto, lista nft etc...
               String TipoUscita=v[9];
               String MonetaUscita=v[8];
@@ -704,7 +698,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         // TODO add your handling code here:
                 //Se cambiano le proprietà di questo oggetto devo cambiare di conseguenza l'oggetto del dettaglio del wallet
         this.WalletDettaglio_ComboBox.removeAllItems();
-        List<String> Dettagli = Wallets_e_Dettagli.get(Wallet_ComboBox.getSelectedItem().toString());
+        List<String> Dettagli = Mappa_Wallets_e_Dettagli.get(Wallet_ComboBox.getSelectedItem().toString());
         if (Dettagli != null) {
             this.WalletDettaglio_ComboBox.addItem("");
             for (String v : Dettagli) {
@@ -789,7 +783,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     private void CompilaComboBoxWallet(){
         this.Wallet_ComboBox.removeAllItems();
         this.Wallet_ComboBox.addItem("");
-        for (String v : Wallets_e_Dettagli.keySet()) {
+        for (String v : Mappa_Wallets_e_Dettagli.keySet()) {
               this.Wallet_ComboBox.addItem(v);
           }
     }

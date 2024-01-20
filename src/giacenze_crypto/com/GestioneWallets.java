@@ -238,12 +238,9 @@ public class GestioneWallets extends javax.swing.JDialog {
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         for (String[] v : MappaCryptoWallet.values()) {
-            if (v.length>23){
-                if (v[23]==null)v[23]="0";
-                 Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
-            }else{
-                 Mappa_Wallet.put(v[3], v[1]+";0");
-            }
+            
+            Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
+            
         }
         for (String riga:MappaWallets.values())
         {

@@ -4792,6 +4792,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
         String Valore;
         String Val[];
         
+        Valore=Transazione[0];
+        if (!Valore.isBlank()){
+            Val=new String[]{"ID ",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        }
+        
         Valore=Transazione[1];
         if (!Valore.isBlank()){
             Valore="<html><b>"+Valore+"</html>";
@@ -4960,6 +4966,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 //questo serve affinchè ogni movimento abbia sempre un numero di colonne pari a ColonneTabella
                 //serve affinchè possa incrementare a piacimento il numero di colonne senza avere problemi poi
                 //----------------------------------------------------------------------------------------
+                //Adesso faccio in modo che che i sottowallet CRO Transaction, BSC transaction etc.... vengano convertiti in 
+                //"Principale"
+               // System.out.println(splittata[4]);
+                if (!Funzioni.TrovaReteDaID(splittata[0]).isBlank()){
+                    if (splittata[4].split(" ").length>1&&splittata[4].contains("Transaction"))splittata[4]="Wallet";
+                    if (splittata[4].equals("PIATTAFORMA DI SCAMBIO"))splittata[4]="Defi";
+                    if (splittata[4].equals("PIATTAFORMA/VAULT"))splittata[4]="DeFi";
+                }
                 //questo serve solo per eliminare i null che erano finiti per sbaglio
                 //dopo un errore di programmazione
                 //Direi che si può tranquillamente togliere tra qualche versione, mettiamo ad esempio dalla 1.15

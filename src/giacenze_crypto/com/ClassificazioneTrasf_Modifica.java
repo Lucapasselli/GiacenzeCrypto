@@ -1163,9 +1163,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT1[3]=MovimentoPrelievo[3];
         MS[3]=MovimentoPrelievo[3];
         MT2[3]=MovimentoPrelievo[3];
-        MT1[4]="PIATTAFORMA DI SCAMBIO";
-        MS[4]="PIATTAFORMA DI SCAMBIO";
-        MT2[4]="PIATTAFORMA DI SCAMBIO";
+        MT1[4]="Piattaforma di scambio";//da mettere defi se il movimento è in defi
+        MS[4]="Piattaforma di scambio";//da mettere defi se il movimento è in defi
+        MT2[4]="Piattaforma di scambio";//da mettere defi se il movimento è in defi
         MT1[5]="TRASFERIMENTO PER SCAMBIO";
         MS[5]="SCAMBIO CRYPTO";
         MT2[5]="TRASFERIMENTO PER SCAMBIO";

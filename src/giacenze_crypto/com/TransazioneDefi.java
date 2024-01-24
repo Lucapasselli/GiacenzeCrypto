@@ -405,7 +405,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]="COMMISSIONE";
               RT[6]="Per Operazione Fallita";
               RT[7]=TipoTransazione;
@@ -448,7 +448,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]="COMMISSIONE";
               RT[6]="Per "+TipoTransazione;
               RT[7]=TipoTransazione;
@@ -496,7 +496,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]=Importazioni.RitornaTipologiaTransazione(null, token.Tipo,1);
               RT[6]="-> "+token.RitornaNomeToken();
               RT[7]=TipoTransazione;
@@ -541,7 +541,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]="COMMISSIONE";
               RT[6]="Per Prelievo";
               RT[7]=TipoTransazione;
@@ -585,7 +585,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroPrelievi;
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]=Importazioni.RitornaTipologiaTransazione(token.Tipo, null,1);
               RT[6]=token.RitornaNomeToken()+" ->";
               RT[7]=TipoTransazione;
@@ -629,7 +629,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]="COMMISSIONE";
               RT[6]="Per Scambio";
               RT[7]=TipoTransazione;
@@ -691,7 +691,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+totMov;
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo,1);
               RT[6]=tokenU.RitornaNomeToken()+" -> "+tokenE.RitornaNomeToken();
               RT[7]=TipoTransazione;
@@ -744,7 +744,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]="TRANSAZIONE TECNICA INTERNA";
               RT[6]="-> "+token.MonetaName;
               RT[7]=TipoTransazione;
@@ -789,7 +789,7 @@ public class TransazioneDefi {
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
               RT[3]=Wallet+" ("+Rete+")";
-              RT[4]=Rete+" Transaction";
+              RT[4]="Wallet";
               RT[5]="TRANSAZIONE TECNICA INTERNA";
               RT[6]=token.MonetaName+" ->";
               RT[7]=TipoTransazione;

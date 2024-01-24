@@ -219,6 +219,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Bottone_CambiaNomeToken = new javax.swing.JButton();
         GiacenzeaData_Wallet2_Label = new javax.swing.JLabel();
         GiacenzeaData_Wallet2_ComboBox = new javax.swing.JComboBox<>();
+        Giacenzeadata_Walletb_Label = new javax.swing.JLabel();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -987,7 +988,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                                 .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
                                 .addComponent(GiacenzeaData_Data_Label)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1010,19 +1013,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(GiacenzeaData_Wallet2_Label)
                     .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(GiacenzeaData_Data_Label)
-                            .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)))
+                            .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE)
+                    .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                        .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1035,7 +1040,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label)
@@ -1717,7 +1722,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 671, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(CDC_OpzioniLayout.createSequentialGroup()
                                 .addGroup(CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 301, Short.MAX_VALUE)
                                     .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                                     .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(36, 36, 36)
@@ -3050,7 +3055,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 }
             
                     //ABILITO BOTTONE DEFI SE CI SONO LE CONDIZIONI
-        String Wallet=Giacenzeadata_Walleta_Label.getText().trim();           
+        String Wallet=Giacenzeadata_Walleta_Label.getText().trim(); 
+        String SottoWallet=Giacenzeadata_Walletb_Label.getText().trim();
         if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")&&!Address.equalsIgnoreCase("")) {
                 this.GiacenzeaData_Bottone_MovimentiDefi.setEnabled(true);
             }
@@ -3077,7 +3083,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
                     // adesso verifico il wallet
-                    if (Wallet.equalsIgnoreCase("tutti") || Wallet.equalsIgnoreCase(movimento[3].trim())) {
+                    if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
+                                || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                                ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
+                                ) { 
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                             String riga[] = new String[9];
@@ -3232,8 +3241,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     }//GEN-LAST:event_CDC_OpzioniComponentShown
 
-    public void Funzione_AggiornaMappaWallets(String[] v){
+    public static void Funzione_AggiornaMappaWallets(String[] v){
                   Mappa_Wallet.put(v[3], v[1]);
+                  
                   if(Mappa_Wallets_e_Dettagli.get(v[3])==null)
                   {
                       List<String> Lista=new ArrayList();
@@ -3251,6 +3261,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.removeAllItems();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.addItem("----------");
           Mappa_Wallet.clear();
+          Mappa_Wallets_e_Dettagli.clear();
           for (String[] v : MappaCryptoWallet.values()) {
                 Funzione_AggiornaMappaWallets(v);
           }
@@ -4536,6 +4547,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
 
         String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
+        String SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString().trim();
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
@@ -4543,7 +4555,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
                         // adesso verifico il wallet
-                        if (Wallet.equalsIgnoreCase("tutti") || GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim().equalsIgnoreCase(movimento[3].trim())) {
+                        if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
+                                || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                                ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
+                                ) {
                             // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
                             //Faccio la somma dei movimenti in usicta
                             Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
@@ -4630,7 +4645,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             
         }
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
-        Giacenzeadata_Walleta_Label.setText(GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim());
+        Giacenzeadata_Walleta_Label.setText(Wallet);
+        Giacenzeadata_Walletb_Label.setText(SottoWallet);
         progress.ChiudiFinestra();
         
                         }
@@ -4958,6 +4974,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         File TransazioniCrypto1=new File (fileDaImportare);
         if (!TransazioniCrypto1.exists()) TransazioniCrypto1.createNewFile();
         String riga;
+        Mappa_Wallet.clear();
+          Mappa_Wallets_e_Dettagli.clear();
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
             while ((riga = bure.readLine()) != null) {
                 String splittata1[] = riga.split(";");
@@ -4971,8 +4989,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                // System.out.println(splittata[4]);
                 if (!Funzioni.TrovaReteDaID(splittata[0]).isBlank()){
                     if (splittata[4].split(" ").length>1&&splittata[4].contains("Transaction"))splittata[4]="Wallet";
-                    if (splittata[4].equals("PIATTAFORMA DI SCAMBIO"))splittata[4]="Defi";
-                    if (splittata[4].equals("PIATTAFORMA/VAULT"))splittata[4]="DeFi";
+                    if (splittata[4].equals("PIATTAFORMA DI SCAMBIO"))splittata[4]="Piattaforma di scambio";
+                    if (splittata[4].equals("PIATTAFORMA/VAULT"))splittata[4]="Piattaforma/DeFi";
                 }
                 //questo serve solo per eliminare i null che erano finiti per sbaglio
                 //dopo un errore di programmazione
@@ -5055,6 +5073,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
         BigDecimal Plusvalenza=new BigDecimal("0");
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
+        Mappa_Wallet.clear();
+          Mappa_Wallets_e_Dettagli.clear();
          for (String[] v : MappaCryptoWallet.values()) {
           Funzione_AggiornaMappaWallets(v);
           
@@ -5440,6 +5460,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel GiacenzeaData_Wallet_Label;
     private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
+    private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;

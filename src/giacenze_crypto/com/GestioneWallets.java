@@ -294,6 +294,8 @@ public class GestioneWallets extends javax.swing.JDialog {
                     //Scrivo tutte le nuove transazioni nella mappa principale
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {
                         for (String[] st : v.RitornaRigheTabella()) {
+                            CDC_Grafica.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
+                            //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
                             Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
                          //   MappaCryptoWallet.put(st[0], st);
                             i++;

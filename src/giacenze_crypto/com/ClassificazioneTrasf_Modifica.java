@@ -690,7 +690,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                // for (String[] v : MappaCryptoWallet.values()) {
                 for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
                 String v[]=MappaCryptoWallet.get(IDnc);
-                    if (v.length > 30) {
+
                         String AddContratto = v[30];
                         if (AddressContratto != null && AddContratto != null
                                 && !AddressContratto.isBlank() && !AddContratto.isBlank()
@@ -702,7 +702,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                             ListaIDMovimentiUguali.add(v[0]);
                         }
 
-                    }
+                    
                 }
                 
                 
@@ -845,7 +845,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //fase 1: creo il nuovo movimento
         String IDSpezzato[]=Movimento[0].split("_");
         String MonetaDettaglio=Movimento[8];
-        if (Movimento.length>29){
+        if (!Movimento[25].isBlank()){
             MonetaDettaglio=Movimento[25];
         }
         String MT[]=new String[Importazioni.ColonneTabella];
@@ -854,7 +854,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT[1]=Movimento[1];
         MT[2]="1 di 1";
         MT[3]=Movimento[3];
-        MT[4]="PIATTAFORMA/VAULT";
+        MT[4]="Piattaforma/DeFi";
         MT[5]="TRASFERIMENTO A PIATTAFORMA";
         MT[6]="-> "+MonetaDettaglio;
         MT[11]=Movimento[8];
@@ -1034,7 +1034,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //fase 1: creo il nuovo movimento
         String IDSpezzato[]=Movimento[0].split("_");
         String MonetaDettaglio=Movimento[11];
-        if (Movimento.length>29){
+        if (!Movimento[27].isBlank()){
             MonetaDettaglio=Movimento[27];
         }
         String MT[]=new String[Importazioni.ColonneTabella];
@@ -1043,7 +1043,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT[1]=Movimento[1];
         MT[2]="1 di 1";
         MT[3]=Movimento[3];
-        MT[4]="PIATTAFORMA/VAULT";
+        MT[4]="Piattaforma/DeFi";
         MT[5]="TRASFERIMENTO DA PIATTAFORMA";
         MT[6]=MonetaDettaglio+" ->";
         MT[8]=Movimento[11];
@@ -1070,7 +1070,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //faccio la somma dei movimenti del vault di questa moneta/wallet
         //Mi serve sapere la giacenza residua e vedere se sottraendo il movimento in uscita va o meno sotto zero
         //qualora vada sotto zero devo creare un movimento che compensi la cosa
-        String CoppiaWalletVault=Movimento[3]+"PIATTAFORMA/VAULT";   
+        String CoppiaWalletVault=Movimento[3]+"Piattaforma/DeFi";   
         for (String[] v : MappaCryptoWallet.values()) {
             DataOra=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
             String MonetaUscita=v[8];
@@ -1098,7 +1098,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT2[1]=Movimento[1];
         MT2[2]="1 di 1";
         MT2[3]=Movimento[3];
-        MT2[4]="PIATTAFORMA/VAULT";
+        MT2[4]="Piattaforma/DeFi";
         MT2[5]="REWARD";
         MT2[6]="-> "+MonetaDettaglio;
         MT2[11]=Movimento[11];
@@ -1169,9 +1169,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT1[5]="TRASFERIMENTO PER SCAMBIO";
         MS[5]="SCAMBIO CRYPTO";
         MT2[5]="TRASFERIMENTO PER SCAMBIO";
-        MT1[6]="-> "+MovimentoPrelievo[8];
-        MS[6]=MovimentoPrelievo[8]+" -> "+MovimentoDeposito[11];
-        MT2[6]=MovimentoDeposito[11] +" ->";
+        String MonetaUscita=MovimentoPrelievo[8];
+        if (!MovimentoPrelievo[25].isBlank())MonetaUscita=MovimentoPrelievo[25];
+        String MonetaEntrata=MovimentoDeposito[11];
+        if (!MovimentoDeposito[27].isBlank())MonetaEntrata=MovimentoDeposito[27];
+        MT1[6]="-> "+MonetaUscita;
+        MS[6]=MonetaUscita+" -> "+MonetaEntrata;
+        MT2[6]=MonetaEntrata +" ->";
         
         MS[8]=MovimentoPrelievo[8];
         MT2[8]=MovimentoDeposito[11];        

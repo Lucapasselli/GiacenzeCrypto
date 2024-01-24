@@ -3152,15 +3152,18 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     //La moneta movimentata deve essere CRO
                     //Devo avere il numero di blocco
                     //poi penso cambierò il nome del wallet per la defi, credo li chiamerò Wallet o qualcosa del tipo DEFI Principale
-                    if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("CRO Transaction")) {
+                    if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")) {
                        // System.out.println("Sono qui");
                         if (AddressU.equalsIgnoreCase("CRO")||AddressE.equalsIgnoreCase("CRO")) {
                             
                             if (!movimento[23].equals(UltimoBlocco)&&!UltimoBlocco.isBlank()){
                                 //Se il blocco che sto analizzando è diverso dal blocco precedente allora posso fare le verifiche sulla giacenza del blocco precedente e sistemare le cose
                                 
-                                  
+                                // System.out.println("Sono qui");
                                 String rima=GiacenzeCRO_RimanzeBlocco(UltimoBlocco,Wallet.split(" ")[0]);
+                                //a questo punto faccio il check e se il risultato è null annullare tutto
+                                //questo perchè altrimenti rischio di mandare avanti un conto sbagliato
+                                //Ovviamente annullo mandando fuori un errore
                                 if (rima==null){
                                     String testoMessaggio="""
                                                        Errore nello scaricamento delle rimanenze dei singoli blocchi di CRO
@@ -3169,9 +3172,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     return null;
                                     
                                 }
-  //DA FARE!!!!!!!!!!!!!!!!!!!!        //a questo punto dovrei fare il check e se il risultato è null annullare tutto
-                                //questo perchè altrimenti rischio di mandare avanti un conto sbagliato
-                                //Ovviamente annullo mandando fuori un errore
+
                                 BigDecimal TotaleVoluto=new BigDecimal(rima);
                                 if (TotaleVoluto.compareTo(TotaleQta)!=0){//se i 2 totali non corrispondono creo il movimento che sistema le cose                                
                                     String RT[]=GiacenzeCRO_CreaMovCorretivo(PrimaTransBlocco,TotaleQta,TotaleVoluto);
@@ -3200,6 +3201,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             //Ora creo tutti i movimenti correttivi che ho messo da parte nella lista
             for (String RT[]:RigheTabella){
                 MappaCryptoWallet.put(RT[0], RT);
+               // System.out.println("Sto correggendo");
             }
             if (!RigheTabella.isEmpty())CDC_Grafica.TabellaCryptodaAggiornare=true;
     return "Ok";

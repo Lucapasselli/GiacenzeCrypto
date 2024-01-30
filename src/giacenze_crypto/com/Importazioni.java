@@ -82,7 +82,6 @@ import giacenze_crypto.com.TransazioneDefi.ValoriToken;
 //import giacenze_crypto.com.TransazioneDefi;
 import java.util.Collections;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -3215,14 +3214,14 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
         // String apiKey="6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6";
         progressb.setDefaultCloseOperation(0);
-        progressb.Titolo("Importazione da rete BSC");
+        progressb.Titolo("Importazione dati da explorer");
         AzzeraContatori();
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         for (String wallets : Portafogli) {
             int ava = 0;
             String walletAddress = wallets.split(";")[0];
-            progressb.Titolo("Importazione portafoglio " + walletAddress + "da rete BSC");
+            progressb.Titolo("Importazione portafoglio " + walletAddress + "da explorer");
             String Blocco = wallets.split(";")[1];
             Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);
             String Rete = wallets.split(";")[2];

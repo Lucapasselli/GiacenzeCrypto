@@ -138,7 +138,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)" }));
 
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -284,7 +284,9 @@ public class GestioneWallets extends javax.swing.JDialog {
                         blocco = "0";
                     }
 
-                    if (splittata[1].equalsIgnoreCase("BSC")||splittata[1].equalsIgnoreCase("CRO")) {
+                    if (splittata[1].equalsIgnoreCase("BSC")
+                            ||splittata[1].equalsIgnoreCase("CRO")
+                            ||splittata[1].equalsIgnoreCase("ETH")) {
                         Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
                     }
                 }

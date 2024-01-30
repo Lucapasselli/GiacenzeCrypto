@@ -347,7 +347,7 @@ public class Prezzi {
 
      
      
-     public static void RecuperaDettagliTransazioneBSC(String transactionHash){
+  /*   public static void RecuperaDettagliTransazioneBSC(String transactionHash){
            String coinE=null;
            String qtaE=null;
            String coinU=null;
@@ -443,9 +443,9 @@ public class Prezzi {
         System.out.println("qta="+qtaE+" - coin="+coinE); 
         System.out.println("");
       
-      }
+      }*/
      
-      public static String RitornaNomeTokendadaBSCSCAN(String Address)
+ /*     public static String RitornaNomeTokendadaBSCSCAN(String Address)
           {
               String Moneta;
         try {
@@ -480,7 +480,7 @@ public class Prezzi {
             Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-      }
+      }*/
      
         
     public static String ConvertiUSDEUR(String Valore, String Data) {
@@ -1543,9 +1543,13 @@ for (int i=0;i<ArraydataIni.size();i++){
                         JsonObject platformsObject = jsonObject.getAsJsonObject("platforms");
                         String BSCAddress = platformsObject.has("binance-smart-chain") ? platformsObject.get("binance-smart-chain").getAsString() : null;
                         String cronosAddress = platformsObject.has("cronos") ? platformsObject.get("cronos").getAsString() : null;
+                        String ethereumAddress = platformsObject.has("ethereum") ? platformsObject.get("ethereum").getAsString() : null;
                         
                         if (cronosAddress!=null&&!cronosAddress.isEmpty()){
                             gestiti.add((cronosAddress+"_CRO").toUpperCase());
+                        }
+                        if (ethereumAddress!=null&&!ethereumAddress.isEmpty()){
+                            gestiti.add((ethereumAddress+"_ETH").toUpperCase());                           
                         }
                         if (BSCAddress!=null&&!BSCAddress.isEmpty()){
                             gestiti.add((BSCAddress+"_BSC").toUpperCase());                           

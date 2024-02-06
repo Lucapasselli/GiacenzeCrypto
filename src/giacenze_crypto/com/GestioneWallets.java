@@ -31,7 +31,14 @@ import javax.swing.table.DefaultTableModel;
  * @author luca.passelli
  */
 
+/*
+Funzioni da sistemare per aggiungere nuova rete
 
+-> Prezzi.RecuperaCoinsCoingecko
+-> Funzioni.CompilaMappaChain
+-> GestioneWallets
+
+*/
 public class GestioneWallets extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;

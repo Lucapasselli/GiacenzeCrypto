@@ -496,8 +496,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         TransazioniCrypto_TabbedPane.addTab("Dettagli Riga", jScrollPane4);
 
-        jButton1.setText("Export Periodo in CSV");
-        jButton1.setEnabled(false);
+        jButton1.setText("Esporta Tabella in CSV");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
@@ -4379,6 +4383,48 @@ public class CDC_Grafica extends javax.swing.JFrame {
         // TODO add your handling code here:
         TransazioniCrypto_CompilaTextPaneDatiMovimento();
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+
+        try {
+            // TODO add your handling code here:
+
+            //il modo più rapido per esportare la tabella è prendere tutta la mappa ed esportare solo quello che c'è tra le date e che ha
+            //nel suo contenuto il filtro in basso
+            
+            
+            File export = new File("temp.csv");
+            FileWriter w = new FileWriter(export);
+            BufferedWriter b = new BufferedWriter(w);
+            b.write("ID,Data,nMov,Exchange/Wallet,Dett.Wallet,TipoTransazione,Dettaglio Movimento,Causale Originale,Crypto Uscita,Tipo Crypto Uscita,Qta Uscita,"+
+                    "Crypto Entrata,Tipo Crypto Entrata,Qta Entrata,Valore Transazione (da CSV),Valore Transazione in Euro,Costo di Carico Uscente,Nuovo Costo di Carico,"+
+                    "Tipo Trasferimento,Plusvalenza generata in Euro,Rif. per Trasferimenti,Note,Auto,Blocco Transazione,Hash Transazione,Nome Token Uscita,"+
+                    "Address Token Uscita,Nome Token Entrata,Address Token Entrata,Timestamp,Address Controparte, \n");
+            for (String[] R : MappaCryptoWallet.values()) {
+                if (Funzioni_Date_ConvertiDatainLong(R[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
+                        && Funzioni_Date_ConvertiDatainLong(R[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
+                    String Stringa="";
+                    for (String prov : R) {
+                        Stringa=Stringa+prov+",";
+                        
+                    }
+                     Stringa=Stringa+"\n";
+                        b.write(Stringa);
+                        
+                }
+                   
+            }
+            b.close();
+            w.close();
+            Desktop desktop = Desktop.getDesktop();  
+            desktop.open(export); 
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        
+
+    }//GEN-LAST:event_jButton1ActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

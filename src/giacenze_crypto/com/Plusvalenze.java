@@ -85,7 +85,7 @@ public class Plusvalenze {
             else if ((TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("Crypto"))
                     || (TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("NFT"))) 
             {
-                Tipologia = 2; //Scambio CryptoAttività dicverse Caratteristiche
+                Tipologia = 2; //Scambio CryptoAttività diverse Caratteristiche 
             }
             
             //TIPOLOGIA = 3

@@ -48,6 +48,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.ZoneId;
 import java.util.List;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.table.TableCellEditor;
 //import org.apache.commons.codec.binary.Hex;
 
 
@@ -280,19 +283,23 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Tabella3 = new javax.swing.JTable();
         CDC_FiatWallet_Label_Tabella3 = new javax.swing.JLabel();
         CDC_FiatWallet_Bottone_StampaRapporto = new javax.swing.JButton();
-        CDC_Opzioni = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
+        Opzioni = new javax.swing.JPanel();
+        Opzioni_TabbedPane = new javax.swing.JTabbedPane();
+        Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_Opzioni_Bottone_CancellaCardWallet = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
+        Opzioni_FiatWallet_Pannello = new javax.swing.JPanel();
         CDC_Opzioni_Bottone_CancellaFiatWallet = new javax.swing.JButton();
         CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
+        Opzioni_Crypto_Pannello = new javax.swing.JPanel();
         Opzioni_Bottone_CancellaTransazioniCrypto = new javax.swing.JButton();
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
-        jPanel4 = new javax.swing.JPanel();
+        Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
+        Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
+        Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
+        Opzioni_GruppoWallet_ComboBox = new javax.swing.JComboBox<>();
+        Opzioni_GruppoWallet_Bottone_AssociaGruppo = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1666,13 +1673,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         CDC.addTab("Fiat Wallet", CDC_FiatWallet_Pannello);
 
-        CDC_Opzioni.addComponentListener(new java.awt.event.ComponentAdapter() {
+        Opzioni.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
-                CDC_OpzioniComponentShown(evt);
+                OpzioniComponentShown(evt);
             }
         });
 
-        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.LEFT);
+        Opzioni_TabbedPane.setTabPlacement(javax.swing.JTabbedPane.LEFT);
 
         CDC_Opzioni_Bottone_CancellaCardWallet.setText("Elimina tutti i dati dal Card Wallet");
         CDC_Opzioni_Bottone_CancellaCardWallet.addActionListener(new java.awt.event.ActionListener() {
@@ -1681,24 +1688,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout Opzioni_CardWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_CardWallet_Pannello);
+        Opzioni_CardWallet_Pannello.setLayout(Opzioni_CardWallet_PannelloLayout);
+        Opzioni_CardWallet_PannelloLayout.setHorizontalGroup(
+            Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        Opzioni_CardWallet_PannelloLayout.setVerticalGroup(
+            Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("CDC Card Wallet", jPanel1);
+        Opzioni_TabbedPane.addTab("CDC Card Wallet", Opzioni_CardWallet_Pannello);
 
         CDC_Opzioni_Bottone_CancellaFiatWallet.setText("Elimina tutti i dati dal Fiat Wallet");
         CDC_Opzioni_Bottone_CancellaFiatWallet.addActionListener(new java.awt.event.ActionListener() {
@@ -1714,20 +1721,20 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout Opzioni_FiatWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_FiatWallet_Pannello);
+        Opzioni_FiatWallet_Pannello.setLayout(Opzioni_FiatWallet_PannelloLayout);
+        Opzioni_FiatWallet_PannelloLayout.setHorizontalGroup(
+            Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)
                     .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        Opzioni_FiatWallet_PannelloLayout.setVerticalGroup(
+            Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1735,7 +1742,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("CDC Fiat Wallet", jPanel2);
+        Opzioni_TabbedPane.addTab("CDC Fiat Wallet", Opzioni_FiatWallet_Pannello);
 
         Opzioni_Bottone_CancellaTransazioniCrypto.setText("Elimina tutte le transazioni Crypto");
         Opzioni_Bottone_CancellaTransazioniCrypto.addActionListener(new java.awt.event.ActionListener() {
@@ -1755,15 +1762,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
+        Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
+        Opzioni_Crypto_PannelloLayout.setHorizontalGroup(
+            Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
+                    .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel8)
@@ -1771,49 +1778,85 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 634, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        Opzioni_Crypto_PannelloLayout.setVerticalGroup(
+            Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
                     .addComponent(jLabel8)
                     .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Crypto", jPanel3);
+        Opzioni_TabbedPane.addTab("Crypto", Opzioni_Crypto_Pannello);
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
+        Opzioni_GruppoWallet_Tabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
 
-        jTabbedPane1.addTab("Gruppi Wallet Crypto", jPanel4);
+            },
+            new String [] {
+                "Nome Wallet", "Gruppo Wallet"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
 
-        javax.swing.GroupLayout CDC_OpzioniLayout = new javax.swing.GroupLayout(CDC_Opzioni);
-        CDC_Opzioni.setLayout(CDC_OpzioniLayout);
-        CDC_OpzioniLayout.setHorizontalGroup(
-            CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1085, Short.MAX_VALUE)
-        );
-        CDC_OpzioniLayout.setVerticalGroup(
-            CDC_OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(CDC_OpzioniLayout.createSequentialGroup()
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        Opzioni_GruppoWallet_ScrollTabella.setViewportView(Opzioni_GruppoWallet_Tabella);
+
+        Opzioni_GruppoWallet_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gruppo 1", "Gruppo 2", "Gruppo 3", "Gruppo 4", "Gruppo 5", "Gruppo 6", "Gruppo 7", "Gruppo 8", "Gruppo 9", "Gruppo 10", "Gruppo 11", "Gruppo 12", "Gruppo 13", "Gruppo 14", "Gruppo 15", "Gruppo 16", "Gruppo 17", "Gruppo 18", "Gruppo 19", "Gruppo 20" }));
+
+        Opzioni_GruppoWallet_Bottone_AssociaGruppo.setText("Associa Gruppo a Wallet");
+
+        javax.swing.GroupLayout Opzioni_GruppoWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_GruppoWallet_Pannello);
+        Opzioni_GruppoWallet_Pannello.setLayout(Opzioni_GruppoWallet_PannelloLayout);
+        Opzioni_GruppoWallet_PannelloLayout.setHorizontalGroup(
+            Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 943, Short.MAX_VALUE)
+                    .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(Opzioni_GruppoWallet_Bottone_AssociaGruppo, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_GruppoWallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE))))
+        );
+        Opzioni_GruppoWallet_PannelloLayout.setVerticalGroup(
+            Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_GruppoWallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_GruppoWallet_Bottone_AssociaGruppo))
                 .addContainerGap())
         );
 
-        CDC.addTab("Opzioni", CDC_Opzioni);
+        Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
+
+        javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
+        Opzioni.setLayout(OpzioniLayout);
+        OpzioniLayout.setHorizontalGroup(
+            OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Opzioni_TabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1085, Short.MAX_VALUE)
+        );
+        OpzioniLayout.setVerticalGroup(
+            OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(OpzioniLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_TabbedPane)
+                .addContainerGap())
+        );
+
+        CDC.addTab("Opzioni", Opzioni);
 
         jLabel1.setText("Seleziona data inizio e fine per i calcoli ->");
 
@@ -3269,12 +3312,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
 
     
-    private void CDC_OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_CDC_OpzioniComponentShown
+    private void OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_OpzioniComponentShown
         // TODO add your handling code here:
         Opzioni_RicreaListaWalletDisponibili();
+        Opzioni_CaricaGruppiWallet();
 
-    }//GEN-LAST:event_CDC_OpzioniComponentShown
+    }//GEN-LAST:event_OpzioniComponentShown
 
+    private void Opzioni_CaricaGruppiWallet(){
+        DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
+        Funzioni_Tabelle_PulisciTabella(GruppoWallet_ModelloTabella);
+        
+        for (String a: Mappa_Wallet.keySet()){
+            Object rigaTabella[]=new Object[2];
+            JComboBox gruppo=new JComboBox();
+            gruppo.addItem("1");
+            gruppo.addItem("2");
+            TableCellEditor comboBoxEditor = new DefaultCellEditor(gruppo);
+            Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1).setCellEditor(comboBoxEditor);
+            rigaTabella[0]=a;
+            rigaTabella[1]="1";
+            GruppoWallet_ModelloTabella.addRow(rigaTabella);
+            
+          //  System.out.println("aaaa");
+        }
+    }
+    
     public static void Funzione_AggiornaMappaWallets(String[] v){
                   Mappa_Wallet.put(v[3], v[1]);
                   
@@ -5515,7 +5578,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JTextField CDC_FiatWallet_Text_SaldoIniziale;
     private javax.swing.JTextField CDC_FiatWallet_Text_UltimaData;
     private javax.swing.JLabel CDC_Label_Giorni;
-    private javax.swing.JPanel CDC_Opzioni;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaCardWallet;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaFiatWallet;
     private javax.swing.JButton CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet;
@@ -5551,9 +5613,19 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
+    private javax.swing.JPanel Opzioni;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
+    private javax.swing.JPanel Opzioni_Crypto_Pannello;
+    private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
+    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_AssociaGruppo;
+    private javax.swing.JComboBox<String> Opzioni_GruppoWallet_ComboBox;
+    private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
+    private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
+    private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
+    private javax.swing.JTabbedPane Opzioni_TabbedPane;
     private javax.swing.JPanel SituazioneImport;
     private javax.swing.JTable SituazioneImport_Tabella1;
     private javax.swing.JPanel TransazioniCrypto;
@@ -5580,16 +5652,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator5;
-    private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 }

@@ -22,18 +22,18 @@ import java.util.logging.Logger;
 public class DatabaseH2 {
 
     static String jdbcUrl = "jdbc:h2:./database";
-  //  static String jdbcUrl2 = "jdbc:h2:./personale";
+    static String jdbcUrl2 = "jdbc:h2:./personale";
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;
-  //  static Connection connectionPersonale;
+    static Connection connectionPersonale;
 
     //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
     public static boolean CreaoCollegaDatabase() {
         boolean successo=false;
         try {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
-         //   connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
+            connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
         /*    String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
             PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
@@ -70,7 +70,12 @@ public class DatabaseH2 {
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS RINOMINATOKEN (address_chain VARCHAR(255) PRIMARY KEY, VecchioNome VARCHAR(255), NuovoNome VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();            
+            preparedStatement.execute(); 
+            
+            //Tabella che associa i Wallet ad un Gruppo per poter poi gestire correttamente i quadri RW
+            createTableSQL = "CREATE TABLE IF NOT EXISTS WALLETGRUPPO  (Wallet VARCHAR(255) PRIMARY KEY, Gruppo VARCHAR(255))";
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
+            preparedStatement.execute();
             
             successo=true;
             
@@ -88,6 +93,38 @@ public class DatabaseH2 {
         return successo;
     }
 
+    
+    
+        public static void GruppoWallet_Scrivi(String Wallet, String Gruppo) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE WALLETGRUPPO SET Gruppo = '" + Gruppo + "' WHERE Wallet = '" + Wallet + "'";
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = 
+                    "INSERT INTO WALLETGRUPPO (Wallet, Gruppo ) VALUES ('" + Wallet + "','" + Gruppo + "')";
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
     
         public static void RinominaToken_Scrivi(String address_chain, String VecchioNome,String NuovoNome) {
         try {

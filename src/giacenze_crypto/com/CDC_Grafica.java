@@ -51,6 +51,7 @@ import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 //import org.apache.commons.codec.binary.Hex;
 
 
@@ -298,8 +299,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
         Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
-        Opzioni_GruppoWallet_ComboBox = new javax.swing.JComboBox<>();
-        Opzioni_GruppoWallet_Bottone_AssociaGruppo = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1694,7 +1698,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)
+                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 931, Short.MAX_VALUE)
                 .addContainerGap())
         );
         Opzioni_CardWallet_PannelloLayout.setVerticalGroup(
@@ -1728,8 +1732,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)
-                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE))
+                    .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 931, Short.MAX_VALUE)
+                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 931, Short.MAX_VALUE))
                 .addContainerGap())
         );
         Opzioni_FiatWallet_PannelloLayout.setVerticalGroup(
@@ -1775,7 +1779,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 634, Short.MAX_VALUE)))
+                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 605, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
@@ -1793,12 +1797,63 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.addTab("Crypto", Opzioni_Crypto_Pannello);
 
+        Opzioni_GruppoWallet_Tabella.setAutoCreateRowSorter(true);
         Opzioni_GruppoWallet_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
                 "Nome Wallet", "Gruppo Wallet"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        Opzioni_GruppoWallet_Tabella.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                Opzioni_GruppoWallet_TabellaFocusGained(evt);
+            }
+        });
+        Opzioni_GruppoWallet_ScrollTabella.setViewportView(Opzioni_GruppoWallet_Tabella);
+
+        jTextArea1.setEditable(false);
+        jTextArea1.setColumns(20);
+        jTextArea1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jTextArea1.setRows(3);
+        jTextArea1.setText("Per ogni Wallet selezionare un gruppo di appartenenza (più Nomi Wallet possono essere associati allo stesso Gruppo Wallet).\nQuesti gruppi veranno utilizzati poi dal programma per generare i vari quadri RW.\nVerrà generato un Quadro RW per ogni Gruppo.");
+        jScrollPane1.setViewportView(jTextArea1);
+
+        javax.swing.GroupLayout Opzioni_GruppoWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_GruppoWallet_Pannello);
+        Opzioni_GruppoWallet_Pannello.setLayout(Opzioni_GruppoWallet_PannelloLayout);
+        Opzioni_GruppoWallet_PannelloLayout.setHorizontalGroup(
+            Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 937, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)))
+        );
+        Opzioni_GruppoWallet_PannelloLayout.setVerticalGroup(
+            Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Token", "Data Inizio classificazione e-money token"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1809,44 +1864,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        Opzioni_GruppoWallet_ScrollTabella.setViewportView(Opzioni_GruppoWallet_Tabella);
+        jScrollPane5.setViewportView(jTable1);
 
-        Opzioni_GruppoWallet_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gruppo 1", "Gruppo 2", "Gruppo 3", "Gruppo 4", "Gruppo 5", "Gruppo 6", "Gruppo 7", "Gruppo 8", "Gruppo 9", "Gruppo 10", "Gruppo 11", "Gruppo 12", "Gruppo 13", "Gruppo 14", "Gruppo 15", "Gruppo 16", "Gruppo 17", "Gruppo 18", "Gruppo 19", "Gruppo 20" }));
-
-        Opzioni_GruppoWallet_Bottone_AssociaGruppo.setText("Associa Gruppo a Wallet");
-
-        javax.swing.GroupLayout Opzioni_GruppoWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_GruppoWallet_Pannello);
-        Opzioni_GruppoWallet_Pannello.setLayout(Opzioni_GruppoWallet_PannelloLayout);
-        Opzioni_GruppoWallet_PannelloLayout.setHorizontalGroup(
-            Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 943, Short.MAX_VALUE)
-                    .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(Opzioni_GruppoWallet_Bottone_AssociaGruppo, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_GruppoWallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE))))
-        );
-        Opzioni_GruppoWallet_PannelloLayout.setVerticalGroup(
-            Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_GruppoWallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_GruppoWallet_Bottone_AssociaGruppo))
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 931, Short.MAX_VALUE)
                 .addContainerGap())
         );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(131, Short.MAX_VALUE))
+        );
 
-        Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
+        Opzioni_TabbedPane.addTab("E-Money Token (EMT)", jPanel1);
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Opzioni_TabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1085, Short.MAX_VALUE)
+            .addComponent(Opzioni_TabbedPane)
         );
         OpzioniLayout.setVerticalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3315,23 +3358,44 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_OpzioniComponentShown
         // TODO add your handling code here:
         Opzioni_RicreaListaWalletDisponibili();
-        Opzioni_CaricaGruppiWallet();
+        Opzioni_CaricaGruppiWallet();        
 
     }//GEN-LAST:event_OpzioniComponentShown
 
     private void Opzioni_CaricaGruppiWallet(){
         DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(GruppoWallet_ModelloTabella);
+   JComboBox<String> comboBox = new JComboBox<>();
+    comboBox.addItem("Wallet 01");
+    comboBox.addItem("Wallet 02");
+    comboBox.addItem("Wallet 03");
+    comboBox.addItem("Wallet 04");
+    comboBox.addItem("Wallet 05");
+    comboBox.addItem("Wallet 06");
+    comboBox.addItem("Wallet 07");
+    comboBox.addItem("Wallet 08");
+    comboBox.addItem("Wallet 09");
+    comboBox.addItem("Wallet 10");
+    comboBox.addItem("Wallet 11");
+    comboBox.addItem("Wallet 12");
+    comboBox.addItem("Wallet 13");
+    comboBox.addItem("Wallet 14");
+    comboBox.addItem("Wallet 15");
+    comboBox.addItem("Wallet 16");
+    comboBox.addItem("Wallet 17");
+    comboBox.addItem("Wallet 18");   
+    comboBox.addItem("Wallet 19");
+    comboBox.addItem("Wallet 20");
+    
+TableColumn testColumn = Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1);
+testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         
         for (String a: Mappa_Wallet.keySet()){
             Object rigaTabella[]=new Object[2];
-            JComboBox gruppo=new JComboBox();
-            gruppo.addItem("1");
-            gruppo.addItem("2");
-            TableCellEditor comboBoxEditor = new DefaultCellEditor(gruppo);
-            Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1).setCellEditor(comboBoxEditor);
+         //   TableCellEditor comboBoxEditor = new DefaultCellEditor(gruppo);
+          //  Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1).setCellEditor(comboBoxEditor);
             rigaTabella[0]=a;
-            rigaTabella[1]="1";
+            rigaTabella[1]=DatabaseH2.GruppoWallet_Leggi(a);
             GruppoWallet_ModelloTabella.addRow(rigaTabella);
             
           //  System.out.println("aaaa");
@@ -4509,6 +4573,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
 
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void Opzioni_GruppoWallet_TabellaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaFocusGained
+        // TODO add your handling code here:
+        //System.out.println("Componente cambiato");
+        if (Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
+            String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Wallet=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            DatabaseH2.GruppoWallet_Scrivi(Wallet, Gruppo);
+          }  
+    }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaFocusGained
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5620,8 +5695,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
-    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_AssociaGruppo;
-    private javax.swing.JComboBox<String> Opzioni_GruppoWallet_ComboBox;
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
@@ -5652,11 +5725,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 }

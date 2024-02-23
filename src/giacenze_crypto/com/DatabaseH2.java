@@ -124,6 +124,27 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+        public static String GruppoWallet_Leggi(String Wallet) {
+                String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Wallet,Gruppo FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("Gruppo");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (Risultato==null){
+            GruppoWallet_Scrivi(Wallet, "Wallet 01");
+            Risultato="Wallet 01";
+            }
+        return Risultato;
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
         
     
         public static void RinominaToken_Scrivi(String address_chain, String VecchioNome,String NuovoNome) {

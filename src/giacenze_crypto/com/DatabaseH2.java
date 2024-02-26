@@ -77,6 +77,10 @@ public class DatabaseH2 {
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
+            createTableSQL = "CREATE TABLE IF NOT EXISTS EMONEY  (Moneta VARCHAR(255) PRIMARY KEY, Data VARCHAR(255))";
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
+            preparedStatement.execute();
+            
             successo=true;
             
 
@@ -93,7 +97,54 @@ public class DatabaseH2 {
         return successo;
     }
 
-    
+        public static void Emoney_Scrivi(String Moneta, String Data) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM EMONEY WHERE Moneta = '" + Moneta + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE EMONEY SET Data = '" + Data + "' WHERE Moneta = '" + Moneta + "'";
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = 
+                    "INSERT INTO EMONEY (Moneta, Data ) VALUES ('" + Moneta + "','" + Data + "')";
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
+                public static String Emoney_Leggi(String Moneta) {
+                String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Moneta,Data FROM WALLETGRUPPO WHERE Moneta = '" + Moneta + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("Data");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return Risultato;
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
     
         public static void GruppoWallet_Scrivi(String Wallet, String Gruppo) {
         try {

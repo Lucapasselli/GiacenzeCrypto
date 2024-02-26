@@ -301,9 +301,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        jPanel1 = new javax.swing.JPanel();
+        Opzioni_Emoney_Pannello = new javax.swing.JPanel();
+        Opzioni_Emoney_ScrollPane = new javax.swing.JScrollPane();
+        Opzioni_Emoney_Tabella = new javax.swing.JTable();
         jScrollPane5 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        jTextPane1 = new javax.swing.JTextPane();
+        Opzioni_Emoney_Bottone_Rimuovi = new javax.swing.JButton();
+        Opzioni_Emoney_Bottone_Aggiungi = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1843,12 +1847,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        Opzioni_Emoney_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -1864,39 +1868,61 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane5.setViewportView(jTable1);
+        Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        jTextPane1.setEditable(false);
+        jTextPane1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jTextPane1.setText("Nella Tabella sottostante aggiungere il nome di tutti i token che si vogliono classificare come E-Money Token (es. USDC).\nLo scambio tra Crypto ed E-Money Token verrà considerato fiscalmente rilevante e genererà quindi un eventuale plusvalenza o minusvalenza.\n\nPer casistiche particolari, ad esempio un  token che diventa E-Money solo da un certa data, è possibile indicare quest'ultima direttamente nella tabella.\nIn questi casi gli scambi tra Crypto e queste E-Money saranno fiscalmente rilevanti solo alla data indicata in poi.");
+        jScrollPane5.setViewportView(jTextPane1);
+
+        javax.swing.GroupLayout Opzioni_Emoney_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Emoney_Pannello);
+        Opzioni_Emoney_Pannello.setLayout(Opzioni_Emoney_PannelloLayout);
+        Opzioni_Emoney_PannelloLayout.setHorizontalGroup(
+            Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 931, Short.MAX_VALUE)
+                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 937, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Emoney_ScrollPane)))
+        );
+        Opzioni_Emoney_PannelloLayout.setVerticalGroup(
+            Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_Emoney_PannelloLayout.createSequentialGroup()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(131, Short.MAX_VALUE))
-        );
 
-        Opzioni_TabbedPane.addTab("E-Money Token (EMT)", jPanel1);
+        Opzioni_TabbedPane.addTab("E-Money Token (EMT)", Opzioni_Emoney_Pannello);
+
+        Opzioni_Emoney_Bottone_Rimuovi.setText("Rimuovi Token");
+
+        Opzioni_Emoney_Bottone_Aggiungi.setText("Aggiungi Token");
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(Opzioni_TabbedPane)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, OpzioniLayout.createSequentialGroup()
+                .addGap(148, 148, 148)
+                .addComponent(Opzioni_Emoney_Bottone_Aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Opzioni_Emoney_Bottone_Rimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         OpzioniLayout.setVerticalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(OpzioniLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(Opzioni_TabbedPane)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Emoney_Bottone_Rimuovi)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, OpzioniLayout.createSequentialGroup()
+                        .addComponent(Opzioni_Emoney_Bottone_Aggiungi)
+                        .addContainerGap())))
         );
 
         CDC.addTab("Opzioni", Opzioni);
@@ -5694,6 +5720,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JPanel Opzioni_CardWallet_Pannello;
     private javax.swing.JComboBox<String> Opzioni_Combobox_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Crypto_Pannello;
+    private javax.swing.JButton Opzioni_Emoney_Bottone_Aggiungi;
+    private javax.swing.JButton Opzioni_Emoney_Bottone_Rimuovi;
+    private javax.swing.JPanel Opzioni_Emoney_Pannello;
+    private javax.swing.JScrollPane Opzioni_Emoney_ScrollPane;
+    private javax.swing.JTable Opzioni_Emoney_Tabella;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
@@ -5725,7 +5756,6 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -5734,7 +5764,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator5;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
 }

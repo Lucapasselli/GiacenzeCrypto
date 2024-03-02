@@ -2573,7 +2573,7 @@
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="2" rowCount="0">
                                 <Column editable="false" title="Token" type="java.lang.Object"/>
-                                <Column editable="false" title="Data Inizio classificazione e-money token" type="java.lang.Object"/>
+                                <Column editable="true" title="Data Inizio classificazione e-money token" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2594,6 +2594,9 @@
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
                           </Properties>
+                          <Events>
+                            <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="Opzioni_Emoney_TabellaFocusGained"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -2623,11 +2626,17 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Rimuovi Token"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Emoney_Bottone_RimuoviActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="Opzioni_Emoney_Bottone_Aggiungi">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Aggiungi Token"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Emoney_Bottone_AggiungiActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

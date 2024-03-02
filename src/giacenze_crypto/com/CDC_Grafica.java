@@ -6,6 +6,8 @@ package giacenze_crypto.com;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
+import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JDateChooserCellEditor;
 import static giacenze_crypto.com.Importazioni.ColonneTabella;
 import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
 import java.awt.Color;
@@ -38,6 +40,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -46,11 +49,16 @@ import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 //import org.apache.commons.codec.binary.Hex;
 
@@ -69,6 +77,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, String> Mappa_EMoney = new TreeMap<>();//Mapa dei token considerati emoney, deve essere case sensitive perchè in alcuni casi dei token si differenziano solo dalle minuscole o maiuscole
     static public Map<String, List<String>> Mappa_Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -134,6 +143,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto();
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
+        DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
 
@@ -1861,11 +1871,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        Opzioni_Emoney_Tabella.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                Opzioni_Emoney_TabellaFocusGained(evt);
             }
         });
         Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
@@ -1897,8 +1912,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_TabbedPane.addTab("E-Money Token (EMT)", Opzioni_Emoney_Pannello);
 
         Opzioni_Emoney_Bottone_Rimuovi.setText("Rimuovi Token");
+        Opzioni_Emoney_Bottone_Rimuovi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Emoney_Bottone_RimuoviActionPerformed(evt);
+            }
+        });
 
         Opzioni_Emoney_Bottone_Aggiungi.setText("Aggiungi Token");
+        Opzioni_Emoney_Bottone_Aggiungi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Emoney_Bottone_AggiungiActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
@@ -3384,11 +3409,38 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_OpzioniComponentShown
         // TODO add your handling code here:
         Opzioni_RicreaListaWalletDisponibili();
-        Opzioni_CaricaGruppiWallet();        
+        Opzioni_GruppoWallet_CaricaGruppiWallet();    
+        Opzioni_Emoney_CaricaTabellaEmoney();
 
     }//GEN-LAST:event_OpzioniComponentShown
 
-    private void Opzioni_CaricaGruppiWallet(){
+    private void Opzioni_Emoney_CaricaTabellaEmoney(){
+        DefaultTableModel Emoney_ModelloTabella = (DefaultTableModel) this.Opzioni_Emoney_Tabella.getModel();
+        Funzioni_Tabelle_PulisciTabella(Emoney_ModelloTabella);
+        TableColumn column1 = Opzioni_Emoney_Tabella.getColumnModel().getColumn(1);
+        JDateChooser DataChooser = new com.toedter.calendar.JDateChooser();
+        
+        //DataChooser.get
+        column1.setCellRenderer(new JDateChooserRenderer());
+        column1.setCellEditor(new JDateChooserCellEditor());
+        //testColumn.setCellEditor(new JDateChooser());
+        for (String a: Mappa_EMoney.keySet()){
+            try {
+                Object rigaTabella[]=new Object[2];
+                rigaTabella[0]=a;
+                String Data=Mappa_EMoney.get(a);
+                SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                Date d = f.parse(Data);
+                rigaTabella[1]=d;
+                Emoney_ModelloTabella.addRow(rigaTabella);
+                // System.out.println(a);
+            } catch (ParseException ex) {
+                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    private void Opzioni_GruppoWallet_CaricaGruppiWallet(){
         DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(GruppoWallet_ModelloTabella);
    JComboBox<String> comboBox = new JComboBox<>();
@@ -3421,7 +3473,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
          //   TableCellEditor comboBoxEditor = new DefaultCellEditor(gruppo);
           //  Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1).setCellEditor(comboBoxEditor);
             rigaTabella[0]=a;
-            rigaTabella[1]=DatabaseH2.GruppoWallet_Leggi(a);
+            rigaTabella[1]=DatabaseH2.Pers_GruppoWallet_Leggi(a);
             GruppoWallet_ModelloTabella.addRow(rigaTabella);
             
           //  System.out.println("aaaa");
@@ -4607,9 +4659,65 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
             String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
             String Wallet=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            DatabaseH2.GruppoWallet_Scrivi(Wallet, Gruppo);
+            DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
           }  
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaFocusGained
+
+    private void Opzioni_Emoney_Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
+        // TODO add your handling code here:
+        String Testo="<html>Digita il nome della moneta da aggiungere alla lista delle E-Money Token (es. USDC)<br>";
+        Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi, ad esempio, BTC è diverso da Btc o btc<br><br></html>";
+            String m = JOptionPane.showInputDialog(this, Testo, "").trim();
+            if (m!=null){
+                if (DatabaseH2.Pers_Emoney_Leggi(m)==null){
+                   //System.out.println("Aggiunto "+m+" al databse");
+                   DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
+                   Opzioni_Emoney_CaricaTabellaEmoney();
+                }else{
+                    JOptionPane.showConfirmDialog(this, "Il token è già presente in tabella.",
+                    "Token già esistente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                }
+               // System.out.println("Trovato moneta: "+m);
+               // System.out.println(DatabaseH2.Pers_Emoney_Leggi(m));
+            } 
+    }//GEN-LAST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
+
+    private void Opzioni_Emoney_Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
+        // TODO add your handling code here:
+        if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Opzioni_Emoney_Tabella.getSelectedRow();
+            String Moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Testo = "<html>Vuoi calncellare il Token <b>" + Moneta + "</b> dalla lista degli EMoney Token?<br><br>"
+                    + "</html>";
+            Object[] Bottoni = {"Si", "No"};
+            int scelta = JOptionPane.showOptionDialog(this, Testo,
+                    "Classificazione del Token",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    Bottoni,
+                    null);
+            if (scelta == 0) {
+                DatabaseH2.Pers_Emoney_Cancella(Moneta);
+                Opzioni_Emoney_CaricaTabellaEmoney();
+            } else {
+
+            }
+
+        }
+    }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
+
+    private void Opzioni_Emoney_TabellaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaFocusGained
+        // TODO add your handling code here:
+        System.out.println("mio focus");
+        if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Opzioni_Emoney_Tabella.getSelectedRow();
+            rigaselezionata=2;
+            String Data = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            System.out.println(Data);
+            }
+            
+    }//GEN-LAST:event_Opzioni_Emoney_TabellaFocusGained
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5614,6 +5722,31 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             }
         });
     }
+    
+    
+    public class JDateChooserRenderer extends JDateChooser implements TableCellRenderer{
+
+  //  Date inDate;
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value,
+            boolean isSelected, boolean hasFocus, int row, int column) {
+        // TODO Auto-generated method stub
+        if (value instanceof Date date){
+                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+               // Date newDate = new Date();
+                String newDate=dateFormat.format(date);
+                this.setDate(date);
+                
+                //this.setDateFormatString("AA");
+
+        } else if (value instanceof Calendar calendar){
+            this.setCalendar(calendar);
+          //  this.setDateFormatString("AA");
+        }
+        return this;
+    }
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane AnalisiCrypto;
@@ -5768,3 +5901,4 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
 }
+

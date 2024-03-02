@@ -97,7 +97,7 @@ public class DatabaseH2 {
         return successo;
     }
 
-        public static void Emoney_Scrivi(String Moneta, String Data) {
+        public static void Pers_Emoney_Scrivi(String Moneta, String Data) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM EMONEY WHERE Moneta = '" + Moneta + "'";
@@ -112,7 +112,7 @@ public class DatabaseH2 {
                 // La riga esiste, esegui l'aggiornamento
                 String updateSQL = "UPDATE EMONEY SET Data = '" + Data + "' WHERE Moneta = '" + Moneta + "'";
                 PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
-                updateStatement.executeUpdate();
+                updateStatement.executeUpdate();               
 
             } else {
                 // La riga non esiste, esegui l'inserimento
@@ -122,16 +122,33 @@ public class DatabaseH2 {
                 insertStatement.executeUpdate();
 
             }
+            //Se aggiungo una riga al DB la aggiungo anche alla mappa di riferimento
+            //Lavorare con le mappe risulta infatti + veloce del DB e uso quella come base per le ricerche
+            CDC_Grafica.Mappa_EMoney.put(Moneta, Data);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
         
-                public static String Emoney_Leggi(String Moneta) {
-                String Risultato = null;
+        public static void Pers_Emoney_Cancella(String Moneta) {
+               //completamente da gestire
+        try {
+            String checkIfExistsSQL = "DELETE FROM EMONEY WHERE Moneta='"+Moneta+"'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.executeUpdate();
+            CDC_Grafica.Mappa_EMoney.remove(Moneta);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+        
+        public static String Pers_Emoney_Leggi(String Moneta) {
+        String Risultato = null;
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Moneta,Data FROM WALLETGRUPPO WHERE Moneta = '" + Moneta + "'";
+            String checkIfExistsSQL = "SELECT Moneta,Data FROM EMONEY WHERE Moneta = '" + Moneta + "'";
             PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
@@ -145,8 +162,31 @@ public class DatabaseH2 {
         return Risultato;
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
+        
+        public static void Pers_Emoney_PopolaMappaEmoney() {
+
+        CDC_Grafica.Mappa_EMoney.clear();
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT * FROM EMONEY";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            //System.out.println(resultSet.getFetchSize());
+            while (resultSet.next()) {
+                String Moneta = resultSet.getString("Moneta"); 
+                String Data = resultSet.getString("Data");
+                CDC_Grafica.Mappa_EMoney.put(Moneta, Data);
+                //System.out.println(Moneta);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }        
     
-        public static void GruppoWallet_Scrivi(String Wallet, String Gruppo) {
+        public static void Pers_GruppoWallet_Scrivi(String Wallet, String Gruppo) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
@@ -175,7 +215,7 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-        public static String GruppoWallet_Leggi(String Wallet) {
+        public static String Pers_GruppoWallet_Leggi(String Wallet) {
                 String Risultato = null;
         try {
             // Connessione al database
@@ -190,7 +230,7 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         if (Risultato==null){
-            GruppoWallet_Scrivi(Wallet, "Wallet 01");
+            Pers_GruppoWallet_Scrivi(Wallet, "Wallet 01");
             Risultato="Wallet 01";
             }
         return Risultato;
@@ -314,11 +354,10 @@ public class DatabaseH2 {
         
         public static void RinominaToken_CancellaRiga(String address_chain) {
                //completamente da gestire
-            Map<String, String> Mappa_NomiToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try {
             String checkIfExistsSQL = "DELETE FROM RINOMINATOKEN WHERE address_chain='"+address_chain+"'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            checkStatement.executeQuery();
+            checkStatement.executeUpdate();
 
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);

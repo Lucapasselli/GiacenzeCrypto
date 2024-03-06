@@ -64,8 +64,13 @@ public class Plusvalenze {
 //Questa prima funzione si occupa di categorizzare le movimentazioni in 10 Categorie
 //Leggi la documentazione in fondo alla classe per le spiegazioni del caso
 
-            String TipoMU = movimento[9].trim();
-            String TipoME = movimento[12].trim();
+           // String TipoMU = movimento[9].trim();
+            //String TipoME = movimento[12].trim();
+            String TipoMU = RitornaTipoCrypto(movimento[8].trim(),movimento[1].trim(),movimento[9].trim());
+            String TipoME = RitornaTipoCrypto(movimento[11].trim(),movimento[1].trim(),movimento[12].trim());
+          /*  System.out.println(TipoMU);
+            System.out.println(TipoMU);
+            System.out.println("------");*/
             String IDTransazione=movimento[0];
             String IDTS[]=IDTransazione.split("_");
             int Tipologia = 0;
@@ -75,37 +80,40 @@ public class Plusvalenze {
             int TipologiaStackLIFONuovoCosto=0;*/
             
             //TIPOLOGIA = 1 
-            if ((TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("Crypto"))
-                    || (TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("NFT"))) 
+            if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
+                    && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
+                    !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
             {
                 Tipologia = 1; //ScambioCryptoAttività medesime caratteristiche
             } 
             
             //TIPOLOGIA = 2
-            else if ((TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("Crypto"))
-                    || (TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("NFT"))) 
+          /*  else if ((TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("Crypto"))
+                    || (TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("NFT"))) */
+            else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
+                    && !TipoMU.equalsIgnoreCase(TipoME)&&
+                    !TipoMU.isBlank() && !TipoME.isBlank())  
             {
                 Tipologia = 2; //Scambio CryptoAttività diverse Caratteristiche 
             }
             
             //TIPOLOGIA = 3
-            else if (((TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("NFT"))
-                    || (TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("Crypto")))) 
+            else if (TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")&&
+                    !TipoMU.isBlank() && !TipoME.isBlank())  
             {
                 Tipologia = 3; //Acquisto CriptoAttività
             }
             
             //TIPOLOGIA = 4
-            else if ((TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase("FIAT"))
-                    || (TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase("FIAT"))) 
+            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("FIAT")&&
+                    !TipoMU.isBlank() && !TipoME.isBlank())  
             {
                 Tipologia = 4; //Vendita CryptoAttività
             } 
             
             
             //TIPOLOGIA = 5 , 7 e 9 -> Deposito Criptoattività di vario tipo
-            else if ((TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("Crypto"))|| 
-                    (TipoMU.equalsIgnoreCase("") && TipoME.equalsIgnoreCase("NFT"))) 
+            else if (TipoMU.isBlank() && !TipoME.equalsIgnoreCase("FIAT")) 
             {
                 //Se arrivo qua vuol dire che questo è un deposito, poi a secondo di che tipo di deposito è
                 //valorizzo la tipologia corretta
@@ -116,7 +124,7 @@ public class Plusvalenze {
             } 
             
             //TIPOLOGIA = 6 , 8 e 10 -> Prelievo Criptoattività di vario tipo
-            else if ((TipoMU.equalsIgnoreCase("Crypto") && TipoME.equalsIgnoreCase(""))|| (TipoMU.equalsIgnoreCase("NFT") && TipoME.equalsIgnoreCase(""))) 
+            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.isBlank()) 
             {
                 //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
                 //valorizzo la tipologia corretta
@@ -175,7 +183,7 @@ public class Plusvalenze {
     public static int[] RitornaTipologieCalcoli(int Tipologia) {
         int tipo[] = new int[5];
         int tipoPlus=0;
-        int tipoNCC=0;
+        int tipoNCC=0;//Nuovo Costo di Carico
         int tipoRimuovoStack=0;
         int tipoInseriscoStack=0;
         int tipoVecchioCostoCarico=0;
@@ -757,6 +765,34 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
         }
 }
 
+   /**
+     *
+     * @param Tipologia
+     * @param Data
+     * @param Token
+     * @return  In base alla Tipologia di movimento<br>
+     * 
+     * 
+     * 
+     * 
+     * 
+     * 
+     * 
+     * 
+     * 
+     */
+   public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
+       String Tipo=Tipologia;
+       String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
+       if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
+           long dataemoney=OperazioniSuDate.ConvertiDatainLong(DataEmoney);
+           long datascambio=OperazioniSuDate.ConvertiDatainLong(Data);
+           if (datascambio>=dataemoney) Tipo="EMoney";
+       }
+       return Tipo;
+   }
+   
+   
 
 }   
     

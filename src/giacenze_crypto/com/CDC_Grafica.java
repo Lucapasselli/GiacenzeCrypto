@@ -103,6 +103,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static public boolean TabellaCryptodaAggiornare=false;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     public boolean tabDepositiPrelieviCaricataprimavolta=false;
+    public static Object JDialog_Ritorno;
     
     //static String Appoggio="";
     
@@ -1862,12 +1863,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
 
-        Opzioni_Emoney_Pannello.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                Opzioni_Emoney_PannelloFocusLost(evt);
-            }
-        });
-
         Opzioni_Emoney_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -1886,30 +1881,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
         Opzioni_Emoney_Tabella.setColumnSelectionAllowed(true);
         Opzioni_Emoney_Tabella.setRowHeight(30);
-        Opzioni_Emoney_Tabella.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                Opzioni_Emoney_TabellaFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                Opzioni_Emoney_TabellaFocusLost(evt);
-            }
-        });
         Opzioni_Emoney_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Opzioni_Emoney_TabellaMouseClicked(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                Opzioni_Emoney_TabellaMouseExited(evt);
-            }
-        });
-        Opzioni_Emoney_Tabella.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                Opzioni_Emoney_TabellaPropertyChange(evt);
-            }
-        });
-        Opzioni_Emoney_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                Opzioni_Emoney_TabellaKeyPressed(evt);
             }
         });
         Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
@@ -4714,6 +4688,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                    //System.out.println("Aggiunto "+m+" al databse");
                    DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
                    Opzioni_Emoney_CaricaTabellaEmoney();
+                   TabellaCryptodaAggiornare=true;
                 }else{
                     JOptionPane.showConfirmDialog(this, "Il token è già presente in tabella.",
                     "Token già esistente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
@@ -4741,37 +4716,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (scelta == 0) {
                 DatabaseH2.Pers_Emoney_Cancella(Moneta);
                 Opzioni_Emoney_CaricaTabellaEmoney();
+                TabellaCryptodaAggiornare=true;
             } else {
 
             }
 
         }
     }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
-
-    private void Opzioni_Emoney_TabellaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaFocusGained
-        // TODO add your handling code here:
-     /*   System.out.println("mio focus");
-        for (int i=0;i<Opzioni_Emoney_Tabella.getModel().getRowCount();i++){ 
-            System.out.println(i+" - "+Opzioni_Emoney_Tabella.getModel().getValueAt(i, 1).toString());
-        }*/
-            
-    }//GEN-LAST:event_Opzioni_Emoney_TabellaFocusGained
-
-    private void Opzioni_Emoney_TabellaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaFocusLost
-        // TODO add your handling code here:
-      //  System.out.println("focus lost");
-     /*   for (int i=0;i<Opzioni_Emoney_Tabella.getModel().getRowCount();i++){ 
-            System.out.println(i+" - "+Opzioni_Emoney_Tabella.getModel().getValueAt(i, 1).toString());
-        }*/
-        
-    }//GEN-LAST:event_Opzioni_Emoney_TabellaFocusLost
-
-    private void Opzioni_Emoney_TabellaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaKeyPressed
-        // TODO add your handling code here:
-    /*            for (int i=0;i<Opzioni_Emoney_Tabella.getModel().getRowCount();i++){ 
-            System.out.println(i+" - "+Opzioni_Emoney_Tabella.getModel().getValueAt(i, 1).toString());
-        }*/
-    }//GEN-LAST:event_Opzioni_Emoney_TabellaKeyPressed
 
     private void CDC_DataChooser_InizialeKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialeKeyPressed
         // TODO add your handling code here:
@@ -4782,24 +4733,29 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
        // System.out.println("lost");
     }//GEN-LAST:event_CDC_DataChooser_InizialeFocusLost
 
-    private void Opzioni_Emoney_PannelloFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_PannelloFocusLost
-        // TODO add your handling code here:
-        
-    }//GEN-LAST:event_Opzioni_Emoney_PannelloFocusLost
-
-    private void Opzioni_Emoney_TabellaPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaPropertyChange
-        // TODO add your handling code here:
-       // System.out.println("focus lost");
-    }//GEN-LAST:event_Opzioni_Emoney_TabellaPropertyChange
-
-    private void Opzioni_Emoney_TabellaMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseExited
-        // TODO add your handling code here:
-        //System.out.println("lost");
-    }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseExited
-
     private void Opzioni_Emoney_TabellaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseClicked
-        // TODO add your handling code here:
-        System.out.println(Opzioni_Emoney_Tabella.getModel().getValueAt(Opzioni_Emoney_Tabella.getSelectedRow(), 1).toString());
+      //  try {
+            // TODO add your handling code here:
+            if(Opzioni_Emoney_Tabella.getSelectedColumn()==1){
+            String token=Opzioni_Emoney_Tabella.getModel().getValueAt(Opzioni_Emoney_Tabella.getSelectedRow(), 0).toString();
+            Date data=(Date)Opzioni_Emoney_Tabella.getModel().getValueAt(Opzioni_Emoney_Tabella.getSelectedRow(), 1);
+            String oldData=data.toString();
+            GUI_ScegliData a = new GUI_ScegliData();
+            a.setLocationRelativeTo(this);
+            a.ImpostaData(data);
+            a.ImpostaTitolo("Imposta la data dal quale il token "+token+" deve essere considerato E-Money");            
+            a.setVisible(true);
+            if (JDialog_Ritorno!=null){
+                Date nuovaData=(Date)JDialog_Ritorno;
+                Opzioni_Emoney_Tabella.getModel().setValueAt(nuovaData, Opzioni_Emoney_Tabella.getSelectedRow(), 1);
+                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String DataStringata=dateFormat.format(nuovaData);
+                DatabaseH2.Pers_Emoney_Scrivi(token, DataStringata);
+               // TransazioniCrypto_DaSalvare=true;
+               if(!oldData.equalsIgnoreCase(nuovaData.toString()))TabellaCryptodaAggiornare=true;
+            }
+            //System.out.println(JDialog_Ritorno);
+ } 
     }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseClicked
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
@@ -5847,7 +5803,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                // DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                // Date newDate = new Date();
                // String newDate=dateFormat.format(date);
-                //this.setDateFormatString("yyyy-MM-dd");
+               // this.setDateFormatString("yyyy-MM-dd");
                 this.setDate(date);
                 
                 

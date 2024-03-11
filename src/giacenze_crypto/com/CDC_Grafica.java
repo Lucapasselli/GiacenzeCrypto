@@ -40,7 +40,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -53,10 +52,7 @@ import java.text.DateFormat;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 import javax.swing.DefaultCellEditor;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -112,7 +108,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.16 Beta");
+            this.setTitle("Giacenze_Crypto 1.17 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -4682,13 +4678,18 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // TODO add your handling code here:
         String Testo="<html>Digita il nome della moneta da aggiungere alla lista delle E-Money Token (es. USDC)<br>";
         Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi, ad esempio, BTC è diverso da Btc o btc<br><br></html>";
-            String m = JOptionPane.showInputDialog(this, Testo, "").trim();
+            String m = JOptionPane.showInputDialog(this, Testo, "");
             if (m!=null){
+                m=m.trim();
                 if (DatabaseH2.Pers_Emoney_Leggi(m)==null){
                    //System.out.println("Aggiunto "+m+" al databse");
                    DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
                    Opzioni_Emoney_CaricaTabellaEmoney();
-                   TabellaCryptodaAggiornare=true;
+                   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                   Plusvalenze.AggiornaPlusvalenze();
+                   TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                   this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                  // TabellaCryptodaAggiornare=true;
                 }else{
                     JOptionPane.showConfirmDialog(this, "Il token è già presente in tabella.",
                     "Token già esistente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
@@ -4716,7 +4717,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (scelta == 0) {
                 DatabaseH2.Pers_Emoney_Cancella(Moneta);
                 Opzioni_Emoney_CaricaTabellaEmoney();
-                TabellaCryptodaAggiornare=true;
+                   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                   Plusvalenze.AggiornaPlusvalenze();
+                   TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                   this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                //TabellaCryptodaAggiornare=true;
             } else {
 
             }
@@ -4752,7 +4757,14 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 String DataStringata=dateFormat.format(nuovaData);
                 DatabaseH2.Pers_Emoney_Scrivi(token, DataStringata);
                // TransazioniCrypto_DaSalvare=true;
-               if(!oldData.equalsIgnoreCase(nuovaData.toString()))TabellaCryptodaAggiornare=true;
+               if(!oldData.equalsIgnoreCase(nuovaData.toString()))
+                   {
+                   //TabellaCryptodaAggiornare=true;
+                   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                   Plusvalenze.AggiornaPlusvalenze();
+                   TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                   this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                   }
             }
             //System.out.println(JDialog_Ritorno);
  } 
@@ -5357,21 +5369,21 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     
     
        private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException { 
-        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-        PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
+///        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+///        PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         
         String fileDaImportare = CryptoWallet_FileDB;
         MappaCryptoWallet.clear();
         Mappa_Wallet.clear();
-        BigDecimal Plusvalenza=new BigDecimal("0");
-        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
+///        BigDecimal Plusvalenza=new BigDecimal("0");
+///        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
         
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
-        DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
-        Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
+///        DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
+///        Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
+///        Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         File TransazioniCrypto1=new File (fileDaImportare);
         if (!TransazioniCrypto1.exists()) TransazioniCrypto1.createNewFile();
         String riga;
@@ -5401,12 +5413,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     if (splittata[kj]==null||splittata[kj].equals("null"))splittata[kj]="";
                 }
                 //---------------------------------------------------------------------------------------------------               
-                Funzione_AggiornaMappaWallets(splittata);
+//                Funzione_AggiornaMappaWallets(splittata);
                
               //  this.TransazioniCryptoTabella.add(splittata);
               
                     //questo rinomina i token con nomi personalizzati
-                    String Rete = Funzioni.TrovaReteDaID(splittata[0]);
+      /*              String Rete = Funzioni.TrovaReteDaID(splittata[0]);
                     String AddressU = splittata[26];
                     String AddressE = splittata[28];
                     if (!Funzioni.noData(Rete)) {
@@ -5425,12 +5437,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                             }
 
                         }
-                    }
+                    }*/
 
 
                  MappaCryptoWallet.put(splittata[0], splittata);
               
-              if (EscludiTI==true&&!splittata[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
+      /*        if (EscludiTI==true&&!splittata[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
                   if (Funzioni_Date_ConvertiDatainLong(splittata[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(splittata[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                      ModelloTabellaCrypto.addRow(splittata);
                                      if (Funzioni_isNumeric(splittata[19],false))
@@ -5438,22 +5450,24 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     Plusvalenza=Plusvalenza.add(new BigDecimal(splittata[19]));
                 }
               }
-                  }
+                  }*/
 
 
-             //   MappaCryptoWallet.put(splittata[0], splittata);
+             
                 
             }
             
     }   catch (IOException ex) {   
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
+        Plusvalenze.AggiornaPlusvalenze();
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI);
+    /*    this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
         Color verde=new Color (45, 155, 103);
         Color rosso=new Color(166,16,34);
         if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-"))TransazioniCrypto_Text_Plusvalenza.setForeground(verde);else TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
-        GiacenzeaData_Funzione_AggiornaComboBoxWallet();
+        GiacenzeaData_Funzione_AggiornaComboBoxWallet();*/
     }    
     
        

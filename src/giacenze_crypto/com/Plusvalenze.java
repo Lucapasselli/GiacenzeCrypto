@@ -365,8 +365,295 @@ public class Plusvalenze {
    // System.out.println(Moneta +" - "+stack.size());
 }
     
-     public static void AggiornaPlusvalenze(){
-        Deque<String[]> stack = new ArrayDeque<String[]>();
+     public static void AggiornaPlusvalenzeIncopleto(){
+////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
+
+       // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, ArrayDeque> CryptoStack = new TreeMap<>();
+        for (String[] v : MappaCryptoWallet.values()) {
+            String TipoMU = RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
+            String TipoME = RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
+            String IDTransazione=v[0];
+            String IDTS[]=IDTransazione.split("_");
+            String MonetaU=v[8];
+            String QtaU=v[10];
+            String MonetaE=v[11];
+            String QtaE=v[13];
+            String Valore=v[15];
+            String VecchioPrezzoCarico="0.00";
+            String NuovoPrezzoCarico="0.00";
+            String Plusvalenza="0.00";
+            
+            
+            //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
+            if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
+                    && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
+                    !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
+            {
+                    //Tolgo dallo stack il costo di carico della cripèto uscita
+                    VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    
+                    //Inserisco il costo di carico nello stack della cripto entrata
+                    NuovoPrezzoCarico=VecchioPrezzoCarico;
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    
+                    //La plusvalenza va valorizzata a zero
+                    Plusvalenza="0.00";
+                                                        
+            } 
+            
+            
+            //TIPOLOGIA = 2 (Scambio Cripto Attività Diverse Caratteristiche)
+            else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
+                    && !TipoMU.equalsIgnoreCase(TipoME)&&
+                    !TipoMU.isBlank() && !TipoME.isBlank())  
+            {
+                    //Tolgo dallo stack il vecchio costo di carico
+                    VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    
+                    //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
+                    //lo aggiungo quindi allo stack del lifo
+                    NuovoPrezzoCarico=Valore;
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    
+                    //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
+                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                                       
+            }
+            
+            
+            //TIPOLOGIA = 3 (Acquisto di Cripto attività tramite FIAT)
+            else if (TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")&&
+                    !TipoMU.isBlank() && !TipoME.isBlank())  
+            {
+                
+                    NuovoPrezzoCarico=Valore;
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    
+                    Plusvalenza="0.00";
+                                         
+                    VecchioPrezzoCarico=""; 
+                    
+                    
+                    
+            }
+            
+            //TIPOLOGIA = 4 (Vendita Criptoattività per FIAT)
+            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("FIAT")&&
+                    !TipoMU.isBlank() && !TipoME.isBlank())  
+            {
+                //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                
+                //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                NuovoPrezzoCarico="";
+                
+                //Calcolo la plusvalenza
+                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();                
+                 
+            } 
+            
+            
+            //TIPOLOGIA = 5 , 7 e 9 -> Deposito Criptoattività di vario tipo
+            else if (TipoMU.isBlank() && !TipoME.equalsIgnoreCase("FIAT")) 
+            {
+                //Se arrivo qua vuol dire che questo è un deposito, poi a secondo di che tipo di deposito è
+                //valorizzo la tipologia corretta
+                
+                //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
+                if(IDTS[4].equalsIgnoreCase("RW")||v[18].contains("DAI")) {
+                                       
+                    NuovoPrezzoCarico=Valore;
+                    
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    
+                    Plusvalenza=Valore;
+                    
+                    VecchioPrezzoCarico="";                                
+                
+                }
+
+                //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
+                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("DTW")) {                    
+                    
+                     Plusvalenza="0.00";
+                     
+                     NuovoPrezzoCarico="";
+                     
+                     VecchioPrezzoCarico="";
+                                         
+                } 
+                
+                //Tipologia = 9; (Deposito a costo di carico zero)
+                else if(v[18].contains("DCZ")){
+                     
+                     NuovoPrezzoCarico="0.00";
+                     Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                     
+                     Plusvalenza="0.00";
+                     
+                     VecchioPrezzoCarico="";
+                }
+                
+                //Tipologia = 3; (Acquisto Crypto)
+                else if(v[18].contains("DAC")){
+                    
+                    NuovoPrezzoCarico=Valore;
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    
+                    Plusvalenza="0.00";
+                                         
+                    VecchioPrezzoCarico=""; 
+                }
+            } 
+            
+            //TIPOLOGIA = 6 , 8 e 10 -> Prelievo Criptoattività di vario tipo
+            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.isBlank()) 
+            {
+                //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
+                //valorizzo la tipologia corretta                         
+                
+                //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
+                if(IDTS[4].equalsIgnoreCase("RW")){
+                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                    VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                
+                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                    NuovoPrezzoCarico="";
+                
+                    //Calcolo la plusvalenza
+                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();  
+                }
+                //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
+                else if(IDTS[4].equalsIgnoreCase("CM")||v[18].contains("PCO")){
+                    
+                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                    VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                
+                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                    NuovoPrezzoCarico="";
+                
+                    //Calcolo la plusvalenza
+                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString(); 
+                }
+                //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
+                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("PTW")) {
+                                        
+                     Plusvalenza="0.00";
+                     
+                     NuovoPrezzoCarico="";
+                     
+                     VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,false);
+                } 
+                
+                //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo)
+                else if(v[18].contains("PWN")){
+                    //DA FAREEE!!!!!!!!!!
+                }
+            } 
+            //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
+            else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
+            {
+                //DA FARE!!!!!!!!!
+            }
+            else {
+                System.out.println("Classe:Plusvalenze - Funzione:CategorizzaTransazione - Nessuna Tipologia Individuata");
+                System.out.println(TipoMU+" - "+TipoME);
+            }
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            int TipoMovimento=Plusvalenze.CategorizzaTransazione(v);
+            int TipologieCalcoli[]=Plusvalenze.RitornaTipologieCalcoli(TipoMovimento);
+
+            
+
+            switch (TipologieCalcoli[2]) {//Qui analizzo se devo o meno cancellare dallo stack il vecchio costo
+                case 0 -> {//Non tolgo dallo stack il vecchio costo di carico
+                   
+                    VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,false);
+                    //questa seconda casistica succede solo in presenza di depositi
+                    if (VecchioPrezzoCarico.isBlank())VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaE,QtaE,false);
+                }
+                case 1 -> {//Tolgo dallo stack il vecchio costo di carico
+                    VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                }
+            }
+            switch (TipologieCalcoli[3]) {//Qui analizzo se devo e che valore devo inserire nello stack come nuovo costo di carico
+                case 0 -> {
+                    //il nuovo prezzo di carico ovviamente è valorizzato a Zero
+                    NuovoPrezzoCarico="0.00";
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                }
+                case 1 -> {
+                    NuovoPrezzoCarico="";
+                }
+                case 2 -> {
+                    NuovoPrezzoCarico=VecchioPrezzoCarico;
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                }
+                case 3 -> {
+                    NuovoPrezzoCarico=Valore;
+                    Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                }
+            }
+            switch (TipologieCalcoli[0]) {//Qui analizzo il calcolo della plusvalenza e mi comportio di conseguenza
+                case 0 -> {
+                    Plusvalenza="0.00";
+                }
+                case 1 -> {
+                    Plusvalenza=Valore;
+                }
+                case 2 -> {
+                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                }
+            }
+            switch (TipologieCalcoli[1]) {//Qui analizzo il calcolo del costo di carico e mi comporto di conseguenza
+                case 0 -> {
+                    NuovoPrezzoCarico="0.00";
+                }
+                case 1 -> {
+                    NuovoPrezzoCarico="";
+                }
+                case 2 -> {
+                    NuovoPrezzoCarico=VecchioPrezzoCarico;
+                }
+                case 3 -> {
+                    NuovoPrezzoCarico=Valore;
+                }
+            }
+            switch (TipologieCalcoli[4]) {//Qui decido il Vecchio Costo di carico
+                case 0 -> {
+                    VecchioPrezzoCarico="0.00";
+                }
+                case 1 -> {
+                    VecchioPrezzoCarico="";
+                }
+                case 2 -> {
+                    //non faccio nulla resta valorizzato così com'è
+                }
+
+            }
+                   // System.out.println("-"+VecchioPrezzoCarico+"-"+TipologieCalcoli[4]);
+                    v[16]=VecchioPrezzoCarico;
+                    v[17]=NuovoPrezzoCarico;
+                    v[19]=Plusvalenza;
+                    //System.out.println("--------------------------");
+
+        }
+    }
+
+    
+       
+         public static void AggiornaPlusvalenze(){
+////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
+
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, ArrayDeque> CryptoStack = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
@@ -456,10 +743,6 @@ public class Plusvalenze {
 
         }
     }
-
-    
-       
-    
     
  
 public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){

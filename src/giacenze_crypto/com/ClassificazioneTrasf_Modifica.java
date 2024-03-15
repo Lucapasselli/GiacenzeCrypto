@@ -13,8 +13,6 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
 import java.math.RoundingMode;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  *
@@ -549,6 +547,26 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
        // System.out.println("Creo commissione");
         String MovimentoPrelievo[]=MappaCryptoWallet.get(IDPrelievo);
         String MovimentoDeposito[]=MappaCryptoWallet.get(IDDeposito);
+        
+   /*     long dataPrelievo=Long.parseLong(IDPrelievo.split("_")[0]);
+        long dataDeposito=Long.parseLong(IDDeposito.split("_")[0]);
+        //affinchè i movimenti di deposito e prelievo risultino in ordine se trovo che un movimento di prelievo è successivo ad uno di posito vado a cambiargli 
+        //l'id della transazione, salvo poi il vecchio id nel movimento in modo da poterlo ripristinare in caso io cancelli l'associazione in futuro
+        if (dataPrelievo>dataDeposito){
+    ///////////DA FARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+            
+            MovimentoPrelievo[31]=IDPrelievo;
+            dataPrelievo=dataDeposito-1;
+            String Prel[]=IDPrelievo.split("_");
+            String NuovoIDPrelievo=String.valueOf(dataPrelievo)+"_"+Prel[1]+"_"+Prel[2]+"_"+Prel[3]+"_"+Prel[4];
+            MovimentoPrelievo[0]=NuovoIDPrelievo;
+            MappaCryptoWallet.put(NuovoIDPrelievo, MovimentoPrelievo);
+            //finito la creazione del nuovo movimento cancello il vecchio
+            MappaCryptoWallet.remove(IDPrelievo);
+            //l'idprelievo adesso diventa quello nuovo
+            IDPrelievo=NuovoIDPrelievo;
+            
+        }*/
         BigDecimal QtaPrelievoValoreAssoluto=new BigDecimal(MovimentoPrelievo[10]).stripTrailingZeros().abs();
         BigDecimal QtaDepositoValoreAssoluto=new BigDecimal(MovimentoDeposito[13]).stripTrailingZeros().abs();
         //Vado avanti solo se la qta prelevata è maggiore o uguale di quelòla ricevuta

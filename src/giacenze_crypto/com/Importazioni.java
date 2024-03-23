@@ -107,7 +107,7 @@ public class Importazioni {
     public static int TransazioniAggiunte=0;
     public static int TrasazioniScartate=0;
     public static int TrasazioniSconosciute=0;
-    public static int ColonneTabella=31;
+    public static int ColonneTabella=35;
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
     

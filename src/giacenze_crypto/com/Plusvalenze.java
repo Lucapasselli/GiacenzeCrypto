@@ -365,12 +365,24 @@ public class Plusvalenze {
    // System.out.println(Moneta +" - "+stack.size());
 }
     
-     public static void AggiornaPlusvalenzeIncopleto(){
+     public static void AggiornaPlusvalenze(){
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        Map<String, ArrayDeque> CryptoStack = new TreeMap<>();
+        Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();
+        Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
+            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+            
+            if (MappaGrWallet_CryptoStack.get(GruppoWallet)==null){
+                //se non esiste ancora lo stack lo creo e lo associo alla mappa
+                CryptoStack = new TreeMap<>();
+                MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);
+            }else{
+                //altrimenti lo recupero per i calcoli
+                CryptoStack=MappaGrWallet_CryptoStack.get(GruppoWallet);
+            }
+            
             String TipoMU = RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
             String TipoME = RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
             String IDTransazione=v[0];
@@ -474,7 +486,18 @@ public class Plusvalenze {
                 }
 
                 //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
-                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("DTW")) {                    
+                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("DTW")) {
+
+                    //Se il trasferimento è classificato come DTW e si riferisce a wallet dello stesso gruppo non devo fare nulla
+                    //ovvero plusvalenza a zero e non tocco nulla sullo stack del lifo
+                    //Se invece la controparte del movimento ovvero il prelievo è relativo a un wallet che non fa parte dello stesso gruppo devo fare diversi ragionamenti
+                    //Verifico che il movimento di uscita abbia data precedente al movimento di entrata
+                    //Così fosse Prendo il costo di carico del movimento in uscita e lo metto nel costo di carico del token in ingresso
+                    //Nel caso in cui la data sia successiva
+                    //prendo il costo di carico del prelievo e lo metto nel deposito
+                    //nel movimento di prelievo poi vado ad inserire un flag che mi dice che quel movimento è già stato conteggiato
+                    //quando lo reincontrerò non dovrò considerarlo e dovrò solo togliere il flag
+                    //Questa parte è comunque tutta da studiare con calma
                     
                      Plusvalenza="0.00";
                      
@@ -548,13 +571,25 @@ public class Plusvalenze {
                 
                 //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo)
                 else if(v[18].contains("PWN")){
-                    //DA FAREEE!!!!!!!!!!
+                    
+                    VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    
+                    NuovoPrezzoCarico="";
+                    
+                    Plusvalenza="0.00";                    
+                    
                 }
             } 
             //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
             else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
             {
-                //DA FARE!!!!!!!!!
+                    
+                    NuovoPrezzoCarico="";
+                    
+                    Plusvalenza="0.00";
+                                           
+                    VecchioPrezzoCarico="";
+                    
             }
             else {
                 System.out.println("Classe:Plusvalenze - Funzione:CategorizzaTransazione - Nessuna Tipologia Individuata");
@@ -569,7 +604,7 @@ public class Plusvalenze {
             
             
             
-            int TipoMovimento=Plusvalenze.CategorizzaTransazione(v);
+         /*   int TipoMovimento=Plusvalenze.CategorizzaTransazione(v);
             int TipologieCalcoli[]=Plusvalenze.RitornaTipologieCalcoli(TipoMovimento);
 
             
@@ -639,7 +674,7 @@ public class Plusvalenze {
                     //non faccio nulla resta valorizzato così com'è
                 }
 
-            }
+            }*/
                    // System.out.println("-"+VecchioPrezzoCarico+"-"+TipologieCalcoli[4]);
                     v[16]=VecchioPrezzoCarico;
                     v[17]=NuovoPrezzoCarico;
@@ -651,7 +686,7 @@ public class Plusvalenze {
 
     
        
-         public static void AggiornaPlusvalenze(){
+         public static void AggiornaPlusvalenzeOLD(){
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);

@@ -4670,7 +4670,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
             String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
             String Wallet=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
+            if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equals(Gruppo)){
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
+                Plusvalenze.AggiornaPlusvalenze();
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
           }  
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaFocusGained
 

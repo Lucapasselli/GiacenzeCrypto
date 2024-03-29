@@ -81,6 +81,10 @@ public class DatabaseH2 {
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
+            createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
+            preparedStatement.execute(); 
+            
             successo=true;
             
 
@@ -647,7 +651,23 @@ public class DatabaseH2 {
         }
         return Risultato;
     }
-        
+    
+    public static String Pers_Opzioni_Leggi(String Opzione) {
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Opzione,valore FROM OPZIONI WHERE Opzione = '" + Opzione + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("valore");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    }
         
         public static void Opzioni_Scrivi(String Opzione, String Valore) {
         try {
@@ -676,4 +696,30 @@ public class DatabaseH2 {
         }
     } 
     
+                public static void Pers_Opzioni_Scrivi(String Opzione, String Valore) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM OPZIONI WHERE Opzione = '" + Opzione + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE OPZIONI SET Valore = '" + Valore + "' WHERE Opzione = '" + Opzione + "'";
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO OPZIONI (Opzione, Valore) VALUES ('" + Opzione + "','" + Valore + "')";
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

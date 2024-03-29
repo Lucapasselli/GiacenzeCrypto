@@ -40,6 +40,7 @@
 28 - [DEFI] Address Token Entrata
 29 - [DEFI (si può utilizzare anche per altro)] Timestamp
 30 - [DEFI (si può utilizzare anche per altro)] Address Controparte
+31 - Data Fine trasferimento crypto (viene anche utilizzata come data per lo spostamento del costo di carico tra wallet)
 */
 
 

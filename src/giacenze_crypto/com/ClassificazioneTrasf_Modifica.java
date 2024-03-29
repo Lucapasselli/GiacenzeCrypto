@@ -1392,6 +1392,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 attuale[18] = "";
                 attuale[19] = "";
                 attuale[20] = "";
+                attuale[31] = "";//data e ora di fine trasferimento
             }
         }
     }

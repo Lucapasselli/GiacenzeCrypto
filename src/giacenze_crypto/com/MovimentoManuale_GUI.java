@@ -633,6 +633,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             //che dovrò eseguire la cancellazione del vecchio elemento e l'inserimento del nuovo con un nuovo possibile IDTransazione
             //Per ora direi che è sufficiente dare la possibilita di variare i solo valore della transazione o le note
             //quindi
+            if (!riga[22].equals("M")){
             this.Data_Datachooser.setEnabled(false);
             this.Ora_ComboBox.setEnabled(false);
             this.Minuto_ComboBox.setEnabled(false);
@@ -640,13 +641,13 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             this.ID_TextField.setEnabled(false);
             this.Wallet_ComboBox.setEnabled(false);
             this.WalletDettaglio_ComboBox.setEnabled(false);
-            this.MonetaUscitaTipo_ComboBox.setEnabled(false);
-            this.MonetaUscita_ComboBox.setEnabled(false);
-            this.MonetaUscitaQuantita_TextField.setEnabled(false);
-            this.MonetaEntrataTipo_ComboBox.setEnabled(false);
-            this.MonetaEntrata_ComboBox.setEnabled(false);
-            this.MonetaEntrataQuantita_TextField.setEnabled(false);
-                       
+                this.MonetaUscitaTipo_ComboBox.setEnabled(false);
+                this.MonetaUscita_ComboBox.setEnabled(false);
+                this.MonetaUscitaQuantita_TextField.setEnabled(false);
+                this.MonetaEntrataTipo_ComboBox.setEnabled(false);
+                this.MonetaEntrata_ComboBox.setEnabled(false);
+                this.MonetaEntrataQuantita_TextField.setEnabled(false);
+            }          
             
             EvidenziaProblemi();
         } catch (ParseException ex) {
@@ -786,64 +787,76 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
           }
     }
 
-    private void ScriviMovimento(String ID) {
-        
+    private boolean ScriviMovimento(String ID) {
 
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
         String Note = this.Note_TextArea.getText().replace(";", "").replace("\n", "<br>");
         ValoreTransazione = new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
+        MonetaUQta = MonetaUQta.replace("-", "");
+        if (CDC_Grafica.Funzioni_isNumeric(MonetaUQta, false) && !MonetaUQta.equalsIgnoreCase("0")) {
+            MonetaUQta = "-" + MonetaUQta;
+        }
+        MonetaEQta = MonetaEQta.replace("-", "");
+
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
+        String Data = f.format(Data_Datachooser.getDate())
+                + Ora_ComboBox.getSelectedItem().toString() + ":"
+                + Minuto_ComboBox.getSelectedItem().toString();
+
+        String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
         if (ModificaMovimento) {
             //Se sto modificando un movimento gli unici campi che posso modificare sono quelli del valore e delle note
-            MovimentoRiportato[15]=ValoreTransazione;
-            MovimentoRiportato[21] = Note;
-        } else {
-            MonetaUQta = MonetaUQta.replace("-", "");
-            if (CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false) && !MonetaUQta.equalsIgnoreCase("0")) {
-                MonetaUQta = "-" + MonetaUQta;
-            }
-            MonetaEQta = MonetaEQta.replace("-", "");
+         //   MovimentoRiportato[15] = ValoreTransazione;
+         //   MovimentoRiportato[21] = Note;
+         if (!MovimentoRiportato[0].equals(ID)) 
+         {
+             String Messaggio="Attenzione, il movimento ha subito variazioni di stato per cui verrà ricalcolato l'id ed eliminate le eventuali associazioni ad altri movimenti.\n"
+                     + "Si vuole Proseguire?";
+             int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cambio stato movimento", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
+                    case 0 -> {
+                        Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
+                    }
+                    case 1 -> {
+                                                JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                                return false;
+                    }
+                    case -1 -> {
+                                                JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                                return false;
+                    }
 
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
-            String Data = f.format(Data_Datachooser.getDate())
-                    + Ora_ComboBox.getSelectedItem().toString() + ":"
-                    + Minuto_ComboBox.getSelectedItem().toString();
+                }
 
-            String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
+         }
+        }// else {
 
-            
-            
-            
-            //come prima cosa recupero la riga della transazione originale qualora vi fosse
             String RT[];
-            if (ModificaMovimento) {
-                //Se sto facendo una modifica di un movimento esistente come prima cosa recupero tutte le informazioni del movimento
-                RT = MappaCryptoWallet.get(ID);
-                RT[15] = ValoreTransazione;
-                RT[21] = Note;
-            } else {
-                //in alternativa creo un nuovo array di dati
-                RT = new String[Importazioni.ColonneTabella];
-                RT[0] = ID;
-                RT[1] = Data;
-                RT[2] = 1 + " di " + 1;
-                RT[3] = Wallet;
-                RT[4] = WalletDettaglio;
-                RT[5] = TipoTransazione;
-                RT[6] = (MonetaU + " -> " + MonetaE).trim();
-                RT[8] = MonetaU;
-                RT[9] = MonetaUTipo;
-                RT[10] = MonetaUQta;
-                RT[11] = MonetaE;
-                RT[12] = MonetaETipo;
-                RT[13] = MonetaEQta;
-                RT[15] = ValoreTransazione;
-                RT[21] = Note;
-                RT[22] = TipoMovimentoAM;
-                Importazioni.RiempiVuotiArray(RT);
-                MappaCryptoWallet.put(RT[0], RT);
-            }
-            
-        }
+            RT = new String[Importazioni.ColonneTabella];
+            RT[0] = ID;
+            RT[1] = Data;
+            RT[2] = 1 + " di " + 1;
+            RT[3] = Wallet;
+            RT[4] = WalletDettaglio;
+            RT[5] = TipoTransazione;
+            RT[6] = (MonetaU + " -> " + MonetaE).trim();
+            RT[8] = MonetaU;
+            RT[9] = MonetaUTipo;
+            RT[10] = MonetaUQta;
+            RT[11] = MonetaE;
+            RT[12] = MonetaETipo;
+            RT[13] = MonetaEQta;
+            RT[15] = ValoreTransazione;
+            RT[21] = Note;
+            RT[22] = TipoMovimentoAM;
+            Importazioni.RiempiVuotiArray(RT);
+            MappaCryptoWallet.put(RT[0], RT);
+            return true;
+       // }
     }
     
     private boolean EvidenziaProblemi() {                                           
@@ -1014,11 +1027,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
          //CM=Commissioni/Fees
         ID=ID+Importazioni.RitornaTipologiaTransazione(MonetaUTipo,MonetaETipo,0);
        // System.out.println(ID);
-       String IDScritto=this.ID_TextField.getText();
+      // String IDScritto=this.ID_TextField.getText();
        //se ho recuperato l'id dalla transazione tengo quello
-       if (IDScritto.equalsIgnoreCase(""))
+     //  if (IDScritto.equalsIgnoreCase(""))
         return ID;
-       else return IDScritto;
+      // else return IDScritto;
     }
     /**
      * @param args the command line arguments

@@ -143,6 +143,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
+        
+        //Aggiorno lo stato del checkbox relativo al calcolo delle plusvalenze
+        String PlusXWallet=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
+        if(PlusXWallet!=null && PlusXWallet.equalsIgnoreCase("SI")){
+            Opzioni_GruppoWallet_CheckBox_PlusXWallet.setSelected(true);
+        }
 
         //CDC_LeggiFileDatiDB();
 
@@ -308,6 +314,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        Opzioni_GruppoWallet_CheckBox_PlusXWallet = new javax.swing.JCheckBox();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jTextArea2 = new javax.swing.JTextArea();
         Opzioni_Emoney_Pannello = new javax.swing.JPanel();
         Opzioni_Emoney_ScrollPane = new javax.swing.JScrollPane();
         Opzioni_Emoney_Tabella = new javax.swing.JTable();
@@ -584,7 +593,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza)
@@ -719,7 +728,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
@@ -777,7 +786,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(SituazioneImportLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1064,7 +1073,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1077,7 +1086,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label)
@@ -1365,7 +1374,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(CDC_CardWallet_Label_Tabella2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
+                            .addComponent(CDC_CardWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
                             .addComponent(CDC_CardWallet_Tabella1Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1678,7 +1687,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(CDC_FiatWallet_Label_Tabella3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
+                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
                     .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1832,12 +1841,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
         Opzioni_GruppoWallet_ScrollTabella.setViewportView(Opzioni_GruppoWallet_Tabella);
 
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jTextArea1.setRows(3);
-        jTextArea1.setText("Per ogni Wallet selezionare un gruppo di appartenenza (più Nomi Wallet possono essere associati allo stesso Gruppo Wallet).\nQuesti gruppi veranno utilizzati poi dal programma per generare i vari quadri RW.\nVerrà generato un Quadro RW per ogni Gruppo.");
+        jTextArea1.setText("Per ogni Wallet selezionare un gruppo di appartenenza (più Nomi Wallet possono essere associati allo stesso Gruppo Wallet).\nVerrà generato un Quadro RW per ogni Gruppo.");
+        jTextArea1.setPreferredSize(new java.awt.Dimension(774, 44));
         jScrollPane1.setViewportView(jTextArea1);
+
+        Opzioni_GruppoWallet_CheckBox_PlusXWallet.setText("Abilita Calcolo Plusvalenze per Gruppo Wallet");
+        Opzioni_GruppoWallet_CheckBox_PlusXWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed(evt);
+            }
+        });
+
+        jScrollPane6.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        jTextArea2.setEditable(false);
+        jTextArea2.setColumns(20);
+        jTextArea2.setRows(5);
+        jTextArea2.setText("Se biffata questa opzione i gruppi wallet verranno utilizzati anche per il calcolo delle plusvalenze.\nQuesto significa che, ad esempio, il costo dei BTC del gruppo \"Wallet 1\" non verranno considerati nel calcolo delle Plusvalenze di un BTC venduto nel gruppo \"Wallet 2\".\nViceversa tutti i BTC dei vari wallet verranno considerati come facenti parte di un unico grande portafoglio per il calcolo delle Plusvalenze.");
+        jTextArea2.setMinimumSize(new java.awt.Dimension(897, 45));
+        jTextArea2.setPreferredSize(new java.awt.Dimension(897, 70));
+        jScrollPane6.setViewportView(jTextArea2);
 
         javax.swing.GroupLayout Opzioni_GruppoWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_GruppoWallet_Pannello);
         Opzioni_GruppoWallet_Pannello.setLayout(Opzioni_GruppoWallet_PannelloLayout);
@@ -1847,14 +1876,25 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 937, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1)))
+                    .addComponent(jScrollPane1)
+                    .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+                        .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(jScrollPane6))))
         );
         Opzioni_GruppoWallet_PannelloLayout.setVerticalGroup(
             Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(7, 7, 7))
         );
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
@@ -1885,31 +1925,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
         Opzioni_Emoney_Tabella.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
+        jScrollPane5.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
         jTextPane1.setEditable(false);
         jTextPane1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jTextPane1.setText("Nella Tabella sottostante aggiungere il nome di tutti i token che si vogliono classificare come E-Money Token (es. USDC).\nLo scambio tra Crypto ed E-Money Token verrà considerato fiscalmente rilevante e genererà quindi un eventuale plusvalenza o minusvalenza.\n\nPer casistiche particolari, ad esempio un  token che diventa E-Money solo da un certa data, è possibile indicare quest'ultima direttamente nella tabella.\nIn questi casi gli scambi tra Crypto e queste E-Money saranno fiscalmente rilevanti solo alla data indicata in poi.");
         jScrollPane5.setViewportView(jTextPane1);
-
-        javax.swing.GroupLayout Opzioni_Emoney_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Emoney_Pannello);
-        Opzioni_Emoney_Pannello.setLayout(Opzioni_Emoney_PannelloLayout);
-        Opzioni_Emoney_PannelloLayout.setHorizontalGroup(
-            Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 937, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Emoney_ScrollPane)))
-        );
-        Opzioni_Emoney_PannelloLayout.setVerticalGroup(
-            Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_Emoney_PannelloLayout.createSequentialGroup()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        Opzioni_TabbedPane.addTab("E-Money Token (EMT)", Opzioni_Emoney_Pannello);
 
         Opzioni_Emoney_Bottone_Rimuovi.setText("Rimuovi Token");
         Opzioni_Emoney_Bottone_Rimuovi.addActionListener(new java.awt.event.ActionListener() {
@@ -1925,29 +1946,48 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        javax.swing.GroupLayout Opzioni_Emoney_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Emoney_Pannello);
+        Opzioni_Emoney_Pannello.setLayout(Opzioni_Emoney_PannelloLayout);
+        Opzioni_Emoney_PannelloLayout.setHorizontalGroup(
+            Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 937, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Emoney_ScrollPane)
+                    .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
+                        .addComponent(Opzioni_Emoney_Bottone_Aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Opzioni_Emoney_Bottone_Rimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
+        );
+        Opzioni_Emoney_PannelloLayout.setVerticalGroup(
+            Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_Emoney_PannelloLayout.createSequentialGroup()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_Emoney_Bottone_Aggiungi)
+                    .addComponent(Opzioni_Emoney_Bottone_Rimuovi))
+                .addContainerGap())
+        );
+
+        Opzioni_TabbedPane.addTab("E-Money Token (EMT)", Opzioni_Emoney_Pannello);
+
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(Opzioni_TabbedPane)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, OpzioniLayout.createSequentialGroup()
-                .addGap(148, 148, 148)
-                .addComponent(Opzioni_Emoney_Bottone_Aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(Opzioni_Emoney_Bottone_Rimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
         );
         OpzioniLayout.setVerticalGroup(
             OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(OpzioniLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(Opzioni_TabbedPane)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(OpzioniLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Opzioni_Emoney_Bottone_Rimuovi)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, OpzioniLayout.createSequentialGroup()
-                        .addComponent(Opzioni_Emoney_Bottone_Aggiungi)
-                        .addContainerGap())))
+                .addContainerGap())
         );
 
         CDC.addTab("Opzioni", Opzioni);
@@ -2034,6 +2074,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public void CDC_AggiornaGui() {
         CDC_FiatWallet_AggiornaDatisuGUI();
         CDC_CardWallet_AggiornaDatisuGUI();
+        
     }
     
     
@@ -3304,127 +3345,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
     }
     
-    private void Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
-        // TODO add your handling code here:
-        // TODO add your handling code here:
-        String Messaggio = "Sicuro di voler cancellare tutti i dati delle Transazioni Crypto?";
-        int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta == 0) {
-            MappaCryptoWallet.clear();
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-            TransazioniCrypto_DaSalvare=true;
-            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-            Messaggio = "Sono state cancellate tutte le movimentazioni crypto \nRicordarsi di Salvare per non perdere le modifiche fatte.";
-            JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
-        }
-
-    }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
-
-    private void CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
-        // TODO add your handling code here:
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione CardWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                FileWriter w=new FileWriter(CDC_Grafica.CDC_CardWallet_FileDB);
-                BufferedWriter b=new BufferedWriter (w);
-                b.write("");
-                b.close();
-                w.close();
-            }catch (IOException ex)
-            {
-
-            }    }
-            CDC_CardWallet_Mappa.clear();
-            CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
-            CDC_CardWallet_AggiornaDatisuGUI();
-    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
-
-    private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
-        // TODO add your handling code here:
-        String Messaggio="Sicuro di voler cancellare le personalizzazione sui movimenti del Fiat Wallet?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione personalizzazioni FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
-                BufferedWriter b=new BufferedWriter (w);
-                for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values())
-                {
-                    if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase()))
-                    {
-                        b.write(value+"\n");
-                    }
-                }
-                b.close();
-                w.close();
-            }catch (IOException ex)
-            {
-
-            }    }
-            CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
-            CDC_FiatWallet_AggiornaDatisuGUI();
-    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
-
-    private void CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
-        // TODO add your handling code here:
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-        if (risposta==0){
-            try
-            {
-                FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileDB);
-                BufferedWriter b=new BufferedWriter (w);
-                b.write("");
-                b.close();
-                w.close();
-            }catch (IOException ex)
-            {
-
-            }    }
-            CDC_FiatWallet_Mappa.clear();
-            CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
-            CDC_FiatWallet_AggiornaDatisuGUI();
-    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
-
-    private void Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
-        // TODO add your handling code here:
-        if(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedIndex()!=0) {
-            
-                    String Messaggio="Sicuro di voler cancellare tutti i dati delle Transazioni Crypto del Wallet "+Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString()+"?";
-        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-         if (risposta==0)
-        {
-            Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-            int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString());
-            if (movimentiCancellati>0){
-               Opzioni_RicreaListaWalletDisponibili();
-                Plusvalenze.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-                TransazioniCrypto_DaSalvare=true;
-                TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-                }
-        Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
-        Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
-        JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
-     
-        
-        }
-            }
-    }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
-
     
 
     
-    private void OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_OpzioniComponentShown
-        // TODO add your handling code here:
-        Opzioni_RicreaListaWalletDisponibili();
-        Opzioni_GruppoWallet_CaricaGruppiWallet();    
-        Opzioni_Emoney_CaricaTabellaEmoney();
-
-    }//GEN-LAST:event_OpzioniComponentShown
-
     private void Opzioni_Emoney_CaricaTabellaEmoney(){
         DefaultTableModel Emoney_ModelloTabella = (DefaultTableModel) this.Opzioni_Emoney_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(Emoney_ModelloTabella);
@@ -4663,6 +4586,109 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void CDC_DataChooser_InizialeKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialeKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CDC_DataChooser_InizialeKeyPressed
+
+    private void CDC_DataChooser_InizialeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialeFocusLost
+        // TODO add your handling code here:
+       // System.out.println("lost");
+    }//GEN-LAST:event_CDC_DataChooser_InizialeFocusLost
+
+    private void OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_OpzioniComponentShown
+        // TODO add your handling code here:
+        Opzioni_RicreaListaWalletDisponibili();
+        Opzioni_GruppoWallet_CaricaGruppiWallet();
+        Opzioni_Emoney_CaricaTabellaEmoney();
+    }//GEN-LAST:event_OpzioniComponentShown
+
+    private void Opzioni_Emoney_TabellaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseClicked
+        //  try {
+            // TODO add your handling code here:
+            if(Opzioni_Emoney_Tabella.getSelectedColumn()==1){
+                String token=Opzioni_Emoney_Tabella.getModel().getValueAt(Opzioni_Emoney_Tabella.getSelectedRow(), 0).toString();
+                Date data=(Date)Opzioni_Emoney_Tabella.getModel().getValueAt(Opzioni_Emoney_Tabella.getSelectedRow(), 1);
+                String oldData=data.toString();
+                GUI_ScegliData a = new GUI_ScegliData();
+                a.setLocationRelativeTo(this);
+                a.ImpostaData(data);
+                a.ImpostaTitolo("Imposta la data dal quale il token "+token+" deve essere considerato E-Money");
+                a.setVisible(true);
+                if (JDialog_Ritorno!=null){
+                    Date nuovaData=(Date)JDialog_Ritorno;
+                    Opzioni_Emoney_Tabella.getModel().setValueAt(nuovaData, Opzioni_Emoney_Tabella.getSelectedRow(), 1);
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    String DataStringata=dateFormat.format(nuovaData);
+                    DatabaseH2.Pers_Emoney_Scrivi(token, DataStringata);
+                    // TransazioniCrypto_DaSalvare=true;
+                    if(!oldData.equalsIgnoreCase(nuovaData.toString()))
+                    {
+                        //TabellaCryptodaAggiornare=true;
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        Plusvalenze.AggiornaPlusvalenze();
+                        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    }
+                }
+                //System.out.println(JDialog_Ritorno);
+            }
+    }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseClicked
+
+    private void Opzioni_Emoney_Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
+        // TODO add your handling code here:
+        if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Opzioni_Emoney_Tabella.getSelectedRow();
+            String Moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Testo = "<html>Vuoi calncellare il Token <b>" + Moneta + "</b> dalla lista degli EMoney Token?<br><br>"
+            + "</html>";
+            Object[] Bottoni = {"Si", "No"};
+            int scelta = JOptionPane.showOptionDialog(this, Testo,
+                "Classificazione del Token",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                Bottoni,
+                null);
+            if (scelta == 0) {
+                DatabaseH2.Pers_Emoney_Cancella(Moneta);
+                Opzioni_Emoney_CaricaTabellaEmoney();
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                Plusvalenze.AggiornaPlusvalenze();
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                //TabellaCryptodaAggiornare=true;
+            } else {
+
+            }
+
+        }
+    }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
+
+    private void Opzioni_Emoney_Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
+        // TODO add your handling code here:
+        String Testo="<html>Digita il nome della moneta da aggiungere alla lista delle E-Money Token (es. USDC)<br>";
+        Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi, ad esempio, BTC è diverso da Btc o btc<br><br></html>";
+        String m = JOptionPane.showInputDialog(this, Testo, "");
+        if (m!=null){
+            m=m.trim();
+            if (DatabaseH2.Pers_Emoney_Leggi(m)==null){
+                //System.out.println("Aggiunto "+m+" al databse");
+                DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
+                Opzioni_Emoney_CaricaTabellaEmoney();
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                Plusvalenze.AggiornaPlusvalenze();
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                // TabellaCryptodaAggiornare=true;
+            }else{
+                JOptionPane.showConfirmDialog(this, "Il token è già presente in tabella.",
+                    "Token già esistente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            }
+            // System.out.println("Trovato moneta: "+m);
+            // System.out.println(DatabaseH2.Pers_Emoney_Leggi(m));
+        }
+    }//GEN-LAST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
+
     private void Opzioni_GruppoWallet_TabellaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaFocusGained
         // TODO add your handling code here:
         //System.out.println("Componente cambiato");
@@ -4677,104 +4703,128 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
-          }  
+        }
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaFocusGained
 
-    private void Opzioni_Emoney_Bottone_AggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
+    private void Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
         // TODO add your handling code here:
-        String Testo="<html>Digita il nome della moneta da aggiungere alla lista delle E-Money Token (es. USDC)<br>";
-        Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi, ad esempio, BTC è diverso da Btc o btc<br><br></html>";
-            String m = JOptionPane.showInputDialog(this, Testo, "");
-            if (m!=null){
-                m=m.trim();
-                if (DatabaseH2.Pers_Emoney_Leggi(m)==null){
-                   //System.out.println("Aggiunto "+m+" al databse");
-                   DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
-                   Opzioni_Emoney_CaricaTabellaEmoney();
-                   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                   Plusvalenze.AggiornaPlusvalenze();
-                   TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-                   this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                  // TabellaCryptodaAggiornare=true;
-                }else{
-                    JOptionPane.showConfirmDialog(this, "Il token è già presente in tabella.",
-                    "Token già esistente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        if(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedIndex()!=0) {
+
+            String Messaggio="Sicuro di voler cancellare tutti i dati delle Transazioni Crypto del Wallet "+Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString()+"?";
+            int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+            if (risposta==0)
+            {
+                Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+                int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString());
+                if (movimentiCancellati>0){
+                    Opzioni_RicreaListaWalletDisponibili();
+                    Plusvalenze.AggiornaPlusvalenze();
+                    TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                    TransazioniCrypto_DaSalvare=true;
+                    TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
                 }
-               // System.out.println("Trovato moneta: "+m);
-               // System.out.println(DatabaseH2.Pers_Emoney_Leggi(m));
-            } 
-    }//GEN-LAST:event_Opzioni_Emoney_Bottone_AggiungiActionPerformed
-
-    private void Opzioni_Emoney_Bottone_RimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
-        // TODO add your handling code here:
-        if (Opzioni_Emoney_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = Opzioni_Emoney_Tabella.getSelectedRow();
-            String Moneta = Opzioni_Emoney_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String Testo = "<html>Vuoi calncellare il Token <b>" + Moneta + "</b> dalla lista degli EMoney Token?<br><br>"
-                    + "</html>";
-            Object[] Bottoni = {"Si", "No"};
-            int scelta = JOptionPane.showOptionDialog(this, Testo,
-                    "Classificazione del Token",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    Bottoni,
-                    null);
-            if (scelta == 0) {
-                DatabaseH2.Pers_Emoney_Cancella(Moneta);
-                Opzioni_Emoney_CaricaTabellaEmoney();
-                   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                   Plusvalenze.AggiornaPlusvalenze();
-                   TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-                   this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                //TabellaCryptodaAggiornare=true;
-            } else {
+                Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+                Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
+                JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
 
             }
-
         }
-    }//GEN-LAST:event_Opzioni_Emoney_Bottone_RimuoviActionPerformed
+    }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
 
-    private void CDC_DataChooser_InizialeKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialeKeyPressed
+    private void Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_CDC_DataChooser_InizialeKeyPressed
-
-    private void CDC_DataChooser_InizialeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialeFocusLost
         // TODO add your handling code here:
-       // System.out.println("lost");
-    }//GEN-LAST:event_CDC_DataChooser_InizialeFocusLost
+        String Messaggio = "Sicuro di voler cancellare tutti i dati delle Transazioni Crypto?";
+        int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta == 0) {
+            MappaCryptoWallet.clear();
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            TransazioniCrypto_DaSalvare=true;
+            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+            Messaggio = "Sono state cancellate tutte le movimentazioni crypto \nRicordarsi di Salvare per non perdere le modifiche fatte.";
+            JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
+        }
+    }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
 
-    private void Opzioni_Emoney_TabellaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseClicked
-      //  try {
-            // TODO add your handling code here:
-            if(Opzioni_Emoney_Tabella.getSelectedColumn()==1){
-            String token=Opzioni_Emoney_Tabella.getModel().getValueAt(Opzioni_Emoney_Tabella.getSelectedRow(), 0).toString();
-            Date data=(Date)Opzioni_Emoney_Tabella.getModel().getValueAt(Opzioni_Emoney_Tabella.getSelectedRow(), 1);
-            String oldData=data.toString();
-            GUI_ScegliData a = new GUI_ScegliData();
-            a.setLocationRelativeTo(this);
-            a.ImpostaData(data);
-            a.ImpostaTitolo("Imposta la data dal quale il token "+token+" deve essere considerato E-Money");            
-            a.setVisible(true);
-            if (JDialog_Ritorno!=null){
-                Date nuovaData=(Date)JDialog_Ritorno;
-                Opzioni_Emoney_Tabella.getModel().setValueAt(nuovaData, Opzioni_Emoney_Tabella.getSelectedRow(), 1);
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                String DataStringata=dateFormat.format(nuovaData);
-                DatabaseH2.Pers_Emoney_Scrivi(token, DataStringata);
-               // TransazioniCrypto_DaSalvare=true;
-               if(!oldData.equalsIgnoreCase(nuovaData.toString()))
-                   {
-                   //TabellaCryptodaAggiornare=true;
-                   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                   Plusvalenze.AggiornaPlusvalenze();
-                   TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-                   this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                   }
-            }
-            //System.out.println(JDialog_Ritorno);
- } 
-    }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseClicked
+    private void CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
+        // TODO add your handling code here:
+        String Messaggio="Sicuro di voler cancellare le personalizzazione sui movimenti del Fiat Wallet?";
+        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione personalizzazioni FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+            try
+            {
+                FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
+                BufferedWriter b=new BufferedWriter (w);
+                for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values())
+                {
+                    if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase()))
+                    {
+                        b.write(value+"\n");
+                    }
+                }
+                b.close();
+                w.close();
+            }catch (IOException ex)
+            {
+
+            }    }
+            CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
+            CDC_FiatWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
+
+    private void CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
+        // TODO add your handling code here:
+        String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet?";
+        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+            try
+            {
+                FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileDB);
+                BufferedWriter b=new BufferedWriter (w);
+                b.write("");
+                b.close();
+                w.close();
+            }catch (IOException ex)
+            {
+
+            }    }
+            CDC_FiatWallet_Mappa.clear();
+            CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
+            CDC_FiatWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
+
+    private void CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
+        // TODO add your handling code here:
+        String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet?";
+        int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione CardWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+        if (risposta==0){
+            try
+            {
+                FileWriter w=new FileWriter(CDC_Grafica.CDC_CardWallet_FileDB);
+                BufferedWriter b=new BufferedWriter (w);
+                b.write("");
+                b.close();
+                w.close();
+            }catch (IOException ex)
+            {
+
+            }    }
+            CDC_CardWallet_Mappa.clear();
+            CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
+            CDC_CardWallet_AggiornaDatisuGUI();
+    }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
+
+    private void Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
+        // TODO add your handling code here:
+       // System.out.println(Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected());
+        if (Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected()){ 
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "SI");
+        }else{ 
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
+        }
+    }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5228,11 +5278,42 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             ModelloTabellaCrypto.addRow(Val);
         }
         
-        Valore=Transazione[5];
+            Valore = Transazione[5];
+            if (!Valore.isBlank()) {
+                if (Transazione[20].isBlank()) {
+                    Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")</html>"};
+                } else {
+                    String WalletPrelievo = "";
+                    String WalletDeposito = "";
+                    String Movimenti[] = (Transazione[20]+","+Transazione[0]).split(",");
+                    if (Movimenti.length < 3)//Sono in presenza di uno scambio differito
+                    {
+                        for (String IdM : Movimenti) {
+                            String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
+                            if (Mov[18].contains("PTW")) {
+                                WalletPrelievo = Mov[3];
+                            }
+                            if (Mov[18].contains("DTW")) {
+                                WalletDeposito = Mov[3];
+                            }
+                        }
+                    }
+                    Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")<br>"
+                            +"Trasferimento da <b>"+ WalletPrelievo+"</b> a <b>"+WalletDeposito+"</html>"};
+                }
+                ModelloTabellaCrypto.addRow(Val);
+            }
+        
+        Valore=Transazione[31];
         if (!Valore.isBlank()){
-            Val=new String[]{"Causale Movimento ","<html><b>"+Valore+"</b> ("+Transazione[6]+")</html>"};
+            Val=new String[]{"Data e Ora fine trasferimento",Valore};
             ModelloTabellaCrypto.addRow(Val);
-        }
+        } 
+       /* Valore=Transazione[20];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Movimenti Correlati ","<html>"+Valore.replaceAll(",", "<br>")+"</html>"};
+            ModelloTabellaCrypto.addRow(Val);
+        }*/
         
         Valore=Transazione[7];
         if (!Valore.isBlank()){
@@ -5346,7 +5427,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             Val=new String[]{"BC: Address Controparte",Valore};
             ModelloTabellaCrypto.addRow(Val);
         } 
-        
+
 
         Valore=Transazione[21];
         if (!Valore.isBlank()){
@@ -5360,11 +5441,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             Val=new String[]{"ID ",Valore};
             ModelloTabellaCrypto.addRow(Val);
         }
-        Valore=Transazione[20];
-        if (!Valore.isBlank()){
-            Val=new String[]{"Movimenti Correlati ","<html>"+Valore.replaceAll(",", "<br>")+"</html>"};
-            ModelloTabellaCrypto.addRow(Val);
-        }
+        
         
         Tabelle.ColoraTabellaSemplice(TransazioniCrypto_Tabella_Dettagli);
         Tabelle.updateRowHeights(TransazioniCrypto_Tabella_Dettagli);
@@ -5953,6 +6030,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JScrollPane Opzioni_Emoney_ScrollPane;
     private javax.swing.JTable Opzioni_Emoney_Tabella;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
+    private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusXWallet;
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
@@ -5988,10 +6066,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
 }

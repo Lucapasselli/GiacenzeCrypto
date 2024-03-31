@@ -380,7 +380,8 @@ public class Plusvalenze {
         }
         for (String[] v : MappaCryptoWallet.values()) {
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
-            
+               // System.out.println(GruppoWallet);
+                if(!PlusXWallet)GruppoWallet="Wallet 01";
                 if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
                     //se non esiste ancora lo stack lo creo e lo associo alla mappa
                     CryptoStack = new TreeMap<>();

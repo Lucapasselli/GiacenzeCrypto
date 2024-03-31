@@ -689,23 +689,30 @@ public class Prezzi {
         if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         String DataOra=OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
+        
         risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
+        //se il risultato è null significa che non ho il prezzo specifico dell'ora
         if (risultato == null) {
-                //se non trovo un prezzo recupero le coppie gestite da binance
+            //controllo se invece ho il prezzo di giornata
+            risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno+" "+Crypto);
+            if (risultato == null) {
+                //se non trovo un prezzo recupero le coppie gestite da binance e cryptohistory
                 RecuperaCoppieBinance();//il test sulla data lo fà già il programma
-  
-                if(DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") == null ){
-                    //se la coppia non è gestita da binance termino il ciclo
-                    return null;
-                    }
+                RecuperaCoinsCryptoHistory();
+                //se gestito da binance scarico i dati da binance
+                if(DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") != null ){
+                    //scarico i prezzi da binance
+                    RecuperaTassidiCambioXXXUSDT(Crypto,DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                    //se la coppia non è gestita da binance controllo se invece è gestita da cryptohistory
+                    
+                    }else if(DatabaseH2.GestitiCryptohistory_Leggi(Crypto) != null ){
+ //DA FARE!!!!!!     //Se gestito da cryptohistory scarico i prezzi da cryptohistory
+                    
+                    }else return null;
             
-                     RecuperaTassidiCambioXXXUSDT(Crypto,DataGiorno,DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
                      risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
 
-                 //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
-
-                     //non serve mettere nessun else in quanto se  non è null allora il valore è già stato recuperato sopra
-        }
+        } }
         //se il risultato è zero devo equipararlo ad un risultato nullo
 
            if (risultato != null) {
@@ -1079,10 +1086,6 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
   
-    
-    
-    
-    
         public static String RecuperaTassidiCambioXXXUSDT(String Crypto,String DataIniziale, String DataFinale) {
                       
         String ok = null;
@@ -1233,6 +1236,98 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
+    
+        public static String RecuperaTassidiCambiodaSIMBOLO(String Crypto,String DataIniziale) {
+         //COMPLETAMENTE DA FARE             
+        String ok = null;
+        //https://cryptohistory.one/api/USDT/2022-08-12/2023-01-14
+        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("31536000000");
+        String DataFinale=OperazioniSuDate.ConvertiDatadaLong(dataFin);
+
+
+
+            try {
+                String apiUrl = "https://cryptohistory.one/api/" + Crypto +"/"+DataIniziale+"/"+DataFinale;
+                URL url = new URI(apiUrl).toURL();
+                URLConnection connection = url.openConnection();
+                System.out.println(url);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+
+                    }
+
+                    Gson gson = new Gson();
+                
+                    //System.out.println(response.toString());
+                     JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                  //  JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
+                    JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
+                //  List<PrezzoData> prezzoDataList = new ArrayList<>();
+              
+                    //JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
+                    //  List<PrezzoData> prezzoDataList = new ArrayList<>();
+                    if (pricesArray != null) {
+                        for (JsonElement element : pricesArray) {
+                            JsonArray priceArray = element.getAsJsonArray();
+                            //System.out.println(priceArray);
+
+                            if (priceArray.size() == 12) {
+                                long timestamp = priceArray.get(0).getAsLong();
+                                String price = priceArray.get(4).getAsString();
+                                Date date = new java.util.Date(timestamp);
+                                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                                String DataconOra = sdf.format(date);
+                                //  System.out.println("DataAttuale : "+DataAttualeLong);
+                                //  System.out.println("timestamp : "+timestamp);
+                                //  System.out.println(CercaPrezziDataAttuale);
+                                //Questo if server per evitare di cercare i dati della data odierna se non sono proprio strettamente necessari
+                                //perchè i dati della data odfierna non vengono salvati nel file di conversione dei valori di usdt
+                                //e questo genererebbe una richiesta inutile su coingecko
+                              
+                                    String Prezzo = ConvertiUSDTEUR(price, timestamp);
+                                    // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
+                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
+                                
+                                ok = "ok";
+                                //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
+                                //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
+                                //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
+                                //ora devo gestire l'inserimento nella mappa
+                            }
+
+                        }
+                    } else {
+                        ok = null;
+                    }
+                } catch (IOException ex) {
+                    ok = null;
+                }
+                TimeUnit.SECONDS.sleep(1);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (IOException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (InterruptedException ex) {
+                ok = null;
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        
+        //   ScriviFileConversioneUSDTEUR();
+        //System.out.println(ok);
+        return ok;
+    }
+    
+    
 
  
     
@@ -1247,18 +1342,36 @@ for (int i=0;i<ArraydataIni.size();i++){
         4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
         */
         String PrezzoTransazione;
+        long adesso = System.currentTimeMillis();
+        boolean ForzaUsoBinanceM1=false;
+        boolean ForzaUsoBinanceM2=false;
+        //Se la differenza tra la data dello scambio e oggi è maggiore di 365 gg forzo l'uso di binance perchè
+        //coingecko mi permette di avere i dati solo degli ultimi 365gg
+        
         
         //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
         String AddressMoneta1 = null;
         if (Moneta1 != null) {
             if (Moneta1.MonetaAddress!=null&&!Moneta1.MonetaAddress.equals("")) {
                 AddressMoneta1 = Moneta1.MonetaAddress;
+                if ((adesso-Data)>Long.parseLong("31536000000")){ 
+                    RecuperaCoinsCoingecko();
+                    String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(AddressMoneta1 + "_" + Rete);
+                    //se la moneta è gestita da coingecko e il movimento ha più di 365gg allora dico di usare binance per trovare il prezzo
+                    if (AddressNoPrezzo!=null)ForzaUsoBinanceM1=true;
+                }
             }
         }
         String AddressMoneta2 = null;
         if (Moneta2 != null) {
             if (Moneta2.MonetaAddress!=null&&!Moneta2.MonetaAddress.equals("")) {
                 AddressMoneta2 = Moneta2.MonetaAddress;
+                if ((adesso-Data)>Long.parseLong("31536000000")){ 
+                    RecuperaCoinsCoingecko();
+                    String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(AddressMoneta2 + "_" + Rete);
+                    //se la moneta è gestita da coingecko e il movimento ha più di 365gg allora dico di usare binance per trovare il prezzo
+                    if (AddressNoPrezzo!=null)ForzaUsoBinanceM2=true;
+                }
             }
         }
         //come prima cosa prima di iniziare controllo che la moneta in questione non sia già una di quelle in lista
@@ -1334,7 +1447,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USDT") && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
                 //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
-                if (AddressMoneta1 == null) {
+                if (AddressMoneta1 == null || ForzaUsoBinanceM1) {
                     PrezzoTransazione = ConvertiUSDTEUR(Moneta1.Qta, Data);
                 } else {
                     PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
@@ -1344,7 +1457,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                     return PrezzoTransazione;
                 }
             } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USDT") && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
-                if (AddressMoneta2 == null) {
+                if (AddressMoneta2 == null || ForzaUsoBinanceM2) {
                     PrezzoTransazione = ConvertiUSDTEUR(Moneta2.Qta, Data);
                 } else {
                     PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
@@ -1361,7 +1474,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 if (Moneta1 != null &&  (Moneta1.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1) && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                     // trovato1=true;
                   //  System.out.println("aaa"+Moneta1.MonetaAddress);
-                    if (AddressMoneta1 == null || MonetaRete.equalsIgnoreCase(AddressMoneta1)) {
+                    if (AddressMoneta1 == null || MonetaRete.equalsIgnoreCase(AddressMoneta1) || ForzaUsoBinanceM1) {
                         PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                     } else {
                         PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
@@ -1376,7 +1489,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
                 if (Moneta2 != null && (Moneta2.Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1)&& Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                     // trovato2=true;
-                    if (AddressMoneta2 == null || MonetaRete.equalsIgnoreCase(AddressMoneta2)) {
+                    if (AddressMoneta2 == null || MonetaRete.equalsIgnoreCase(AddressMoneta2) || ForzaUsoBinanceM2) {
                         PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                     } else {
                         PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
@@ -1396,7 +1509,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             //PARTE 4 - Prendo il prezzo della prima moneta disponibile
             if (Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
-                if(AddressMoneta1 == null){
+                if(AddressMoneta1 == null || ForzaUsoBinanceM1){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                 }
                 else if(Rete != null)
@@ -1416,7 +1529,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
                 
-                if(AddressMoneta2 == null){
+                if(AddressMoneta2 == null || ForzaUsoBinanceM2){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                    // System.out.println("ConvertiXXXEUR "+Moneta2.Moneta+" - "+Data);
                 }
@@ -1504,7 +1617,59 @@ for (int i=0;i<ArraydataIni.size();i++){
         return ok;
     }
         
-    
+     public static String RecuperaCoinsCryptoHistory() {
+        String ok = "ok";
+        //come prima cosa recupero l'ora atuale
+        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
+        //altrimenti tengo buona quella presente nel database
+        long adesso = System.currentTimeMillis();
+       String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CryptoHistory");
+        long dataUltimoScarico = 0;
+        if (dataUltimoScaricoString != null) {
+            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
+        }
+        if (adesso > (dataUltimoScarico + 86400000)) {
+            try {
+                String apiUrl = "https://cryptohistory.one/api/list";
+                URL url = new URI(apiUrl).toURL();
+                URLConnection connection = url.openConnection();
+                System.out.println(url);
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+                    System.out.println(line);
+                }
+                List<String> gestiti = new ArrayList<>();
+                String jsonString=response.toString();
+               JsonElement jsonElement = JsonParser.parseString(jsonString);
+
+                if (jsonElement.isJsonArray()) {
+                    JsonArray jsonArray = jsonElement.getAsJsonArray();
+                    for (JsonElement element : jsonArray) {
+                        JsonObject jsonObject = element.getAsJsonObject();
+                       // System.out.println(jsonObject.get("ticker"));
+                       gestiti.add(jsonObject.get("ticker").getAsString());
+
+
+                    }
+                    DatabaseH2.GestitiCryptohistory_ScriviNuovaTabella(gestiti);
+                    DatabaseH2.Opzioni_Scrivi("Data_Lista_CryptoHistory", String.valueOf(adesso));
+                } else {
+                    ok = null;
+                }
+
+                TimeUnit.SECONDS.sleep(1);
+            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
+                ok = null;
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return ok;
+    }   
     
         public static String RecuperaCoinsCoingecko() {
         String ok = "ok";

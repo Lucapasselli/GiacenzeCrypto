@@ -707,17 +707,20 @@ public class Prezzi {
                     
                     }else if(DatabaseH2.GestitiCryptohistory_Leggi(Crypto) != null ){
  //DA FARE!!!!!!     //Se gestito da cryptohistory scarico i prezzi da cryptohistory
-                    
+                      RecuperaTassidiCambiodaSimbolo(Crypto,DataGiorno);  
                     }else return null;
             
                      risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
+                     if (risultato == null) {
+                         risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno+" "+Crypto);
+                     }
 
         } }
         //se il risultato è zero devo equipararlo ad un risultato nullo
 
            if (risultato != null) {
-               //infatti se ritorna zero vuol dire che per quella data binance non mi fornisce nessun prezzo
-               if (risultato.equalsIgnoreCase("ND")) {
+               //infatti se ritorna zero vuol dire che per quella data binance o cryptohistory non forniscono nessun prezzo
+               if (risultato.equalsIgnoreCase("ND")||risultato.equalsIgnoreCase("null")) {
                    risultato = null;
                } else {
                    //questa è la mappa che al termine della conversione devo scrivere nel file;
@@ -1031,7 +1034,7 @@ for (int i=0;i<ArraydataIni.size();i++){
 
                 while ((line = in.readLine()) != null) {
                     response.append(line);
-
+                    System.out.println(response);
                 }
 
                 Gson gson = new Gson();
@@ -1230,24 +1233,19 @@ for (int i=0;i<ArraydataIni.size();i++){
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        //   ScriviFileConversioneUSDTEUR();
-        //System.out.println(ok);
         return ok;
     }
     
     
     
-        public static String RecuperaTassidiCambiodaSIMBOLO(String Crypto,String DataIniziale) {
-         //COMPLETAMENTE DA FARE             
+        public static String RecuperaTassidiCambiodaSimbolo(String Crypto,String DataIniziale) {          
         String ok = null;
         //https://cryptohistory.one/api/USDT/2022-08-12/2023-01-14
         long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("31536000000");
         String DataFinale=OperazioniSuDate.ConvertiDatadaLong(dataFin);
-
-
-
+        String apiUrl = "https://cryptohistory.one/api/" + Crypto +"/"+DataIniziale+"/"+DataFinale;
+       // if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get("https://cryptohistory.one/api/" + Crypto +"/"+DataIniziale)==null){    
             try {
-                String apiUrl = "https://cryptohistory.one/api/" + Crypto +"/"+DataIniziale+"/"+DataFinale;
                 URL url = new URI(apiUrl).toURL();
                 URLConnection connection = url.openConnection();
                 System.out.println(url);
@@ -1262,45 +1260,20 @@ for (int i=0;i<ArraydataIni.size();i++){
                     }
 
                     Gson gson = new Gson();
-                
-                    //System.out.println(response.toString());
-                     JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
-                  //  JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
-                    JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
-                //  List<PrezzoData> prezzoDataList = new ArrayList<>();
-              
-                    //JsonArray pricesArray = jsonObject.getAsJsonArray("prices");
-                    //  List<PrezzoData> prezzoDataList = new ArrayList<>();
-                    if (pricesArray != null) {
+                    JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
+                    
+                    //questa mappa permette di non rifare le stesse richieste api nella stessa sessione
+
+                    if (pricesArray != null || !pricesArray.isEmpty()) {
                         for (JsonElement element : pricesArray) {
-                            JsonArray priceArray = element.getAsJsonArray();
-                            //System.out.println(priceArray);
-
-                            if (priceArray.size() == 12) {
-                                long timestamp = priceArray.get(0).getAsLong();
-                                String price = priceArray.get(4).getAsString();
-                                Date date = new java.util.Date(timestamp);
-                                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                                String DataconOra = sdf.format(date);
-                                //  System.out.println("DataAttuale : "+DataAttualeLong);
-                                //  System.out.println("timestamp : "+timestamp);
-                                //  System.out.println(CercaPrezziDataAttuale);
-                                //Questo if server per evitare di cercare i dati della data odierna se non sono proprio strettamente necessari
-                                //perchè i dati della data odfierna non vengono salvati nel file di conversione dei valori di usdt
-                                //e questo genererebbe una richiesta inutile su coingecko
-                              
-                                    String Prezzo = ConvertiUSDTEUR(price, timestamp);
-                                    // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
-                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
-                                
-                                ok = "ok";
-                                //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
-                                //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
-                                //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
-                                //ora devo gestire l'inserimento nella mappa
-                            }
-
+                            JsonObject ogg = element.getAsJsonObject();
+                            String DataRichiesta=ogg.get("date").getAsString();
+                           // CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put("https://cryptohistory.one/api/" + Crypto+"/"+DataRichiesta, "ok");
+                            String Data =ogg.get("real_date").getAsString();
+                            String PrezzoEuro=ogg.get("price_eur").getAsString();
+                            if (!DataRichiesta.equals(Data))DatabaseH2.XXXEUR_Scrivi(DataRichiesta + " " + Crypto, "ND");
+                            DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro);
+                            
                         }
                     } else {
                         ok = null;
@@ -1309,6 +1282,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                     ok = null;
                 }
                 TimeUnit.SECONDS.sleep(1);
+                
             } catch (MalformedURLException ex) {
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
                 ok = null;
@@ -1320,10 +1294,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             } catch (URISyntaxException ex) {
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        
-        //   ScriviFileConversioneUSDTEUR();
-        //System.out.println(ok);
+            }//}
         return ok;
     }
     
@@ -1623,7 +1594,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
         //altrimenti tengo buona quella presente nel database
         long adesso = System.currentTimeMillis();
-       String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CryptoHistory");
+        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CryptoHistory");
         long dataUltimoScarico = 0;
         if (dataUltimoScaricoString != null) {
             dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);

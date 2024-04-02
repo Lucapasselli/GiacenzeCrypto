@@ -104,6 +104,26 @@ public class DatabaseH2 {
         }
         return successo;
     }
+    
+    
+    //Devo predisporre la cancellazione dei record dei prezzi nulli all'apertura del gestionale
+    //DELETE FROM XXXEUR WHERE PREZZO='ND'
+    //DELETE FROM XXXEUR WHERE PREZZO='null'
+    public static void CancellaPrezziVuoti() {
+        try {
+            String SQL = "DELETE FROM XXXEUR WHERE PREZZO='ND'";
+            PreparedStatement checkStatement = connection.prepareStatement(SQL);
+            checkStatement.executeUpdate();
+            SQL = "DELETE FROM XXXEUR WHERE PREZZO='null'";
+            checkStatement = connection.prepareStatement(SQL);
+            checkStatement.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+    
 
         public static void Pers_Emoney_Scrivi(String Moneta, String Data) {
         try {
@@ -603,7 +623,7 @@ public class DatabaseH2 {
         String Risultato = null;
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Symbol FROM GESTITICOINGECKO WHERE Symbol = '" + Gestito + "'";
+            String checkIfExistsSQL = "SELECT Symbol FROM GESTITICRYPTOHISTORY WHERE Symbol = '" + Gestito + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {

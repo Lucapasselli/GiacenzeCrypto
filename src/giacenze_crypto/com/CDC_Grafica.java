@@ -74,6 +74,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String> Mappa_EMoney = new TreeMap<>();//Mapa dei token considerati emoney, deve essere case sensitive perchè in alcuni casi dei token si differenziano solo dalle minuscole o maiuscole
+  //  static public Map<String, String> Mappa_RichiesteAPIGiaEffettuate = new TreeMap<>();
     static public Map<String, List<String>> Mappa_Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -135,6 +136,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
+        DatabaseH2.CancellaPrezziVuoti();//pulisce il database dai prezzi vuoti delle precedenti sessioni
+                                        //in modo tale che se i prezzi tornano ad essere disponibili questi vengono riscaricati
         
         CDC_LeggiFileDatiDB();
         TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto();

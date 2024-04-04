@@ -56,11 +56,11 @@ public class DatabaseH2 {
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
             
-            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINGECKO  (Address_Chain VARCHAR(255) PRIMARY KEY)";
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINGECKO  (Address_Chain VARCHAR(255) PRIMARY KEY, Simbolo VARCHAR(255), Nome VARCHAR (255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
             
-            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICRYPTOHISTORY  (Symbol VARCHAR(255) PRIMARY KEY)";
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICRYPTOHISTORY  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
                        
@@ -607,7 +607,7 @@ public class DatabaseH2 {
         String Risultato = null;
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Address_Chain FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito + "'";
+            String checkIfExistsSQL = "SELECT Address_Chain FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito.toUpperCase() + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
@@ -618,7 +618,27 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Risultato;
-    }    
+    }  
+            
+        public static String[] GestitiCoingecko_LeggiInteraRiga(String Gestito) {
+        String Risultato[]=new String[3];
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Address_Chain,Simbolo,Nome FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito.toUpperCase() + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato[0] = resultSet.getString("Address_Chain");
+                Risultato[1] = resultSet.getString("Simbolo");
+                Risultato[2] = resultSet.getString("Nome");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    } 
+                        
         public static String GestitiCryptohistory_Leggi(String Gestito) {
         String Risultato = null;
         try {
@@ -628,6 +648,23 @@ public class DatabaseH2 {
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 Risultato = resultSet.getString("Symbol");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    } 
+    public static String[] GestitiCryptohistory_LeggiInteraRiga(String Gestito) {
+        String Risultato[] = new String[2];
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Symbol,Nome FROM GESTITICRYPTOHISTORY WHERE Symbol = '" + Gestito + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato[0] = resultSet.getString("Symbol");
+                Risultato[1] = resultSet.getString("Nome");
             }
 
         } catch (SQLException ex) {
@@ -654,18 +691,21 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
-        public static void GestitiCoingecko_ScriviNuovaTabella(List<String> Gestiti) {
+        public static void GestitiCoingecko_ScriviNuovaTabella(List<String[]> Gestiti) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITICOINGECKO";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             checkStatement.execute();
-            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINGECKO  (Address_Chain VARCHAR(255) PRIMARY KEY)";
+            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINGECKO  (Address_Chain VARCHAR(255) PRIMARY KEY, Simbolo VARCHAR(255), Nome VARCHAR (255))";
             checkStatement = connection.prepareStatement(checkIfExistsSQL);
             checkStatement.execute(); 
-            for (String gestito:Gestiti){
+            for (String[] gestito:Gestiti){
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO GESTITICOINGECKO (Address_Chain) VALUES ('" + gestito + "')";
+                gestito[1]=gestito[1].replace("'", "");
+                gestito[2]=gestito[2].replace("'", "");
+                gestito[2]=gestito[2].split("\\(")[0].trim();//questo serve per eliminare i nomi delle chain tra parentesi nel nome qualora vi fosse
+                String insertSQL = "INSERT INTO GESTITICOINGECKO (Address_Chain,Simbolo,Nome) VALUES ('" + gestito[0] + "','"+ gestito[1] + "','" + gestito[2] + "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 insertStatement.executeUpdate();
             }
@@ -674,18 +714,19 @@ public class DatabaseH2 {
         }
     }
         
-        public static void GestitiCryptohistory_ScriviNuovaTabella(List<String> Gestiti) {
+        public static void GestitiCryptohistory_ScriviNuovaTabella(List<String[]> Gestiti) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITICRYPTOHISTORY";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             checkStatement.execute();
-            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICRYPTOHISTORY  (Symbol VARCHAR(255) PRIMARY KEY)";
+            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICRYPTOHISTORY  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))";
             checkStatement = connection.prepareStatement(checkIfExistsSQL);
             checkStatement.execute(); 
-            for (String gestito:Gestiti){
+            for (String gestito[]:Gestiti){
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO GESTITICRYPTOHISTORY (Symbol) VALUES ('" + gestito + "')";
+                gestito[1]=gestito[1].replace("'", "").replace("*", "");
+                String insertSQL = "INSERT INTO GESTITICRYPTOHISTORY (Symbol,Nome) VALUES ('" + gestito[0] + "','"+ gestito[1] + "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 insertStatement.executeUpdate();
             }

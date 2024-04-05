@@ -156,10 +156,10 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Simple Earn Flexible Interest",              "EARN");  
         Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
         Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
-        Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING");//
+        Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING REWARDS");//
         Mappa_Conversione_Causali.put("Distribution",                               "REWARD");//
         Mappa_Conversione_Causali.put("BNB Vault Rewards",                          "REWARD");//
-        Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING");//
+        Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING REWARDS");//
         Mappa_Conversione_Causali.put("Simple Earn Flexible Subscription",          "TRASFERIMENTO-CRYPTO-INTERNO");//
         Mappa_Conversione_Causali.put("Simple Earn Flexible Redemption",            "TRASFERIMENTO-CRYPTO-INTERNO");//
         Mappa_Conversione_Causali.put("Simple Earn Locked Subscription",            "TRASFERIMENTO-CRYPTO-INTERNO");//
@@ -397,8 +397,8 @@ public class Importazioni {
 //        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
         Mappa_Conversione_Causali.put("lockup_upgrade", "TRASFERIMENTO-CRYPTO-INTERNO");       //CRO Stake per la MCO Card. (Upgrade)
-        Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING");                       //Interessi che la MCO Card matura. Da (Jade in su)
-        Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING");    //Nuovo Staking di Crypto.com
+        Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING REWARD");                       //Interessi che la MCO Card matura. Da (Jade in su)
+        Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING REWARD");    //Nuovo Staking di Crypto.com
         Mappa_Conversione_Causali.put("finance.dpos.staking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");    //Nuovo Staking di Crypto.com
         Mappa_Conversione_Causali.put("finance.dpos.unstaking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");      //unstake
         Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
@@ -411,7 +411,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("supercharger_withdrawal", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo dei CRO dal supercharger
         Mappa_Conversione_Causali.put("viban_purchase", "ACQUISTO CRYPTO");           //Acquisto di Crypto dal portafoglio EUR 
 //        Mappa_Conversione_Causali.put("nft_payout_credited", fileDaImportare);            //Vendita NFT 
-        Mappa_Conversione_Causali.put("staking_reward", "STAKING");                       //Reward (Es. NEO Gas) 
+        Mappa_Conversione_Causali.put("staking_reward", "STAKING REWARD");                       //Reward (Es. NEO Gas) 
         Mappa_Conversione_Causali.put("campaign_reward", "REWARD");                       //Vincita di una campagna (Es.: Telegram Madness
         Mappa_Conversione_Causali.put("crypto_payment_refund", "REWARD");                 //Rimborso in Crypto. (Es. Rimborso Offerta per un NFT)
         Mappa_Conversione_Causali.put("referral_bonus", "REWARD");                        //Bonus Referral 
@@ -895,7 +895,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                    TrasazioniSconosciute++;
                                 }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("CASHBACK")||
-                                    movimentoConvertito.trim().equalsIgnoreCase("STAKING")||
+                                    movimentoConvertito.trim().equalsIgnoreCase("STAKING REWARD")||
                                     movimentoConvertito.trim().equalsIgnoreCase("EARN")||
                                     movimentoConvertito.trim().equalsIgnoreCase("REWARD")||
                                     movimentoConvertito.trim().equalsIgnoreCase("ALTRE-REWARD"))
@@ -1604,7 +1604,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                    TrasazioniSconosciute++;
                                 }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("CASHBACK")||
-                                    movimentoConvertito.trim().equalsIgnoreCase("STAKING")||
+                                    movimentoConvertito.trim().equalsIgnoreCase("STAKING REWARDS")||
                                     movimentoConvertito.trim().equalsIgnoreCase("EARN")||
                                     movimentoConvertito.trim().equalsIgnoreCase("REWARD")||
                                     movimentoConvertito.trim().equalsIgnoreCase("ALTRE-REWARD"))

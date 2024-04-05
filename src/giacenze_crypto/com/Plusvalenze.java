@@ -404,8 +404,19 @@ public class Plusvalenze {
             String Plusvalenza="0.00";
             
             
+            //TIPOLOGIA = 0 (Vendita Crypto)
+            if (IDTS[4].equals("VC")){
+                //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                VecchioPrezzoCarico=Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                
+                //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                NuovoPrezzoCarico="";
+                
+                //Calcolo la plusvalenza
+                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString(); 
+            }           
             //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
-            if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
+            else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
                     && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
                     !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
             {

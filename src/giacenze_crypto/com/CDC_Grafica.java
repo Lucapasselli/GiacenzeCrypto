@@ -101,6 +101,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     public boolean tabDepositiPrelieviCaricataprimavolta=false;
     public static Object JDialog_Ritorno;
+    public boolean VersioneCambiata=false;
     
     //static String Appoggio="";
     
@@ -109,7 +110,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.17 Beta");
+            this.setTitle("Giacenze_Crypto 1.18 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -131,6 +132,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
             JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             System.exit(0);
         }
+        
+        if (Funzioni.CambiataVersione(this.getTitle()))
+                {
+                    System.out.println("Versione Cambiata");
+                    VersioneCambiata=true;
+                    if (VersioneCambiata){
+                        DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
+                    }
+                    VersioneCambiata=false;//intanto così poi verrà utilizzata per altre cose in futuro
+                }
+        
         Funzioni.CompilaMappaChain();
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
@@ -4441,14 +4453,20 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
     private void TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
         // TODO add your handling code here:
-
+        
+        if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
+            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+            int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+            String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            a.CompilaCampiPrincipalidaID(IDTransazione);
+            a.setLocationRelativeTo(this);
+            a.setVisible(true);
+        }else
+        {
         MovimentoManuale_GUI a= new MovimentoManuale_GUI();
         a.setLocationRelativeTo(this);
         a.setVisible(true);
-        //Le seguenti 3 funzioni sono commentate perchè ci pensa il gain focus della finestra a generare l'aggiornamento della tabella
-        //  TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-        // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
-        //  TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        }
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
 
     private void TransazioniCrypto_Bottone_DettaglioDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_DettaglioDefiActionPerformed

@@ -69,7 +69,7 @@ public class DatabaseH2 {
             preparedStatement.execute();  
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZEBLOCKCHAIN (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
-            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS RINOMINATOKEN (address_chain VARCHAR(255) PRIMARY KEY, VecchioNome VARCHAR(255), NuovoNome VARCHAR(255))";
@@ -320,7 +320,7 @@ public class DatabaseH2 {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT Valore FROM GIACENZEBLOCKCHAIN WHERE Wallet_Blocco = '" + wallet_blocco + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 Valore = resultSet.getString("Valore");
@@ -337,7 +337,7 @@ public class DatabaseH2 {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM GIACENZEBLOCKCHAIN WHERE Wallet_Blocco = '" + wallet_blocco + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
             int rowCount = 0;
             // Esegui la query e controlla il risultato
             var resultSet = checkStatement.executeQuery();
@@ -347,12 +347,12 @@ public class DatabaseH2 {
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
                 String updateSQL = "UPDATE GIACENZEBLOCKCHAIN SET Valore = '" + Valore + "' WHERE Wallet_Blocco = '" + wallet_blocco + "'";
-                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
                 updateStatement.executeUpdate();
             } else {
                 // La riga non esiste, esegui l'inserimento
                 String insertSQL = "INSERT INTO GIACENZEBLOCKCHAIN (Wallet_Blocco, Valore) VALUES ('" + wallet_blocco + "','" + Valore + "')";
-                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
                 insertStatement.executeUpdate();
             }
         } catch (SQLException ex) {

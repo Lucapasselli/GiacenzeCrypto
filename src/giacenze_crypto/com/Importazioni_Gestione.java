@@ -241,7 +241,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     private void Bottone_SelezionaFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SelezionaFileActionPerformed
 
        // boolean selezioneok[]=new boolean[]{false};
+       //this.setCursor(Cursor.WAIT_CURSOR);
         if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv")) {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             JFileChooser fc = new JFileChooser();
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -256,6 +258,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 res.setVisible(true);
                 dispose();
             }
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
 
             Component c = this;

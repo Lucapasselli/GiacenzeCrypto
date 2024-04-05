@@ -66,6 +66,22 @@ public class Funzioni {
             } 
          }
         
+        
+        public static boolean CambiataVersione(String Versione){
+            boolean VersioneCambiata=false;
+            String Ver=DatabaseH2.Opzioni_Leggi("Versione");
+            if (Ver==null){
+                VersioneCambiata=true;
+            }
+            else {
+                if (!Ver.equals(Versione)){
+                    VersioneCambiata=true;
+                }
+            }
+            DatabaseH2.Opzioni_Scrivi("Versione",Versione);
+            return VersioneCambiata;
+         }     
+        
          
          
         public static String NormalizzaNome(String Nome){

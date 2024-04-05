@@ -362,24 +362,38 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("card_cashback_reverted", "CASHBACK");              //Cashback ripristinato
         Mappa_Conversione_Causali.put("referral_card_cashback", "CASHBACK");              //Cashback della Carta MCO
         Mappa_Conversione_Causali.put("crypto_earn_interest_paid", "EARN");               //Interessi maturati da una Crypto in Earn
-        Mappa_Conversione_Causali.put("crypto_earn_program_created", "TRASFERIMENTO-CRYPTO-INTERNO");//Inserimento di una Crypto in Earn
-        Mappa_Conversione_Causali.put("crypto_earn_program_withdrawn", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo di una Crypto dall'Earn
+
         Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
         Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
 
         Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
         Mappa_Conversione_Causali.put("crypto_to_exchange_transfer", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
         Mappa_Conversione_Causali.put("crypto_viban_exchange", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
+        Mappa_Conversione_Causali.put("card_top_up", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
 //        Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", fileDaImportare);    //Scambio MCO in CRO (MCO liberi nel portafoglio). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", fileDaImportare);     //Scambio MCO in CRO (MCO liberi nel portafoglio). Vendita degli MCO
         Mappa_Conversione_Causali.put("crypto_withdrawal", "TRASFERIMENTO-CRYPTO");       //Prelievo di una Crypto verso portafogli esterni
         Mappa_Conversione_Causali.put("dust_conversion_credited", "DUST-CONVERSION");//Conversione di Crypto in CRO. CRO Ricevuti dalla conversione.
         Mappa_Conversione_Causali.put("dust_conversion_debited", "DUST-CONVERSION");//Conversione di Crypto in CRO. Crypto da convertire in CRO.
+        Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", "DUST-CONVERSION");//Conversione di monete
+        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", "DUST-CONVERSION");//Conversione di monete       
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", fileDaImportare);//Bonus Swap MCO/CRO
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_credited", fileDaImportare);     //Scambio MCO in CRO (MCO in Earn). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_debited", fileDaImportare);      //Scambio MCO in CRO (MCO in Earn). Vendita degli MCO
         Mappa_Conversione_Causali.put("exchange_to_crypto_transfer", "TRASFERIMENTO-CRYPTO");    //Trasferimenti dall'Exchange verso l'App
+        
         Mappa_Conversione_Causali.put("lockup_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
+        Mappa_Conversione_Causali.put("lockup_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo unStake
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
+        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
+        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order     
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order  
+        Mappa_Conversione_Causali.put("finance.lockup.dpos_lock.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
+        Mappa_Conversione_Causali.put("finance.lockup.dpos_unlock.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo unStake
+        Mappa_Conversione_Causali.put("crypto_earn_program_created", "TRASFERIMENTO-CRYPTO-INTERNO");//Inserimento di una Crypto in Earn
+        Mappa_Conversione_Causali.put("crypto_earn_program_withdrawn", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo di una Crypto dall'Earn
 //        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
         Mappa_Conversione_Causali.put("lockup_upgrade", "TRASFERIMENTO-CRYPTO-INTERNO");       //CRO Stake per la MCO Card. (Upgrade)
@@ -391,6 +405,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("referral_gift", "REWARD");                         //Bonus di iscrizione sbloccato
         Mappa_Conversione_Causali.put("reimbursement", "REWARD");                         //Rimborsi (Es. Netflix, Promozioni)
         Mappa_Conversione_Causali.put("reimbursement_reverted", "REWARD");                //Annullamento di un rimborso (o parte)
+        Mappa_Conversione_Causali.put("reward.loyalty_program.trading_rebate.crypto_wallet", "REWARD");                //Altre reward
+        
         Mappa_Conversione_Causali.put("supercharger_deposit", "TRASFERIMENTO-CRYPTO-INTERNO"); //Deposito dei CRO nel supercharger
         Mappa_Conversione_Causali.put("supercharger_withdrawal", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo dei CRO dal supercharger
         Mappa_Conversione_Causali.put("viban_purchase", "ACQUISTO CRYPTO");           //Acquisto di Crypto dal portafoglio EUR 
@@ -1061,7 +1077,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             else if (movimentoConvertito.trim().equalsIgnoreCase("VENDITA CRYPTO"))
                             {
                                 //Vendita Crypto x Servizio
-                                if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment")){
+                                if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment")||movimentoSplittato[9].equalsIgnoreCase("card_top_up")){
                                 RT=new String[ColonneTabella];
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC"; 
                                 RT[1]=dataa;
@@ -1069,7 +1085,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[3]="Crypto.com App";
                                 RT[4]="Crypto Wallet";
                                 RT[5]="VENDITA CRYPTO";
-                                RT[6]=movimentoSplittato[2]+" -> (Acquisto con Crypto)";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment"))RT[6]=movimentoSplittato[2]+" -> (Acquisto con Crypto)";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                else if (movimentoSplittato[9].equalsIgnoreCase("card_top_up"))RT[6]=movimentoSplittato[2]+" -> (Top Up Carta)";
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";
                                 RT[8]=movimentoSplittato[2];
                                 RT[9]="Crypto";
@@ -1080,6 +1097,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                    }
+                                else
+                                    {
+                                        valoreEuro=Prezzi.ConvertiXXXEUR(movimentoSplittato[6],movimentoSplittato[7], OperazioniSuDate.ConvertiDatainLongMinuto(data));
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;

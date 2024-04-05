@@ -1312,8 +1312,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                             String DataRichiesta=ogg.get("date").getAsString();
                            // CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put("https://cryptohistory.one/api/" + Crypto+"/"+DataRichiesta, "ok");
                             String Data =ogg.get("real_date").getAsString();
-                            String PrezzoEuro=ogg.get("price_eur").getAsString();
+                            String PrezzoEuro=ogg.get("price_usd").getAsString();
                             if (!DataRichiesta.equals(Data))DatabaseH2.XXXEUR_Scrivi(DataRichiesta + " " + Crypto, "ND");
+                            PrezzoEuro=ConvertiUSDEUR(PrezzoEuro,Data);
                             DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro);
                             
                         }

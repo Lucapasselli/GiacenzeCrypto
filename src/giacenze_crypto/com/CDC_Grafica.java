@@ -2297,7 +2297,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 {
                     String splittata[]=riga.split(",");
                     if (splittata.length==10)// se non è esattamente uguale a 10 significa che il file non è corretto
-                    {        
+                    {    
                        //le transazioni qua sotto non devo considerarle
                         if (!splittata[9].equals("trading.limit_order.fiat_wallet.purchase_unlock")&&
                                 !splittata[9].equals("trading.limit_order.fiat_wallet.purchase_lock"))
@@ -2315,7 +2315,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             {
                                 idRiga=splittata[0]+splittata[1]+splittata[9]+splittata[Colonna];
                             }
-                            CDC_FiatWallet_Mappa.put(idRiga, riga);
+                            String rigasistemata="";
+                            splittata[3] = splittata[3].replace("-", ""); //questo toglie i valori negativi dalla colonna 3 che deve essere sempre positiva
+                            for (String composta:splittata){
+                                rigasistemata=rigasistemata+composta+",";
+                            }
+                            //System.out.println(rigasistemata);
+                            CDC_FiatWallet_Mappa.put(idRiga, rigasistemata);
                         }
                     }
                     }
@@ -2770,8 +2776,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         CDC_FiatWallet_RigaTabella2[0]=splittata[0];
                         CDC_FiatWallet_RigaTabella2[1]=Descrizione;
                         CDC_FiatWallet_RigaTabella2[2]=splittata[1];
+                        //System.out.println("-"+splittata[Colonna]+"-");
+                        //System.out.println(tempo.split(";")[1]+splittata[Colonna]);
                         CDC_FiatWallet_RigaTabella2[3]=Double.valueOf(splittata[Colonna]);
-                        BigDecimal Adde2 = new BigDecimal(tempo.split(";")[1]+splittata[Colonna]);
+                        String numString=(tempo.split(";")[1]+splittata[Colonna]);
+                        BigDecimal Adde2 = new BigDecimal(numString);
                         Totale=Totale.add(Adde2);
                         CDC_FiatWallet_RigaTabella2[4]=Double.valueOf(Totale.toString());
                         if (CDC_FiatWallet_MappaCausali.get(Descrizione) == null) {

@@ -364,15 +364,25 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("crypto_earn_interest_paid", "EARN");               //Interessi maturati da una Crypto in Earn
 
         Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
+        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito   
+        
         Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
-
-        Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
+        Mappa_Conversione_Causali.put("crypto_withdrawal", "TRASFERIMENTO-CRYPTO");       //Prelievo di una Crypto verso portafogli esterni
         Mappa_Conversione_Causali.put("crypto_to_exchange_transfer", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
+        Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
+        Mappa_Conversione_Causali.put("exchange_to_crypto_transfer", "TRASFERIMENTO-CRYPTO");    //Trasferimenti dall'Exchange verso l'App
+        
+        Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_commit", "ACQUISTO CRYPTO");//Acquisto crypto da fill order limit
+        Mappa_Conversione_Causali.put("viban_purchase", "ACQUISTO CRYPTO");           //Acquisto di Crypto dal portafoglio EUR 
+        Mappa_Conversione_Causali.put("recurring_buy_order", "ACQUISTO CRYPTO");//Acquisto Crypto tramite acquisti ricorrenti
+        
         Mappa_Conversione_Causali.put("crypto_viban_exchange", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
         Mappa_Conversione_Causali.put("card_top_up", "VENDITA CRYPTO");    //Vendita di una Crypto verso il portafoglio EUR
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_commit", "VENDITA CRYPTO");//Vendita crypto da fill order limit
 //        Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", fileDaImportare);    //Scambio MCO in CRO (MCO liberi nel portafoglio). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", fileDaImportare);     //Scambio MCO in CRO (MCO liberi nel portafoglio). Vendita degli MCO
-        Mappa_Conversione_Causali.put("crypto_withdrawal", "TRASFERIMENTO-CRYPTO");       //Prelievo di una Crypto verso portafogli esterni
+
         Mappa_Conversione_Causali.put("dust_conversion_credited", "DUST-CONVERSION");//Conversione di Crypto in CRO. CRO Ricevuti dalla conversione.
         Mappa_Conversione_Causali.put("dust_conversion_debited", "DUST-CONVERSION");//Conversione di Crypto in CRO. Crypto da convertire in CRO.
         Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", "DUST-CONVERSION");//Conversione di monete
@@ -380,57 +390,64 @@ public class Importazioni {
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", fileDaImportare);//Bonus Swap MCO/CRO
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_credited", fileDaImportare);     //Scambio MCO in CRO (MCO in Earn). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_debited", fileDaImportare);      //Scambio MCO in CRO (MCO in Earn). Vendita degli MCO
-        Mappa_Conversione_Causali.put("exchange_to_crypto_transfer", "TRASFERIMENTO-CRYPTO");    //Trasferimenti dall'Exchange verso l'App
+
+
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_unlock", "IGNORA"); //Ignoro il movimento in quanto sto bloccando Euro del Fiat Wallet
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_lock", "IGNORA"); //Ignoro il movimento in quanto sto bloccando fondi del Fiat Wallet
+        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_lock", "IGNORA");          //Limit order
+        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_unlock", "IGNORA");          //Limit order     
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_unlock", "IGNORA");          //Limit order
+        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_lock", "IGNORA");          //Limit order  
         
         Mappa_Conversione_Causali.put("lockup_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
         Mappa_Conversione_Causali.put("lockup_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo unStake
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
-        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
-        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.fund_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order     
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order
-        Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.sell_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //Limit order  
         Mappa_Conversione_Causali.put("finance.lockup.dpos_lock.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
         Mappa_Conversione_Causali.put("finance.lockup.dpos_unlock.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo unStake
         Mappa_Conversione_Causali.put("crypto_earn_program_created", "TRASFERIMENTO-CRYPTO-INTERNO");//Inserimento di una Crypto in Earn
         Mappa_Conversione_Causali.put("crypto_earn_program_withdrawn", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo di una Crypto dall'Earn
-//        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
-//        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
-        Mappa_Conversione_Causali.put("lockup_upgrade", "TRASFERIMENTO-CRYPTO-INTERNO");       //CRO Stake per la MCO Card. (Upgrade)
-        Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING REWARD");                       //Interessi che la MCO Card matura. Da (Jade in su)
-        Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING REWARD");    //Nuovo Staking di Crypto.com
         Mappa_Conversione_Causali.put("finance.dpos.staking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");    //Nuovo Staking di Crypto.com
         Mappa_Conversione_Causali.put("finance.dpos.unstaking.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");      //unstake
+        Mappa_Conversione_Causali.put("lockup_upgrade", "TRASFERIMENTO-CRYPTO-INTERNO");       //CRO Stake per la MCO Card. (Upgrade)
+        Mappa_Conversione_Causali.put("supercharger_deposit", "TRASFERIMENTO-CRYPTO-INTERNO"); //Deposito dei CRO nel supercharger
+        Mappa_Conversione_Causali.put("supercharger_withdrawal", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo dei CRO dal supercharger
+        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_fund_lock", "TRASFERIMENTO-CRYPTO-INTERNO");//Blocca i fondi destinati ad un'ordine Limit 
+
+//        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
+//        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
+
+
+        Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING REWARD");                       //Interessi che la MCO Card matura. Da (Jade in su)
+        Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING REWARD");    //Nuovo Staking di Crypto.com
+        Mappa_Conversione_Causali.put("staking_reward", "STAKING REWARD");                       //Reward (Es. NEO Gas) 
+
         Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
         Mappa_Conversione_Causali.put("referral_gift", "REWARD");                         //Bonus di iscrizione sbloccato
         Mappa_Conversione_Causali.put("reimbursement", "REWARD");                         //Rimborsi (Es. Netflix, Promozioni)
         Mappa_Conversione_Causali.put("reimbursement_reverted", "REWARD");                //Annullamento di un rimborso (o parte)
         Mappa_Conversione_Causali.put("reward.loyalty_program.trading_rebate.crypto_wallet", "REWARD");                //Altre reward
-        
-        Mappa_Conversione_Causali.put("supercharger_deposit", "TRASFERIMENTO-CRYPTO-INTERNO"); //Deposito dei CRO nel supercharger
-        Mappa_Conversione_Causali.put("supercharger_withdrawal", "TRASFERIMENTO-CRYPTO-INTERNO");//Prelievo dei CRO dal supercharger
-        Mappa_Conversione_Causali.put("viban_purchase", "ACQUISTO CRYPTO");           //Acquisto di Crypto dal portafoglio EUR 
-//        Mappa_Conversione_Causali.put("nft_payout_credited", fileDaImportare);            //Vendita NFT 
-        Mappa_Conversione_Causali.put("staking_reward", "STAKING REWARD");                       //Reward (Es. NEO Gas) 
         Mappa_Conversione_Causali.put("campaign_reward", "REWARD");                       //Vincita di una campagna (Es.: Telegram Madness
         Mappa_Conversione_Causali.put("crypto_payment_refund", "REWARD");                 //Rimborso in Crypto. (Es. Rimborso Offerta per un NFT)
         Mappa_Conversione_Causali.put("referral_bonus", "REWARD");                        //Bonus Referral 
         Mappa_Conversione_Causali.put("crypto_earn_extra_interest_paid", "REWARD");//Earn Extra Reward 
         Mappa_Conversione_Causali.put("supercharger_reward_to_app_credited", "REWARD");//Supercharger Reward in App
         Mappa_Conversione_Causali.put("rewards_platform_deposit_credited", "REWARD");//Mission Reward
-        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_fund_lock", "TRASFERIMENTO-CRYPTO-INTERNO");//Blocca i fondi destinati ad un'ordine Limit 
-        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito         
+        
+
+
+//        Mappa_Conversione_Causali.put("nft_payout_credited", fileDaImportare);            //Vendita NFT 
+
+
+      
 //        Mappa_Conversione_Causali.put("crypto_credit_withdrawal_created", fileDaImportare);//Crypto Loan
 //        Mappa_Conversione_Causali.put("crypto_credit_repayment_created", fileDaImportare);//Crypto Loan        
 //        Mappa_Conversione_Causali.put("crypto_credit_loan_credited", fileDaImportare);    //Crypto Loan
 //        Mappa_Conversione_Causali.put("crypto_credit_program_created", fileDaImportare);  //Crypto Loan 
         Mappa_Conversione_Causali.put("admin_wallet_credited", "ALTRE-REWARD");//es. aggiustamenti luna 
         Mappa_Conversione_Causali.put("transfer_cashback", "CASHBACK");              //Cashback su trasferimento crypto tra portafogli
-        Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
-        
+
         //QUESTE 2 SOTTO SONO ANCORA DA GESTIRE
         Mappa_Conversione_Causali.put("crypto_payment", "VENDITA CRYPTO");              //Pagamento in Crypto (Es.: Crypto Pay in CRO)
-        Mappa_Conversione_Causali.put("recurring_buy_order", "ACQUISTO CRYPTO");//Acquisto Crypto tramite acquisti ricorrenti
+
         
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
@@ -1039,7 +1056,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[4]="Crypto Wallet";
                                 RT[5]="ACQUISTO CRYPTO";
                                 //recurring_buy_order e viban_purcase vanno gestite diversamente
-                                if (movimentoSplittato[9].trim().equalsIgnoreCase("viban_purchase")||movimentoSplittato[9].trim().equalsIgnoreCase("recurring_buy_order"))
+                                if (movimentoSplittato[9].trim().equalsIgnoreCase("viban_purchase")||
+                                        movimentoSplittato[9].trim().equalsIgnoreCase("recurring_buy_order")||
+                                        movimentoSplittato[9].trim().equalsIgnoreCase("trading.limit_order.fiat_wallet.purchase_commit"))
                                 {
                                     RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];
                                     RT[8]=movimentoSplittato[2];
@@ -1481,6 +1500,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[22]="A";
                                 RiempiVuotiArray(RT);
                                 lista.add(RT); 
+                            }
+                            else if (movimentoConvertito.trim().equalsIgnoreCase("IGNORA"))
+                            {
+                                System.out.println("Movimento ignorato : "+movimento);
                             }
                            else
                                     {

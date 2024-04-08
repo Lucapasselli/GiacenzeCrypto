@@ -208,5 +208,18 @@ public class Funzioni {
             return array;
         }
         
-        
+            public static boolean Funzioni_isNumeric(String str,boolean CampoVuotoContacomeNumero) {
+        //ritorna vero se il campo è vuoto oppure è un numero
+  if(CampoVuotoContacomeNumero&&str.isBlank()) return true;
+        try  
+  {  
+    double d = Double.parseDouble(str);  
+  }  
+  catch(NumberFormatException nfe)  
+  {  
+    return false;  
+  }  
+  return !str.matches("^.*[a-zA-Z].*$");  
+
+}
 }

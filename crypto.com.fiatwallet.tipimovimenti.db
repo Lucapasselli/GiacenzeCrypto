@@ -4,3 +4,4 @@ viban_deposit;+;default;Bonifico in Ingresso
 viban_purchase;-;default;Acquisto Crypto
 viban_withdrawal;+;default;Bonifico su Conto Corrente
 trading.limit_order.fiat_wallet.purchase_commit;-;default;Acquisto Crypto
+trading.limit_order.fiat_wallet.sell_commit;+;default;Vendita Crypto

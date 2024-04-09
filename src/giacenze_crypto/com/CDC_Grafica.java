@@ -83,7 +83,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
     static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
     static String CDC_FileDatiDB="crypto.com.dati.db";
-    static String CDC_FiatWallet_FileTipiMovimentiDB="crypto.com.fiatwallet.tipimovimenti.db";
+//    static String CDC_FiatWallet_FileTipiMovimentiDB="crypto.com.fiatwallet.tipimovimenti.db";
     static String CryptoWallet_FileDB="movimenti.crypto.db";
     static public String CDC_FiatWallet_FileTipiMovimentiDBPers="crypto.com.fiatwallet.tipimovimentiPers.db";
     static String CDC_DataIniziale="";
@@ -110,7 +110,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.18 Beta");
+            this.setTitle("Giacenze_Crypto 1.19 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -2282,109 +2282,89 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
     }*/
     
-    public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {                                          
+    public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {
         // TODO add your handling code here:
-        
+
         //Questa funzione importa i dati del wallet, presi dal file csv o dal database interno e li mette nelle mappe
         //questo per rendere le operazioni molto più veloci visto che il tutto viene gestito in ram
         //non vengono utilizzati database visto che i dati sono relativamente pochi
-       // CDC_FiatWallet_Mappa.clear();
+        // CDC_FiatWallet_Mappa.clear();
         String riga;
-        try (FileReader fire = new FileReader(fiatwallet); 
-                BufferedReader bure = new BufferedReader(fire);) 
-        {
-                while((riga=bure.readLine())!=null)
+        try ( FileReader fire = new FileReader(fiatwallet);  BufferedReader bure = new BufferedReader(fire);) {
+            while ((riga = bure.readLine()) != null) {
+                String splittata[] = riga.split(",");
+                if (splittata.length == 10)// se non è esattamente uguale a 10 significa che il file non è corretto
                 {
-                    String splittata[]=riga.split(",");
-                    if (splittata.length==10)// se non è esattamente uguale a 10 significa che il file non è corretto
-                    {    
-                       //le transazioni qua sotto non devo considerarle
-                        if (!splittata[9].equals("trading.limit_order.fiat_wallet.purchase_unlock")&&
-                                !splittata[9].equals("trading.limit_order.fiat_wallet.purchase_lock"))
-                    {
-                        if(Funzioni_Date_ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
+                    //le transazioni qua sotto non devo considerarle
+                    if (!splittata[9].equals("trading.limit_order.fiat_wallet.purchase_unlock")
+                            && !splittata[9].equals("trading.limit_order.fiat_wallet.purchase_lock")) {
+                        if (Funzioni_Date_ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                         {
                             //CDC_FiatWallet_Mappa.put(splittata[0], riga);
                             String idRiga;
-                            int Colonna=CDC_Funzione_trovaColonnaEuro(riga);
-                            if (Colonna==999)
-                            {
-                                idRiga=splittata[0]+splittata[1]+splittata[9];
+                            int Colonna = CDC_Funzione_trovaColonnaEuro(riga);
+                            if (Colonna == 999) {
+                                idRiga = splittata[0] + splittata[1] + splittata[9];
+                            } else {
+                                idRiga = splittata[0] + splittata[1] + splittata[9] + splittata[Colonna];
                             }
-                            else
-                            {
-                                idRiga=splittata[0]+splittata[1]+splittata[9]+splittata[Colonna];
-                            }
-                            String rigasistemata="";
+                            String rigasistemata = "";
                             splittata[3] = splittata[3].replace("-", ""); //questo toglie i valori negativi dalla colonna 3 che deve essere sempre positiva
-                            for (String composta:splittata){
-                                rigasistemata=rigasistemata+composta+",";
+                            for (String composta : splittata) {
+                                rigasistemata = rigasistemata + composta + ",";
                             }
                             //System.out.println(rigasistemata);
                             CDC_FiatWallet_Mappa.put(idRiga, rigasistemata);
                         }
                     }
-                    }
                 }
-    //   bure.close();
-     //  fire.close();
-    }   catch (FileNotFoundException ex) {     
+            }
+            //   bure.close();
+            //  fire.close();
+        } catch (FileNotFoundException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
+
         CDC_FiatWallet_MappaTipiMovimenti.clear();
         //Ora importo i tipi movimento del FiatWallet
-        
-                try (FileReader fire = new FileReader(CDC_FiatWallet_FileTipiMovimentiDB); 
-                BufferedReader bure = new BufferedReader(fire);) 
-        {
-                while((riga=bure.readLine())!=null)
+        CDC_FiatWallet_MappaTipiMovimenti.put("crypto_viban", "crypto_viban;+;default;Vendita Crypto");
+        CDC_FiatWallet_MappaTipiMovimenti.put("viban_card_top_up", "viban_card_top_up;-;default;TopUp Carta");
+        CDC_FiatWallet_MappaTipiMovimenti.put("viban_deposit", "viban_deposit;+;default;Bonifico in Ingresso");
+        CDC_FiatWallet_MappaTipiMovimenti.put("viban_purchase", "viban_purchase;-;default;Acquisto Crypto");
+        CDC_FiatWallet_MappaTipiMovimenti.put("viban_withdrawal", "viban_withdrawal;+;default;Bonifico su Conto Corrente");
+        CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.purchase_commit", "trading.limit_order.fiat_wallet.purchase_commit;-;default;Acquisto Crypto");
+        CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.sell_commit", "trading.limit_order.fiat_wallet.sell_commit;+;default;Vendita Crypto");
+
+        try {
+            File movPers = new File(CDC_FiatWallet_FileTipiMovimentiDBPers);
+            if (!movPers.exists()) {
+                movPers.createNewFile();
+            }
+            FileReader fires = new FileReader(CDC_FiatWallet_FileTipiMovimentiDBPers);
+            BufferedReader bures = new BufferedReader(fires);
+
+            while ((riga = bures.readLine()) != null) {
+                String splittata[] = riga.split(";");
+                if (splittata.length == 4)// se non è esattamente uguale a 4 significa che il file non è corretto
                 {
-                    String splittata[]=riga.split(";");
-                    if (splittata.length==4)// se non è esattamente uguale a 4 significa che il file non è corretto
-                    {
-
-                            CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
-                           // System.out.println("aaa");
-
-                    }
+                    CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
                 }
-     //  bure.close();
-     //  fire.close();
-                File movPers=new File (CDC_FiatWallet_FileTipiMovimentiDBPers);
-        if (!movPers.exists()) movPers.createNewFile();
-               FileReader fires = new FileReader(CDC_FiatWallet_FileTipiMovimentiDBPers); 
-               BufferedReader bures = new BufferedReader(fires);
-        
-                while((riga=bures.readLine())!=null)
-                {
-                    String splittata[]=riga.split(";");
-                    if (splittata.length==4)// se non è esattamente uguale a 4 significa che il file non è corretto
-                    {
+            }
+            bures.close();
+            fires.close();
 
-                            CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
-                            //System.out.println("aaa");
-
-                    }
-                }
-       bures.close();
-       fires.close();
-       
-    }   catch (FileNotFoundException ex) {     
+        } catch (FileNotFoundException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
-                
-                
-                
-                CDC_FiatWallet_ListaSaldi=CDC_FiatWallet_Funzione_CalcolaListaSaldi();
-        
-   } 
-    
+
+        CDC_FiatWallet_ListaSaldi = CDC_FiatWallet_Funzione_CalcolaListaSaldi();
+
+    }
+
         public void CDC_CardWallet_Funzione_ImportaWallet(String cardwallet) {                                          
         String riga;
         try (FileReader fire = new FileReader(cardwallet); 

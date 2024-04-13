@@ -253,6 +253,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Wallet2_Label = new javax.swing.JLabel();
         GiacenzeaData_Wallet2_ComboBox = new javax.swing.JComboBox<>();
         Giacenzeadata_Walletb_Label = new javax.swing.JLabel();
+        RW = new javax.swing.JPanel();
+        RW_Anno_ComboBox = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        RW_Tabella = new javax.swing.JTable();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        RW_Tabella_Dettagli = new javax.swing.JTable();
+        RW_Calcola_Bottone = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -558,7 +566,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1054, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1079, Short.MAX_VALUE)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(TransazioniCrypto_Bottone_Importa)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -576,7 +584,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo)
                                 .addGap(18, 18, 18)
                                 .addComponent(TransazioniCrypto_Bottone_MovimentoModifica)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 238, Short.MAX_VALUE)
                                 .addComponent(TransazioniCrypto_Bottone_MovimentoElimina))
                             .addComponent(TransazioniCrypto_TabbedPane))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1110,6 +1118,95 @@ public class CDC_Grafica extends javax.swing.JFrame {
         );
 
         AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
+
+        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2023" }));
+
+        jLabel4.setText("Anno :");
+
+        RW_Tabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "RW", "Val. Iniziale", "Val. Finale", "Giorni di Detenzione", "Errori"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane7.setViewportView(RW_Tabella);
+
+        RW_Tabella_Dettagli.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Moneta", "Quantità", "Data Acq. o Inizio Anno", "Data Ven. o Fine Anno", "Val. Iniziale", "Val. Finale", "Giorni", "Rimanza"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane8.setViewportView(RW_Tabella_Dettagli);
+        if (RW_Tabella_Dettagli.getColumnModel().getColumnCount() > 0) {
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(100);
+        }
+
+        RW_Calcola_Bottone.setText("Calcola");
+
+        javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
+        RW.setLayout(RWLayout);
+        RWLayout.setHorizontalGroup(
+            RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RWLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, RWLayout.createSequentialGroup()
+                        .addComponent(RW_Calcola_Bottone)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 860, Short.MAX_VALUE)
+                    .addComponent(jScrollPane8))
+                .addContainerGap())
+        );
+        RWLayout.setVerticalGroup(
+            RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RWLayout.createSequentialGroup()
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(RW_Calcola_Bottone))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        AnalisiCrypto.addTab("Dati per RW/W", RW);
 
         javax.swing.GroupLayout Analisi_CryptoLayout = new javax.swing.GroupLayout(Analisi_Crypto);
         Analisi_Crypto.setLayout(Analisi_CryptoLayout);
@@ -3469,7 +3566,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             TransazioniCrypto_DaSalvare=true;
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
          
-         Plusvalenze.AggiornaPlusvalenze();
+         Calcoli_Plusvalenze.AggiornaPlusvalenze();
          this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         }
              
@@ -3806,7 +3903,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
         }
         
-        Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_Plusvalenze.AggiornaPlusvalenze();
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         DepositiPrelievi_Caricatabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -3843,7 +3940,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             TabellaCryptodaAggiornare = false;
             TransazioniCrypto_DaSalvare = true;
-            Plusvalenze.AggiornaPlusvalenze();
+            Calcoli_Plusvalenze.AggiornaPlusvalenze();
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
             //GiacenzeaData_AggiornaComboBoxWallet();
@@ -4542,7 +4639,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         gest.setVisible(true);
 
         //   TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti();
-        Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_Plusvalenze.AggiornaPlusvalenze();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
 
         //questo sotto serve per aumentare la diomensione dell'header della tabella
@@ -4640,7 +4737,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     {
                         //TabellaCryptodaAggiornare=true;
                         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        Plusvalenze.AggiornaPlusvalenze();
+                        Calcoli_Plusvalenze.AggiornaPlusvalenze();
                         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
@@ -4668,7 +4765,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 DatabaseH2.Pers_Emoney_Cancella(Moneta);
                 Opzioni_Emoney_CaricaTabellaEmoney();
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                Plusvalenze.AggiornaPlusvalenze();
+                Calcoli_Plusvalenze.AggiornaPlusvalenze();
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 //TabellaCryptodaAggiornare=true;
@@ -4691,7 +4788,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
                 Opzioni_Emoney_CaricaTabellaEmoney();
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                Plusvalenze.AggiornaPlusvalenze();
+                Calcoli_Plusvalenze.AggiornaPlusvalenze();
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 // TabellaCryptodaAggiornare=true;
@@ -4714,7 +4811,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equals(Gruppo)){
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
-                Plusvalenze.AggiornaPlusvalenze();
+                Calcoli_Plusvalenze.AggiornaPlusvalenze();
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
@@ -4733,7 +4830,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString());
                 if (movimentiCancellati>0){
                     Opzioni_RicreaListaWalletDisponibili();
-                    Plusvalenze.AggiornaPlusvalenze();
+                    Calcoli_Plusvalenze.AggiornaPlusvalenze();
                     TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                     TransazioniCrypto_DaSalvare=true;
                     TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
@@ -4840,7 +4937,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_Plusvalenze.AggiornaPlusvalenze();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
@@ -5567,7 +5664,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     }   catch (IOException ex) {   
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
-        Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_Plusvalenze.AggiornaPlusvalenze();
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI);
     /*    this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
         Color verde=new Color (45, 155, 103);
@@ -6054,6 +6151,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
+    private javax.swing.JPanel RW;
+    private javax.swing.JComboBox<String> RW_Anno_ComboBox;
+    private javax.swing.JButton RW_Calcola_Bottone;
+    private javax.swing.JTable RW_Tabella;
+    private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JPanel SituazioneImport;
     private javax.swing.JTable SituazioneImport_Tabella1;
     private javax.swing.JPanel TransazioniCrypto;
@@ -6079,6 +6181,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -6086,6 +6189,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator5;

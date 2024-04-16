@@ -1174,6 +1174,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
 
         RW_Calcola_Bottone.setText("Calcola");
+        RW_Calcola_Bottone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Calcola_BottoneActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
@@ -4941,6 +4946,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
+
+    private void RW_Calcola_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Calcola_BottoneActionPerformed
+        // TODO add your handling code here:
+        Calcoli_RW.AggiornaRW();
+    }//GEN-LAST:event_RW_Calcola_BottoneActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

@@ -1366,8 +1366,17 @@ for (int i=0;i<ArraydataIni.size();i++){
         //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
         String AddressMoneta1 = null;
         if (Moneta1 != null) {
+            if (Rete==null&&(Moneta1.MonetaAddress==null||Moneta1.MonetaAddress.isBlank())&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
+            //Questo serve solo nel caso interroghi i prezzi di CRO
+            //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
+            //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
+            Moneta1.MonetaAddress="CRO";
+            AddressMoneta1="CRO";
+            Rete="CRO";
+        }
             if (Moneta1.MonetaAddress!=null&&!Moneta1.MonetaAddress.equals("")) {
                 AddressMoneta1 = Moneta1.MonetaAddress;
+
                 if ((adesso-Data)>Long.parseLong("31536000000")){  
                    // System.out.println(AddressMoneta1);
                     //String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(AddressMoneta1 + "_" + Rete);
@@ -1392,9 +1401,21 @@ for (int i=0;i<ArraydataIni.size();i++){
         }
         String AddressMoneta2 = null;
         if (Moneta2 != null) {
+          //  System.out.println(Moneta2.Moneta);
+           // System.out.println(Moneta2.MonetaAddress);
+            if (Rete==null&&(Moneta2.MonetaAddress==null||Moneta2.MonetaAddress.isBlank())&&Moneta2.Moneta.equalsIgnoreCase("CRO")){
+            //Questo serve solo nel caso interroghi interroghi i prezzi di CRO
+            //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
+            //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
+            Moneta2.MonetaAddress="CRO";
+            AddressMoneta2="CRO";
+            Rete="CRO";
+        }
             if (Moneta2.MonetaAddress!=null&&!Moneta2.MonetaAddress.equals("")) {
                 AddressMoneta2 = Moneta2.MonetaAddress;
+
                 if ((adesso-Data)>Long.parseLong("31536000000")){ 
+                  //  System.out.println(AddressMoneta2);
                     String RigaCoingecko[]=DatabaseH2.GestitiCoingecko_LeggiInteraRiga(AddressMoneta2 + "_" + Rete);
                     if (RigaCoingecko[0]!=null){
                         //Se arrivo qua vuol dire che il token è gestito da coingecko
@@ -1417,7 +1438,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         //per far questo se trovo le suddette monete nella lista elimino address per farle prendere da binance
         //CREDO SIA IL CASO DI SPOSTARE STA COSA NELLA GESTIONE DEI PREZZI SINGOLI
       //  System.out.println(Moneta1.Moneta+" - "+AddressMoneta1);
-        if (Moneta1!=null&&Rete==null&&AddressMoneta1==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
+   /*     if (Moneta1!=null&&Rete==null&&AddressMoneta1==null&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
             //Questo serve solo nel caso interroghi i prezzi di CRO
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
             //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
@@ -1432,7 +1453,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             Moneta2.MonetaAddress="CRO";
             AddressMoneta2="CRO";
             Rete="CRO";
-        }
+        }*/
 
                 
         //Questa parte impone la ricerca su binance per determinati token salvati nella mappa

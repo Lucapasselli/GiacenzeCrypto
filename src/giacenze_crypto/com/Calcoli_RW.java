@@ -4,6 +4,10 @@
  */
 package giacenze_crypto.com;
 
+
+//ATTENZIONE : PREZZO CRO DA RIVEDERE!!!!!!
+
+
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
@@ -59,7 +63,7 @@ public class Calcoli_RW {
     
     
     
-         public static void AggiornaPlusvalenze(){
+         public static void AggiornaRW(){
              
         //PARTE 1 : Calcolo delle Giacenze iniziali e inserimento nello stack
              
@@ -132,9 +136,9 @@ public class Calcoli_RW {
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
                             for (int a = 0; a < 2; a++) {
                                 //ANALIZZO MOVIMENTI
-                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress)!=null) {
+                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo)!=null) {
                                     //Movimento già presente da implementare
-                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress);
+                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo);
                                     M1.Qta = new BigDecimal(M1.Qta)
                                             .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
 
@@ -143,17 +147,26 @@ public class Calcoli_RW {
                                     Moneta M1 = new Moneta();
                                     M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
                                     M1.Rete = Rete;
-                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress, M1);
+                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo, M1);
 
                                 }
                             }
-                
             }else if (Anno==AnnoRiferimento){
                 //al primo movimento dell'anno successivo faccio questo:
                 //1 - Inseirsco nello stack tutti i valori iniziali precedentemente trovati
                 //2 - Uso il lifo per il calcolo dei valori RW
-                if (PrimoMovimentoAnno){
-                    
+                if (PrimoMovimentoAnno) {
+                    for (Map<String, Moneta> a : MappaGrWallet_QtaCrypto.values()) {
+                        for (Moneta m : a.values()) {
+                            if (!m.Tipo.equalsIgnoreCase("FIAT")) {
+                                long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
+                                m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 10, null);
+                                System.out.println(m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                                
+                            }
+                        }
+                    }
+                    PrimoMovimentoAnno = false;
                 }
                 
             }else if (Anno>AnnoRiferimento){

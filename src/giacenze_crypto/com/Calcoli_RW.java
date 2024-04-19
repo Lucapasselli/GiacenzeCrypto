@@ -10,8 +10,12 @@ package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -54,7 +58,77 @@ public class Calcoli_RW {
 }
        
        
+  public static List<String> StackLIFO_TogliQta(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,boolean toglidaStack) {
     
+    //in ritorno devo avere la lista delle qta estratte  e valore con relative date
+    //es. ListaRitorno[0]=1,025;15550;2023-01-01 00:00   (qta iniziale;valore iniziale;data iniziale)
+    List<String> ListaRitorno=new ArrayList<>();
+   // String ritorno="0.00";
+    if (!Qta.isBlank()&&!Moneta.isBlank()){//non faccio nulla se la momenta o la qta non è valorizzata
+    ArrayDeque<String[]> stack;
+
+    BigDecimal qtaRimanente=new BigDecimal(Qta).abs();
+   // BigDecimal costoTransazione=new BigDecimal("0");
+    //prima cosa individuo la moneta e prendo lo stack corrispondente
+    if (CryptoStack.get(Moneta)==null){
+        //ritorno="0";
+    }else{
+          //  System.out.println("OKokokokoko");
+            
+        if (toglidaStack)stack=CryptoStack.get(Moneta);
+        else{
+            ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
+            stack=stack2.clone();
+        }
+        /*ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
+        stack=stack2.clone();*/
+        //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
+        while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
+           // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
+            String ultimoRecupero[];
+            ultimoRecupero=stack.pop();
+            BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();
+            BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
+            String dataEstratta=ultimoRecupero[3];
+         /*  if (Moneta.equalsIgnoreCase("usdt")){ 
+                System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
+                System.out.println(qtaRimanente);
+                }*/
+            //System.out.println(qtaEstratta+" - "+costoEstratta);
+            if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta è minore o uguale alla qta rimanente allora
+                {
+                //imposto il nuovo valore su qtarimanente che è uguale a qtarimanente-qtaestratta
+                qtaRimanente=qtaRimanente.subtract(qtaEstratta);
+                //poi inserisco nella lista i dati che mi servono per chiudere le righe dell'rw
+                ListaRitorno.add(qtaEstratta.toPlainString()+";"+costoEstratta.toPlainString()+";"+dataEstratta);
+            }else{
+                //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
+                //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
+                //recuperare il prezzo della qta rimanente e la qta rimanente e riaggiungerla allo stack
+                //non ho più qta rimanente
+                String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
+                //System.out.println(qtaRimanenteStack);
+               // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).stripTrailingZeros().toPlainString();
+                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,dataEstratta};
+                stack.push(valori);
+                BigDecimal costoTransazione=costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck));
+                ListaRitorno.add(qtaRimanente.toPlainString()+";"+costoTransazione.toPlainString()+";"+dataEstratta);
+                
+                qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
+            }
+            
+        }
+        //pop -> toglie dello stack l'ultimo e recupera il dato
+        //peek - > recupera solo il dato
+
+    }
+   // ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+    return ListaRitorno;
+    //ogni singolo elemento di listaRitorno è così composto     1,025;15550;2023-01-01 00:00   (qta iniziale;valore iniziale;data iniziale)
+   // System.out.println(Moneta +" - "+stack.size());
+}      
     
     
     
@@ -156,18 +230,29 @@ public class Calcoli_RW {
                 //1 - Inseirsco nello stack tutti i valori iniziali precedentemente trovati
                 //2 - Uso il lifo per il calcolo dei valori RW
                 if (PrimoMovimentoAnno) {
-                    for (Map<String, Moneta> a : MappaGrWallet_QtaCrypto.values()) {
+                      for (String key : MappaGrWallet_QtaCrypto.keySet()) {  
+                          Map<String, Moneta> a=MappaGrWallet_QtaCrypto.get(key);
                         for (Moneta m : a.values()) {
                             if (!m.Tipo.equalsIgnoreCase("FIAT")) {
                                 long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
                                 m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 10, null);
-                                System.out.println(m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                               // System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                                Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
+                                StackLIFO_InserisciValore(CryptoStackTemp,m.Moneta,m.Qta,m.Prezzo,DataInizioAnno);
                                 
                             }
                         }
                     }
                     PrimoMovimentoAnno = false;
                 }
+                //Adesso a seconda del tipo movimento devo comportarmi in maniera diversa
+            //TIPOLOGIA = 0 (Vendita Crypto)
+            if (IDTS[4].equals("VC")){
+                //tolgo dal Lifo della moneta venduta e prendo la lista delle varie movimentazione
+                List<String> ListaRitorno=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                //creo la riga per i quadri RW
+                
+            } 
                 
             }else if (Anno>AnnoRiferimento){
                 //al primo movimento dell'anno successivo faccio questo:

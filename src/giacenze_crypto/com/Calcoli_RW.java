@@ -188,11 +188,7 @@ public class Calcoli_RW {
             String NuovoPrezzoCarico="0.00";
             String Plusvalenza="0.00";
             String Rete = Funzioni.TrovaReteDaID(v[0]);
-            
-            int Anno=Integer.parseInt(Data.split("-")[0]); 
-            if (Anno<AnnoRiferimento){
-                //Faccio i conti per i valori iniziali
-                            Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
+                                        Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
                             //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
                             Monete[0] = new Moneta();
                             Monete[1] = new Moneta();
@@ -207,6 +203,11 @@ public class Calcoli_RW {
                             Monete[1].Tipo = v[12];
                             Monete[1].Qta = v[13];
                             Monete[1].Rete=Rete;
+            
+            int Anno=Integer.parseInt(Data.split("-")[0]); 
+            if (Anno<AnnoRiferimento){
+                //Faccio i conti per i valori iniziali
+
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
                             for (int a = 0; a < 2; a++) {
                                 //ANALIZZO MOVIMENTI
@@ -251,6 +252,19 @@ public class Calcoli_RW {
                 //tolgo dal Lifo della moneta venduta e prendo la lista delle varie movimentazione
                 List<String> ListaRitorno=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                 //creo la riga per i quadri RW
+                for (String elemento:ListaRitorno){
+                    String Elementi[]=elemento.split(";");
+                    //Elementi è così composta Qta;Prezzo;Data                    
+                    System.out.println("Moneta="+MonetaU);
+                    System.out.println("Qta="+Elementi[0]);
+                    System.out.println("Data inizio periodo di detenzione="+Elementi[2]);
+                    System.out.println("Prezzo a inizio periodo di detenzione="+Elementi[1]);
+                    System.out.println("Data fine periodo di detenzione="+Data);
+                    long DataLong=OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+                    System.out.println("Prezzo a fine periodo di dentenzione="+Prezzi.DammiPrezzoTransazione(Monete[0],Monete[1], DataLong, "0.00", true, 2, Rete));
+                    System.out.println("---------------------------------");
+                }
+               // Sysyem.out.println("Qta="+)
                 
             } 
                 

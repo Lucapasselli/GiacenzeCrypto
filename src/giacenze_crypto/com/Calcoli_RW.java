@@ -73,8 +73,7 @@ public class Calcoli_RW {
     if (CryptoStack.get(Moneta)==null){
         //ritorno="0";
     }else{
-          //  System.out.println("OKokokokoko");
-            
+    
         if (toglidaStack)stack=CryptoStack.get(Moneta);
         else{
             ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
@@ -86,6 +85,7 @@ public class Calcoli_RW {
         while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
            // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
             String ultimoRecupero[];
+           // System.out.println(stack.size());
             ultimoRecupero=stack.pop();
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
@@ -99,8 +99,9 @@ public class Calcoli_RW {
                 {
                 //imposto il nuovo valore su qtarimanente che è uguale a qtarimanente-qtaestratta
                 qtaRimanente=qtaRimanente.subtract(qtaEstratta);
+                               
                 //poi inserisco nella lista i dati che mi servono per chiudere le righe dell'rw
-                ListaRitorno.add(qtaEstratta.toPlainString()+";"+costoEstratta.toPlainString()+";"+dataEstratta);
+                ListaRitorno.add(qtaEstratta.toPlainString()+";"+costoEstratta.setScale(2, RoundingMode.HALF_UP).toPlainString()+";"+dataEstratta);
             }else{
                 //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
                 //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
@@ -109,21 +110,31 @@ public class Calcoli_RW {
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).stripTrailingZeros().toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,dataEstratta};
                 stack.push(valori);
                 BigDecimal costoTransazione=costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck));
-                ListaRitorno.add(qtaRimanente.toPlainString()+";"+costoTransazione.toPlainString()+";"+dataEstratta);
+                ListaRitorno.add(qtaRimanente.toPlainString()+";"+costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString()+";"+dataEstratta);
                 
+
                 qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
             }
             
         }
         //pop -> toglie dello stack l'ultimo e recupera il dato
         //peek - > recupera solo il dato
+        // System.out.println("RIMANENTE : "+qtaRimanente);
+         if (qtaRimanente.compareTo(new BigDecimal(0))==1){
+             //Se resta ancora della qta rimanente da scaricare significa che sto vendendo crypto che non posseggo, ergo mancano dei movimenti
+             //in questo caso lo segnalo mettendo la data e prezzo a zero
+             ListaRitorno.add(qtaRimanente.toPlainString()+";0.00;0000-00-00 00:00");
+         }
 
     }
    // ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+   for (String elemento : ListaRitorno) {
+        System.out.println(elemento);
     }
     return ListaRitorno;
     //ogni singolo elemento di listaRitorno è così composto     1,025;15550;2023-01-01 00:00   (qta iniziale;valore iniziale;data iniziale)
@@ -178,6 +189,7 @@ public class Calcoli_RW {
             String TipoME = RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
             String IDTransazione=v[0];
             String Data=v[1];
+            long DataLong = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
             String IDTS[]=IDTransazione.split("_");
             String MonetaU=v[8];
             String QtaU=v[10];
@@ -248,23 +260,32 @@ public class Calcoli_RW {
                 }
                 //Adesso a seconda del tipo movimento devo comportarmi in maniera diversa
             //TIPOLOGIA = 0 (Vendita Crypto)
-            if (IDTS[4].equals("VC")){
+            if (IDTS[4].equals("VC")||IDTS[4].equals("SC")||IDTS[4].equals("AC")||IDTS[4].equals("RW")){
+                
                 //tolgo dal Lifo della moneta venduta e prendo la lista delle varie movimentazione
-                List<String> ListaRitorno=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                //creo la riga per i quadri RW
-                for (String elemento:ListaRitorno){
-                    String Elementi[]=elemento.split(";");
-                    //Elementi è così composta Qta;Prezzo;Data                    
-                    System.out.println("Moneta="+MonetaU);
-                    System.out.println("Qta="+Elementi[0]);
-                    System.out.println("Data inizio periodo di detenzione="+Elementi[2]);
-                    System.out.println("Prezzo a inizio periodo di detenzione="+Elementi[1]);
-                    System.out.println("Data fine periodo di detenzione="+Data);
-                    long DataLong=OperazioniSuDate.ConvertiDatainLongMinuto(Data);
-                    System.out.println("Prezzo a fine periodo di dentenzione="+Prezzi.DammiPrezzoTransazione(Monete[0],Monete[1], DataLong, "0.00", true, 2, Rete));
-                    System.out.println("---------------------------------");
+                if (!Monete[0].Moneta.isBlank()&&!Monete[0].Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
+                    List<String> ListaRitorno = StackLIFO_TogliQta(CryptoStack, Monete[0].Moneta, Monete[0].Qta, true);
+                    //creo la riga per i quadri RW
+                    for (String elemento : ListaRitorno) {
+                        String Elementi[] = elemento.split(";");
+                        //Elementi è così composta Qta;Prezzo;Data                    
+                        System.out.println("Moneta=" + Monete[0].Moneta);
+                        System.out.println("Qta=" + Elementi[0]);
+                        System.out.println("Data inizio periodo di detenzione=" + Elementi[2]);
+                        System.out.println("Prezzo a inizio periodo di detenzione=" + Elementi[1]);
+                        System.out.println("Data fine periodo di detenzione=" + Data); 
+                        String Prz=new BigDecimal(Valore).divide(new BigDecimal(Monete[0].Qta),30, RoundingMode.HALF_UP).multiply(new BigDecimal(Elementi[0])).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        System.out.println("Prezzo a fine periodo di dentenzione="+Prz);
+                        //attenzione il prezzo specificato sotto è quello dell'intero blocco e non della frazione, bisogna ricalcolarlo
+                        // il prezzo sarà Valore Totale/Qta Totale x QtaTransazione
+                        //System.out.println("Prezzo a fine periodo di dentenzione=" + Prezzi.DammiPrezzoTransazione(Monete[0], Monete[1], DataLong, "0.00", true, 2, Rete));
+                        System.out.println("---------------------------------");
+                    }
                 }
-               // Sysyem.out.println("Qta="+)
+                if (!Monete[0].Moneta.isBlank()&&!Monete[1].Tipo.equalsIgnoreCase("FIAT")) {
+                    //in questo caso invece devo aggiungere al Lifo le informazioni                   
+                                StackLIFO_InserisciValore(CryptoStack,Monete[1].Moneta,Monete[1].Qta,Valore,Data);                    
+                }
                 
             } 
                 

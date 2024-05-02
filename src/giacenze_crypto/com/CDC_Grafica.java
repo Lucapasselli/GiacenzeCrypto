@@ -5440,6 +5440,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             Val=new String[]{"Movimenti Correlati ","<html>"+Valore.replaceAll(",", "<br>")+"</html>"};
             ModelloTabellaCrypto.addRow(Val);
         }*/
+        Valore=Transazione[18];
+        if (!Valore.isBlank()){
+            Val=new String[]{"Dett. ",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        }
         
         Valore=Transazione[7];
         if (!Valore.isBlank()){

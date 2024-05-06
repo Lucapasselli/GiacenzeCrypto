@@ -5,7 +5,7 @@
 package giacenze_crypto.com;
 
 
-//ATTENZIONE : PREZZO CRO DA RIVEDERE!!!!!!
+
 
 
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
@@ -15,7 +15,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -133,9 +132,9 @@ public class Calcoli_RW {
     }
    // ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
-   for (String elemento : ListaRitorno) {
+   /*for (String elemento : ListaRitorno) {
         System.out.println(elemento);
-    }
+    }*/
     return ListaRitorno;
     //ogni singolo elemento di listaRitorno è così composto     1,025;15550;2023-01-01 00:00   (qta iniziale;valore iniziale;data iniziale)
    // System.out.println(Moneta +" - "+stack.size());
@@ -152,32 +151,68 @@ public class Calcoli_RW {
                 String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(CDC_Grafica.MappaCryptoWallet.get(IdM)[3]);
                 //per ogni movimento verifico se fa parte di un gruppo diverso e nel qual caso significa che la transazione riguarda wallet di gruppi diversi
                 //per cui metto a false il boolean stessoGruppo
-                if (gruppo.equals(GruppoWalletOrigine))stessoGruppo=false;
+                if (!gruppo.equals(GruppoWalletOrigine))stessoGruppo=false;
             }
             return stessoGruppo;
         }
         
-    public static void ChiudiRW(Moneta Monete,Map<String, ArrayDeque> CryptoStack,String GruppoWallet,String Data,String Valore) {
+        public static String RitornaGruppoWalletContropate(String ID){
+            String Gruppo;
+            String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
+            Gruppo = GruppoWalletOrigine;
+            String MovimentiCorrelati[] = Movimento[20].split(",");
+            for (String IdM : MovimentiCorrelati) {
+                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(CDC_Grafica.MappaCryptoWallet.get(IdM)[3]);
+                //per ogni movimento verifico se fa parte di un gruppo diverso e nel qual caso significa che la transazione riguarda wallet di gruppi diversi
+                //per cui metto a false il boolean stessoGruppo
+                if (!gruppo.equals(GruppoWalletOrigine)){
+                    Gruppo=gruppo;
+                }
+            }
+            return Gruppo;
+        }
+        
+    public static void ChiudiRW(Moneta Monete,Map<String, ArrayDeque> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale) {
+        List<String[]> ListaRW;
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
             List<String> ListaRitorno = StackLIFO_TogliQta(CryptoStack, Monete.Moneta, Monete.Qta, true);
             //creo la riga per i quadri RW
             for (String elemento : ListaRitorno) {
                 String Elementi[] = elemento.split(";");
                 //Elementi è così composta Qta;Prezzo;Data  
-                long DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
-                System.out.println("Gruppo = " + GruppoWallet);
+                //Se la data del movimento è uguale a quella di creazione (al minuto) metto GG di detenzione zero altrimenti anche se posseggo la moneta per un solo minuto metto 1
+                long DiffData = OperazioniSuDate.ConvertiDatainLongMinuto(Data) - OperazioniSuDate.ConvertiDatainLongMinuto(Elementi[2]);
+                if (DiffData!=0){
+                    DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
+                }
+
+               /* System.out.println("Gruppo = " + GruppoWallet);
                 System.out.println("Moneta = " + Monete.Moneta);
                 System.out.println("Qta = " + Elementi[0]);
                 System.out.println("Data inizio periodo di detenzione = " + Elementi[2]);
                 System.out.println("Prezzo a inizio periodo di detenzione = " + Elementi[1]);
-                System.out.println("Data fine periodo di detenzione = " + Data);
+                System.out.println("Data fine periodo di detenzione = " + Data);*/
                 String Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(Elementi[0])).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-                System.out.println("Prezzo a fine periodo di dentenzione = " + Prz);
+               /* System.out.println("Prezzo a fine periodo di dentenzione = " + Prz);
                 System.out.println("Giorni di Detenzione = " + DiffData);
-                //attenzione il prezzo specificato sotto è quello dell'intero blocco e non della frazione, bisogna ricalcolarlo
-                // il prezzo sarà Valore Totale/Qta Totale x QtaTransazione
-                //System.out.println("Prezzo a fine periodo di dentenzione=" + Prezzi.DammiPrezzoTransazione(Monete[0], Monete[1], DataLong, "0.00", true, 2, Rete));
-                System.out.println("---------------------------------");
+                System.out.println("Causale = " + Causale);
+                System.out.println("---------------------------------");*/
+                String xlista[]=new String[10];
+                xlista[0]="2023";                   //Anno RW
+                xlista[1]=GruppoWallet;             //GruppoWallet
+                xlista[2]=Monete.Moneta;            //Moneta
+                xlista[3]=Elementi[0];              //Qta
+                xlista[4]=Elementi[2];              //Data Inizio
+                xlista[5]=Elementi[1];              //Prezzo Inizio
+                xlista[6]=Data;                     //Data Fine
+                xlista[7]=Prz;                      //Prezzo Fine
+                xlista[8]=String.valueOf(DiffData); //Giorni di Detenzione
+                xlista[9]=Causale;                  //Causale
+                if (!xlista[8].equals("0")){//Solo se i giorni di detenzione sono diversi da zero compilo la lista altrimenti resta tutto così com'è.
+                    ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
+                    ListaRW.add(xlista);
+                }
             }
         }
     }
@@ -185,20 +220,22 @@ public class Calcoli_RW {
     
     
     public static void AggiornaRW() {
+        
+        CDC_Grafica.Mappa_RW_ListeXGruppoWallet.clear();
 
         //PARTE 1 : Calcolo delle Giacenze iniziali e inserimento nello stack
         int AnnoRiferimento = Integer.parseInt("2023");
         String DataInizioAnno = "2023-01-01 00:00";
         String DataFineAnno = "2023-12-31 23:59";
         boolean PrimoMovimentoAnno = true;
-        boolean UltimoMovimentoAnno = true;
 
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
         // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();
         Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto = new TreeMap<>();
         Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>();
-        Map<String, Moneta> QtaCrypto = new TreeMap<>();
+        Map<String, Moneta> QtaCrypto;
+        List<String[]> ListaRW;
 
         for (String[] v : MappaCryptoWallet.values()) {
             String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
@@ -206,6 +243,10 @@ public class Calcoli_RW {
 
             if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
                 //se non esiste ancora lo stack lo creo e lo associo alla mappa
+                //stessa cosa faccio per la lista per l'rw
+                //stessa cosa faccio per il gruppo delle qta
+                ListaRW=new ArrayList<>();
+                CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
                 CryptoStack = new TreeMap<>();
                 QtaCrypto = new TreeMap<>();
                 MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);
@@ -215,20 +256,11 @@ public class Calcoli_RW {
                 CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);
                 QtaCrypto = MappaGrWallet_QtaCrypto.get(GruppoWallet);
             }
-            String TipoMU = RitornaTipoCrypto(v[8].trim(), v[1].trim(), v[9].trim());
-            String TipoME = RitornaTipoCrypto(v[11].trim(), v[1].trim(), v[12].trim());
+
             String IDTransazione = v[0];
             String Data = v[1];
-            long DataLong = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
             String IDTS[] = IDTransazione.split("_");
-            String MonetaU = v[8];
-            String QtaU = v[10];
-            String MonetaE = v[11];
-            String QtaE = v[13];
             String Valore = v[15];
-            String VecchioPrezzoCarico = "0.00";
-            String NuovoPrezzoCarico = "0.00";
-            String Plusvalenza = "0.00";
             String Rete = Funzioni.TrovaReteDaID(v[0]);
             Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
             //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
@@ -247,6 +279,8 @@ public class Calcoli_RW {
             Monete[1].Rete = Rete;
 
             int Anno = Integer.parseInt(Data.split("-")[0]);
+
+            //PARTE 1
             if (Anno < AnnoRiferimento) {
                 //Faccio i conti per i valori iniziali
 
@@ -268,6 +302,8 @@ public class Calcoli_RW {
 
                     }
                 }
+
+                //PARTE 2    
             } else if (Anno == AnnoRiferimento) {
                 //al primo movimento dell'anno successivo faccio questo:
                 //1 - Inseirsco nello stack tutti i valori iniziali precedentemente trovati
@@ -288,6 +324,26 @@ public class Calcoli_RW {
                     }
                     PrimoMovimentoAnno = false;
                 }
+
+                //Continuo comunque a fare la somma della qta delle crypto che servirà dopo per chiudere gli RW di fine anno
+                for (int a = 0; a < 2; a++) {
+                    //ANALIZZO MOVIMENTI
+                    if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo) != null) {
+                        //Movimento già presente da implementare
+                        Moneta M1 = QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo);
+                        M1.Qta = new BigDecimal(M1.Qta)
+                                .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
+
+                    } else if (!Monete[a].Moneta.isBlank()) {
+                        //Movimento Nuovo da inserire
+                        Moneta M1 = new Moneta();
+                        M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                        M1.Rete = Rete;
+                        QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo, M1);
+
+                    }
+                }
+
                 //Adesso a seconda del tipo movimento devo comportarmi in maniera diversa
                 //TIPOLOGIA = 0 (Vendita Crypto)
                 if (IDTS[4].equals("VC")
@@ -297,7 +353,15 @@ public class Calcoli_RW {
                         || IDTS[4].equals("CM")) {
 
                     //tolgo dal Lifo della moneta venduta e prendo la lista delle varie movimentazione
-                    ChiudiRW(Monete[0],CryptoStack,GruppoWallet,Data,Valore);
+                    String Causale="Vendita";
+                    switch (IDTS[4]) {
+                        case "VC" -> Causale="Vendita";
+                        case "SC" -> Causale="Scambio";
+                        case "CM" -> Causale="Commissione";
+                        default -> {
+                        }
+                    }
+                    ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data, Valore, Causale);
                     if (!Monete[0].Moneta.isBlank() && !Monete[1].Tipo.equalsIgnoreCase("FIAT")) {
                         //in questo caso invece devo aggiungere al Lifo le informazioni                   
                         StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data);
@@ -320,335 +384,108 @@ public class Calcoli_RW {
                     //DTW -> Trasferimento tra Wallet (deposito)
                     //DAI -> Airdrop o similare (deposito)
                     //DCZ -> Costo di carico 0 (deposito)
-                    if (v[18].isBlank()){
+                    if (v[18].isBlank()) {
                         //Non faccio nulla perchè sono movimenti non classificati e non saprei come gestirli
-                    }else if (v[18].contains("PWN")||v[18].contains("PCO")){
+                    } else if (v[18].contains("PWN") || v[18].contains("PCO")) {
                         //Chiudo RW
-                        ChiudiRW(Monete[0],CryptoStack,GruppoWallet,Data,Valore);
-                    }else if (v[18].contains("DAI")||v[18].contains("DCZ")){
+                        ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data,Valore, "Cashout o Similare");
+                    } else if (v[18].contains("DAI") || v[18].contains("DCZ")) {
                         //Apro nuovo RW
                         StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data);
-                    }else if (v[18].contains("PTW")){
+                    } else if (v[18].contains("PTW")) {
+                       // System.out.println(StessoGruppoWalletContropate(IDTransazione) + " : " + IDTransazione);
                         //Se è un trasferimento tra wallet dello stesso gruppo non faccio nulla
                         //Se è un trasferimento tra wallet di gruppi diversi chiudo l'RW
                         //Se è trasferimento per scambio non faccio nulla perchè viene tutto gestito nel momento del deposito sul wallet di destinazione
                         //Se è un trasferimento a vault non faccio nulla perchè ritengo che il valut faccia sempre riferimento al mio wallet quindi di conseguenza i token non sono mai usciti
-                        if (v[18].contains("PTW - Trasferimento tra Wallet")){
+                        if (v[18].contains("PTW - Trasferimento tra Wallet")) {
                             //se soddisfa questa condizione sono in presenza di un trasferimento tra wallet
                             //adesso devo verificare se il Gruppo wallet della controparte è lo stesso del mio o meno
-                            if (StessoGruppoWalletContropate(IDTransazione)){
+
+                            if (StessoGruppoWalletContropate(IDTransazione)) {
+
                                 //Non faccio nulla se sono nello stesso gruppo
-                            }else{
+                            } else {
                                 //Se è un trasferimento tra wallet di gruppi diversi chiudo l'RW
-                                ChiudiRW(Monete[0],CryptoStack,GruppoWallet,Data,Valore);
+                                ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data, Valore,"Trasferimento su altro Wallet");
                             }
                         }
-                        
-                    }else if (v[18].contains("DTW")){
+
+                    } else if (v[18].contains("DTW")) {
                         //Se è un trasferimento tra wallet dello stesso gruppo non faccio nulla
                         //Se è un trasferimento tra wallet di gruppi diversi apro l'RW
                         //Se è un deposito per scambio differito nello stesso gruppo wallet non faccio nulla
                         //Se è un deposito per scambio differito da un diverso gruppo wallet chiudo RW vecchio Wallet apro RW nuovo Wallet
                         //Da ricordare che scambio, invio e ricezione del token vengono generati nello stesso istante
                         //E lo scambio già di per se va a chiudere un rw e aprirne uno nuovo
-           /*                                     if (v[18].contains("PTW - Trasferimento tra Wallet")){
+                        if (v[18].contains("DTW - Trasferimento tra Wallet")) {
                             //se soddisfa questa condizione sono in presenza di un trasferimento tra wallet
                             //adesso devo verificare se il Gruppo wallet della controparte è lo stesso del mio o meno
-                            if (StessoGruppoWalletContropate(IDTransazione)){
+                            if (StessoGruppoWalletContropate(IDTransazione)) {
                                 //Non faccio nulla se sono nello stesso gruppo
-                            }else{
-                                //Se è un trasferimento tra wallet di gruppi diversi chiudo l'RW
-                                ChiudiRW(Monete[0],CryptoStack,GruppoWallet,Data,Valore);
+                            } else {
+                                //Se è un trasferimento tra wallet di gruppi diversi apro il nuovo RW
+                                StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data);
                             }
-                        }*/
-                    }
-                    else{
-                        System.out.println("Attenzione movimento di deposito o prelievo non classificato nella funzione AggiornaRW() in CalcoliRW");
-                    }
-                }
-
-            } else if (Anno > AnnoRiferimento) {
-                //al primo movimento dell'anno successivo faccio questo:
-                //1 - Trovo il valore di fine anno di riferimento relativo a tutti i token e chiudo tutti i conti aperti
-                //2 - Termino il ciclo
-            }
-            
-            
-            
-     /*       
-            //TIPOLOGIA = 0 (Vendita Crypto)
-            if (IDTS[4].equals("VC")){
-                //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                
-                //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                NuovoPrezzoCarico="";
-                
-                //Calcolo la plusvalenza
-                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString(); 
-            }           
-            //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
-                    && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
-                    !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
-            {
-                    //Tolgo dallo stack il costo di carico della cripèto uscita
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                    
-                    //Inserisco il costo di carico nello stack della cripto entrata
-                    NuovoPrezzoCarico=VecchioPrezzoCarico;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    
-                    //La plusvalenza va valorizzata a zero
-                    Plusvalenza="0.00";
-                                                        
-            } 
-            
-            
-            //TIPOLOGIA = 2 (Scambio Cripto Attività Diverse Caratteristiche)
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
-                    && !TipoMU.equalsIgnoreCase(TipoME)&&
-                    !TipoMU.isBlank() && !TipoME.isBlank())  
-            {
-                    //Tolgo dallo stack il vecchio costo di carico
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                    
-                    //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
-                    //lo aggiungo quindi allo stack del lifo
-                    NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    
-                    //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
-                                       
-            }
-            
-            
-            //TIPOLOGIA = 3 (Acquisto di Cripto attività tramite FIAT)
-            else if (TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")&&
-                    !TipoMU.isBlank() && !TipoME.isBlank())  
-            {
-                
-                    NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    
-                    Plusvalenza="0.00";
-                                         
-                    VecchioPrezzoCarico=""; 
-                    
-                    
-                    
-            }
-            
-            //TIPOLOGIA = 4 (Vendita Criptoattività per FIAT)
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("FIAT")&&
-                    !TipoMU.isBlank() && !TipoME.isBlank())  
-            {
-                //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                
-                //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                NuovoPrezzoCarico="";
-                
-                //Calcolo la plusvalenza
-                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();                
-                 
-            } 
-            
-            
-            //TIPOLOGIA = 5 , 7 e 9 -> Deposito Criptoattività di vario tipo
-            else if (TipoMU.isBlank() && !TipoME.equalsIgnoreCase("FIAT")) 
-            {
-                //Se arrivo qua vuol dire che questo è un deposito, poi a secondo di che tipo di deposito è
-                //valorizzo la tipologia corretta
-                
-                //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
-                if(IDTS[4].equalsIgnoreCase("RW")||v[18].contains("DAI")) {
-                                       
-                    NuovoPrezzoCarico=Valore;
-                    
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    
-                    Plusvalenza=Valore;
-                    
-                    VecchioPrezzoCarico="";                                
-                
-                }
-
-                //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
-                else if (IDTS[4].equalsIgnoreCase("TI") || v[18].isBlank() || v[18].contains("DTW")) {
-
-                    //il compito è trovare la controparte del movimento qualora questa si riferisse ad un diverso gruppo wallet
-                    //e da li spostare il costo di carico
-                    String IDControparte = null;
-                    String GruppoWalletControparte = null;
-                    //comincio impostando le prime condizioni
-                    //v[20] non deve essere nullo ovvero devo avere transazioni allegate
-                    //v[18] deve essere un deposito derivante da trasferimenti e deve essere o un movimento importato o uno manuale (v[22]=ad A o M)
-                    if (!v[20].isBlank() && v[18].contains("DTW") && (v[22].equals("A") || v[22].equals("M"))) {
-
-                        //Se è un movimento di Trasferimento tra wallet (2 o 3 movimenti a seconda se ci sono le commissioni) il movimento controparte è l'unico PTW
-                        //Se è un movimento di scambio differito (5 movimenti) il movimento controparte è un PTW classificato come AU (posizione 22)
-                        //Tutto questo lo faccio però solo se il movimento di controparte PTW fa parte di un altro gruppo di wallet, altrimentio non faccio nulla.
-                        String Movimenti[] = v[20].split(",");
-
-                        if (Movimenti.length > 3)//Sono in presenza di uno scambio differito
-                        {
-                            for (String IdM : Movimenti) {
-                                String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
-                                //devo trovare la controparte che in questo caso è il movimento di prelievo creato automaticamente dal sistema
-                                //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
-                                //perchè se fanno parte dello stesso gruppo non devo fare nulla
-
-                                if (Mov[18].contains("PTW") && Mov[22].contains("AU")
-                                        && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
-                                    IDControparte = IdM;
-                                    GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
-                                }
-                            }
-                        } else {//Scambio tra wallet
-
-                            for (String IdM : Movimenti) {
-                                String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
-                                //devo trovare la controparte che in questo caso è l'unico movimento di prelievo
-                                //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
-                                //perchè se fanno parte dello stesso gruppo non devo fare nulla
-                                if (Mov[18].contains("PTW")
-                                        && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
-                                    IDControparte = IdM;
-                                    GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
-                                }
+                        } else if (v[18].contains("DTW - Scambio Differito")) {
+                            //Es. Scambio differito
+                            //Mov. 1 - Wallet 1 - Invia 1 ETH a piattaforma di scambio
+                            //Mov. 2 - Wallet 1 - La piattaforma di scambio riceve l'ETH
+                            //Mov. 3 - Wallet 1 - La piattaforma di scambio scambia ETH con BTC
+                            //Mov. 4 - Wallet 1 - La piattaforma di scambio invia BTC al Wallet 2
+                            //Mov. 5 - Wallet 2 - La piattaforma di scambio riceve i BTC
+                            //Se è l'ultimo movimento di uno scambio differito allora chiudo l'rw del vecchio wallet e apro l'RW del nuovo
+                            //infatti la conversione tra le monete è già stata classificata
+                            //l'RW chiuso non verrà considerato in quanto avrà zero come lasso di tempo ovvero GG, scambio token invio e ricezione avvengono infatti nello stesso momento.
+                            if (StessoGruppoWalletContropate(IDTransazione)) {
+                                //Non faccio nulla se sono nello stesso gruppo
+                            } else {
+                                //Se è un trasferimento tra wallet di gruppi diversi apro il nuovo RW
+                                StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data);
+                                //Adesso devo recuperare il CryptoStack dell'altro wallet e togliere dall'RW la moneta
+                                String gruppoControparte = RitornaGruppoWalletContropate(IDTransazione);
+                                //gruppoControparte non sarà mai nulla perchè l'ho già verificato nelle righe sopra quindi evito di fare un altro IF
+                                Map<String, ArrayDeque> CryptoStackControparte = MappaGrWallet_CryptoStack.get(gruppoControparte);
+                                //Chiudo l'RW della controparte
+                                ChiudiRW(Monete[1], CryptoStackControparte, gruppoControparte, Data, Valore,"Trasferimento su altro Wallet");
 
                             }
 
                         }
-
-                    }
-                    //Se ID controparte è diverso da null vuol dire che devo gestire il calcolo delle plusvalenze, altrimenti no
-                    if (IDControparte != null) {
-                        Plusvalenza = "0.00";
-                        VecchioPrezzoCarico = "";
-                        
-                        //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
-                        String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
-                    Map<String, ArrayDeque> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
-                    Mov[31]=v[1];
-                    if (CryptoStack2==null){
-                        NuovoPrezzoCarico="0.00";
-                        } else {
-                        NuovoPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack2,Mov[8],Mov[10],true);
-                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    }
-
                     } else {
-                        Plusvalenza = "0.00";
-
-                        NuovoPrezzoCarico = "";
-
-                        VecchioPrezzoCarico = "";
+                        System.out.println("Attenzione movimento di deposito o prelievo non classificato nella funzione AggiornaRW() in CalcoliRW");
                     }
+                }
 
-                }
-                
-                //Tipologia = 9; (Deposito a costo di carico zero)
-                else if(v[18].contains("DCZ")){
-                     
-                     NuovoPrezzoCarico="0.00";
-                     Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                     
-                     Plusvalenza="0.00";
-                     
-                     VecchioPrezzoCarico="";
-                }
-                
-                //Tipologia = 3; (Acquisto Crypto)
-                else if(v[18].contains("DAC")){
-                    
-                    NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    
-                    Plusvalenza="0.00";
-                                         
-                    VecchioPrezzoCarico=""; 
-                }
-            } 
-            
-            //TIPOLOGIA = 6 , 8 e 10 -> Prelievo Criptoattività di vario tipo
-            else if (!TipoMU.equalsIgnoreCase("FIAT") && TipoME.isBlank()) 
-            {
-                //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
-                //valorizzo la tipologia corretta                         
-                
-                //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
-                if(IDTS[4].equalsIgnoreCase("RW")){
-                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                
-                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                    NuovoPrezzoCarico="";
-                
-                    //Calcolo la plusvalenza
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();  
-                }
-                //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
-                else if(IDTS[4].equalsIgnoreCase("CM")||v[18].contains("PCO")){
-                    
-                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                
-                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                    NuovoPrezzoCarico="";
-                
-                    //Calcolo la plusvalenza
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString(); 
-                }
-                //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
-                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("PTW")) {
-                                        
-                     Plusvalenza="0.00";
-                     
-                     NuovoPrezzoCarico="";
-                     
-                     VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,false);
-                } 
-                
-                //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo)
-                else if(v[18].contains("PWN")){
-                    
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                    
-                    NuovoPrezzoCarico="";
-                    
-                    Plusvalenza="0.00";                    
-                    
-                }
-            } 
-            //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
-            else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
-            {
-                    
-                    NuovoPrezzoCarico="";
-                    
-                    Plusvalenza="0.00";
-                                           
-                    VecchioPrezzoCarico="";
-                    
+                //PARTE 3
+            } else if (Anno > AnnoRiferimento) {
+                //Non faccio nulla
+
             }
-            else {
-                System.out.println("Classe:Plusvalenze - Funzione:CategorizzaTransazione - Nessuna Tipologia Individuata");
-                System.out.println(TipoMU+" - "+TipoME);
-            }
-            
-            
-
-                    v[16]=VecchioPrezzoCarico;
-                    v[17]=NuovoPrezzoCarico;
-                    v[19]=Plusvalenza;
-*/
-
         }
-    }
+        
+                //finito il ciclo
+                //1 - Trovo il valore di fine anno di riferimento relativo a tutti i token e chiudo tutti i conti aperti
+                //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
+                        for (String key : MappaGrWallet_QtaCrypto.keySet()) {
+                    Map<String, Moneta> a = MappaGrWallet_QtaCrypto.get(key);
+                    for (Moneta m : a.values()) {
+                        if (!m.Tipo.equalsIgnoreCase("FIAT")) {
+                            long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnno);
+                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 10, null);
+                            // System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                            Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
+                           // StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataFineAnno);
+                            ChiudiRW(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo,"Fine Anno");
 
+                        }
+                    }
+                }
+        
+        
+        
+    }
+    
     
     
 }

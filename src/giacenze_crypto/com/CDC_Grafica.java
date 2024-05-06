@@ -95,6 +95,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static boolean CDC_FiatWallet_ConsideroValoreMassimoGiornaliero=false;
     static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
     static List<String>[] CDC_CardWallet_ListaSaldi;
+    static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
     static public List<String>[] CDC_FiatWallet_ListaSaldi;
     static public boolean TabellaCryptodaAggiornare=false;
@@ -1139,6 +1140,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        RW_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RW_TabellaMouseReleased(evt);
+            }
+        });
+        RW_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RW_TabellaKeyReleased(evt);
+            }
+        });
         jScrollPane7.setViewportView(RW_Tabella);
 
         RW_Tabella_Dettagli.setModel(new javax.swing.table.DefaultTableModel(
@@ -1146,11 +1157,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Moneta", "Quantità", "Data Acq. o Inizio Anno", "Data Ven. o Fine Anno", "Val. Iniziale", "Val. Finale", "Giorni", "Rimanza"
+                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1159,18 +1170,27 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
         jScrollPane8.setViewportView(RW_Tabella_Dettagli);
         if (RW_Tabella_Dettagli.getColumnModel().getColumnCount() > 0) {
-            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(40);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(40);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(40);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(50);
         }
 
         RW_Calcola_Bottone.setText("Calcola");
@@ -4949,8 +4969,82 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
     private void RW_Calcola_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Calcola_BottoneActionPerformed
         // TODO add your handling code here:
-        Calcoli_RW.AggiornaRW();
+        
+        DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        //Array Lista RW così composta
+        // 0 - Anno
+        // 1 - Gruppo Wallet
+        // 2 - Moneta
+        // 3 - Qta
+        // 4 - Data Inizio
+        // 5 - Prezzo Inizio
+        // 6 - Data Fine
+        // 7 - Prezzo Fine
+        // 8 - Giorni di detenzione
+        // 9 - Causale
+        Calcoli_RW.AggiornaRW();// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+        //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
+        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+            BigDecimal ValIniziale = new BigDecimal(0);
+            BigDecimal ValFinale = new BigDecimal(0);
+            BigDecimal ValFinalexggTOT = new BigDecimal(0);
+            String RW1[] = new String[5];
+            for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
+              //  System.out.println(lista[1]);
+                ValIniziale = new BigDecimal(lista[5]).add(ValIniziale);
+                ValFinale = new BigDecimal(lista[7]).add(ValFinale);
+                ValFinalexggTOT = new BigDecimal(lista[7]).multiply(new BigDecimal(lista[8])).add(ValFinalexggTOT);
+            }
+            BigDecimal GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
+            RW1[0] = key.split(" ")[1] + " (" + key + ")";
+            RW1[1] = ValIniziale.toPlainString();
+            RW1[2] = ValFinale.toPlainString();
+            RW1[3] = GGPonderati.toPlainString();
+            RW1[4] = "";
+            ModelloTabella.addRow(RW1);
+            
+        }
+        Tabelle.ColoraTabellaSemplice(RW_Tabella);
+        
+        
+        
+        
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        
+        //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
+        
+       
     }//GEN-LAST:event_RW_Calcola_BottoneActionPerformed
+
+    private void RW_CompilaTabellaDettagli(){
+        if (RW_Tabella.getSelectedRow()>=0){
+            //Cancello Contenuto Tabella Dettagli
+            DefaultTableModel ModelloTabella = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
+            Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+            
+            int rigaselezionata = RW_Tabella.getSelectedRow();
+            String Gruppo = RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split("\\(")[1].replaceAll("\\)", "").trim();
+            //System.out.println(Gruppo);
+            for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
+                 ModelloTabella.addRow(lista);
+            }
+          //  ModelloTabella.addRow(Mappa_RW_ListeXGruppoWallet);
+            
+            Tabelle.ColoraTabellaSemplice(RW_Tabella_Dettagli);
+           } 
+    }
+    
+    private void RW_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RW_TabellaKeyReleased
+        // TODO add your handling code here:
+        RW_CompilaTabellaDettagli();
+    }//GEN-LAST:event_RW_TabellaKeyReleased
+
+    private void RW_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_TabellaMouseReleased
+        // TODO add your handling code here:
+        RW_CompilaTabellaDettagli();
+    }//GEN-LAST:event_RW_TabellaMouseReleased
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

@@ -96,6 +96,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
     static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
     static List<String>[] CDC_CardWallet_ListaSaldi;
     static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, List<Moneta>> Mappa_RW_GiacenzeInizioPeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    static public Map<String, List<Moneta>> Mappa_RW_GiacenzeFinePeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
     static public List<String>[] CDC_FiatWallet_ListaSaldi;
     static public boolean TabellaCryptodaAggiornare=false;
@@ -262,6 +264,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jScrollPane8 = new javax.swing.JScrollPane();
         RW_Tabella_Dettagli = new javax.swing.JTable();
         RW_Calcola_Bottone = new javax.swing.JButton();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        RW_Tabella_DettaglioMovimenti = new javax.swing.JTable();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -1157,15 +1164,25 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale"
+                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        RW_Tabella_Dettagli.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RW_Tabella_DettagliMouseReleased(evt);
+            }
+        });
+        RW_Tabella_Dettagli.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RW_Tabella_DettagliKeyReleased(evt);
             }
         });
         jScrollPane8.setViewportView(RW_Tabella_Dettagli);
@@ -1191,6 +1208,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMinWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMaxWidth(0);
         }
 
         RW_Calcola_Bottone.setText("Calcola");
@@ -1200,6 +1223,30 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        RW_Tabella_DettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data", "Wallet", "Tipo Movimento", "Moneta Uscita / Fine Anno", "Moneta Entrata / Inizio Anno", "Valore", "ID Transazione"
+            }
+        ));
+        jScrollPane9.setViewportView(RW_Tabella_DettaglioMovimenti);
+        if (RW_Tabella_DettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
+            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMinWidth(100);
+            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setPreferredWidth(100);
+            RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMaxWidth(100);
+        }
+
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel5.setText("Dettaglio RW");
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel6.setText("Movimenti dell'anno coinvolti");
+
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel7.setText("RW Aggregato");
+
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
         RWLayout.setHorizontalGroup(
@@ -1207,14 +1254,22 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(RWLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, RWLayout.createSequentialGroup()
-                        .addComponent(RW_Calcola_Bottone)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 860, Short.MAX_VALUE)
-                    .addComponent(jScrollPane8))
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane9)
+                    .addGroup(RWLayout.createSequentialGroup()
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_Calcola_Bottone))
+                    .addGroup(RWLayout.createSequentialGroup()
+                        .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         RWLayout.setVerticalGroup(
@@ -1223,11 +1278,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4)
-                    .addComponent(RW_Calcola_Bottone))
+                    .addComponent(RW_Calcola_Bottone)
+                    .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                .addGap(9, 9, 9)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -4972,6 +5034,10 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         
         DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
+        DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         //Array Lista RW così composta
         // 0 - Anno
@@ -5023,6 +5089,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabella = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+            DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
+            Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             
             int rigaselezionata = RW_Tabella.getSelectedRow();
             String Gruppo = RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split("\\(")[1].replaceAll("\\)", "").trim();
@@ -5036,6 +5104,67 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
            } 
     }
     
+    private void RW_CompilaTabellaDettagliXID(){
+        if (RW_Tabella_Dettagli.getSelectedRow()>=0){
+            //Cancello Contenuto Tabella Dettagli
+            DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
+            Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            String IDIniziale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+            String IDFinale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
+           // System.out.println(IDIniziale + " - " + IDFinale);
+            String[] Movimento=MappaCryptoWallet.get(IDIniziale);
+            if (Movimento!=null){
+                String Mov[]=new String[7];
+                Mov[0]=Movimento[1];
+                Mov[1]=Movimento[3]+" ("+Movimento[4]+")";
+                Mov[2]=Movimento[5];
+                Mov[3]="";
+                Mov[4]="";
+                if (!Movimento[10].isBlank())Mov[3]=Movimento[10]+" "+Movimento[8]+" ("+Movimento[9]+")";
+                if (!Movimento[13].isBlank())Mov[4]=Movimento[13]+" "+Movimento[11]+" ("+Movimento[12]+")";
+                Mov[5]=Movimento[15];
+                Mov[6]=IDIniziale; 
+                ModelloTabella3.addRow(Mov);
+            }else{
+                String Mov[]=new String[7];
+                Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
+                Mov[1]="";
+                Mov[2]=IDIniziale;
+                Mov[3]="";
+                Mov[4]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                Mov[5]="";
+                Mov[6]=""; 
+                ModelloTabella3.addRow(Mov);
+            }
+            Movimento=MappaCryptoWallet.get(IDFinale);
+            if (Movimento!=null){
+                String Mov[]=new String[7];
+                Mov[0]=Movimento[1];
+                Mov[1]=Movimento[3]+" ("+Movimento[4]+")";
+                Mov[2]=Movimento[5];
+                Mov[3]="";
+                Mov[4]="";
+                if (!Movimento[10].isBlank())Mov[3]=Movimento[10]+" "+Movimento[8]+" ("+Movimento[9]+")";
+                if (!Movimento[13].isBlank())Mov[4]=Movimento[13]+" "+Movimento[11]+" ("+Movimento[12]+")";
+                Mov[5]=Movimento[15];
+                Mov[6]=IDFinale; 
+                ModelloTabella3.addRow(Mov);
+            }else{
+                String Mov[]=new String[7];
+                Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
+                Mov[1]="";
+                Mov[2]=IDFinale;
+                Mov[3]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                Mov[4]="";
+                Mov[5]="";
+                Mov[6]=""; 
+                ModelloTabella3.addRow(Mov);
+            }
+            Tabelle.ColoraTabellaSemplice(RW_Tabella_DettaglioMovimenti);
+           } 
+    }
+    
     private void RW_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RW_TabellaKeyReleased
         // TODO add your handling code here:
         RW_CompilaTabellaDettagli();
@@ -5045,6 +5174,16 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // TODO add your handling code here:
         RW_CompilaTabellaDettagli();
     }//GEN-LAST:event_RW_TabellaMouseReleased
+
+    private void RW_Tabella_DettagliKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RW_Tabella_DettagliKeyReleased
+        // TODO add your handling code here:
+        RW_CompilaTabellaDettagliXID();
+    }//GEN-LAST:event_RW_Tabella_DettagliKeyReleased
+
+    private void RW_Tabella_DettagliMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Tabella_DettagliMouseReleased
+        // TODO add your handling code here:
+        RW_CompilaTabellaDettagliXID();
+    }//GEN-LAST:event_RW_Tabella_DettagliMouseReleased
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -6265,6 +6404,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JButton RW_Calcola_Bottone;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
+    private javax.swing.JTable RW_Tabella_DettaglioMovimenti;
     private javax.swing.JPanel SituazioneImport;
     private javax.swing.JTable SituazioneImport_Tabella1;
     private javax.swing.JPanel TransazioniCrypto;
@@ -6291,6 +6431,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -6300,6 +6443,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator5;

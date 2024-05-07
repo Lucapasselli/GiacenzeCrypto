@@ -5253,16 +5253,68 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private void RW_CorreggiErrore_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_CorreggiErrore_BottoneActionPerformed
         // TODO add your handling code here:
         //Quello che devo fare sono le seguenti cose:
-        //Individuare il tipo di errore
-        //Se è un errore di giacenza negativa :
-            //Posizionare il focus su GiacenzeaData
-            //Cambiare la data di riferimento con quella di fine anno RW
-            //Cambiare la label del wallet selezionato con quella del gruppo
-            //Compilare le 2 tabelle, la prima con le giacenze del wallet e la seconda tabella con le movimentazioni della coin con errore
-            //Far uscire un messaggio chiedendo di correggere la giacenza negativa
-        //Se è un errore di prezzo non disponibile a sistema:
-            //Dare la possibilità di correggerlo o eventualmente identificarlo come token scam, in quel caso varrà sempre zero ma non verrà segnalato come errore
+        //1-Individuare il tipo di errore
+        //2-Se è un errore di giacenza negativa :
+            //2a-Posizionare il focus su GiacenzeaData
+            //2b-Cambiare la data di riferimento con quella di fine anno RW
+            //2c-Cambiare la label del wallet selezionato con quella del gruppo
+            //2d-Compilare le 2 tabelle, la prima con le giacenze del wallet e la seconda tabella con le movimentazioni della coin con errore
+            //2e-Far uscire un messaggio chiedendo di correggere la giacenza negativa
+        //3-Se è un errore di prezzo non disponibile a sistema:
+            //3a-Dare la possibilità di correggerlo o eventualmente identificarlo come token scam, in quel caso varrà sempre zero ma non verrà segnalato come errore
         
+         //Punto 1   
+           if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
+
+            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
+            //Punto 2
+            if (Errore.toLowerCase().contains("giacenza negativa")) {
+                try {
+                    //Punto 2a
+                    AnalisiCrypto.setSelectedComponent(GiacenzeaData);
+                    //Punto 2b
+                    String DataFineRW=RW_Anno_ComboBox.getSelectedItem().toString()+"-12-31";
+                    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                    Date d = f.parse(DataFineRW);                    
+                    GiacenzeaData_Data_DataChooser.setDate(d);
+                    //Punto 2c
+                    String GWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+                    GiacenzeaData_Wallet_ComboBox.setSelectedItem("Gruppo : "+GWallet);
+                    //Punto 2d
+                    GiacenzeaData_CompilaTabellaToken();
+                    //Punto 2e
+                    int righeTabella=GiacenzeaData_Tabella.getModel().getRowCount();
+                    //Certo la riga della tabella con la moneta incriminata
+                    int rigaTabellaMoneta=0;
+                    String MonetaCercata=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                    for (int i=0;i<righeTabella;i++){
+                        if (GiacenzeaData_Tabella.getModel().getValueAt(i, 0).toString().equals(MonetaCercata)){
+                            rigaTabellaMoneta=i;
+                        }
+                    }
+                    GiacenzeaData_Tabella.setRowSelectionInterval(rigaTabellaMoneta, rigaTabellaMoneta);
+                    GiacenzeaData_CompilaTabellaMovimenti();
+                    //Adesso mi posiziono nel primo movimento con giacenza negativa che trovo
+                    righeTabella=GiacenzeaData_TabellaDettaglioMovimenti.getModel().getRowCount();
+                    int rigaconGiacNegativa=0;
+                    for (int i=0;i<righeTabella;i++){
+                        if (GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 7).toString().contains("-")){
+                            rigaconGiacNegativa=i;
+                        }
+                    }
+                    GiacenzeaData_TabellaDettaglioMovimenti.setRowSelectionInterval(rigaconGiacNegativa, rigaconGiacNegativa);
+                  //  GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
+                    
+                } catch (ParseException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+              
+            }else{
+                //Messaggio nessun errore da correggere sulla riga selezionata
+            }
+        }
     }//GEN-LAST:event_RW_CorreggiErrore_BottoneActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {

@@ -41,7 +41,16 @@ public String GetTipologia(){
     return Tipo;
 }
 
-  
+    public Moneta ClonaMoneta() {
+        Moneta mo = new Moneta();
+        mo.Moneta = Moneta;
+        mo.MonetaAddress = MonetaAddress;
+        mo.Prezzo = Prezzo;
+        mo.Qta = Qta;
+        mo.Rete = Rete;
+        mo.Tipo = Tipo;
+        return mo;
+    } 
   
 }
 

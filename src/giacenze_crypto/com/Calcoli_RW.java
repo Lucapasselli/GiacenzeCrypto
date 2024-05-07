@@ -21,9 +21,11 @@ import java.util.TreeMap;
  *
  * @author luca.passelli
  */
+
+
 public class Calcoli_RW {
     
-    
+       static String AnnoR;
        public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
        String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
@@ -200,8 +202,8 @@ public class Calcoli_RW {
                 System.out.println("Giorni di Detenzione = " + DiffData);
                 System.out.println("Causale = " + Causale);
                 System.out.println("---------------------------------");*/
-                String xlista[]=new String[12];
-                xlista[0]="2023";                   //Anno RW
+                String xlista[]=new String[13];
+                xlista[0]=AnnoR;                    //Anno RW
                 xlista[1]=GruppoWallet;             //GruppoWallet
                 xlista[2]=Monete.Moneta;            //Moneta
                 xlista[3]=Elementi[0];              //Qta
@@ -213,6 +215,10 @@ public class Calcoli_RW {
                 xlista[9]=Causale;                  //Causale
                 xlista[10]=Elementi[3];             //ID Movimento Apertura (o segnalazione inizio anno)
                 xlista[11]=IDt;                     //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
+                xlista[12]="";                      //Tipo Errore
+                //System.out.println(Elementi[3]);
+               // if (Elementi[3].contains("Errore")) xlista[12]=Elementi[3].split("\\(")[1].replace(")", "");
+                if (Elementi[3].contains("Errore")) xlista[12]=Elementi[3];
                 if (!xlista[8].equals("0")){//Solo se i giorni di detenzione sono diversi da zero compilo la lista altrimenti resta tutto così com'è.
                     ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                     ListaRW.add(xlista);
@@ -223,14 +229,17 @@ public class Calcoli_RW {
     
     
     
-    public static void AggiornaRW() {
+    public static void AggiornaRW(String AnnoRif) {
         
         CDC_Grafica.Mappa_RW_ListeXGruppoWallet.clear();
+        CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.clear();
+        CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.clear();
+        AnnoR=AnnoRif;
 
         //PARTE 1 : Calcolo delle Giacenze iniziali e inserimento nello stack
-        int AnnoRiferimento = Integer.parseInt("2023");
-        String DataInizioAnno = "2023-01-01 00:00";
-        String DataFineAnno = "2023-12-31 23:59";
+        int AnnoRiferimento = Integer.parseInt(AnnoRif);
+        String DataInizioAnno = AnnoRif+"-01-01 00:00";
+        String DataFineAnno = AnnoRif+"-12-31 23:59";
         boolean PrimoMovimentoAnno = true;
 
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
@@ -324,11 +333,13 @@ public class Calcoli_RW {
                                 StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataInizioAnno,"Giacenza Inizio Anno");
                                 if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key)==null){
                                     List<Moneta> li=new ArrayList<>();
-                                    li.add(m);
+                                    Moneta mo=m.ClonaMoneta();
+                                    li.add(mo);
                                     CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.put(key, li);
                                 }else{
                                     List<Moneta> li=CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key);
-                                    li.add(m);
+                                    Moneta mo=m.ClonaMoneta();
+                                    li.add(mo);
                                 }
                             }
                         }
@@ -488,12 +499,14 @@ public class Calcoli_RW {
                             Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
                            // StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataFineAnno);
                             ChiudiRW(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo,"Fine Anno","Giacenza Fine Anno");
-                            if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key)==null){
+                            //Questo qua sotto popola una lista per ogni gruppo wallet contenente la giacenza di ciascuna moneta ad inizio anno
+                            
+                            if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key)==null){
                                     List<Moneta> li=new ArrayList<>();
                                     li.add(m);
-                                    CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.put(key, li);
+                                    CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.put(key, li);
                                 }else{
-                                    List<Moneta> li=CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key);
+                                    List<Moneta> li=CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key);
                                     li.add(m);
                                 }
 

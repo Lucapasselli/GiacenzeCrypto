@@ -51,6 +51,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
@@ -269,6 +270,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
+        RW_CorreggiErrore_Bottone = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -759,7 +761,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
@@ -1045,7 +1047,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(GiacenzeaData_Bottone_MovimentiDefi)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Bottone_Scam)
@@ -1059,8 +1061,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                                 .addComponent(GiacenzeaData_Wallet_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                                 .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1104,7 +1106,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1117,7 +1119,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label)
@@ -1164,11 +1166,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura"
+                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1202,9 +1204,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMaxWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(50);
@@ -1228,7 +1236,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Data", "Wallet", "Tipo Movimento", "Moneta Uscita / Fine Anno", "Moneta Entrata / Inizio Anno", "Valore", "ID Transazione"
+                "Data", "Wallet", "Tipo Movimento", "Mon.Uscita/Fine Anno", "Mon.Entrata/Iniz.Anno", "Valore", "ID Transazione"
             }
         ));
         jScrollPane9.setViewportView(RW_Tabella_DettaglioMovimenti);
@@ -1247,6 +1255,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel7.setText("RW Aggregato");
 
+        RW_CorreggiErrore_Bottone.setText("Corrreggi Errore");
+        RW_CorreggiErrore_Bottone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_CorreggiErrore_BottoneActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
         RWLayout.setHorizontalGroup(
@@ -1254,7 +1269,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(RWLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 860, Short.MAX_VALUE)
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 987, Short.MAX_VALUE)
                     .addComponent(jScrollPane8, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane9)
                     .addGroup(RWLayout.createSequentialGroup()
@@ -1266,10 +1281,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Calcola_Bottone))
                     .addGroup(RWLayout.createSequentialGroup()
-                        .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jLabel5)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(RWLayout.createSequentialGroup()
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(RW_CorreggiErrore_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         RWLayout.setVerticalGroup(
@@ -1281,13 +1298,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Calcola_Bottone)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
-                .addGap(9, 9, 9)
-                .addComponent(jLabel6)
+                .addGap(1, 1, 1)
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(RW_CorreggiErrore_Bottone))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1886,7 +1905,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(CDC_FiatWallet_Label_Tabella3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                     .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -2088,7 +2107,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2165,7 +2184,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_Emoney_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_Emoney_Bottone_Aggiungi)
@@ -3496,12 +3515,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
             for (String[] movimento : MappaCryptoWallet.values()) {
                 long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                 if (DataMovimento < DataRiferimento) {
+                        String gruppoWallet="";
+                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
                     // adesso verifico il wallet
                     if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
                                 ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) { 
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
@@ -5050,15 +5072,17 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // 7 - Prezzo Fine
         // 8 - Giorni di detenzione
         // 9 - Causale
-        Calcoli_RW.AggiornaRW();// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+        Calcoli_RW.AggiornaRW(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+            String Errore="";
             BigDecimal ValIniziale = new BigDecimal(0);
             BigDecimal ValFinale = new BigDecimal(0);
             BigDecimal ValFinalexggTOT = new BigDecimal(0);
             String RW1[] = new String[5];
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
               //  System.out.println(lista[1]);
+                if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
                 ValIniziale = new BigDecimal(lista[5]).add(ValIniziale);
                 ValFinale = new BigDecimal(lista[7]).add(ValFinale);
                 ValFinalexggTOT = new BigDecimal(lista[7]).multiply(new BigDecimal(lista[8])).add(ValFinalexggTOT);
@@ -5068,11 +5092,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             RW1[1] = ValIniziale.toPlainString();
             RW1[2] = ValFinale.toPlainString();
             RW1[3] = GGPonderati.toPlainString();
-            RW1[4] = "";
+            RW1[4] = Errore;
             ModelloTabella.addRow(RW1);
             
         }
-        Tabelle.ColoraTabellaSemplice(RW_Tabella);
+        Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
         
         
         
@@ -5100,7 +5124,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             }
           //  ModelloTabella.addRow(Mappa_RW_ListeXGruppoWallet);
             
-            Tabelle.ColoraTabellaSemplice(RW_Tabella_Dettagli);
+            Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella_Dettagli);
            } 
     }
     
@@ -5110,14 +5134,18 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            //IDIniziale è l'id del movimento che ha fatto partire l'RW
+            //IDFinale è l'id del movimento che ha chiuso l'RW
             String IDIniziale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
             String IDFinale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
+            String GruppoWallet = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString().trim();
+            String MonetaTab = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
            // System.out.println(IDIniziale + " - " + IDFinale);
             String[] Movimento=MappaCryptoWallet.get(IDIniziale);
             if (Movimento!=null){
                 String Mov[]=new String[7];
                 Mov[0]=Movimento[1];
-                Mov[1]=Movimento[3]+" ("+Movimento[4]+")";
+                Mov[1]=GruppoWallet+" ("+Movimento[3]+")";
                 Mov[2]=Movimento[5];
                 Mov[3]="";
                 Mov[4]="";
@@ -5128,12 +5156,32 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 ModelloTabella3.addRow(Mov);
             }else{
                 String Mov[]=new String[7];
+                //Se arrivo qua significa che il movimento è in realtà la giacenza iniziale
+                //devo quindi trovare a quanto ammonta e scriverlo
+                List<Moneta> listaIniziale=Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet);
+                String MonNome="";
+                String MonQta="";
+                String MonPrz="";
+                String MonTipo="";
+                if(listaIniziale!=null){
+                Iterator<Moneta> it=listaIniziale.iterator();
+                Moneta Mon;
+                while (it.hasNext()){
+                    Mon=it.next();
+                    if (Mon.Moneta.equals(MonetaTab)){
+                        MonNome=MonetaTab;
+                        MonQta=Mon.Qta;
+                        MonPrz=new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        MonTipo=Mon.Tipo;
+                    }
+                }
+                }
                 Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
-                Mov[1]="";
+                Mov[1]=GruppoWallet;
                 Mov[2]=IDIniziale;
                 Mov[3]="";
-                Mov[4]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
-                Mov[5]="";
+                Mov[4]=MonQta+" "+MonNome+" ("+MonTipo+")";
+                Mov[5]=MonPrz;
                 Mov[6]=""; 
                 ModelloTabella3.addRow(Mov);
             }
@@ -5141,7 +5189,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (Movimento!=null){
                 String Mov[]=new String[7];
                 Mov[0]=Movimento[1];
-                Mov[1]=Movimento[3]+" ("+Movimento[4]+")";
+                Mov[1]=GruppoWallet+" ("+Movimento[3]+")";
                 Mov[2]=Movimento[5];
                 Mov[3]="";
                 Mov[4]="";
@@ -5152,16 +5200,33 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 ModelloTabella3.addRow(Mov);
             }else{
                 String Mov[]=new String[7];
+                List<Moneta> listaFinale=Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet);
+                String MonNome="";
+                String MonQta="";
+                String MonPrz="";
+                String MonTipo="";
+                if(listaFinale!=null){
+                Iterator<Moneta> it=listaFinale.iterator();
+                Moneta Mon;
+                while (it.hasNext()){
+                    Mon=it.next();
+                    if (Mon.Moneta.equals(MonetaTab)){
+                        MonNome=MonetaTab;
+                        MonQta=Mon.Qta;
+                        MonPrz=new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        MonTipo=Mon.Tipo;
+                    }
+                }}
                 Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
-                Mov[1]="";
+                Mov[1]=GruppoWallet;
                 Mov[2]=IDFinale;
-                Mov[3]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                Mov[3]=MonQta+" "+MonNome+" ("+MonTipo+")";
                 Mov[4]="";
-                Mov[5]="";
+                Mov[5]=MonPrz;
                 Mov[6]=""; 
                 ModelloTabella3.addRow(Mov);
             }
-            Tabelle.ColoraTabellaSemplice(RW_Tabella_DettaglioMovimenti);
+            Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella_DettaglioMovimenti);
            } 
     }
     
@@ -5184,6 +5249,21 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // TODO add your handling code here:
         RW_CompilaTabellaDettagliXID();
     }//GEN-LAST:event_RW_Tabella_DettagliMouseReleased
+
+    private void RW_CorreggiErrore_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_CorreggiErrore_BottoneActionPerformed
+        // TODO add your handling code here:
+        //Quello che devo fare sono le seguenti cose:
+        //Individuare il tipo di errore
+        //Se è un errore di giacenza negativa :
+            //Posizionare il focus su GiacenzeaData
+            //Cambiare la data di riferimento con quella di fine anno RW
+            //Cambiare la label del wallet selezionato con quella del gruppo
+            //Compilare le 2 tabelle, la prima con le giacenze del wallet e la seconda tabella con le movimentazioni della coin con errore
+            //Far uscire un messaggio chiedendo di correggere la giacenza negativa
+        //Se è un errore di prezzo non disponibile a sistema:
+            //Dare la possibilità di correggerlo o eventualmente identificarlo come token scam, in quel caso varrà sempre zero ma non verrà segnalato come errore
+        
+    }//GEN-LAST:event_RW_CorreggiErrore_BottoneActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5369,9 +5449,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
                         // adesso verifico il wallet
+                        String gruppoWallet="";
+                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
-                                ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
+                                ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) {
                             // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
                             //Faccio la somma dei movimenti in usicta
@@ -5472,6 +5555,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet() {
        // int Selezionata=GiacenzeaData_Wallet_ComboBox.getSelectedIndex();
         String VecchioValore=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+        Map<String, String> MappaGruppiWalletUtilizzati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         boolean VecchioTrovato=false;
        // int Selezionata2=GiacenzeaData_Wallet2_ComboBox.getSelectedIndex();
         GiacenzeaData_Wallet_ComboBox.removeAllItems();
@@ -5482,7 +5566,16 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         }*/
         for (String v : Mappa_Wallet.keySet()) {
             this.GiacenzeaData_Wallet_ComboBox.addItem(v);
+            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v);
+            MappaGruppiWalletUtilizzati.put(GruppoWallet, GruppoWallet);
             if (v.equals(VecchioValore)) {
+                VecchioTrovato=true;
+            }
+        }
+        for (String v : MappaGruppiWalletUtilizzati.keySet()) {
+            String nome="Gruppo : "+v;
+            this.GiacenzeaData_Wallet_ComboBox.addItem(nome);
+            if (nome.equals(VecchioValore)) {
                 VecchioTrovato=true;
             }
         }
@@ -6402,6 +6495,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JPanel RW;
     private javax.swing.JComboBox<String> RW_Anno_ComboBox;
     private javax.swing.JButton RW_Calcola_Bottone;
+    private javax.swing.JButton RW_CorreggiErrore_Bottone;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;

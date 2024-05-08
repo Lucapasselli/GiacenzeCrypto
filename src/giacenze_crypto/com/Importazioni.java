@@ -3551,7 +3551,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         public static void ConvertiScambiLPinDepositiPrelievi(){
         //Ci sono alcuni depositi su piattaforma defi che nel momento in cui fai il deposito
         //ad esempio di un token lp sulla piattaforma poi ti restituiscono le reward accumulate fino a quel momento in altra moneta
-        //Questo fa si che il programma identifichi il movimento come uno scambio invec che come un deposito con una reward in rientro
+        //Questo fa si che il programma identifichi il movimento come uno scambio invece che come un deposito con una reward in rientro
         //Questa funzione cancellerà il movimento di scambio e lo trasformerà in un prelievo/deposito
         //Dove il prelievo viene fatto dal wallet verso una piattaforma defi
         //mentre il deposito sul wallet verrà fatto figurare come una reward come è giusto che sia

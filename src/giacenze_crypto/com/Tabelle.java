@@ -165,7 +165,7 @@ public class Tabelle {
 
             Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
  
-            if (isSelected) {
+            if (isSelected&&col!=7) {
 
                     c.setBackground(table.getSelectionBackground());
                     //c.revalidate();
@@ -175,8 +175,8 @@ public class Tabelle {
                   c.setBackground(bg);
                 }
             else if (col==7 && value.toString().toLowerCase().contains("-")) {
-                    setForeground(Color.RED);
-                  c.setBackground(bg);
+                    setForeground(Color.black);
+                  c.setBackground(Color.RED);
                 }
             else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 5).toString().contains("-")) {
                     setBackground(bg);
@@ -316,9 +316,9 @@ public class Tabelle {
                 }else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(row, 4).toString().toLowerCase().contains("error")) {
                     setForeground(Color.RED);
                   c.setBackground(bg);
-                }else if (table.getModel().getColumnCount()>9 && table.getModel().getValueAt(row, 10).toString().toLowerCase().contains("error")) {
+                }else if (table.getModel().getColumnCount()>11 && table.getModel().getValueAt(row, 12).toString().toLowerCase().contains("error")) {          
                     setForeground(Color.RED);
-                  c.setBackground(bg);
+                  c.setBackground(bg);                
                 }
                  
                 else {

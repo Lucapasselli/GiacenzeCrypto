@@ -71,6 +71,15 @@ private Timer timer = new Timer(1000, new ActionListener() {
         thread=T;
     }
     
+    public void NascondiBarra(){
+        ProgressBarDownload.setVisible(false);
+    }
+    
+    public void NascondiInterrompi(){
+        Bottone_Interrompi.setEnabled(false);
+        Bottone_Interrompi.setVisible(false);
+    }
+    
     public Boolean FineThread(){
         
         if (thread!=null&&!thread.isAlive()){

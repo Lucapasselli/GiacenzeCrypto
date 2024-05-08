@@ -250,9 +250,11 @@ public class TransazioneDefi {
             if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
                 //Se trovo un prezzo a zero valorizzo il booleano a false
                 trovatoValoreTransazione = false;
+                
 
              //   ValoreTransazioneEntrata = ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
             }
+          //  System.out.println(a.Qta+" - "+a.Moneta+" - Euro "+a.Prezzo);
             ValoreTransazioneEntrata = ValoreTransazioneEntrata.add(new BigDecimal(a.Prezzo));
         }
         if (trovatoValoreTransazione)// se trovo il totale allora vuol dire che ho trovato il valore della transazione lo salvo
@@ -261,6 +263,7 @@ public class TransazioneDefi {
 
         } //se non trovo il valore della transazione allora lo cerco nei valori in uscita
         else {
+            trovatoValoreTransazione = true;
             for (ValoriToken a : MappaTokenUscita.values()) {
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
                     //Se trovo un prezzo a zero valorizzo il booleano a false
@@ -268,6 +271,7 @@ public class TransazioneDefi {
             //        ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
                 }
                 ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
+             //   System.out.println(a.Qta+" - "+a.Moneta+" - Euro "+a.Prezzo);
             }
             if (trovatoValoreTransazione) {
                 ValoreTransazione = ValoreTransazioneUscita;
@@ -315,13 +319,17 @@ public class TransazioneDefi {
             for (ValoriToken a : MappaTokenEntrata.values()) {
                 //Se ha prezzo riduco di 1 il numero dei token rimanenti e faccio il calcolo del peso
                 //il peso lo calcolo dividendo il prezzo per il valore della transazione
+
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))!=0) {
+
                     numTokenRimenenti--;
                     if (numTokenRimenenti==0){
                         a.Peso=PesoRimanente.toPlainString();
+
                     }else   
                     {                 
-                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 10, RoundingMode.HALF_UP).toPlainString();
+                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 20, RoundingMode.HALF_UP).toPlainString();
+
                         //Se a.peso è maggiore di pesoRimanente allora a.Peso=Pesorimanente
                         if (new BigDecimal(a.Peso).compareTo(PesoRimanente)==1){
                             a.Peso=PesoRimanente.toPlainString();
@@ -376,6 +384,9 @@ public class TransazioneDefi {
                 }
             }
         }
+      /*  for (ValoriToken a : MappaTokenEntrata.values()) {
+         //   System.out.println(a.Qta+" - "+a.Moneta+" - Euro "+a.Prezzo+" - Peso : "+a.Peso);
+        }*/
     }
 
   
@@ -668,6 +679,7 @@ public class TransazioneDefi {
           // in seconda istanza a seconda del numero di token che compongono la transazione creo i vari scambi 
           int i=1;
           int totMov=MappaTokenEntrata.size()*MappaTokenUscita.size();
+          System.out.println("Numero Token in Entrata = "+MappaTokenEntrata.size()+" - Numero Token in uscita = "+MappaTokenUscita.size());
           for (ValoriToken tokenE : MappaTokenEntrata.values()) {
               for (ValoriToken tokenU : MappaTokenUscita.values()) {
                   //PESOOOOOOOOOOOOOOOOOOOOO

@@ -178,6 +178,7 @@ public class Calcoli_RW {
         }
         
     public static void ChiudiRW(Moneta Monete,Map<String, ArrayDeque> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale,String IDt) {
+       // System.out.println(Valore);
         List<String[]> ListaRW;
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
             List<String> ListaRitorno = StackLIFO_TogliQta(CryptoStack, Monete.Moneta, Monete.Qta, true);
@@ -191,17 +192,10 @@ public class Calcoli_RW {
                     DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
                 }
 
-               /* System.out.println("Gruppo = " + GruppoWallet);
-                System.out.println("Moneta = " + Monete.Moneta);
-                System.out.println("Qta = " + Elementi[0]);
-                System.out.println("Data inizio periodo di detenzione = " + Elementi[2]);
-                System.out.println("Prezzo a inizio periodo di detenzione = " + Elementi[1]);
-                System.out.println("Data fine periodo di detenzione = " + Data);*/
-                String Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(Elementi[0])).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
-               /* System.out.println("Prezzo a fine periodo di dentenzione = " + Prz);
-                System.out.println("Giorni di Detenzione = " + DiffData);
-                System.out.println("Causale = " + Causale);
-                System.out.println("---------------------------------");*/
+                String Prz;
+               // if (!Valore.equals("0.00")){
+                    Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(Elementi[0])).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+               // }
                 String xlista[]=new String[13];
                 xlista[0]=AnnoR;                    //Anno RW
                 xlista[1]=GruppoWallet;             //GruppoWallet
@@ -216,9 +210,19 @@ public class Calcoli_RW {
                 xlista[10]=Elementi[3];             //ID Movimento Apertura (o segnalazione inizio anno)
                 xlista[11]=IDt;                     //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
                 xlista[12]="";                      //Tipo Errore
-                //System.out.println(Elementi[3]);
-               // if (Elementi[3].contains("Errore")) xlista[12]=Elementi[3].split("\\(")[1].replace(")", "");
-                if (Elementi[3].contains("Errore")) xlista[12]=Elementi[3];
+                
+                //Qui gestisco gli errori
+                //Gli errori non li segnalo se il token in questione è stato identificato come Scam
+                if (DatabaseH2.RinominaToken_Leggi(Monete.MonetaAddress+"_"+Monete.Rete)!=null&&Monete.Moneta.contains(" **")){
+                    xlista[12] = "Avviso (Token SCAM)";
+                }
+                else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
+                    xlista[12] = "Errore ("+Elementi[3].split("\\(")[1].replace(")", "")+" e Token non Valorizzato)";
+                } else if (Valore.equals("0.00")) {
+                    xlista[12] = "Errore (Token non Valorizzato)";
+                } else if (Elementi[3].contains("Errore")) {
+                    xlista[12] = Elementi[3];
+                }
                 if (!xlista[8].equals("0")){//Solo se i giorni di detenzione sono diversi da zero compilo la lista altrimenti resta tutto così com'è.
                     ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                     ListaRW.add(xlista);
@@ -325,10 +329,11 @@ public class Calcoli_RW {
                     for (String key : MappaGrWallet_QtaCrypto.keySet()) {
                         Map<String, Moneta> a = MappaGrWallet_QtaCrypto.get(key);
                         for (Moneta m : a.values()) {
-                            if (!m.Tipo.equalsIgnoreCase("FIAT")) {
+                            if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
                                 long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
-                                m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 10, null);
-                                // System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                                m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete);
+                               // System.out.println(m.Prezzo);
+                              //   System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
                                 Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
                                 StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataInizioAnno,"Giacenza Inizio Anno");
                                 if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key)==null){
@@ -492,10 +497,10 @@ public class Calcoli_RW {
                         for (String key : MappaGrWallet_QtaCrypto.keySet()) {
                     Map<String, Moneta> a = MappaGrWallet_QtaCrypto.get(key);
                     for (Moneta m : a.values()) {
-                        if (!m.Tipo.equalsIgnoreCase("FIAT")) {
+                        if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
                             long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnno);
-                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 10, null);
-                            // System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete);
+                           //  System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
                            // StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataFineAnno);
                             ChiudiRW(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo,"Fine Anno","Giacenza Fine Anno");

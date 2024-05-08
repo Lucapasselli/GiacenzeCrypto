@@ -1166,7 +1166,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore"
+                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1197,10 +1197,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(65);
             RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(2).setPreferredWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(100);
@@ -1256,6 +1256,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel7.setText("RW Aggregato");
 
         RW_CorreggiErrore_Bottone.setText("Corrreggi Errore");
+        RW_CorreggiErrore_Bottone.setEnabled(false);
         RW_CorreggiErrore_Bottone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_CorreggiErrore_BottoneActionPerformed(evt);
@@ -3509,8 +3510,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     DataRiferimento = DatadiOggi;
                 }
             }
-            //Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
-            //String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
+            //Adesso compilo i movimenti
             BigDecimal TotaleQta = new BigDecimal(0);
             for (String[] movimento : MappaCryptoWallet.values()) {
                 long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
@@ -3556,6 +3556,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     }
                 }
             }
+            //coloro la tabella
             Tabelle.ColoraRigheTabella1GiacenzeaData(GiacenzeaData_TabellaDettaglioMovimenti);
         }
     }
@@ -4247,6 +4248,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
     private void GiacenzeaData_Funzione_SistemaQta() {
         if (GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow() >= 0) {
+            int scelta=0;
             int rigaselezionataTabPrincipale = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String TipoMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionataTabPrincipale, 3).toString();
             int rigaselezionata = GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow();
@@ -4290,7 +4292,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                                 + "<b>4</b> - Lo inserisco con descrizione <b>Rettifica Giacenza</b><br>"
                                 + "    (Non verranno calcolate le eventuali plusvalenze)<br><br></html>";
                         Object[] Bottoni = {"Annulla", "1", "2", "3", "4"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                        scelta = JOptionPane.showOptionDialog(this, Testo,
                                 "Classificazione del movimento",
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.PLAIN_MESSAGE,
@@ -4386,7 +4388,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                                 + "<b>3</b> - Carico il movimento con <b>Costo di carico = 0</b><br><br>"
                                 + "</html>";
                         Object[] Bottoni = {"Annulla", "1", "2", "3"};
-                        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                        scelta = JOptionPane.showOptionDialog(this, Testo,
                                 "Classificazione del movimento",
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.PLAIN_MESSAGE,
@@ -4463,8 +4465,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
 
                     }
-                        //Adesso avviso che il movimento è inserito e ricarico l'intera pagina
-                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    //Adesso avviso che il movimento è inserito e ricarico l'intera pagina
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    if (scelta != 0 && scelta != -1) {
                         JOptionPane.showConfirmDialog(this, """
                                                             Movimento di rettifica generato con successo!
                                                             Ricordarsi di salvare i movimenti nella sezione 'Transazioni Crypto'.""",
@@ -4473,11 +4476,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                         GiacenzeaData_Tabella.getModel().setValueAt(GiacenzaVoluta, rigaselezionataTabPrincipale, 4);
                         GiacenzeaData_CompilaTabellaMovimenti();
                         //E ricarico la tabella secondaria
-                        
-                       // GiacenzeaData_CompilaTabellaToken();
-                       
+
+                        // GiacenzeaData_CompilaTabellaToken();
                         //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
                         TabellaCryptodaAggiornare = true;
+                        //Tra le altre cose devo anche ricalcolare l'RW qualora sia stato già calcolato
+                        RW_RicalcolaRWseEsiste();
+                    }
                 } else {
                     //  completato=false;
                     JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
@@ -4917,16 +4922,34 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
             String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
             String Wallet=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            //Se viene modificato un gruppo wallet
+            //1 - Scrivo il nuovo gruppo nel dabase
+            //2 - Ricalcolo i dati dell'RW se presenti
+            //3 - Aggiorno le plusvalenze
+            //4 - Ricarico la tabella crypto
             if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equals(Gruppo)){
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                //1 - Scrivo il nuovo gruppo nel dabase
                 DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
+                //2 - Ricalcolo i dati dell'RW se presenti
+                RW_RicalcolaRWseEsiste();
+                //3 - Aggiorno le plusvalenze
                 Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                //4 - Ricarico la tabella crypt
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaFocusGained
 
+    private void RW_RicalcolaRWseEsiste() {
+        //Questa funzione serve per ricalcolare l'RW qualora vi siano state delle modifiche
+        //Va a verificare se l'RW è stato generato e in quel caso lo ricalcola altrimenti non fa nulla
+        if (Mappa_RW_ListeXGruppoWallet != null && !Mappa_RW_ListeXGruppoWallet.isEmpty()) {
+            RW_CalcolaRW();
+        }
+    }
+    
     private void Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
         // TODO add your handling code here:
         if(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedIndex()!=0) {
@@ -5053,13 +5076,21 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
     private void RW_Calcola_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Calcola_BottoneActionPerformed
         // TODO add your handling code here:
+        RW_CalcolaRW();
         
+       
+    }//GEN-LAST:event_RW_Calcola_BottoneActionPerformed
+
+    private void RW_CalcolaRW(){
+                // TODO add your handling code here:
+        //Come prima cosa faccio un pò di pulizia
         DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        RW_CorreggiErrore_Bottone.setEnabled(false);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         //Array Lista RW così composta
         // 0 - Anno
@@ -5072,6 +5103,18 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // 7 - Prezzo Fine
         // 8 - Giorni di detenzione
         // 9 - Causale
+                Download progress = new Download();
+        progress.setLocationRelativeTo(this);
+                Thread thread;
+        thread = new Thread() {
+            public void run() {
+
+        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+        //in futuro dovrò mettere anche un limite per data e un limite per wallet
+        progress.Titolo("Calcolo RW in corso.... Attendere");
+        progress.SetLabel("Calcolo RW in corso.... Attendere");
+        progress.NascondiBarra();
+        progress.NascondiInterrompi();
         Calcoli_RW.AggiornaRW(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
@@ -5083,11 +5126,16 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
               //  System.out.println(lista[1]);
                 if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
+                if (lista[12].toLowerCase().contains("error"))Errore="ERRORI";
                 ValIniziale = new BigDecimal(lista[5]).add(ValIniziale);
                 ValFinale = new BigDecimal(lista[7]).add(ValFinale);
                 ValFinalexggTOT = new BigDecimal(lista[7]).multiply(new BigDecimal(lista[8])).add(ValFinalexggTOT);
             }
-            BigDecimal GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
+            BigDecimal GGPonderati=new BigDecimal(999999);
+            if (ValFinale.compareTo(new BigDecimal(0))!=0) {
+                GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
+            }else Errore="ERRORI";
+            if (!Errore.isBlank())GGPonderati=new BigDecimal(999999);
             RW1[0] = key.split(" ")[1] + " (" + key + ")";
             RW1[1] = ValIniziale.toPlainString();
             RW1[2] = ValFinale.toPlainString();
@@ -5097,6 +5145,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             
         }
         Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
+        progress.ChiudiFinestra();
+        }
+            };
+        thread.start();
+        progress.setVisible(true);
+       // Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
+        RW_Tabella.requestFocus();
         
         
         
@@ -5104,10 +5159,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         
         //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
-        
-       
-    }//GEN-LAST:event_RW_Calcola_BottoneActionPerformed
-
+    }
+    
     private void RW_CompilaTabellaDettagli(){
         if (RW_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -5134,6 +5187,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
+            if (Errore.toLowerCase().contains("errore")) {
+                //se c'è un errore sulla riga abilito il pulsante di correzione altrimenti lo disabilito
+                RW_CorreggiErrore_Bottone.setEnabled(true);
+            }else{
+                RW_CorreggiErrore_Bottone.setEnabled(false);
+            }
             //IDIniziale è l'id del movimento che ha fatto partire l'RW
             //IDFinale è l'id del movimento che ha chiuso l'RW
             String IDIniziale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
@@ -5271,6 +5331,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             //Punto 2
             if (Errore.toLowerCase().contains("giacenza negativa")) {
                 try {
+                    JOptionPane.showConfirmDialog(this, "Si verrà ora reindirizzati alla funzione GiacenzeaData\nSistemare le giacenze negative per correggere l'RW!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                     //Punto 2a
                     AnalisiCrypto.setSelectedComponent(GiacenzeaData);
                     //Punto 2b
@@ -5304,7 +5366,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                         }
                     }
                     GiacenzeaData_TabellaDettaglioMovimenti.setRowSelectionInterval(rigaconGiacNegativa, rigaconGiacNegativa);
-                  //  GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
+                    //GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
                     
                 } catch (ParseException ex) {
                     Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);

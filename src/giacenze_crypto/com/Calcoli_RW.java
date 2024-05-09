@@ -104,7 +104,8 @@ public class Calcoli_RW {
                 qtaRimanente=qtaRimanente.subtract(qtaEstratta);
                                
                 //poi inserisco nella lista i dati che mi servono per chiudere le righe dell'rw
-                ListaRitorno.add(qtaEstratta.toPlainString()+";"+costoEstratta.setScale(2, RoundingMode.HALF_UP).toPlainString()+";"+dataEstratta+";"+IDEstratto);
+               // ListaRitorno.add(qtaEstratta.toPlainString()+";"+costoEstratta.setScale(2, RoundingMode.HALF_UP).toPlainString()+";"+dataEstratta+";"+IDEstratto);
+                ListaRitorno.add(qtaEstratta.toPlainString()+";"+costoEstratta.toPlainString()+";"+dataEstratta+";"+IDEstratto);
             }else{
                 //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
                 //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
@@ -117,7 +118,8 @@ public class Calcoli_RW {
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,dataEstratta,IDEstratto};
                 stack.push(valori);
                 BigDecimal costoTransazione=costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck));
-                ListaRitorno.add(qtaRimanente.toPlainString()+";"+costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString()+";"+dataEstratta+";"+IDEstratto);
+               // ListaRitorno.add(qtaRimanente.toPlainString()+";"+costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString()+";"+dataEstratta+";"+IDEstratto);
+                ListaRitorno.add(qtaRimanente.toPlainString()+";"+costoTransazione.toPlainString()+";"+dataEstratta+";"+IDEstratto);
                 
 
                 qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
@@ -194,7 +196,7 @@ public class Calcoli_RW {
 
                 String Prz;
                // if (!Valore.equals("0.00")){
-                    Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(Elementi[0])).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(Elementi[0])).abs().toPlainString();
                // }
                 String xlista[]=new String[13];
                 xlista[0]=AnnoR;                    //Anno RW
@@ -211,16 +213,12 @@ public class Calcoli_RW {
                 xlista[11]=IDt;                     //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
                 xlista[12]="";                      //Tipo Errore
                 
+                //Verifico Ora se esistono i prezzi unitari del token con data iniziale e del token con data finale.
+                //Se esistono li scrivo nella lista come campo 13 e 14
+                
                 //Qui gestisco gli errori
                 //Gli errori non li segnalo se il token in questione è stato identificato come Scam
-                if (DatabaseH2.RinominaToken_Leggi(Monete.MonetaAddress+"_"+Monete.Rete)!=null&&Monete.Moneta.contains(" **")){
-                    xlista[12] = "Avviso (Token SCAM)";
-                }
-                else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
-                    xlista[12] = "Errore ("+Elementi[3].split("\\(")[1].replace(")", "")+" e Token non Valorizzato)";
-                } else if (Valore.equals("0.00")) {
-                    xlista[12] = "Errore (Token non Valorizzato)";
-                } else if (Elementi[3].contains("Errore")) {
+                if (Elementi[3].contains("Errore")) {
                     xlista[12] = Elementi[3];
                 }
                 if (!xlista[8].equals("0")){//Solo se i giorni di detenzione sono diversi da zero compilo la lista altrimenti resta tutto così com'è.
@@ -231,7 +229,43 @@ public class Calcoli_RW {
         }
     }
     
-    
+    public static void SistemaErroriInListe(){
+        
+        //Se prezzo = 0.00 significa che non esiste il prezzo della moneta
+        //Lo segnalo nelgi errori
+        //Poi scalo tutti i prezzi ai 2 centesimi
+        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+            for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)) {
+                //Prima di aggiungere alla tabella la riga relativa al movimento controllo se il valore è a zero
+                //se il valore è zero e non esiste un prezzo per quel token a quella data allora metto errore
+                String PrezzoInizio = lista[5];
+                String PrezzoFine = lista[7];
+                if (PrezzoInizio.equals("0.00")) {
+                    lista[12] = "Errore (Token non Valorizzato)";
+                }
+                if (PrezzoFine.equals("0.00")) {
+                    lista[12] = "Errore (Token non Valorizzato)";
+                }
+                lista[5]=new BigDecimal(lista[5]).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                lista[7]=new BigDecimal(lista[5]).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                
+                //Manca da sistemare la parte relativa al fatto di non segnalare i token scam
+                //Poi sarebbe anche da verificare le giacenze negative
+                //e fare la modifica dei prezzi sui token con id
+                
+              /*  if (DatabaseH2.RinominaToken_Leggi(Monete.MonetaAddress+"_"+Monete.Rete)!=null&&Monete.Moneta.contains(" **")){
+                    xlista[12] = "Avviso (Token SCAM)";
+                }
+                else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
+                    xlista[12] = "Errore ("+Elementi[3].split("\\(")[1].replace(")", "")+" e Token non Valorizzato)";
+                } else if (Valore.equals("0.00")) {
+                    xlista[12] = "Errore (Token non Valorizzato)";
+                } else */
+            }
+        }
+    }
+
+
     
     public static void AggiornaRW(String AnnoRif) {
         
@@ -239,11 +273,16 @@ public class Calcoli_RW {
         CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.clear();
         CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.clear();
         AnnoR=AnnoRif;
+        String AnnoSuccessivo=String.valueOf(Integer.parseInt(AnnoRif)+1);
 
         //PARTE 1 : Calcolo delle Giacenze iniziali e inserimento nello stack
         int AnnoRiferimento = Integer.parseInt(AnnoRif);
         String DataInizioAnno = AnnoRif+"-01-01 00:00";
         String DataFineAnno = AnnoRif+"-12-31 23:59";
+        long fine = OperazioniSuDate.ConvertiDatainLongMinuto(AnnoSuccessivo+"-01-01 00:00");//Data Fine anno in long per calcolo prezzi
+        
+       // long inizio = OperazioniSuDate.ConvertiDatainLongSecondo(AnnoPrecendente+"-12-31 23:59:59");//Data Fine anno in long per calcolo prezzi
+        long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);//Data inizio anno in long per calcolo prezzi
         boolean PrimoMovimentoAnno = true;
 
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
@@ -330,7 +369,7 @@ public class Calcoli_RW {
                         Map<String, Moneta> a = MappaGrWallet_QtaCrypto.get(key);
                         for (Moneta m : a.values()) {
                             if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
-                                long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
+                                //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
                                 m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete);
                                // System.out.println(m.Prezzo);
                               //   System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
@@ -498,7 +537,7 @@ public class Calcoli_RW {
                     Map<String, Moneta> a = MappaGrWallet_QtaCrypto.get(key);
                     for (Moneta m : a.values()) {
                         if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
-                            long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnno);
+                           // long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnnoCalcoloPrezzi);
                             m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete);
                            //  System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);

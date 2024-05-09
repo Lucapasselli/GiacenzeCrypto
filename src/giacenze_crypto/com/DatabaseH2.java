@@ -445,6 +445,8 @@ public class DatabaseH2 {
 
     public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
         String Risultato = null;
+       // String OAC[]=ora_address_chain.split("_");
+        ora_address_chain=ora_address_chain.toUpperCase();
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
@@ -463,6 +465,8 @@ public class DatabaseH2 {
     public static void PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo) {
         try {
             // Connessione al database
+            //String OAC[]=ora_address_chain.split("_");
+            ora_address_chain=ora_address_chain.toUpperCase();
             String checkIfExistsSQL = "SELECT COUNT(*) FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
             //System.out.println(checkIfExistsSQL);
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);

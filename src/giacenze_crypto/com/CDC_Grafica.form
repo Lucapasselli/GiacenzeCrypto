@@ -1367,7 +1367,13 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="jLabel6" min="-2" pref="216" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="RW_CorreggiErrore_Bottone" min="-2" pref="248" max="-2" attributes="0"/>
+                                      <Component id="RW_ModificaVIniziale_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="RW_ModificaVFinale_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="RW_IdentificaScam_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="RW_CorreggiErrore_Bottone" min="-2" pref="154" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -1384,15 +1390,18 @@
                                   <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="158" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="162" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="243" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="247" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="RW_CorreggiErrore_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_IdentificaScam_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_ModificaVFinale_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_ModificaVIniziale_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="jScrollPane9" min="-2" pref="114" max="-2" attributes="0"/>
@@ -1688,6 +1697,33 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_CorreggiErrore_BottoneActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RW_IdentificaScam_Bottone">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Identifica come SPAM"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_IdentificaScam_BottoneActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RW_ModificaVFinale_Bottone">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Modifica Valore Finale"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_ModificaVFinale_BottoneActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RW_ModificaVIniziale_Bottone">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Modifica Valore Iniziale"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_ModificaVIniziale_BottoneActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

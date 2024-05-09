@@ -271,6 +271,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         RW_CorreggiErrore_Bottone = new javax.swing.JButton();
+        RW_IdentificaScam_Bottone = new javax.swing.JButton();
+        RW_ModificaVFinale_Bottone = new javax.swing.JButton();
+        RW_ModificaVIniziale_Bottone = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -1263,6 +1266,30 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        RW_IdentificaScam_Bottone.setText("Identifica come SPAM");
+        RW_IdentificaScam_Bottone.setEnabled(false);
+        RW_IdentificaScam_Bottone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_IdentificaScam_BottoneActionPerformed(evt);
+            }
+        });
+
+        RW_ModificaVFinale_Bottone.setText("Modifica Valore Finale");
+        RW_ModificaVFinale_Bottone.setEnabled(false);
+        RW_ModificaVFinale_Bottone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_ModificaVFinale_BottoneActionPerformed(evt);
+            }
+        });
+
+        RW_ModificaVIniziale_Bottone.setText("Modifica Valore Iniziale");
+        RW_ModificaVIniziale_Bottone.setEnabled(false);
+        RW_ModificaVIniziale_Bottone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_ModificaVIniziale_BottoneActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
         RWLayout.setHorizontalGroup(
@@ -1287,7 +1314,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addGroup(RWLayout.createSequentialGroup()
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(RW_CorreggiErrore_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(RW_ModificaVIniziale_Bottone)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_ModificaVFinale_Bottone)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_IdentificaScam_Bottone)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RW_CorreggiErrore_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         RWLayout.setVerticalGroup(
@@ -1299,15 +1332,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Calcola_Bottone)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addGap(1, 1, 1)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(RW_CorreggiErrore_Bottone))
+                    .addComponent(RW_CorreggiErrore_Bottone)
+                    .addComponent(RW_IdentificaScam_Bottone)
+                    .addComponent(RW_ModificaVFinale_Bottone)
+                    .addComponent(RW_ModificaVIniziale_Bottone))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -4053,6 +4089,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             Calcoli_Plusvalenze.AggiornaPlusvalenze();
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+            RW_RicalcolaRWseEsiste();
             //GiacenzeaData_AggiornaComboBoxWallet();
            /* TransazioniCrypto_Bottone_Annulla.setEnabled(true);
             TransazioniCrypto_Bottone_Salva.setEnabled(true);
@@ -4113,6 +4150,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                         BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, 30, RoundingMode.HALF_UP).stripTrailingZeros();
                         if (Address != null && Rete != null) {
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString());
+                           // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString());
                         }
@@ -4126,6 +4164,101 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             }
         }
     }
+    
+        private void RW_Funzione_ModificaValore(int InizioFine) {
+            //InizioFine=0 -> Prezzo Iniziale
+            //InizioFine=1 -> Prezzo Finale
+            //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
+            //Altrimenti cambio il prezzo sulla transazione
+            String ID;
+        if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
+            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            String GruppoWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+            String DataPrezzo;
+            String Prezzo;
+            if (InizioFine==0){
+                    //Prezzo Iniziale
+                    DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
+                    Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString();
+                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+            }else{
+                    //Prezzo Finale
+                    DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
+                    Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString();
+                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
+            }
+            System.out.println("RW_Funzione_ModificaValore  - ID : "+ID);
+            if (ID==null||ID.isBlank()||ID.split("_").length==1){
+                //Se entro qua dentro significa che il valore che voglio modificare è quello di inizio o fine anno
+                //Adesso verifico se è una data iniziale o finale che voglio modificare
+                //Se è fine anno devo invece aggiungere 60 secondi
+                long DataCalcoli = 0;
+                if (DataPrezzo.contains("00:00")) DataCalcoli=OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo);
+                if (DataPrezzo.contains("23:59")) DataCalcoli=OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo)+60000;
+                String DataconOra=OperazioniSuDate.ConvertiDatadaLongallOra(DataCalcoli);
+            //long DataRiferimento = 0;
+                
+                String mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
+                
+
+                String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
+                if (Prezz != null) {
+                    Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                    if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+                        //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
+                        //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.
+                        //Scansiono la tabella della movimentazioni e salvo in una mappa Monete tutte le monete che trovo con Address_Nome come key
+                        //ovvimente solo quelle facente parti del Gruppo wallet analizzato
+                        String Address;
+                        String Rete;
+                        //cd
+                        Map<String, Moneta> MappaAddressNomeMoneta = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);        
+                        for (String[] v : MappaCryptoWallet.values()) {
+                            Moneta a[]=Funzioni.RitornaMoneteDaID(v[0]);
+                            //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
+                            //E se il wallet fa parte del gruppo wallet di riferimento
+                            String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+                            long dataTransazione=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                            if (dataTransazione<=DataCalcoli&&GruppoWallet.equals(GruppoWalletMovimento)){
+                            //A questo punto controllo se la moneta è quella che sto cercando
+                            for (Moneta MonTransazione : a){
+                                //controllo sia la moneta in uscita che quella in ingresso, nel caso trovi una corrispondenza inserisco la moneta nella mappa
+                                if (MonTransazione.Moneta.equals(mon)){
+                                    MappaAddressNomeMoneta.put(MonTransazione.MonetaAddress+"_"+MonTransazione.Moneta, MonTransazione);
+                                }
+                            }
+                            }else  {
+                                //in caso devo mettere un break se la funzione risulta troppo lenta
+                            }
+                        }
+                        
+                        for (Moneta Mone : MappaAddressNomeMoneta.values()){
+                            Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
+                            Rete=Mone.Rete;
+                           // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
+                           // System.out.println(DataconOra);
+                        //Se è un numero inserisco il prezzo e lo salvo a sistema
+                        BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, 30, RoundingMode.HALF_UP).stripTrailingZeros();
+                        if (Address != null && Rete != null) {
+                          //  System.out.println("Scrivo prezzo per Address");
+                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString());
+                           // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
+                        } else {
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString());
+                        }
+                        } 
+                    } else {
+                        JOptionPane.showConfirmDialog(this, "Attenzione, " + Prezz + " non è un numero valido!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+                }
+                //Una volta cambiato il prezzo aggiorno la tabella
+                this.RW_CalcolaRW();
+         }    
+        }
+    }
+    
     
     private void GiacenzeaData_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
@@ -4481,7 +4614,6 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                         //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
                         TabellaCryptodaAggiornare = true;
                         //Tra le altre cose devo anche ricalcolare l'RW qualora sia stato già calcolato
-                        RW_RicalcolaRWseEsiste();
                     }
                 } else {
                     //  completato=false;
@@ -5091,6 +5223,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         RW_CorreggiErrore_Bottone.setEnabled(false);
+        RW_IdentificaScam_Bottone.setEnabled(false);
+        RW_ModificaVFinale_Bottone.setEnabled(false);
+        RW_ModificaVIniziale_Bottone.setEnabled(false);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         //Array Lista RW così composta
         // 0 - Anno
@@ -5116,6 +5251,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.NascondiBarra();
         progress.NascondiInterrompi();
         Calcoli_RW.AggiornaRW(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+        Calcoli_RW.SistemaErroriInListe();//Serve per controllare le liste create e aggionare la segnalazione sui possibili errori
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
             String Errore="";
@@ -5173,7 +5309,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             String Gruppo = RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split("\\(")[1].replaceAll("\\)", "").trim();
             //System.out.println(Gruppo);
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
-                 ModelloTabella.addRow(lista);
+                ModelloTabella.addRow(lista);
             }
           //  ModelloTabella.addRow(Mappa_RW_ListeXGruppoWallet);
             
@@ -5188,18 +5324,35 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
+            String MonetaTab = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
+            
+            if (Errore.toLowerCase().contains("scam")){
+                RW_IdentificaScam_Bottone.setText("Rimuovi da SCAM");
+                RW_IdentificaScam_Bottone.setEnabled(true);
+                }
+            else{
+                RW_IdentificaScam_Bottone.setText("Identifica come SCAM");
+                }
             if (Errore.toLowerCase().contains("errore")) {
                 //se c'è un errore sulla riga abilito il pulsante di correzione altrimenti lo disabilito
                 RW_CorreggiErrore_Bottone.setEnabled(true);
+                if (Errore.toLowerCase().contains("token non valorizzato")){
+                    RW_IdentificaScam_Bottone.setEnabled(true);
+                    RW_ModificaVFinale_Bottone.setEnabled(true);
+                    RW_ModificaVIniziale_Bottone.setEnabled(true);
+                }
             }else{
                 RW_CorreggiErrore_Bottone.setEnabled(false);
+                RW_IdentificaScam_Bottone.setEnabled(false);
+               // RW_ModificaVFinale_Bottone.setEnabled(false);
+               // RW_ModificaVIniziale_Bottone.setEnabled(false);
             }
             //IDIniziale è l'id del movimento che ha fatto partire l'RW
             //IDFinale è l'id del movimento che ha chiuso l'RW
             String IDIniziale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
             String IDFinale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
             String GruppoWallet = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString().trim();
-            String MonetaTab = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
+            
            // System.out.println(IDIniziale + " - " + IDFinale);
             String[] Movimento=MappaCryptoWallet.get(IDIniziale);
             if (Movimento!=null){
@@ -5363,10 +5516,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     for (int i=0;i<righeTabella;i++){
                         if (GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 7).toString().contains("-")){
                             rigaconGiacNegativa=i;
+                            GiacenzeaData_Bottone_RettificaQta.setEnabled(true);
                         }
                     }
                     GiacenzeaData_TabellaDettaglioMovimenti.setRowSelectionInterval(rigaconGiacNegativa, rigaconGiacNegativa);
-                    //GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
+                    GiacenzeaData.requestFocus();
+                    GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
                     
                 } catch (ParseException ex) {
                     Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -5378,6 +5533,58 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             }
         }
     }//GEN-LAST:event_RW_CorreggiErrore_BottoneActionPerformed
+
+    private void RW_IdentificaScam_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_IdentificaScam_BottoneActionPerformed
+        try {
+            // TODO add your handling code here:
+            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            //   String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
+            JOptionPane.showConfirmDialog(this, "Si verrà ora reindirizzati alla funzione GiacenzeaData\nIdentificare i token SCAM per correggere l'RW!",
+                    "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            //Punto 2a
+            AnalisiCrypto.setSelectedComponent(GiacenzeaData);
+            //Punto 2b
+            String DataFineRW=RW_Anno_ComboBox.getSelectedItem().toString()+"-12-31";
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = f.parse(DataFineRW);
+            GiacenzeaData_Data_DataChooser.setDate(d);
+            //Punto 2c
+            String GWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+            GiacenzeaData_Wallet_ComboBox.setSelectedItem("Gruppo : "+GWallet);
+            //Punto 2d
+            GiacenzeaData_CompilaTabellaToken();
+            //Punto 2e
+            int righeTabella=GiacenzeaData_Tabella.getModel().getRowCount();
+            //Certo la riga della tabella con la moneta incriminata
+            int rigaTabellaMoneta=0;
+            String MonetaCercata=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+            for (int i=0;i<righeTabella;i++){
+                if (GiacenzeaData_Tabella.getModel().getValueAt(i, 0).toString().equals(MonetaCercata)){
+                    rigaTabellaMoneta=i;
+                }
+            }
+            GiacenzeaData_Tabella.setRowSelectionInterval(rigaTabellaMoneta, rigaTabellaMoneta);
+            GiacenzeaData_CompilaTabellaMovimenti();
+            GiacenzeaData.requestFocus();
+            GiacenzeaData_Tabella.requestFocus();
+            //GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
+        } catch (ParseException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                    
+        
+    }//GEN-LAST:event_RW_IdentificaScam_BottoneActionPerformed
+
+    private void RW_ModificaVIniziale_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_ModificaVIniziale_BottoneActionPerformed
+        // TODO add your handling code here:
+        RW_Funzione_ModificaValore(0);
+    }//GEN-LAST:event_RW_ModificaVIniziale_BottoneActionPerformed
+
+    private void RW_ModificaVFinale_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_ModificaVFinale_BottoneActionPerformed
+        // TODO add your handling code here:
+        RW_Funzione_ModificaValore(1);
+
+    }//GEN-LAST:event_RW_ModificaVFinale_BottoneActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5548,6 +5755,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
             DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86400000;
+           // DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86399000;
+            //DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86340000;//Riferito alle 23:59 del giorno
             long DatadiOggi = System.currentTimeMillis();
             if (DatadiOggi<DataRiferimento) DataRiferimento=DatadiOggi;
         } 
@@ -6610,6 +6819,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JComboBox<String> RW_Anno_ComboBox;
     private javax.swing.JButton RW_Calcola_Bottone;
     private javax.swing.JButton RW_CorreggiErrore_Bottone;
+    private javax.swing.JButton RW_IdentificaScam_Bottone;
+    private javax.swing.JButton RW_ModificaVFinale_Bottone;
+    private javax.swing.JButton RW_ModificaVIniziale_Bottone;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;

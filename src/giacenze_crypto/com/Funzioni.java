@@ -163,6 +163,28 @@ public class Funzioni {
         return true;
 
     }
+    
+        public static Moneta[] RitornaMoneteDaID(String ID){
+            //Moneta[0] sarà la moneta uscente
+            //Moneta[1] srà quella entrante
+            Moneta m[]=new Moneta[2];
+            String[] Mov=MappaCryptoWallet.get(ID);
+            m[0]=new Moneta();
+            m[0].Moneta=Mov[8];
+            m[0].MonetaAddress=Mov[26];
+            m[0].Prezzo=Mov[15];
+            m[0].Qta=Mov[10];
+            m[0].Rete=TrovaReteDaID(ID);
+            m[0].Tipo=Mov[9];
+            m[1]=new Moneta();
+            m[1].Moneta=Mov[11];
+            m[1].MonetaAddress=Mov[28];
+            m[1].Prezzo=Mov[15];
+            m[1].Qta=Mov[13];
+            m[1].Rete=TrovaReteDaID(ID);
+            m[1].Tipo=Mov[12];
+            return m;
+        }
         
         public static boolean isSCAM(String Nome){
             boolean SCAM=false;

@@ -1219,6 +1219,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(200);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(0);
@@ -1275,7 +1278,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         RW_ModificaVFinale_Bottone.setText("Modifica Valore Finale");
-        RW_ModificaVFinale_Bottone.setEnabled(false);
         RW_ModificaVFinale_Bottone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_ModificaVFinale_BottoneActionPerformed(evt);
@@ -1283,7 +1285,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         RW_ModificaVIniziale_Bottone.setText("Modifica Valore Iniziale");
-        RW_ModificaVIniziale_Bottone.setEnabled(false);
         RW_ModificaVIniziale_Bottone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_ModificaVIniziale_BottoneActionPerformed(evt);
@@ -1638,7 +1639,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        CDC.addTab("Carta", CDC_CardWallet_Pannello);
+        CDC.addTab("Carta CdC", CDC_CardWallet_Pannello);
 
         CDC_FiatWallet_Bottone_CaricaCSV.setText("Carica Dati Fiat Wallet");
         CDC_FiatWallet_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
@@ -1950,7 +1951,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(CDC_FiatWallet_Text_FiltroTabella, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
-        CDC.addTab("Fiat Wallet", CDC_FiatWallet_Pannello);
+        CDC.addTab("Fiat Wallet CdC", CDC_FiatWallet_Pannello);
 
         Opzioni.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -4188,7 +4189,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
             }
             System.out.println("RW_Funzione_ModificaValore  - ID : "+ID);
-            if (ID==null||ID.isBlank()||ID.split("_").length==1){
+            int rigaTabellaPrincipale=RW_Tabella.getSelectedRow();
+            if (MappaCryptoWallet.get(ID)==null){
                 //Se entro qua dentro significa che il valore che voglio modificare è quello di inizio o fine anno
                 //Adesso verifico se è una data iniziale o finale che voglio modificare
                 //Se è fine anno devo invece aggiungere 60 secondi
@@ -4253,9 +4255,26 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                     }
                 }
-                //Una volta cambiato il prezzo aggiorno la tabella
+
+         }else{
+                JOptionPane.showConfirmDialog(this, "<html>Attenzione<br>"
+                        + "Siccome il valore è legato ad un movimento specifico verra' proposto la modifica dello stesso.<br>"
+                        + "Questo potrebbe inficiare anche sul valore di altri righi che fanno riferimento allo stesso movimento.</html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+                            a.CompilaCampidaID(ID);
+            a.setLocationRelativeTo(this);
+            a.setVisible(true);
+            }
+                         //Una volta cambiato il prezzo aggiorno la tabella
                 this.RW_CalcolaRW();
-         }    
+                RW_Tabella.setRowSelectionInterval(rigaTabellaPrincipale, rigaTabellaPrincipale);
+                RW_CompilaTabellaDettagli();
+                RW_Tabella_Dettagli.setRowSelectionInterval(rigaselezionata, rigaselezionata);
+                RW_CompilaTabellaDettagliXID();
+                RW_Tabella_Dettagli.requestFocus();
+                //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima   
+            
         }
     }
     
@@ -5224,8 +5243,6 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         RW_CorreggiErrore_Bottone.setEnabled(false);
         RW_IdentificaScam_Bottone.setEnabled(false);
-        RW_ModificaVFinale_Bottone.setEnabled(false);
-        RW_ModificaVIniziale_Bottone.setEnabled(false);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         //Array Lista RW così composta
         // 0 - Anno
@@ -5251,7 +5268,6 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.NascondiBarra();
         progress.NascondiInterrompi();
         Calcoli_RW.AggiornaRW(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
-        Calcoli_RW.SistemaErroriInListe();//Serve per controllare le liste create e aggionare la segnalazione sui possibili errori
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
             String Errore="";
@@ -5298,6 +5314,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     }
     
     private void RW_CompilaTabellaDettagli(){
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (RW_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabella = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
@@ -5314,7 +5331,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
           //  ModelloTabella.addRow(Mappa_RW_ListeXGruppoWallet);
             
             Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella_Dettagli);
+            Tabelle.updateRowHeights(RW_Tabella_Dettagli);
            } 
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
     private void RW_CompilaTabellaDettagliXID(){
@@ -5336,16 +5355,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (Errore.toLowerCase().contains("errore")) {
                 //se c'è un errore sulla riga abilito il pulsante di correzione altrimenti lo disabilito
                 RW_CorreggiErrore_Bottone.setEnabled(true);
-                if (Errore.toLowerCase().contains("token non valorizzato")){
+                if (Errore.toLowerCase().contains("non valorizzato")){
                     RW_IdentificaScam_Bottone.setEnabled(true);
-                    RW_ModificaVFinale_Bottone.setEnabled(true);
-                    RW_ModificaVIniziale_Bottone.setEnabled(true);
                 }
             }else{
                 RW_CorreggiErrore_Bottone.setEnabled(false);
                 RW_IdentificaScam_Bottone.setEnabled(false);
-               // RW_ModificaVFinale_Bottone.setEnabled(false);
-               // RW_ModificaVIniziale_Bottone.setEnabled(false);
             }
             //IDIniziale è l'id del movimento che ha fatto partire l'RW
             //IDFinale è l'id del movimento che ha chiuso l'RW
@@ -5853,14 +5868,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             riga[4]=M1.Qta;
             riga[1]=M1.Rete;
             if (!M1.Qta.equals("0")||GiacenzeaData_CheckBox_MostraQtaZero.isSelected()){
-                //System.out.println(Address);
                 if (M1.Qta.equals("0"))riga[5]="0.00";
                 else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
                 if (riga[4].contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
                 GiacenzeaData_ModelloTabella.addRow(riga);
                 TotEuro=TotEuro.add(new BigDecimal(riga[5]));
-                GiacenzeaData_Totali_TextField.setText(TotEuro.toString());
-                
+                GiacenzeaData_Totali_TextField.setText(TotEuro.toString());                
             }
             
         }

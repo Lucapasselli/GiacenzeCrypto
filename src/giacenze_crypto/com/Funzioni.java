@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -219,7 +222,21 @@ public class Funzioni {
             }
         return Rete;
         }
-         
+       
+    public static void DifferenzaDate()   { 
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MM yyyy");
+String inputString1 = "23 01 1997";
+String inputString2 = "27 04 1997";
+
+/*try {
+    LocalDateTime date1 = LocalDate.parse(inputString1, dtf);
+    LocalDateTime date2 = LocalDate.parse(inputString2, dtf);
+    long daysBetween = Duration.between(date1, date2).toDays();
+    System.out.println ("Days: " + daysBetween);
+} catch (ParseException e) {
+    e.printStackTrace();
+}*/
+ }       
         
        public static String[] RiempiVuotiArray(String[] array){
             for (int i=0;i<array.length;i++) {

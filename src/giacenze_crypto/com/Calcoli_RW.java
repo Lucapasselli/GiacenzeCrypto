@@ -38,25 +38,58 @@ public class Calcoli_RW {
    }
    
        
-    public static void StackLIFO_InserisciValore(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String Valore, String Data,String ID) {
+    public static void StackLIFO_InserisciValore(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String Valore, String Data,String ID,String GruppoWallet) {
     
+    //System.out.println(Moneta+" <> "+Qta);
     ArrayDeque<String[]> stack;
     String valori[]=new String[5];
     valori[0]=Moneta;
-    valori[1]=new BigDecimal(Qta).abs().toPlainString();
+    //valori[1]=new BigDecimal(Qta).abs().toPlainString();
+    valori[1]=Qta;
     valori[2]=Valore;
     valori[3]=Data;
     valori[4]=ID;
-    if (CryptoStack.get(Moneta)==null){
-        stack = new ArrayDeque<String[]>();
-        stack.push(valori);
-        CryptoStack.put(Moneta, stack);
-    }else{
-        stack=CryptoStack.get(Moneta);
-        stack.push(valori);
-        CryptoStack.put(Moneta, stack);
+    if(!Qta.contains("-")){//Inserisco nello stack solo valori positivi, i token con giacenze negative ovviamente non li inserisco
+        if (CryptoStack.get(Moneta)==null){
+            stack = new ArrayDeque<String[]>();
+            stack.push(valori);
+            CryptoStack.put(Moneta, stack);
+        }else{
+            stack=CryptoStack.get(Moneta);
+            stack.push(valori);
+            CryptoStack.put(Moneta, stack);
+        }
     }
-   // System.out.println(Moneta +" - "+stack.size());
+    else{// se invece contiene una giacenza negativa la inserisco subito in lista per far verificare gli erorri
+            
+        
+        
+                String xlista[]=new String[13];
+                xlista[0]=AnnoR;                    //Anno RW
+                xlista[1]=GruppoWallet;             //GruppoWallet
+                xlista[2]=Moneta;                   //Moneta
+                xlista[3]=Qta;                      //Qta
+                xlista[4]=Data;                     //Data Inizio
+                xlista[5]="0.000";                  //Prezzo Inizio
+                xlista[6]="0000-00-00 00:00";       //Data Fine
+                xlista[7]="0.000";                  //Prezzo Fine
+                xlista[8]="0";                      //Giorni di Detenzione
+                xlista[9]="Inizio Periodo";         //Causale
+                xlista[10]=ID;                      //ID Movimento Apertura (o segnalazione inizio anno)
+                xlista[11]="";                     //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
+                xlista[12]="Errore (Giacenza Negativa)";//Tipo Errore
+                
+                List<String[]> ListaRW;
+                ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
+                ListaRW.add(xlista);
+                //Verifico Ora se esistono i prezzi unitari del token con data iniziale e del token con data finale.
+                //Se esistono li scrivo nella lista come campo 13 e 14
+                
+                //Qui gestisco gli errori
+                //Gli errori non li segnalo se il token in questione è stato identificato come Scam
+                
+                }
+  //System.out.println(Moneta +" - "+Valore);
 }
        
        
@@ -85,17 +118,17 @@ public class Calcoli_RW {
         stack=stack2.clone();*/
         //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
         while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
-           // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
+           //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
             String ultimoRecupero[];
-           // System.out.println(stack.size());
+           //System.out.println(stack.size());
             ultimoRecupero=stack.pop();
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
             String dataEstratta=ultimoRecupero[3];
             String IDEstratto=ultimoRecupero[4];
          /*  if (Moneta.equalsIgnoreCase("usdt")){ 
-                System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
-                System.out.println(qtaRimanente);
+                //System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
+                //System.out.println(qtaRimanente);
                 }*/
             //System.out.println(qtaEstratta+" - "+costoEstratta);
             if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta è minore o uguale alla qta rimanente allora
@@ -113,7 +146,7 @@ public class Calcoli_RW {
                 //non ho più qta rimanente
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
-               // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
+               //System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
                 String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,dataEstratta,IDEstratto};
                 stack.push(valori);
@@ -128,7 +161,7 @@ public class Calcoli_RW {
         }
         //pop -> toglie dello stack l'ultimo e recupera il dato
         //peek - > recupera solo il dato
-        // System.out.println("RIMANENTE : "+qtaRimanente);
+        //System.out.println("RIMANENTE : "+qtaRimanente);
          if (qtaRimanente.compareTo(new BigDecimal(0))==1){
              //Se resta ancora della qta rimanente da scaricare significa che sto vendendo crypto che non posseggo, ergo mancano dei movimenti
              //in questo caso lo segnalo mettendo la data e prezzo a zero
@@ -138,12 +171,12 @@ public class Calcoli_RW {
     }
    // ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
-   /*for (String elemento : ListaRitorno) {
-        System.out.println(elemento);
+  /* for (String elemento : ListaRitorno) {
+      //System.out.println(elemento);
     }*/
     return ListaRitorno;
     //ogni singolo elemento di listaRitorno è così composto     1,025;15550;2023-01-01 00:00   (qta iniziale;valore iniziale;data iniziale)
-   // System.out.println(Moneta +" - "+stack.size());
+  //System.out.println(Moneta +" - "+stack.size());
 }      
     
     
@@ -180,8 +213,9 @@ public class Calcoli_RW {
         }
         
     public static void ChiudiRW(Moneta Monete,Map<String, ArrayDeque> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale,String IDt) {
-       // System.out.println(Valore);
+        //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         List<String[]> ListaRW;
+        //System.out.println(Monete.Qta);
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
             List<String> ListaRitorno = StackLIFO_TogliQta(CryptoStack, Monete.Moneta, Monete.Qta, true);
             //creo la riga per i quadri RW
@@ -192,6 +226,7 @@ public class Calcoli_RW {
                 long DiffData = OperazioniSuDate.ConvertiDatainLongMinuto(Data) - OperazioniSuDate.ConvertiDatainLongMinuto(Elementi[2]);
                 if (DiffData!=0){
                     DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
+                  //  DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0])) / 86400000;
                 }
 
                 String Prz;
@@ -236,27 +271,89 @@ public class Calcoli_RW {
         //Poi scalo tutti i prezzi ai 2 centesimi
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
             for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)) {
+                Moneta mi[]=new Moneta[2];
+                Moneta mf[]=new Moneta[2];
+                if (MappaCryptoWallet.get(lista[10])!=null) mi=Funzioni.RitornaMoneteDaID(lista[10]);
+                if (MappaCryptoWallet.get(lista[11])!=null) mf=Funzioni.RitornaMoneteDaID(lista[11]);
                 //Prima di aggiungere alla tabella la riga relativa al movimento controllo se il valore è a zero
                 //se il valore è zero e non esiste un prezzo per quel token a quella data allora metto errore
                 String PrezzoInizio = lista[5];
                 String PrezzoFine = lista[7];
-                if (PrezzoInizio.equals("0.00")) {
-                    lista[12] = "Errore (Token non Valorizzato)";
+                if (lista[12].isBlank()) lista[12]="<html>";
+                else lista[12]="<html>"+lista[12].trim()+"<br>";
+                //Se
+                //A - id non reale
+                //B - PrezzoInizio=0.00
+                //C - Token non scam
+                //Oppure
+                //Se 
+                //1 - ho id iniziale reale (non fine o inizio anno)
+                //2 - il prezzo è zero (in qualsiasi forma)
+                //3 - il token non è scam
+                //4 - il prezzo cercato nel database è zero
+                //5 - non esiste un prezzo sul csv
+                //Allora Faccio uscire l'errore Valore Iniziale non valorizzato
+                if( (MappaCryptoWallet.get(lista[10])==null                     //A
+                        &&PrezzoInizio.equals("0.00")                           //B
+                        &&!lista[2].contains(" **")                             //C
+                     )                            
+                        ||
+                    (MappaCryptoWallet.get(lista[10])!=null                     //1
+                        &&new BigDecimal(PrezzoInizio).compareTo(new BigDecimal(0))==0 //2
+                        &&!lista[2].contains(" **")                             //3
+                        &&!TokenConPrezzo(mi[1],"0.00",lista[4])                 //4
+                        &&MappaCryptoWallet.get(lista[10])[14].isBlank()        //5
+                     )
+                    )
+                {
+                    lista[5] = "0";
+                    lista[12] = lista[12]+"Errore (Valore Iniziale non Valorizzato) <br>";
                 }
-                if (PrezzoFine.equals("0.00")) {
-                    lista[12] = "Errore (Token non Valorizzato)";
+                
+                
+                //Stessa cosa però con il valore finale
+                if( (MappaCryptoWallet.get(lista[11])==null                     //A
+                        &&PrezzoFine.equals("0.00")                           //B
+                        &&!lista[2].contains(" **")                             //C
+                     )                            
+                        ||
+                    (MappaCryptoWallet.get(lista[11])!=null                     //1
+                        &&new BigDecimal(PrezzoFine).compareTo(new BigDecimal(0))==0 //2
+                        &&!lista[2].contains(" **")                             //3
+                        &&!TokenConPrezzo(mf[0],"0.00",lista[6])                //4
+                        &&MappaCryptoWallet.get(lista[11])[14].isBlank()        //5
+                     )
+                    )
+                {
+                    lista[7]="0";
+                    lista[12] = lista[12]+"Errore (Valore Finale non Valorizzato) <br>";
                 }
-                lista[5]=new BigDecimal(lista[5]).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                lista[7]=new BigDecimal(lista[5]).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                                
+                                
+             /*   if (PrezzoInizio.equals("0.00")&&!lista[2].contains(" **")) {//token non valorizzato e non scam
+                    lista[5] = "0";
+                    lista[12] = lista[12]+"Errore (Valore Iniziale non Valorizzato) <br>";
+                }*/
+                /*if (PrezzoFine.equals("0.00")&&!lista[2].contains(" **")) {//token non valorizzato e non scam
+                    lista[7]="0";
+                    lista[12] = lista[12]+"Errore (Valore Finale non Valorizzato) <br>";
+                }*/
+                //lista[3]=new BigDecimal(lista[3]).setScale(10, RoundingMode.HALF_UP).toPlainString();
+                if (!lista[5].equals("0"))lista[5]=new BigDecimal(lista[5]).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                if (!lista[7].equals("0"))lista[7]=new BigDecimal(lista[7]).setScale(2, RoundingMode.HALF_UP).toPlainString();
                 
                 //Manca da sistemare la parte relativa al fatto di non segnalare i token scam
                 //Poi sarebbe anche da verificare le giacenze negative
                 //e fare la modifica dei prezzi sui token con id
-                
-              /*  if (DatabaseH2.RinominaToken_Leggi(Monete.MonetaAddress+"_"+Monete.Rete)!=null&&Monete.Moneta.contains(" **")){
-                    xlista[12] = "Avviso (Token SCAM)";
+
+                if (lista[2].contains(" **")){
+                    lista[12] = lista[12]+"Avviso (Token SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
                 }
-                else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
+                if (lista[9].toLowerCase().contains("non classificato")){
+                    lista[12] = lista[12]+"Errore (Movimento non Classificato) <br>";
+                }
+                lista[12]=lista[12]+"</html>";
+               /* else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
                     xlista[12] = "Errore ("+Elementi[3].split("\\(")[1].replace(")", "")+" e Token non Valorizzato)";
                 } else if (Valore.equals("0.00")) {
                     xlista[12] = "Errore (Token non Valorizzato)";
@@ -265,7 +362,21 @@ public class Calcoli_RW {
         }
     }
 
-
+    public static boolean TokenConPrezzo(Moneta m,String Valore,String Data){
+        boolean TokenConPrezzo=true;
+                        //Prima di inserire il token nello stack verifico se è valorizzato a 0.00
+                        //e se il token è effettivamente senza prezzo
+                        //se così è allora lascio Valore a 0.00 (Significa che è un tokenm senza prezzo)
+                        //Altrimenti lo valorizzo a 0.000 che significa che il suo valore è zero ma il token ha un valore intrinseco
+                        //Dovrò anche verificare se per caso il token ha già prezzi che arrivano dal csv
+                        if (Valore.equals("0.00")){
+                            long DataRif=OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+                            String Prezzo = Prezzi.DammiPrezzoTransazione(m, null, DataRif, null, true, 15, m.Rete);
+                           //System.out.println("Funzione CalcoliRW TokenConPrezzo "+m.Moneta+" - "+Prezzo);
+                            if (Prezzo.equals("0.00"))TokenConPrezzo=false;
+                        }
+        return TokenConPrezzo;
+    }
     
     public static void AggiornaRW(String AnnoRif) {
         
@@ -295,7 +406,7 @@ public class Calcoli_RW {
 
         for (String[] v : MappaCryptoWallet.values()) {
             String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
-            // System.out.println(GruppoWallet);
+            //System.out.println(GruppoWallet);
 
             if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
                 //se non esiste ancora lo stack lo creo e lo associo alla mappa
@@ -371,10 +482,10 @@ public class Calcoli_RW {
                             if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
                                 //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
                                 m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete);
-                               // System.out.println(m.Prezzo);
-                              //   System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                                //System.out.println(m.Prezzo);
+                                //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
                                 Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
-                                StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataInizioAnno,"Giacenza Inizio Anno");
+                                StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataInizioAnno,"Giacenza Inizio Anno",key);
                                 if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key)==null){
                                     List<Moneta> li=new ArrayList<>();
                                     Moneta mo=m.ClonaMoneta();
@@ -415,7 +526,8 @@ public class Calcoli_RW {
                 if (IDTS[4].equals("VC")
                         || IDTS[4].equals("SC")
                         || IDTS[4].equals("AC")
-                        || IDTS[4].equals("RW")
+                        //La Reward va qua solo se è un rimborso della reward per qualche motivo, altrimenti va cosiderata come un acquisto
+                        || IDTS[4].equals("RW")//Se Monete[1].Moneta è vuota vuol dire che è un rimborso
                         || IDTS[4].equals("CM")) {
 
                     //tolgo dal Lifo della moneta venduta e prendo la lista delle varie movimentazione
@@ -424,13 +536,21 @@ public class Calcoli_RW {
                         case "VC" -> Causale="Vendita";
                         case "SC" -> Causale="Scambio";
                         case "CM" -> Causale="Commissione";
+                        case "RW" -> Causale="Rimborso Ricompensa";
                         default -> {
                         }
                     }
-                    ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data, Valore, Causale,IDTransazione);
-                    if (!Monete[0].Moneta.isBlank() && !Monete[1].Tipo.equalsIgnoreCase("FIAT")) {
-                        //in questo caso invece devo aggiungere al Lifo le informazioni                   
-                        StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione);
+                    if (!Monete[0].Moneta.isBlank() && !Monete[0].Tipo.equalsIgnoreCase("FIAT")) {
+                        //Chiudo RW se ho una moneta in uscita che è diversa da una FIAT (le FIAT non le considero per l'RW)
+                        //Se è un movimento RW ()quindi un rimborso di un RW se è qua) e il prezzo è zero lo ricalcolo perchè viene messo a zero dal sistema per il calcolo delle plusvalenze
+                        //ma non è corretto per il calcolo del quadro RW
+                        long d=OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+                        if(IDTS[4].equals("RW")&&Valore.equals("0.00"))Valore=Prezzi.DammiPrezzoTransazione(Monete[0], null, d, null, true, 15, Monete[0].Rete);
+                        ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data, Valore, Causale,IDTransazione);
+                    }
+                    if (!Monete[1].Moneta.isBlank() && !Monete[1].Tipo.equalsIgnoreCase("FIAT")) {
+                        //Apro RW se ho una moneta in ingresso diversa da una FIAT (le FIAT non le considero per l'RW)  
+                        StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione,GruppoWallet);
                     }
 
                 } else if (IDTS[4].equals("DF")//deposito Fiat
@@ -451,13 +571,17 @@ public class Calcoli_RW {
                     //DAI -> Airdrop o similare (deposito)
                     //DCZ -> Costo di carico 0 (deposito)
                     if (v[18].isBlank()) {
-                        //Non faccio nulla perchè sono movimenti non classificati e non saprei come gestirli
+                        //Se i movimenti non sono classificati identifico come Cashout i movimenti in uscita
+                        //e come reward i movimenti in ingresso
+                        //Devo anche emettere qualche sorta di avviso
+                        if(IDTS[4].equals("PC"))ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data,Valore, "Non Classificato",IDTransazione);
+                        else StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione,GruppoWallet);
                     } else if (v[18].contains("PWN") || v[18].contains("PCO")) {
                         //Chiudo RW
                         ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data,Valore, "Cashout o Similare",IDTransazione);
                     } else if (v[18].contains("DAI") || v[18].contains("DCZ")) {
                         //Apro nuovo RW
-                        StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione);
+                        StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione,GruppoWallet);
                     } else if (v[18].contains("PTW")) {
                        // System.out.println(StessoGruppoWalletContropate(IDTransazione) + " : " + IDTransazione);
                         //Se è un trasferimento tra wallet dello stesso gruppo non faccio nulla
@@ -491,7 +615,7 @@ public class Calcoli_RW {
                                 //Non faccio nulla se sono nello stesso gruppo
                             } else {
                                 //Se è un trasferimento tra wallet di gruppi diversi apro il nuovo RW
-                                StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione);
+                                StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione,GruppoWallet);
                             }
                         } else if (v[18].contains("DTW - Scambio Differito")) {
                             //Es. Scambio differito
@@ -507,7 +631,7 @@ public class Calcoli_RW {
                                 //Non faccio nulla se sono nello stesso gruppo
                             } else {
                                 //Se è un trasferimento tra wallet di gruppi diversi apro il nuovo RW
-                                StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione);
+                                StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione,GruppoWallet);
                                 //Adesso devo recuperare il CryptoStack dell'altro wallet e togliere dall'RW la moneta
                                 String gruppoControparte = RitornaGruppoWalletContropate(IDTransazione);
                                 //gruppoControparte non sarà mai nulla perchè l'ho già verificato nelle righe sopra quindi evito di fare un altro IF
@@ -521,7 +645,9 @@ public class Calcoli_RW {
                     } else {
                         System.out.println("Attenzione movimento di deposito o prelievo non classificato nella funzione AggiornaRW() in CalcoliRW");
                     }
-                }
+                }else {
+                        System.out.println("Attenzione movimento "+IDTS[4]+" non considerato in CalcoliRW");
+                    }
 
                 //PARTE 3
             } else if (Anno > AnnoRiferimento) {
@@ -538,8 +664,10 @@ public class Calcoli_RW {
                     for (Moneta m : a.values()) {
                         if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
                            // long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnnoCalcoloPrezzi);
-                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete);
-                           //  System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
+                          // m.Moneta="BTC";
+                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete); 
+                            //System.out.println(Prezzi.DammiPrezzoTransazione(m, null,fine, null, true, 15, m.Rete));
+                            //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
                            // StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataFineAnno);
                             ChiudiRW(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo,"Fine Anno","Giacenza Fine Anno");
@@ -558,7 +686,7 @@ public class Calcoli_RW {
                     }
                 }
         
-        
+        SistemaErroriInListe();
         
     }
     

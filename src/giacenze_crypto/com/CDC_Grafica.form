@@ -1559,7 +1559,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                <Column maxWidth="200" minWidth="100" prefWidth="100" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -1711,7 +1711,6 @@
                     <Component class="javax.swing.JButton" name="RW_ModificaVFinale_Bottone">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Modifica Valore Finale"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_ModificaVFinale_BottoneActionPerformed"/>
@@ -1720,7 +1719,6 @@
                     <Component class="javax.swing.JButton" name="RW_ModificaVIniziale_Bottone">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Modifica Valore Iniziale"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_ModificaVIniziale_BottoneActionPerformed"/>
@@ -1735,8 +1733,8 @@
         <Container class="javax.swing.JPanel" name="CDC_CardWallet_Pannello">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Carta">
-                <Property name="tabTitle" type="java.lang.String" value="Carta"/>
+              <JTabbedPaneConstraints tabName="Carta CdC">
+                <Property name="tabTitle" type="java.lang.String" value="Carta CdC"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -2145,8 +2143,8 @@
         <Container class="javax.swing.JPanel" name="CDC_FiatWallet_Pannello">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Fiat Wallet">
-                <Property name="tabTitle" type="java.lang.String" value="Fiat Wallet"/>
+              <JTabbedPaneConstraints tabName="Fiat Wallet CdC">
+                <Property name="tabTitle" type="java.lang.String" value="Fiat Wallet CdC"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>

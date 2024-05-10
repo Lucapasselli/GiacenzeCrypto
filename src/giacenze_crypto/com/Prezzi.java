@@ -1346,7 +1346,7 @@ for (int i=0;i<ArraydataIni.size();i++){
  
     
     
-    public static String DammiPrezzoTransazione(Moneta Moneta1, Moneta Moneta2, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
+    public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
 
         /*Questa funzione si divide in 4 punti fondamentali:
         1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
@@ -1355,10 +1355,17 @@ for (int i=0;i<ArraydataIni.size();i++){
         prezzo della transazione in quanto il prezzo risulta sicuramente più preciso di quello di una shitcoin o comunque di una moneta con bassa liquidità
         4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
         */
+        
+       //System.out.println("DammiPrezzoTransazione : "+Moneta1.Moneta+" - "+Moneta1.Qta+" - "+Data+" - "+Prezzo+" - "+PrezzoZero+" - "+Decimali+" - "+Rete);
         String PrezzoTransazione;
         long adesso = System.currentTimeMillis();
         boolean ForzaUsoBinanceM1=false;
         boolean ForzaUsoBinanceM2=false;
+        //Clono le monete in quanto altrimenti potrei andare ad alterarle nel corso del cilo per la richiesta dei prezzi
+        Moneta Moneta1=null;
+        Moneta Moneta2=null;
+        if (Moneta1a != null)Moneta1=Moneta1a.ClonaMoneta();
+        if (Moneta2a != null)Moneta2=Moneta2a.ClonaMoneta();
         //Se la differenza tra la data dello scambio e oggi è maggiore di 365 gg forzo l'uso di binance perchè
         //coingecko mi permette di avere i dati solo degli ultimi 365gg
         RecuperaCoinsCoingecko();
@@ -1366,10 +1373,12 @@ for (int i=0;i<ArraydataIni.size();i++){
         //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
         String AddressMoneta1 = null;
         if (Moneta1 != null) {
-            if (Rete==null&&(Moneta1.MonetaAddress==null||Moneta1.MonetaAddress.isBlank())&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
+            if ((Moneta1.MonetaAddress==null||Moneta1.MonetaAddress.isBlank())&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
             //Questo serve solo nel caso interroghi i prezzi di CRO
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
             //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
+         //   System.out.println("CROCROCRO");
+         //   System.out.println(Moneta1.Moneta+" - "+Moneta1.Qta+" - "+Data+" - "+Prezzo+" - "+PrezzoZero+" - "+Decimali+" - "+Rete);
             Moneta1.MonetaAddress="CRO";
             AddressMoneta1="CRO";
             Rete="CRO";
@@ -1403,7 +1412,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         if (Moneta2 != null) {
           //  System.out.println(Moneta2.Moneta);
            // System.out.println(Moneta2.MonetaAddress);
-            if (Rete==null&&(Moneta2.MonetaAddress==null||Moneta2.MonetaAddress.isBlank())&&Moneta2.Moneta.equalsIgnoreCase("CRO")){
+            if ((Moneta2.MonetaAddress==null||Moneta2.MonetaAddress.isBlank())&&Moneta2.Moneta.equalsIgnoreCase("CRO")){
             //Questo serve solo nel caso interroghi interroghi i prezzi di CRO
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
             //e per far si di farlo devo mettere un indirizzo e usare la rete CRO
@@ -1604,6 +1613,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                   //  System.out.println(Moneta2.Moneta+" - "+Data+" - "+PrezzoTransazione);
+                 // System.out.println(PrezzoTransazione);
                     return PrezzoTransazione;
                 }
             }
@@ -1612,6 +1622,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         if (PrezzoZero) {
             return "0.00";
         } else {
+            //System.out.println(Prezzo);
             return Prezzo;
         }
     }

@@ -223,9 +223,10 @@ public class Calcoli_RW {
                 String Elementi[] = elemento.split(";");
                 //Elementi è così composta Qta;Prezzo;Data  
                 //Se la data del movimento è uguale a quella di creazione (al minuto) metto GG di detenzione zero altrimenti anche se posseggo la moneta per un solo minuto metto 1
-                long DiffData = OperazioniSuDate.ConvertiDatainLongMinuto(Data) - OperazioniSuDate.ConvertiDatainLongMinuto(Elementi[2]);
+                long DiffData = OperazioniSuDate.DifferenzaDate(Elementi[2], Data);
                 if (DiffData!=0){
-                    DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
+                   // DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
+                    DiffData = OperazioniSuDate.DifferenzaDate(Elementi[2], Data)+1;
                   //  DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0])) / 86400000;
                 }
 

@@ -2,8 +2,11 @@ package giacenze_crypto.com;
 
 
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +47,17 @@ public class OperazioniSuDate {
         return m1;
     } 
     
+            public static int DifferenzaDate(String DataInizio,String DataFine)   {
+                //Il Formato della data deve essere es. 2023-02-15
+                //System.out.println(DataInizio);
+                //System.out.println(DataFine);
+                BigDecimal DataInizioBigD=new BigDecimal(ConvertiDatainLong(DataInizio.split(" ")[0]));
+                BigDecimal DataFineBigD=new BigDecimal(ConvertiDatainLong(DataFine.split(" ")[0]));
+                String DiffData = (DataFineBigD.subtract(DataInizioBigD)).divide(new BigDecimal(86400000),0,RoundingMode.HALF_UP).toPlainString();
+                //System.out.println(DiffData);
+                //System.out.println("--------");
+                return Integer.parseInt(DiffData);
+ }  
     
         public static String ConvertiDatadaLongallOra(long Data1) {
 

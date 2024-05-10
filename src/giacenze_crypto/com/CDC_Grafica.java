@@ -6501,7 +6501,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 //  System.out.println("SaldoIniziale="+UltimoValore+" , "+splittata[0]);
             }
             if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
-                diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
+                //diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
+                diffdate = OperazioniSuDate.DifferenzaDate(DataIniziale, splittata[0]);
                 contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
                 SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
                 if (!TrovatoSaldoIniziale) {
@@ -6527,7 +6528,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     UltimoValore = new BigDecimal(splittata[1]);
                 }
                 if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
-                    diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
+                    //diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
+                    diffdate = OperazioniSuDate.DifferenzaDate(DataIniziale, splittata[0]);
                     contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
                     SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
                     DataIniziale = splittata[0];
@@ -6537,7 +6539,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             }
         }
 
-        diffdate = Funzioni_Date_DifferenzaDate(DataFinale, DataIniziale) + 1;
+        //diffdate = Funzioni_Date_DifferenzaDate(DataFinale, DataIniziale) + 1;
+        diffdate = OperazioniSuDate.DifferenzaDate(DataIniziale, DataFinale)+1;
         contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
         SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
         BigDecimal GiacenzaMedia = SaldoIniziale.divide(new BigDecimal(contatore), 2, RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));

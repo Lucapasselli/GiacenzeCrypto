@@ -264,16 +264,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RW_Tabella = new javax.swing.JTable();
         jScrollPane8 = new javax.swing.JScrollPane();
         RW_Tabella_Dettagli = new javax.swing.JTable();
-        RW_Calcola_Bottone = new javax.swing.JButton();
+        RW_Bottone_Calcola = new javax.swing.JButton();
         jScrollPane9 = new javax.swing.JScrollPane();
         RW_Tabella_DettaglioMovimenti = new javax.swing.JTable();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        RW_CorreggiErrore_Bottone = new javax.swing.JButton();
-        RW_IdentificaScam_Bottone = new javax.swing.JButton();
-        RW_ModificaVFinale_Bottone = new javax.swing.JButton();
-        RW_ModificaVIniziale_Bottone = new javax.swing.JButton();
+        RW_Bottone_CorreggiErrore = new javax.swing.JButton();
+        RW_Bottone_IdentificaScam = new javax.swing.JButton();
+        RW_Bottone_ModificaVFinale = new javax.swing.JButton();
+        RW_Bottone_ModificaVIniziale = new javax.swing.JButton();
+        RW_CheckBox_VediSoloErrori = new javax.swing.JCheckBox();
+        RW_Label_SegnalaErrori = new javax.swing.JLabel();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -1230,10 +1232,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMaxWidth(0);
         }
 
-        RW_Calcola_Bottone.setText("Calcola");
-        RW_Calcola_Bottone.addActionListener(new java.awt.event.ActionListener() {
+        RW_Bottone_Calcola.setText("Calcola");
+        RW_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Calcola_BottoneActionPerformed(evt);
+                RW_Bottone_CalcolaActionPerformed(evt);
             }
         });
 
@@ -1261,35 +1263,45 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel7.setText("RW Aggregato");
 
-        RW_CorreggiErrore_Bottone.setText("Corrreggi Errore");
-        RW_CorreggiErrore_Bottone.setEnabled(false);
-        RW_CorreggiErrore_Bottone.addActionListener(new java.awt.event.ActionListener() {
+        RW_Bottone_CorreggiErrore.setText("Corrreggi Errore");
+        RW_Bottone_CorreggiErrore.setEnabled(false);
+        RW_Bottone_CorreggiErrore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_CorreggiErrore_BottoneActionPerformed(evt);
+                RW_Bottone_CorreggiErroreActionPerformed(evt);
             }
         });
 
-        RW_IdentificaScam_Bottone.setText("Identifica come SPAM");
-        RW_IdentificaScam_Bottone.setEnabled(false);
-        RW_IdentificaScam_Bottone.addActionListener(new java.awt.event.ActionListener() {
+        RW_Bottone_IdentificaScam.setText("Identifica come SPAM");
+        RW_Bottone_IdentificaScam.setEnabled(false);
+        RW_Bottone_IdentificaScam.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_IdentificaScam_BottoneActionPerformed(evt);
+                RW_Bottone_IdentificaScamActionPerformed(evt);
             }
         });
 
-        RW_ModificaVFinale_Bottone.setText("Modifica Valore Finale");
-        RW_ModificaVFinale_Bottone.addActionListener(new java.awt.event.ActionListener() {
+        RW_Bottone_ModificaVFinale.setText("Modifica Valore Finale");
+        RW_Bottone_ModificaVFinale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_ModificaVFinale_BottoneActionPerformed(evt);
+                RW_Bottone_ModificaVFinaleActionPerformed(evt);
             }
         });
 
-        RW_ModificaVIniziale_Bottone.setText("Modifica Valore Iniziale");
-        RW_ModificaVIniziale_Bottone.addActionListener(new java.awt.event.ActionListener() {
+        RW_Bottone_ModificaVIniziale.setText("Modifica Valore Iniziale");
+        RW_Bottone_ModificaVIniziale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_ModificaVIniziale_BottoneActionPerformed(evt);
+                RW_Bottone_ModificaVInizialeActionPerformed(evt);
             }
         });
+
+        RW_CheckBox_VediSoloErrori.setText("Vedi solo movimenti con errori");
+        RW_CheckBox_VediSoloErrori.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_CheckBox_VediSoloErroriActionPerformed(evt);
+            }
+        });
+
+        RW_Label_SegnalaErrori.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        RW_Label_SegnalaErrori.setForeground(new java.awt.Color(255, 0, 51));
 
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
@@ -1308,20 +1320,23 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Calcola_Bottone))
+                        .addComponent(RW_Bottone_Calcola))
                     .addGroup(RWLayout.createSequentialGroup()
                         .addComponent(jLabel5)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 628, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(RW_CheckBox_VediSoloErrori))
                     .addGroup(RWLayout.createSequentialGroup()
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(RW_ModificaVIniziale_Bottone)
+                        .addComponent(RW_Bottone_ModificaVIniziale)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_ModificaVFinale_Bottone)
+                        .addComponent(RW_Bottone_ModificaVFinale)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_IdentificaScam_Bottone)
+                        .addComponent(RW_Bottone_IdentificaScam)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_CorreggiErrore_Bottone, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(RW_Bottone_CorreggiErrore, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         RWLayout.setVerticalGroup(
@@ -1330,21 +1345,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4)
-                    .addComponent(RW_Calcola_Bottone)
+                    .addComponent(RW_Bottone_Calcola)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(RW_CheckBox_VediSoloErrori)
+                    .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
                 .addGap(1, 1, 1)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(RW_CorreggiErrore_Bottone)
-                    .addComponent(RW_IdentificaScam_Bottone)
-                    .addComponent(RW_ModificaVFinale_Bottone)
-                    .addComponent(RW_ModificaVIniziale_Bottone))
+                    .addComponent(RW_Bottone_CorreggiErrore)
+                    .addComponent(RW_Bottone_IdentificaScam)
+                    .addComponent(RW_Bottone_ModificaVFinale)
+                    .addComponent(RW_Bottone_ModificaVIniziale))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -3715,9 +3733,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
          
          Calcoli_Plusvalenze.AggiornaPlusvalenze();
          this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+         RW_RicalcolaRWseEsiste();
+         DepositiPrelievi_Caricatabella();
         }
              
-        DepositiPrelievi_Caricatabella();
+      //  DepositiPrelievi_Caricatabella();
         
         
         
@@ -3835,6 +3855,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
         DepositiPrelievi_AssegnazioneAutomatica();
+        RW_RicalcolaRWseEsiste();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
     
@@ -5225,12 +5246,12 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
 
-    private void RW_Calcola_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Calcola_BottoneActionPerformed
+    private void RW_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
         RW_CalcolaRW();
         
        
-    }//GEN-LAST:event_RW_Calcola_BottoneActionPerformed
+    }//GEN-LAST:event_RW_Bottone_CalcolaActionPerformed
 
     private void RW_CalcolaRW(){
                 // TODO add your handling code here:
@@ -5241,8 +5262,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
-        RW_CorreggiErrore_Bottone.setEnabled(false);
-        RW_IdentificaScam_Bottone.setEnabled(false);
+        RW_Bottone_CorreggiErrore.setEnabled(false);
+        RW_Bottone_IdentificaScam.setEnabled(false);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         //Array Lista RW così composta
         // 0 - Anno
@@ -5322,11 +5343,22 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             
-            int rigaselezionata = RW_Tabella.getSelectedRow();
+           // ATTENZIONE : Correggere gli errori per calcolare i totali corretti
+           int rigaselezionata = RW_Tabella.getSelectedRow();
+            if (RW_Tabella.getModel().getValueAt(rigaselezionata, 4).toString().toLowerCase().contains("errori"))
+                this.RW_Label_SegnalaErrori.setText("ATTENZIONE : Correggere gli errori per calcolare i totali corretti");
+            else
+                this.RW_Label_SegnalaErrori.setText("");   
+            
             String Gruppo = RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split("\\(")[1].replaceAll("\\)", "").trim();
             //System.out.println(Gruppo);
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
-                ModelloTabella.addRow(lista);
+                if (RW_CheckBox_VediSoloErrori.isSelected())
+                    {
+                        if(lista[12].toLowerCase().contains("errore")) ModelloTabella.addRow(lista);
+                    }
+                else 
+                    ModelloTabella.addRow(lista);
             }
           //  ModelloTabella.addRow(Mappa_RW_ListeXGruppoWallet);
             
@@ -5346,21 +5378,21 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             String MonetaTab = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
             
             if (Errore.toLowerCase().contains("scam")){
-                RW_IdentificaScam_Bottone.setText("Rimuovi da SCAM");
-                RW_IdentificaScam_Bottone.setEnabled(true);
+                RW_Bottone_IdentificaScam.setText("Rimuovi da SCAM");
+                RW_Bottone_IdentificaScam.setEnabled(true);
                 }
             else{
-                RW_IdentificaScam_Bottone.setText("Identifica come SCAM");
+                RW_Bottone_IdentificaScam.setText("Identifica come SCAM");
                 }
             if (Errore.toLowerCase().contains("errore")) {
                 //se c'è un errore sulla riga abilito il pulsante di correzione altrimenti lo disabilito
-                RW_CorreggiErrore_Bottone.setEnabled(true);
+                RW_Bottone_CorreggiErrore.setEnabled(true);
                 if (Errore.toLowerCase().contains("non valorizzato")){
-                    RW_IdentificaScam_Bottone.setEnabled(true);
+                    RW_Bottone_IdentificaScam.setEnabled(true);
                 }
             }else{
-                RW_CorreggiErrore_Bottone.setEnabled(false);
-                RW_IdentificaScam_Bottone.setEnabled(false);
+                RW_Bottone_CorreggiErrore.setEnabled(false);
+                RW_Bottone_IdentificaScam.setEnabled(false);
             }
             //IDIniziale è l'id del movimento che ha fatto partire l'RW
             //IDFinale è l'id del movimento che ha chiuso l'RW
@@ -5478,7 +5510,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         RW_CompilaTabellaDettagliXID();
     }//GEN-LAST:event_RW_Tabella_DettagliMouseReleased
 
-    private void RW_CorreggiErrore_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_CorreggiErrore_BottoneActionPerformed
+    private void RW_Bottone_CorreggiErroreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_CorreggiErroreActionPerformed
         // TODO add your handling code here:
         //Quello che devo fare sono le seguenti cose:
         //1-Individuare il tipo di errore
@@ -5543,13 +5575,53 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 }
 
               
-            }else{
-                //Messaggio nessun errore da correggere sulla riga selezionata
-            }
-        }
-    }//GEN-LAST:event_RW_CorreggiErrore_BottoneActionPerformed
+               } else if (Errore.toLowerCase().contains("apertura non classificato")) {
+                   String IDTransazione = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+                   // System.out.println(IDTransazione);
+                   ClassificazioneTrasf_Modifica mod = new ClassificazioneTrasf_Modifica(IDTransazione);
+                   mod.setLocationRelativeTo(this);
+                   mod.setVisible(true);
 
-    private void RW_IdentificaScam_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_IdentificaScam_BottoneActionPerformed
+                   if (mod.getModificaEffettuata()) {
+                       int riga = RW_Tabella.getSelectedRow();
+                       TransazioniCrypto_DaSalvare = true;
+                       TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+
+                       Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                       this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                       DepositiPrelievi_Caricatabella();
+                       RW_CalcolaRW();
+                       RW_Tabella.setRowSelectionInterval(riga, riga);
+                       RW_CompilaTabellaDettagli();
+                   }
+                   //Messaggio nessun errore da correggere sulla riga selezionata
+               } else if (Errore.toLowerCase().contains("chiusura non classificato")) {
+                   //Messaggio nessun errore da correggere sulla riga selezionata
+                   String IDTransazione = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
+                   // System.out.println(IDTransazione);
+                   ClassificazioneTrasf_Modifica mod = new ClassificazioneTrasf_Modifica(IDTransazione);
+                   mod.setLocationRelativeTo(this);
+                   mod.setVisible(true);
+
+                   if (mod.getModificaEffettuata()) {
+                       int riga = RW_Tabella.getSelectedRow();
+                       TransazioniCrypto_DaSalvare = true;
+                       TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+
+                       Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                       this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                       DepositiPrelievi_Caricatabella();
+                       RW_CalcolaRW();
+                       RW_Tabella.setRowSelectionInterval(riga, riga);
+                       RW_CompilaTabellaDettagli();
+                   }
+               } else {
+                   //Messaggio nessun errore da correggere sulla riga selezionata
+               }
+        }
+    }//GEN-LAST:event_RW_Bottone_CorreggiErroreActionPerformed
+
+    private void RW_Bottone_IdentificaScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_IdentificaScamActionPerformed
         try {
             // TODO add your handling code here:
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
@@ -5588,18 +5660,23 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         }
                     
         
-    }//GEN-LAST:event_RW_IdentificaScam_BottoneActionPerformed
+    }//GEN-LAST:event_RW_Bottone_IdentificaScamActionPerformed
 
-    private void RW_ModificaVIniziale_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_ModificaVIniziale_BottoneActionPerformed
+    private void RW_Bottone_ModificaVInizialeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_ModificaVInizialeActionPerformed
         // TODO add your handling code here:
         RW_Funzione_ModificaValore(0);
-    }//GEN-LAST:event_RW_ModificaVIniziale_BottoneActionPerformed
+    }//GEN-LAST:event_RW_Bottone_ModificaVInizialeActionPerformed
 
-    private void RW_ModificaVFinale_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_ModificaVFinale_BottoneActionPerformed
+    private void RW_Bottone_ModificaVFinaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_ModificaVFinaleActionPerformed
         // TODO add your handling code here:
         RW_Funzione_ModificaValore(1);
 
-    }//GEN-LAST:event_RW_ModificaVFinale_BottoneActionPerformed
+    }//GEN-LAST:event_RW_Bottone_ModificaVFinaleActionPerformed
+
+    private void RW_CheckBox_VediSoloErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_CheckBox_VediSoloErroriActionPerformed
+        // TODO add your handling code here:
+        RW_CompilaTabellaDettagli();
+    }//GEN-LAST:event_RW_CheckBox_VediSoloErroriActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -6833,11 +6910,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
     private javax.swing.JPanel RW;
     private javax.swing.JComboBox<String> RW_Anno_ComboBox;
-    private javax.swing.JButton RW_Calcola_Bottone;
-    private javax.swing.JButton RW_CorreggiErrore_Bottone;
-    private javax.swing.JButton RW_IdentificaScam_Bottone;
-    private javax.swing.JButton RW_ModificaVFinale_Bottone;
-    private javax.swing.JButton RW_ModificaVIniziale_Bottone;
+    private javax.swing.JButton RW_Bottone_Calcola;
+    private javax.swing.JButton RW_Bottone_CorreggiErrore;
+    private javax.swing.JButton RW_Bottone_IdentificaScam;
+    private javax.swing.JButton RW_Bottone_ModificaVFinale;
+    private javax.swing.JButton RW_Bottone_ModificaVIniziale;
+    private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
+    private javax.swing.JLabel RW_Label_SegnalaErrori;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;

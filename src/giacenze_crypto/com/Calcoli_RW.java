@@ -223,12 +223,13 @@ public class Calcoli_RW {
                 String Elementi[] = elemento.split(";");
                 //Elementi è così composta Qta;Prezzo;Data  
                 //Se la data del movimento è uguale a quella di creazione (al minuto) metto GG di detenzione zero altrimenti anche se posseggo la moneta per un solo minuto metto 1
-                long DiffData = OperazioniSuDate.DifferenzaDate(Elementi[2], Data);
+                long DiffData = OperazioniSuDate.ConvertiDatainLongMinuto(Data)-OperazioniSuDate.ConvertiDatainLongMinuto(Elementi[2]);
                 if (DiffData!=0){
                    // DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
                     DiffData = OperazioniSuDate.DifferenzaDate(Elementi[2], Data)+1;
                   //  DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0])) / 86400000;
                 }
+                //System.out.println(DiffData);
 
                 String Prz;
                // if (!Valore.equals("0.00")){
@@ -350,9 +351,20 @@ public class Calcoli_RW {
                 if (lista[2].contains(" **")){
                     lista[12] = lista[12]+"Avviso (Token SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
                 }
-                if (lista[9].toLowerCase().contains("non classificato")){
-                    lista[12] = lista[12]+"Errore (Movimento non Classificato) <br>";
+                
+                //Se ID di apertura corrisponde a movimento non classificato aggiungo anche quell'errore
+                if(MappaCryptoWallet.get(lista[10])!=null
+                        &&MappaCryptoWallet.get(lista[10])[18].isBlank()
+                        &&lista[10].split("_")[4].equals("DC")) {
+                    lista[12] = lista[12]+"Errore (Movimento di apertura non Classificato) <br>";
                 }
+                if(MappaCryptoWallet.get(lista[11])!=null
+                        &&MappaCryptoWallet.get(lista[11])[18].isBlank()
+                        &&lista[11].split("_")[4].equals("PC")) {
+                    lista[12] = lista[12]+"Errore (Movimento di chiusura non Classificato) <br>";
+                }
+
+                
                 lista[12]=lista[12]+"</html>";
                /* else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
                     xlista[12] = "Errore ("+Elementi[3].split("\\(")[1].replace(")", "")+" e Token non Valorizzato)";
@@ -575,8 +587,17 @@ public class Calcoli_RW {
                         //Se i movimenti non sono classificati identifico come Cashout i movimenti in uscita
                         //e come reward i movimenti in ingresso
                         //Devo anche emettere qualche sorta di avviso
-                        if(IDTS[4].equals("PC"))ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data,Valore, "Non Classificato",IDTransazione);
-                        else StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione,GruppoWallet);
+                        //System.out.println("Movimento non classificato");
+                        if(IDTS[4].equals("PC"))
+                        {    
+                            //System.out.println("Movimento non classificato Prelievo");
+                            ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data,Valore, "Prelievo Sconosciuto",IDTransazione);
+                        }
+                        else 
+                        {   
+                            //System.out.println("Movimento non classificato Deposito");
+                            StackLIFO_InserisciValore(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data,IDTransazione,GruppoWallet);
+                        }
                     } else if (v[18].contains("PWN") || v[18].contains("PCO")) {
                         //Chiudo RW
                         ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data,Valore, "Cashout o Similare",IDTransazione);

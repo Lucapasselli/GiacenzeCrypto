@@ -1358,22 +1358,25 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="123" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_Calcola_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_Calcola" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="RW_Label_SegnalaErrori" min="-2" pref="628" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="RW_CheckBox_VediSoloErrori" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="jLabel6" min="-2" pref="216" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="RW_ModificaVIniziale_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_ModificaVIniziale" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_ModificaVFinale_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_ModificaVFinale" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_IdentificaScam_Bottone" min="-2" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_IdentificaScam" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_CorreggiErrore_Bottone" min="-2" pref="154" max="-2" attributes="0"/>
+                                      <Component id="RW_Bottone_CorreggiErrore" min="-2" pref="154" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -1386,22 +1389,26 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="RW_Anno_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="RW_Calcola_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Bottone_Calcola" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="162" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="157" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_CheckBox_VediSoloErrori" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="247" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="241" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="RW_CorreggiErrore_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="RW_IdentificaScam_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="RW_ModificaVFinale_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="RW_ModificaVIniziale_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Bottone_CorreggiErrore" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Bottone_IdentificaScam" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Bottone_ModificaVFinale" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="jScrollPane9" min="-2" pref="114" max="-2" attributes="0"/>
@@ -1592,12 +1599,12 @@
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Component class="javax.swing.JButton" name="RW_Calcola_Bottone">
+                    <Component class="javax.swing.JButton" name="RW_Bottone_Calcola">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Calcola"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Calcola_BottoneActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_CalcolaActionPerformed"/>
                       </Events>
                     </Component>
                     <Container class="javax.swing.JScrollPane" name="jScrollPane9">
@@ -1690,39 +1697,57 @@
                         <Property name="text" type="java.lang.String" value="RW Aggregato"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="RW_CorreggiErrore_Bottone">
+                    <Component class="javax.swing.JButton" name="RW_Bottone_CorreggiErrore">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Corrreggi Errore"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_CorreggiErrore_BottoneActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_CorreggiErroreActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="RW_IdentificaScam_Bottone">
+                    <Component class="javax.swing.JButton" name="RW_Bottone_IdentificaScam">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Identifica come SPAM"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_IdentificaScam_BottoneActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_IdentificaScamActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="RW_ModificaVFinale_Bottone">
+                    <Component class="javax.swing.JButton" name="RW_Bottone_ModificaVFinale">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Modifica Valore Finale"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_ModificaVFinale_BottoneActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_ModificaVFinaleActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="RW_ModificaVIniziale_Bottone">
+                    <Component class="javax.swing.JButton" name="RW_Bottone_ModificaVIniziale">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Modifica Valore Iniziale"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_ModificaVIniziale_BottoneActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_ModificaVInizialeActionPerformed"/>
                       </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_CheckBox_VediSoloErrori">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Vedi solo movimenti con errori"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_CheckBox_VediSoloErroriActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="RW_Label_SegnalaErrori">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Segoe UI" size="15" style="1"/>
+                        </Property>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="33" green="0" red="ff" type="rgb"/>
+                        </Property>
+                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>

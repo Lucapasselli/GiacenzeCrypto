@@ -114,7 +114,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.19 Beta");
+            this.setTitle("Giacenze_Crypto 1.20 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -347,6 +347,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
+        jCheckBox1 = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
         Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
@@ -1350,10 +1351,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(RW_CheckBox_VediSoloErrori)
-                    .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel5)
+                        .addComponent(RW_CheckBox_VediSoloErrori)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
                 .addGap(1, 1, 1)
@@ -2060,6 +2062,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
 
+        jCheckBox1.setText("<html><b>RW - Nei movimenti intragiornalieri calcola il tempo di possesso in minuti e poi rapportato alla giornata intera.</b><br>\nES. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 11:00 dello stesso giorno per 1200Euro<br>\nSenza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1<br>\nCon questa biffatura - V.Iniziale=41,7 V.Finale=50 Giorni di Detenzione=1 <br>\n(Per trovare il valore iniziale e finale viene rapportato il valore alla giornata tenendo conto del numero di minuti di effettivo possesso nella moneta)<br><br>\nAttenzione : Questo calcolo viene fatto solo per i movimenti aperti e chiusi nella stessa giornata<br>\n</html>");
+        jCheckBox1.setEnabled(false);
+
         javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
         Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
         Opzioni_Crypto_PannelloLayout.setHorizontalGroup(
@@ -2073,7 +2078,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 605, Short.MAX_VALUE)))
+                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 748, Short.MAX_VALUE))
+                    .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
+                        .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
@@ -2086,7 +2094,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
                     .addComponent(jLabel8)
                     .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(393, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Crypto", Opzioni_Crypto_Pannello);
@@ -4286,7 +4296,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                             a.CompilaCampidaID(ID);
             a.setLocationRelativeTo(this);
             a.setVisible(true);
+            
             }
+            
                          //Una volta cambiato il prezzo aggiorno la tabella
                 this.RW_CalcolaRW();
                 RW_Tabella.setRowSelectionInterval(rigaTabellaPrincipale, rigaTabellaPrincipale);
@@ -5256,6 +5268,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private void RW_CalcolaRW(){
                 // TODO add your handling code here:
         //Come prima cosa faccio un pò di pulizia
+        System.out.println("RW_CalcoloRW");
         DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
@@ -6942,6 +6955,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JTable TransazioniCrypto_Tabella_Dettagli;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JButton jButton1;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

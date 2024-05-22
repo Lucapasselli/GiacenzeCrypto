@@ -42,6 +42,7 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -53,8 +54,10 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 //import org.apache.commons.codec.binary.Hex;
@@ -106,6 +109,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public boolean tabDepositiPrelieviCaricataprimavolta=false;
     public static Object JDialog_Ritorno;
     public boolean VersioneCambiata=false;
+    public boolean FineCaricamentoDati=false;
     
     //static String Appoggio="";
     
@@ -137,15 +141,38 @@ public class CDC_Grafica extends javax.swing.JFrame {
             System.exit(0);
         }
         
-        if (Funzioni.CambiataVersione(this.getTitle()))
-                {
-                    System.out.println("Versione Cambiata");
-                    VersioneCambiata=true;
-                    if (VersioneCambiata){
-                        DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
+        if (Funzioni.CambiataVersione(this.getTitle())) {
+            System.out.println("Versione Cambiata");
+            VersioneCambiata = true;
+        } else {
+            VersioneCambiata = false;//intanto così poi verrà utilizzata per altre cose in futuro
+        }
+        if (VersioneCambiata) {
+            DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
+            Download progress = new Download();
+            progress.setLocationRelativeTo(this);
+            progress.Titolo("Sistemazione dati per cambio versione... ATTENDERE...");
+            progress.SetLabel("Caricamento e sistemazione Dati per cambio versione...");
+            progress.NascondiInterrompi();
+            progress.NascondiBarra();
+            progress.NoModale();
+            Thread thread;
+            thread = new Thread() {
+                public void run() {
+
+                    while (!FineCaricamentoDati) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
-                    VersioneCambiata=false;//intanto così poi verrà utilizzata per altre cose in futuro
+                    progress.ChiudiFinestra();
                 }
+            };
+            thread.start();
+            progress.setVisible(true);
+        }
         
         Funzioni.CompilaMappaChain();
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
@@ -160,6 +187,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
+        
+
+        
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
         
@@ -172,17 +202,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if(RWgiorno1!=null && RWgiorno1.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_giorno1.setSelected(true);
         }
-        //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
-       /* Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Rome"),Locale.ITALY);
-        long today = calendar.getTimeInMillis();
-        Date currentDate = new Date(today);
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        Date d = f.parse(f.format(currentDate));
-        System.out.println(f.format(currentDate)+"aa");
-        //m1 = d.getTime();
-        this.CDC_DataChooser_Iniziale.setDate(d);*/
+        FineCaricamentoDati=true;
+
 }  catch( Exception ex ) {
              Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println( "Failed to initialize LaF" );
@@ -6365,182 +6388,170 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
        }
     
     
-       private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException { 
-///        this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-///        PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
-        
-        String fileDaImportare = CryptoWallet_FileDB;
-        MappaCryptoWallet.clear();
-        Mappa_Wallet.clear();
-///        BigDecimal Plusvalenza=new BigDecimal("0");
-///        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
-        
-        //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
-        //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
-        //ad esempio questo succede per i dust conversion etc....
-///        DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCryptoTabella.getModel();
-///        Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
-///        Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
-        File TransazioniCrypto1=new File (fileDaImportare);
-        if (!TransazioniCrypto1.exists()) TransazioniCrypto1.createNewFile();
-        String riga;
-        Mappa_Wallet.clear();
-          Mappa_Wallets_e_Dettagli.clear();
-        try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
-            while ((riga = bure.readLine()) != null) {
-                String splittata1[] = riga.split(";");
-                String splittata[]=new String[ColonneTabella];
-                System.arraycopy(splittata1, 0, splittata, 0, splittata1.length);
-                //questo serve affinchè ogni movimento abbia sempre un numero di colonne pari a ColonneTabella
-                //serve affinchè possa incrementare a piacimento il numero di colonne senza avere problemi poi
-                //----------------------------------------------------------------------------------------
-                //Adesso faccio in modo che che i sottowallet CRO Transaction, BSC transaction etc.... vengano convertiti in 
-                //"Principale"
-               // System.out.println(splittata[4]);
-                if (Funzioni.TrovaReteDaID(splittata[0])!=null && !Funzioni.TrovaReteDaID(splittata[0]).isBlank()){
-                    if (splittata[4].split(" ").length>1&&splittata[4].contains("Transaction"))splittata[4]="Wallet";
-                    if (splittata[4].equals("PIATTAFORMA DI SCAMBIO"))splittata[4]="Piattaforma di scambio";
-                    if (splittata[4].equals("PIATTAFORMA/VAULT"))splittata[4]="Piattaforma/DeFi";
-                }
-                //questo serve solo per eliminare i null che erano finiti per sbaglio
-                //dopo un errore di programmazione
-                //Direi che si può tranquillamente togliere tra qualche versione, mettiamo ad esempio dalla 1.15
-                for (int kj=0;kj<splittata.length;kj++){
-                    //questo invece inizializza tutti i campi nulli a campo vuoto per non avere problemi con gli if futuri
-                    if (splittata[kj]==null||splittata[kj].equals("null"))splittata[kj]="";
-                }
-                
-                //Adesso verifico se ho prezzi a zero non perchè valgano zero ma perchè non è presente un prezzo sul movimento e li segnalo
-                //col 32 a SI se il movimento è senza prezzo invece a NO se ha prezzo
-                Prezzi.VerificaSeSenzaPrezzo(splittata);
-                
-                //---------------------------------------------------------------------------------------------------               
-//                Funzione_AggiornaMappaWallets(splittata);
-               
-              //  this.TransazioniCryptoTabella.add(splittata);
-              
-                    //questo rinomina i token con nomi personalizzati
-      /*              String Rete = Funzioni.TrovaReteDaID(splittata[0]);
-                    String AddressU = splittata[26];
-                    String AddressE = splittata[28];
-                    if (!Funzioni.noData(Rete)) {
-                        if (!Funzioni.noData(AddressU)) {
-                            //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                            String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
-                            if (valore != null) {
-                                splittata[8] = valore;
+    private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException {
+
+                try {                    
+             /*       File file = new File(CryptoWallet_FileDB);
+                    LineNumberReader lineNumberReader = new LineNumberReader(new FileReader(file));
+                    lineNumberReader.skip(Long.MAX_VALUE);
+                    int lines = lineNumberReader.getLineNumber();
+                    lineNumberReader.close();*/
+                  
+
+                    String fileDaImportare = CryptoWallet_FileDB;
+                    MappaCryptoWallet.clear();
+                    Mappa_Wallet.clear();
+
+                    //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
+                    //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
+                    //ad esempio questo succede per i dust conversion etc....
+                    File TransazioniCrypto1 = new File(fileDaImportare);
+                    if (!TransazioniCrypto1.exists()) {
+                        TransazioniCrypto1.createNewFile();
+                    }
+                    String riga;
+                    Mappa_Wallet.clear();
+                    Mappa_Wallets_e_Dettagli.clear();
+                    try (FileReader fire = new FileReader(fileDaImportare); BufferedReader bure = new BufferedReader(fire);) {
+                        while ((riga = bure.readLine()) != null) {
+                            String splittata1[] = riga.split(";");
+                            String splittata[] = new String[ColonneTabella];
+                            System.arraycopy(splittata1, 0, splittata, 0, splittata1.length);
+                            //questo serve affinchè ogni movimento abbia sempre un numero di colonne pari a ColonneTabella
+                            //serve affinchè possa incrementare a piacimento il numero di colonne senza avere problemi poi
+                            //----------------------------------------------------------------------------------------
+                            //Adesso faccio in modo che che i sottowallet CRO Transaction, BSC transaction etc.... vengano convertiti in
+                            if (VersioneCambiata){
+                            if (Funzioni.TrovaReteDaID(splittata[0]) != null && !Funzioni.TrovaReteDaID(splittata[0]).isBlank()) {
+                                if (splittata[4].split(" ").length > 1 && splittata[4].contains("Transaction")) {
+                                    splittata[4] = "Wallet";
+                                }
+                                if (splittata[4].equals("PIATTAFORMA DI SCAMBIO")) {
+                                    splittata[4] = "Piattaforma di scambio";
+                                }
+                                if (splittata[4].equals("PIATTAFORMA/VAULT")) {
+                                    splittata[4] = "Piattaforma/DeFi";
+                                }
                             }
-                        }
-                        if (!Funzioni.noData(AddressE)) {
-                            //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                            String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
-                            if (valore != null) {
-                                splittata[11] = valore;
+                            //questo serve solo per eliminare i null che erano finiti per sbaglio
+                            //dopo un errore di programmazione
+                            
+                            
+                                //Queste cose le faccio solo se mi accorcgo che la versione del software è cambiata
+                            //Direi che si può tranquillamente togliere tra qualche versione, mettiamo ad esempio dalla 1.15
+                            for (int kj = 0; kj < splittata.length; kj++) {
+                                //questo invece inizializza tutti i campi nulli a campo vuoto per non avere problemi con gli if futuri
+                                if (splittata[kj] == null || splittata[kj].equals("null")) {
+                                    splittata[kj] = "";
+                                }
                             }
 
+                            //Adesso verifico se ho prezzi a zero non perchè valgano zero ma perchè non è presente un prezzo sul movimento e li segnalo
+                            //col 32 a SI se il movimento è senza prezzo invece a NO se ha prezzo
+                            Prezzi.IndicaMovimentoPrezzato(splittata);
+                            }
+                            MappaCryptoWallet.put(splittata[0], splittata);
+
                         }
-                    }*/
 
+                    } catch (IOException ex) {
+                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
-                 MappaCryptoWallet.put(splittata[0], splittata);
-              
-      /*        if (EscludiTI==true&&!splittata[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
-                  if (Funzioni_Date_ConvertiDatainLong(splittata[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(splittata[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
-                     ModelloTabellaCrypto.addRow(splittata);
-                                     if (Funzioni_isNumeric(splittata[19],false))
-                {
-                    Plusvalenza=Plusvalenza.add(new BigDecimal(splittata[19]));
+                } catch (IOException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                 }
-              }
-                  }*/
 
 
-             
-                
-            }
-            
-    }   catch (IOException ex) {   
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        }
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        
+        if (VersioneCambiata){
+            //Se c'è un cambio versione può essere che vi sia anche una modifica del file
+            //per questo salverei una copia di backup del vecchio file e ne creerei uno nuovo con le modifiche
+
+            Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+        }
+        
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI);
-    /*    this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
+        /*    this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
         Color verde=new Color (45, 155, 103);
         Color rosso=new Color(166,16,34);
         if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-"))TransazioniCrypto_Text_Plusvalenza.setForeground(verde);else TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
         this.Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
         GiacenzeaData_Funzione_AggiornaComboBoxWallet();*/
-    }    
+    } 
     
        
        
-        private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) { 
+    private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) {
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         Mappa_Wallet.clear();
-        
-       //da verificare se va bene, serve per evitare problemi di sorting nel caso in cui la richiesta arrivi da un thread
+
+        //da verificare se va bene, serve per evitare problemi di sorting nel caso in cui la richiesta arrivi da un thread
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(TransazioniCryptoTabella.getModel());
         TransazioniCryptoTabella.setRowSorter(sorter);
-        
+
         Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
-        
-        
+
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) TransazioniCryptoTabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
-        BigDecimal Plusvalenza=new BigDecimal("0");
+        BigDecimal Plusvalenza = new BigDecimal("0");
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
         Mappa_Wallet.clear();
-          Mappa_Wallets_e_Dettagli.clear();
-         for (String[] v : MappaCryptoWallet.values()) {
-          Funzione_AggiornaMappaWallets(v);
-          
-                 //questo rinomina i token con nomi personalizzati
-                 //Solo in caso di defi
-                 String Rete = Funzioni.TrovaReteDaID(v[0]);
-                 String AddressU = v[26];
-                 String AddressE = v[28];
-                 if (!Funzioni.noData(Rete)) {
-                     if (!Funzioni.noData(AddressU)) {
-                         //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                         String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
-                         if (valore != null) {
-                             v[8] = valore;
-                         }
-                     }
-                     if (!Funzioni.noData(AddressE)) {
-                         //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                         String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
-                         if (valore != null) {
-                             v[11] = valore;
-                         }
+        Mappa_Wallets_e_Dettagli.clear();
+        for (String[] v : MappaCryptoWallet.values()) {
+            Funzione_AggiornaMappaWallets(v);
 
-                     }
-                 }
-
-             
-          
-          //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
-          if (EscludiTI==true&&!v[5].trim().equalsIgnoreCase("Trasferimento Interno")||EscludiTI==false){
-                if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
-                ModelloTabellaCrypto.addRow(v);
-                if (Funzioni_isNumeric(v[19],false))
-                {
-                    Plusvalenza=Plusvalenza.add(new BigDecimal(v[19]));
+            //questo rinomina i token con nomi personalizzati
+            //Solo in caso di defi
+            String Rete = Funzioni.TrovaReteDaID(v[0]);
+            String AddressU = v[26];
+            String AddressE = v[28];
+            if (!Funzioni.noData(Rete)) {
+                if (!Funzioni.noData(AddressU)) {
+                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
+                    if (valore != null) {
+                        v[8] = valore;
+                    }
                 }
+                if (!Funzioni.noData(AddressE)) {
+                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
+                    if (valore != null) {
+                        v[11] = valore;
+                    }
+
+                }
+            }
+            //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
+            Prezzi.IndicaMovimentoPrezzato(v);
+
+            //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
+            if (EscludiTI == true && !v[5].trim().equalsIgnoreCase("Trasferimento Interno") || EscludiTI == false) {
+                if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
+                    ModelloTabellaCrypto.addRow(v);
+                    if (Funzioni_isNumeric(v[19], false)) {
+                        Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
+                    }
                 }
             }
 
-       }
-         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-         TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
-         Color verde=new Color (45, 155, 103);
-        Color rosso=new Color(166,16,34);
-        if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-"))TransazioniCrypto_Text_Plusvalenza.setForeground(verde);else TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
-         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
-         //Adesso aggiorno i componenti delle funzioni secondarie
-         GiacenzeaData_Funzione_AggiornaComboBoxWallet();
-    }       
+        }
+        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+        TransazioniCrypto_Text_Plusvalenza.setText("€ " + Plusvalenza.toPlainString());
+        Color verde = new Color(45, 155, 103);
+        Color rosso = new Color(166, 16, 34);
+        if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-")) {
+            TransazioniCrypto_Text_Plusvalenza.setForeground(verde);
+        } else {
+            TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
+        }
+        Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+        //Adesso aggiorno i componenti delle funzioni secondarie
+        GiacenzeaData_Funzione_AggiornaComboBoxWallet();
+    }    
     
         
     private void TransazioniCrypto_Funzioni_AbilitaBottoneSalva(boolean Attivo) { 

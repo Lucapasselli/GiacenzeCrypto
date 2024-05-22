@@ -84,6 +84,7 @@ import giacenze_crypto.com.TransazioneDefi.ValoriToken;
 //import giacenze_crypto.com.TransazioneDefi;
 import java.util.Collections;
 import java.awt.Component;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -832,6 +833,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
     
     
         public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti) {
+        File f = new File("movimenti.crypto.db");
+        File f2 = new File("movimenti.crypto.backup");
+    if(f.exists()){
+        if(f2.exists())f2.delete();
+        f.renameTo(new File("movimenti.crypto.backup"));
+    }
          try { 
             FileWriter w=new FileWriter("movimenti.crypto.db");
             BufferedWriter b=new BufferedWriter (w);

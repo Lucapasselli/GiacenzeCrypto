@@ -73,6 +73,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     
     public void NascondiBarra(){
         ProgressBarDownload.setVisible(false);
+        LabelAvanzamento.setVisible(false);
     }
     
     public void NascondiInterrompi(){
@@ -88,7 +89,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
         return Download.FineThread;
     }
     
-    
+    public void NoModale(){
+    this.setModalityType(ModalityType.MODELESS);
+}
      public void Pausa(){
          timer.start();
      }

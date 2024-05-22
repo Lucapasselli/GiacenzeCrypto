@@ -168,7 +168,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if(PlusXWallet!=null && PlusXWallet.equalsIgnoreCase("SI")){
             Opzioni_GruppoWallet_CheckBox_PlusXWallet.setSelected(true);
         }
-
+        String RWgiorno1=DatabaseH2.Pers_Opzioni_Leggi("RW_DiffDateMatematica");
+        if(RWgiorno1!=null && RWgiorno1.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_giorno1.setSelected(true);
+        }
         //CDC_LeggiFileDatiDB();
 
         CDC_AggiornaGui();
@@ -347,7 +350,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        RW_Opzioni_CheckBox_giorno1 = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
         Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
@@ -2062,8 +2065,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
 
-        jCheckBox1.setText("<html><b>RW - Nei movimenti intragiornalieri calcola il tempo di possesso in minuti e poi rapportato alla giornata intera.</b><br>\nES. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 11:00 dello stesso giorno per 1200Euro<br>\nSenza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1<br>\nCon questa biffatura - V.Iniziale=41,7 V.Finale=50 Giorni di Detenzione=1 <br>\n(Per trovare il valore iniziale e finale viene rapportato il valore alla giornata tenendo conto del numero di minuti di effettivo possesso nella moneta)<br><br>\nAttenzione : Questo calcolo viene fatto solo per i movimenti aperti e chiusi nella stessa giornata<br>\n</html>");
-        jCheckBox1.setEnabled(false);
+        RW_Opzioni_CheckBox_giorno1.setText("<html><b>RW - Considera 1 giorno solo nel momento in cui si è passati alla giornata successiva</b><br>\nES. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 11:00 dello stesso giorno per 1200Euro<br>\nSenza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1<br>\nCon questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=0 (questo movimento non viene considerato nei calcoli per l'IC o aggregazione RW)<br>\nES2. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 09:00 del 26/06/2023 per 1200Euro<br>\nSenza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=2<br>\nCon questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1<br>\n</html>");
+        RW_Opzioni_CheckBox_giorno1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_giorno1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
         Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
@@ -2080,7 +2087,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 748, Short.MAX_VALUE))
                     .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
-                        .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Opzioni_CheckBox_giorno1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -2095,7 +2102,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(jLabel8)
                     .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(RW_Opzioni_CheckBox_giorno1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(393, Short.MAX_VALUE))
         );
 
@@ -5690,6 +5697,25 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // TODO add your handling code here:
         RW_CompilaTabellaDettagli();
     }//GEN-LAST:event_RW_CheckBox_VediSoloErroriActionPerformed
+
+    private void RW_Opzioni_CheckBox_giorno1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_giorno1ActionPerformed
+                                                                         
+        // TODO add your handling code here:
+        if (RW_Opzioni_CheckBox_giorno1.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_DiffDateMatematica", "SI");
+            //System.out.println("SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_DiffDateMatematica", "NO");
+            //System.out.println("NO");
+        }
+      /*  this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));*/
+    
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_giorno1ActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -6383,6 +6409,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     //questo invece inizializza tutti i campi nulli a campo vuoto per non avere problemi con gli if futuri
                     if (splittata[kj]==null||splittata[kj].equals("null"))splittata[kj]="";
                 }
+                
+                //Adesso verifico se ho prezzi a zero non perchè valgano zero ma perchè non è presente un prezzo sul movimento e li segnalo
+                //col 32 a SI se il movimento è senza prezzo invece a NO se ha prezzo
+                Prezzi.VerificaSeSenzaPrezzo(splittata);
+                
                 //---------------------------------------------------------------------------------------------------               
 //                Funzione_AggiornaMappaWallets(splittata);
                
@@ -6930,6 +6961,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JButton RW_Bottone_ModificaVIniziale;
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_giorno1;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;
@@ -6955,7 +6987,6 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JTable TransazioniCrypto_Tabella_Dettagli;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

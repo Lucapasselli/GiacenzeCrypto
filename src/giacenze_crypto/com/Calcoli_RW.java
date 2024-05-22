@@ -215,6 +215,7 @@ public class Calcoli_RW {
     public static void ChiudiRW(Moneta Monete,Map<String, ArrayDeque> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale,String IDt) {
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         List<String[]> ListaRW;
+        String DataDaScrivere=Data;
         //System.out.println(Monete.Qta);
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
             List<String> ListaRitorno = StackLIFO_TogliQta(CryptoStack, Monete.Moneta, Monete.Qta, true);
@@ -226,10 +227,18 @@ public class Calcoli_RW {
                 long DiffData = OperazioniSuDate.ConvertiDatainLongMinuto(Data)-OperazioniSuDate.ConvertiDatainLongMinuto(Elementi[2]);
                 if (DiffData!=0){
                    // DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
-                    DiffData = OperazioniSuDate.DifferenzaDate(Elementi[2], Data)+1;
-                  //  DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0])) / 86400000;
+                    String RWgiorno1 = DatabaseH2.Pers_Opzioni_Leggi("RW_DiffDateMatematica");
+                    if (RWgiorno1 != null && RWgiorno1.equalsIgnoreCase("SI")) {
+                        DiffData = OperazioniSuDate.DifferenzaDate(Elementi[2], Data);
+                    } else {
+                        DiffData = OperazioniSuDate.DifferenzaDate(Elementi[2], Data) + 1;
+                    }
                 }
-                //System.out.println(DiffData);
+                
+                //adesso controllo se la data fine corrisponde con la data di inizio anno a mezzanotte, se così tolgo 1 minuto per scrivere il valore del wallet a fine anno
+                if (Data.equals(String.valueOf(Integer.parseInt(AnnoR)+1)+"-01-01 00:00")){
+                    DataDaScrivere=AnnoR+"-12-31 23:59";
+                }
 
                 String Prz;
                // if (!Valore.equals("0.00")){
@@ -242,7 +251,7 @@ public class Calcoli_RW {
                 xlista[3]=Elementi[0];              //Qta
                 xlista[4]=Elementi[2];              //Data Inizio
                 xlista[5]=Elementi[1];              //Prezzo Inizio
-                xlista[6]=Data;                     //Data Fine
+                xlista[6]=DataDaScrivere;           //Data Fine
                 xlista[7]=Prz;                      //Prezzo Fine
                 xlista[8]=String.valueOf(DiffData); //Giorni di Detenzione
                 xlista[9]=Causale;                  //Causale
@@ -403,6 +412,10 @@ public class Calcoli_RW {
         int AnnoRiferimento = Integer.parseInt(AnnoRif);
         String DataInizioAnno = AnnoRif+"-01-01 00:00";
         String DataFineAnno = AnnoRif+"-12-31 23:59";
+        String RWgiorno1 = DatabaseH2.Pers_Opzioni_Leggi("RW_DiffDateMatematica");
+        if (RWgiorno1 != null && RWgiorno1.equalsIgnoreCase("SI")) {
+            DataFineAnno=AnnoSuccessivo+"-01-01 00:00";      
+        }
         long fine = OperazioniSuDate.ConvertiDatainLongMinuto(AnnoSuccessivo+"-01-01 00:00");//Data Fine anno in long per calcolo prezzi
         
        // long inizio = OperazioniSuDate.ConvertiDatainLongSecondo(AnnoPrecendente+"-12-31 23:59:59");//Data Fine anno in long per calcolo prezzi
@@ -692,6 +705,10 @@ public class Calcoli_RW {
                             //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
                            // StackLIFO_InserisciValore(CryptoStackTemp, m.Moneta, m.Qta, m.Prezzo, DataFineAnno);
+      /*  String RWgiorno1 = DatabaseH2.Pers_Opzioni_Leggi("RW_DiffDateMatematica");
+        if (RWgiorno1 != null && RWgiorno1.equalsIgnoreCase("SI")) {
+            DataFineAnno=AnnoSuccessivo+"-01-01 00:00";      
+        }*/
                             ChiudiRW(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo,"Fine Anno","Giacenza Fine Anno");
                             //Questo qua sotto popola una lista per ogni gruppo wallet contenente la giacenza di ciascuna moneta ad inizio anno
                             

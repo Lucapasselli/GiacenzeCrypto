@@ -2784,7 +2784,7 @@
                                       <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" pref="748" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
+                                      <Component id="RW_Opzioni_CheckBox_giorno1" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
@@ -2804,7 +2804,7 @@
                                   <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_giorno1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="393" max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -2844,11 +2844,13 @@
                         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                       </AuxValues>
                     </Component>
-                    <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_giorno1">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;RW - Nei movimenti intragiornalieri calcola il tempo di possesso in minuti e poi rapportato alla giornata intera.&lt;/b&gt;&lt;br&gt;&#xa;ES. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 11:00 dello stesso giorno per 1200Euro&lt;br&gt;&#xa;Senza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1&lt;br&gt;&#xa;Con questa biffatura - V.Iniziale=41,7 V.Finale=50 Giorni di Detenzione=1 &lt;br&gt;&#xa;(Per trovare il valore iniziale e finale viene rapportato il valore alla giornata tenendo conto del numero di minuti di effettivo possesso nella moneta)&lt;br&gt;&lt;br&gt;&#xa;Attenzione : Questo calcolo viene fatto solo per i movimenti aperti e chiusi nella stessa giornata&lt;br&gt;&#xa;&lt;/html&gt;"/>
-                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;RW - Considera 1 giorno solo nel momento in cui si &#xe8; passati alla giornata successiva&lt;/b&gt;&lt;br&gt;&#xa;ES. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 11:00 dello stesso giorno per 1200Euro&lt;br&gt;&#xa;Senza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1&lt;br&gt;&#xa;Con questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=0 (questo movimento non viene considerato nei calcoli per l&apos;IC o aggregazione RW)&lt;br&gt;&#xa;ES2. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 09:00 del 26/06/2023 per 1200Euro&lt;br&gt;&#xa;Senza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=2&lt;br&gt;&#xa;Con questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1&lt;br&gt;&#xa;&lt;/html&gt;"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_giorno1ActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

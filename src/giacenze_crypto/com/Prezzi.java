@@ -55,7 +55,43 @@ public class Prezzi {
     
   //DA FARE : Recupero prezzi orari in base all'ora più vicina  
 
-  
+    public static void VerificaSeSenzaPrezzo(String[] Movimento){
+        //questa funzione verifica se il movimento è senza prezzo e se lo è valorizza il campo 32 a SI altrimenti lo valorizza a NO
+        if ((Movimento[32]==null||Movimento[32].isBlank()||Movimento[32].equalsIgnoreCase("NO"))&&Movimento[15].equals("0.00")){//Questa cosa la faccio se il campo non è valorizzato o è valorizzato a NO
+            if (!Movimento[15].equals("0.00")) Movimento[32]="SI";
+            else {//adesso devo verificare il il movimento ha una qualche sorta di prezzo e in caso mettere a SI il campo altrimenti valorizzarlo a NO
+                if (DammiPrezzoDaTransazione(Movimento).equals("0.00")){
+                    
+                }else{
+                    
+                }
+            }       
+        }
+    }
+    
+    public static String DammiPrezzoDaTransazione(String[] v){
+        
+            long data=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+            String Rete = Funzioni.TrovaReteDaID(v[0]);
+            Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
+            //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
+            Monete[0] = new Moneta();
+            Monete[1] = new Moneta();
+            Monete[0].MonetaAddress = v[26];
+            Monete[1].MonetaAddress = v[28];
+            //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
+            Monete[0].Moneta = v[8];
+            Monete[0].Tipo = v[9];
+            Monete[0].Qta = v[10];
+            Monete[0].Rete = Rete;
+            Monete[1].Moneta = v[11];
+            Monete[1].Tipo = v[12];
+            Monete[1].Qta = v[13];
+            Monete[1].Rete = Rete;
+            String Prezzo=DammiPrezzoTransazione(Monete[0],Monete[1],data,null, true, 15, Rete);
+            return Prezzo;
+            
+    }
     
     
     

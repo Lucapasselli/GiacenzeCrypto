@@ -179,6 +179,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
+        //Optioni_Export_Wallets_Combobox=GiacenzeaData_Wallet_ComboBox;
         DatabaseH2.CancellaPrezziVuoti();//pulisce il database dai prezzi vuoti delle precedenti sessioni
                                         //in modo tale che se i prezzi tornano ad essere disponibili questi vengono riscaricati
         
@@ -389,6 +390,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jTextPane1 = new javax.swing.JTextPane();
         Opzioni_Emoney_Bottone_Rimuovi = new javax.swing.JButton();
         Opzioni_Emoney_Bottone_Aggiungi = new javax.swing.JButton();
+        Opzioni_Export_Pannello = new javax.swing.JPanel();
+        Opzioni_Export_Wallets_Combobox = new javax.swing.JComboBox<>();
+        jLabel9 = new javax.swing.JLabel();
+        Opzioni_Export_Tatax_Bottone = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -2289,6 +2294,43 @@ public class CDC_Grafica extends javax.swing.JFrame {
         );
 
         Opzioni_TabbedPane.addTab("E-Money Token (EMT)", Opzioni_Emoney_Pannello);
+
+        Opzioni_Export_Wallets_Combobox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel9.setText("Scegli il wallet da esportare : ");
+
+        Opzioni_Export_Tatax_Bottone.setText("Genera File per Tatax");
+        Opzioni_Export_Tatax_Bottone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Export_Tatax_BottoneActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_Export_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Export_Pannello);
+        Opzioni_Export_Pannello.setLayout(Opzioni_Export_PannelloLayout);
+        Opzioni_Export_PannelloLayout.setHorizontalGroup(
+            Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Export_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel9)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Export_Tatax_Bottone)
+                .addContainerGap(359, Short.MAX_VALUE))
+        );
+        Opzioni_Export_PannelloLayout.setVerticalGroup(
+            Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Export_PannelloLayout.createSequentialGroup()
+                .addGap(4, 4, 4)
+                .addGroup(Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Export_Tatax_Bottone))
+                .addContainerGap(583, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("Export", Opzioni_Export_Pannello);
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
@@ -5739,6 +5781,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));*/
     
     }//GEN-LAST:event_RW_Opzioni_CheckBox_giorno1ActionPerformed
+
+    private void Opzioni_Export_Tatax_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Export_Tatax_BottoneActionPerformed
+        // TODO add your handling code here:
+        Opzioni_Export_Tatax();
+    }//GEN-LAST:event_Opzioni_Export_Tatax_BottoneActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5871,6 +5918,68 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         }*/
  return null;
     }
+    
+    
+        private void Opzioni_Export_Tatax(){
+
+
+        //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
+        Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+
+        String Wallet = Opzioni_Export_Wallets_Combobox.getSelectedItem().toString().trim();
+                for (String[] movimento : MappaCryptoWallet.values()) {
+                    //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
+                    //altrimenti non vado avanti
+                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    String DataMovimento = movimento[1]+":00";
+                        // adesso verifico il wallet
+                        String gruppoWallet="";
+                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
+                        if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
+                                ||Wallet.equalsIgnoreCase(movimento[3].trim())//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ) 
+                        {
+                            //Faccio la somma dei movimenti in usicta
+                            Moneta Monete[] = new Moneta[2];
+                            Monete[0] = new Moneta();
+                            Monete[1] = new Moneta();
+                            Monete[0].MonetaAddress = movimento[26];
+                            Monete[1].MonetaAddress = movimento[28];
+                            Monete[0].Moneta = movimento[8];
+                            Monete[0].Tipo = movimento[9];
+                            Monete[0].Qta = movimento[10];
+                            Monete[0].Rete=Rete;
+                            Monete[1].Moneta = movimento[11];
+                            Monete[1].Tipo = movimento[12];
+                            Monete[1].Qta = movimento[13];
+                            Monete[1].Rete=Rete;
+                            //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
+                            for (int a = 0; a < 2; a++) {
+                                //ANALIZZO MOVIMENTI
+                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress)!=null) {
+                                    //Movimento già presente da implementare
+                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress);
+                                    M1.Qta = new BigDecimal(M1.Qta)
+                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
+
+                                } else if (!Monete[a].Moneta.isBlank()) {
+                                    //Movimento Nuovo da inserire
+                                    Moneta M1 = new Moneta();
+                                    M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                                    M1.Rete = Rete;
+                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress, M1);
+
+                                }
+                            }
+                        }
+                    
+                }
+
+        
+
+        }
+    
     
     private void GiacenzeaData_CompilaTabellaToken(){
         
@@ -6034,13 +6143,16 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         boolean VecchioTrovato=false;
        // int Selezionata2=GiacenzeaData_Wallet2_ComboBox.getSelectedIndex();
         GiacenzeaData_Wallet_ComboBox.removeAllItems();
+        Opzioni_Export_Wallets_Combobox.removeAllItems();
         GiacenzeaData_Wallet_ComboBox.addItem("Tutti");
+        Opzioni_Export_Wallets_Combobox.addItem("Tutti");
        /* Mappa_Wallet.clear();
         for (String[] v : MappaCryptoWallet.values()) {
             Funzione_AggiornaMappaWallets(v);
         }*/
         for (String v : Mappa_Wallet.keySet()) {
             this.GiacenzeaData_Wallet_ComboBox.addItem(v);
+            Opzioni_Export_Wallets_Combobox.addItem(v);
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v);
             MappaGruppiWalletUtilizzati.put(GruppoWallet, GruppoWallet);
             if (v.equals(VecchioValore)) {
@@ -6050,6 +6162,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         for (String v : MappaGruppiWalletUtilizzati.keySet()) {
             String nome="Gruppo : "+v;
             this.GiacenzeaData_Wallet_ComboBox.addItem(nome);
+            Opzioni_Export_Wallets_Combobox.addItem(nome);
             if (nome.equals(VecchioValore)) {
                 VecchioTrovato=true;
             }
@@ -6957,6 +7070,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JPanel Opzioni_Emoney_Pannello;
     private javax.swing.JScrollPane Opzioni_Emoney_ScrollPane;
     private javax.swing.JTable Opzioni_Emoney_Tabella;
+    private javax.swing.JPanel Opzioni_Export_Pannello;
+    private javax.swing.JButton Opzioni_Export_Tatax_Bottone;
+    private javax.swing.JComboBox<String> Opzioni_Export_Wallets_Combobox;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusXWallet;
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
@@ -7006,6 +7122,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

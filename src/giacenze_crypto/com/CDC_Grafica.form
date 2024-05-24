@@ -2783,9 +2783,13 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" pref="748" max="32767" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="RW_Opzioni_CheckBox_giorno1" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="RW_Opzioni_CheckBox_giorno1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="0" pref="77" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2805,7 +2809,11 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_giorno1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="393" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="306" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2850,6 +2858,22 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_giorno1ActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti (calcola plusvalenza e nuovo costo di carico)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 considera tutti gli earn,cashback,staking,airdrop etc... come token a costo di carico zero"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

@@ -191,7 +191,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
 
         
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
         
         //Aggiorno lo stato del checkbox relativo al calcolo delle plusvalenze
@@ -203,7 +203,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if(RWgiorno1!=null && RWgiorno1.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_giorno1.setSelected(true);
         }
-
+        String Plusvalenze_Pre2023EarnCostoZero=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
+        if(Plusvalenze_Pre2023EarnCostoZero!=null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")){
+            this.Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero.setSelected(true);
+        }
+        String Plusvalenze_Pre2023ScambiRilevanti=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
+        if(Plusvalenze_Pre2023ScambiRilevanti!=null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")){
+            this.Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected(true);
+        }
+        
+        
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         CDC_AggiornaGui();
         FineCaricamentoDati=true;
 
@@ -375,6 +385,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
         RW_Opzioni_CheckBox_giorno1 = new javax.swing.JCheckBox();
+        Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
+        Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
         Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
@@ -2100,6 +2112,20 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setText("Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti (calcola plusvalenza e nuovo costo di carico)");
+        Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed(evt);
+            }
+        });
+
+        Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero.setText("Fino al 31-12-2022 considera tutti gli earn,cashback,staking,airdrop etc... come token a costo di carico zero");
+        Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
         Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
         Opzioni_Crypto_PannelloLayout.setHorizontalGroup(
@@ -2115,8 +2141,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 748, Short.MAX_VALUE))
                     .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
-                        .addComponent(RW_Opzioni_CheckBox_giorno1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(RW_Opzioni_CheckBox_giorno1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
+                            .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero))
+                        .addGap(0, 77, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
@@ -2131,7 +2160,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_giorno1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(393, Short.MAX_VALUE))
+                .addGap(27, 27, 27)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
+                .addContainerGap(306, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Crypto", Opzioni_Crypto_Pannello);
@@ -3810,13 +3843,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         mod.setVisible(true);
 
         if (mod.getModificaEffettuata()){
-            TransazioniCrypto_DaSalvare=true;
-            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-         
-         Calcoli_Plusvalenze.AggiornaPlusvalenze();
-         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-         RW_RicalcolaRWseEsiste();
-         DepositiPrelievi_Caricatabella();
+            Funzioni_AggiornaTutto();
+            DepositiPrelievi_Caricatabella();
         }
              
       //  DepositiPrelievi_Caricatabella();
@@ -3846,6 +3874,15 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // adesso devo caricarci i dettagli del movimento selezionato etc...
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
 
+    private void Funzioni_AggiornaTutto() {
+        TransazioniCrypto_DaSalvare = true;
+        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        RW_RicalcolaRWseEsiste();
+        //DepositiPrelievi_Caricatabella();
+    }
+    
     private void DepositiPrelievi_Caricatabella()
             {
                 
@@ -5786,6 +5823,40 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // TODO add your handling code here:
         Opzioni_Export_Tatax();
     }//GEN-LAST:event_Opzioni_Export_Tatax_BottoneActionPerformed
+
+    private void Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023ScambiRilevanti", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023ScambiRilevanti", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed
+
+    private void Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023EarnCostoZero", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023EarnCostoZero", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
+       Funzioni_AggiornaTutto();
+       this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -7079,6 +7150,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JPanel RW;
     private javax.swing.JComboBox<String> RW_Anno_ComboBox;
     private javax.swing.JButton RW_Bottone_Calcola;

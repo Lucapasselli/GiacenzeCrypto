@@ -402,6 +402,20 @@ public class Calcoli_Plusvalenze {
             String VecchioPrezzoCarico="0.00";
             String NuovoPrezzoCarico="0.00";
             String Plusvalenza="0.00";
+            long long2023=OperazioniSuDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
+            long dataLong=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+            boolean DataSuperiore2023=true;
+            if (dataLong<long2023)DataSuperiore2023=false;
+            boolean Pre2023EarnCostoZero = false;
+            boolean Pre2023ScambiRilevanti = false;
+            String Plusvalenze_Pre2023EarnCostoZero = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
+            if (Plusvalenze_Pre2023EarnCostoZero != null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")) {
+                Pre2023EarnCostoZero=true;
+            }
+            String Plusvalenze_Pre2023ScambiRilevanti = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
+            if (Plusvalenze_Pre2023ScambiRilevanti != null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")) {
+                Pre2023ScambiRilevanti=true;
+            }
             
             
             //TIPOLOGIA = 0 (Vendita Crypto)
@@ -420,6 +434,8 @@ public class Calcoli_Plusvalenze {
                     && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
                     !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
             {
+                
+                if (DataSuperiore2023||!Pre2023ScambiRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
                     //Tolgo dallo stack il costo di carico della cripèto uscita
                     VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                     
@@ -429,7 +445,18 @@ public class Calcoli_Plusvalenze {
                     
                     //La plusvalenza va valorizzata a zero
                     Plusvalenza="0.00";
-                                                        
+                 }else {//altrimenti calcolo la plusvalenza
+                    //Tolgo dallo stack il vecchio costo di carico
+                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    
+                    //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
+                    //lo aggiungo quindi allo stack del lifo
+                    NuovoPrezzoCarico=Valore;
+                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    
+                    //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
+                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                }                                      
             } 
             
             
@@ -491,16 +518,25 @@ public class Calcoli_Plusvalenze {
                 //valorizzo la tipologia corretta
                 
                 //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
-                if(IDTS[4].equalsIgnoreCase("RW")||v[18].contains("DAI")) {
-                                       
-                    NuovoPrezzoCarico=Valore;
-                    
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    
-                    Plusvalenza=Valore;
-                    
-                    VecchioPrezzoCarico="";                                
-                
+                if (IDTS[4].equalsIgnoreCase("RW") || v[18].contains("DAI")) {
+
+                    if (DataSuperiore2023 || !Pre2023EarnCostoZero) {
+                        NuovoPrezzoCarico = Valore;
+
+                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+
+                        Plusvalenza = Valore;
+
+                        VecchioPrezzoCarico = "";
+                    } else {
+                        NuovoPrezzoCarico = "0.00";
+                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+
+                        Plusvalenza = "0.00";
+
+                        VecchioPrezzoCarico = "";
+                    }
+
                 }
 
                 //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)

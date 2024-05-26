@@ -2138,8 +2138,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     }
                             }
                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Income")
-                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Altri redditi")
-                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Reddito (non imponibile)"))
+                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Altri redditi"))
                             {
                                 //Rewards di vario tipo
                                 
@@ -2211,7 +2210,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
-                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Fee") || movimentoSplittato[0].trim().equalsIgnoreCase("Altra commissione"))
+                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Fee") 
+                                    || movimentoSplittato[0].trim().equalsIgnoreCase("Altra commissione"))
                             {
                                 //Commissioni
                                 
@@ -2452,7 +2452,11 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RiempiVuotiArray(RT);
                                     lista.add(RT);
                                   }   
-                                }
+                                }else if (movimentoSplittato[0].trim().equalsIgnoreCase("Reddito (non imponibile)")||
+                                    movimentoSplittato[0].trim().equalsIgnoreCase("Spese (non imponibili)"))
+                            {
+                                System.out.println("Movimento di entrata e uscita da earn scartato dai movimenti");
+                            }
                                 
                                
                              

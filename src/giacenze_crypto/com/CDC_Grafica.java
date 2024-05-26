@@ -5995,14 +5995,24 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
 
         //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
-        Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+try {
+            // TODO add your handling code here:
 
-        String Wallet = Opzioni_Export_Wallets_Combobox.getSelectedItem().toString().trim();
+            //il modo più rapido per esportare la tabella è prendere tutta la mappa ed esportare solo quello che c'è tra le date e che ha
+            //nel suo contenuto il filtro in basso
+            
+            
+            File export = new File("temp.csv");
+            FileWriter w = new FileWriter(export);
+            BufferedWriter b = new BufferedWriter(w);
+            b.write("\"Symbol\",\"TokenAddress\",\"TimeStamp\",\"MovementType\",\"Quantity\",\"Countervalue\",\"SymbolCountervalue\",\"UserCountervalue\",\"UserSymbolCountervalue\",\"SourceCountervalue\",\"SourceSymbolCountervalue\"\n");
+            String Wallet = Opzioni_Export_Wallets_Combobox.getSelectedItem().toString().trim();
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
                     String Rete = Funzioni.TrovaReteDaID(movimento[0]);
                     String DataMovimento = movimento[1]+":00";
+                    String IDTS[] = movimento[0].split("_");
                         // adesso verifico il wallet
                         String gruppoWallet="";
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
@@ -6011,42 +6021,75 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                                 ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) 
                         {
-                            //Faccio la somma dei movimenti in usicta
-                            Moneta Monete[] = new Moneta[2];
-                            Monete[0] = new Moneta();
-                            Monete[1] = new Moneta();
-                            Monete[0].MonetaAddress = movimento[26];
-                            Monete[1].MonetaAddress = movimento[28];
-                            Monete[0].Moneta = movimento[8];
-                            Monete[0].Tipo = movimento[9];
-                            Monete[0].Qta = movimento[10];
-                            Monete[0].Rete=Rete;
-                            Monete[1].Moneta = movimento[11];
-                            Monete[1].Tipo = movimento[12];
-                            Monete[1].Qta = movimento[13];
-                            Monete[1].Rete=Rete;
-                            //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
-                            for (int a = 0; a < 2; a++) {
-                                //ANALIZZO MOVIMENTI
-                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress)!=null) {
-                                    //Movimento già presente da implementare
-                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress);
-                                    M1.Qta = new BigDecimal(M1.Qta)
-                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
-
-                                } else if (!Monete[a].Moneta.isBlank()) {
-                                    //Movimento Nuovo da inserire
-                                    Moneta M1 = new Moneta();
-                                    M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
-                                    M1.Rete = Rete;
-                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress, M1);
-
-                                }
+                            
+                            if (IDTS[4].equals("VC")
+                                    || IDTS[4].equals("SC")
+                                    || IDTS[4].equals("AC")) {
+                                String Stringa="";
+                                Stringa =Stringa+"\""+movimento[8]+"\",\"\",\""+
+                                        DataMovimento+"\",\""+
+                                        "DEBIT\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
+                                b.append(Stringa);
+                                Stringa="";
+                                Stringa =Stringa+"\""+movimento[11]+"\",\"\",\""+
+                                DataMovimento+"\",\""+
+                                        "CREDIT\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
+                                b.append(Stringa);                               
                             }
+                            else if (IDTS[4].equals("CM")) {
+                                String TipoCommissione="EXCHANGE_FEE";
+                                if (Rete!=null)TipoCommissione="BLOCKCHAIN_FEE";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+movimento[8]+"\",\"\",\""+
+                                        DataMovimento+"\",\""+
+                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
+                                b.append(Stringa); 
+                            }
+                            else if (IDTS[4].equals("RW")) {
+                                String Tipo="EARN";
+                                if (movimento[5].equalsIgnoreCase("CASHBACK"))Tipo="CASHBACK";
+                                else if (movimento[5].equalsIgnoreCase("STAKING"))Tipo="STAKING";
+                                if (movimento[5].equalsIgnoreCase("AIRDROP"))Tipo="AIRDROP";
+                                if (movimento[5].equalsIgnoreCase("EARN"))Tipo="EARN";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+movimento[11]+"\",\"\",\""+
+                                        DataMovimento+"\",\""+
+                                        Tipo+"\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
+                                b.append(Stringa); 
+                            }
+                            else if (IDTS[4].equals("DC")||IDTS[4].equals("DF")) {
+                                String Tipo="DEPOSIT";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+movimento[11]+"\",\"\",\""+
+                                        DataMovimento+"\",\""+
+                                        Tipo+"\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
+                                b.append(Stringa); 
+                            }
+                            else if (IDTS[4].equals("PC")||IDTS[4].equals("PF")) {
+                                String Tipo="WITHDRAWAL";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+movimento[8]+"\",\"\",\""+
+                                        DataMovimento+"\",\""+
+                                        Tipo+"\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
+                                b.append(Stringa); 
+                            }
+                            else if (IDTS[4].equals("TI")) {
+                                //TI non fà nulla
+                            }
+                            else {
+                                System.out.println("Movimento "+movimento[0]+" sconosciuto e non esportato");
+                            }
+
                         }
                     
                 }
-
+            b.close();
+            w.close();
+            Desktop desktop = Desktop.getDesktop();  
+            desktop.open(export); 
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
 
         }

@@ -149,6 +149,182 @@ public class Importazioni {
     //29->Timestamp
     //
     
+        public static boolean Importa_Crypto_OKX(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
+        //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
+        //Da sistemare problema con conversione dust su secondi diversi che da problemi
+        //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
+        //mettere almeno 1 secondo di tempo tra una richiesta e l'altra verso banchitalia
+        
+        AzzeraContatori();
+        List<String[]> listaScambiDifferiti=new ArrayList<>();
+        
+        String fileDaImportare = fileBinance;
+       // System.out.println(fileBinance);
+        Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        //fee,sell,buy,Transaction Fee,Transaction Spend,Transaction Buy,Transaction Revenue,Transaction Sold
+        //Sono tutte descrizioni che fanno parte di uno scambio tra crypto
+        //in quel caso il movimento si compone di tre parti principali che però possono essee multiple e sono
+        //le fee, la moneta venduta e la moneta acquistata
+        //per gestire la transazione dovremmo prendere tutte le righe con lo stesso orario e sommarle per ottenere
+        //i dati della transazione di scambio
+        //le tipologie sono alla posizione 3
+
+        
+        Mappa_Conversione_Causali.put("Savings subscription",                   "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Savings redemption",                     "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Stake",                                  "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Redeem staking",                         "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("From unified trading account",           "TRASFERIMENTO-CRYPTO-INTERNO");      
+        Mappa_Conversione_Causali.put("To unified trading account",             "TRASFERIMENTO-CRYPTO-INTERNO");
+        
+        Mappa_Conversione_Causali.put("withdraw",                               "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("deposit",                                "TRASFERIMENTO-CRYPTO");
+        
+        Mappa_Conversione_Causali.put("Convert",                                "SCAMBIO CRYPTO-CRYPTO");
+
+        
+         
+        //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
+        //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
+        //ad esempio questo succede per i dust conversion etc....
+        Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+       // Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        String riga;
+        String ultimaData = "";
+        List<String> listaMovimentidaConsolidare = new ArrayList<>();
+        List<String> righeFile = new ArrayList<>();
+            try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
+
+                //in questo modo butto tutto il in un array
+                while ((riga = bure.readLine()) != null) {
+                    riga=riga.replace("\"", "");//rimuovo le virgolette dal file
+                    righeFile.add(riga);
+                }
+                bure.close();
+                fire.close();
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            progressb.SetMassimo(righeFile.size());
+            progressb.SetAvanzamento(0);
+            //System.out.println(righeFile.size());
+            for (int w=0;w<righeFile.size();w++){
+                progressb.avanzamento++;
+                progressb.SetAvanzamento(progressb.avanzamento);
+                if (progressb.FineThread()){
+                    //se è stato interrotta la finestra di progresso interrompo il ciclo
+                    return false;
+                }
+                riga=righeFile.get(w);
+               
+                String splittata[] = riga.split(",");
+                //Se splittata è minore di 6 vuol dire che ci troviamo di fronte alla prima riga del file, in quel caso la salto
+                //li infatti ci sono solo i dati cliente
+                if (splittata.length>6){
+                    //Adesso verifico se tra i campi c'è almeno un campo numerico
+                    //cosi non fosse quella è l'intestazione del file e vado a leggere le colonne per capire che cosa sto importando
+                    boolean SoloTesto=true;
+                    for (String a :splittata){
+                        if (Funzioni.Funzioni_isNumeric(a, false))SoloTesto=false;
+                        
+                    }
+                    if (SoloTesto){
+                        //Qui devo identificare le colonne e assegnarle il valore corretto
+                    }
+                    else{
+              //   System.out.println(splittata[2]);
+                if (OperazioniSuDate.ConvertiDatainLongSecondo(splittata[1]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
+                {
+                   // System.out.println("sono qua");
+                    //se trovo movimento con stessa data oppure la data differisce di un solo secondosolo se è un dust conversion allora lo aggiungo alla lista che compone il movimento e vado avanti
+                    //ho dovuto aggiungere la parte del secondo perchè quando fa i dust conversion può capitare che ci metta 1 secondo a fare tutti i movimenti
+                    String secondo=splittata[1].split(":")[2];
+                    int secondoInt=Integer.parseInt(secondo)-1;
+                    secondo=String.valueOf(secondoInt);//secondo è secondo meno 1
+                    if (secondo.length()==1)secondo="0"+secondo;
+                    String DataMeno1Secondo=splittata[1].split(":")[0]+":"+splittata[1].split(":")[1]+":"+secondo;
+                    if (splittata[1].equalsIgnoreCase(ultimaData)) {
+                        listaMovimentidaConsolidare.add(riga);
+                    }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Small Assets Exchange BNB")){//SOLO per i dust conversion
+                        listaMovimentidaConsolidare.add(riga);
+                        }
+                    else //altrimenti consolido il movimento precedente
+                    {
+                     //   System.out.println(riga);
+                        List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
+                        int nElementi = listaConsolidata.size();
+                        for (int i = 0; i < nElementi; i++) {
+                            String consolidata[] = listaConsolidata.get(i);
+                            Mappa_Movimenti.put(consolidata[0], consolidata);
+                        }
+
+                        //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
+                        listaMovimentidaConsolidare = new ArrayList<>();
+                        listaMovimentidaConsolidare.add(riga);
+                    }
+                    ultimaData = splittata[1];
+
+                }
+                }
+                }
+            }
+            List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
+          //  List<String> listaAutoinvestimenti=new ArrayList()<>;
+            int nElementi = listaConsolidata.size();
+            for (int i = 0; i < nElementi; i++) {
+                String consolidata[] = listaConsolidata.get(i);
+                //System.out.println(consolidata[2].split(" di ")[0].trim());               
+                Mappa_Movimenti.put(consolidata[0], consolidata);
+               // 
+            }
+            
+
+         //   bure.close();
+          //  fire.close();
+     
+
+        
+       int numeromov=0; 
+       int numeroscartati=0;
+       int numeroaggiunti=0;
+       for (String v : Mappa_Movimenti.keySet()) {
+           numeromov++;
+           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
+           {
+
+             //  MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
+               numeroaggiunti++;
+           }else {
+            //   System.out.println("Movimento Duplicato " + v);
+               numeroscartati++;
+           }
+       }
+       //questo lo faccio alla fine perchè vado ad agire direttamente sulla mappa già compilata
+       //assengnado i movimenti aggiuntivi
+       ConsolidaMovimentiDifferiti(listaScambiDifferiti,SovrascriEsistenti);
+    //   System.out.println(listaScambiDifferiti.get(0)[5]);
+    //   System.out.println(MappaCryptoWallet.get(listaScambiDifferiti.get(0)[0])[5]);
+     //  System.out.println("TotaleMovimenti="+numeromov);
+     //  System.out.println("TotaleScartati="+numeroscartati);
+//////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+        Transazioni=numeromov;
+        TransazioniAggiunte=numeroaggiunti;
+        TrasazioniScartate=numeroscartati;
+        if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+        
+        
+    return true;    
+    }
+    
+    
+    
+    
+    
+    
+    
     
         public static boolean Importa_Crypto_Binance(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop

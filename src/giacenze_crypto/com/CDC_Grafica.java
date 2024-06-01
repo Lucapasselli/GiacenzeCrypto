@@ -1227,11 +1227,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Anno", "Gruppo", "Moneta", "Quantità", "Data Inizio", "Val. Iniziale", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi"
+                "Anno", "Gr. Inizio", "Mon. Inizio", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "Mon. Fine", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1268,24 +1268,33 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(150);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(200);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMinWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setPreferredWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMaxWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setPreferredWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMaxWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMaxWidth(200);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setMinWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(13).setMaxWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMinWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMaxWidth(0);
         }
 
         RW_Bottone_Calcola.setText("Calcola");
@@ -5422,7 +5431,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi();
-        Calcoli_RW.AggiornaRW(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+        Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
             String Errore="";
@@ -5433,10 +5442,10 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
               //  System.out.println(lista[1]);
                 if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
-                if (lista[12].toLowerCase().contains("error"))Errore="ERRORI";
+                if (lista[15].toLowerCase().contains("error"))Errore="ERRORI";
                 ValIniziale = new BigDecimal(lista[5]).add(ValIniziale);
-                ValFinale = new BigDecimal(lista[7]).add(ValFinale);
-                ValFinalexggTOT = new BigDecimal(lista[7]).multiply(new BigDecimal(lista[8])).add(ValFinalexggTOT);
+                ValFinale = new BigDecimal(lista[10]).add(ValFinale);
+                ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
             }
             BigDecimal GGPonderati=new BigDecimal(999999);
             if (ValFinale.compareTo(new BigDecimal(0))!=0) {
@@ -5489,7 +5498,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
                 if (RW_CheckBox_VediSoloErrori.isSelected())
                     {
-                        if(lista[12].toLowerCase().contains("errore")) ModelloTabella.addRow(lista);
+                        if(lista[15].toLowerCase().contains("errore")) ModelloTabella.addRow(lista);
                     }
                 else 
                     ModelloTabella.addRow(lista);
@@ -5508,8 +5517,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
-            String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
-            String MonetaTab = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
+            String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
+            String MonetaTabIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
+            String MonetaTabFin = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString().trim();
             
             if (Errore.toLowerCase().contains("scam")){
                 RW_Bottone_IdentificaScam.setText("Rimuovi da SCAM");
@@ -5530,16 +5540,17 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             }
             //IDIniziale è l'id del movimento che ha fatto partire l'RW
             //IDFinale è l'id del movimento che ha chiuso l'RW
-            String IDIniziale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
-            String IDFinale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
-            String GruppoWallet = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString().trim();
+            String IDIniziale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 13).toString();
+            String IDFinale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 14).toString();
+            String GruppoWalletIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString().trim();
+            String GruppoWalletFin = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString().trim();
             
            // System.out.println(IDIniziale + " - " + IDFinale);
             String[] Movimento=MappaCryptoWallet.get(IDIniziale);
             if (Movimento!=null){
                 String Mov[]=new String[7];
                 Mov[0]=Movimento[1];
-                Mov[1]=GruppoWallet+" ("+Movimento[3]+")";
+                Mov[1]=GruppoWalletIni+" ("+Movimento[3]+")";
                 Mov[2]=Movimento[5];
                 Mov[3]="";
                 Mov[4]="";
@@ -5552,7 +5563,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 String Mov[]=new String[7];
                 //Se arrivo qua significa che il movimento è in realtà la giacenza iniziale
                 //devo quindi trovare a quanto ammonta e scriverlo
-                List<Moneta> listaIniziale=Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet);
+                List<Moneta> listaIniziale=Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWalletIni);
                 String MonNome="";
                 String MonQta="";
                 String MonPrz="";
@@ -5562,8 +5573,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 Moneta Mon;
                 while (it.hasNext()){
                     Mon=it.next();
-                    if (Mon.Moneta.equals(MonetaTab)){
-                        MonNome=MonetaTab;
+                    if (Mon.Moneta.equals(MonetaTabIni)){
+                        MonNome=MonetaTabIni;
                         MonQta=Mon.Qta;
                         MonPrz=new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                         MonTipo=Mon.Tipo;
@@ -5571,7 +5582,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 }
                 }
                 Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
-                Mov[1]=GruppoWallet;
+                Mov[1]=GruppoWalletIni;
                 Mov[2]=IDIniziale;
                 Mov[3]="";
                 Mov[4]=MonQta+" "+MonNome+" ("+MonTipo+")";
@@ -5583,7 +5594,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (Movimento!=null){
                 String Mov[]=new String[7];
                 Mov[0]=Movimento[1];
-                Mov[1]=GruppoWallet+" ("+Movimento[3]+")";
+                Mov[1]=GruppoWalletFin+" ("+Movimento[3]+")";
                 Mov[2]=Movimento[5];
                 Mov[3]="";
                 Mov[4]="";
@@ -5594,7 +5605,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 ModelloTabella3.addRow(Mov);
             }else{
                 String Mov[]=new String[7];
-                List<Moneta> listaFinale=Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet);
+                List<Moneta> listaFinale=Mappa_RW_GiacenzeFinePeriodo.get(GruppoWalletFin);
                 String MonNome="";
                 String MonQta="";
                 String MonPrz="";
@@ -5604,15 +5615,15 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 Moneta Mon;
                 while (it.hasNext()){
                     Mon=it.next();
-                    if (Mon.Moneta.equals(MonetaTab)){
-                        MonNome=MonetaTab;
+                    if (Mon.Moneta.equals(MonetaTabFin)){
+                        MonNome=MonetaTabFin;
                         MonQta=Mon.Qta;
                         MonPrz=new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                         MonTipo=Mon.Tipo;
                     }
                 }}
                 Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
-                Mov[1]=GruppoWallet;
+                Mov[1]=GruppoWalletFin;
                 Mov[2]=IDFinale;
                 Mov[3]=MonQta+" "+MonNome+" ("+MonTipo+")";
                 Mov[4]="";

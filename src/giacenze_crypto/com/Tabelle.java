@@ -316,7 +316,7 @@ public class Tabelle {
                 }else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(row, 4).toString().toLowerCase().contains("error")) {
                     setForeground(Color.RED);
                   c.setBackground(bg);
-                }else if (table.getModel().getColumnCount()>11 && table.getModel().getValueAt(row, 12).toString().toLowerCase().contains("error")) {          
+                }else if (table.getModel().getColumnCount()>11 && table.getModel().getValueAt(row, 15).toString().toLowerCase().contains("error")) {          
                     setForeground(Color.RED);
                   c.setBackground(bg);                
                 }

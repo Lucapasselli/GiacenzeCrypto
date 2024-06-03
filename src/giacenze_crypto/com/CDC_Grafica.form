@@ -1393,7 +1393,7 @@
                                   <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="157" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="158" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
@@ -1413,7 +1413,7 @@
                                   <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" min="-2" pref="114" max="-2" attributes="0"/>
+                              <Component id="jScrollPane9" pref="114" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -1505,7 +1505,7 @@
                         <Component class="javax.swing.JTable" name="RW_Tabella_Dettagli">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="16" rowCount="0">
+                              <Table columnCount="17" rowCount="0">
                                 <Column editable="false" title="Anno" type="java.lang.Object"/>
                                 <Column editable="false" title="Gr. Inizio" type="java.lang.Object"/>
                                 <Column editable="false" title="Mon. Inizio" type="java.lang.Object"/>
@@ -1522,6 +1522,7 @@
                                 <Column editable="false" title="IDApertura" type="java.lang.Object"/>
                                 <Column editable="false" title="IDChiusura" type="java.lang.Object"/>
                                 <Column editable="false" title="Errore / Avvisi" type="java.lang.Object"/>
+                                <Column editable="false" title="IDMovimentati" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -1602,6 +1603,11 @@
                                   <Renderer/>
                                 </Column>
                                 <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="0" resizable="false">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -2803,11 +2809,10 @@
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="RW_Opzioni_CheckBox_giorno1" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="77" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="396" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2825,13 +2830,11 @@
                                   <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_giorno1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="149" max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="306" max="32767" attributes="0"/>
+                              <EmptySpace pref="358" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2869,14 +2872,6 @@
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                       </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_giorno1">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;RW - Considera 1 giorno solo nel momento in cui si &#xe8; passati alla giornata successiva&lt;/b&gt;&lt;br&gt;&#xa;ES. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 11:00 dello stesso giorno per 1200Euro&lt;br&gt;&#xa;Senza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1&lt;br&gt;&#xa;Con questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=0 (questo movimento non viene considerato nei calcoli per l&apos;IC o aggregazione RW)&lt;br&gt;&#xa;ES2. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 09:00 del 26/06/2023 per 1200Euro&lt;br&gt;&#xa;Senza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=2&lt;br&gt;&#xa;Con questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1&lt;br&gt;&#xa;&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_giorno1ActionPerformed"/>
-                      </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti">
                       <Properties>

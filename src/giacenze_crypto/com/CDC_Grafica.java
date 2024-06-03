@@ -42,7 +42,6 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -54,10 +53,8 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 //import org.apache.commons.codec.binary.Hex;
@@ -198,10 +195,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         String PlusXWallet=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
         if(PlusXWallet!=null && PlusXWallet.equalsIgnoreCase("SI")){
             Opzioni_GruppoWallet_CheckBox_PlusXWallet.setSelected(true);
-        }
-        String RWgiorno1=DatabaseH2.Pers_Opzioni_Leggi("RW_DiffDateMatematica");
-        if(RWgiorno1!=null && RWgiorno1.equalsIgnoreCase("SI")){
-            this.RW_Opzioni_CheckBox_giorno1.setSelected(true);
         }
         String Plusvalenze_Pre2023EarnCostoZero=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
         if(Plusvalenze_Pre2023EarnCostoZero!=null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")){
@@ -384,7 +377,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
-        RW_Opzioni_CheckBox_giorno1 = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
@@ -1215,11 +1207,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Anno", "Gr. Inizio", "Mon. Inizio", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "Mon. Fine", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi"
+                "Anno", "Gr. Inizio", "Mon. Inizio", "Qta Inizio", "Data Inizio", "Val. Inizio", "Gr. Fine", "Mon. Fine", "Qta Fine", "Data Fine", "Val. Finale", "Giorni", "Causale", "IDApertura", "IDChiusura", "Errore / Avvisi", "IDMovimentati"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1283,6 +1275,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMinWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(14).setPreferredWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMaxWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setResizable(false);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setPreferredWidth(0);
         }
 
         RW_Bottone_Calcola.setText("Calcola");
@@ -1401,7 +1395,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Bottone_Calcola)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1418,7 +1412,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Bottone_ModificaVFinale)
                     .addComponent(RW_Bottone_ModificaVIniziale))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2114,13 +2108,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
 
-        RW_Opzioni_CheckBox_giorno1.setText("<html><b>RW - Considera 1 giorno solo nel momento in cui si è passati alla giornata successiva</b><br>\nES. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 11:00 dello stesso giorno per 1200Euro<br>\nSenza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1<br>\nCon questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=0 (questo movimento non viene considerato nei calcoli per l'IC o aggregazione RW)<br>\nES2. Acquisto 1 eth per 1000 Euro il 25/06/2023 alle ore 10:00, lo rivendo poi alle ore 09:00 del 26/06/2023 per 1200Euro<br>\nSenza questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=2<br>\nCon questa biffatura - V.Iniziale=1000 V.Finale=1200 Giorni di detenzione=1<br>\n</html>");
-        RW_Opzioni_CheckBox_giorno1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Opzioni_CheckBox_giorno1ActionPerformed(evt);
-            }
-        });
-
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setText("Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti (calcola plusvalenza e nuovo costo di carico)");
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2151,10 +2138,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 748, Short.MAX_VALUE))
                     .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(RW_Opzioni_CheckBox_giorno1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero))
-                        .addGap(0, 77, Short.MAX_VALUE)))
+                        .addGap(0, 396, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
@@ -2167,13 +2153,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
                     .addComponent(jLabel8)
                     .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(RW_Opzioni_CheckBox_giorno1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27)
+                .addGap(149, 149, 149)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
-                .addContainerGap(306, Short.MAX_VALUE))
+                .addContainerGap(358, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Crypto", Opzioni_Crypto_Pannello);
@@ -4323,21 +4307,31 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             String ID;
         if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
-            String GruppoWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+            //String GruppoWalletInizio=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+            //String GruppoWalletFine=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
+            String GruppoWallet;
             String DataPrezzo;
             String Prezzo;
+            String mon;
+            BigDecimal Qta;
             if (InizioFine==0){
                     //Prezzo Iniziale
+                    GruppoWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+                    mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                    Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
                     DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
                     Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString();
-                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 13).toString();
             }else{
                     //Prezzo Finale
-                    DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
-                    Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString();
-                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
+                    GruppoWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
+                    mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString();
+                    Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString());
+                    DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 9).toString();
+                    Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 14).toString();
             }
-            System.out.println("RW_Funzione_ModificaValore  - ID : "+ID);
+           // System.out.println("RW_Funzione_ModificaValore  - ID : "+ID);
             int rigaTabellaPrincipale=RW_Tabella.getSelectedRow();
             if (MappaCryptoWallet.get(ID)==null){
                 //Se entro qua dentro significa che il valore che voglio modificare è quello di inizio o fine anno
@@ -4349,8 +4343,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 String DataconOra=OperazioniSuDate.ConvertiDatadaLongallOra(DataCalcoli);
             //long DataRiferimento = 0;
                 
-                String mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
-                BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
+                
+               // BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
                 
 
                 String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
@@ -5528,6 +5522,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             }
             //IDIniziale è l'id del movimento che ha fatto partire l'RW
             //IDFinale è l'id del movimento che ha chiuso l'RW
+            String IDMovimentati[]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 16).toString().split(",");
             String IDIniziale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 13).toString();
             String IDFinale = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 14).toString();
             String GruppoWalletIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString().trim();
@@ -5578,6 +5573,29 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 Mov[6]=""; 
                 ModelloTabella3.addRow(Mov);
             }
+            for (String id : IDMovimentati) {
+                Movimento = MappaCryptoWallet.get(id);
+                if (Movimento != null) {
+                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
+                    String Mov[] = new String[7];
+                    Mov[0] = Movimento[1];
+                    Mov[1] = gwallet + " (" + Movimento[3] + ")";//da sistemare gruppo wallet
+                    Mov[2] = Movimento[5];
+                    Mov[3] = "";
+                    Mov[4] = "";
+                    if (!Movimento[10].isBlank()) {
+                        Mov[3] = Movimento[10] + " " + Movimento[8] + " (" + Movimento[9] + ")";
+                    }
+                    if (!Movimento[13].isBlank()) {
+                        Mov[4] = Movimento[13] + " " + Movimento[11] + " (" + Movimento[12] + ")";
+                    }
+                    Mov[5] = Movimento[15];
+                    Mov[6] = id;
+                    ModelloTabella3.addRow(Mov);
+                }
+            }
+            
+            
             Movimento=MappaCryptoWallet.get(IDFinale);
             if (Movimento!=null){
                 String Mov[]=new String[7];
@@ -5610,7 +5628,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                         MonTipo=Mon.Tipo;
                     }
                 }}
-                Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
+                Mov[0]=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 9).toString();
                 Mov[1]=GruppoWalletFin;
                 Mov[2]=IDFinale;
                 Mov[3]=MonQta+" "+MonNome+" ("+MonTipo+")";
@@ -5660,7 +5678,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
            if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
 
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
-            String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
+            String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             //Punto 2
             if (Errore.toLowerCase().contains("giacenza negativa")) {
                 try {
@@ -5709,7 +5727,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
               
                } else if (Errore.toLowerCase().contains("apertura non classificato")) {
-                   String IDTransazione = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+                   String IDTransazione = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 13).toString();
                    // System.out.println(IDTransazione);
                    ClassificazioneTrasf_Modifica mod = new ClassificazioneTrasf_Modifica(IDTransazione);
                    mod.setLocationRelativeTo(this);
@@ -5730,7 +5748,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                    //Messaggio nessun errore da correggere sulla riga selezionata
                } else if (Errore.toLowerCase().contains("chiusura non classificato")) {
                    //Messaggio nessun errore da correggere sulla riga selezionata
-                   String IDTransazione = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 11).toString();
+                   String IDTransazione = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 14).toString();
                    // System.out.println(IDTransazione);
                    ClassificazioneTrasf_Modifica mod = new ClassificazioneTrasf_Modifica(IDTransazione);
                    mod.setLocationRelativeTo(this);
@@ -5777,7 +5795,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             int righeTabella=GiacenzeaData_Tabella.getModel().getRowCount();
             //Certo la riga della tabella con la moneta incriminata
             int rigaTabellaMoneta=0;
-            String MonetaCercata=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+            String MonetaCercata=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
             for (int i=0;i<righeTabella;i++){
                 if (GiacenzeaData_Tabella.getModel().getValueAt(i, 0).toString().equals(MonetaCercata)){
                     rigaTabellaMoneta=i;
@@ -5810,25 +5828,6 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // TODO add your handling code here:
         RW_CompilaTabellaDettagli();
     }//GEN-LAST:event_RW_CheckBox_VediSoloErroriActionPerformed
-
-    private void RW_Opzioni_CheckBox_giorno1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_giorno1ActionPerformed
-                                                                         
-        // TODO add your handling code here:
-        if (RW_Opzioni_CheckBox_giorno1.isSelected()) {
-            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("RW_DiffDateMatematica", "SI");
-            //System.out.println("SI");
-        } else {
-            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("RW_DiffDateMatematica", "NO");
-            //System.out.println("NO");
-        }
-      /*  this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Calcoli_Plusvalenze.AggiornaPlusvalenze();
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));*/
-    
-    }//GEN-LAST:event_RW_Opzioni_CheckBox_giorno1ActionPerformed
 
     private void Opzioni_Export_Tatax_BottoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Export_Tatax_BottoneActionPerformed
         // TODO add your handling code here:
@@ -7215,7 +7214,6 @@ try {
     private javax.swing.JButton RW_Bottone_ModificaVIniziale;
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
-    private javax.swing.JCheckBox RW_Opzioni_CheckBox_giorno1;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;

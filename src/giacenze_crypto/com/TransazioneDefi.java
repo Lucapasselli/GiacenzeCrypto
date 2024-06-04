@@ -119,7 +119,7 @@ public class TransazioneDefi {
     }
     
      //FUNZIONE TUTTA DA VERIFICARE   
-    public void InserisciMoneteCEX(Moneta Moneta,String Wallet,String CausaleOriginale){
+    public void InserisciMoneteCEX(Moneta Moneta,String Wallet,String CausaleOriginale,String IDT){
         ValoriToken monete;
         //le monete in uscita avranno il meno davanti alla qta mentre quelle in ingresso no
         //conviene forse verificare la cosa già prima di cercare di buttare i token qua dentro
@@ -134,6 +134,7 @@ public class TransazioneDefi {
             monete.Prezzo=Moneta.Prezzo;
             monete.WalletSecondario=Wallet;//poi sarà da vedere se esistono casi di monete identiche presi da wallet dioversi, in quel caso bisognerà differenziarli
             monete.CausaleOriginale=CausaleOriginale;
+            monete.IDTransazione=IDT;
             MappaToken.put(Moneta.Moneta,monete);
             }
         else 
@@ -205,7 +206,17 @@ public class TransazioneDefi {
           return Tipo;
     }   
      
-           public String IdentificaTipoTransazioneCEX(){
+      public boolean isEmpty(){
+          int i=0;
+        for(ValoriToken token : MappaToken.values())
+              {
+                  i++;
+              }
+      return i==0;
+      }
+      
+      
+          public String IdentificaTipoTransazioneCEX(){
           String Tipo;
           boolean trovataEntrata=false;
           boolean trovataUscita=false;
@@ -213,11 +224,12 @@ public class TransazioneDefi {
               {
                //   System.out.print(token.MonetaName+" _ "+token.Qta+" - ");
                 //  if (new BigDecimal(token.Qta).compareTo(new BigDecimal("0"))==1)
+                 /// System.out.println(token.Moneta);
                   if (!token.Qta.contains("-"))
                    {
                      
                             MappaTokenEntrata.put(token.Moneta, token);
-                           // System.out.println(token.Moneta+" - "+token.Qta);
+                            //System.out.println("Moneta Entrata : "+token.Moneta+" - "+token.Qta);
                             trovataEntrata=true;
                        
                    }  
@@ -226,6 +238,7 @@ public class TransazioneDefi {
                    {
                      
                             MappaTokenUscita.put(token.Moneta, token);
+                            //System.out.println("Moneta Uscita : "+token.Moneta+" - "+token.Qta);
                             trovataUscita=true;
                        
                    } 
@@ -234,7 +247,8 @@ public class TransazioneDefi {
           if(trovataEntrata&&trovataUscita)Tipo="Scambio";
           else if(trovataEntrata&&!trovataUscita)Tipo="Deposito";
           else if(!trovataEntrata&&trovataUscita)Tipo="Prelievo";
-          else Tipo="Commissioni";     
+          else Tipo="Commissioni";
+          //System.out.println(Tipo);
           return Tipo;
     }    
       
@@ -247,6 +261,7 @@ public class TransazioneDefi {
         BigDecimal ValoreTransazioneUscita = new BigDecimal("0");
         BigDecimal ValoreTransazione = new BigDecimal("0");
         for (ValoriToken a : MappaTokenEntrata.values()) {
+           // System.out.println(a.Moneta);
             if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
                 //Se trovo un prezzo a zero valorizzo il booleano a false
                 trovatoValoreTransazione = false;
@@ -855,6 +870,7 @@ public class TransazioneDefi {
   public String Prezzo;
   public String Peso;
   public String Tipo; //NFT, FIAT o CRYPTO
+  public String IDTransazione;
   
   public String RitornaNomeToken(){
       String nome;

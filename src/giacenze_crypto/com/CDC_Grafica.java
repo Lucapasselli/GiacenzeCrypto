@@ -4680,7 +4680,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                                 + "Come classifichiamo il movimento?<br><br>"
                                 + "<b>1</b> - <b>Non classifico il movimento</b>, dovrò gestirlo successivamente<br>"
                                 + "    nella sezione 'Classificazione Trasferimenti Crypto'<br><br>"
-                                + "<b>2</b> - Lo considero alla stregua di una <b>Rendita da Capitale</b> <br>"
+                                + "<b>2</b> - Lo considero alla stregua di un <b>Provento da detenzione</b> <br>"
                                 + "    (Verrà generata una plusvalenza sul movimento pari al suo valore)<br><br>"
                                 + "<b>3</b> - Carico il movimento con <b>Costo di carico = 0</b><br><br>"
                                 + "</html>";
@@ -4743,8 +4743,8 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                                     }
                                     case 2 -> {
                                         //Rendita da Capitale
-                                        RT[5] = "REDDITO DA CAPITALE";
-                                        RT[18] = "DAI - REDDITO DA CAPITALE";
+                                        RT[5] = "EARN";
+                                        RT[18] = "DAI - Provento da Detenzione";
                                     }
                                     case 3 -> {
                                         //Costo di carico 0
@@ -6010,10 +6010,16 @@ try {
 
             //il modo più rapido per esportare la tabella è prendere tutta la mappa ed esportare solo quello che c'è tra le date e che ha
             //nel suo contenuto il filtro in basso
-            
-            
-            File export = new File("temp.csv");
-            FileWriter w = new FileWriter(export);
+                    JFileChooser fc = new JFileChooser();
+
+        //In response to a button click:
+        //fc.showSaveDialog(Opzioni);
+       // System.out.println(CDC_FiatWallet_Pannello);
+        int returnVal = fc.showSaveDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {           
+            FileWriter w = new FileWriter(fc.getSelectedFile()+".csv");
+            //File export = new File("temp.csv");
+            //FileWriter w = new FileWriter(export);
             BufferedWriter b = new BufferedWriter(w);
             b.write("\"Symbol\",\"TokenAddress\",\"TimeStamp\",\"MovementType\",\"Quantity\",\"Countervalue\",\"SymbolCountervalue\",\"UserCountervalue\",\"UserSymbolCountervalue\",\"SourceCountervalue\",\"SourceSymbolCountervalue\"\n");
             String Wallet = Opzioni_Export_Wallets_Combobox.getSelectedItem().toString().trim();
@@ -6021,8 +6027,9 @@ try {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
                     String Rete = Funzioni.TrovaReteDaID(movimento[0]);
-                    String DataMovimento = movimento[1]+":00";
                     String IDTS[] = movimento[0].split("_");
+                    String secondi=IDTS[0].substring(12, 14);
+                    String DataMovimento = movimento[1]+":"+secondi;
                         // adesso verifico il wallet
                         String gruppoWallet="";
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
@@ -6095,8 +6102,13 @@ try {
                 }
             b.close();
             w.close();
-            Desktop desktop = Desktop.getDesktop();  
-            desktop.open(export); 
+            File a=fc.getSelectedFile();
+            JOptionPane.showConfirmDialog(null, "<html><b>Elaborazione Terminata</b><br>"
+                    + "File Salvato in "+fc.getSelectedFile().getAbsolutePath(),
+                            "Fine Esportazione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+          //  Desktop desktop = Desktop.getDesktop();  
+         //   desktop.open(export);
+} 
         } catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -33,7 +33,7 @@
 21 - Note -> Eventuali note sulla transazione o sulla singola parte della transazione.
 22 - Auto -> Segno con M se i valori sono stati modificati manualmente o con A se sono stati presi in automatico
 23 - [DEFI] Blocco Transazione
-24 - [DEFI (si può utilizzare anche per altro)] Hash Transazione
+24 - [DEFI] Hash Transazione o ID Transazione Exchange come da CSV
 25 - [DEFI] Nome Token Uscita
 26 - [DEFI] Address Token Uscita
 27 - [DEFI] Nome Token Entrata
@@ -42,7 +42,6 @@
 30 - [DEFI (si può utilizzare anche per altro)] Address Controparte
 31 - Data Fine trasferimento crypto (viene anche utilizzata come data per lo spostamento del costo di carico tra wallet)
 32 - Movimento ha prezzo (Valorizzato a Si o No)  //Serve per sapere se l'eventuale prezzo a zero è voluto o semplicemente non ho trovato i prezzi sul movimento
-33 - IDTransazione da csv Exchange
 */
 
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
@@ -164,9 +163,9 @@ public class Importazioni {
         Map<String, String> MappaIDOKX=new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String Trans[]:CDC_Grafica.MappaCryptoWallet.values()){
             if (Trans[3].equalsIgnoreCase("OKX")){
-                for (String id:Trans[33].split("_")){
-                    MappaIDOKX.put(id, "");
-                }
+
+                    MappaIDOKX.put(Trans[24], "");
+                
             }
         }
         
@@ -191,7 +190,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Simple Earn subscription",               "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Simple Earn redemption",                 "TRASFERIMENTO-CRYPTO-INTERNO");
         
-        Mappa_Conversione_Causali.put("withdraw",                               "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("withdrawal",                               "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                "TRASFERIMENTO-CRYPTO");
         
         Mappa_Conversione_Causali.put("Convert",                                "SCAMBIO CRYPTO-CRYPTO");
@@ -346,54 +345,7 @@ public class Importazioni {
                     else if (splittata[ColTipoTrans].equalsIgnoreCase("Simple Earn redemption"))WalletDestinazione="Earn";
                     //System.out.println(splittata[ColID]+"-"+splittata[ColTipoTrans]+"-"+splittata[ColTime]);
                     
-                    //Se trovo una fee inserisco il movimento
-                  /*  if (splittata[ColFee].isEmpty()) {
-                        String DatoRiga[] = new String[19];
-                        String NomeWallet = "Funding";
-                        if (ColTime != 1) {
-                            NomeWallet = "Trading";
-                        }
-                        if (ColTime != 99) {
-                            DatoRiga[0] = splittata[ColTime];//Timestamp
-                        }
-                        DatoRiga[1] = "OKX";//exchange
-                        DatoRiga[2] = NomeWallet;//Wallet   ----> Da Sistemare in base al tipo di import
-                        DatoRiga[3] = "";//conversione tipo movimento
-                        DatoRiga[3] = "COMMISSIONI";//conversione tipo movimento
-                        if (ColMonFee != 99) {
-                            DatoRiga[5] = splittata[ColMonFee];//Moneta
-                        }
-                        if (ColFee != 99) {
-                            DatoRiga[6] = splittata[ColFee];
-                        }
-                        DatoRiga[7] = "";
-                        DatoRiga[8] = "";
-                        DatoRiga[9] = "";
-                        DatoRiga[10] = "";
-                        if (ColMonFee != 99) {
-                            DatoRiga[11] = splittata[ColMonFee];//Moneta fee
-                        }
-                        if (ColFee != 99) {
-                            DatoRiga[12] = splittata[ColFee];//Qta fee
-                        }                    //Se Fee Valorizzata e > di zero e moneta fee non c'è vuol dire che la moneta fee è la stessa della transazione
-                        if (!DatoRiga[12].isBlank() && !DatoRiga[12].equals("0")) {
-                            DatoRiga[11] = DatoRiga[5];
-                        }
-                        DatoRiga[13] = "";
-                        if (ColID != 99) {
-                            DatoRiga[14] = splittata[ColID];//ID                    
-                        }
-                        DatoRiga[15] = "SI";
-                        DatoRiga[16] = WalletDestinazione;
-                        if (ColGiacIni != 99) {
-                            DatoRiga[17] = splittata[ColGiacIni];
-                        }
-                        if (ColGiacFin != 99) {
-                            DatoRiga[18] = splittata[ColGiacFin];
-                        }
-                        RiempiVuotiArray(DatoRiga);
-                    }*/
-                    
+                  
                     String DatoRiga[]=new String[19];
                     String NomeWallet="Funding";
                     if (ColTime!=1)NomeWallet="Trading";
@@ -505,8 +457,13 @@ public class Importazioni {
        int numeroscartati=0;
        int numeroaggiunti=0;
        for (String v : Mappa_Movimenti.keySet()) {
+           String IDdaCSV=Mappa_Movimenti.get(v)[24];
+         /*  System.out.println(IDdaCSV);
+           System.out.println();*/
            numeromov++;
-           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
+           if (!(MappaCryptoWallet.get(v)!=null||//se trovo la stessa id transazione
+                    MappaIDOKX.get(IDdaCSV)!=null)//o se trovo lo stesso id dal csv scarto il movimento (la mappa degli id la genero prima di far partire l'importazione)
+                   ||SovrascriEsistenti)
            {
 
              //  MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
@@ -564,7 +521,9 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Card Cashback",                              "CASHBACK");              //Cashback        
         Mappa_Conversione_Causali.put("Simple Earn Flexible Interest",              "EARN");  
         Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
+        Mappa_Conversione_Causali.put("Launchpool Earnings Withdrawal",             "EARN");//
         Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
+        Mappa_Conversione_Causali.put("Airdrop Assets",                             "REWARD");//
         Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING REWARDS");//
         Mappa_Conversione_Causali.put("Distribution",                               "REWARD");//
         Mappa_Conversione_Causali.put("BNB Vault Rewards",                          "REWARD");//
@@ -596,6 +555,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Sell",                                       "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Related",                        "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("ETH 2.0 Staking",                            "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("ETH 2.0 Staking Withdrawals",                "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fiat Deposit",                               "DEPOSITO FIAT");
@@ -827,6 +787,7 @@ public class Importazioni {
 
         Mappa_Conversione_Causali.put("mco_stake_reward", "STAKING REWARD");                       //Interessi che la MCO Card matura. Da (Jade in su)
         Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING REWARD");    //Nuovo Staking di Crypto.com
+        Mappa_Conversione_Causali.put("finance.dpos.compound_interest.crypto_wallet", "STAKING REWARD");
         Mappa_Conversione_Causali.put("staking_reward", "STAKING REWARD");                       //Reward (Es. NEO Gas) 
 
         Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
@@ -2027,7 +1988,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                            
                             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null);
                             String valoreEuro = new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                            String WalletSecondario=movimentoSplittato[2];
+                           // String WalletSecondario=movimentoSplittato[2];
+                           // WalletSecondario="Principale";
                             String CausaleOriginale=movimentoSplittato[3];
 
                             dataa=data.trim().substring(0, data.length()-3);
@@ -2188,7 +2150,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             {
                                // System.out.println(Mon.Moneta);
                                 // serve solo per il calcolo della percentuale di cro da attivare
-                                    Scambio.InserisciMoneteCEX(Mon,WalletSecondario,CausaleOriginale,"");
+                                    Scambio.InserisciMoneteCEX(Mon,"Principale",CausaleOriginale,"");
                                    // System.out.println(CausaleOriginale+" - "+dataa+ " - "+Mon.Moneta+" _ "+Mon.Qta);
 
                            // se è l'ultimo movimento allora creo anche le righe
@@ -2358,7 +2320,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             RT[1] = dataa;
                                             RT[2] = i + " di " + totMov;
                                             RT[3] = "Binance";
-                                            RT[4] = tokenU.WalletSecondario;
+                                            RT[4] = "Principale";
                                             RT[5] = TipoTransazione;
                                             RT[6] = tokenU.RitornaNomeToken() + " -> " + tokenE.RitornaNomeToken();
                                             RT[7] = tokenU.CausaleOriginale+" - "+tokenE.CausaleOriginale;
@@ -2463,7 +2425,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[15]=val;
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);  
                             }
@@ -2519,7 +2481,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
                                 RT[22] = "A";
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 
@@ -2546,7 +2508,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[19]="0.00";
                                 RT[22]="A";   
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
@@ -2589,7 +2551,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[19]="0.00";
                                 RT[22]="A";   
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
@@ -2611,7 +2573,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[15]=valoreEuro;
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);     
                             }
@@ -2662,7 +2624,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[19]="0.00";
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);  
                                 
@@ -2694,7 +2656,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[19]="0.00";
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT); 
                                 }
@@ -2733,7 +2695,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[20]="";
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
-                                RT[33] = IDOriginale;
+                                RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
@@ -2822,7 +2784,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             RT[22] = "A";
                                             long TimeStamp=OperazioniSuDate.ConvertiDatainLongSecondo(data);
                                             RT[29] = String.valueOf(TimeStamp);
-                                            RT[33] = tokenU.IDTransazione+"_"+tokenE.IDTransazione;
+                                            RT[24] = tokenU.IDTransazione+"_"+tokenE.IDTransazione;
                                             Importazioni.RiempiVuotiArray(RT);
                                             lista.add(RT);
                                             i++;

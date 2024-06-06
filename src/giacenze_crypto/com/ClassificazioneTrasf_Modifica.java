@@ -715,6 +715,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MovimentoCommissione[22]="AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
         //quindi se decadono le condizioni che lo hanno generato va eliminato
         //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
+        MovimentoCommissione[25]=MovimentoPrelievo[25];
+        MovimentoCommissione[26]=MovimentoPrelievo[26];
+        
         Importazioni.RiempiVuotiArray(MovimentoCommissione);
         //Se movimento di Prelievo è uguale a movimento di deposito allora non devo creare nessuna commissione
         if (QtaPrelievoValoreAssoluto.compareTo(QtaDepositoValoreAssoluto)==1){           

@@ -258,6 +258,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_Bottone_AssegnazioneManuale = new javax.swing.JButton();
         DepositiPrelievi_CheckBox_movimentiClassificati = new javax.swing.JCheckBox();
         DepositiPrelievi_Bottone_DettaglioDefi = new javax.swing.JButton();
+        DepositiPrelievi_Bottone_CreaMovOpposto = new javax.swing.JButton();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -780,6 +781,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        DepositiPrelievi_Bottone_CreaMovOpposto.setText("Crea Movimento Opposto su altro Wallet");
+        DepositiPrelievi_Bottone_CreaMovOpposto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout DepositiPrelieviLayout = new javax.swing.GroupLayout(DepositiPrelievi);
         DepositiPrelievi.setLayout(DepositiPrelieviLayout);
         DepositiPrelieviLayout.setHorizontalGroup(
@@ -790,9 +798,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 860, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
+                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
+                                .addGap(252, 252, 252)
+                                .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto))
                             .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 196, Short.MAX_VALUE)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
@@ -810,7 +821,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
-                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)))
+                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)
+                    .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto)))
         );
 
         AnalisiCrypto.addTab("Calssificazione Trasferimenti Crypto", DepositiPrelievi);
@@ -5873,6 +5885,25 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed
+
+    private void DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
+        // TODO add your handling code here:
+        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
+            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+        int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
+        String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            a.CompilaMovimentoOppostoID(IDTransazione);
+            a.setLocationRelativeTo(this);
+            a.setVisible(true);
+        }else
+        {
+        MovimentoManuale_GUI a= new MovimentoManuale_GUI();
+        a.setLocationRelativeTo(this);
+        a.setVisible(true);
+        }
+                  //  Funzioni_AggiornaTutto();
+            DepositiPrelievi_Caricatabella();
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -7173,6 +7204,7 @@ try {
     private javax.swing.JPanel DepositiPrelievi;
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneAutomatica;
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneManuale;
+    private javax.swing.JButton DepositiPrelievi_Bottone_CreaMovOpposto;
     private javax.swing.JButton DepositiPrelievi_Bottone_DettaglioDefi;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;

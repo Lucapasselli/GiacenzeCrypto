@@ -704,6 +704,35 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+        
+            public void CompilaMovimentoOppostoID(String IDTransazione){
+        try {
+            String riga[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+            MovimentoRiportato=riga;
+            String DataOraMinutiSecondo=riga[0].split("_")[0];
+            SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
+            Date d = f.parse(DataOraMinutiSecondo.substring(0,8));
+            this.Data_Datachooser.setDate(d);
+            this.Ora_ComboBox.setSelectedItem(DataOraMinutiSecondo.substring(8,10));
+            this.Minuto_ComboBox.setSelectedItem(DataOraMinutiSecondo.substring(10,12));
+            this.Secondo_ComboBox.setSelectedItem(DataOraMinutiSecondo.substring(12,14));
+            //this.Wallet_ComboBox.setSelectedItem(riga[3]);
+            //this.WalletDettaglio_ComboBox.setSelectedItem(riga[4]);
+            this.MonetaEntrata_ComboBox.setSelectedItem(riga[8]);
+            this.MonetaUscita_ComboBox.setSelectedItem(riga[11]);
+            this.MonetaEntrataAddress_TextField.setText(riga[26]);
+            this.MonetaUscitaAddress_TextField.setText(riga[28]);
+            this.MonetaEntrataQuantita_TextField.setText(riga[10]);
+            this.MonetaUscitaQuantita_TextField.setText(riga[13]);
+            this.MonetaEntrataTipo_ComboBox.setSelectedItem(riga[9]);
+            this.MonetaUscitaTipo_ComboBox.setSelectedItem(riga[12]);
+            this.ValoreTransazione_TextField.setText(riga[15]);
+           // EvidenziaProblemi();
+        } catch (ParseException ex) {
+            Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
     
     private void MonetaUscitaQuantita_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_MonetaUscitaQuantita_TextFieldKeyReleased
         // TODO add your handling code here:

@@ -215,7 +215,16 @@ public class Funzioni {
             String IDDettSplittato[]=IDSplittato[1].split("\\.");
             if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && IDDettSplittato[0].equalsIgnoreCase("BC")){
                 Rete=IDDettSplittato[1];
-
+                return Rete;
+            }
+            
+            //Se il primo if non trova la rete la cerco tra i movimenti manuali, a patto che venga inserito il contratto del token
+            if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
+                String Mov[] = MappaCryptoWallet.get(ID);
+                if (Mov!=null&&(!Mov[26].isEmpty() || !Mov[28].isEmpty())) {
+                    Rete = IDSplittato[1].split("\\(")[1].split("\\)")[0];
+                    return Rete;
+                }
             }
         return Rete;
         }

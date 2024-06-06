@@ -62,6 +62,11 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="MonetaUscita_ComboBox" min="-2" pref="250" max="-2" attributes="0"/>
                                   </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="MonetaUscitaTipo_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="MonetaUscitaTipo_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
+                                  </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
                                       <Component id="Data_Label" min="-2" max="-2" attributes="0"/>
@@ -71,23 +76,17 @@
                                       <Component id="Ora_Label" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="Ora_ComboBox" min="-2" pref="57" max="-2" attributes="0"/>
-                                      <EmptySpace pref="14" max="32767" attributes="0"/>
                                   </Group>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                                              <Component id="MonetaUscitaQuantita_Label" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="MonetaUscitaQuantita_TextField" min="-2" pref="150" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="MonetaUscitaTipo_Label" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="MonetaUscitaTipo_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <EmptySpace min="0" pref="100" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                                      <Component id="MonetaUscitaQuantita_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="MonetaUscitaQuantita_TextField" min="-2" pref="150" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="MonetaUscitaAddress_Label" min="-2" pref="85" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="MonetaUscitaAddress_TextField" min="-2" pref="270" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -109,16 +108,25 @@
                                           <Component id="Freccia1_Label" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="MonetaEntrataTipo_Label" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="MonetaEntrata_Label" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="MonetaEntrataQuantita_Label" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="MonetaEntrataTipo_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
-                                          <Component id="MonetaEntrata_ComboBox" min="-2" pref="250" max="-2" attributes="0"/>
-                                          <Component id="MonetaEntrataQuantita_TextField" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="MonetaEntrataAddress_Label" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                              <Component id="MonetaEntrataAddress_TextField" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="MonetaEntrataTipo_Label" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="MonetaEntrata_Label" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="MonetaEntrataQuantita_Label" alignment="1" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="MonetaEntrataTipo_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
+                                                  <Component id="MonetaEntrata_ComboBox" min="-2" pref="250" max="-2" attributes="0"/>
+                                                  <Component id="MonetaEntrataQuantita_TextField" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
                                       </Group>
                                   </Group>
                               </Group>
@@ -206,7 +214,23 @@
                   <Component id="MonetaUscitaQuantita_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="MonetaUscitaQuantita_Label" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="MonetaUscitaAddress_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="MonetaUscitaAddress_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="MonetaEntrataAddress_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="MonetaEntrataAddress_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
               <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -214,7 +238,7 @@
                   <Component id="ValoreTransazione_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Bottone_CalcolaAutomaticamente" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="Note_ScrollPane" min="-2" max="-2" attributes="0"/>
                   <Component id="Note_Label" min="-2" max="-2" attributes="0"/>
@@ -675,6 +699,20 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="MonetaUscitaAddress_Label">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Address Uscita :"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="MonetaUscitaAddress_TextField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="MonetaEntrataAddress_Label">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Address Entrata :"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="MonetaEntrataAddress_TextField">
     </Component>
   </SubComponents>
 </Form>

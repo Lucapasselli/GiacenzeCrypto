@@ -81,7 +81,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String papele[];
         if (ID.split("_")[4].equalsIgnoreCase("DC")){
             papele=new String[]{"- nessuna selezione -",
-                "AIRDROP O SIMILARI (verrà calcolata la plusvalenza)",
+                "AIRDROP, CASHBACK, EARN etc...",
                 "DEPOSITO CON COSTO DI CARICO A ZERO",
                 "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)",
                 "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...)",
@@ -352,7 +352,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //DCZ -> Costo di carico 0 (deposito)
         int scelta = this.ComboBox_TipoMovimento.getSelectedIndex();
         boolean completato = true;
-        String descrizione = "";
+        String descrizione;
         String dettaglio = "";
         //String Note=jTextField1.getText();
         String Note = TextArea_Note.getText().replace("\n", "<br>");
@@ -365,10 +365,124 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //in questo caso sono in presenza di un movimento di deposito
             switch (scelta) {
                 case 1 -> {
+                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
                     descrizione = "REWARD";
-                    dettaglio = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
-                    plusvalenza = attuale[15];
-                    PrzCarico = attuale[15];
+                    dettaglio = "DAI - Airdrop,Cashback,Rewards etc.. ";
+                    String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
+                            + "<b>Come classifichiamo il movimento?<br><br><b>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "REWARD", "STAKING REWARD", "EARN", "CASHBACK", "AIRDROP"};
+                    scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Classificazione del movimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                descrizione = "REWARD";
+                            }
+                            case 2 -> {
+                                descrizione = "STAKING REWARD";
+                            }
+                            case 3 -> {
+                                descrizione = "EARN";
+                            }
+                            case 4 -> {
+                                descrizione = "CASHBACK";
+                            }
+                            case 5 -> {
+                                descrizione = "AIRDROP";
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        completato=false;
+                    }
+                    if (completato){
+                        //Se effettuo una scelta valida controllo se è un movimento in defi
+                        //Qualora lo fosse e trovo movimenti identici chiedo se si vuole classificare anche tutti gli altri movimenti allo stesso modo
+                        //Se rispondo si li faccio tutti
+                        //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
+                       // String Movimento[] = MappaCryptoWallet.get(ID);
+                        String Moneta = attuale[11];
+                        String AddressMoneta=attuale[28];
+                        String AddressContratto = null;
+                        if (attuale.length > 30) {
+                            AddressContratto = attuale[30];
+                        }
+                        ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
+                        //for (String[] v : MappaCryptoWallet.values()) {
+                        for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+                            String v[] = MappaCryptoWallet.get(IDnc);
+                            //considero solo i movimenti che hanno l'address del contratto in memoria
+                            //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
+                            if (v.length > 30) {
+                                String AddContratto = v[30];
+                                if (AddressContratto != null && AddContratto != null
+                                        && !AddressContratto.isBlank() && !AddContratto.isBlank()
+                                        && AddressContratto.equalsIgnoreCase(AddContratto)
+                                        && !v[0].equals(IDTrans)
+                                        && v[0].split("_")[4].equalsIgnoreCase("DC")
+                                        && v[11].equals(Moneta)
+                                        && v[28].equals(AddressMoneta)
+                                        && v[18].isBlank()) {//questo serve per trovare solo i movimenti non ancora classificati
+
+                                    //Sotto questa if ci sono tutti i movimenti di deposito
+                                    //che riguardano la stessa moneta e lo stesso contratto
+                                    ListaIDMovimentiUguali.add(v[0]);
+                                }
+
+                            }
+                        }
+                        //boolean TuttiiMovimenti = false;
+                        if (!ListaIDMovimentiUguali.isEmpty()){
+                String Messaggio="Sono stati trovati altri "+ListaIDMovimentiUguali.size()+" movimenti analoghi non ancora classificati, vuoi considerarli allo stesso modo?";
+                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Classificazione movimenti multipli", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
+                    case 0 -> {
+                        //modifico tutti i movimenti
+                        //Salvo un booleano a true in mdo da sapere che ho fatto questa scelta per dopo
+
+                        for (String IDMov:ListaIDMovimentiUguali){
+                            String mov[]=MappaCryptoWallet.get(IDMov);
+                                mov[5] = descrizione;
+                                mov[18] = dettaglio;
+                                mov[20] = "";
+                                mov[21] = Note;
+                                MappaCryptoWallet.put(IDMov, mov);
+                        }
+                        ModificaEffettuata=true;
+                       // TuttiiMovimenti=true;
+                    }
+                    case 1 -> {
+                        //modifico il solo movimento interessato
+                        //in sostanza non faccio nulla di più perchè il movimento verrà modificato già dalla funzione stessa
+                    }
+                    case -1 -> {
+                        completato=false;
+                    }
+                    default -> {
+                    }
+                }
+               // System.out.println(risposta);
+            }
+                    }
+                    //Adesso se trovo movimenti con le stesse caratteristiche chiedo se voglio assegnarli tutti allo stesso modo
+                        
+                       
+                    
+                   // plusvalenza = attuale[15];
+                   // PrzCarico = attuale[15];
                 }
                 case 2 -> {
                     descrizione = "DEPOSITO CRYPTO (a costo zero)";
@@ -1276,7 +1390,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
           switch(scelta){
               case 1 -> {
                   descrizione="AIRDROP o SIMILARE";
-                  dettaglio="DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
+                  dettaglio="DAI - Airdrop,Cashback,Rewards etc..";
                   TransferNO();
                 }
               case 2 -> {
@@ -1420,7 +1534,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 QtaAttuale = new BigDecimal(attuale[13]).stripTrailingZeros();
                 TipoMovimentoRichiesto = "PC";
             }
-            BigDecimal escursioneMassima = new BigDecimal(5);
+            BigDecimal escursioneMassima = new BigDecimal(30);
             BigDecimal QtaAttualeMax = QtaAttuale.add(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
             BigDecimal QtaAttualeMin = QtaAttuale.subtract(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
 

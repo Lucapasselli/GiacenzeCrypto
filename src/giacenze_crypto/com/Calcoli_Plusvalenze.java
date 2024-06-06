@@ -664,7 +664,9 @@ public class Calcoli_Plusvalenze {
                     NuovoPrezzoCarico="";
                 
                     //Calcolo la plusvalenza
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString(); 
+                  //  if (Funzioni.Funzioni_isNumeric(Valore, false)&&Funzioni.Funzioni_isNumeric(VecchioPrezzoCarico, false))
+                        Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                   // else Plusvalenza="ERRORE";
                 }
                 //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
                 else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("PTW")) {

@@ -923,7 +923,8 @@ public class Importazioni {
     
         public static String Formatta_Data_CoinTracking(String Data) {
 
-        String DataFormattata="";
+        if (Data.split(":").length>2) return Data;
+            String DataFormattata="";
             try {
             SimpleDateFormat originale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
             
@@ -1013,6 +1014,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         Map<String, String> Mappa_EliminaDoppioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
                 while ((riga = bure.readLine()) != null) {
+                    //System.out.println(riga);
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
                     String splittata[] = riga.split(","); 
                     if (splittata.length==13){
@@ -1044,6 +1046,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         if (OrdineInverso){
             for (int i = lista.size(); i-- > 0; ) {
                 listaProv.add(lista.get(i));
+                //System.out.println(lista.get(i));
                 }
             lista=listaProv;
         }
@@ -1079,6 +1082,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                         }
             }
             //metto la data nel keyset in modo da mettere in ordine cronologico qualora ancora non lo fossero, i movimenti
+            //System.out.println(riga);
             Mappa_MovimentiTemporanea.put(data+" "+riga, riga);
            // System.out.println(rigas);
         }
@@ -1106,10 +1110,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String splittata[] = riga.split(",");
             String data=splittata[12];
             //System.out.println(data+" "+ultimaData);
-         // System.out.println(data);
+
             if (OperazioniSuDate.ConvertiDatainLongSecondo(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
             {
-              //  System.out.println("aaa");
+                System.out.println(riga);
                 //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
                 if (data.equalsIgnoreCase(ultimaData)) {
                     listaMovimentidaConsolidare.add(riga);
@@ -1117,7 +1121,6 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 } else //altrimenti consolido il movimento precedente
                 {
                      //System.out.println(listaMovimentidaConsolidare.size());
-                    
                     List<String[]> listaConsolidata = ConsolidaMovimenti_CoinTracking(listaMovimentidaConsolidare,Exchange,PrezzoZero);
                     int nElementi = listaConsolidata.size();
                     for (int i = 0; i < nElementi; i++) {
@@ -4009,6 +4012,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String UltimoBlocco="";
             String PrimaTransBlocco="";
             List<String[]> RigheTabella=new ArrayList<>();
+            List<String[]> MovDaAggiungere=new ArrayList<>();
+            List<String> MovDaEliminare=new ArrayList<>();
             for (String[] movimento : MappaCryptoWallet.values()) {
                 progressb.SetAvanzamento(avanzamento);
                 avanzamento++;
@@ -4032,6 +4037,69 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")) {
                        // System.out.println("Sono qui");
                         if (AddressU.equalsIgnoreCase("CRO")||AddressE.equalsIgnoreCase("CRO")) {
+                            
+                            //Prima di iniziare il controllo delle giacenze e sistemara la qta di CRO verifico se trovo dei trasferimenti di CRO da un certo Address
+                            //e li trasformo in uno scambio WCRO - CRO
+                           
+
+                               
+
+                                //Se non è un movimento in defi non gestisco nulla perchè non ho le bsi per farlo e devo gestirlo a mano
+                                if (movimento[18].equalsIgnoreCase("")
+                                        &&//movimento non classificato e in defi
+                                        movimento[0].split("_")[4].equals("DC") && movimento[11].equals("CRO")
+                                        &&//movimento di deposito di CRO
+                                        movimento[7].trim().equalsIgnoreCase("withdraw")
+                                        &&//Classificato come withdraw
+                                        movimento[30].equalsIgnoreCase("0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23")
+                                        &&//Arriva da contratto WCRO
+                                        Funzioni.TrovaReteDaID(movimento[0]).equalsIgnoreCase("CRO")) //Rete Cronos
+                                {
+                                    //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
+                                    String MT[] = new String[Importazioni.ColonneTabella];
+                                    String IDSpezzato[] = movimento[0].split("_");
+                                    String IDNuovoMov = IDSpezzato[0] + "_" + IDSpezzato[1] + "_" + IDSpezzato[2] + "_" + IDSpezzato[3] + "_SC";
+                                    MT[0] = IDNuovoMov;
+                                    MT[1] = movimento[1];
+                                    MT[2] = "1 di 1";
+                                    MT[3] = movimento[3];
+                                    MT[4] = movimento[4];
+                                    MT[5] = "SCAMBIO CRYPTO";
+                                    MT[6] = "WCRO -> CRO";
+                                    MT[8] = "WCRO";
+                                    MT[9] = movimento[12];
+                                    MT[10] = new BigDecimal(movimento[13]).multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
+                                    MT[11] = movimento[11];
+                                    MT[12] = movimento[12];
+                                    MT[13] = movimento[13];
+                                    MT[15] = movimento[15];
+                                    MT[22] = "A";
+                                    MT[23] = movimento[23];
+                                    MT[24] = movimento[24];
+                                    MT[25] = "WCRO";
+                                    MT[26] = "0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23";
+                                    MT[27] = movimento[27];
+                                    MT[28] = movimento[28];
+                                    MT[29] = movimento[29];
+                                    MT[30] = movimento[30];
+                                    Importazioni.RiempiVuotiArray(MT);
+                                    MovDaAggiungere.add(MT);
+                                    MovDaEliminare.add(movimento[0]);
+                                   // MappaCryptoWallet.put(IDNuovoMov, MT);
+                                   // ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(IDNuovoMov, movimento[0]);
+                                    // System.out.println("Trovato scambio con WCRO");
+                                
+                                }
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
                             
                             if (!movimento[23].equals(UltimoBlocco)&&!UltimoBlocco.isBlank()){
                                 //Se il blocco che sto analizzando è diverso dal blocco precedente allora posso fare le verifiche sulla giacenza del blocco precedente e sistemare le cose
@@ -4080,7 +4148,15 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 MappaCryptoWallet.put(RT[0], RT);
                // System.out.println("Sto correggendo");
             }
+            for (String RT[]:MovDaAggiungere){
+                MappaCryptoWallet.put(RT[0], RT);
+            }
+            for (String id:MovDaEliminare){
+                MappaCryptoWallet.remove(id);
+            }
             if (!RigheTabella.isEmpty())CDC_Grafica.TabellaCryptodaAggiornare=true;
+            if (!MovDaAggiungere.isEmpty())CDC_Grafica.TabellaCryptodaAggiornare=true;
+            if (!MovDaEliminare.isEmpty())CDC_Grafica.TabellaCryptodaAggiornare=true;
     return "Ok";
         
     }

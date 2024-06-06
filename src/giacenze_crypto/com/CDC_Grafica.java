@@ -748,7 +748,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMinWidth(100);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMaxWidth(200);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMinWidth(50);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMaxWidth(200);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMaxWidth(400);
         }
 
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("Assegnazione Automatica");
@@ -3890,8 +3890,14 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
         for (String[] v : MappaCryptoWallet.values()) {
           String TipoMovimento=v[0].split("_")[4].trim();
+          //AU sono equiparati a dei trasferimenti interni, da verifixcare accuratamente perchè così rischio di fare casino nelle esportazioni
           if ((TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))&&v[22]!=null&&!v[22].equalsIgnoreCase("AU"))
           {
+            //Adesso controllo se il token è scam e in quel caso non lo faccio vedere che creo solo confusione
+              if (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])
+                      ||
+                  TipoMovimento.equalsIgnoreCase("PC"))
+              {
             //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
             if (v[18].trim().equalsIgnoreCase("")||this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
               {
@@ -3921,7 +3927,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
            // System.out.println("a");
             }
           }
-                  
+         }         
        }
     }
     
@@ -6043,12 +6049,12 @@ try {
                                     || IDTS[4].equals("SC")
                                     || IDTS[4].equals("AC")) {
                                 String Stringa="";
-                                Stringa =Stringa+"\""+movimento[8]+"\",\"\",\""+
+                                Stringa =Stringa+"\""+movimento[8]+"\",\""+movimento[26]+"\",\""+
                                         DataMovimento+"\",\""+
                                         "DEBIT\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
                                 b.append(Stringa);
                                 Stringa="";
-                                Stringa =Stringa+"\""+movimento[11]+"\",\"\",\""+
+                                Stringa =Stringa+"\""+movimento[11]+"\",\""+movimento[28]+"\",\""+
                                 DataMovimento+"\",\""+
                                         "CREDIT\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
                                 b.append(Stringa);                               
@@ -6057,7 +6063,7 @@ try {
                                 String TipoCommissione="EXCHANGE_FEE";
                                 if (Rete!=null)TipoCommissione="BLOCKCHAIN_FEE";
                                 String Stringa="";
-                                Stringa =Stringa+"\""+movimento[8]+"\",\"\",\""+
+                                Stringa =Stringa+"\""+movimento[8]+"\",\""+movimento[26]+"\",\""+
                                         DataMovimento+"\",\""+
                                         TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
                                 b.append(Stringa); 
@@ -6069,7 +6075,7 @@ try {
                                 if (movimento[5].equalsIgnoreCase("AIRDROP"))Tipo="AIRDROP";
                                 if (movimento[5].equalsIgnoreCase("EARN"))Tipo="EARN";
                                 String Stringa="";
-                                Stringa =Stringa+"\""+movimento[11]+"\",\"\",\""+
+                                Stringa =Stringa+"\""+movimento[11]+"\",\""+movimento[28]+"\",\""+
                                         DataMovimento+"\",\""+
                                         Tipo+"\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
                                 b.append(Stringa); 
@@ -6077,7 +6083,7 @@ try {
                             else if (IDTS[4].equals("DC")||IDTS[4].equals("DF")) {
                                 String Tipo="DEPOSIT";
                                 String Stringa="";
-                                Stringa =Stringa+"\""+movimento[11]+"\",\"\",\""+
+                                Stringa =Stringa+"\""+movimento[11]+"\",\""+movimento[28]+"\",\""+
                                         DataMovimento+"\",\""+
                                         Tipo+"\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
                                 b.append(Stringa); 
@@ -6085,7 +6091,7 @@ try {
                             else if (IDTS[4].equals("PC")||IDTS[4].equals("PF")) {
                                 String Tipo="WITHDRAWAL";
                                 String Stringa="";
-                                Stringa =Stringa+"\""+movimento[8]+"\",\"\",\""+
+                                Stringa =Stringa+"\""+movimento[8]+"\",\""+movimento[26]+"\",\""+
                                         DataMovimento+"\",\""+
                                         Tipo+"\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
                                 b.append(Stringa); 

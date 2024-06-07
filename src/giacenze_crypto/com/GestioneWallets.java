@@ -246,7 +246,9 @@ public class GestioneWallets extends javax.swing.JDialog {
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         for (String[] v : MappaCryptoWallet.values()) {
             
-            Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
+            if (Funzioni.Funzioni_isNumeric(v[23], false))
+                Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
+            //System.out.println(v[1]+";"+v[23]);
             
         }
         for (String riga:MappaWallets.values())
@@ -261,8 +263,11 @@ public class GestioneWallets extends javax.swing.JDialog {
                     rigaTabella[4]="0";
                 }
                 else{
+                    if (Mappa_Wallet.get(w).split(";").length>1)
+                    {
                     rigaTabella[3]=Mappa_Wallet.get(w).split(";")[0];
                     rigaTabella[4]=Mappa_Wallet.get(w).split(";")[1];
+                    }
                 }
                     
                 ModelloTabellaWallets.addRow(rigaTabella);            

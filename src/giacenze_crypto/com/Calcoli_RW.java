@@ -517,6 +517,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
             //Se lo stack è vuoto vuol dire che non ho movimenti tracciati della moneta in questione ma ho una giacenza finale
             //Questo caso si verifica se ho delle giacenze negative a fine anno oppure non ho tracciato correttamente i movimenti
             //nel qual caso mi compare l'errore "Attenzione movimento XY non considerato in Calcoli RW
+         //   System.out.println(Monete.Moneta+"-"+Valore);
             if (StackRitorno.isEmpty()){
                // System.out.println("Sono io "+Monete.Moneta);
                 String xlista[]=new String[17];
@@ -561,16 +562,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 }
 
                 String Prz;
-                Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).stripTrailingZeros().abs().toPlainString();
+                if (new BigDecimal(Valore).compareTo(new BigDecimal("0"))==0) Prz=Valore;
+                else Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).abs().toPlainString();
                 //System.out.println(Monete.Moneta +" + "+Monete.Qta);
-                String GruppoInizio="";
+             /*   String GruppoInizio="";
                 if (CDC_Grafica.MappaCryptoWallet.get(el.IDOri) != null)
                 {    
                     GruppoInizio = DatabaseH2.Pers_GruppoWallet_Leggi(CDC_Grafica.MappaCryptoWallet.get(el.IDOri)[3]);
-                }
+                }*/
                 String xlista[]=new String[17];
                 xlista[0]=AnnoR;                    //Anno RW
-                xlista[1]=GruppoInizio;             //Gruppo Wallet Inizio
+                xlista[1]=el.GruppoWalletOri;             //Gruppo Wallet Inizio
                 xlista[2]=el.MonOri;                //Moneta Inizio
                 xlista[3]=el.QtaOri;                //Qta Inizio
                 xlista[4]=el.DataOri;               //Data Inizio
@@ -633,6 +635,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //4 - il prezzo cercato nel database è zero
                 //5 - non esiste un prezzo sul csv
                 //Allora Faccio uscire l'errore Valore Iniziale non valorizzato
+               // System.out.println("ID Iniziale :"+MappaCryptoWallet.get(lista[13]));
+             //   System.out.println("ID Finale :"+MappaCryptoWallet.get(lista[14]));
                 if( (MappaCryptoWallet.get(lista[13])==null                     //A
                         &&PrezzoInizio.equals("0.00")                           //B
                         &&!lista[2].contains(" **")                             //C
@@ -641,7 +645,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     (MappaCryptoWallet.get(lista[13])!=null                     //1
                         &&new BigDecimal(PrezzoInizio).compareTo(new BigDecimal(0))==0 //2
                         &&!lista[2].contains(" **")                             //3
-                        &&!TokenConPrezzo(mi[1],"0.00",lista[4])                 //4
+                        &&!MappaCryptoWallet.get(lista[13])[32].equals("SI")                 //4
+                      //  &&!TokenConPrezzo(mi[1],"0.00",lista[4])                 //4                     
                         &&MappaCryptoWallet.get(lista[13])[14].isBlank()        //5
                      )
                     )
@@ -650,7 +655,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     lista[15] = lista[15]+"Errore (Valore Iniziale non Valorizzato) <br>";
                 }
                 
-                
+                //System.out.println(mf[0]);
                 //Stessa cosa però con il valore finale
                 if( (MappaCryptoWallet.get(lista[14])==null                     //A
                         &&PrezzoFine.equals("0.00")                           //B
@@ -660,11 +665,13 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     (MappaCryptoWallet.get(lista[14])!=null                     //1
                         &&new BigDecimal(PrezzoFine).compareTo(new BigDecimal(0))==0 //2
                         &&!lista[7].contains(" **")                             //3
-                        &&!TokenConPrezzo(mf[0],"0.00",lista[9])                //4
+                        &&!MappaCryptoWallet.get(lista[14])[32].equals("SI")                 //4
+                       // &&!TokenConPrezzo(mf[0],"0.00",lista[9])                //4
                         &&MappaCryptoWallet.get(lista[14])[14].isBlank()        //5
                      )
                     )
                 {
+                   // System.out.println("Valore Finale non valorizzato");
                     lista[10]="0";
                     lista[15] = lista[15]+"Errore (Valore Finale non Valorizzato) <br>";
                 }
@@ -1033,6 +1040,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                            // long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnnoCalcoloPrezzi);
                           // m.Moneta="BTC";
                             m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete); 
+                            
                             //System.out.println(Prezzi.DammiPrezzoTransazione(m, null,fine, null, true, 15, m.Rete));
                             //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);
@@ -1543,6 +1551,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                           // m.Moneta="BTC";
                           
                             m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete); 
+                           // System.out.println(m.Moneta+"-"+m.Prezzo);
                             //System.out.println(Prezzi.DammiPrezzoTransazione(m, null,fine, null, true, 15, m.Rete));
                             //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp = MappaGrWallet_CryptoStack.get(key);

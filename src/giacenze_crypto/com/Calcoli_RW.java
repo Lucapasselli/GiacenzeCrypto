@@ -653,6 +653,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 {
                     lista[5] = "0";
                     lista[15] = lista[15]+"Errore (Valore Iniziale non Valorizzato) <br>";
+                    lista[15] = lista[15]+"Bottone '<b>Modifica Valore Iniziale</b>' per correggere<br><br>";
                 }
                 
                 //System.out.println(mf[0]);
@@ -674,6 +675,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                    // System.out.println("Valore Finale non valorizzato");
                     lista[10]="0";
                     lista[15] = lista[15]+"Errore (Valore Finale non Valorizzato) <br>";
+                    lista[15] = lista[15]+"Bottone '<b>Modifica Valore Finale</b>' per correggere<br><br>";
                 }
                                 
                                 

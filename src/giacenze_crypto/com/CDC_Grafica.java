@@ -415,6 +415,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
             public void windowLostFocus(java.awt.event.WindowEvent evt) {
             }
         });
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         TransazioniCryptoTabella.setAutoCreateRowSorter(true);
         TransazioniCryptoTabella.setModel(new javax.swing.table.DefaultTableModel(
@@ -4439,7 +4444,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 this.RW_CalcolaRW();
                 RW_Tabella.setRowSelectionInterval(rigaTabellaPrincipale, rigaTabellaPrincipale);
                 RW_CompilaTabellaDettagli();
-                RW_Tabella_Dettagli.setRowSelectionInterval(rigaselezionata, rigaselezionata);
+                if(RW_Tabella_Dettagli.getRowCount()>rigaselezionata)RW_Tabella_Dettagli.setRowSelectionInterval(rigaselezionata, rigaselezionata);
                 RW_CompilaTabellaDettagliXID();
                 RW_Tabella_Dettagli.requestFocus();
                 //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima   
@@ -5453,11 +5458,14 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 ValFinale = new BigDecimal(lista[10]).add(ValFinale);
                 ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
             }
-            BigDecimal GGPonderati=new BigDecimal(999999);
+            BigDecimal GGPonderati;//=new BigDecimal(999999);
             if (ValFinale.compareTo(new BigDecimal(0))!=0) {
                 GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
-            }else Errore="ERRORI";
-            if (!Errore.isBlank())GGPonderati=new BigDecimal(999999);
+            }else{ 
+                GGPonderati=new BigDecimal("365.00").setScale(2, RoundingMode.HALF_UP);
+                    Errore="Wallet vuoto o senza valore";
+                }
+            if (Errore.equalsIgnoreCase("ERRORI"))GGPonderati=new BigDecimal(999999);
             RW1[0] = key.split(" ")[1] + " (" + key + ")";
             RW1[1] = ValIniziale.toPlainString();
             RW1[2] = ValFinale.toPlainString();
@@ -5910,6 +5918,26 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                   //  Funzioni_AggiornaTutto();
             DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        System.out.println("Chiusura");
+        
+        if(TransazioniCrypto_Bottone_Salva.isEnabled()){
+                     String Messaggio="Attenzione, ci sono movimenti non salvati.\n"
+                     + "Si vuole salvare prima di chiudere?";
+             int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Movimenti non salvati", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
+                    case 0 -> {
+                        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+                    }
+
+                } 
+        }
+  
+    }//GEN-LAST:event_formWindowClosing
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

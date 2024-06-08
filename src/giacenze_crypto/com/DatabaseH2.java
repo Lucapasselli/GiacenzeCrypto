@@ -27,6 +27,7 @@ public class DatabaseH2 {
     static String passwordH2 = "";
     static Connection connection;
     static Connection connectionPersonale;
+    static Map<String, String> Mappa_Wallet_Gruppo = new TreeMap<>();//memorizzo anche qua l'associazione dei gruppi per rendere più veloce la ricerca
 
     //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
     public static boolean CreaoCollegaDatabase() {
@@ -215,6 +216,7 @@ public class DatabaseH2 {
     }        
     
         public static void Pers_GruppoWallet_Scrivi(String Wallet, String Gruppo) {
+        Mappa_Wallet_Gruppo.put(Wallet, Gruppo);
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
@@ -244,7 +246,8 @@ public class DatabaseH2 {
         }
     }
         public static String Pers_GruppoWallet_Leggi(String Wallet) {
-                String Risultato = null;
+        String Risultato = Mappa_Wallet_Gruppo.get(Wallet);
+        if(Risultato==null){//se non lo trovo nella mappa lo cerco nel database
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT Wallet,Gruppo FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
@@ -256,6 +259,7 @@ public class DatabaseH2 {
 
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
         }
         if (Risultato==null){
             Pers_GruppoWallet_Scrivi(Wallet, "Wallet 01");

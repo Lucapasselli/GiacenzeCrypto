@@ -639,7 +639,7 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane2" alignment="0" pref="860" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane2" alignment="0" pref="1003" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
@@ -823,7 +823,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane3" alignment="0" pref="872" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" alignment="0" pref="1015" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -919,7 +919,9 @@
                                       <Component id="GiacenzeaData_Bottone_MovimentiDefi" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="164" max="32767" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_CambiaNomeToken" min="-2" pref="148" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Scam" min="-2" max="-2" attributes="0"/>
@@ -936,7 +938,7 @@
                                               <Component id="GiacenzeaData_Wallet_Label" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="GiacenzeaData_Wallet_ComboBox" min="-2" pref="428" max="-2" attributes="0"/>
-                                              <EmptySpace max="32767" attributes="0"/>
+                                              <EmptySpace pref="59" max="32767" attributes="0"/>
                                               <Component id="GiacenzeaData_Wallet2_Label" min="-2" pref="69" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
@@ -995,13 +997,16 @@
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPane" pref="221" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPane" pref="228" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="GiacenzeaData_Bottone_ModificaValore" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_Scam" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_MovimentiDefi" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
-                                  <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="GiacenzeaData_CheckBox_MostraQtaZero" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_CheckBox_NascondiScam" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                                   <Component id="GiacenzeaData_Bottone_CambiaNomeToken" alignment="1" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
@@ -1009,7 +1014,7 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="Giacenzeadata_Dettaglio_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="192" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="199" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1345,13 +1350,21 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="Giacenzeadata_Walletb_Label">
                     </Component>
+                    <Component class="javax.swing.JCheckBox" name="GiacenzeaData_CheckBox_NascondiScam">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Nascondi Token Scam"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_NascondiScamActionPerformed"/>
+                      </Events>
+                    </Component>
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="RW">
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                      <JTabbedPaneConstraints tabName="Dati per RW/W">
-                        <Property name="tabTitle" type="java.lang.String" value="Dati per RW/W"/>
+                      <JTabbedPaneConstraints tabName="RW/W (Met.LIFO vers. di test)">
+                        <Property name="tabTitle" type="java.lang.String" value="RW/W (Met.LIFO vers. di test)"/>
                       </JTabbedPaneConstraints>
                     </Constraint>
                   </Constraints>
@@ -1362,7 +1375,7 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane7" alignment="0" pref="987" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane7" alignment="0" pref="1003" max="32767" attributes="0"/>
                                   <Component id="jScrollPane8" alignment="1" max="32767" attributes="0"/>
                                   <Component id="jScrollPane9" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
@@ -2825,8 +2838,9 @@
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="396" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2844,7 +2858,9 @@
                                   <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="149" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="85" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
@@ -2901,6 +2917,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_1RigoXOperazione">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Ogni operazione crea un nuovo rigo RW (Diversamente viene creato un nuovo riso solo sulle operazioni fiscalmente rilevanti)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

@@ -204,6 +204,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if(Plusvalenze_Pre2023ScambiRilevanti!=null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")){
             this.Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected(true);
         }
+        String RW_1RigoXOperazione=DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione");
+        if(RW_1RigoXOperazione!=null && RW_1RigoXOperazione.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_1RigoXOperazione.setSelected(true);
+        }
         
         
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
@@ -288,6 +292,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Wallet2_Label = new javax.swing.JLabel();
         GiacenzeaData_Wallet2_ComboBox = new javax.swing.JComboBox<>();
         Giacenzeadata_Walletb_Label = new javax.swing.JLabel();
+        GiacenzeaData_CheckBox_NascondiScam = new javax.swing.JCheckBox();
         RW = new javax.swing.JPanel();
         RW_Anno_ComboBox = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
@@ -380,6 +385,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
+        RW_Opzioni_CheckBox_1RigoXOperazione = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
         Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
@@ -800,7 +806,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 860, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1003, Short.MAX_VALUE)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
@@ -871,7 +877,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         SituazioneImport.setLayout(SituazioneImportLayout);
         SituazioneImportLayout.setHorizontalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 872, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
         );
         SituazioneImportLayout.setVerticalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1085,6 +1091,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_Wallet2_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
 
+        GiacenzeaData_CheckBox_NascondiScam.setText("Nascondi Token Scam");
+        GiacenzeaData_CheckBox_NascondiScam.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_CheckBox_NascondiScamActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
         GiacenzeaDataLayout.setHorizontalGroup(
@@ -1105,7 +1118,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(GiacenzeaData_Bottone_MovimentiDefi)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Bottone_Scam)
@@ -1120,7 +1135,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(GiacenzeaData_Wallet_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
                                 .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                                 .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1164,20 +1179,22 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Bottone_Scam, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Bottone_MovimentiDefi, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
+                    .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
+                        .addComponent(GiacenzeaData_CheckBox_NascondiScam))
                     .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(4, 4, 4)
                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label)
@@ -1374,7 +1391,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(RWLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 987, Short.MAX_VALUE)
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 1003, Short.MAX_VALUE)
                     .addComponent(jScrollPane8, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane9)
                     .addGroup(RWLayout.createSequentialGroup()
@@ -1433,7 +1450,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        AnalisiCrypto.addTab("Dati per RW/W", RW);
+        AnalisiCrypto.addTab("RW/W (Met.LIFO vers. di test)", RW);
 
         javax.swing.GroupLayout Analisi_CryptoLayout = new javax.swing.GroupLayout(Analisi_Crypto);
         Analisi_Crypto.setLayout(Analisi_CryptoLayout);
@@ -2139,6 +2156,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        RW_Opzioni_CheckBox_1RigoXOperazione.setText("<html><b>Quadro RW :</b> Ogni operazione crea un nuovo rigo RW (Diversamente viene creato un nuovo riso solo sulle operazioni fiscalmente rilevanti)</html>");
+        RW_Opzioni_CheckBox_1RigoXOperazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
         Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
         Opzioni_Crypto_PannelloLayout.setHorizontalGroup(
@@ -2156,8 +2180,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
-                            .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero))
-                        .addGap(0, 396, Short.MAX_VALUE)))
+                            .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
+                            .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
@@ -2170,7 +2195,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
                     .addComponent(jLabel8)
                     .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(149, 149, 149)
+                .addGap(85, 85, 85)
+                .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(44, 44, 44)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
@@ -5938,6 +5965,30 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         }
   
     }//GEN-LAST:event_formWindowClosing
+
+    private void GiacenzeaData_CheckBox_NascondiScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
+        // TODO add your handling code here:
+                if(GiacenzeaData_Tabella.getRowCount()!=0)
+            GiacenzeaData_CompilaTabellaToken();
+    }//GEN-LAST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
+
+    private void RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed
+        // TODO add your handling code here:
+                // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (RW_Opzioni_CheckBox_1RigoXOperazione.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_1RigoXOperazione", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_1RigoXOperazione", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -5947,6 +5998,16 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
             String Rete= GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
             String Testo;
+            //Come prima cosa controllo nella tabella del dettaglio se ho solo movimenti di deposito
+            //solo in quel caso permetto di identificare il token come scam
+            //il tipo movimento è il 4
+            boolean SoloDepositi=true;
+            for (int i=0;i<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();i++){
+               String ID = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 8).toString();
+               if (!ID.split("_")[4].equalsIgnoreCase("DC"))SoloDepositi=false;
+            }
+            
+            
             if (!Funzioni.isSCAM(NomeMoneta)){
                 Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> con Address <b>"+Address+"</b> come SCAM?<br><br>"
                                 + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
@@ -5965,6 +6026,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                                 Bottoni,
                                 null);
                         if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
+                            if (SoloDepositi){//proseguo solo se il token ha solo movimenti di diposito
                             String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
                             //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
                             //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
@@ -5989,7 +6051,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                             //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
                             //Lancio la funzione rinomina token
                             TabellaCryptodaAggiornare = true;
-                           
+                           }
+                            else{
+                                //Se ci sono altri movimenti emetto un messaggio di avviso
+                                JOptionPane.showConfirmDialog(this, "<html>Attenzione! Possono essere considerati SCAM solo i token con solo movimenti di deposito<br>"
+                                        + "L'operazione verrà annullata!<br></html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                }
                         }
                         else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
                             //Da gestire parte di descammizzazione
@@ -6384,7 +6452,9 @@ try {
             riga[3]=M1.Tipo;
             riga[4]=M1.Qta;
             riga[1]=M1.Rete;
-            if (!M1.Qta.equals("0")||GiacenzeaData_CheckBox_MostraQtaZero.isSelected()){
+            if ((GiacenzeaData_CheckBox_MostraQtaZero.isSelected()||!M1.Qta.equals("0"))
+                    &&(!GiacenzeaData_CheckBox_NascondiScam.isSelected()||!Funzioni.isSCAM(M1.Moneta))
+                    ){
                 if (M1.Qta.equals("0"))riga[5]="0.00";
                 else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
                 if (riga[4].contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
@@ -7313,6 +7383,7 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta;
     private javax.swing.JButton GiacenzeaData_Bottone_Scam;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
+    private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
     private javax.swing.JLabel GiacenzeaData_Data_Label;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPane;
@@ -7360,6 +7431,7 @@ try {
     private javax.swing.JButton RW_Bottone_ModificaVIniziale;
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_1RigoXOperazione;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;

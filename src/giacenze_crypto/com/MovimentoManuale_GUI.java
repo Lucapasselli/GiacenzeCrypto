@@ -143,6 +143,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         MonetaEntrataAddress_TextField = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         ID_Label.setText("ID Transazione : ");
 
@@ -855,6 +860,11 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
        setCursor(Cursor.getDefaultCursor());
  
     }//GEN-LAST:event_Bottone_CalcolaAutomaticamenteActionPerformed
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        // TODO add your handling code here:
+        ValoreTransazione_TextField.requestFocus();
+    }//GEN-LAST:event_formWindowOpened
 
     private void CompilaComboBoxWallet(){
         this.Wallet_ComboBox.removeAllItems();

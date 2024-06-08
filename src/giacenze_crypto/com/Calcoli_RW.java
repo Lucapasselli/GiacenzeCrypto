@@ -279,6 +279,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
           //  BigDecimal costoEstratta=new BigDecimal(ultimoRecupero.Valore).abs();
             String dataOrigine=ultimoRecupero.DataOri;
             String MonetaOrigine=ultimoRecupero.MonOri;
+            //System.out.println("a-"+ultimoRecupero.QtaOri+"b-"+ultimoRecupero.MonOri);
             BigDecimal QtaOrigine=new BigDecimal(ultimoRecupero.QtaOri).abs();
             BigDecimal CostoOrigine=new BigDecimal(ultimoRecupero.CostoOri).abs();
             String IDOrigine=ultimoRecupero.IDOri;
@@ -695,17 +696,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //Poi sarebbe anche da verificare le giacenze negative
                 //e fare la modifica dei prezzi sui token con id
 
-                if (lista[2].contains(" **")){
+                if (Funzioni.isSCAM(lista[2])){
                     lista[15] = lista[15]+"Avviso (Token iniziale SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
                 }
-                if (lista[7].contains(" **")){
+                if (Funzioni.isSCAM(lista[7])){
                     lista[15] = lista[15]+"Avviso (Token finale SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
                 }
                 
                 //Se ID di apertura corrisponde a movimento non classificato aggiungo anche quell'errore
                 if(MappaCryptoWallet.get(lista[13])!=null
                         &&MappaCryptoWallet.get(lista[13])[18].isBlank()
-                        &&lista[13].split("_")[4].equals("DC")) {
+                        &&lista[13].split("_")[4].equals("DC")&&!Funzioni.isSCAM(lista[2])) {
                     lista[15] = lista[15]+"Errore (Movimento di apertura non Classificato) <br>";
                 }
                 if(MappaCryptoWallet.get(lista[14])!=null
@@ -1294,7 +1295,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
 
                 {
                     //Adesso distinguo 2 casi, se scambio fiscalmente rilevante oppure no
-                    if (ScambioRilevante(Monete,Data)){
+                    if (ScambioRilevante(Monete,Data)||DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("SI")){
                         //Chiudo RW moneta uscente
                         ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, Causale, IDTransazione);
                         
@@ -1415,18 +1416,15 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                //MA IN LINEA DI MASSIMA LA LOGICA è QUELLA DI NON CONSIDERARE GLI SCAMBI TRA WALLET DI PROPRIETA'
                
                
-                        /*        if (v[18].contains("PTW - Trasferimento tra Wallet")) {
+                            if (v[18].contains("PTW - Trasferimento tra Wallet")&&DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("SI")) {
                             //se soddisfa questa condizione sono in presenza di un trasferimento tra wallet
                             //adesso devo verificare se il Gruppo wallet della controparte è lo stesso del mio o meno
 
-                            if (StessoGruppoWalletContropate(IDTransazione)) {
-
-                                //Non faccio nulla se sono nello stesso gruppo
-                            } else {
+                            if (!StessoGruppoWalletContropate(IDTransazione)) {
                                 //Se è un trasferimento tra wallet di gruppi diversi chiudo l'RW
-                                ChiudiRW(Monete[0], CryptoStack, GruppoWallet, Data, Valore, "Trasferimento su altro Wallet", IDTransazione);
+                                ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, "Trasferimento su altro Wallet", IDTransazione);
                             }
-                        }*/
+                        }
 
                     } else if (v[18].contains("DTW")) {
                         //Se è un trasferimento tra wallet dello stesso gruppo non faccio nulla
@@ -1437,45 +1435,59 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         //E lo scambio già di per se va a chiudere un rw e aprirne uno nuovo
                         if (v[18].contains("DTW - Trasferimento tra Wallet")) {
                             //IN QUESTO CASO CHIUDO SPOSTO IL MOVIMENTO DAL GRUPPO WALLET DI ORIGINE A QUELLO DI DESTINAZIONE
-                            if (!StessoGruppoWalletContropate(IDTransazione)) {
-                                // String IDControparte=
-                                //Se è un trasferimento tra wallet di gruppi diversi sposto il movimento
-                               // String IDcontroparte = RitornaIDControparte(IDTransazione);
-                               //Se non esistono le mappe per il wallet controparte le genero
-                                String gruppoControparte=RitornaGruppoWalletControparte(IDTransazione);
-                                Map<String, ArrayDeque> CryptoStackControparte;  
-                                Map<String, Moneta> QtaCryptoControparte;
-                                if (MappaGrWallet_CryptoStack.get(gruppoControparte) == null) {
-                                    //se non esiste ancora lo stack lo creo e lo associo alla mappa
-                                    //stessa cosa faccio per la lista per l'rw
-                                    //stessa cosa faccio per il gruppo delle qta
-                                    ListaRW = new ArrayList<>();
-                                    CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(gruppoControparte, ListaRW);
-                                    CryptoStackControparte = new TreeMap<>();
-                                    QtaCryptoControparte = new TreeMap<>();
-                                    MappaGrWallet_CryptoStack.put(gruppoControparte, CryptoStackControparte);
-                                    MappaGrWallet_QtaCrypto.put(gruppoControparte, QtaCrypto);
+                            if (!StessoGruppoWalletContropate(IDTransazione)) {//Controllo se fanno parte dello stesso gruppo
+                                //Se non fanno parte dello stesso gruppo controllo se voglio generare un nuovo rigo ad ogni transazione
+                                //se non è così sposto solo i valori tra un gruppo ad un altro, altrimenti greo un nuovo rigo sul wallet
+                                if (!DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("SI")) {
+                                    // String IDControparte=
+                                    //Se è un trasferimento tra wallet di gruppi diversi sposto il movimento sull'altro gruppo
+                                    // String IDcontroparte = RitornaIDControparte(IDTransazione);
+                                    //Se non esistono le mappe per il wallet controparte le genero
+                                    String gruppoControparte = RitornaGruppoWalletControparte(IDTransazione);
+                                    Map<String, ArrayDeque> CryptoStackControparte;
+                                    Map<String, Moneta> QtaCryptoControparte;
+                                    if (MappaGrWallet_CryptoStack.get(gruppoControparte) == null) {
+                                        //se non esiste ancora lo stack lo creo e lo associo alla mappa
+                                        //stessa cosa faccio per la lista per l'rw
+                                        //stessa cosa faccio per il gruppo delle qta
+                                        ListaRW = new ArrayList<>();
+                                        CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(gruppoControparte, ListaRW);
+                                        CryptoStackControparte = new TreeMap<>();
+                                        QtaCryptoControparte = new TreeMap<>();
+                                        MappaGrWallet_CryptoStack.put(gruppoControparte, CryptoStackControparte);
+                                        MappaGrWallet_QtaCrypto.put(gruppoControparte, QtaCrypto);
+                                    } else {
+                                        //altrimenti lo recupero per i calcoli
+                                        CryptoStackControparte = MappaGrWallet_CryptoStack.get(gruppoControparte);
+                                        //QtaCrypto serve per trovare le rimanenze di ogni crypto e compilare la giacenza di fine o inizio anno.
+                                        QtaCryptoControparte = MappaGrWallet_QtaCrypto.get(gruppoControparte);
+                                    }
+
+                                    //Tolgo dal wallet di origine
+                                    ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackControparte, Monete[1].Moneta, Monete[1].Qta, true);
+                                    while (!StackRitorno.isEmpty()) {
+                                        //per ogni elemento trovato devo inserire il giusto quantitativo nello stack della moneta entrante
+                                        ElementiStack el = StackRitorno.pop();
+                                        //Metto nel wallet attuale di destinazione e aggiungo ai movimenti gestiti
+                                        el.AggiungiID(RitornaIDControparte(IDTransazione));
+                                        el.AggiungiID(IDTransazione);
+                                        StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
+
+                                    }
                                 } else {
-                                    //altrimenti lo recupero per i calcoli
-                                    CryptoStackControparte = MappaGrWallet_CryptoStack.get(gruppoControparte);
-                                    //QtaCrypto serve per trovare le rimanenze di ogni crypto e compilare la giacenza di fine o inizio anno.
-                                    QtaCryptoControparte = MappaGrWallet_QtaCrypto.get(gruppoControparte);
-                                }
+                                    ElementiStack el = new ElementiStack();
+                                    el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
+                                    el.CostoOri = Valore;//Costo di partenza della moneta originale
+                                    el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
+                                    el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
+                                    el.DataOri = Data;//Data di partenza
+                                    el.GruppoWalletOri = GruppoWallet;//Gruppo Wallet di partenza
+                                    el.Moneta = Monete[1].Moneta; //Moneta di riferimento
+                                    el.Qta = Monete[1].Qta; //Qta di riferimento
 
-            
-                                //Tolgo dal wallet di origine
-                                ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackControparte, Monete[1].Moneta, Monete[1].Qta, true);
-                                while (!StackRitorno.isEmpty()) {
-                                    //per ogni elemento trovato devo inserire il giusto quantitativo nello stack della moneta entrante
-                                    ElementiStack el = StackRitorno.pop();
-                                    //Metto nel wallet attuale di destinazione e aggiungo ai movimenti gestiti
-                                    el.AggiungiID(RitornaIDControparte(IDTransazione));
-                                    el.AggiungiID(IDTransazione);
                                     StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
-
                                 }
                             }
-                            
                             
                             //se soddisfa questa condizione sono in presenza di un trasferimento tra wallet
                             //adesso devo verificare se il Gruppo wallet della controparte è lo stesso del mio o meno
@@ -1487,11 +1499,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             }*/
                         } else if (v[18].contains("DTW - Scambio Differito")) {
                             //Es. Scambio differito
-                            //Mov. 1 - Wallet 1 - Invia 1 ETH a piattaforma di scambio
-                            //Mov. 2 - Wallet 1 - La piattaforma di scambio riceve l'ETH
+                            //Mov. 1 - Wallet 1 - Invia 1 ETH a piattaforma di scambio 
+                            //Mov. 2 - Wallet 1 - La piattaforma di scambio riceve l'ETH (DTW - Trasferimento Interno)
                             //Mov. 3 - Wallet 1 - La piattaforma di scambio scambia ETH con BTC
                             //Mov. 4 - Wallet 1 - La piattaforma di scambio invia BTC al Wallet 2
-                            //Mov. 5 - Wallet 2 - La piattaforma di scambio riceve i BTC
+                            //Mov. 5 - Wallet 2 - La piattaforma di scambio riceve i BTC (DTW - Scambio Differito)
                             //Se è l'ultimo movimento di uno scambio differito allora chiudo l'rw del vecchio wallet e apro l'RW del nuovo
                             //infatti la conversione tra le monete è già stata classificata
                             //l'RW chiuso non verrà considerato in quanto avrà zero come lasso di tempo ovvero GG, scambio token invio e ricezione avvengono infatti nello stesso momento.
@@ -1513,7 +1525,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     QtaCryptoControparte = MappaGrWallet_QtaCrypto.get(gruppoControparte);
                                 }
 
-            
+                                if (!DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("SI")) {
                                 //Tolgo dal wallet di origine
                                 ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackControparte, Monete[1].Moneta, Monete[1].Qta, true);
                                 while (!StackRitorno.isEmpty()) {
@@ -1523,7 +1535,23 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
 
                                 }
+                                }else{
+                                    //Apro RW con la moneta che ho ricevuto e chiudo l'RW dell'altro Wallet
+                                    //Infatti il momento in cui ricevo la moneta coincide con il momento in cui l'altro wallet mi spedisce i token
+                                    ElementiStack el = new ElementiStack();
+                                    el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
+                                    el.CostoOri = Valore;//Costo di partenza della moneta originale
+                                    el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
+                                    el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
+                                    el.DataOri = Data;//Data di partenza
+                                    el.GruppoWalletOri = GruppoWallet;//Gruppo Wallet di partenza
+                                    el.Moneta = Monete[1].Moneta; //Moneta di riferimento
+                                    el.Qta = Monete[1].Qta; //Qta di riferimento
 
+                                    StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
+                                    
+                                    ChiudiRWFR(Monete[1], CryptoStackControparte, gruppoControparte, Data, Valore, "Trasferimento su altro Wallet","Giorni Detenzione Zero");
+                                }
                             }
 
                         }

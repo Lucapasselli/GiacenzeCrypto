@@ -538,8 +538,38 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //in questo caso sono in presenza di un movimento di prelievo
             switch (scelta) {
                 case 1 -> {
-                    descrizione = "CASHOUT o SIMILARI";
+                    descrizione = "CASHOUT o COMMISSIONI";
                     dettaglio = "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
+                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
+                    String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
+                            + "<b>Come classifichiamo il movimento?<br><br><b>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "CASH OUT", "COMMISSIONI"};
+                    scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Classificazione del movimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                descrizione = "CASH OUT";
+                            }
+                            case 2 -> {
+                                descrizione = "COMMISSIONI";
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        completato=false;
+                    }
                 }
                 case 2 -> {
                     descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";

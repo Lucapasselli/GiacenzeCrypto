@@ -207,7 +207,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         String RW_1RigoXOperazione=DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione");
         if(RW_1RigoXOperazione!=null && RW_1RigoXOperazione.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_1RigoXOperazione.setSelected(true);
-        }
+        }else DatabaseH2.Pers_Opzioni_Scrivi("RW_1RigoXOperazione","NO");
         
         
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());

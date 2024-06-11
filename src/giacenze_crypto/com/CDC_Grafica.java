@@ -1279,7 +1279,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMaxWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(65);
@@ -1294,13 +1294,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMinWidth(50);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMinWidth(25);
             RW_Tabella_Dettagli.getColumnModel().getColumn(11).setPreferredWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(11).setMaxWidth(50);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMinWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMinWidth(25);
             RW_Tabella_Dettagli.getColumnModel().getColumn(12).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(12).setMaxWidth(200);
             RW_Tabella_Dettagli.getColumnModel().getColumn(13).setMinWidth(0);
@@ -1309,8 +1309,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMinWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(14).setPreferredWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(14).setMaxWidth(0);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setResizable(false);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMinWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(16).setPreferredWidth(0);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMaxWidth(0);
         }
 
         RW_Bottone_Calcola.setText("Calcola");

@@ -10,6 +10,11 @@ package giacenze_crypto.com;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+//import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import javax.swing.JTextArea;
 import javax.swing.Timer;
 
 
@@ -57,6 +62,13 @@ private Timer timer = new Timer(1000, new ActionListener() {
   
          initComponents();
          Download.FineThread=false;
+         
+       /*  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));*/
+        PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));
+        System.setOut(printStream);
+        System.setErr(printStream);
+        
         // this.setVisible(true);
 
               
@@ -159,6 +171,8 @@ private Timer timer = new Timer(1000, new ActionListener() {
         ProgressBarDownload = new javax.swing.JProgressBar();
         LabelAvanzamento = new javax.swing.JLabel();
         Bottone_Interrompi = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        textArea = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
@@ -183,6 +197,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
             }
         });
 
+        textArea.setColumns(20);
+        textArea.setRows(5);
+        jScrollPane2.setViewportView(textArea);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -190,14 +208,15 @@ private Timer timer = new Timer(1000, new ActionListener() {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ProgressBarDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .addComponent(ProgressBarDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
                     .addComponent(LabelAvanzamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(LabelScaricamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(LabelScaricamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2))
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(Bottone_Interrompi, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(141, 141, 141))
+                .addGap(233, 233, 233))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -210,7 +229,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
                 .addComponent(LabelAvanzamento)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Bottone_Interrompi)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         getAccessibleContext().setAccessibleParent(null);
@@ -274,5 +295,40 @@ private Timer timer = new Timer(1000, new ActionListener() {
     private javax.swing.JLabel LabelAvanzamento;
     private javax.swing.JLabel LabelScaricamento;
     private javax.swing.JProgressBar ProgressBarDownload;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea textArea;
     // End of variables declaration//GEN-END:variables
+
+
+
+
+   public class CustomOutputStream extends OutputStream {
+  
+       
+
+    private JTextArea textArea;
+
+    public CustomOutputStream(JTextArea textArea) {
+        this.textArea = textArea;
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+        // redirects data to the text area
+        textArea.setText(textArea.getText() + String.valueOf((char)b));
+     //   textArea.append(String.valueOf((char)b));
+        // scrolls the text area to the end of data
+    //    textArea.setCaretPosition(textArea.getDocument().getLength());
+        // keeps the textArea up to date
+    //    textArea.update(textArea.getGraphics());
+    }
+    
+    
+} 
+    
+    
+    
+    
+
+
 }

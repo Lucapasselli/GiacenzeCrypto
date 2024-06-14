@@ -65,10 +65,15 @@ private Timer timer = new Timer(1000, new ActionListener() {
          
        /*  ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));*/
-        PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));
+       
+       
+       //PARTE SOTTO OK PER GESTIONE ERRORI
+    /*    PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));
         System.setOut(printStream);
-        System.setErr(printStream);
+        System.setErr(printStream);*/
         
+    
+    
         // this.setVisible(true);
 
               

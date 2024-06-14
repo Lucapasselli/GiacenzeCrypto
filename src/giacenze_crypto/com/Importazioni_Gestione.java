@@ -307,6 +307,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
                     } catch (Exception ex) {
                         //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
+                        java.util.logging.Logger.getLogger(Importazioni_Gestione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                     }
                 }
 

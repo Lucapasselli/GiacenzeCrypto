@@ -558,7 +558,7 @@ public class Prezzi {
                     }
                 }
             }
-            else if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong("2017-01-01") && OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(DatadiOggi)) {
+            else if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong("2015-01-01") && OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(DatadiOggi)) {
                 if (OperazioniSuDate.ConvertiDatainLong(Data) < OperazioniSuDate.ConvertiDatainLong(PrimaData)) {
                     //in questo caso richiedo i 90 gg precedenti la data richiesta
                     //anche perchè in questo modo comincio a compilare la tabella dei cambi
@@ -576,7 +576,7 @@ public class Prezzi {
             }
         } else {
             if (dateDisponibili.length == 0) {
-                PrimaData = "2017-01-01";
+                PrimaData = "2015-01-01";
                 UltimaData = DatadiOggi;
                 if(RecuperaTassidiCambio(PrimaData, UltimaData)!=null)risultato = ConvertiUSDEUR("1", Data);
             }
@@ -666,6 +666,7 @@ public class Prezzi {
             if (risultato == null) {
                 RecuperaTassidiCambiodaSimbolo("USDT", DataGiorno);
                 risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno + " " + "USDT");
+         //       System.out.println("Mannaggia");
             }
         }
         
@@ -675,6 +676,7 @@ public class Prezzi {
             risultato = ConvertiUSDEUR(Qta, DataGiorno);
         } //altrimenti calcolo il risultato in base alle qta
         else {
+         //   System.out.println(Qta+" - "+risultato+" - "+DataGiorno);
             risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
         }
         return risultato;
@@ -1352,6 +1354,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                             if (!DataRichiesta.equals(Data))DatabaseH2.XXXEUR_Scrivi(DataRichiesta + " " + Crypto, "ND");
                             PrezzoEuro=ConvertiUSDEUR(PrezzoEuro,Data);
                             DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro);
+                           // System.out.println("Prezzi.RecuperaTassiCambiodaSimbolo "+Data + " " + Crypto+" - "+PrezzoEuro);
                             
                         }
                     } else {

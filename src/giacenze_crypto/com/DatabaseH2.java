@@ -563,6 +563,11 @@ public class DatabaseH2 {
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
+        if (Risultato!=null && Risultato.equalsIgnoreCase("null"))
+            {
+                System.out.println("DatabaseH2.XXXEUR_LEGGI prezzo Errato "+dataSimbolo);
+            return null;
+            }
         return Risultato;
     }
 

@@ -1113,7 +1113,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
             if (OperazioniSuDate.ConvertiDatainLongSecondo(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
             {
-                System.out.println(riga);
+               // System.out.println(riga);
                 //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
                 if (data.equalsIgnoreCase(ultimaData)) {
                     listaMovimentidaConsolidare.add(riga);

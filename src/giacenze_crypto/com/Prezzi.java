@@ -57,7 +57,8 @@ public class Prezzi {
 
     public static void IndicaMovimentoPrezzato(String[] Movimento) {
         //questa funzione verifica se il movimento è senza prezzo e se lo è valorizza il campo 32 a SI altrimenti lo valorizza a NO
-        if (Movimento[32] == null || Movimento[32].isBlank()) {//Questa cosa la faccio se il campo non è valorizzato o è valorizzato a NO
+        if (!Movimento[15].equals("0.00"))Movimento[32] = "SI";
+        else if (Movimento[32] == null || Movimento[32].isBlank()) {//Questa cosa la faccio se il campo non è valorizzato o è valorizzato a NO
             if (!Movimento[15].equals("0.00")) {
                 Movimento[32] = "SI";
             } else if (DammiPrezzoDaTransazione(Movimento).equals("0.00")) {
@@ -66,7 +67,7 @@ public class Prezzi {
                 Movimento[32] = "SI";
             }
         }
-        if (!Movimento[15].equals("0.00"))Movimento[32] = "SI";
+        
     }
     
     public static String DammiPrezzoDaTransazione(String[] v){

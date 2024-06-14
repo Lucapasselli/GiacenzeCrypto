@@ -66,6 +66,7 @@ public class Prezzi {
                 Movimento[32] = "SI";
             }
         }
+        if (!Movimento[15].equals("0.00"))Movimento[32] = "SI";
     }
     
     public static String DammiPrezzoDaTransazione(String[] v){

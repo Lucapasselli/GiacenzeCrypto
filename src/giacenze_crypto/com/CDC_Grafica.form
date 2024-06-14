@@ -3212,14 +3212,19 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Export_Wallets_Combobox" min="-2" pref="419" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Export_Tatax_Bottone" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="359" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Export_Wallets_Combobox" min="-2" pref="419" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Opzioni_Export_Tatax_Bottone" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace pref="437" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3232,7 +3237,9 @@
                                   <Component id="Opzioni_Export_Wallets_Combobox" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_Export_Tatax_Bottone" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="583" max="32767" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="572" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3265,6 +3272,11 @@
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Export_Tatax_BottoneActionPerformed"/>
                       </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Opzioni_Export_EsportaPrezzi_CheckBox">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Esporta Prezzi se presenti"/>
+                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>

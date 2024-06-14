@@ -405,6 +405,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Export_Wallets_Combobox = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
         Opzioni_Export_Tatax_Bottone = new javax.swing.JButton();
+        Opzioni_Export_EsportaPrezzi_CheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -2377,18 +2378,23 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        Opzioni_Export_EsportaPrezzi_CheckBox.setText("Esporta Prezzi se presenti");
+
         javax.swing.GroupLayout Opzioni_Export_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Export_Pannello);
         Opzioni_Export_Pannello.setLayout(Opzioni_Export_PannelloLayout);
         Opzioni_Export_PannelloLayout.setHorizontalGroup(
             Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_Export_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel9)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_Export_Tatax_Bottone)
-                .addContainerGap(359, Short.MAX_VALUE))
+                .addGroup(Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Opzioni_Export_PannelloLayout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_Export_Tatax_Bottone))
+                    .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox))
+                .addContainerGap(437, Short.MAX_VALUE))
         );
         Opzioni_Export_PannelloLayout.setVerticalGroup(
             Opzioni_Export_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2398,7 +2404,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(jLabel9)
                     .addComponent(Opzioni_Export_Wallets_Combobox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_Export_Tatax_Bottone))
-                .addContainerGap(583, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(Opzioni_Export_EsportaPrezzi_CheckBox)
+                .addContainerGap(572, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Export", Opzioni_Export_Pannello);
@@ -6175,6 +6183,16 @@ try {
                     String DataMovimento = movimento[1]+":"+secondi;
                     String TokenU=movimento[8];
                     String TokenE=movimento[11];
+                    String Prezzo="";
+                    String Simbolo="";
+                    boolean haprezzo=false;
+                    if (movimento[32].equalsIgnoreCase("SI"))haprezzo=true;
+                    boolean EstraiPrezzi=this.Opzioni_Export_EsportaPrezzi_CheckBox.isSelected();
+                    if (haprezzo&&EstraiPrezzi)
+                    {
+                        Prezzo=movimento[15];
+                        Simbolo="EUR";
+                        }
                     //Ora tolgo le parentesi dai nomi dei token
                     TokenE=TokenE.split("\\(")[0].trim();
                     TokenU=TokenU.split("\\(")[0].trim();
@@ -6193,7 +6211,7 @@ try {
                                 String Stringa="";
                                 Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
                                         DataMovimento+"\",\""+
-                                        "DEBIT\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
+                                        "DEBIT\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
                                 
                                 if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
                                     {
@@ -6205,7 +6223,7 @@ try {
                                 Stringa="";
                                 Stringa =Stringa+"\""+TokenE+"\",\""+movimento[28]+"\",\""+
                                 DataMovimento+"\",\""+
-                                        "CREDIT\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
+                                        "CREDIT\",\""+movimento[13]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
                                 //Prima di scrivere il movimento verifico se è un movimento della defi lo salvo nel file a parte
                                 //altrimenti lo metto nel file principale
                                 if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
@@ -6220,7 +6238,7 @@ try {
                                 String Stringa="";
                                 Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
                                         DataMovimento+"\",\""+
-                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
+                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
                                 if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
                                     {
                                     bDEFI.append(Stringa);   
@@ -6236,7 +6254,7 @@ try {
                                 String Stringa="";
                                 Stringa =Stringa+"\""+TokenE+"\",\""+movimento[28]+"\",\""+
                                         DataMovimento+"\",\""+
-                                        Tipo+"\",\""+movimento[13]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
+                                        Tipo+"\",\""+movimento[13]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
                                 if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
                                     {
                                     bDEFI.append(Stringa);   
@@ -6262,13 +6280,13 @@ try {
                                         }
                                         Stringa = Stringa + "\"" + TokenE + "\",\"" + movimento[28] + "\",\""
                                                 + DataMovimento + "\",\""
-                                                + Tipo + "\",\"" + movimento[13] + "\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
+                                                + Tipo + "\",\"" + movimento[13] +"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
                                     } else {
                                         String Tipo = "DEPOSIT";
 
                                         Stringa = Stringa + "\"" + TokenE + "\",\"" + movimento[28] + "\",\""
                                                 + DataMovimento + "\",\""
-                                                + Tipo + "\",\"" + movimento[13] + "\",\"\",\"\",\"\",\"\",\"\",\"\"\n";
+                                                + Tipo + "\",\"" + movimento[13] +"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
                                     }
                                     if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi") || movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio")) {
                                         bDEFI.append(Stringa);
@@ -6282,7 +6300,7 @@ try {
                                 String Stringa="";
                                 Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
                                         DataMovimento+"\",\""+
-                                        Tipo+"\",\""+movimento[10]+"\",\"\",\"\",\"\",\"\",\"\",\"\"\n"; 
+                                        Tipo+"\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
                                 if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
                                     {
                                     //System.out.println(movimento[4]);
@@ -7412,6 +7430,7 @@ try {
     private javax.swing.JPanel Opzioni_Emoney_Pannello;
     private javax.swing.JScrollPane Opzioni_Emoney_ScrollPane;
     private javax.swing.JTable Opzioni_Emoney_Tabella;
+    private javax.swing.JCheckBox Opzioni_Export_EsportaPrezzi_CheckBox;
     private javax.swing.JPanel Opzioni_Export_Pannello;
     private javax.swing.JButton Opzioni_Export_Tatax_Bottone;
     private javax.swing.JComboBox<String> Opzioni_Export_Wallets_Combobox;

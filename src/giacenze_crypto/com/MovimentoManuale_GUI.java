@@ -884,7 +884,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             MonetaUQta = "-" + MonetaUQta;
         }
         MonetaEQta = MonetaEQta.replace("-", "");
-        boolean MovimentoValorizzato=false;
+        boolean MovimentoValorizzato = false;
 
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd ");
         String Data = f.format(Data_Datachooser.getDate())
@@ -892,15 +892,15 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                 + Minuto_ComboBox.getSelectedItem().toString();
 
         String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
-        
-        String Rete=Funzioni.TrovaReteDaID(ID);
-        
+
+        String Rete = Funzioni.TrovaReteDaID(ID);
+
         //Se il prezzo scritto è zero controllo se i token hanno un valore, così non fosse chiedo all'utente se vuole confermare che il prezzo sia zero
         if (ValoreTransazione.equals("0.00")) {
             //Adesso prima di scrivere il movimento devo verificare se il movimento è valorizzato, se non lo è e non trovo prezzo per il token
             //chiedo all'utente se vuole confermare che il prezzo è zero e se conferma metto a SI la colonnina che dice se il prezzo è valorizzato
-            Moneta MU=null;
-            Moneta ME=null;
+            Moneta MU = null;
+            Moneta ME = null;
             if (!MonetaU.isEmpty()) {
                 MU = new Moneta();
                 MU.Moneta = this.MonetaU;
@@ -918,134 +918,140 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             long dataLong = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
             String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete);
             if (Prezzo.equals("0.00")) {
-             String Messaggio="Attenzione, il prezzo del movimento è valorizzato a '0.00'.\n"
-                     + "E' corretto e si vuole Proseguire?";
-             int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                String Messaggio = "Attenzione, il prezzo del movimento è valorizzato a '0.00'.\n"
+                        + "E' corretto e si vuole Proseguire?";
+                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
                 //Si=0
                 //No=1
                 switch (risposta) {
                     case 0 -> {
-                        MovimentoValorizzato=true;
+                        MovimentoValorizzato = true;
                     }
                     case 1 -> {
-                                                JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                                                return false;
+                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        return false;
                     }
                     case -1 -> {
-                                                JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                                                return false;
+                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        return false;
                     }
 
                 }
-            }else MovimentoValorizzato=true;
-        }else MovimentoValorizzato=true;
-        
-        
+            } else {
+                MovimentoValorizzato = true;
+            }
+        } else {
+            MovimentoValorizzato = true;
+        }
+
         if (ModificaMovimento) {
             //Se sto modificando un movimento gli unici campi che posso modificare sono quelli del valore e delle note
-         //   MovimentoRiportato[15] = ValoreTransazione;
-         //   MovimentoRiportato[21] = Note;
-         if (!MovimentoRiportato[0].equals(ID)) 
-         {
-             String Messaggio="Attenzione, il movimento ha subito variazioni di stato per cui verrà ricalcolato l'id ed eliminate le eventuali associazioni ad altri movimenti.\n"
-                     + "Si vuole Proseguire?";
-             int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cambio stato movimento", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                //Si=0
-                //No=1
-                switch (risposta) {
-                    case 0 -> {
-                        Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
-                    }
-                    case 1 -> {
-                                                JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                                                return false;
-                    }
-                    case -1 -> {
-                                                JOptionPane.showConfirmDialog(this, "Operazione Annullata",
-                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                                                return false;
+            //   MovimentoRiportato[15] = ValoreTransazione;
+            //   MovimentoRiportato[21] = Note;
+
+        }// else {
+        String IDts[] = ID.split("_");
+        String IDtsOri[] = MovimentoRiportato[0].split("_");
+        String Tmov = IDts[4];
+        String TmovOri = IDtsOri[4];
+        //Se il tipo movinto del nuovo id è DC (Deposito Crypto)
+        //Vedo se il tipo movimento vecchio era RW o TI e in quel caso cerco di usare lo stesso id che c'era prima
+        //lo stesso vale se trovo altre movimentazioni analoghe
+        //Cambierò eventialmente solo data e ora se queste sono cambiate
+
+        if ((Tmov.equalsIgnoreCase("DC") && (TmovOri.equalsIgnoreCase("DC") || TmovOri.equalsIgnoreCase("RW") || TmovOri.equalsIgnoreCase("TI")))
+                || (Tmov.equalsIgnoreCase("PC") && (TmovOri.equalsIgnoreCase("PC") || TmovOri.equalsIgnoreCase("CM") || TmovOri.equalsIgnoreCase("TI")))
+                || (Tmov.equalsIgnoreCase("SC") && (TmovOri.equalsIgnoreCase("SC")))//Scambio Crypto
+                || (Tmov.equalsIgnoreCase("DF") && (TmovOri.equalsIgnoreCase("DF")))//Deposito Fiat
+                || (Tmov.equalsIgnoreCase("PF") && (TmovOri.equalsIgnoreCase("PF")))//Prelievo Fiat
+                || (Tmov.equalsIgnoreCase("AC") && (TmovOri.equalsIgnoreCase("AC")))//Acquisto Cripto
+                || (Tmov.equalsIgnoreCase("VC") && (TmovOri.equalsIgnoreCase("VC")))//Vendita Crypto
+                ) {
+            //Se arrivo qua significa che sto risistemando un movimento di deposito o prelievo già esistente
+            //in questo caso creo un nuovo id partendo da quello originale.
+            //in sostanza del nuovo ID tengo solo la parte riguardante data e ora IDts[0], il resto lo prendo dal vecchio movimento.
+            String IDTemp = IDts[0] + "_" + IDtsOri[1] + "_" + IDtsOri[2] + "_" + IDtsOri[3] + "_" + IDtsOri[4];
+
+            //Se l'id è uguale a quello vecchio e movimento automatico significa che ho cambiato solo il prezzo della transazione
+            if (MovimentoRiportato[0].equals(IDTemp)&&(MovimentoRiportato[22].equals("A")||MovimentoRiportato[22].equals("AU"))) {
+                            MovimentoRiportato[15] = ValoreTransazione;
+                            MovimentoRiportato[21] = Note;
+                            if (MovimentoValorizzato) {
+                                MovimentoRiportato[32] = "SI";
+                            }
+            } //altrimenti chiedo se voglio ricreare il movimento con un nuovo ID
+            else {
+                if (!MovimentoRiportato[0].equals(ID)) {
+                    String Messaggio = "Attenzione, il movimento ha subito variazioni di stato per cui verrà ricalcolato l'id ed eliminate le eventuali associazioni ad altri movimenti.\n"
+                            + "Si vuole Proseguire?";
+                    int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cambio stato movimento", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                    //Si=0
+                    //No=1
+                    switch (risposta) {
+                        case 0 -> {
+                            //Cancello il vecchio movimento
+                            Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
+                            //Creo il nuovo
+                            if (MappaCryptoWallet.get(IDTemp) == null) {
+                                ID = IDTemp;
+                                TipoTransazione = MovimentoRiportato[5];
+                            }
+                            String RT[];
+                            RT = new String[Importazioni.ColonneTabella];
+                            RT[0] = ID;
+                            RT[1] = Data;
+                            RT[2] = MovimentoRiportato[2];
+                            RT[3] = Wallet;
+                            RT[4] = WalletDettaglio;
+                            RT[5] = TipoTransazione;
+                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
+                            RT[8] = MonetaU;
+                            RT[9] = MonetaUTipo;
+                            RT[10] = MonetaUQta;
+                            RT[11] = MonetaE;
+                            RT[12] = MonetaETipo;
+                            RT[13] = MonetaEQta;
+                            RT[14] = MovimentoRiportato[14];
+                            RT[15] = ValoreTransazione;
+                            RT[21] = Note;
+                            RT[22] = TipoMovimentoAM;
+                            RT[23] = MovimentoRiportato[23];
+                            RT[24] = MovimentoRiportato[24];
+                            RT[25] = MovimentoRiportato[25];
+                            RT[26] = MonetaUAddress;
+                            RT[27] = MovimentoRiportato[27];
+                            RT[28] = MonetaEAddress;
+                            RT[29] = MovimentoRiportato[29];
+                            RT[30] = MovimentoRiportato[30];
+                            RT[31] = MovimentoRiportato[31];
+                            if (MovimentoValorizzato) {
+                                RT[32] = "SI";
+                            }
+                            Importazioni.RiempiVuotiArray(RT);
+                            MappaCryptoWallet.put(RT[0], RT);
+                            return true;
+                            
+                        }
+                        case 1 -> {
+                            JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                            return false;
+                        }
+                        case -1 -> {
+                            JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                    "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                            return false;
+                        }
+
                     }
 
                 }
+            }         
+        }
 
-         }
-        }// else {
-            String IDts[]=ID.split("_");
-            String IDtsOri[]=MovimentoRiportato[0].split("_");
-            String Tmov=IDts[4];
-            String TmovOri=IDtsOri[4];
-            //Se il tipo movinto del nuovo id è DC (Deposito Crypto)
-            //Vedo se il tipo movimento vecchio era RW o TI e in quel caso cerco di usare lo stesso id che c'era prima
-            //lo stesso vale se trovo altre movimentazioni analoghe
-            //Cambierò eventialmente solo data e ora se queste sono cambiate
-            
-            if (
-                    (Tmov.equalsIgnoreCase("DC")&&(TmovOri.equalsIgnoreCase("DC")||TmovOri.equalsIgnoreCase("RW")||TmovOri.equalsIgnoreCase("TI")))
-                    ||
-                    (Tmov.equalsIgnoreCase("PC")&&(TmovOri.equalsIgnoreCase("PC")||TmovOri.equalsIgnoreCase("CM")||TmovOri.equalsIgnoreCase("TI")))
-                    ||
-                    (Tmov.equalsIgnoreCase("SC")&&(TmovOri.equalsIgnoreCase("SC")))//Scambio Crypto
-                    ||
-                    (Tmov.equalsIgnoreCase("DF")&&(TmovOri.equalsIgnoreCase("DF")))//Deposito Fiat
-                    ||
-                    (Tmov.equalsIgnoreCase("PF")&&(TmovOri.equalsIgnoreCase("PF")))//Prelievo Fiat
-                    ||
-                    (Tmov.equalsIgnoreCase("AC")&&(TmovOri.equalsIgnoreCase("AC")))//Acquisto Cripto
-                    ||
-                    (Tmov.equalsIgnoreCase("VC")&&(TmovOri.equalsIgnoreCase("VC")))//Vendita Crypto
-                    )
-            {
-                //Se arrivo qua significa che sto risistemando un movimento di deposito o prelievo già esistente
-                //in questo caso creo un nuovo id partendo da quello originale.
-                //in sostanza del nuovo ID tengo solo la parte riguardante data e ora IDts[0], il resto lo prendo dal vecchio movimento.
-                String IDTemp=IDts[0]+"_"+IDtsOri[1]+"_"+IDtsOri[2]+"_"+IDtsOri[3]+"_"+IDtsOri[4];
-                //Adesso mando avanti questo ID se è un nuovo id che prima non esisteva
-                if (MappaCryptoWallet.get(IDTemp)==null)
-                   { 
-                       ID=IDTemp;
-                       TipoTransazione=MovimentoRiportato[5];
-                   }
-                //in caso contrario lascio le così così e verrà preso il nuovo ID generato automaticamente               
-            }
-            
-
-            
-            String RT[];
-            RT = new String[Importazioni.ColonneTabella];
-            RT[0] = ID;
-            RT[1] = Data;
-            RT[2] = MovimentoRiportato[2];
-            RT[3] = Wallet;
-            RT[4] = WalletDettaglio;
-            RT[5] = TipoTransazione;
-            RT[6] = (MonetaU + " -> " + MonetaE).trim();
-            RT[8] = MonetaU;
-            RT[9] = MonetaUTipo;
-            RT[10] = MonetaUQta;
-            RT[11] = MonetaE;
-            RT[12] = MonetaETipo;
-            RT[13] = MonetaEQta;
-            RT[14] = MovimentoRiportato[14];
-            RT[15] = ValoreTransazione;
-            RT[21] = Note;
-            RT[22] = TipoMovimentoAM;
-            RT[23] = MovimentoRiportato[23];
-            RT[24] = MovimentoRiportato[24];
-            RT[25] = MovimentoRiportato[25];
-            RT[26] = MonetaUAddress;
-            RT[27] = MovimentoRiportato[27];
-            RT[28] = MonetaEAddress;
-            RT[29] = MovimentoRiportato[29];
-            RT[30] = MovimentoRiportato[30];
-            RT[31] = MovimentoRiportato[31];
-            if (MovimentoValorizzato) RT[32] = "SI";
-            Importazioni.RiempiVuotiArray(RT);
-            MappaCryptoWallet.put(RT[0], RT);
-            return true;
-       // }
+        return true;
     }
     
     private boolean EvidenziaProblemi() {                                           

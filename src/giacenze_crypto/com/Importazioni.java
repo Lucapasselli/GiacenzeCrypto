@@ -382,8 +382,8 @@ public class Importazioni {
                     int secondoInt=Integer.parseInt(secondo)-1;
                     secondo=String.valueOf(secondoInt);//secondo è secondo meno 1
                    /* System.out.println(splittata[ColTime]);
-                    System.out.println(ultimaData);
-                    System.out.println("-------");*/
+                   // System.out.println(ultimaData);
+                   // System.out.println("-------");*/
                     if (secondo.length()==1)secondo="0"+secondo;
                     String DataMeno1Secondo = splittata[ColTime].split(":")[0] + ":" + splittata[ColTime].split(":")[1] + ":" + secondo;
                     if (splittata[ColTime].equalsIgnoreCase(ultimaData)) {
@@ -459,7 +459,7 @@ public class Importazioni {
        for (String v : Mappa_Movimenti.keySet()) {
            String IDdaCSV=Mappa_Movimenti.get(v)[24];
          /*  System.out.println(IDdaCSV);
-           System.out.println();*/
+         //  System.out.println();*/
            numeromov++;
            if (!(MappaCryptoWallet.get(v)!=null||//se trovo la stessa id transazione
                     MappaIDOKX.get(IDdaCSV)!=null)//o se trovo lo stesso id dal csv scarto il movimento (la mappa degli id la genero prima di far partire l'importazione)
@@ -1926,10 +1926,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             BigDecimal Diecipercento=PrezzoPrelievo.divide(new BigDecimal(10));
                             long timestampDeposito=OperazioniSuDate.ConvertiDatainLongMinuto(rigaConfronto[1]);
                           /*  System.out.println(PrezzoPrelievo);
-                            System.out.println(PrezzoDeposito);
-                            System.out.println(Diecipercento);
-                            System.out.println(timestampPrelievo);
-                            System.out.println(timestampDeposito);*/
+                           // System.out.println(PrezzoDeposito);
+                          //  System.out.println(Diecipercento);
+                           // System.out.println(timestampPrelievo);
+                           // System.out.println(timestampDeposito);*/
                             //Se il tempo intercorso tra deposito e prelievo è inferiore di 15 minuti controllo il prezzo
                             if (timestampDeposito-timestampPrelievo>0 && timestampDeposito-timestampPrelievo<900000&&
                                     PrezzoPrelievo.subtract(PrezzoDeposito).abs().compareTo(Diecipercento)==-1){
@@ -2305,8 +2305,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     for (ValoriToken tokenE : MappaTokenEntrata.values()) {
                                         for (ValoriToken tokenU : MappaTokenUscita.values()) {
                                           /*  if (new BigDecimal(tokenU.Peso).compareTo(new BigDecimal(1)) != 0 || new BigDecimal(tokenE.Peso).compareTo(new BigDecimal(1)) != 0) {
-                                                System.out.print(tokenU.Moneta + " - " + tokenU.Peso + " - " + tokenU.Qta + " _____ ");
-                                                System.out.println(tokenE.Moneta + " - " + tokenE.Peso + " - " + tokenE.Qta+ " - "+dataa);
+                                              //  System.out.print(tokenU.Moneta + " - " + tokenU.Peso + " - " + tokenU.Qta + " _____ ");
+                                              //  System.out.println(tokenE.Moneta + " - " + tokenE.Peso + " - " + tokenE.Qta+ " - "+dataa);
                                             }*/
                                             //peso transazione                  
                                             String QuantitaEntrata = new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
@@ -2740,12 +2740,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     }
 
                                   /*  for (ValoriToken tokenE : MappaTokenEntrata.values()) {
-                                        System.out.println(tokenE.Moneta);
+                                      //  System.out.println(tokenE.Moneta);
                                     }
                                     for (ValoriToken tokenU : MappaTokenUscita.values()) {
-                                        System.out.println(tokenU.Moneta);
+                                      //  System.out.println(tokenU.Moneta);
                                     }
-                                    System.out.println("------");*/
+                                    //System.out.println("------");*/
                                     int i = 1;
                                     int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
                                     //  RT = new String[ColonneTabella];
@@ -2754,8 +2754,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         for (ValoriToken tokenU : MappaTokenUscita.values()) {
                                            // System.out.println(tokenU);
                                           /*  if (new BigDecimal(tokenU.Peso).compareTo(new BigDecimal(1)) != 0 || new BigDecimal(tokenE.Peso).compareTo(new BigDecimal(1)) != 0) {
-                                                System.out.print(tokenU.Moneta + " - " + tokenU.Peso + " - " + tokenU.Qta + " _____ ");
-                                                System.out.println(tokenE.Moneta + " - " + tokenE.Peso + " - " + tokenE.Qta+ " - "+dataa);
+                                              //  System.out.print(tokenU.Moneta + " - " + tokenU.Peso + " - " + tokenU.Qta + " _____ ");
+                                              //  System.out.println(tokenE.Moneta + " - " + tokenE.Peso + " - " + tokenE.Qta+ " - "+dataa);
                                             }*/
                                             //peso transazione                  
                                             String QuantitaEntrata = new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
@@ -3845,7 +3845,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             }
             String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
             if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
-            System.out.println(urls);
+           // System.out.println(urls);
+            System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -3903,7 +3904,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
          try {
             String urls = "https://cronos.org/explorer/api?module=account&action=eth_get_balance&address=" + walletAddress + "&block=" + Blocco;
 
-            System.out.println(urls);
+           // System.out.println(urls);
+            System.out.println("Controllo giacenze CRO su blocco "+ Blocco + " per il Wallet "+ walletAddress);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");

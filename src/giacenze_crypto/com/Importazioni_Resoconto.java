@@ -93,7 +93,7 @@ public class Importazioni_Resoconto extends javax.swing.JDialog {
 
         TextPane_Attenzione.setEditable(false);
         TextPane_Attenzione.setContentType("text/html"); // NOI18N
-        TextPane_Attenzione.setText("<html>\r\n  <head>\r\n\r\n  </head>\r\n  <body>\r\n    <p style=\"margin-top: 0\">\r\n      \r<b><center>ATTENZIONE!!! &#9    ALCUNE TRANSAZIONI SONO STATE SCARTATE!</b><br><br>\n<center> Le transazioni di seguito elencate non sono contemplate dall'import del programma<br>\n<center>e' quindi importate segnalare la cosa affinchè possano essere aggiunte all'import<br><br>\n<center>Mandare una mail all'indirizzo pippo@pippo.com con il dettaglio dei movimenti presenti qua sotto<br>\n<center>se si vuole che vengano implementate nelle versioni successive del programma<br>\n    </p>\r\n  </body>\r\n</html>\r\n");
+        TextPane_Attenzione.setText("<html>\r\n  <head>\r\n\r\n  </head>\r\n  <body>\r\n    <p style=\"margin-top: 0\">\r\n      \r<b><center>ATTENZIONE!!! &#9    ALCUNE TRANSAZIONI SONO STATE SCARTATE!</b><br><br>\n<center> Le transazioni di seguito elencate non sono contemplate dall'import del programma<br>\n<center>e' quindi importate segnalare la cosa affinchè possano essere aggiunte all'import<br><br>\n<center>Mandare una mail all'indirizzo <b>giacenzecrypto@gmail.com</b> con il dettaglio dei movimenti presenti <br>\n<center>qua sotto se si vuole che vengano implementate nelle versioni successive del programma<br>\n    </p>\r\n  </body>\r\n</html>\r\n");
         jScrollPane1.setViewportView(TextPane_Attenzione);
 
         TextPane_Errori.setEditable(false);

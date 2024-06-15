@@ -673,12 +673,13 @@ public class Prezzi {
         }
         
         //se il risultato è ancora recupero il prezzo dai dollari reali
-        if (risultato == null) {
+        if (risultato == null ||risultato.equalsIgnoreCase("ND")) {
             //questo risultato è già ponderato in base al valore
             risultato = ConvertiUSDEUR(Qta, DataGiorno);
         } //altrimenti calcolo il risultato in base alle qta
         else {
          //   System.out.println(Qta+" - "+risultato+" - "+DataGiorno);
+         
             risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
         }
         return risultato;
@@ -742,13 +743,14 @@ public class Prezzi {
         if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         String DataOra=OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
+        long DataInizioBinance=Long.parseLong("1502942400000");
         
         risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
         //se il risultato è null significa che non ho il prezzo specifico dell'ora
         if (risultato == null) {
                //a questo punto provo a recuperarlo
                RecuperaCoppieBinance();//il test sulla data lo fà già il programma
-               if (DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") != null) {
+               if (DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") != null && Datalong>=DataInizioBinance) {
                    //scarico i prezzi da binance
                    RecuperaTassidiCambioXXXUSDT(Crypto, DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
                    risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
@@ -801,7 +803,8 @@ public class Prezzi {
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
             URLConnection connection = url.openConnection();
-            System.out.println(url);
+           // System.out.println(url);
+            System.out.println("Recupero tassi di cambio Euro-Dollaro da Bancaditalia da data "+DataIniziale);
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(connection.getInputStream())))
             {
@@ -915,7 +918,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                 return null;
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
-            System.out.println(url);
+           // System.out.println(url);
+            System.out.println("Recupero prezzi "+Address+" da coingecko su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int statusCode = connection.getResponseCode();
@@ -1098,7 +1102,8 @@ for (int i=0;i<ArraydataIni.size();i++){
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
             
             URLConnection connection = url.openConnection();
-            System.out.println(url);
+            System.out.println("Recupero prezzi USDT da Coingecko da data "+DataIniziale);
+            //System.out.println(url);
             try ( BufferedReader in = new BufferedReader(
                     new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
@@ -1106,7 +1111,7 @@ for (int i=0;i<ArraydataIni.size();i++){
 
                 while ((line = in.readLine()) != null) {
                     response.append(line);
-                    System.out.println(response);
+                 //   System.out.println(response);
                 }
 
                 Gson gson = new Gson();
@@ -1242,7 +1247,8 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
                 URLConnection connection = url.openConnection();
-                System.out.println(url);
+                //System.out.println(url);
+                System.out.println("Recupero prezzi "+CoppiaCrypto+" da Binance da data "+DataIniziale);
                 try (BufferedReader in = new BufferedReader(
                         new InputStreamReader(connection.getInputStream()))) {
                     StringBuilder response = new StringBuilder();
@@ -1330,7 +1336,8 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
                 URLConnection connection = url.openConnection();
-                System.out.println(url);
+               // System.out.println(url);
+               System.out.println("Recupero prezzi "+Crypto+" da Cryptohistory da data "+DataIniziale);
                 try (BufferedReader in = new BufferedReader(
                         new InputStreamReader(connection.getInputStream()))) {
                     StringBuilder response = new StringBuilder();
@@ -1686,7 +1693,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                 String apiUrl = "https://api.binance.com/api/v3/exchangeInfo";
                 URL url = new URI(apiUrl).toURL();
                 URLConnection connection = url.openConnection();
-                System.out.println(url);
+                System.out.println("Recupero coppie gestite da Binance");
+               // System.out.println(url);
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -1743,7 +1751,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                 String apiUrl = "https://cryptohistory.one/api/list";
                 URL url = new URI(apiUrl).toURL();
                 URLConnection connection = url.openConnection();
-                System.out.println(url);
+                System.out.println("Recupero token gestiti da Cryptohistory");
+               // System.out.println(url);
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -1799,7 +1808,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                 String apiUrl = "https://api.coingecko.com/api/v3/coins/list?include_platform=true";
                 URL url = new URI(apiUrl).toURL();
                 URLConnection connection = url.openConnection();
-                System.out.println(url);
+                System.out.println("Recupero token gestiti da Coingecko");
+               // System.out.println(url);
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder response = new StringBuilder();
                 String line;

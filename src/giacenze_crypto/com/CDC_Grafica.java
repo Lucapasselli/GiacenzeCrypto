@@ -2692,9 +2692,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             String json = response.toString();
             String[] data = json.substring(1, json.length() - 1).split(",");
             //double price = Double.parseDouble(data[4]);
-            System.out.println (apiUrl);
-            System.out.println (response.toString());
-            System.out.println (data[4]); //questo è il valore sulla coppia con usdt
+          //  System.out.println (apiUrl);
+           // System.out.println (response.toString());
+           // System.out.println (data[4]); //questo è il valore sulla coppia con usdt
             
             // return price;
         } catch (URISyntaxException ex) {
@@ -2983,7 +2983,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                // System.out.println(UltimaData+","+totale);
                                 
                             piccoGiornata=totale;
-    //                        System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
+    //                   //     System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
                         }
                 //CDC_FiatWallet_FileTipiMovimentiDB
             int Colonna=CDC_Funzione_trovaColonnaEuro(value);
@@ -3074,7 +3074,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 //System.out.println(UltimaData+","+totale);
                                 
                             piccoGiornata=totale;
-    //                        System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
+    //                  //      System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
                         }
                 int Colonna=CDC_Funzione_trovaColonnaEuro(value);
                 if (Colonna!=999){
@@ -3112,7 +3112,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 listaSaldi.add(UltimaData+","+totale);
                                 //System.out.println(UltimaData+","+totale);
                                 
-    //                        System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
+    //                  //      System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
     
     List<String>[] group2 = (ArrayList<String>[]) new ArrayList[2];
     group2[0]=listaSaldi;
@@ -4907,13 +4907,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             String data = "recvWindow=60000&timestamp="+timestamp;
             String signature = generateSignature(data, "");
             String richiesta="https://api.binance.com/sapi/v1/asset/assetDividend?"+data+ "&signature=" + signature;
-            System.out.println(richiesta);
+         //   System.out.println(richiesta);
             URL apiUrl = new URL(richiesta);
             connection = (HttpURLConnection) apiUrl.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("X-MBX-APIKEY", "");
                         int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
+         //   System.out.println("Response Code: " + responseCode);
             
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -4924,9 +4924,9 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                     response.append(line);
                 }
 
-                System.out.println(response.toString());
+            //    System.out.println(response.toString());
             } else {
-                System.out.println("Request failed. Response Code: " + responseCode);
+            //    System.out.println("Request failed. Response Code: " + responseCode);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -7095,7 +7095,7 @@ try {
 
             /*   if (longDatainiziale>ConvertiDatainLong(splittata[0]))
                     {
-                        System.out.println("Errore, bisogna mettere una data inferiore o uguale a "+splittata[0]);
+                  //   System.out.println("Errore, bisogna mettere una data inferiore o uguale a "+splittata[0]);
                         break;
                     }*/
             if (longDatainiziale > Funzioni_Date_ConvertiDatainLong(splittata[0])) {
@@ -7233,7 +7233,7 @@ try {
             if (((JDateChooserRenderer)(evt.getSource())).getDate()!=null){
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String Data=f.format(((JDateChooserRenderer)(evt.getSource())).getDate());
-            System.out.println(Data);
+        //    System.out.println(Data);
         }*/
     }
 

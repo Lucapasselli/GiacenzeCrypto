@@ -271,7 +271,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             Thread thread;
             thread = new Thread() {
                 public void run() {
-                    try {
+                  //  try {
 
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
                        //     selezioneok[0] = true;
@@ -305,13 +305,15 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         Bottone_Annulla.setEnabled(true);
                         progressb.dispose();
 
-                    } catch (Exception ex) {
+                 /*   } catch (Exception ex) {
                         //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
+                        System.out.println(ex);
                         java.util.logging.Logger.getLogger(Importazioni_Gestione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-                    }
+                    }*/
                 }
 
             };
+            progressb.SetThread(thread);
             thread.start();
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(this);

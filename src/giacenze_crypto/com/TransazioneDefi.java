@@ -694,13 +694,13 @@ public class TransazioneDefi {
           // in seconda istanza a seconda del numero di token che compongono la transazione creo i vari scambi 
           int i=1;
           int totMov=MappaTokenEntrata.size()*MappaTokenUscita.size();
-          System.out.println("Numero Token in Entrata = "+MappaTokenEntrata.size()+" - Numero Token in uscita = "+MappaTokenUscita.size());
+       //   System.out.println("Numero Token in Entrata = "+MappaTokenEntrata.size()+" - Numero Token in uscita = "+MappaTokenUscita.size());
           for (ValoriToken tokenE : MappaTokenEntrata.values()) {
               for (ValoriToken tokenU : MappaTokenUscita.values()) {
                   //PESOOOOOOOOOOOOOOOOOOOOO
                   if (new BigDecimal(tokenU.Peso).compareTo(new BigDecimal(1))!=0||new BigDecimal(tokenE.Peso).compareTo(new BigDecimal(1))!=0){
-                  System.out.print(tokenU.Moneta+" - "+tokenU.Peso+" - "+tokenU.Qta+" _____ ");
-                  System.out.println(tokenE.Moneta+" - "+tokenE.Peso+" - "+tokenE.Qta);
+                //  System.out.print(tokenU.Moneta+" - "+tokenU.Peso+" - "+tokenU.Qta+" _____ ");
+                 // System.out.println(tokenE.Moneta+" - "+tokenE.Peso+" - "+tokenE.Qta);
                   }
                   //peso transazione                  
              /* BigDecimal PesoTransazione=new BigDecimal(tokenE.Peso).multiply(new BigDecimal(tokenU.Peso));

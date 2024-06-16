@@ -115,7 +115,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.21 Beta");
+            this.setTitle("Giacenze_Crypto 1.22 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -6245,7 +6245,7 @@ try {
                                     }
                                 else b.append(Stringa); 
                             }
-                            else if (IDTS[4].equals("RW")) {
+                            else if (IDTS[4].equals("RW")&&!movimento[13].isBlank()) {
                                 String Tipo="EARN";
                                 if (movimento[5].equalsIgnoreCase("CASHBACK"))Tipo="CASHBACK";
                                 else if (movimento[5].equalsIgnoreCase("STAKING REWARDS"))Tipo="STAKING";
@@ -6295,7 +6295,7 @@ try {
                                     }
                                 }
                             }
-                            else if (IDTS[4].equals("PC")||IDTS[4].equals("PF")) {
+                            else if (IDTS[4].equals("PC")||IDTS[4].equals("PF")||(IDTS[4].equals("RW")&&movimento[13].isBlank())) {
                                 String Tipo="WITHDRAWAL";
                                 String Stringa="";
                                 Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+

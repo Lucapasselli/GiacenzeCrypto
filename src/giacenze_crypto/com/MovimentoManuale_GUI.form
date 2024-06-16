@@ -92,18 +92,8 @@
                                       <Component id="MonetaUscitaAddress_TextField" min="-2" pref="270" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
-                                      <Component id="Minuto_Label" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="Minuto_ComboBox" min="-2" pref="55" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
-                                      <Component id="Secondo_Label" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="Secondo_ComboBox" min="-2" pref="60" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="1" attributes="0">
                                           <Component id="Freccia3_Label" min="-2" max="-2" attributes="0"/>
@@ -131,6 +121,19 @@
                                               </Group>
                                           </Group>
                                       </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+                                      <Component id="Minuto_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Minuto_ComboBox" min="-2" pref="55" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+                                      <Component id="Secondo_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="Secondo_ComboBox" min="-2" pref="60" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="jButton1" min="-2" pref="17" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -177,6 +180,7 @@
                       <Component id="Minuto_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="Secondo_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="Secondo_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButton1" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -716,6 +720,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="MonetaEntrataAddress_TextField">
+    </Component>
+    <Component class="javax.swing.JButton" name="jButton1">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

@@ -141,6 +141,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         MonetaUscitaAddress_TextField = new javax.swing.JTextField();
         MonetaEntrataAddress_Label = new javax.swing.JLabel();
         MonetaEntrataAddress_TextField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -311,6 +312,12 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         MonetaEntrataAddress_Label.setText("Address Entrata :");
 
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -370,16 +377,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                                         .addComponent(MonetaUscitaAddress_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(MonetaUscitaAddress_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(32, 32, 32)
-                                        .addComponent(Minuto_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(32, 32, 32)
-                                        .addComponent(Secondo_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(37, 37, 37)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -401,7 +399,19 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                     .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                     .addComponent(MonetaEntrata_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
+                                                    .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(32, 32, 32)
+                                        .addComponent(Minuto_Label)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(32, 32, 32)
+                                        .addComponent(Secondo_Label)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(11, 11, 11))))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(ID_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -434,7 +444,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                         .addComponent(Minuto_Label)
                         .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(Secondo_Label)
-                        .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -866,6 +877,18 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         ValoreTransazione_TextField.requestFocus();
     }//GEN-LAST:event_formWindowOpened
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        this.MonetaEntrataAddress_TextField.setEnabled(true);
+        this.MonetaUscitaAddress_TextField.setEnabled(true);
+        this.MonetaEntrataQuantita_TextField.setEnabled(true);
+        this.MonetaUscitaQuantita_TextField.setEnabled(true);
+        this.MonetaEntrata_ComboBox.setEnabled(true);
+        this.MonetaUscita_ComboBox.setEnabled(true);
+        this.MonetaEntrataTipo_ComboBox.setEnabled(true);
+        this.MonetaUscitaTipo_ComboBox.setEnabled(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     private void CompilaComboBoxWallet(){
         this.Wallet_ComboBox.removeAllItems();
         this.Wallet_ComboBox.addItem("");
@@ -946,20 +969,20 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             MovimentoValorizzato = true;
         }
 
+        if (MonetaETipo==null)MonetaETipo="";
+        if (MonetaUTipo==null)MonetaUTipo="";
+        
         if (ModificaMovimento) {
-            //Se sto modificando un movimento gli unici campi che posso modificare sono quelli del valore e delle note
-            //   MovimentoRiportato[15] = ValoreTransazione;
-            //   MovimentoRiportato[21] = Note;
-
-        }// else {
+           String IDtsOri[] = MovimentoRiportato[0].split("_");
+           String TmovOri = IDtsOri[4];
         String IDts[] = ID.split("_");
-        String IDtsOri[] = MovimentoRiportato[0].split("_");
         String Tmov = IDts[4];
-        String TmovOri = IDtsOri[4];
         //Se il tipo movinto del nuovo id è DC (Deposito Crypto)
         //Vedo se il tipo movimento vecchio era RW o TI e in quel caso cerco di usare lo stesso id che c'era prima
         //lo stesso vale se trovo altre movimentazioni analoghe
         //Cambierò eventialmente solo data e ora se queste sono cambiate
+        
+       
 
         if ((Tmov.equalsIgnoreCase("DC") && (TmovOri.equalsIgnoreCase("DC") || TmovOri.equalsIgnoreCase("RW") || TmovOri.equalsIgnoreCase("TI")))
                 || (Tmov.equalsIgnoreCase("PC") && (TmovOri.equalsIgnoreCase("PC") || TmovOri.equalsIgnoreCase("CM") || TmovOri.equalsIgnoreCase("TI")))
@@ -969,6 +992,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                 || (Tmov.equalsIgnoreCase("AC") && (TmovOri.equalsIgnoreCase("AC")))//Acquisto Cripto
                 || (Tmov.equalsIgnoreCase("VC") && (TmovOri.equalsIgnoreCase("VC")))//Vendita Crypto
                 ) {
+             
             //Se arrivo qua significa che sto risistemando un movimento di deposito o prelievo già esistente
             //in questo caso creo un nuovo id partendo da quello originale.
             //in sostanza del nuovo ID tengo solo la parte riguardante data e ora IDts[0], il resto lo prendo dal vecchio movimento.
@@ -978,12 +1002,19 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             if (MovimentoRiportato[0].equals(IDTemp)&&(MovimentoRiportato[22].equals("A")||MovimentoRiportato[22].equals("AU"))) {
                             MovimentoRiportato[15] = ValoreTransazione;
                             MovimentoRiportato[21] = Note;
+                            MovimentoRiportato[8] = MonetaU;
+                            MovimentoRiportato[9] = MonetaUTipo;
+                            MovimentoRiportato[10] = MonetaUQta;
+                            MovimentoRiportato[11] = MonetaE;
+                            MovimentoRiportato[12] = MonetaETipo;
+                            MovimentoRiportato[13] = MonetaEQta;
                             if (MovimentoValorizzato) {
                                 MovimentoRiportato[32] = "SI";
                             }
+                           
             } //altrimenti chiedo se voglio ricreare il movimento con un nuovo ID
             else {
-                if (!MovimentoRiportato[0].equals(ID)) {
+               // if (!MovimentoRiportato[0].equals(ID)) {
                     String Messaggio = "Attenzione, il movimento ha subito variazioni di stato per cui verrà ricalcolato l'id ed eliminate le eventuali associazioni ad altri movimenti.\n"
                             + "Si vuole Proseguire?";
                     int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cambio stato movimento", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
@@ -1047,8 +1078,75 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
                     }
 
-                }
+               // }
             }         
+        }else {
+                                        //Cancello il vecchio movimento
+                            Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
+                            //Creo il nuovo
+                            String RT[];
+                            RT = new String[Importazioni.ColonneTabella];
+                            RT[0] = ID;
+                            RT[1] = Data;
+                            RT[2] = MovimentoRiportato[2];
+                            RT[3] = Wallet;
+                            RT[4] = WalletDettaglio;
+                            RT[5] = TipoTransazione;
+                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
+                            RT[8] = MonetaU;
+                            RT[9] = MonetaUTipo;
+                            RT[10] = MonetaUQta;
+                            RT[11] = MonetaE;
+                            RT[12] = MonetaETipo;
+                            RT[13] = MonetaEQta;
+                            RT[14] = MovimentoRiportato[14];
+                            RT[15] = ValoreTransazione;
+                            RT[21] = Note;
+                            RT[22] = TipoMovimentoAM;
+                            RT[23] = MovimentoRiportato[23];
+                            RT[24] = MovimentoRiportato[24];
+                            RT[25] = MovimentoRiportato[25];
+                            RT[26] = MonetaUAddress;
+                            RT[27] = MovimentoRiportato[27];
+                            RT[28] = MonetaEAddress;
+                            RT[29] = MovimentoRiportato[29];
+                            RT[30] = MovimentoRiportato[30];
+                            RT[31] = MovimentoRiportato[31];
+                            if (MovimentoValorizzato) {
+                                RT[32] = "SI";
+                            }
+                            Importazioni.RiempiVuotiArray(RT);
+                            MappaCryptoWallet.put(RT[0], RT);
+                            return true;
+        }
+        
+        }else{
+            //se non sto modificando un movimento allora ne creo uno nuovo
+                            String RT[];
+                            RT = new String[Importazioni.ColonneTabella];
+                            RT[0] = ID;
+                            RT[1] = Data;
+                            RT[2] = "1 di 1";
+                            RT[3] = Wallet;
+                            RT[4] = WalletDettaglio;
+                            RT[5] = TipoTransazione;
+                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
+                            RT[8] = MonetaU;
+                            RT[9] = MonetaUTipo;
+                            RT[10] = MonetaUQta;
+                            RT[11] = MonetaE;
+                            RT[12] = MonetaETipo;
+                            RT[13] = MonetaEQta;
+                            RT[15] = ValoreTransazione;
+                            RT[21] = Note;
+                            RT[22] = TipoMovimentoAM;
+                            RT[26] = MonetaUAddress;
+                            RT[28] = MonetaEAddress;
+                            if (MovimentoValorizzato) {
+                                RT[32] = "SI";
+                            }
+                            Importazioni.RiempiVuotiArray(RT);
+                            MappaCryptoWallet.put(RT[0], RT); 
         }
 
         return true;
@@ -1307,6 +1405,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     private javax.swing.JLabel WalletDettaglio_Label;
     private javax.swing.JComboBox<String> Wallet_ComboBox;
     private javax.swing.JLabel Wallet_Label;
+    private javax.swing.JButton jButton1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;

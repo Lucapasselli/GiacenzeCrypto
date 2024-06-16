@@ -391,6 +391,7 @@ public class Calcoli_Plusvalenze {
                     CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);
                 }
             String TipoMU = RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
+           // if (v[12]==null)System.out.println(v[11]+"_"+v[1]+"_"+v[12]);
             String TipoME = RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
             String IDTransazione=v[0];
             String IDTS[]=IDTransazione.split("_");

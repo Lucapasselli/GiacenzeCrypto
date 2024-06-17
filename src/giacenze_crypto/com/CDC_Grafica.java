@@ -6211,6 +6211,208 @@ try {
                                 String Stringa="";
                                 Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
                                         DataMovimento+"\",\""+
+                                        "DEBIT\",\""+movimento[10]+"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n";
+                                
+                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
+                                    {
+                                    bDEFI.append(Stringa);   
+                                    }
+                                else b.append(Stringa);
+                                
+                                
+                                Stringa="";
+                                Stringa =Stringa+"\""+TokenE+"\",\""+movimento[28]+"\",\""+
+                                DataMovimento+"\",\""+
+                                        "CREDIT\",\""+movimento[13]+"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n";
+                                //Prima di scrivere il movimento verifico se è un movimento della defi lo salvo nel file a parte
+                                //altrimenti lo metto nel file principale
+                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
+                                    {
+                                    bDEFI.append(Stringa);   
+                                    }
+                                else b.append(Stringa);
+                            }
+                            else if (IDTS[4].equals("CM")) {
+                                String TipoCommissione="EXCHANGE_FEE";
+                                if (Rete!=null)TipoCommissione="BLOCKCHAIN_FEE";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
+                                        DataMovimento+"\",\""+
+                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n"; 
+                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
+                                    {
+                                    bDEFI.append(Stringa);   
+                                    }
+                                else b.append(Stringa); 
+                            }
+                            else if (IDTS[4].equals("RW")&&!movimento[13].isBlank()) {
+                                String Tipo="EARN";
+                                if (movimento[5].equalsIgnoreCase("CASHBACK"))Tipo="CASHBACK";
+                                else if (movimento[5].equalsIgnoreCase("STAKING REWARDS"))Tipo="STAKING";
+                                if (movimento[5].equalsIgnoreCase("AIRDROP"))Tipo="AIRDROP";
+                                if (movimento[5].equalsIgnoreCase("EARN"))Tipo="EARN";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+TokenE+"\",\""+movimento[28]+"\",\""+
+                                        DataMovimento+"\",\""+
+                                        Tipo+"\",\""+movimento[13]+"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n";
+                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
+                                    {
+                                    bDEFI.append(Stringa);   
+                                    }
+                                else b.append(Stringa); 
+                            }
+                            else if (IDTS[4].equals("DC") || IDTS[4].equals("DF")) {
+                                //Siccome i token scam hanno solamente depositi metto qua la verifica se il token è scam e se lo è non lo esporto
+                                if (!Funzioni.isSCAM(TokenE)) {
+                                    String Stringa = "";
+                                    if (movimento[18].contains("DAI")) {
+                                        String Tipo = "EARN";
+                                        if (movimento[5].equalsIgnoreCase("CASHBACK")) {
+                                            Tipo = "CASHBACK";
+                                        } else if (movimento[5].equalsIgnoreCase("STAKING REWARDS")) {
+                                            Tipo = "STAKING";
+                                        }
+                                        if (movimento[5].equalsIgnoreCase("AIRDROP")) {
+                                            Tipo = "AIRDROP";
+                                        }
+                                        if (movimento[5].equalsIgnoreCase("EARN")) {
+                                            Tipo = "EARN";
+                                        }
+                                        Stringa = Stringa + "\"" + TokenE + "\",\"" + movimento[28] + "\",\""
+                                                + DataMovimento + "\",\""
+                                                + Tipo + "\",\"" + movimento[13] +"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n";
+                                    } else {
+                                        String Tipo = "DEPOSIT";
+
+                                        Stringa = Stringa + "\"" + TokenE + "\",\"" + movimento[28] + "\",\""
+                                                + DataMovimento + "\",\""
+                                                + Tipo + "\",\"" + movimento[13] +"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n";
+                                    }
+                                    if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi") || movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio")) {
+                                        bDEFI.append(Stringa);
+                                    } else {
+                                        b.append(Stringa);
+                                    }
+                                }
+                            }
+                            else if (IDTS[4].equals("PC")||IDTS[4].equals("PF")||(IDTS[4].equals("RW")&&movimento[13].isBlank())) {
+                                
+                                if(movimento[5].equalsIgnoreCase("COMMISSIONI")){
+                                String TipoCommissione="EXCHANGE_FEE";
+                                if (Rete!=null)TipoCommissione="BLOCKCHAIN_FEE";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
+                                        DataMovimento+"\",\""+
+                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n"; 
+                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
+                                    {
+                                    bDEFI.append(Stringa);   
+                                    }
+                                else b.append(Stringa); 
+                                }else{
+                                String Tipo="WITHDRAWAL";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
+                                        DataMovimento+"\",\""+
+                                        Tipo+"\",\""+movimento[10]+"\",\"\",\"\","+"\"\""+","+"\"\""+",\""+Prezzo+"\",\""+Simbolo+"\"\n";
+                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
+                                    {
+                                    //System.out.println(movimento[4]);
+                                    bDEFI.append(Stringa);   
+                                    }
+                                else b.append(Stringa); 
+                                }
+                            }
+                            else if (IDTS[4].equals("TI")) {
+                                //TI non fà nulla
+                            }
+                            else {
+                                System.out.println("Movimento "+movimento[0]+" sconosciuto e non esportato");
+                            }
+
+                        }
+                    
+                }
+            bDEFI.close();
+            wDEFI.close();
+            b.close();
+            w.close();
+            //File a=fc.getSelectedFile();
+            JOptionPane.showConfirmDialog(null, "<html><b>Elaborazione Terminata</b><br>"
+                    + "File Salvato in "+fc.getSelectedFile().getAbsolutePath(),
+                            "Fine Esportazione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+          //  Desktop desktop = Desktop.getDesktop();  
+         //   desktop.open(export);
+} 
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+
+        }
+    
+      private void Opzioni_Export_Tatax_OLD(){
+
+
+        //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
+try {
+            // TODO add your handling code here:
+
+            //il modo più rapido per esportare la tabella è prendere tutta la mappa ed esportare solo quello che c'è tra le date e che ha
+            //nel suo contenuto il filtro in basso
+                    JFileChooser fc = new JFileChooser();
+
+        //In response to a button click:
+        //fc.showSaveDialog(Opzioni);
+       // System.out.println(CDC_FiatWallet_Pannello);
+        int returnVal = fc.showSaveDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {           
+            FileWriter w = new FileWriter(fc.getSelectedFile()+".csv");
+            FileWriter wDEFI = new FileWriter(fc.getSelectedFile()+"_DEFI.csv");
+            //File export = new File("temp.csv");
+            //FileWriter w = new FileWriter(export);
+            BufferedWriter b = new BufferedWriter(w);
+            BufferedWriter bDEFI = new BufferedWriter(wDEFI);
+            b.write("\"Symbol\",\"TokenAddress\",\"TimeStamp\",\"MovementType\",\"Quantity\",\"Countervalue\",\"SymbolCountervalue\",\"UserCountervalue\",\"UserSymbolCountervalue\",\"SourceCountervalue\",\"SourceSymbolCountervalue\"\n");
+            bDEFI.write("\"Symbol\",\"TokenAddress\",\"TimeStamp\",\"MovementType\",\"Quantity\",\"Countervalue\",\"SymbolCountervalue\",\"UserCountervalue\",\"UserSymbolCountervalue\",\"SourceCountervalue\",\"SourceSymbolCountervalue\"\n");            
+            String Wallet = Opzioni_Export_Wallets_Combobox.getSelectedItem().toString().trim();
+                for (String[] movimento : MappaCryptoWallet.values()) {
+                    //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
+                    //altrimenti non vado avanti
+                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    String IDTS[] = movimento[0].split("_");
+                    String secondi=IDTS[0].substring(12, 14);
+                    String DataMovimento = movimento[1]+":"+secondi;
+                    String TokenU=movimento[8];
+                    String TokenE=movimento[11];
+                    String Prezzo="";
+                    String Simbolo="";
+                    boolean haprezzo=false;
+                    if (movimento[32].equalsIgnoreCase("SI"))haprezzo=true;
+                    boolean EstraiPrezzi=this.Opzioni_Export_EsportaPrezzi_CheckBox.isSelected();
+                    if (haprezzo&&EstraiPrezzi)
+                    {
+                        Prezzo=movimento[15];
+                        Simbolo="EUR";
+                        }
+                    //Ora tolgo le parentesi dai nomi dei token
+                    TokenE=TokenE.split("\\(")[0].trim();
+                    TokenU=TokenU.split("\\(")[0].trim();
+                        // adesso verifico il wallet
+                        String gruppoWallet="";
+                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
+                        if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
+                                ||Wallet.equalsIgnoreCase(movimento[3].trim())//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ) 
+                        {
+                            
+                            if (IDTS[4].equals("VC")
+                                    || IDTS[4].equals("SC")
+                                    || IDTS[4].equals("AC")) {
+                                String Stringa="";
+                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
+                                        DataMovimento+"\",\""+
                                         "DEBIT\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
                                 
                                 if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
@@ -6296,6 +6498,20 @@ try {
                                 }
                             }
                             else if (IDTS[4].equals("PC")||IDTS[4].equals("PF")||(IDTS[4].equals("RW")&&movimento[13].isBlank())) {
+                                
+                                if(movimento[5].equalsIgnoreCase("COMMISSIONI")){
+                                String TipoCommissione="EXCHANGE_FEE";
+                                if (Rete!=null)TipoCommissione="BLOCKCHAIN_FEE";
+                                String Stringa="";
+                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
+                                        DataMovimento+"\",\""+
+                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
+                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
+                                    {
+                                    bDEFI.append(Stringa);   
+                                    }
+                                else b.append(Stringa); 
+                                }else{
                                 String Tipo="WITHDRAWAL";
                                 String Stringa="";
                                 Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
@@ -6307,6 +6523,7 @@ try {
                                     bDEFI.append(Stringa);   
                                     }
                                 else b.append(Stringa); 
+                                }
                             }
                             else if (IDTS[4].equals("TI")) {
                                 //TI non fà nulla
@@ -6335,8 +6552,8 @@ try {
         
 
         }
-    
-    
+      
+      
     private void GiacenzeaData_CompilaTabellaToken(){
         
         //Gestisco i bottoni

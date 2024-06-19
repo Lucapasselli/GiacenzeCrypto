@@ -1540,15 +1540,16 @@ for (int i=0;i<ArraydataIni.size();i++){
         //se almeno una delle 2 monete è una FIAT prendo il prezzo da quella
         
         //PARTE 1 - VERIFICO SE FIAT
-        if ((Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("FIAT")) || (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("FIAT"))) {
+        if ((Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("FIAT")&& Moneta1.Moneta.equalsIgnoreCase("EUR")) 
+                || (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("FIAT")&&Moneta2.Moneta.equalsIgnoreCase("EUR"))) {
             //per ora gestisco solo eruo ma sarà da aggiungere anche la parte USD
-            if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("EUR")) {
+            if (Moneta1 != null) {
                 PrezzoTransazione = Moneta1.Qta;
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     return PrezzoTransazione;
                 }
-            } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("EUR")) {
+            } else if (Moneta2 != null) {
                 PrezzoTransazione = Moneta2.Qta;
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
@@ -1584,7 +1585,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             
             //VERIFICO SE CRYPTO USD
-            else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USD") && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")&&AddressMoneta1 == null) {
+            else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USD") && !Moneta1.Tipo.trim().equalsIgnoreCase("NFT")&&AddressMoneta1 == null) {
                 //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
                 //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
                 String DataDollaro=OperazioniSuDate.ConvertiDatadaLong(Data);
@@ -1593,7 +1594,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     return PrezzoTransazione;
                 }
-            } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USD") && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")&&AddressMoneta2 == null) {
+            } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USD") && !Moneta2.Tipo.trim().equalsIgnoreCase("NFT")&&AddressMoneta2 == null) {
                 String DataDollaro=OperazioniSuDate.ConvertiDatadaLong(Data);
                     PrezzoTransazione = ConvertiUSDEUR(Moneta2.Qta, DataDollaro);                
                 if (PrezzoTransazione != null) {

@@ -1582,6 +1582,25 @@ for (int i=0;i<ArraydataIni.size();i++){
                     return PrezzoTransazione;
                 }
             }
+            
+            //VERIFICO SE CRYPTO USD
+            else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USD") && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")&&AddressMoneta1 == null) {
+                //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
+                //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
+                String DataDollaro=OperazioniSuDate.ConvertiDatadaLong(Data);
+                    PrezzoTransazione = ConvertiUSDEUR(Moneta1.Qta, DataDollaro);                
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USD") && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")&&AddressMoneta2 == null) {
+                String DataDollaro=OperazioniSuDate.ConvertiDatadaLong(Data);
+                    PrezzoTransazione = ConvertiUSDEUR(Moneta2.Qta, DataDollaro);                
+                if (PrezzoTransazione != null) {
+                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                    return PrezzoTransazione;
+                }
+            }
          else {
             //PARTE 3 - VERIFICO SE COPPIE PRIORITARIE
             //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo

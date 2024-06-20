@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lowagie.text.Font;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JDateChooserCellEditor;
+import static giacenze_crypto.com.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
 import static giacenze_crypto.com.Importazioni.ColonneTabella;
 import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
 import java.awt.Color;
@@ -4979,9 +4980,42 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             MovimentoManuale_GUI a = new MovimentoManuale_GUI();
             int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
             String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            a.CompilaCampidaID(IDTransazione);
-            a.setLocationRelativeTo(this);
-            a.setVisible(true);
+            String riga[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+
+            String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
+            if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo
+                String Messaggio = "Attenzione, il movimento è associato ad un altro movimento.\n"
+                        + "se si prosegue l'associazione verrà rimossa, si vuole continuare?";
+                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma modifica", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
+                    case 0 -> {
+                        RiportaTransazioniASituazioneIniziale(PartiCoinvolte); 
+
+                            a.CompilaCampidaID(IDTransazione);
+                            a.setLocationRelativeTo(this);
+                            a.setVisible(true);
+                            CDC_Grafica.TabellaCryptodaAggiornare=true;
+                        
+                    }
+                    case 1 -> {
+                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        
+                    }
+                    case -1 -> {
+                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        
+                    }
+
+                }
+            }else{ 
+                a.CompilaCampidaID(IDTransazione);
+                a.setLocationRelativeTo(this);
+                a.setVisible(true);
+            }
         }
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 

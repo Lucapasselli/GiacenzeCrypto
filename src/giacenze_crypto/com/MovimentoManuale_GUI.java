@@ -25,6 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import static giacenze_crypto.com.CDC_Grafica.Mappa_Wallets_e_Dettagli;
+import static giacenze_crypto.com.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
 
 /**
  *
@@ -438,14 +439,14 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Data_Label)
                     .addComponent(Data_Datachooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(Ora_Label)
                         .addComponent(Ora_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(Minuto_Label)
                         .addComponent(Minuto_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(Secondo_Label)
-                        .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton1)))
+                        .addComponent(Secondo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -630,13 +631,15 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
               //adesso devo far scegliere che fare
               //la cosa più semplice per ora è inserire un messaggio in cui si chiede di cambiare l'orario
               //o qualcosa del genere
+             // System.out.println("ma va la");
               JOptionPane.showConfirmDialog(this, "Attenzione!\nEsiste un movimento con lo stesso ID Transsazione\nProvare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema",
                     "Movimento con Stesso ID",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             }else{
               //se invece arrivo qua posso inserire il movimento nella mappa  
-              ScriviMovimento(ID);
-              CDC_Grafica.TabellaCryptodaAggiornare=true;
-            this.dispose(); 
+              if (ScriviMovimento(ID)){
+                CDC_Grafica.TabellaCryptodaAggiornare=true;
+                this.dispose(); 
+              }
             }
   
             
@@ -875,6 +878,10 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
         ValoreTransazione_TextField.requestFocus();
+        //Verifico se se è un movimento che è associato ad un altro movimento nel qual cosa avverto che per poter modificare il movimento bisogna 
+        //prima eliminare le eventuali associazioni
+
+        
     }//GEN-LAST:event_formWindowOpened
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -973,33 +980,25 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         if (MonetaUTipo==null)MonetaUTipo="";
         
         if (ModificaMovimento) {
-           String IDtsOri[] = MovimentoRiportato[0].split("_");
-           String TmovOri = IDtsOri[4];
-        String IDts[] = ID.split("_");
-        String Tmov = IDts[4];
+            String IDtsOri[] = MovimentoRiportato[0].split("_");
+            String IDts[] = ID.split("_");
         //Se il tipo movinto del nuovo id è DC (Deposito Crypto)
         //Vedo se il tipo movimento vecchio era RW o TI e in quel caso cerco di usare lo stesso id che c'era prima
         //lo stesso vale se trovo altre movimentazioni analoghe
         //Cambierò eventialmente solo data e ora se queste sono cambiate
         
-       
-
-        if ((Tmov.equalsIgnoreCase("DC") && (TmovOri.equalsIgnoreCase("DC") || TmovOri.equalsIgnoreCase("RW") || TmovOri.equalsIgnoreCase("TI")))
-                || (Tmov.equalsIgnoreCase("PC") && (TmovOri.equalsIgnoreCase("PC") || TmovOri.equalsIgnoreCase("CM") || TmovOri.equalsIgnoreCase("TI")))
-                || (Tmov.equalsIgnoreCase("SC") && (TmovOri.equalsIgnoreCase("SC")))//Scambio Crypto
-                || (Tmov.equalsIgnoreCase("DF") && (TmovOri.equalsIgnoreCase("DF")))//Deposito Fiat
-                || (Tmov.equalsIgnoreCase("PF") && (TmovOri.equalsIgnoreCase("PF")))//Prelievo Fiat
-                || (Tmov.equalsIgnoreCase("AC") && (TmovOri.equalsIgnoreCase("AC")))//Acquisto Cripto
-                || (Tmov.equalsIgnoreCase("VC") && (TmovOri.equalsIgnoreCase("VC")))//Vendita Crypto
-                ) {
-             
-            //Se arrivo qua significa che sto risistemando un movimento di deposito o prelievo già esistente
-            //in questo caso creo un nuovo id partendo da quello originale.
-            //in sostanza del nuovo ID tengo solo la parte riguardante data e ora IDts[0], il resto lo prendo dal vecchio movimento.
-            String IDTemp = IDts[0] + "_" + IDtsOri[1] + "_" + IDtsOri[2] + "_" + IDtsOri[3] + "_" + IDtsOri[4];
-
-            //Se l'id è uguale a quello vecchio e movimento automatico significa che ho cambiato solo il prezzo della transazione
-            if (MovimentoRiportato[0].equals(IDTemp)&&(MovimentoRiportato[22].equals("A")||MovimentoRiportato[22].equals("AU"))) {
+           // String IDTemp="";
+           
+           //Se stessa moneta u/e, stesso tipou/e,stesso wallet allora lo considero lo stesso movimento
+            if (MovimentoRiportato[3].equals(Wallet) && MovimentoRiportato[4].equals(WalletDettaglio)
+                    && MonetaU.trim().equals(MovimentoRiportato[8]) && MonetaE.trim().equals(MovimentoRiportato[11])
+                    && MonetaUTipo.trim().equals(MovimentoRiportato[9]) && MonetaETipo.trim().equals(MovimentoRiportato[12])) {
+                ID = IDts[0] + "_" + IDtsOri[1] + "_" + IDtsOri[2] + "_" + IDtsOri[3] + "_" + IDtsOri[4];
+                //in alternativa tengo buono l'id automaticamente generato;
+            } 
+            //Se l'id è uguale a quello vecchio significa che tipo e dataora del movimento sono uguali a quello precedente quindi
+            //mi occupo solo di modificare i dati all'interno del movimento (l'id resta uguale)
+            if (MovimentoRiportato[0].equals(ID)) {//Qui finiscono solo i movimenti che hanno anche la stessa data
                             MovimentoRiportato[15] = ValoreTransazione;
                             MovimentoRiportato[21] = Note;
                             MovimentoRiportato[8] = MonetaU;
@@ -1008,27 +1007,49 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                             MovimentoRiportato[11] = MonetaE;
                             MovimentoRiportato[12] = MonetaETipo;
                             MovimentoRiportato[13] = MonetaEQta;
+                            MovimentoRiportato[26] = MonetaUAddress;
+                            MovimentoRiportato[28] = MonetaEAddress;
                             if (MovimentoValorizzato) {
                                 MovimentoRiportato[32] = "SI";
                             }
-                           
-            } //altrimenti chiedo se voglio ricreare il movimento con un nuovo ID
-            else {
-               // if (!MovimentoRiportato[0].equals(ID)) {
-                    String Messaggio = "Attenzione, il movimento ha subito variazioni di stato per cui verrà ricalcolato l'id ed eliminate le eventuali associazioni ad altri movimenti.\n"
-                            + "Si vuole Proseguire?";
-                    int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cambio stato movimento", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-                    //Si=0
-                    //No=1
-                    switch (risposta) {
+             }              
+             
+            else{
+                //1 - Controllo che non vi sia già un movimento con lo stesso ID di quello che voglio generare
+                if (MappaCryptoWallet.get(ID) != null) {
+                    //System.out.println(ID);
+                    JOptionPane.showConfirmDialog(this, "Attenzione!\nEsiste un movimento con lo stesso ID Transsazione\nProvare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema",
+                            "Movimento con Stesso ID", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
+                    return false;
+                }//altrimenti chiedo se voglio ricreare il movimento con un nuovo ID
+                
+                 if (MovimentoRiportato[22].equalsIgnoreCase("AU")) {
+                    //System.out.println(ID);
+                    JOptionPane.showConfirmDialog(this, "<html>Attenzione!<br>"
+                            + "Su questo tipo di movimento è consentito variare solamente Prezzo e Note<br>"
+                            + "La modifica non può essere fatta</html>",
+                            "Modifica su movimento automatico", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
+                    return false;
+                }//altrimenti chiedo se voglio ricreare il movimento con un nuovo ID               
+                String Messaggio = "<html>Attenzione!<br> "
+                        + "Il movimento ha subito variazioni di stato per cui verrà ricalcolato l'id ed eliminate le eventuali associazioni già fatte.<br>"
+                        + "Si vuole Proseguire?</html>";
+                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cambio stato movimento", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
                         case 0 -> {
                             //Cancello il vecchio movimento
                             Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
-                            //Creo il nuovo
-                            if (MappaCryptoWallet.get(IDTemp) == null) {
-                                ID = IDTemp;
+                            String splitID[] = ID.split("_");
+                            if (splitID[4].equalsIgnoreCase("RW")) {
                                 TipoTransazione = MovimentoRiportato[5];
                             }
+
+                            if (splitID[4].equalsIgnoreCase("CM")) {
+                                TipoTransazione = MovimentoRiportato[5];
+                            }
+                            //Creo il nuovo
                             String RT[];
                             RT = new String[Importazioni.ColonneTabella];
                             RT[0] = ID;
@@ -1047,7 +1068,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                             RT[14] = MovimentoRiportato[14];
                             RT[15] = ValoreTransazione;
                             RT[21] = Note;
-                            RT[22] = TipoMovimentoAM;
+                            RT[22] = "M";
                             RT[23] = MovimentoRiportato[23];
                             RT[24] = MovimentoRiportato[24];
                             RT[25] = MovimentoRiportato[25];
@@ -1079,45 +1100,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                     }
 
                // }
-            }         
-        }else {
-                                        //Cancello il vecchio movimento
-                            Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
-                            //Creo il nuovo
-                            String RT[];
-                            RT = new String[Importazioni.ColonneTabella];
-                            RT[0] = ID;
-                            RT[1] = Data;
-                            RT[2] = MovimentoRiportato[2];
-                            RT[3] = Wallet;
-                            RT[4] = WalletDettaglio;
-                            RT[5] = TipoTransazione;
-                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
-                            RT[8] = MonetaU;
-                            RT[9] = MonetaUTipo;
-                            RT[10] = MonetaUQta;
-                            RT[11] = MonetaE;
-                            RT[12] = MonetaETipo;
-                            RT[13] = MonetaEQta;
-                            RT[14] = MovimentoRiportato[14];
-                            RT[15] = ValoreTransazione;
-                            RT[21] = Note;
-                            RT[22] = TipoMovimentoAM;
-                            RT[23] = MovimentoRiportato[23];
-                            RT[24] = MovimentoRiportato[24];
-                            RT[25] = MovimentoRiportato[25];
-                            RT[26] = MonetaUAddress;
-                            RT[27] = MovimentoRiportato[27];
-                            RT[28] = MonetaEAddress;
-                            RT[29] = MovimentoRiportato[29];
-                            RT[30] = MovimentoRiportato[30];
-                            RT[31] = MovimentoRiportato[31];
-                            if (MovimentoValorizzato) {
-                                RT[32] = "SI";
-                            }
-                            Importazioni.RiempiVuotiArray(RT);
-                            MappaCryptoWallet.put(RT[0], RT);
-                            return true;
+                     
         }
         
         }else{
@@ -1139,7 +1122,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                             RT[13] = MonetaEQta;
                             RT[15] = ValoreTransazione;
                             RT[21] = Note;
-                            RT[22] = TipoMovimentoAM;
+                            RT[22] = "M";
                             RT[26] = MonetaUAddress;
                             RT[28] = MonetaEAddress;
                             if (MovimentoValorizzato) {

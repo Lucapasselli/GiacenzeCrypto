@@ -5514,25 +5514,58 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.NascondiInterrompi();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
-        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+        Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
+        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {            
             String Errore="";
             BigDecimal ValIniziale = new BigDecimal(0);
             BigDecimal ValFinale = new BigDecimal(0);
             BigDecimal ValFinalexggTOT = new BigDecimal(0);
             String RW1[] = new String[5];
+            progress.RipristinaStdout();
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
-              //  System.out.println(lista[1]);
+               //System.out.println(lista[1]);
                 if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
                 if (lista[15].toLowerCase().contains("error"))Errore="ERRORI";
-                ValIniziale = new BigDecimal(lista[5]).add(ValIniziale);
-                ValFinale = new BigDecimal(lista[10]).add(ValFinale);
                 ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
+                    if (MappaWallerQuadro.get(key)==null){//se la mappa è nulla la popolo per la prima volta
+                        //ValIniziale = new BigDecimal(MappaWallerQuadro.get(key)[1]);
+                        if (lista[1].equals(key))
+                        {
+                            RW1[1] = lista[5];//RW1[1] è il valore iniziale
+                        }
+                        else
+                        {
+                            RW1[1]="0";//RW1[1] è il valore iniziale
+                            //qua dovrò gestire l'RW dell'altro wallet
+                        }
+                        ValFinale = new BigDecimal(lista[10]).add(ValFinale);
+                        RW1[0] = key.split(" ")[1] + " (" + key + ")";
+                        RW1[2] = ValFinale.toPlainString();
+                        RW1[3] = "0";
+                        RW1[4] = Errore;
+                        MappaWallerQuadro.put(key, RW1);
+                    }else{//altrimenti recupero i dati vecchi e li aggiorno
+                        RW1=MappaWallerQuadro.get(key);
+                        //se wallet origine diverso da wallet di destinazione non sommo il valore iniziale al wallet di destinazione bensì lo devo sommare al wallet di origine
+                        if (lista[1].equals(key))
+                        {
+                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//RW1[1] è il valore iniziale
+                            }
+                        else
+                        {
+                            //Qua dovrò gestire l'rw dell'altro wallet
+                        }
+                        ValFinale = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2]));
+                        RW1[2] = ValFinale.toPlainString();
+                        RW1[4] = Errore;
+                    }
+                    
             }
             BigDecimal GGPonderati;//=new BigDecimal(999999);
             if (ValFinale.compareTo(new BigDecimal(0))!=0) {
                 GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
             }else{ 
-                GGPonderati=new BigDecimal("365.00").setScale(2, RoundingMode.HALF_UP);
+                GGPonderati=new BigDecimal("0.00").setScale(2, RoundingMode.HALF_UP);
                     Errore="Wallet vuoto o senza valore";
                 }
             if (Errore.equalsIgnoreCase("ERRORI"))GGPonderati=new BigDecimal(999999);
@@ -5541,8 +5574,13 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             RW1[2] = ValFinale.toPlainString();
             RW1[3] = GGPonderati.toPlainString();
             RW1[4] = Errore;
-            ModelloTabella.addRow(RW1);
+            MappaWallerQuadro.put(key, RW1);
+           // ModelloTabella.addRow(RW1);
             
+        }
+        
+        for (String[] RWx : MappaWallerQuadro.values()) {
+            ModelloTabella.addRow(RWx);
         }
         Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
         progress.ChiudiFinestra();

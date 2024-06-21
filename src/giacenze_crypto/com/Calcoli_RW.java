@@ -26,6 +26,7 @@ import java.util.TreeMap;
 public class Calcoli_RW {
     
        static String AnnoR;
+       static boolean InizioWinizio=true;
        
        public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;

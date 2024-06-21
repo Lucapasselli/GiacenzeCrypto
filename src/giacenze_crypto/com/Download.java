@@ -145,6 +145,12 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
      }
      
+     public void RipristinaStdout()
+             {
+                     System.setOut(oldStdout);
+        System.setErr(oldStderr);
+     }
+             
           public void SetMessaggioAvanzamento (String Messaggio) {
  //Thread thread = new Thread() {
  //           public void run() {
@@ -288,6 +294,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     }//GEN-LAST:event_formWindowClosed
 
+    
     private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
         // TODO add your handling code here:
         //this.dispose();

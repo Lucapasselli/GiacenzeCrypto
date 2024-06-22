@@ -886,6 +886,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        this.Data_Datachooser.setEnabled(true);
         this.MonetaEntrataAddress_TextField.setEnabled(true);
         this.MonetaUscitaAddress_TextField.setEnabled(true);
         this.MonetaEntrataQuantita_TextField.setEnabled(true);

@@ -108,6 +108,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public static Object JDialog_Ritorno;
     public boolean VersioneCambiata=false;
     public boolean FineCaricamentoDati=false;
+
     
     //static String Appoggio="";
     
@@ -209,6 +210,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if(RW_1RigoXOperazione!=null && RW_1RigoXOperazione.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_1RigoXOperazione.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_1RigoXOperazione","NO");
+        
+        String RW_InizioSuWOriginale=DatabaseH2.Pers_Opzioni_Leggi("RW_InizioSuWOriginale");
+        if(RW_InizioSuWOriginale!=null && RW_InizioSuWOriginale.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_InizioSuWalletOriginale.setSelected(true);
+        }else DatabaseH2.Pers_Opzioni_Scrivi("RW_InizioSuWOriginale","NO");
+        
+        String RW_LiFoComplessivo=DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo"); 
+        if(RW_LiFoComplessivo!=null && RW_LiFoComplessivo.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_LiFoComplessivo.setSelected(true);
+        }else DatabaseH2.Pers_Opzioni_Scrivi("RW_LiFoComplessivo","NO");
         
         
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
@@ -387,6 +398,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_1RigoXOperazione = new javax.swing.JCheckBox();
+        RW_Opzioni_CheckBox_InizioSuWalletOriginale = new javax.swing.JCheckBox();
+        RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
         Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
@@ -2166,6 +2179,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        RW_Opzioni_CheckBox_InizioSuWalletOriginale.setText("<html><b>Quadro RW :</b> Se il token viene spostato, il valore iniziale resta sul wallet di origine (Diversamente è come se il token fosse sempre stato detenuto dal wallet di destinazione)</html>");
+        RW_Opzioni_CheckBox_InizioSuWalletOriginale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed(evt);
+            }
+        });
+
+        RW_Opzioni_CheckBox_LiFoComplessivo.setText("<html><b>Quadro RW :</b> Il LiFo viene applicato alla totalità dei Wallet (BTC venduto sul Wallet 02 può essere quello appena acquistato aul Wallet 01), non più suddiviso per Gruppo</html>");
+        RW_Opzioni_CheckBox_LiFoComplessivo.setEnabled(false);
+        RW_Opzioni_CheckBox_LiFoComplessivo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
         Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
         Opzioni_Crypto_PannelloLayout.setHorizontalGroup(
@@ -2184,8 +2212,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
-                            .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.PREFERRED_SIZE, 922, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, 922, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 230, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
@@ -2200,11 +2230,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(85, 85, 85)
                 .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(44, 44, 44)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(63, 63, 63)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
-                .addContainerGap(358, Short.MAX_VALUE))
+                .addContainerGap(308, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Crypto", Opzioni_Crypto_Pannello);
@@ -5511,70 +5545,63 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.Titolo("Calcolo RW in corso.... Attendere");
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
-        progress.NascondiInterrompi();
+        progress.NascondiInterrompi(); 
+        //progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {            
             String Errore="";
-            BigDecimal ValIniziale = new BigDecimal(0);
-            BigDecimal ValFinale = new BigDecimal(0);
-            BigDecimal ValFinalexggTOT = new BigDecimal(0);
-            String RW1[] = new String[5];
-            progress.RipristinaStdout();
+           // BigDecimal ValIniziale = new BigDecimal(0);
+           // BigDecimal ValFinale = new BigDecimal(0);
+            //BigDecimal ValFinalexggTOT = new BigDecimal(0);
+            String RW1[];
+            RW1=RitornaRWQuadro(MappaWallerQuadro,key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze           
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
                //System.out.println(lista[1]);
                 if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
                 if (lista[15].toLowerCase().contains("error"))Errore="ERRORI";
-                ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
-                    if (MappaWallerQuadro.get(key)==null){//se la mappa è nulla la popolo per la prima volta
-                        //ValIniziale = new BigDecimal(MappaWallerQuadro.get(key)[1]);
-                        if (lista[1].equals(key))
+              //  ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
+
+                //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio        
+                RW1=RitornaRWQuadro(MappaWallerQuadro,lista[6]);
+                //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
+                //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
+                        if ((!lista[1].equals(lista[6])) && RW_Opzioni_CheckBox_InizioSuWalletOriginale.isSelected())//Se il 
                         {
-                            RW1[1] = lista[5];//RW1[1] è il valore iniziale
-                        }
-                        else
-                        {
-                            RW1[1]="0";//RW1[1] è il valore iniziale
-                            //qua dovrò gestire l'RW dell'altro wallet
-                        }
-                        ValFinale = new BigDecimal(lista[10]).add(ValFinale);
-                        RW1[0] = key.split(" ")[1] + " (" + key + ")";
-                        RW1[2] = ValFinale.toPlainString();
-                        RW1[3] = "0";
-                        RW1[4] = Errore;
-                        MappaWallerQuadro.put(key, RW1);
-                    }else{//altrimenti recupero i dati vecchi e li aggiorno
-                        RW1=MappaWallerQuadro.get(key);
-                        //se wallet origine diverso da wallet di destinazione non sommo il valore iniziale al wallet di destinazione bensì lo devo sommare al wallet di origine
-                        if (lista[1].equals(key))
-                        {
-                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//RW1[1] è il valore iniziale
+                            String RW2[];
+                            RW2=RitornaRWQuadro(MappaWallerQuadro,lista[1]);
+                            RW2[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW2[1])).toPlainString();//RW1[1] è il valore iniziale
+                            
                             }
                         else
                         {
+                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//RW1[1] è il valore iniziale
                             //Qua dovrò gestire l'rw dell'altro wallet
                         }
-                        ValFinale = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2]));
-                        RW1[2] = ValFinale.toPlainString();
+                        RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();
                         RW1[4] = Errore;
-                    }
+                        //RW[5]=gg*prezzo+i precedenti gg* prezzo -> Serve per poi trovare i gg ponderati
+                        RW1[5] = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(new BigDecimal(RW1[5])).toPlainString();
+                        //se il valore finale è dicerso da zero allora proseguo con il calcolo dei gg ponderati
+                        if (new BigDecimal(RW1[2]).compareTo(new BigDecimal(0))!=0) {
+                            RW1[3] = new BigDecimal(RW1[5]).divide(new BigDecimal(RW1[2]), 2, RoundingMode.HALF_UP).toPlainString();
+                        }
                     
             }
-            BigDecimal GGPonderati;//=new BigDecimal(999999);
-            if (ValFinale.compareTo(new BigDecimal(0))!=0) {
+         //   BigDecimal GGPonderati;//=new BigDecimal(999999);
+         //   RW1=RitornaRWQuadro(MappaWallerQuadro,key);
+       //     BigDecimal ValFinale=new BigDecimal(RW1[2]);
+          /*  if (ValFinale.compareTo(new BigDecimal(0))!=0) {
                 GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
             }else{ 
                 GGPonderati=new BigDecimal("0.00").setScale(2, RoundingMode.HALF_UP);
                     Errore="Wallet vuoto o senza valore";
-                }
-            if (Errore.equalsIgnoreCase("ERRORI"))GGPonderati=new BigDecimal(999999);
-            RW1[0] = key.split(" ")[1] + " (" + key + ")";
-            RW1[1] = ValIniziale.toPlainString();
-            RW1[2] = ValFinale.toPlainString();
-            RW1[3] = GGPonderati.toPlainString();
-            RW1[4] = Errore;
-            MappaWallerQuadro.put(key, RW1);
+                }*/
+            //if (Errore.equalsIgnoreCase("ERRORI"))GGPonderati=new BigDecimal(999999);
+           // RW1[3] = GGPonderati.toPlainString();
+            //RW1[4] = Errore;
+           //MappaWallerQuadro.put(key, RW1);
            // ModelloTabella.addRow(RW1);
             
         }
@@ -5597,6 +5624,22 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         
         //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
+    }
+    
+    private String[] RitornaRWQuadro(Map<String, String[]> MappaWallerQuadro,String GruppoWallet){
+              String RW1[] = new String[6];
+              if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta
+                        RW1[0] = GruppoWallet.split(" ")[1] + " (" + GruppoWallet + ")";
+                        RW1[1] = "0.00";
+                        RW1[2] = "0.00";//Valore Finale
+                        RW1[3] = "0.00";
+                        RW1[4] = "";
+                        RW1[5] = "0.00";
+                        MappaWallerQuadro.put(GruppoWallet, RW1);
+                    }else{//altrimenti recupero i dati vecchi e li aggiorno
+                        RW1=MappaWallerQuadro.get(GruppoWallet);
+                    }
+              return RW1;
     }
     
     private void RW_CompilaTabellaDettagli(){
@@ -6070,6 +6113,39 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
        // Calcoli_Plusvalenze.AggiornaPlusvalenze();
     }//GEN-LAST:event_RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed
+
+    private void RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (RW_Opzioni_CheckBox_InizioSuWalletOriginale.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_InizioSuWOriginale", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_InizioSuWOriginale", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed
+
+    private void RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (RW_Opzioni_CheckBox_LiFoComplessivo.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_LiFoComplessivo", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_LiFoComplessivo", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -7741,6 +7817,8 @@ try {
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_1RigoXOperazione;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_InizioSuWalletOriginale;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
     private javax.swing.JTable RW_Tabella;
     private javax.swing.JTable RW_Tabella_Dettagli;
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;

@@ -36,6 +36,7 @@ public Thread thread;
 public static boolean FineThread=false;
 PrintStream oldStdout = System.out;
 PrintStream oldStderr = System.err;
+public boolean nascondiLog=false;
 
 //    static boolean DownloadTerminato=false;
    // static boolean finito=false;
@@ -66,6 +67,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
   
          initComponents();
          Download.FineThread=false;
+     /*   PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));
+        System.setOut(printStream);
+        PrintStream printStreamErr = new PrintStream(new CustomOutputStream(textAreaErrori));
+        System.setErr(printStreamErr);*/
          
        /*  ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));*/
@@ -147,6 +152,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
      
      public void RipristinaStdout()
              {
+                 nascondiLog=true;
                      System.setOut(oldStdout);
         System.setErr(oldStderr);
      }
@@ -310,10 +316,12 @@ private Timer timer = new Timer(1000, new ActionListener() {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
      //   System.out.println("Finestra Attesa Aperta");
+     if (!nascondiLog) {
         PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));
         System.setOut(printStream);
         PrintStream printStreamErr = new PrintStream(new CustomOutputStream(textAreaErrori));
         System.setErr(printStreamErr);
+        }
         //System.out.println("Finestra Attesa Aperta");
     }//GEN-LAST:event_formWindowOpened
 

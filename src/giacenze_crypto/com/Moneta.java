@@ -19,6 +19,8 @@ public class Moneta {
   public String Tipo; //NFT, FIAT o CRYPTO
   public String Rete;//da gestire, anzi forse conviene gestire rete e address come tipologia multipla
   
+  public String GruppoRW;//usato solamente per calcolo finare RW come Base di appoggio, in futuro sarà da sostituire
+  
   
   
 public void InserisciValori(String Nome,String Quantita,String Address,String Tipologia){

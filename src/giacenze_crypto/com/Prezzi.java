@@ -981,7 +981,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 //e ovviamente chiudo il ciclo
                 
 
-                System.out.println(response.toString());
+             //   System.out.println(response.toString());
 /////System.out.println(response);
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);

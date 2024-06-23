@@ -17,7 +17,10 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.Timer;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 
 
 
@@ -192,12 +195,12 @@ private Timer timer = new Timer(1000, new ActionListener() {
         ProgressBarDownload = new javax.swing.JProgressBar();
         LabelAvanzamento = new javax.swing.JLabel();
         Bottone_Interrompi = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        textArea = new javax.swing.JTextArea();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        textAreaErrori = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        textPane = new javax.swing.JTextPane();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        textPaneErrori = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
@@ -225,18 +228,13 @@ private Timer timer = new Timer(1000, new ActionListener() {
             }
         });
 
-        textArea.setColumns(20);
-        textArea.setRows(5);
-        jScrollPane2.setViewportView(textArea);
-
-        textAreaErrori.setColumns(20);
-        textAreaErrori.setForeground(new java.awt.Color(204, 0, 51));
-        textAreaErrori.setRows(5);
-        jScrollPane1.setViewportView(textAreaErrori);
-
         jLabel1.setText("Dettaglio :");
 
         jLabel2.setText("Errori Bloccanti :");
+
+        jScrollPane3.setViewportView(textPane);
+
+        jScrollPane4.setViewportView(textPaneErrori);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -245,22 +243,22 @@ private Timer timer = new Timer(1000, new ActionListener() {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addGap(207, 207, 207)
                                 .addComponent(Bottone_Interrompi, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(ProgressBarDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 742, Short.MAX_VALUE)
-                            .addComponent(LabelAvanzamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(LabelScaricamento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane2)
-                            .addComponent(jScrollPane1))
-                        .addContainerGap())))
+                            .addComponent(ProgressBarDownload, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 742, Short.MAX_VALUE)
+                            .addComponent(LabelAvanzamento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(LabelScaricamento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane4)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -273,17 +271,14 @@ private Timer timer = new Timer(1000, new ActionListener() {
                 .addComponent(LabelAvanzamento)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(Bottone_Interrompi)
-                        .addGap(18, 18, 18))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(3, 3, 3)))
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                    .addComponent(Bottone_Interrompi)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -307,7 +302,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         Download.FineThread=true;
         Bottone_Interrompi.setBackground(Color.red);
         Bottone_Interrompi.setText("Interruzione in corso ...");
-        if (!textAreaErrori.getText().isBlank())
+        if (!textPaneErrori.getText().isBlank())
             {
             this.dispose();
             }
@@ -317,9 +312,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
         // TODO add your handling code here:
      //   System.out.println("Finestra Attesa Aperta");
      if (!nascondiLog) {
-        PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));
+        PrintStream printStream = new PrintStream(new CustomOutputStream(textPane));
         System.setOut(printStream);
-        PrintStream printStreamErr = new PrintStream(new CustomOutputStream(textAreaErrori));
+        PrintStream printStreamErr = new PrintStream(new CustomOutputStream(textPaneErrori));
         System.setErr(printStreamErr);
         }
         //System.out.println("Finestra Attesa Aperta");
@@ -369,10 +364,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
     private javax.swing.JProgressBar ProgressBarDownload;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea textArea;
-    private javax.swing.JTextArea textAreaErrori;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JTextPane textPane;
+    private javax.swing.JTextPane textPaneErrori;
     // End of variables declaration//GEN-END:variables
 
 
@@ -382,19 +377,26 @@ private Timer timer = new Timer(1000, new ActionListener() {
   
        
 
-    private JTextArea textArea;
+    private JTextPane textPane;
 
-    public CustomOutputStream(JTextArea textArea) {
-        this.textArea = textArea;
+    public CustomOutputStream(JTextPane textPane) {
+        this.textPane = textPane;
     }
 
     @Override
     public void write(int b) throws IOException {
         // redirects data to the text area
-        textArea.setText(textArea.getText() + String.valueOf((char)b));
+        //textPane.setText(textPane.getText() + String.valueOf((char)b));
+        
+        StyledDocument document = (StyledDocument) textPane.getDocument();
+        try {
+            document.insertString(document.getLength(), String.valueOf((char)b), null);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(Download.class.getName()).log(Level.SEVERE, null, ex);
+        }
      //   textArea.append(String.valueOf((char)b));
         // scrolls the text area to the end of data
-        textArea.setCaretPosition(textArea.getDocument().getLength());
+     //   textPane.setCaretPosition(textPane.getDocument().getLength());
         // keeps the textArea up to date
     //    textArea.update(textArea.getGraphics());
     }

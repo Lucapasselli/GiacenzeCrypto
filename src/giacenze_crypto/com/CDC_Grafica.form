@@ -2835,14 +2835,14 @@
                                       <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" pref="748" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" min="-2" pref="922" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" min="-2" pref="922" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" pref="1188" max="32767" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="230" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="47" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2944,7 +2944,6 @@
                     <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoComplessivo">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Il LiFo viene applicato alla totalit&#xe0; dei Wallet (BTC venduto sul Wallet 02 pu&#xf2; essere quello appena acquistato aul Wallet 01), non pi&#xf9; suddiviso per Gruppo&lt;/html&gt;"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed"/>

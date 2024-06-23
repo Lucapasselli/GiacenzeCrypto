@@ -2187,7 +2187,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         RW_Opzioni_CheckBox_LiFoComplessivo.setText("<html><b>Quadro RW :</b> Il LiFo viene applicato alla totalità dei Wallet (BTC venduto sul Wallet 02 può essere quello appena acquistato aul Wallet 01), non più suddiviso per Gruppo</html>");
-        RW_Opzioni_CheckBox_LiFoComplessivo.setEnabled(false);
         RW_Opzioni_CheckBox_LiFoComplessivo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed(evt);
@@ -2209,13 +2208,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 748, Short.MAX_VALUE))
                     .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
-                        .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
                             .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.PREFERRED_SIZE, 922, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, 922, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 230, Short.MAX_VALUE)))
+                            .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo)
+                            .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.DEFAULT_SIZE, 1188, Short.MAX_VALUE))
+                        .addGap(0, 47, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Crypto_PannelloLayout.setVerticalGroup(
@@ -5510,6 +5509,92 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
        
     }//GEN-LAST:event_RW_Bottone_CalcolaActionPerformed
 
+     private void RW_CalcolaRWold(){
+                // TODO add your handling code here:
+        //Come prima cosa faccio un pò di pulizia
+        System.out.println("RW_CalcoloRW");
+        DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
+        DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        RW_Bottone_CorreggiErrore.setEnabled(false);
+        RW_Bottone_IdentificaScam.setEnabled(false);
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        //Array Lista RW così composta
+        // 0 - Anno
+        // 1 - Gruppo Wallet
+        // 2 - Moneta
+        // 3 - Qta
+        // 4 - Data Inizio
+        // 5 - Prezzo Inizio
+        // 6 - Data Fine
+        // 7 - Prezzo Fine
+        // 8 - Giorni di detenzione
+        // 9 - Causale
+                Download progress = new Download();
+        progress.setLocationRelativeTo(this);
+                Thread thread;
+        thread = new Thread() {
+            public void run() {
+
+        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+        //in futuro dovrò mettere anche un limite per data e un limite per wallet
+        progress.Titolo("Calcolo RW in corso.... Attendere");
+        progress.SetLabel("Calcolo RW in corso.... Attendere");
+        progress.NascondiBarra();
+        progress.NascondiInterrompi();
+        Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+        //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
+        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+            String Errore="";
+            BigDecimal ValIniziale = new BigDecimal(0);
+            BigDecimal ValFinale = new BigDecimal(0);
+            BigDecimal ValFinalexggTOT = new BigDecimal(0);
+            String RW1[] = new String[5];
+            for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
+              //  System.out.println(lista[1]);
+                if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
+                if (lista[15].toLowerCase().contains("error"))Errore="ERRORI";
+                ValIniziale = new BigDecimal(lista[5]).add(ValIniziale);
+                ValFinale = new BigDecimal(lista[10]).add(ValFinale);
+                ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
+            }
+            BigDecimal GGPonderati;//=new BigDecimal(999999);
+            if (ValFinale.compareTo(new BigDecimal(0))!=0) {
+                GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
+            }else{ 
+                GGPonderati=new BigDecimal("365.00").setScale(2, RoundingMode.HALF_UP);
+                    Errore="Wallet vuoto o senza valore";
+                }
+            if (Errore.equalsIgnoreCase("ERRORI"))GGPonderati=new BigDecimal(999999);
+            RW1[0] = key.split(" ")[1] + " (" + key + ")";
+            RW1[1] = ValIniziale.toPlainString();
+            RW1[2] = ValFinale.toPlainString();
+            RW1[3] = GGPonderati.toPlainString();
+            RW1[4] = Errore;
+            ModelloTabella.addRow(RW1);
+            
+        }
+        Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
+        progress.ChiudiFinestra();
+        }
+            };
+        thread.start();
+        progress.setVisible(true);
+       // Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
+        RW_Tabella.requestFocus();
+        
+        
+        
+        
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        
+        //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
+    }
+    
+    
     private void RW_CalcolaRW(){
                 // TODO add your handling code here:
         //Come prima cosa faccio un pò di pulizia
@@ -5546,7 +5631,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        //progress.RipristinaStdout();
+        progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -5629,7 +5714,10 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     private String[] RitornaRWQuadro(Map<String, String[]> MappaWallerQuadro,String GruppoWallet){
               String RW1[] = new String[6];
               if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta
-                        RW1[0] = GruppoWallet.split(" ")[1] + " (" + GruppoWallet + ")";
+                        if(GruppoWallet.split(" ").length>1)
+                            RW1[0] = GruppoWallet.split(" ")[1] + " (" + GruppoWallet + ")";
+                        else
+                            RW1[0] = GruppoWallet;
                         RW1[1] = "0.00";
                         RW1[2] = "0.00";//Valore Finale
                         RW1[3] = "0.00";

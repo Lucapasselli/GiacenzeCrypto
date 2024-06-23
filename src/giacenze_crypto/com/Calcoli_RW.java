@@ -303,7 +303,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
             System.out.println("QTA: "+ultimoRecupero.QtaOri+" MON: "+ultimoRecupero.MonOri); 
             System.out.println("-");*/
             //    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,ultimoRecupero);
-                //Aggiorno il Gruppo Wallet con quello attuale
+                //Aggiorno il Gruppo Wallet con quello attuale solo se è attiva l'opzione per toglierlo dallo stack
                 if (toglidaStack)ultimoRecupero.GruppoWallet=GruppoWallet;
                 stackRitorno.push(ultimoRecupero);
 
@@ -391,6 +391,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     el.Moneta = Moneta; //Moneta di riferimento
                     el.Qta = qtaRimanente.toPlainString(); //Qta di riferimento
                     el.GruppoWallet = GruppoWallet;
+                //    el.GruppoWallet = "parsimonia";
+                //  System.out.println(el.Moneta);
                     el.ListaIDcoinvolti="";
        /*                         System.out.println("Errore MON: "+Moneta+" QTA: "+qtaRimanente);
             System.out.println("ID: "+el.IDOri);
@@ -1360,6 +1362,19 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo, M1);
 
                     }
+                    if (!Monete[a].Moneta.isBlank() && QtaCryptoInizio.get(Monete[a].Moneta + ";" + Monete[a].Tipo) != null) {
+                        //Movimento già presente da implementare
+                        Moneta M1 = QtaCryptoInizio.get(Monete[a].Moneta + ";" + Monete[a].Tipo);
+                        M1.Qta = new BigDecimal(M1.Qta)
+                                .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
+
+                    } else if (!Monete[a].Moneta.isBlank()) {
+                        //Movimento Nuovo da inserire
+                        Moneta M1 = new Moneta();
+                        M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                        M1.Rete = Rete;
+                        QtaCryptoInizio.put(Monete[a].Moneta + ";" + Monete[a].Tipo, M1);
+                    }
                                       
                 }
 
@@ -1789,8 +1804,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
              //   MappaGrWallet_QtaCrypto2 .putAll(MappaGrWallet_QtaCrypto);
               
                
-                    for (String key : MappaGrWallet_QtaCrypto.keySet()) {
-                    Map<String, Moneta> a = MappaGrWallet_QtaCrypto.get(key);
+                    for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
+                    Map<String, Moneta> a = MappaGrWallet_QtaCryptoInizio.get(key);
                    // System.out.println(key);
                     for (Moneta m : a.values()) {
                         if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
@@ -1803,39 +1818,51 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp;
                             String GRWallet=key;
+                            if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI"))GRWallet="Unico 01";
                             CryptoStackTemp = MappaGrWallet_CryptoStack.get(GRWallet);
-                            if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) {
-                                ChiudiRWFR(m, CryptoStackTemp, "null", DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
+                            
+                            //Questa parte sotto è momentaneamente disabilitata con quell'if perchè non mi sembra corretto concettualmente
+                            //anche se ho riscontrato lo stesso comportamento in tatax
+                            if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SIs")) {
+                             //   ChiudiRWFR(m, CryptoStackTemp, "null", DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
 
                                 ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackTemp, m.Moneta, m.Qta, "ininfluente", false);
-                                List<Moneta> listaDaConsolidare = new ArrayList<>();
+                               // List<Moneta> listaDaConsolidare = new ArrayList<>();
+                                Map<String, Moneta> listaDaConsolidare=new TreeMap<>();
                                 while (!StackRitorno.isEmpty()) {
                                     ElementiStack el = StackRitorno.pop();
-                                    m.Prezzo=new BigDecimal(m.Prezzo).divide(new BigDecimal(m.Qta),30,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).stripTrailingZeros().toPlainString();
-                                    m.Moneta=el.Moneta;
-                                    m.Qta=el.Qta;
-                                    m.GruppoRW=el.GruppoWallet;
-                                    listaDaConsolidare.add(m);
+                                    Moneta m2=m.ClonaMoneta();
+                                    if (!m2.Moneta.equals(el.Moneta))System.out.println("Errore moneta diversa");
+                                    m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),30,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).stripTrailingZeros().toPlainString();
+                                    m2.Moneta=el.Moneta;
+                                    m2.Qta=el.Qta;
+                                    m2.GruppoRW=el.GruppoWallet;
+                                    if (listaDaConsolidare.get(el.GruppoWallet)==null){
+                                        listaDaConsolidare.put(el.GruppoWallet, m2);
+                                    }
+                                    else{
+                                        Moneta m3=listaDaConsolidare.get(el.GruppoWallet);
+                                        //ora sommo la qta di m2 con quella di m3
+                                        //tanto so già che la moneta che sto analizzando è la stessa
+                                        m3.Qta=new BigDecimal(m2.Qta).add(new BigDecimal(m3.Qta)).stripTrailingZeros().toPlainString();
+                                        m3.Prezzo=new BigDecimal(m2.Prezzo).add(new BigDecimal(m3.Prezzo)).stripTrailingZeros().toPlainString();
+                                    }
                                     }
                                 int i=0;
-                                    for(Moneta h:listaDaConsolidare)
-                                        {
-                                            i++;
-                                       //     System.out.println(listaDaConsolidare.size()+ " - "+i);
-                                    //Riabilitare la riga sotto una volta sistemato
-                         /*           ChiudiRWFR(m, CryptoStackTemp, h.GruppoRW, DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
-                                 //   System.out.println("aaaa");
-                                   
-
-                                    if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key) == null) {
+                                for(String GRWAL : listaDaConsolidare.keySet()){
+                                    Moneta m2=listaDaConsolidare.get(GRWAL);
+                                    ChiudiRWFR(m2, CryptoStackTemp, GRWAL, DataFineAnno, m2.Prezzo, "Fine Anno", "Giacenza Fine Anno");
+                                    if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(m2.GruppoRW) == null) {
                                         List<Moneta> li = new ArrayList<>();
-                                        li.add(m);
-                                        CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.put(key, li);
+                                        li.add(m2);
+                                        CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.put(m2.GruppoRW, li);
                                     } else {
-                                        List<Moneta> li = CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key);
-                                        li.add(m);
-                                    }*/
+                                        List<Moneta> li = CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(m2.GruppoRW);
+                                        li.add(m2);
+                                    }
                                 }
+                             
+                                
                             } else {
 
                             ChiudiRWFR(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo,"Fine Anno", "Giacenza Fine Anno");
@@ -1865,7 +1892,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
     
     
     
-        public static void AggiornaRWFRold(String AnnoRif) {
+        public static void AggiornaRWFRold
+        (String AnnoRif) {
         
         CDC_Grafica.Mappa_RW_ListeXGruppoWallet.clear();
         CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.clear();

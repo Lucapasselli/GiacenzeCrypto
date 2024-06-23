@@ -2866,11 +2866,11 @@
                               <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="63" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="96" max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="308" max="32767" attributes="0"/>
+                              <EmptySpace pref="275" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

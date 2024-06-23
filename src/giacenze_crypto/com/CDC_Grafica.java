@@ -2233,11 +2233,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(63, 63, 63)
+                .addGap(96, 96, 96)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
-                .addContainerGap(308, Short.MAX_VALUE))
+                .addContainerGap(275, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Crypto", Opzioni_Crypto_Pannello);
@@ -5631,7 +5631,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        progress.RipristinaStdout();
+        //progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto

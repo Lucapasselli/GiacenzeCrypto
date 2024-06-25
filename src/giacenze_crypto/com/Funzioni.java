@@ -164,6 +164,86 @@ public class Funzioni {
 
     }
     
+    
+    public static boolean MovimentoRilevante(String[] Mov){
+        String ID=Mov[0];
+        String IDTS[]=ID.split("_");
+        Moneta m[]=Moneta.RitornaMoneteDaMov(Mov);
+        String Data = Mov[1];
+        boolean rilevante=true;
+        boolean plusvalenza=true;
+        
+        if (IDTS[4].equals("VC")                //Vendita Cripto Rilevante
+                || IDTS[4].equals("CM")         //Commissione Rilevante
+                || IDTS[4].equals("RW"))        //Rewards rilevante
+        {
+            rilevante=true;
+            plusvalenza=true;
+        }else if (IDTS[4].equals("AC"))//Acquisto Cripto Rilvente ma no Plusvalenza
+                {
+            rilevante=true;
+            plusvalenza=false;
+        }
+            else if (IDTS[4].equals("DF")//deposito Fiat
+                        || IDTS[4].equals("PF")//Prelievo Fiat
+                        || IDTS[4].equals("SF")//Scambio Fiat
+                        || IDTS[4].equals("TI"))//Trasferimento Interno
+                {
+            rilevante=false;
+            plusvalenza=false;
+        }
+        else if (IDTS[4].equals("SC"))//deposito Fiat
+        {
+            String Tipo1 = RitornaTipoCrypto(m[0].Moneta, Data, m[0].Tipo);
+            String Tipo2 = RitornaTipoCrypto(m[1].Moneta, Data, m[1].Tipo);
+            if (Tipo1.equalsIgnoreCase(Tipo2)) {
+                rilevante = false;
+                plusvalenza=false;
+            }else
+                {
+                rilevante = true;
+                plusvalenza=true;
+            }
+        }
+        else if (IDTS[4].equals("DC")//Deposito Crypto
+                        || IDTS[4].equals("PC"))//Prelievo Crypto
+                {
+                    //Le tipologie possono essere le seguenti
+                    //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
+                    //PCO -> Cashout o similare (prelievo)
+                    //PTW -> Trasferimento tra Wallet (prelievo)
+                    //DTW -> Trasferimento tra Wallet (deposito)
+                    //DAI -> Airdrop o similare (deposito)
+                    //DCZ -> Costo di carico 0 (deposito)
+                    if (Mov[18].isBlank()) {
+                        //Se Mov[18] è vuoto significa che non ho classificato il movimento
+                        //a questo punto devo decidere come comportarmi, se considerare il movimento rilevante o se invece non gestirlo
+                        //perora lo considero rilvente quindi tratterò i prelievi come cashout e i depositi come provento da detenzione es. Staking
+                        rilevante = true;
+                    }
+                }else if (Mov[18].contains("PWN") || Mov[18].contains("PCO")) {
+
+                    } else if (Mov[18].contains("DAI") || Mov[18].contains("DCZ")) {
+                        
+                    }
+        return rilevante;
+    }
+        
+    public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
+       String Tipo=Tipologia;
+       String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
+       if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
+           long dataemoney=OperazioniSuDate.ConvertiDatainLong(DataEmoney);
+           long datascambio=OperazioniSuDate.ConvertiDatainLong(Data);
+           if (datascambio>=dataemoney) Tipo="EMoney";
+       }
+       return Tipo;
+   }
+    
+    
+    
+    
+    
         public static Moneta[] RitornaMoneteDaID(String ID){
             //Moneta[0] sarà la moneta uscente
             //Moneta[1] srà quella entrante

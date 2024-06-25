@@ -25,8 +25,8 @@
 13 - Quantità Acq./Ricevuta -> es. 10
 14 - Valore di Mercato transazione (come da csv) -> es. 10 USD
 15 - Valore di Mercato Transazione in EURO -> es. 9
-16 - Vecchio Costo di Carico
-17 - Prezzo di Carico Totale Transazione in EUR -> es. 8
+16 - Costo di Carico Moneta Uscente
+17 - Costo di carico Moneta Entrante
 18 - Tipo Trasferimento
 19 - Plusvalenza in EUR della Transazione -> es 3
 20 - Riferimento x Trasferimenti -> Se è un traferimento si mette il riferimento al wallet/ transazione che l'ha generato es. 202112031045_Crypto.com_TraferimentoCrypto

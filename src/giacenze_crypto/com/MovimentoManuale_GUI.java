@@ -1002,6 +1002,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             if (MovimentoRiportato[0].equals(ID)) {//Qui finiscono solo i movimenti che hanno anche la stessa data
                             MovimentoRiportato[15] = ValoreTransazione;
                             MovimentoRiportato[21] = Note;
+                            MovimentoRiportato[6] = (MonetaU + " -> " + MonetaE).trim();
                             MovimentoRiportato[8] = MonetaU;
                             MovimentoRiportato[9] = MonetaUTipo;
                             MovimentoRiportato[10] = MonetaUQta;

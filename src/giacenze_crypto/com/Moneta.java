@@ -54,6 +54,29 @@ public String GetTipologia(){
         return mo;
     } 
   
+    
+    public static Moneta[] RitornaMoneteDaMov(String[] v){
+            
+            String Rete = Funzioni.TrovaReteDaID(v[0]);
+            Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
+            //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
+            Monete[0] = new Moneta();
+            Monete[1] = new Moneta();
+            Monete[0].MonetaAddress = v[26];
+            Monete[1].MonetaAddress = v[28];
+            //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
+            Monete[0].Moneta = v[8];
+            Monete[0].Tipo = v[9];
+            Monete[0].Qta = v[10];
+            Monete[0].Rete = Rete;
+            Monete[1].Moneta = v[11];
+            Monete[1].Tipo = v[12];
+            Monete[1].Qta = v[13];
+            Monete[1].Rete = Rete;
+            
+            return Monete;
+    }
+    
 }
 
 

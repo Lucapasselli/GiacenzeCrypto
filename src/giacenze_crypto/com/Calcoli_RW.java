@@ -1166,6 +1166,16 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
    
         public static void AggiornaRWFR(String AnnoRif) {
         
+        //Assegno ad un booleano le opzioni di calcolo per l'RW
+        boolean ChiudiRWsuTrasferimento=false;
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_ChiudiRWsuTrasferimento").equals("SI")) ChiudiRWsuTrasferimento=true;
+        boolean StakingZero = false;
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_StakingZero").equals("SI")) StakingZero=true;
+        boolean LiFoComplessivo = false;
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) LiFoComplessivo=true;
+        boolean UnRigoXOperazione = false;
+        if (DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equals("SI")) UnRigoXOperazione = true;
+        
         CDC_Grafica.Mappa_RW_ListeXGruppoWallet.clear();
         CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.clear();
         CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.clear();
@@ -1416,7 +1426,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         ElementiStack el = new ElementiStack();
 
                         el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
-                        el.CostoOri = Valore;//Costo di partenza della moneta originale
+                        if(IDTS[4].equals("RW")&&StakingZero) el.CostoOri="0.00";
+                        else  el.CostoOri = Valore;//Costo di partenza della moneta originale
                         el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
                         el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
                         el.DataOri = Data;//Data di partenza
@@ -1448,7 +1459,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             SpostaQta(GruppoWallet,ELem,ELem.GruppoWalletOri);
                         }}*/
                     //Adesso distinguo 2 casi, se scambio fiscalmente rilevante oppure no
-                    if (ScambioRilevante(Monete,Data)||DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("SI")){
+                    if (ScambioRilevante(Monete,Data)||UnRigoXOperazione){
                         //Chiudo RW moneta uscente
                         //prima di chiudere RW recupero i movimenti e li sposto sul wallet di destinazione
 
@@ -1567,7 +1578,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         //DCZ -> Costo di carico 0 (deposito)
                         ElementiStack el = new ElementiStack();
                         el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
-                        el.CostoOri = Valore;//Costo di partenza della moneta originale
+                        if (v[18].contains("DAI")&&StakingZero) el.CostoOri="0.00";
+                        else  el.CostoOri = Valore;//Costo di partenza della moneta originale
                         el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
                         el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
                         el.DataOri = Data;//Data di partenza
@@ -1591,14 +1603,14 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                //MA IN LINEA DI MASSIMA LA LOGICA è QUELLA DI NON CONSIDERARE GLI SCAMBI TRA WALLET DI PROPRIETA'
                
                
-                            if (v[18].contains("PTW - Trasferimento tra Wallet")&&DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("SI")) {
-                            //se soddisfa questa condizione sono in presenza di un trasferimento tra wallet
-                            //adesso devo verificare se il Gruppo wallet della controparte è lo stesso del mio o meno
+                        if (v[18].contains("PTW - Trasferimento tra Wallet")//E' un trasferimento tra wallet (Prelievo)
+                                &&
+                                (UnRigoXOperazione || ChiudiRWsuTrasferimento)//decido di chiudere rw su traferimento o su ogni movimento 
+                                && !StessoGruppoWalletContropate(IDTransazione)//Trasferimento tra gruppi diversi
+                                // &&!LiFoComplessivo
+                                ) {
+                            ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, "Trasferimento su altro Wallet", IDTransazione);
 
-                            if (!StessoGruppoWalletContropate(IDTransazione)) {
-                                //Se è un trasferimento tra wallet di gruppi diversi chiudo l'RW
-                                ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, "Trasferimento su altro Wallet", IDTransazione);
-                            }
                         }
 
                     } else if (v[18].contains("DTW")) {
@@ -1626,17 +1638,38 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     
                                     
                                 } */
-                          //  if (!StessoGruppoWalletContropate(IDTransazione)&& DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("NO")) 
-                            if (!StessoGruppoWalletContropate(IDTransazione)&&(DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("NO")))
+                           
+                            //if (!StessoGruppoWalletContropate(IDTransazione)&&(DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("NO")))
+                            if (!StessoGruppoWalletContropate(IDTransazione)
+                                  //  &&!LiFoComplessivo
+                                    )
                             {//Controllo se fanno parte dello stesso gruppo
                                 //Se non fanno parte dello stesso gruppo controllo se voglio generare un nuovo rigo ad ogni transazione
                                 //se non è così sposto solo i valori tra un gruppo ad un altro, altrimenti greo un nuovo rigo sul wallet
-                                if (DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("NO")) {
-                                    //Arrivo qua se devo trasportare i dati dello stack dal wallet di origine a quello di destinazione
-                                    //ovvero se il movimento non è fiscalmente rilevante
-                                    // String IDControparte=
-                                    //Se è un trasferimento tra wallet di gruppi diversi sposto il movimento sull'altro gruppo
-                                    // String IDcontroparte = RitornaIDControparte(IDTransazione);
+                                if (UnRigoXOperazione||
+                                    ChiudiRWsuTrasferimento) 
+                                {
+                                    //Qua ci vado solo quando il trasferimento voglio che sia fiscalmente rilevante
+                                    //o devido che devo aprire un nuovo rw quando scambio le crypto tra i wallet
+                                    ElementiStack el = new ElementiStack();
+                                    el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
+                                    el.CostoOri = Valore;//Costo di partenza della moneta originale
+                                    el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
+                                    el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
+                                    el.DataOri = Data;//Data di partenza
+                                    el.GruppoWalletOri = GruppoWallet;//Gruppo Wallet di partenza
+                                    el.Moneta = Monete[1].Moneta; //Moneta di riferimento
+                                    el.Qta = Monete[1].Qta; //Qta di riferimento
+                                    el.TipoMonetaOri=Monete[1].Tipo;
+                                    el.Tipo=Monete[1].Tipo;
+                                    el.GruppoWallet=GruppoWallet;
+                                    el.Data =Data;
+                                  //  if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,el);
+                                    StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
+                                }
+                                else if (!LiFoComplessivo){//solo se LiFo complessivo è false allora sposto lo stack da un wallet all'altro
+                                                            //appunto perchè decido di non spezzare l'rw sugli scambi
+                                                            //Se Lifo complessivo è true non serve spostare nulla perchè lo stack è lo stesso
                                     //Se non esistono le mappe per il wallet controparte le genero
                                     String gruppoControparte = RitornaGruppoWalletControparte(IDTransazione);
                                     Map<String, ArrayDeque> CryptoStackControparte;
@@ -1670,24 +1703,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                         StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
 
                                     }
-                                } else {
-                                    //Qua ci vado solo quando il trasferimento voglio che sia fiscalmente rilevante
-                                    ElementiStack el = new ElementiStack();
-                                    el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
-                                    el.CostoOri = Valore;//Costo di partenza della moneta originale
-                                    el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
-                                    el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
-                                    el.DataOri = Data;//Data di partenza
-                                    el.GruppoWalletOri = GruppoWallet;//Gruppo Wallet di partenza
-                                    el.Moneta = Monete[1].Moneta; //Moneta di riferimento
-                                    el.Qta = Monete[1].Qta; //Qta di riferimento
-                                    el.TipoMonetaOri=Monete[1].Tipo;
-                                    el.Tipo=Monete[1].Tipo;
-                                    el.GruppoWallet=GruppoWallet;
-                                    el.Data =Data;
-                                  //  if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,el);
-                                    StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
-                                }
+                                } 
                             }
 
                             //se soddisfa questa condizione sono in presenza di un trasferimento tra wallet
@@ -1724,11 +1740,14 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     
                                     
                                 } */
-                            
-                            if (!StessoGruppoWalletContropate(IDTransazione)&& DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("NO")) {
+                            //!LiFoComplessivo
+                            if (!StessoGruppoWalletContropate(IDTransazione)) //Gruppi diversi
+                            {
                          //   if (!StessoGruppoWalletContropate(IDTransazione)) {
                                 //Se non esistono le mappe per il wallet controparte le genero
-                                String gruppoControparte=RitornaGruppoWalletControparte(IDTransazione);
+                                String gruppoControparte;
+                                if(LiFoComplessivo)gruppoControparte=GruppoWallet;//il gruppoControparte nel caso di LiFo complessivo è uguale al gruppo originale
+                                else gruppoControparte=RitornaGruppoWalletControparte(IDTransazione);
                                 Map<String, ArrayDeque> CryptoStackControparte;  
                              //   Map<String, Moneta> QtaCryptoControparte;
                                 //Se non ho lifo complessivo e non esiste wallet controparte lo creao vuoto
@@ -1745,17 +1764,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                  //   QtaCryptoControparte = MappaGrWallet_QtaCrypto.get(gruppoControparte);
                                 }
 
-                                if (DatabaseH2.Pers_Opzioni_Leggi("RW_1RigoXOperazione").equalsIgnoreCase("NO")) {
-                                //Tolgo dal wallet di origine
-                                ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackControparte, Monete[1].Moneta, Monete[1].Qta,GruppoWallet, true);
-                                while (!StackRitorno.isEmpty()) {
-                                    //per ogni elemento trovato devo inserire il giusto quantitativo nello stack della moneta entrante
-                                    ElementiStack el = StackRitorno.pop();
-                                    //Metto nel wallet attuale di destinazione
-                                    StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
-
-                                }
-                                }else{
+                                if (UnRigoXOperazione||
+                                    ChiudiRWsuTrasferimento) 
+                                {
                                     
                                     //Questo nel caso in cui non chiudo l'rw nel momento dello scambio
                                     //Apro RW con la moneta che ho ricevuto e chiudo l'RW dell'altro Wallet
@@ -1777,6 +1788,21 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
                                     
                                     ChiudiRWFR(Monete[1], CryptoStackControparte, gruppoControparte, Data, Valore, "Trasferimento su altro Wallet", "Giorni Detenzione Zero");
+                                }
+                                
+                                else if (!LiFoComplessivo) {//se arrivo qua significa che decido di non spezzare l'rw sui trasfeirmenti
+                                    //e solo se LiFo complessivo è false allora sposto lo stack da un wallet all'altro
+                                    //Se Lifo complessivo è true non serve spostare nulla perchè lo stack è lo stesso
+
+                                    //Tolgo dal wallet di origine
+                                    ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackControparte, Monete[1].Moneta, Monete[1].Qta, GruppoWallet, true);
+                                    while (!StackRitorno.isEmpty()) {
+                                        //per ogni elemento trovato devo inserire il giusto quantitativo nello stack della moneta entrante
+                                        ElementiStack el = StackRitorno.pop();
+                                        //Metto nel wallet attuale di destinazione
+                                        StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
+
+                                    }
                                 }
                             }
 
@@ -1818,7 +1844,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
                             Map<String, ArrayDeque> CryptoStackTemp;
                             String GRWallet=key;
-                            if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI"))GRWallet="Unico 01";
+                            if (LiFoComplessivo)GRWallet="Unico 01";
                             CryptoStackTemp = MappaGrWallet_CryptoStack.get(GRWallet);
                             
                             //Questa parte sotto è momentaneamente disabilitata con quell'if perchè non mi sembra corretto concettualmente

@@ -2890,17 +2890,7 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" pref="748" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" pref="1188" max="32767" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="0" pref="47" max="32767" attributes="0"/>
+                                      <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" pref="909" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2918,17 +2908,7 @@
                                   <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="85" max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="96" max="-2" attributes="0"/>
-                              <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="275" max="32767" attributes="0"/>
+                              <EmptySpace pref="574" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2966,46 +2946,6 @@
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                       </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti (calcola plusvalenza e nuovo costo di carico)"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 considera tutti gli earn,cashback,staking,airdrop etc... come token a costo di carico zero"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_1RigoXOperazione">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Ogni operazione crea un nuovo rigo RW (Diversamente viene creato un nuovo riso solo sulle operazioni fiscalmente rilevanti)&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_InizioSuWalletOriginale">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Se il token viene spostato, il valore iniziale resta sul wallet di origine (Diversamente &#xe8; come se il token fosse sempre stato detenuto dal wallet di destinazione)&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoComplessivo">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Il LiFo viene applicato alla totalit&#xe0; dei Wallet (BTC venduto sul Wallet 02 pu&#xf2; essere quello appena acquistato aul Wallet 01), non pi&#xf9; suddiviso per Gruppo&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed"/>
-                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -3357,6 +3297,119 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Esporta Prezzi se presenti"/>
                       </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Container class="javax.swing.JPanel" name="Opzioni_Calcolo_Pannello">
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                      <JTabbedPaneConstraints tabName="Opzioni di Calcolo">
+                        <Property name="tabTitle" type="java.lang.String" value="Opzioni di Calcolo"/>
+                      </JTabbedPaneConstraints>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" pref="1235" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
+                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_StakingZero" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="222" max="32767" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="235" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_1RigoXOperazione">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Ogni operazione crea un nuovo rigo RW (Diversamente viene creato un nuovo riso solo sulle operazioni fiscalmente rilevanti)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_InizioSuWalletOriginale">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Se il token viene spostato, il valore iniziale resta sul wallet di origine (Diversamente &#xe8; come se il token fosse sempre stato detenuto dal wallet di destinazione)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoComplessivo">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Il LiFo viene applicato alla totalit&#xe0; dei Wallet (BTC venduto sul Wallet 02 pu&#xf2; essere quello appena acquistato aul Wallet 01), non pi&#xf9; suddiviso per Gruppo&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti (calcola plusvalenza e nuovo costo di carico)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 considera tutti gli earn,cashback,staking,airdrop etc... come token a costo di carico zero"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_StakingZero">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Earn, airdrop, staking etc... non incrementano il valore iniziale del quadro (vengono valorizzati a Zero alla ricezione)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_StakingZeroActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; I trasferimenti tra Wallet di propriet&#xe0; chiudono l&apos;RW sul wallet di Origine e ne aprono uno nuovo sul Wallet di Destinazione&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimentoActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

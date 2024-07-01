@@ -42,6 +42,7 @@
 30 - [DEFI (si può utilizzare anche per altro)] Address Controparte
 31 - Data Fine trasferimento crypto (viene anche utilizzata come data per lo spostamento del costo di carico tra wallet)
 32 - Movimento ha prezzo (Valorizzato a Si o No)  //Serve per sapere se l'eventuale prezzo a zero è voluto o semplicemente non ho trovato i prezzi sul movimento
+33 - Movimento che genera plusvalenza (Valorizzato a S o N)
 */
 
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI

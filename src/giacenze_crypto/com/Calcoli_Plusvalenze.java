@@ -403,6 +403,7 @@ public class Calcoli_Plusvalenze {
             String VecchioPrezzoCarico="0.00";
             String NuovoPrezzoCarico="0.00";
             String Plusvalenza="0.00";
+            String CalcoloPlusvalenza="N";
             long long2023=OperazioniSuDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
             long dataLong=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
             boolean DataSuperiore2023=true;
@@ -429,6 +430,7 @@ public class Calcoli_Plusvalenze {
                 
                 //Calcolo la plusvalenza
                 Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString(); 
+                CalcoloPlusvalenza="S";
             }           
             //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
             else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
@@ -446,6 +448,7 @@ public class Calcoli_Plusvalenze {
                     
                     //La plusvalenza va valorizzata a zero
                     Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";
                  }else {//altrimenti calcolo la plusvalenza
                     //Tolgo dallo stack il vecchio costo di carico
                     VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
@@ -457,6 +460,7 @@ public class Calcoli_Plusvalenze {
                     
                     //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
                     Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                    CalcoloPlusvalenza="S";
                 }                                      
             } 
             
@@ -476,6 +480,7 @@ public class Calcoli_Plusvalenze {
                     
                     //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
                     Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                    CalcoloPlusvalenza="S";
                                        
             }
             
@@ -489,6 +494,7 @@ public class Calcoli_Plusvalenze {
                     Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                     
                     Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";
                                          
                     VecchioPrezzoCarico=""; 
                     
@@ -507,7 +513,8 @@ public class Calcoli_Plusvalenze {
                 NuovoPrezzoCarico="";
                 
                 //Calcolo la plusvalenza
-                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();                
+                Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                CalcoloPlusvalenza="S";                
                  
             } 
             
@@ -527,6 +534,7 @@ public class Calcoli_Plusvalenze {
                         Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
 
                         Plusvalenza = Valore;
+                        CalcoloPlusvalenza="S";
 
                         VecchioPrezzoCarico = "";
                     } else {
@@ -534,6 +542,7 @@ public class Calcoli_Plusvalenze {
                         Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
 
                         Plusvalenza = "0.00";
+                        CalcoloPlusvalenza="N";
 
                         VecchioPrezzoCarico = "";
                     }
@@ -592,6 +601,7 @@ public class Calcoli_Plusvalenze {
                     //Se ID controparte è diverso da null vuol dire che devo gestire il calcolo delle plusvalenze, altrimenti no
                     if (IDControparte != null) {
                         Plusvalenza = "0.00";
+                        CalcoloPlusvalenza="N";
                         VecchioPrezzoCarico = "";
                         
                         //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
@@ -607,6 +617,7 @@ public class Calcoli_Plusvalenze {
 
                     } else {
                         Plusvalenza = "0.00";
+                        CalcoloPlusvalenza="N";
 
                         NuovoPrezzoCarico = "";
 
@@ -622,6 +633,7 @@ public class Calcoli_Plusvalenze {
                      Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                      
                      Plusvalenza="0.00";
+                     CalcoloPlusvalenza="N";
                      
                      VecchioPrezzoCarico="";
                 }
@@ -633,6 +645,7 @@ public class Calcoli_Plusvalenze {
                     Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                     
                     Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";
                                          
                     VecchioPrezzoCarico=""; 
                 }
@@ -653,7 +666,8 @@ public class Calcoli_Plusvalenze {
                     NuovoPrezzoCarico="";
                 
                     //Calcolo la plusvalenza
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();  
+                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                    CalcoloPlusvalenza="S";
                 }
                 //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
                 else if(IDTS[4].equalsIgnoreCase("CM")||v[18].contains("PCO")){
@@ -667,12 +681,14 @@ public class Calcoli_Plusvalenze {
                     //Calcolo la plusvalenza
                   //  if (Funzioni.Funzioni_isNumeric(Valore, false)&&Funzioni.Funzioni_isNumeric(VecchioPrezzoCarico, false))
                         Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        CalcoloPlusvalenza="S";
                    // else Plusvalenza="ERRORE";
                 }
                 //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
                 else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("PTW")) {
                                         
                      Plusvalenza="0.00";
+                     CalcoloPlusvalenza="N";
                      
                      NuovoPrezzoCarico="";
                      
@@ -686,7 +702,8 @@ public class Calcoli_Plusvalenze {
                     
                     NuovoPrezzoCarico="";
                     
-                    Plusvalenza="0.00";                    
+                    Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";                    
                     
                 }
             } 
@@ -697,6 +714,7 @@ public class Calcoli_Plusvalenze {
                     NuovoPrezzoCarico="";
                     
                     Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";
                                            
                     VecchioPrezzoCarico="";
                     
@@ -711,6 +729,7 @@ public class Calcoli_Plusvalenze {
                     v[16]=VecchioPrezzoCarico;
                     v[17]=NuovoPrezzoCarico;
                     v[19]=Plusvalenza;
+                    v[33]=CalcoloPlusvalenza;
 
 
         }

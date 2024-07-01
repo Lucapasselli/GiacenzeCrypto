@@ -215,7 +215,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
                //System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().stripTrailingZeros().toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,dataEstratta,IDEstratto};
                 stack.push(valori);
                 BigDecimal costoTransazione=costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck));
@@ -317,7 +317,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //adesso devo trovare anche la QtaRimanenteOrigine = QtaRimanente / QtaEstratta x QtaOrigine
                 String qtaRimanenteOrigine=qtaRimanenteStackBD.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(QtaOrigine).stripTrailingZeros().abs().toPlainString();
 
-                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).stripTrailingZeros().abs().toPlainString();
+                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).abs().toPlainString();
                 //                System.out.println("ValRimanenteOrigine " +valoreRimanenteOrigine);
             //    String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 
@@ -1859,7 +1859,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     ElementiStack el = StackRitorno.pop();
                                     Moneta m2=m.ClonaMoneta();
                                     if (!m2.Moneta.equals(el.Moneta))System.out.println("Errore moneta diversa");
-                                    m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),30,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).stripTrailingZeros().toPlainString();
+                                    m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),30,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).toPlainString();
                                     m2.Moneta=el.Moneta;
                                     m2.Qta=el.Qta;
                                     m2.GruppoRW=el.GruppoWallet;
@@ -1871,7 +1871,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                         //ora sommo la qta di m2 con quella di m3
                                         //tanto so già che la moneta che sto analizzando è la stessa
                                         m3.Qta=new BigDecimal(m2.Qta).add(new BigDecimal(m3.Qta)).stripTrailingZeros().toPlainString();
-                                        m3.Prezzo=new BigDecimal(m2.Prezzo).add(new BigDecimal(m3.Prezzo)).stripTrailingZeros().toPlainString();
+                                        m3.Prezzo=new BigDecimal(m2.Prezzo).add(new BigDecimal(m3.Prezzo)).toPlainString();
                                     }
                                     }
                                 int i=0;

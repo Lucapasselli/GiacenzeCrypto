@@ -82,6 +82,24 @@ public class DatabaseH2 {
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
+            //Tabella Gruppi Wallet Fatta così NomeGruppoOriginale,Alias,PagaBollo(Valorizzato S o N)
+            //NomeGruppoOriginale è il Campo Univoco e sarà Wallet 01, Wallet 02, Wallet 03 etc....
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GRUPPO_ALIAS  (Gruppo VARCHAR(255) PRIMARY KEY, Alias VARCHAR(255), PagaBollo VARCHAR(25))";
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
+            preparedStatement.execute();
+            if (Pers_GruppoAlias_Leggi("Wallet 01")[0] == null) {
+                for (int i = 1; i < 21; i++) {
+                    String gruppo;
+                    if (i < 10) {
+                        gruppo = "Wallet 0" + String.valueOf(i);
+                    } else {
+                        gruppo = "Wallet " + String.valueOf(i);
+                    }
+                    //Questa cosa sotto la devo fare solo se non esiste
+                    Pers_GruppoAlias_Scrivi(gruppo, gruppo, false);
+                }
+            }
+            
             createTableSQL = "CREATE TABLE IF NOT EXISTS EMONEY  (Moneta VARCHAR(255) PRIMARY KEY, Data VARCHAR(255))";
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
@@ -245,6 +263,9 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+        
+        
+        
         public static String Pers_GruppoWallet_Leggi(String Wallet) {
         String Risultato = Mappa_Wallet_Gruppo.get(Wallet);
         if(Risultato==null){//se non lo trovo nella mappa lo cerco nel database
@@ -267,6 +288,84 @@ public class DatabaseH2 {
             }
         return Risultato;
         //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+        
+        public static String[] Pers_GruppoAlias_Leggi(String Gruppo) {
+        String Risultato[]=new String[3]; 
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Gruppo,Alias,PagaBollo FROM GRUPPO_ALIAS WHERE Gruppo = '" + Gruppo + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato[0] = resultSet.getString("Gruppo");
+                Risultato[1] = resultSet.getString("Alias");
+                Risultato[2] = resultSet.getString("PagaBollo");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return Risultato;
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+        
+        public static Map<String, String[]> Pers_GruppoAlias_LeggiTabella() {
+        Map<String, String[]> Mappa_GruppiAlias = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);    
+         
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Gruppo,Alias,PagaBollo FROM GRUPPO_ALIAS";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            while (resultSet.next()) {
+                String Risultato[]=new String[3];
+                Risultato[0] = resultSet.getString("Gruppo");
+                Risultato[1] = resultSet.getString("Alias");
+                Risultato[2] = resultSet.getString("PagaBollo");
+                Mappa_GruppiAlias.put(Risultato[0], Risultato);
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return Mappa_GruppiAlias;
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+        
+        public static void Pers_GruppoAlias_Scrivi(String Gruppo, String Alias, boolean PagaBollo) {
+            String Pagabollo="N";
+            if (PagaBollo)Pagabollo="S";            
+            //Devo ricordarmi di non permettere virgole, punti e virgola, underscore o apici di vario tipo nel nome
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM GRUPPO_ALIAS WHERE Gruppo = '" + Gruppo + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                // La riga esiste, esegui l'aggiornamento
+                String updateSQL = "UPDATE GRUPPO_ALIAS SET (Alias, Pagabollo) = ('" + Alias + "','" + Pagabollo+ "') WHERE Gruppo = '" + Gruppo + "'";
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.executeUpdate();
+
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = 
+                    "INSERT INTO GRUPPO_ALIAS (Gruppo, Alias, Pagabollo) VALUES ('" + Gruppo + "','" + Alias + "','" + Pagabollo+ "')";
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
         
     

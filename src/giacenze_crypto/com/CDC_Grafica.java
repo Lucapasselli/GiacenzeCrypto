@@ -382,6 +382,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        Opzioni_GruppoWallet_Bottone_Rinomina = new javax.swing.JButton();
         Opzioni_Emoney_Pannello = new javax.swing.JPanel();
         Opzioni_Emoney_ScrollPane = new javax.swing.JScrollPane();
         Opzioni_Emoney_Tabella = new javax.swing.JTable();
@@ -2233,11 +2234,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Nome Wallet", "Gruppo Wallet"
+                "Nome Wallet", "Gruppo Wallet", "Alias", "Bollo Pagato dall' Intermediario"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true
+                false, true, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2261,6 +2262,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jTextArea1.setPreferredSize(new java.awt.Dimension(774, 44));
         jScrollPane1.setViewportView(jTextArea1);
 
+        Opzioni_GruppoWallet_Bottone_Rinomina.setText("Rinomina Gruppo");
+        Opzioni_GruppoWallet_Bottone_Rinomina.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_GruppoWallet_Bottone_RinominaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_GruppoWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_GruppoWallet_Pannello);
         Opzioni_GruppoWallet_Pannello.setLayout(Opzioni_GruppoWallet_PannelloLayout);
         Opzioni_GruppoWallet_PannelloLayout.setHorizontalGroup(
@@ -2269,7 +2277,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1241, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1)))
+                    .addComponent(jScrollPane1)
+                    .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
+                        .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         Opzioni_GruppoWallet_PannelloLayout.setVerticalGroup(
             Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2277,7 +2288,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
-                .addGap(113, 113, 113))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina)
+                .addGap(84, 84, 84))
         );
 
         Opzioni_TabbedPane.addTab("Gruppi Wallet Crypto", Opzioni_GruppoWallet_Pannello);
@@ -3962,7 +3975,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
     private void Opzioni_GruppoWallet_CaricaGruppiWallet(){
         DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(GruppoWallet_ModelloTabella);
+        Map<String, String[]> Mappa_GruppiAlias=DatabaseH2.Pers_GruppoAlias_LeggiTabella();
    JComboBox<String> comboBox = new JComboBox<>();
+        for(String Item[]: Mappa_GruppiAlias.values()){
+            comboBox.addItem(Item[0]+" ("+Item[1]+")");
+        }
     comboBox.addItem("Wallet 01");
     comboBox.addItem("Wallet 02");
     comboBox.addItem("Wallet 03");
@@ -6396,6 +6413,10 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_RW_Opzioni_CheckBox_ChiudiRWsuTrasferimentoActionPerformed
+
+    private void Opzioni_GruppoWallet_Bottone_RinominaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -8061,6 +8082,7 @@ try {
     private javax.swing.JButton Opzioni_Export_Tatax_Bottone;
     private javax.swing.JComboBox<String> Opzioni_Export_Wallets_Combobox;
     private javax.swing.JPanel Opzioni_FiatWallet_Pannello;
+    private javax.swing.JButton Opzioni_GruppoWallet_Bottone_Rinomina;
     private javax.swing.JCheckBox Opzioni_GruppoWallet_CheckBox_PlusXWallet;
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;

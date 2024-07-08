@@ -96,6 +96,18 @@ public class Funzioni {
             return NuovoNome;
          }
         
+         public static String NormalizzaNomeStringente(String Nome){
+            String NuovoNome=Nome.replace(";", "")
+                   // .replace(" ", "")
+                   // .replace(".", "")
+                    .replace(",", "")
+                    .replace("_", "")
+                    .replace("\\(", "")
+                    .replace("\\)", "")
+                    ;    
+            return NuovoNome;
+         }
+        
         public static void CompilaMappaChain(){
             //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko
             //System.out.println("Compilo Mappe integrate nel codice");

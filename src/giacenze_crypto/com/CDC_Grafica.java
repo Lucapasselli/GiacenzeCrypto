@@ -55,6 +55,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -1311,9 +1312,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(40);
             RW_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(40);
             RW_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(40);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(1).setPreferredWidth(65);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(1).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(2).setPreferredWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(2).setMaxWidth(150);
@@ -1326,9 +1327,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMaxWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(6).setPreferredWidth(65);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(65);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(6).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(7).setPreferredWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(7).setMaxWidth(150);
@@ -1372,7 +1373,15 @@ public class CDC_Grafica extends javax.swing.JFrame {
             new String [] {
                 "Data", "Wallet", "Tipo Movimento", "Mon.Uscita/Fine Anno", "Mon.Entrata/Iniz.Anno", "Valore", "ID Transazione"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane9.setViewportView(RW_Tabella_DettaglioMovimenti);
         if (RW_Tabella_DettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
             RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMinWidth(100);
@@ -2237,9 +2246,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "Nome Wallet", "Gruppo Wallet", "Alias", "Bollo Pagato dall' Intermediario"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
-                false, true, true, true
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, true, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
@@ -2248,6 +2264,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_GruppoWallet_Tabella.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 Opzioni_GruppoWallet_TabellaFocusGained(evt);
+            }
+        });
+        Opzioni_GruppoWallet_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_GruppoWallet_TabellaMouseClicked(evt);
+            }
+        });
+        Opzioni_GruppoWallet_Tabella.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                Opzioni_GruppoWallet_TabellaPropertyChange(evt);
+            }
+        });
+        Opzioni_GruppoWallet_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_GruppoWallet_TabellaKeyReleased(evt);
             }
         });
         Opzioni_GruppoWallet_ScrollTabella.setViewportView(Opzioni_GruppoWallet_Tabella);
@@ -2262,7 +2293,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jTextArea1.setPreferredSize(new java.awt.Dimension(774, 44));
         jScrollPane1.setViewportView(jTextArea1);
 
-        Opzioni_GruppoWallet_Bottone_Rinomina.setText("Rinomina Gruppo");
+        Opzioni_GruppoWallet_Bottone_Rinomina.setText("Rinomina Alias");
         Opzioni_GruppoWallet_Bottone_Rinomina.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_GruppoWallet_Bottone_RinominaActionPerformed(evt);
@@ -3976,43 +4007,29 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(GruppoWallet_ModelloTabella);
         Map<String, String[]> Mappa_GruppiAlias=DatabaseH2.Pers_GruppoAlias_LeggiTabella();
-   JComboBox<String> comboBox = new JComboBox<>();
+        JComboBox<String> comboBox = new JComboBox<>();
+        JCheckBox CheckBox=new JCheckBox();
         for(String Item[]: Mappa_GruppiAlias.values()){
-            comboBox.addItem(Item[0]+" ("+Item[1]+")");
+            
+            comboBox.addItem(Item[0]+" ( "+Item[1]+" )");
         }
-    comboBox.addItem("Wallet 01");
-    comboBox.addItem("Wallet 02");
-    comboBox.addItem("Wallet 03");
-    comboBox.addItem("Wallet 04");
-    comboBox.addItem("Wallet 05");
-    comboBox.addItem("Wallet 06");
-    comboBox.addItem("Wallet 07");
-    comboBox.addItem("Wallet 08");
-    comboBox.addItem("Wallet 09");
-    comboBox.addItem("Wallet 10");
-    comboBox.addItem("Wallet 11");
-    comboBox.addItem("Wallet 12");
-    comboBox.addItem("Wallet 13");
-    comboBox.addItem("Wallet 14");
-    comboBox.addItem("Wallet 15");
-    comboBox.addItem("Wallet 16");
-    comboBox.addItem("Wallet 17");
-    comboBox.addItem("Wallet 18");   
-    comboBox.addItem("Wallet 19");
-    comboBox.addItem("Wallet 20");
-    
+ 
 TableColumn testColumn = Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1);
 testColumn.setCellEditor(new DefaultCellEditor(comboBox));
+TableColumn testColumn2 = Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(3);
+testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
         for (String a: Mappa_Wallet.keySet()){
-            Object rigaTabella[]=new Object[2];
-         //   TableCellEditor comboBoxEditor = new DefaultCellEditor(gruppo);
-          //  Opzioni_GruppoWallet_Tabella.getColumnModel().getColumn(1).setCellEditor(comboBoxEditor);
+            Object rigaTabella[]=new Object[4];
             rigaTabella[0]=a;
-            rigaTabella[1]=DatabaseH2.Pers_GruppoWallet_Leggi(a);
+            String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(a);
+            String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+            rigaTabella[1]=Gruppo+" ( "+Valori[1]+" )";
+            rigaTabella[2]=Valori[1];
+            boolean PagaBollo=false;
+            if (Valori[2].equals("S"))PagaBollo=true;
+            rigaTabella[3]=PagaBollo;
             GruppoWallet_ModelloTabella.addRow(rigaTabella);
-            
-          //  System.out.println("aaaa");
         }
     }
     
@@ -5485,6 +5502,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         if (Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
             String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            Gruppo=Gruppo.split("\\(")[0].trim();        
             String Wallet=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             //Se viene modificato un gruppo wallet
             //1 - Scrivo il nuovo gruppo nel dabase
@@ -5492,6 +5510,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             //3 - Aggiorno le plusvalenze
             //4 - Ricarico la tabella crypto
             if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equals(Gruppo)){
+                String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+                boolean PagaBollo=false;
+                if (Valori[2].equals("S"))PagaBollo=true;
+                Opzioni_GruppoWallet_Tabella.getModel().setValueAt(Valori[1], rigaselezionata, 2);
+                Opzioni_GruppoWallet_Tabella.getModel().setValueAt(PagaBollo, rigaselezionata, 3);
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 //1 - Scrivo il nuovo gruppo nel dabase
                 DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
@@ -5755,7 +5778,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         // 7 - Prezzo Fine
         // 8 - Giorni di detenzione
         // 9 - Causale
-                Download progress = new Download();
+        Download progress = new Download();
         progress.setLocationRelativeTo(this);
                 Thread thread;
         thread = new Thread() {
@@ -5767,7 +5790,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        //progress.RipristinaStdout();
+        progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -5831,6 +5854,10 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
         String ICtot="0";
         for (String[] RWx : MappaWallerQuadro.values()) {
             ICtot=new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
+            //Rinomino i Wallet seguendo l'Alias
+            String Gruppo="Wallet "+RWx[0].split(" ")[0].trim();
+            String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+            RWx[0]=RWx[0].split(" ")[0].trim()+" ( "+Valori[1]+" )";
             ModelloTabella.addRow(RWx);
         }
         RW_Text_IC.setText(ICtot);
@@ -5872,6 +5899,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
     }
     
     private void RW_CompilaTabellaDettagli(){
+        Map<String, String[]> Mappa_Gruppo_Alias =DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (RW_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -5887,15 +5915,24 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             else
                 this.RW_Label_SegnalaErrori.setText("");   
             
-            String Gruppo = RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split("\\(")[1].replaceAll("\\)", "").trim();
+            String Gruppo = "Wallet "+RW_Tabella.getModel().getValueAt(rigaselezionata, 0).toString().split(" ")[0].trim();
+           // Gruppo =
             //System.out.println(Gruppo);
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
+                
+                
+                
+                if (Mappa_Gruppo_Alias.get(lista[1])!=null)lista[1]=lista[1].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(lista[1])[1]+" )";
+                if (Mappa_Gruppo_Alias.get(lista[6])!=null)lista[6]=lista[6].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(lista[6])[1]+" )";
                 if (RW_CheckBox_VediSoloErrori.isSelected())
                     {
                         if(lista[15].toLowerCase().contains("errore")) ModelloTabella.addRow(lista);
                     }
                 else 
+                    {
                     ModelloTabella.addRow(lista);
+                    }
+                    
             }
           //  ModelloTabella.addRow(Mappa_RW_ListeXGruppoWallet);
             
@@ -5913,7 +5950,11 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             String MonetaTabIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
+            String MonetaIniQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString().trim();
+            String MonetaIniVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString().trim();
             String MonetaTabFin = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString().trim();
+            String MonetaFinQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString().trim();
+            String MonetaFinVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString().trim();
             
             if (Errore.toLowerCase().contains("scam")){
                 RW_Bottone_IdentificaScam.setText("Rimuovi da SCAM");
@@ -5945,7 +5986,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (Movimento!=null){
                 String Mov[]=new String[7];
                 Mov[0]=Movimento[1];
-                Mov[1]=GruppoWalletIni+" ("+Movimento[3]+")";
+                Mov[1]=GruppoWalletIni+" - ("+Movimento[3]+")";
                 Mov[2]=Movimento[5];
                 Mov[3]="";
                 Mov[4]="";
@@ -5980,18 +6021,20 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
                 Mov[1]=GruppoWalletIni;
                 Mov[2]=IDIniziale;
                 Mov[3]="";
-                Mov[4]=MonQta+" "+MonNome+" ("+MonTipo+")";
-                Mov[5]=MonPrz;
+                Mov[4]=MonetaIniQta+" "+MonetaTabIni+" ("+MonTipo+")";
+                Mov[5]=MonetaIniVal;
                 Mov[6]=""; 
                 ModelloTabella3.addRow(Mov);
             }
             for (String id : IDMovimentati) {
                 Movimento = MappaCryptoWallet.get(id);
                 if (Movimento != null) {
-                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
+                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]); 
+                    String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(gwallet);
+                    gwallet=gwallet.split(" ")[1];
                     String Mov[] = new String[7];
                     Mov[0] = Movimento[1];
-                    Mov[1] = gwallet + " (" + Movimento[3] + ")";//da sistemare gruppo wallet
+                    Mov[1] = gwallet + " ( "+Valori[1]+ " ) - (" + Movimento[3] + ")";//da sistemare gruppo wallet
                     Mov[2] = Movimento[5];
                     Mov[3] = "";
                     Mov[4] = "";
@@ -6012,7 +6055,7 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
             if (Movimento!=null){
                 String Mov[]=new String[7];
                 Mov[0]=Movimento[1];
-                Mov[1]=GruppoWalletFin+" ("+Movimento[3]+")";
+                Mov[1]=GruppoWalletFin+" - ("+Movimento[3]+")";
                 Mov[2]=Movimento[5];
                 Mov[3]="";
                 Mov[4]="";
@@ -6416,7 +6459,61 @@ testColumn.setCellEditor(new DefaultCellEditor(comboBox));
 
     private void Opzioni_GruppoWallet_Bottone_RinominaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
         // TODO add your handling code here:
+        if (Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
+            String Gruppo=Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            Gruppo=Gruppo.split("\\(")[0].trim();        
+            String Testo = "<html>Indica il nuovo Alias per il Gruppo<b>" + Gruppo + "</b><br>";
+            String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+            String m = JOptionPane.showInputDialog(this, Testo, Valori[1]).trim();
+            if (m != null) {
+                m = Funzioni.NormalizzaNomeStringente(m);
+                //Se il nome dell'Alias è di almeno 21 caratteri proseguo
+                if (m.length() > 0) {
+                    boolean PagaBollo=false;
+                    if(Valori[2].equals("S"))PagaBollo=true;
+                    DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], m, PagaBollo);
+                    Opzioni_GruppoWallet_CaricaGruppiWallet();
+                    RW_RicalcolaRWseEsiste();                    
+                    rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
+                    Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(rigaselezionata, rigaselezionata);
+                } else {
+                    JOptionPane.showConfirmDialog(this, "Attenzione,il campo è nullo",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                }
+            }
+       } 
     }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
+
+    private void Opzioni_GruppoWallet_TabellaPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaPropertyChange
+        // TODO add your handling code here:
+       
+    }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaPropertyChange
+
+    private void Opzioni_GruppoWallet_TabellaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaMouseClicked
+        // TODO add your handling code here:
+        if (Opzioni_GruppoWallet_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(Opzioni_GruppoWallet_Tabella.getSelectedRow());
+            String Gruppo = Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 1).toString().split("\\(")[0].trim();
+            String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+            int colonna = Opzioni_GruppoWallet_Tabella.getSelectedColumn();
+           
+            if (colonna == 3) {
+                boolean PagaBollo = !(boolean) Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 3);               
+                //Adesso devo scrivere nel database i dati corretti
+                DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], Valori[1], PagaBollo); 
+                //Aggiorno la tabella
+                Opzioni_GruppoWallet_CaricaGruppiWallet();
+                rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
+                Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(rigaselezionata, rigaselezionata);
+
+            }
+        }
+    }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaMouseClicked
+
+    private void Opzioni_GruppoWallet_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaKeyReleased
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

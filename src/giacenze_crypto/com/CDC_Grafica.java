@@ -5950,11 +5950,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             String MonetaTabIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
-            String MonetaIniQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString().trim();
-            String MonetaIniVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString().trim();
+            //String MonetaIniQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString().trim();
+            //String MonetaIniVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString().trim();
             String MonetaTabFin = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString().trim();
-            String MonetaFinQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString().trim();
-            String MonetaFinVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString().trim();
+            //String MonetaFinQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString().trim();
+            //String MonetaFinVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString().trim();
             
             if (Errore.toLowerCase().contains("scam")){
                 RW_Bottone_IdentificaScam.setText("Rimuovi da SCAM");
@@ -5999,7 +5999,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 String Mov[]=new String[7];
                 //Se arrivo qua significa che il movimento è in realtà la giacenza iniziale
                 //devo quindi trovare a quanto ammonta e scriverlo
-                List<Moneta> listaIniziale=Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWalletIni);
+                String GRIni="Wallet "+GruppoWalletIni.split(" ")[0];
+                List<Moneta> listaIniziale=Mappa_RW_GiacenzeInizioPeriodo.get(GRIni);
                 String MonNome="";
                 String MonQta="";
                 String MonPrz="";
@@ -6008,7 +6009,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Iterator<Moneta> it=listaIniziale.iterator();
                 Moneta Mon;
                 while (it.hasNext()){
-                    Mon=it.next();
+                    Mon=it.next();                 
                     if (Mon.Moneta.equals(MonetaTabIni)){
                         MonNome=MonetaTabIni;
                         MonQta=Mon.Qta;
@@ -6021,8 +6022,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Mov[1]=GruppoWalletIni;
                 Mov[2]=IDIniziale;
                 Mov[3]="";
-                Mov[4]=MonetaIniQta+" "+MonetaTabIni+" ("+MonTipo+")";
-                Mov[5]=MonetaIniVal;
+                Mov[4]=MonQta+" "+MonNome+" ("+MonTipo+")";
+                Mov[5]=MonPrz;
                 Mov[6]=""; 
                 ModelloTabella3.addRow(Mov);
             }
@@ -6065,8 +6066,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Mov[6]=IDFinale; 
                 ModelloTabella3.addRow(Mov);
             }else{
+                //Se arrivo qua significa che sto gestendo un valore finale di fine anno
                 String Mov[]=new String[7];
-                List<Moneta> listaFinale=Mappa_RW_GiacenzeFinePeriodo.get(GruppoWalletFin);
+                String GRFin="Wallet "+GruppoWalletFin.split(" ")[0];
+                List<Moneta> listaFinale=Mappa_RW_GiacenzeFinePeriodo.get(GRFin);
                 String MonNome="";
                 String MonQta="";
                 String MonPrz="";
@@ -6087,8 +6090,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Mov[1]=GruppoWalletFin;
                 Mov[2]=IDFinale;
                 Mov[3]=MonQta+" "+MonNome+" ("+MonTipo+")";
+               // Mov[3]=MonetaFinQta+" "+MonetaTabFin;
                 Mov[4]="";
                 Mov[5]=MonPrz;
+               // Mov[5]=MonetaFinVal;
                 Mov[6]=""; 
                 ModelloTabella3.addRow(Mov);
             }

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="RW_RadioGruppo">
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
   </Properties>
@@ -2928,7 +2932,7 @@
                                   <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_Combobox_CancellaTransazioniCryptoXwallet" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="574" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3247,7 +3251,7 @@
                                   </Group>
                                   <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="437" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3262,7 +3266,7 @@
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="Opzioni_Export_EsportaPrezzi_CheckBox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="572" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3318,22 +3322,26 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" pref="1235" max="32767" attributes="0"/>
                                   <Component id="jSeparator3" alignment="0" max="32767" attributes="0"/>
                                   <Component id="jSeparator4" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" pref="1235" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
                                           <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" alignment="0" min="-2" pref="1088" max="-2" attributes="0"/>
                                           <Group type="102" attributes="0">
                                               <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
                                               <Component id="jScrollPane6" min="-2" pref="933" max="-2" attributes="0"/>
                                           </Group>
+                                          <Component id="RW_Opzioni_RilenvanteTuttigliScambi" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_RilenvanteScambiFIAT" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_RilevanteScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" alignment="0" min="-2" pref="1188" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_RilevanteSoloValoriIniFin" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
@@ -3345,7 +3353,14 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
+                              <Component id="RW_Opzioni_RilevanteSoloValoriIniFin" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_RilenvanteScambiFIAT" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_RilevanteScambiRilevanti" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_RilenvanteTuttigliScambi" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_1RigoXOperazione" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" min="-2" max="-2" attributes="0"/>
@@ -3355,13 +3370,13 @@
                               <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_StakingZero" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <EmptySpace pref="31" max="32767" attributes="0"/>
                               <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jScrollPane6" min="-2" pref="63" max="-2" attributes="0"/>
-                              <EmptySpace pref="145" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jSeparator4" min="-2" pref="10" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
@@ -3466,6 +3481,40 @@
                     <Component class="javax.swing.JSeparator" name="jSeparator3">
                     </Component>
                     <Component class="javax.swing.JSeparator" name="jSeparator4">
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilenvanteScambiFIAT">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Solo cashout o nuovi acquisti generano un nuori rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteScambiRilevanti">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Ogni operazione fiscalmente rilevante crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilenvanteTuttigliScambi">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Ogni operazione crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata)&lt;/html&gt;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteSoloValoriIniFin">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Per sviluppi futuri"/>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>

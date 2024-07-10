@@ -934,4 +934,20 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+                
+                
+    public static void Pers_Opzioni_CancellaOpzione(String Opzione) {
+               //completamente da gestire
+        try {
+            String checkIfExistsSQL = "DELETE FROM OPZIONI WHERE Opzione='"+Opzione+"'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }
+                
+                
 }

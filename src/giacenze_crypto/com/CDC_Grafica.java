@@ -2520,13 +2520,28 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         RW_RadioGruppo.add(RW_Opzioni_RilenvanteScambiFIAT);
         RW_Opzioni_RilenvanteScambiFIAT.setText("<html><b>Quadro RW :</b> Solo cashout o nuovi acquisti generano un nuori rigo W/RW (che poi verrà accorpato tramite media ponderata) </html>");
+        RW_Opzioni_RilenvanteScambiFIAT.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_RilenvanteScambiFIATActionPerformed(evt);
+            }
+        });
 
         RW_RadioGruppo.add(RW_Opzioni_RilevanteScambiRilevanti);
         RW_Opzioni_RilevanteScambiRilevanti.setSelected(true);
         RW_Opzioni_RilevanteScambiRilevanti.setText("<html><b>Quadro RW :</b> Ogni operazione fiscalmente rilevante crea un nuovo rigo W/RW (che poi verrà accorpato tramite media ponderata) </html>");
+        RW_Opzioni_RilevanteScambiRilevanti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_RilevanteScambiRilevantiActionPerformed(evt);
+            }
+        });
 
         RW_RadioGruppo.add(RW_Opzioni_RilenvanteTuttigliScambi);
         RW_Opzioni_RilenvanteTuttigliScambi.setText("<html><b>Quadro RW :</b> Ogni operazione crea un nuovo rigo W/RW (che poi verrà accorpato tramite media ponderata)</html>");
+        RW_Opzioni_RilenvanteTuttigliScambi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_RilenvanteTuttigliScambiActionPerformed(evt);
+            }
+        });
 
         RW_RadioGruppo.add(RW_Opzioni_RilevanteSoloValoriIniFin);
         RW_Opzioni_RilevanteSoloValoriIniFin.setText("Per sviluppi futuri");
@@ -5845,7 +5860,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        progress.RipristinaStdout();
+        //progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -6578,6 +6593,38 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Opzioni_GruppoWallet_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaKeyReleased
         // TODO add your handling code here:
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaKeyReleased
+
+    private void RW_Opzioni_RilenvanteScambiFIATActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_RilenvanteScambiFIATActionPerformed
+        // TODO add your handling code here:
+        if (RW_Opzioni_RilenvanteScambiFIAT.isSelected()){
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_Rilevanza","B");
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            Funzioni_AggiornaTutto();
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }//GEN-LAST:event_RW_Opzioni_RilenvanteScambiFIATActionPerformed
+
+    private void RW_Opzioni_RilevanteScambiRilevantiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_RilevanteScambiRilevantiActionPerformed
+        // TODO add your handling code here:
+        if (RW_Opzioni_RilevanteScambiRilevanti.isSelected()){
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_Rilevanza","C");
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            Funzioni_AggiornaTutto();
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            
+        }
+    }//GEN-LAST:event_RW_Opzioni_RilevanteScambiRilevantiActionPerformed
+
+    private void RW_Opzioni_RilenvanteTuttigliScambiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_RilenvanteTuttigliScambiActionPerformed
+        // TODO add your handling code here:
+        if (RW_Opzioni_RilenvanteTuttigliScambi.isSelected()){
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_Rilevanza","D");
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            Funzioni_AggiornaTutto();
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+
+    }//GEN-LAST:event_RW_Opzioni_RilenvanteTuttigliScambiActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

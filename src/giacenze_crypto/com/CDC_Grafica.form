@@ -3489,6 +3489,9 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Solo cashout o nuovi acquisti generano un nuori rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilenvanteScambiFIATActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteScambiRilevanti">
                       <Properties>
@@ -3498,6 +3501,9 @@
                         <Property name="selected" type="boolean" value="true"/>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Ogni operazione fiscalmente rilevante crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilevanteScambiRilevantiActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilenvanteTuttigliScambi">
                       <Properties>
@@ -3506,6 +3512,9 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW :&lt;/b&gt; Ogni operazione crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata)&lt;/html&gt;"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilenvanteTuttigliScambiActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteSoloValoriIniFin">
                       <Properties>

@@ -398,7 +398,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Export_Tatax_Bottone = new javax.swing.JButton();
         Opzioni_Export_EsportaPrezzi_CheckBox = new javax.swing.JCheckBox();
         Opzioni_Calcolo_Pannello = new javax.swing.JPanel();
-        RW_Opzioni_CheckBox_1RigoXOperazione = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_InizioSuWalletOriginale = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
@@ -414,6 +413,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RW_Opzioni_RilevanteScambiRilevanti = new javax.swing.JRadioButton();
         RW_Opzioni_RilenvanteTuttigliScambi = new javax.swing.JRadioButton();
         RW_Opzioni_RilevanteSoloValoriIniFin = new javax.swing.JRadioButton();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1258,11 +1259,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "RW", "Val. Iniziale", "Val. Finale", "Giorni di Detenzione", "Errori", "IC"
+                "RW", "Val. Iniziale", "Val. Finale", "Giorni di Detenzione", "Errori", "IC Dovuta", "null", "Bollo Pagato"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1284,6 +1285,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella.getColumnModel().getColumn(5).setMinWidth(75);
             RW_Tabella.getColumnModel().getColumn(5).setPreferredWidth(75);
             RW_Tabella.getColumnModel().getColumn(5).setMaxWidth(75);
+            RW_Tabella.getColumnModel().getColumn(6).setMinWidth(0);
+            RW_Tabella.getColumnModel().getColumn(6).setPreferredWidth(0);
+            RW_Tabella.getColumnModel().getColumn(6).setMaxWidth(0);
+            RW_Tabella.getColumnModel().getColumn(7).setMinWidth(75);
+            RW_Tabella.getColumnModel().getColumn(7).setPreferredWidth(75);
+            RW_Tabella.getColumnModel().getColumn(7).setMaxWidth(75);
         }
 
         RW_Tabella_Dettagli.setModel(new javax.swing.table.DefaultTableModel(
@@ -1443,7 +1450,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RW_Label_SegnalaErrori.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
         RW_Label_SegnalaErrori.setForeground(new java.awt.Color(255, 0, 51));
 
-        jLabel13.setText("IC Totale : ");
+        jLabel13.setText("IC Dovuta Totale : ");
 
         RW_Text_IC.setEditable(false);
 
@@ -1462,7 +1469,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGap(244, 244, 244)
                         .addComponent(jLabel13)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2452,13 +2459,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.addTab("Export", Opzioni_Export_Pannello);
 
-        RW_Opzioni_CheckBox_1RigoXOperazione.setText("<html><b>Quadro RW :</b> Ogni operazione crea un nuovo rigo RW (Diversamente viene creato un nuovo riso solo sulle operazioni fiscalmente rilevanti)</html>");
-        RW_Opzioni_CheckBox_1RigoXOperazione.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed(evt);
-            }
-        });
-
         RW_Opzioni_CheckBox_InizioSuWalletOriginale.setText("<html><b>Quadro RW :</b> Se il token viene spostato, il valore iniziale resta sul wallet di origine (Diversamente è come se il token fosse sempre stato detenuto dal wallet di destinazione)</html>");
         RW_Opzioni_CheckBox_InizioSuWalletOriginale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2519,7 +2519,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         RW_RadioGruppo.add(RW_Opzioni_RilenvanteScambiFIAT);
-        RW_Opzioni_RilenvanteScambiFIAT.setText("<html><b>Quadro RW :</b> Solo cashout o nuovi acquisti generano un nuori rigo W/RW (che poi verrà accorpato tramite media ponderata) </html>");
+        RW_Opzioni_RilenvanteScambiFIAT.setText("<html><b>B -</b> Solo cashout o nuovi acquisti generano un nuori rigo W/RW (che poi verrà accorpato tramite media ponderata) </html>");
         RW_Opzioni_RilenvanteScambiFIAT.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Opzioni_RilenvanteScambiFIATActionPerformed(evt);
@@ -2528,7 +2528,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         RW_RadioGruppo.add(RW_Opzioni_RilevanteScambiRilevanti);
         RW_Opzioni_RilevanteScambiRilevanti.setSelected(true);
-        RW_Opzioni_RilevanteScambiRilevanti.setText("<html><b>Quadro RW :</b> Ogni operazione fiscalmente rilevante crea un nuovo rigo W/RW (che poi verrà accorpato tramite media ponderata) </html>");
+        RW_Opzioni_RilevanteScambiRilevanti.setText("<html><b>C -</b> Ogni operazione fiscalmente rilevante crea un nuovo rigo W/RW (che poi verrà accorpato tramite media ponderata) </html>");
         RW_Opzioni_RilevanteScambiRilevanti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Opzioni_RilevanteScambiRilevantiActionPerformed(evt);
@@ -2536,7 +2536,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         RW_RadioGruppo.add(RW_Opzioni_RilenvanteTuttigliScambi);
-        RW_Opzioni_RilenvanteTuttigliScambi.setText("<html><b>Quadro RW :</b> Ogni operazione crea un nuovo rigo W/RW (che poi verrà accorpato tramite media ponderata)</html>");
+        RW_Opzioni_RilenvanteTuttigliScambi.setText("<html><b>D -</b> Ogni operazione crea un nuovo rigo W/RW (che poi verrà accorpato tramite media ponderata)</html>");
         RW_Opzioni_RilenvanteTuttigliScambi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Opzioni_RilenvanteTuttigliScambiActionPerformed(evt);
@@ -2544,8 +2544,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         RW_RadioGruppo.add(RW_Opzioni_RilevanteSoloValoriIniFin);
-        RW_Opzioni_RilevanteSoloValoriIniFin.setText("Per sviluppi futuri");
+        RW_Opzioni_RilevanteSoloValoriIniFin.setText("A - Attualmente non utilizzata");
         RW_Opzioni_RilevanteSoloValoriIniFin.setEnabled(false);
+
+        jLabel14.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel14.setText("<html>Scegli la <b>modalità di calcolo</b> da utilizzare per il <b>Quadro W/RW</b> : </html>");
+
+        jLabel15.setText("Ulteriori opzioni :");
 
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
@@ -2556,7 +2561,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator3)
                     .addComponent(jSeparator4)
-                    .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.DEFAULT_SIZE, 1235, Short.MAX_VALUE)
                     .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
@@ -2565,20 +2569,31 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
                                 .addGap(21, 21, 21)
                                 .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 933, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(RW_Opzioni_RilenvanteTuttigliScambi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_RilenvanteScambiFIAT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_RilevanteScambiRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, 1188, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.PREFERRED_SIZE, 1188, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento, javax.swing.GroupLayout.PREFERRED_SIZE, 1188, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RW_Opzioni_RilevanteSoloValoriIniFin))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
+                                .addGap(47, 47, 47)
+                                .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(RW_Opzioni_RilenvanteTuttigliScambi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RW_Opzioni_RilenvanteScambiFIAT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RW_Opzioni_RilevanteScambiRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RW_Opzioni_RilevanteSoloValoriIniFin)))
+                            .addComponent(jLabel15)
+                            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
+                                .addGap(49, 49, 49)
+                                .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1000, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 147, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         Opzioni_Calcolo_PannelloLayout.setVerticalGroup(
             Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
                 .addComponent(RW_Opzioni_RilevanteSoloValoriIniFin)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_RilenvanteScambiFIAT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2586,8 +2601,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(RW_Opzioni_RilevanteScambiRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_RilenvanteTuttigliScambi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(RW_Opzioni_CheckBox_1RigoXOperazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel15)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2596,7 +2611,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5923,11 +5938,18 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         String ICtot="0";
         for (String[] RWx : MappaWallerQuadro.values()) {
-            ICtot=new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
             //Rinomino i Wallet seguendo l'Alias
             String Gruppo="Wallet "+RWx[0].split(" ")[0].trim();
             String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
             RWx[0]=RWx[0].split(" ")[0].trim()+" ( "+Valori[1]+" )";
+            String PagaBollo="NO";
+            if (Valori[2].equalsIgnoreCase("S"))
+                {
+                RWx[5]="0.00";
+                PagaBollo="SI";
+                }
+            else  ICtot=new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
+            RWx[7]=PagaBollo;
             ModelloTabella.addRow(RWx);
         }
         RW_Text_IC.setText(ICtot);
@@ -5949,7 +5971,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     private String[] RW_Funzione_RitornaRWQuadro(Map<String, String[]> MappaWallerQuadro,String GruppoWallet){
-              String RW1[] = new String[7];
+              String RW1[] = new String[8];
               if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta
                         if(GruppoWallet.split(" ").length>1)
                             RW1[0] = GruppoWallet.split(" ")[1] + " (" + GruppoWallet + ")";
@@ -5961,6 +5983,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         RW1[4] = "";    //Errori
                         RW1[5] = "0.00";//IC Calcolata
                         RW1[6] = "0.00";//gg*valore+gg2*valore2+.....
+                        RW1[7] = "NO";
                         MappaWallerQuadro.put(GruppoWallet, RW1);
                     }else{//altrimenti recupero i dati vecchi e li aggiorno
                         RW1=MappaWallerQuadro.get(GruppoWallet);
@@ -6446,24 +6469,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if(GiacenzeaData_Tabella.getRowCount()!=0)
             GiacenzeaData_CompilaTabellaToken();
     }//GEN-LAST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
-
-    private void RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed
-        // TODO add your handling code here:
-                // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (RW_Opzioni_CheckBox_1RigoXOperazione.isSelected()) {
-            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("RW_1RigoXOperazione", "SI");
-        } else {
-            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
-            DatabaseH2.Pers_Opzioni_Scrivi("RW_1RigoXOperazione", "NO");
-        }
-        //TabellaCryptodaAggiornare=true;
-        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
-        Funzioni_AggiornaTutto();
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
-    }//GEN-LAST:event_RW_Opzioni_CheckBox_1RigoXOperazioneActionPerformed
 
     private void RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_InizioSuWalletOriginaleActionPerformed
         // TODO add your handling code here:
@@ -8309,7 +8314,6 @@ try {
     private javax.swing.JButton RW_Bottone_ModificaVIniziale;
     private javax.swing.JCheckBox RW_CheckBox_VediSoloErrori;
     private javax.swing.JLabel RW_Label_SegnalaErrori;
-    private javax.swing.JCheckBox RW_Opzioni_CheckBox_1RigoXOperazione;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_InizioSuWalletOriginale;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
@@ -8352,6 +8356,8 @@ try {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

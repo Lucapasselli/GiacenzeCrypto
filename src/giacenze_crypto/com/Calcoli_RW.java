@@ -182,11 +182,15 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //recuperare il prezzo della qta rimanente e la qta rimanente e riaggiungerla allo stack
                 //non ho più qta rimanente
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
+               // System.out.println(dataOrigine+" - "+MonetaOrigine+" - "+qtaRimanenteStack);
                 BigDecimal qtaRimanenteStackBD=new BigDecimal(qtaRimanenteStack);
                 //adesso devo trovare anche la QtaRimanenteOrigine = QtaRimanente / QtaEstratta x QtaOrigine
-                String qtaRimanenteOrigine=qtaRimanenteStackBD.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(QtaOrigine).stripTrailingZeros().abs().toPlainString();
-
-                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).abs().toPlainString();
+                //Il cambio di scala nei calcoli dopo la divisione serve a togliere eventuali errori di approssimazione dovuti alla moltiplicazione successiva
+                String qtaRimanenteOrigine=qtaRimanenteStackBD.divide(qtaEstratta,40,RoundingMode.HALF_UP).multiply(QtaOrigine).setScale(30,RoundingMode.HALF_UP).stripTrailingZeros().abs().toPlainString();
+                //System.out.println(qtaRimanenteStackBD+" / "+qtaEstratta+" x "+QtaOrigine);
+                //System.out.println(dataOrigine+" - "+MonetaOrigine+" - "+qtaRimanenteOrigine);
+                //Il cambio di scala nei calcoli dopo la divisione serve a togliere eventuali errori di approssimazione dovuti alla moltiplicazione successiva
+                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,40,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).setScale(30,RoundingMode.HALF_UP).abs().toPlainString();
                 //                System.out.println("ValRimanenteOrigine " +valoreRimanenteOrigine);
             //    String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 
@@ -1087,7 +1091,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                
                         if (v[18].contains("PTW - Trasferimento tra Wallet")//E' un trasferimento tra wallet (Prelievo)
                                 &&
-                                (Rilevanza.equalsIgnoreCase("D") || ChiudiRWsuTrasferimento)//decido di chiudere rw su traferimento o su ogni movimento 
+                                (//Rilevanza.equalsIgnoreCase("D") || 
+                                ChiudiRWsuTrasferimento)//decido di chiudere rw su traferimento o su ogni movimento 
                                 && !StessoGruppoWalletContropate(IDTransazione)//Trasferimento tra gruppi diversi
                                 // &&!LiFoComplessivo
                                 ) {
@@ -1128,7 +1133,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             {//Controllo se fanno parte dello stesso gruppo
                                 //Se non fanno parte dello stesso gruppo controllo se voglio generare un nuovo rigo ad ogni transazione
                                 //se non è così sposto solo i valori tra un gruppo ad un altro, altrimenti greo un nuovo rigo sul wallet
-                                if (Rilevanza.equalsIgnoreCase("D")||
+                                if (//Rilevanza.equalsIgnoreCase("D")||
                                     ChiudiRWsuTrasferimento) 
                                 {
                                     //Qua ci vado solo quando il trasferimento voglio che sia fiscalmente rilevante
@@ -1246,7 +1251,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                  //   QtaCryptoControparte = MappaGrWallet_QtaCrypto.get(gruppoControparte);
                                 }
 
-                                if (Rilevanza.equalsIgnoreCase("D")||
+                                if (//Rilevanza.equalsIgnoreCase("D")||
                                     ChiudiRWsuTrasferimento) 
                                 {
                                     

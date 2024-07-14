@@ -1403,7 +1403,6 @@ for (int i=0;i<ArraydataIni.size();i++){
         prezzo della transazione in quanto il prezzo risulta sicuramente più preciso di quello di una shitcoin o comunque di una moneta con bassa liquidità
         4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
         */
-        
        //System.out.println("DammiPrezzoTransazione : "+Moneta1.Moneta+" - "+Moneta1.Qta+" - "+Data+" - "+Prezzo+" - "+PrezzoZero+" - "+Decimali+" - "+Rete);
         String PrezzoTransazione;
         long adesso = System.currentTimeMillis();
@@ -1540,16 +1539,14 @@ for (int i=0;i<ArraydataIni.size();i++){
         //se almeno una delle 2 monete è una FIAT prendo il prezzo da quella
         
         //PARTE 1 - VERIFICO SE FIAT
-        if ((Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("FIAT")&& Moneta1.Moneta.equalsIgnoreCase("EUR")) 
-                || (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("FIAT")&&Moneta2.Moneta.equalsIgnoreCase("EUR"))) {
-            //per ora gestisco solo eruo ma sarà da aggiungere anche la parte USD
-            if (Moneta1 != null) {
+
+            if (Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("FIAT")&& Moneta1.Moneta.equalsIgnoreCase("EUR")) {
                 PrezzoTransazione = Moneta1.Qta;
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     return PrezzoTransazione;
                 }
-            } else if (Moneta2 != null) {
+            } else if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("FIAT")&&Moneta2.Moneta.equalsIgnoreCase("EUR")) {
                 PrezzoTransazione = Moneta2.Qta;
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
@@ -1557,32 +1554,32 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
             }
 
-        } //se non sono FIAT controllo se una delle coppie è USDT in quel caso prendo il prezzo di quello 
+         //se non sono FIAT controllo se una delle coppie è USDT in quel caso prendo il prezzo di quello 
 
         //PARTE 2 VERIFICO SE USDT
         else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USDT") && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
-                //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
-                //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
-                if (AddressMoneta1 == null || ForzaUsoBinanceM1) {
-                    PrezzoTransazione = ConvertiUSDTEUR(Moneta1.Qta, Data);
-                } else {
-                    PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
-                }
-                if (PrezzoTransazione != null) {
-                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                    return PrezzoTransazione;
-                }
-            } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USDT") && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
-                if (AddressMoneta2 == null || ForzaUsoBinanceM2) {
-                    PrezzoTransazione = ConvertiUSDTEUR(Moneta2.Qta, Data);
-                } else {
-                    PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
-                }
-                if (PrezzoTransazione != null) {
-                    PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
-                    return PrezzoTransazione;
-                }
+            //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
+            //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
+            if (AddressMoneta1 == null || ForzaUsoBinanceM1) {
+                PrezzoTransazione = ConvertiUSDTEUR(Moneta1.Qta, Data);
+            } else {
+                PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
             }
+            if (PrezzoTransazione != null) {
+                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                return PrezzoTransazione;
+            }
+        } else if (Moneta2 != null && Moneta2.Moneta.equalsIgnoreCase("USDT") && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
+            if (AddressMoneta2 == null || ForzaUsoBinanceM2) {
+                PrezzoTransazione = ConvertiUSDTEUR(Moneta2.Qta, Data);
+            } else {
+                PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
+            }
+            if (PrezzoTransazione != null) {
+                PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
+                return PrezzoTransazione;
+            }
+        }
             
             //VERIFICO SE CRYPTO USD
             else if (Moneta1 != null && Moneta1.Moneta.equalsIgnoreCase("USD") && !Moneta1.Tipo.trim().equalsIgnoreCase("NFT")&&AddressMoneta1 == null) {

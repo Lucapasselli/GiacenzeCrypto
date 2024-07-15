@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -394,7 +395,60 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
         }
         
     
-    
+        
+      public static void CreaPrimiMovimenti(Map<String, Map<String, Moneta>> MappaGrWallet_QtaCryptoInizio,Map<String,
+              Map<String, ArrayDeque>> MappaGrWallet_CryptoStack, long inizio, String DataInizioAnno) {
+
+        for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
+            Map<String, Moneta> a = MappaGrWallet_QtaCryptoInizio.get(key);
+            for (Moneta m : a.values()) {
+                if (!m.Tipo.equalsIgnoreCase("FIAT") && new BigDecimal(m.Qta).compareTo(new BigDecimal(0)) != 0) {
+                    //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
+                    m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete);
+                    //System.out.println(m.Prezzo);
+                    //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
+                    Map<String, ArrayDeque> CryptoStackTemp;
+                    String WR = key;
+                    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) {
+                        WR = "Unico 01";
+                    }
+                    CryptoStackTemp = MappaGrWallet_CryptoStack.get(WR);
+
+                    ElementiStack el = new ElementiStack();
+
+                    el.IDOri = "Giacenza Inizio Anno";//ID del movimento da cui tutto ha avuto origine
+                    el.CostoOri = m.Prezzo;//Costo di partenza della moneta originale
+                    el.MonOri = m.Moneta;//Moneta di partenza di tutto il giro del Lifo
+                    el.QtaOri = m.Qta;//Qta di partenza della moneta originale
+                    el.DataOri = DataInizioAnno;//Data di partenza
+                    el.GruppoWalletOri = key;//Gruppo Wallet di partenza
+
+                    el.Moneta = m.Moneta; //Moneta di riferimento
+                    el.Qta = m.Qta; //Qta di riferimento    
+                    el.TipoMonetaOri = m.Tipo;
+                   // el.Tipo = Monete[1].Tipo;
+                    el.Tipo = m.Tipo;
+                    el.GruppoWallet = key;
+                    //el.Data = Data;
+                    el.Data =DataInizioAnno;
+
+                    StackLIFO_InserisciValoreFR(CryptoStackTemp, key, el);
+                    if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key) == null) {
+                        List<Moneta> li = new ArrayList<>();
+                        Moneta mo = m.ClonaMoneta();
+                        li.add(mo);
+                        CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.put(key, li);
+                    } else {
+                        List<Moneta> li = CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key);
+                        Moneta mo = m.ClonaMoneta();
+                        li.add(mo);
+                    }
+                }
+            }
+        }
+    }
+      
+      
         public static void ChiudiRWFR (Moneta Monete,Map<String, ArrayDeque> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale,String IDt) {
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         List<String[]> ListaRW;
@@ -503,6 +557,87 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 }
                 }
         }
+    }
+        
+        
+    public static void ChiudiRWGiacenzeFinali(String GruppoWallet) {
+        //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
+        List<String[]> ListaRW;
+        String DataFineAnno = AnnoR + "-12-31 23:59";
+        String DataInizioAnno = AnnoR + "-01-01 00:00";
+        //Moneta Miniziale = null;
+        Map<String, Moneta[]> MappaDoppia = new TreeMap<>();//Moneta[0]=monetaIniziale, Moneta[1]=monetaFinale
+        if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet) != null) {
+            List<Moneta> lf = CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet);
+            Iterator<Moneta> it = lf.iterator();
+            while (it.hasNext()) {
+                Moneta Mfinale = it.next();
+                Moneta Miniziale=new Moneta();
+                Miniziale.Moneta=Mfinale.Moneta;
+                Miniziale.GruppoRW=Mfinale.GruppoRW;
+                Miniziale.Prezzo="0.000";
+                Miniziale.Qta="0";
+                Miniziale.Tipo=Mfinale.Tipo;
+                Moneta Mdoppia[] =new Moneta[2];
+                Mdoppia[0]=Miniziale;
+                Mdoppia[1]=Mfinale;
+                MappaDoppia.put(Mfinale.Moneta, Mdoppia);
+            }
+        }
+        if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet) != null) {
+            List<Moneta> li = CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet);
+            Iterator<Moneta> iti = li.iterator();
+            while (iti.hasNext()) {
+                Moneta Miniziale = iti.next();
+                if (MappaDoppia.get(Miniziale.Moneta) == null) {
+                    Moneta Mfinale = new Moneta();
+                    Mfinale.Moneta = Miniziale.Moneta;
+                    Mfinale.GruppoRW = Miniziale.GruppoRW;
+                    Mfinale.Prezzo = "0.000";
+                    Mfinale.Qta = "0";
+                    Mfinale.Tipo = Miniziale.Tipo;
+                    Moneta Mdoppia[] = new Moneta[2];
+                    Mdoppia[0] = Miniziale;
+                    Mdoppia[1] = Mfinale; 
+                    MappaDoppia.put(Mfinale.Moneta, Mdoppia);
+                }else{
+                    Moneta Mdoppia[] = MappaDoppia.get(Miniziale.Moneta);
+                    Mdoppia[0] = Miniziale;
+                }
+            }
+        }   
+        for(Moneta m[]:MappaDoppia.values()){
+
+                               //Trovato moneta con giacenza iniziale e finale
+                                //Compilo la lista
+                                String xlista[] = new String[17];
+                                xlista[0] = AnnoR;                                                //Anno RW
+                                xlista[1] = GruppoWallet;                                         //Gruppo Wallet Inizio
+                                xlista[2] = m[0].Moneta;                                     //Moneta Inizio
+                                xlista[3] = m[0].Qta;                                        //Qta Inizio
+                                xlista[4] = DataInizioAnno;                                       //Data Inizio
+                                xlista[5] = m[0].Prezzo;                                     //Prezzo Inizio
+                                xlista[6] = GruppoWallet;                                         //GruppoWallet Fine
+                                xlista[7] = m[1].Moneta;                                        //Moneta Fine
+                                xlista[8] = m[1].Qta;                                           //Qta Fine
+                                xlista[9] = DataFineAnno;                                         //Data Fine
+                                xlista[10] = m[1].Prezzo;                                              //Prezzo Fine
+                                xlista[11] = "365";                                               //Giorni di Detenzione
+                                xlista[12] = "Fine Anno";                                             //Causale
+                                xlista[13] = "Giacenza Inizio Anno";                              //ID Movimento Apertura (o segnalazione inizio anno)
+                                xlista[14] = "Giacenza Fine Anno";                                                 //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
+                                xlista[15] = "";                                                  //Tipo Errore
+                                xlista[16] = "";                                                  //Lista ID coinvolti separati da virgola
+
+                                if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
+                                    ListaRW = new ArrayList<>();
+                                    CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
+                                }
+                                ListaRW = CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
+                                ListaRW.add(xlista);
+                            }
+                  
+
     }
     
     
@@ -794,7 +929,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //1 - Inseirsco nello stack tutti i valori iniziali precedentemente trovati
                 //2 - Uso il lifo per il calcolo dei valori RW
                 if (PrimoMovimentoAnno) {
-                    for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
+                    
+                    CreaPrimiMovimenti(MappaGrWallet_QtaCryptoInizio,MappaGrWallet_CryptoStack,inizio,DataInizioAnno);
+                    PrimoMovimentoAnno = false;
+                   /* for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
                         Map<String, Moneta> a = MappaGrWallet_QtaCryptoInizio.get(key);
                         for (Moneta m : a.values()) {
                             if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
@@ -836,8 +974,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 }
                             }
                         }
-                    }
-                    PrimoMovimentoAnno = false;
+                    }*/
+                    
                 }
 
                 //Continuo comunque a fare la somma della qta delle crypto che servirà dopo per chiudere gli RW di fine anno
@@ -873,7 +1011,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                       
                 }
 
-                                
+                //Solo se rilvenza è di diverso da A proseguo con i calcoli
+                //Infatti se è uguale ad A devo solo leggere le giacenze iniziali e finali
+                if (!Rilevanza.equalsIgnoreCase("A")){                 
                 String Causale = "Vendita";
                     switch (IDTS[4]) {
                         case "VC" ->
@@ -1302,12 +1442,22 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 }
 
                 //PARTE 3
-            } else if (Anno > AnnoRiferimento) {
+           } } else if (Anno > AnnoRiferimento) {
                 //Non faccio nulla
 
             }
+            
+
         }
-        
+                //Se arrivato a questo punto non ho ancora creato i primi movimenti li creo ora
+                //1 - Inseirsco nello stack tutti i valori iniziali precedentemente trovati
+                //2 - Uso il lifo per il calcolo dei valori RW
+                if (PrimoMovimentoAnno) {                   
+                    CreaPrimiMovimenti(MappaGrWallet_QtaCryptoInizio,MappaGrWallet_CryptoStack,inizio,DataInizioAnno);
+                   // System.out.println("Secondo Primo Movimento");
+                    //PrimoMovimentoAnno = false;
+                 }  
+ 
                 //finito il ciclo
                 //1 - Trovo il valore di fine anno di riferimento relativo a tutti i token e chiudo tutti i conti aperti
                 //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
@@ -1377,8 +1527,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                              
                                 
                             } else {
-
-                            ChiudiRWFR(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo,"Fine Anno", "Giacenza Fine Anno");
+                                //Solo se rilvenza è di diverso da A proseguo con i calcoli
+                                //nel caso sia uguale ad A viene gestito a fine ciclo
+                                if (!Rilevanza.equalsIgnoreCase("A")) {
+                                    ChiudiRWFR(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
+                                }
                             //Questo qua sotto popola una lista per ogni gruppo wallet contenente la giacenza di ciascuna moneta ad inizio anno
                             
                             if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key)==null){
@@ -1392,6 +1545,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                          }
                         }
                     }
+                    
+                    //se la rilevanza è uguale ad A significa che voglio vedere solo le giacenze iniziali e finali e quelle andrò a calcolare
+                    if (Rilevanza.equalsIgnoreCase("A")) ChiudiRWGiacenzeFinali (key);
+                    
                 }
         
         SistemaErroriInListe();

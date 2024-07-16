@@ -3358,11 +3358,14 @@
                                           <Component id="jLabel15" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Group type="102" alignment="0" attributes="0">
                                               <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                                  <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" max="32767" attributes="0"/>
-                                                  <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" alignment="0" max="32767" attributes="0"/>
-                                                  <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" max="32767" attributes="0"/>
-                                                  <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" min="-2" pref="1000" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
+                                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                                      <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" max="32767" attributes="0"/>
+                                                      <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" alignment="0" max="32767" attributes="0"/>
+                                                      <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" max="32767" attributes="0"/>
+                                                      <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" min="-2" pref="1000" max="-2" attributes="0"/>
+                                                  </Group>
                                               </Group>
                                           </Group>
                                       </Group>
@@ -3391,12 +3394,14 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_StakingZero" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="78" max="32767" attributes="0"/>
                               <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" min="-2" max="-2" attributes="0"/>
@@ -3557,6 +3562,14 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Ulteriori opzioni :"/>
                       </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Quadro RW : &lt;/b&gt;Per i Wallet che pagano gi&#xe0; il bollo mostra solo giacenza ad inizio fine anno&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

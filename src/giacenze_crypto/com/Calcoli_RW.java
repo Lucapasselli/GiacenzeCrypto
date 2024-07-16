@@ -562,7 +562,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
         
     public static void ChiudiRWGiacenzeFinali(String GruppoWallet) {
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
-        List<String[]> ListaRW;
+        //pulizia vecchia lista, tanto devo ricrearla da capo in questo caso perchè devo prendere solo i valori iniziali e finali
+        List<String[]> ListaRW=new ArrayList<>();
+        CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
+        
         String DataFineAnno = AnnoR + "-12-31 23:59";
         String DataInizioAnno = AnnoR + "-01-01 00:00";
         //Moneta Miniziale = null;
@@ -629,10 +632,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 xlista[15] = "";                                                  //Tipo Errore
                                 xlista[16] = "";                                                  //Lista ID coinvolti separati da virgola
 
-                                if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
+                              /*  if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
                                     ListaRW = new ArrayList<>();
                                     CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
-                                }
+                                }*/
                                 ListaRW = CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                                 ListaRW.add(xlista);
                             }
@@ -647,6 +650,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
         //Lo segnalo nelgi errori
         //Poi scalo tutti i prezzi ai 2 centesimi
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+            //if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)!=null)
             for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)) {
                 Moneta mi[]=new Moneta[2];
                 Moneta mf[]=new Moneta[2];
@@ -1468,6 +1472,15 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
               
                
                     for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
+                        //Key è il Gruppo Wallet
+                        String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(key);
+                        String RW_MostraGiacenzeSePagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
+                        //Leggo se il gruppo ha pagato o meno e a seconda del flag RW_MostraGiacenzeSePagaBollo
+                        //aggiorno il boolean che dice se devo o meno mostrare la giacenza inizio e fine anno al posto dei calcoli
+                        boolean MostraGiacenzeSePagaBollo=false;
+                        if (Valori[2].equals("S")&&RW_MostraGiacenzeSePagaBollo.equals("SI"))MostraGiacenzeSePagaBollo=true;
+                       // System.out.println(key+" _ "+RW_MostraGiacenzeSePagaBollo+" _ "+MostraGiacenzeSePagaBollo);
+                        
                     Map<String, Moneta> a = MappaGrWallet_QtaCryptoInizio.get(key);
                    // System.out.println(key);
                     for (Moneta m : a.values()) {
@@ -1529,7 +1542,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             } else {
                                 //Solo se rilvenza è di diverso da A proseguo con i calcoli
                                 //nel caso sia uguale ad A viene gestito a fine ciclo
-                                if (!Rilevanza.equalsIgnoreCase("A")) {
+                                if (!(Rilevanza.equalsIgnoreCase("A") || MostraGiacenzeSePagaBollo)) {
+                                    
                                     ChiudiRWFR(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
                                 }
                             //Questo qua sotto popola una lista per ogni gruppo wallet contenente la giacenza di ciascuna moneta ad inizio anno
@@ -1547,8 +1561,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     }
                     
                     //se la rilevanza è uguale ad A significa che voglio vedere solo le giacenze iniziali e finali e quelle andrò a calcolare
-                    if (Rilevanza.equalsIgnoreCase("A")) ChiudiRWGiacenzeFinali (key);
-                    
+                    if (Rilevanza.equalsIgnoreCase("A")|| MostraGiacenzeSePagaBollo){ 
+                        ChiudiRWGiacenzeFinali (key);
+                    }
                 }
         
         SistemaErroriInListe();

@@ -415,6 +415,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RW_Opzioni_RilevanteSoloValoriIniFin = new javax.swing.JRadioButton();
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
+        RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -695,7 +696,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(jButton1))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
+                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                 .addGap(51, 51, 51)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2556,6 +2557,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         jLabel15.setText("Ulteriori opzioni :");
 
+        RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setText("<html><b>Quadro RW : </b>Per i Wallet che pagano già il bollo mostra solo giacenza ad inizio fine anno</html>");
+        RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
         Opzioni_Calcolo_PannelloLayout.setHorizontalGroup(
@@ -2584,11 +2592,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             .addComponent(jLabel15)
                             .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
                                 .addGap(49, 49, 49)
-                                .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1000, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento, javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1000, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                         .addGap(0, 147, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -2610,12 +2620,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_InizioSuWalletOriginale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5)
                 .addComponent(RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Opzioni_CheckBox_LiFoComplessivo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_CheckBox_StakingZero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2768,6 +2780,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RW_Rilevanza=DatabaseH2.Pers_Opzioni_Leggi("RW_Rilevanza");
         if(RW_Rilevanza.equalsIgnoreCase("A")){
             RW_Opzioni_RilevanteSoloValoriIniFin.setSelected(true);
+            RW_Opzioni_CheckBox_InizioSuWalletOriginale.setEnabled(false);
+            RW_Opzioni_CheckBox_LiFoComplessivo.setEnabled(false);
+            RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento.setEnabled(false);
+            RW_Opzioni_CheckBox_StakingZero.setEnabled(false);
+            RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setEnabled(false);
         }else if(RW_Rilevanza.equalsIgnoreCase("B")){
             RW_Opzioni_RilenvanteScambiFIAT.setSelected(true);
         }else if(RW_Rilevanza.equalsIgnoreCase("C")){
@@ -2780,6 +2797,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if(RW_InizioSuWOriginale!=null && RW_InizioSuWOriginale.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_InizioSuWalletOriginale.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_InizioSuWOriginale","NO");
+        
+        String RW_MostraGiacenzeSePagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
+        if(RW_MostraGiacenzeSePagaBollo!=null && RW_MostraGiacenzeSePagaBollo.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setSelected(true);
+        }else DatabaseH2.Pers_Opzioni_Scrivi("RW_MostraGiacenzeSePagaBollo","NO");
         
         String RW_LiFoComplessivo=DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo"); 
         if(RW_LiFoComplessivo!=null && RW_LiFoComplessivo.equalsIgnoreCase("SI")){
@@ -5879,7 +5901,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        progress.RipristinaStdout();
+        //progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -6590,6 +6612,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 boolean PagaBollo = !(boolean) Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 3);               
                 //Adesso devo scrivere nel database i dati corretti
                 DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], Valori[1], PagaBollo); 
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                RW_RicalcolaRWseEsiste();
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 //Aggiorno la tabella
                 Opzioni_GruppoWallet_CaricaGruppiWallet();
                 rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
@@ -6610,6 +6635,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Funzioni_AggiornaTutto();
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        //Ripristina lo stato delle altre opzioni
+            RW_Opzioni_CheckBox_InizioSuWalletOriginale.setEnabled(true);
+            RW_Opzioni_CheckBox_LiFoComplessivo.setEnabled(true);
+            RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento.setEnabled(true);
+            RW_Opzioni_CheckBox_StakingZero.setEnabled(true);
+            RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setEnabled(true);
         }
     }//GEN-LAST:event_RW_Opzioni_RilenvanteScambiFIATActionPerformed
 
@@ -6620,6 +6651,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Funzioni_AggiornaTutto();
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        //Ripristina lo stato delle altre opzioni
+            RW_Opzioni_CheckBox_InizioSuWalletOriginale.setEnabled(true);
+            RW_Opzioni_CheckBox_LiFoComplessivo.setEnabled(true);
+            RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento.setEnabled(true);
+            RW_Opzioni_CheckBox_StakingZero.setEnabled(true);
+            RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setEnabled(true);
             
         }
     }//GEN-LAST:event_RW_Opzioni_RilevanteScambiRilevantiActionPerformed
@@ -6631,19 +6668,47 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Funzioni_AggiornaTutto();
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        //Ripristina lo stato delle altre opzioni
+            RW_Opzioni_CheckBox_InizioSuWalletOriginale.setEnabled(true);
+            RW_Opzioni_CheckBox_LiFoComplessivo.setEnabled(true);
+            RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento.setEnabled(true);
+            RW_Opzioni_CheckBox_StakingZero.setEnabled(true);
+            RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setEnabled(true);
         }
 
     }//GEN-LAST:event_RW_Opzioni_RilenvanteTuttigliScambiActionPerformed
 
     private void RW_Opzioni_RilevanteSoloValoriIniFinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_RilevanteSoloValoriIniFinActionPerformed
         // TODO add your handling code here:
-            if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()){
-            DatabaseH2.Pers_Opzioni_Scrivi("RW_Rilevanza","A");
+        if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_Rilevanza", "A");
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Funzioni_AggiornaTutto();
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            //rendi grigie le opzioni accessorie visto che con questa ozione biffata non vengono contemplate
+            RW_Opzioni_CheckBox_InizioSuWalletOriginale.setEnabled(false);
+            RW_Opzioni_CheckBox_LiFoComplessivo.setEnabled(false);
+            RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento.setEnabled(false);
+            RW_Opzioni_CheckBox_StakingZero.setEnabled(false);
+            RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.setEnabled(false);
         }
     }//GEN-LAST:event_RW_Opzioni_RilevanteSoloValoriIniFinActionPerformed
+
+    private void RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed
+        // TODO add your handling code here:
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_MostraGiacenzeSePagaBollo", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("RW_MostraGiacenzeSePagaBollo", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -8331,6 +8396,7 @@ try {
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_InizioSuWalletOriginale;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_LiFoComplessivo;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_StakingZero;
     private javax.swing.JRadioButton RW_Opzioni_RilenvanteScambiFIAT;
     private javax.swing.JRadioButton RW_Opzioni_RilenvanteTuttigliScambi;

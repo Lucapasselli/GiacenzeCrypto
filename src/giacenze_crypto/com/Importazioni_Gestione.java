@@ -244,11 +244,14 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
        //this.setCursor(Cursor.WAIT_CURSOR);
         if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Crypto.com APP Csv")) {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            JFileChooser fc = new JFileChooser();
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
              //   selezioneok[0]=true;
                 String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+                System.out.println(Directory);
                 boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                 Importazioni.AzzeraContatori();
                 Importazioni.Importa_Crypto_CDCApp(FileDaImportare, SovrascriEsistenti);
@@ -259,13 +262,16 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 dispose();
             }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
+        } 
+        
+        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("COINTRACKING")) {
 
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
             Bottone_Annulla.setEnabled(false);
-            JFileChooser fc = new JFileChooser();
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
             int returnVal = fc.showOpenDialog(c);
 
             Thread thread;
@@ -276,7 +282,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
                        //     selezioneok[0] = true;
                             String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
-                            // System.out.println(CheckBox_Exchanges.getSelectedItem().toString().trim());
+                            DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                             boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
                             Importazioni.AzzeraContatori();
                             String nomewallet;
@@ -330,12 +336,15 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }*/
 
 
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV")) {
+        }
+        
+        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV")) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
             Bottone_Annulla.setEnabled(false);
-            JFileChooser fc = new JFileChooser();
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
             int returnVal = fc.showOpenDialog(c);
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
             Thread thread;
@@ -347,6 +356,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                       //  selezioneok[0] = true;
                         String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
                         Importazioni.Importa_Crypto_Binance(FileDaImportare, SovrascriEsistenti, c, progressb);
@@ -371,12 +381,15 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             progressb.setDefaultCloseOperation(0);
             progressb.setLocationRelativeTo(this);
             progressb.setVisible(true);
-        } else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().contains("OKX CSV")) {
+        } 
+        
+        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().contains("OKX CSV")) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);
             Bottone_Annulla.setEnabled(false);
-            JFileChooser fc = new JFileChooser();
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
             int returnVal = fc.showOpenDialog(c);
             boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
             Thread thread;
@@ -388,6 +401,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                       //  selezioneok[0] = true;
                         String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
                         Importazioni.Importa_Crypto_OKX(FileDaImportare, SovrascriEsistenti, c, progressb);

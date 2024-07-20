@@ -1116,6 +1116,9 @@
                       <Properties>
                         <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="GiacenzeaData_Data_DataChooserPropertyChange"/>
+                      </Events>
                     </Component>
                     <Container class="javax.swing.JScrollPane" name="GiacenzeaData_ScrollPane">
                       <AuxValues>

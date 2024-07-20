@@ -790,6 +790,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.dpos.non_compound_interest.crypto_wallet", "STAKING REWARD");    //Nuovo Staking di Crypto.com
         Mappa_Conversione_Causali.put("finance.dpos.compound_interest.crypto_wallet", "STAKING REWARD");
         Mappa_Conversione_Causali.put("staking_reward", "STAKING REWARD");                       //Reward (Es. NEO Gas) 
+        Mappa_Conversione_Causali.put("finance.lockup.dpos_compound_interest.crypto_wallet", "STAKING REWARD");//Reward da staking con Carta 20/07/2024
 
         Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
         Mappa_Conversione_Causali.put("referral_gift", "REWARD");                         //Bonus di iscrizione sbloccato
@@ -802,6 +803,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("crypto_earn_extra_interest_paid", "REWARD");//Earn Extra Reward 
         Mappa_Conversione_Causali.put("supercharger_reward_to_app_credited", "REWARD");//Supercharger Reward in App
         Mappa_Conversione_Causali.put("rewards_platform_deposit_credited", "REWARD");//Mission Reward
+
         
 
 

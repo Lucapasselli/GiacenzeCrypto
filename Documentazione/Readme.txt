@@ -21,6 +21,13 @@ La versione con installer invece basta installarla sopra quella vecchia che mant
 
 Changelog
 
+ver. 1.0.25
+Nuove implementazioni : 
+	- Una volta selezionata la data dalla Funzione giacenze a data questa viene memorizzata per i successivi accessi
+	- Una volta selezionato un file da importare la path viene salvata per le successive importazioni per evitare di dover riselezionare l'intero percorso
+	- Aggiunto tipologia "finance.lockup.dpos_compound_interest.crypto_wallet" a quelle supportate dalle importazioni da CDC APP
+Correzione di bug :
+
 ver. 1.0.24
 Nuove implementazioni : 
 	- In "Opzioni" - "Gruppi Wallet Crypto" inserita possibilità di aggiungere un Alias e indicare se è già stato pagato il bollo

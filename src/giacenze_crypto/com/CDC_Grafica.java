@@ -697,7 +697,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(jButton1))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
+                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                 .addGap(51, 51, 51)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -960,6 +960,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Data_Label.setText("Data : ");
 
         GiacenzeaData_Data_DataChooser.setDateFormatString("yyyy-MM-dd");
+        GiacenzeaData_Data_DataChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                GiacenzeaData_Data_DataChooserPropertyChange(evt);
+            }
+        });
 
         GiacenzeaData_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -2758,6 +2763,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
     
     
     private void AggiornaSpunte(){
+        
+   
+        
+        
         //Aggiorno lo stato del checkbox relativo al calcolo delle plusvalenze
         String PlusXWallet=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
         if(PlusXWallet!=null && PlusXWallet.equalsIgnoreCase("SI")){
@@ -2875,10 +2884,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
    }catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } 
-        
-        
-        
-        
+                
         
         
         
@@ -2950,21 +2956,30 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
     
     
-   private void CDC_ScriviDatesuGUI() {
+    private void CDC_ScriviDatesuGUI() {
         try {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             Date d = f.parse(CDC_DataIniziale);
             this.CDC_DataChooser_Iniziale.setDate(d);
-            d= f.parse(CDC_DataFinale);
+            d = f.parse(CDC_DataFinale);
             this.CDC_DataChooser_Finale.setDate(d);
-            this.GiacenzeaData_Data_DataChooser.setDate(d);
             this.CDC_FiatWallet_Checkbox_ConsideraValoreMaggiore.setSelected(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
             this.CDC_CardWallet_Checkbox_ConsideraValoreMaggiore.setSelected(CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+
+            //Aggiorno la Data su Giacenze a Data
+            String GiacenzeAData_Data = DatabaseH2.Pers_Opzioni_Leggi("GiacenzeAData_Data");
+            if (GiacenzeAData_Data != null) {
+                d = f.parse(DatabaseH2.Pers_Opzioni_Leggi("GiacenzeAData_Data"));
+                this.GiacenzeaData_Data_DataChooser.setDate(d);
+            } else {
+                DatabaseH2.Pers_Opzioni_Scrivi("GiacenzeAData_Data", CDC_DataFinale);
+                this.GiacenzeaData_Data_DataChooser.setDate(d);
+            }
         } catch (ParseException ex) {
-         //   Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+               Logger.getLogger("Erroe su funzione CDC_ScriviDatesuGUI() in CDC_Grafica - "+CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
         //CDC_ScriviFileDatiDB();
-   }
+    }
     
    private void CDC_ScriviFileDatiDB() { //CDC_FileDatiDB
    // CDC_FileDatiDB
@@ -6733,6 +6748,37 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             }
 }
     }//GEN-LAST:event_RW_Bottone_DocumentazioneActionPerformed
+
+    private void GiacenzeaData_Data_DataChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_GiacenzeaData_Data_DataChooserPropertyChange
+        // TODO add your handling code here:
+            if (GiacenzeaData_Data_DataChooser.getDate()!=null){
+                try {
+                    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                    String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
+                    LocalDate current_date = LocalDate.now();
+                    
+                    long dataIeri=Funzioni_Date_ConvertiDatainLong(current_date.toString())-86400000;
+                    Date DataIeri=f.parse(OperazioniSuDate.ConvertiDatadaLong(dataIeri));
+                    
+                    long dataInserita=Funzioni_Date_ConvertiDatainLong(Data);
+                    //adesso devo mettere un blocco ovvero impedire che venga selezionata una data maggiore di quella di ieri
+                    //nel qual caso emettere un messaggio
+                    
+                    if (dataInserita<=dataIeri){
+                        //Gestisco il fatto che la data indicata va bene e la salvo anche nel database
+                        DatabaseH2.Pers_Opzioni_Scrivi("GiacenzeAData_Data", CDC_DataFinale);
+                    }
+                    else if(Funzioni_Date_ConvertiDatainLong(Data)>Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
+                        
+                        JOptionPane.showConfirmDialog(this, "Attenzione, la data inserita non può essere superiore alla data di ieri!",
+                                "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                        GiacenzeaData_Data_DataChooser.setDate(DataIeri);
+                        
+                    }   } catch (ParseException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+        }
+    }//GEN-LAST:event_GiacenzeaData_Data_DataChooserPropertyChange
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

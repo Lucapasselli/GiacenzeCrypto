@@ -563,6 +563,9 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Binance Card Spending",                      "PRELIEVO FIAT");
         Mappa_Conversione_Causali.put("Buy Crypto",                                 "ACQUISTO CRYPTO");
         
+        Mappa_Conversione_Causali.put("Referral Commission",                        "REWARD");//Inserito il 21/07/2024
+        Mappa_Conversione_Causali.put("Crypto Box",                                 "REWARD"); // Red carpet Binance rewards, Inserito il 21/07/2024
+        Mappa_Conversione_Causali.put("Convert Fiat to Stablecoin Paysafe",         "ACQUISTO CRYPTO");//Inserito il 21/07/2024
         //,Auto-Invest Transaction
         //Binance Card Spending
       /*  Mappa_Conversione_Causali.put("Fiat Deposit", "DEPOSITO FIAT");        //Scambio di una Crypto per un'altra Crypto*/

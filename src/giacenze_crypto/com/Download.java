@@ -396,7 +396,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         }
      //   textArea.append(String.valueOf((char)b));
         // scrolls the text area to the end of data
-     //   textPane.setCaretPosition(textPane.getDocument().getLength());
+        textPane.setCaretPosition(textPane.getDocument().getLength());
         // keeps the textArea up to date
     //    textArea.update(textArea.getGraphics());
     }

@@ -514,6 +514,54 @@ public class TransazioneDefi {
           }
        else if(IdentificaTipoTransazione()!=null && IdentificaTipoTransazione().equalsIgnoreCase("deposito")){
          //Deposito (No commissioni)
+         //Potrebbero esserci commissioni se è un deposito da piattaforma defi
+         //Quindi controllo se c'è la causale prima di applicare la commissione
+         //Se non c'è la causale probabilmente arriva da exchange
+         // System.out.println("---" + QtaCommissioni + "---");
+          if (QtaCommissioni != null && TipoTransazione!=null && !TipoTransazione.isBlank()) {
+              RT = new String[Importazioni.ColonneTabella];
+              RT[0] = PrimaParteID + "_1_1_CM";
+              RT[1] = dataAlMinuto;
+              RT[2] = "1 di 1";
+              RT[3] = Wallet + " (" + Rete + ")";
+              RT[4] = "Wallet";
+              RT[5] = "COMMISSIONE";
+              RT[6] = "Per Deposito";
+              RT[7] = TipoTransazione;
+              RT[8] = MonetaCommissioni;
+              RT[9] = "Crypto";
+              RT[10] = QtaCommissioni;
+              RT[11] = "";
+              RT[12] = "";
+              RT[13] = "";
+              RT[14] = "";
+              Moneta M1 = new Moneta();
+              //             if(RT[8].equalsIgnoreCase("CRO")){
+              M1.InserisciValori(RT[8], RT[10], RT[8], RT[9]);
+              //   }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+
+              RT[15] = Prezzi.DammiPrezzoTransazione(M1, null, OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0", true, 2, Rete);//calcolare con numero contratto              
+              //RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
+              RT[16] = "";//Da definire cosa mettere
+              RT[17] = "Da calcolare";
+              RT[18] = "";
+              RT[19] = "Da calcolare";
+              RT[20] = "";
+              RT[21] = "";
+              RT[22] = "A";
+              RT[23] = Blocco;
+              RT[24] = HashTransazione;
+              RT[25] = "";
+              RT[26] = MonetaCommissioni;
+              RT[27] = "";
+              RT[28] = "";
+              RT[29] = TimeStamp;
+              RT[30] = "";
+              Importazioni.RiempiVuotiArray(RT);
+              righe.add(RT);
+          }
+         
+         
          int numeroDepositi=MappaToken.size();
          int i=1;
          for(ValoriToken token : MappaToken.values()){

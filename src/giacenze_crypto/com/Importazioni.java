@@ -3851,7 +3851,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             }
             String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
             if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
-           // System.out.println(urls);
+            //System.out.println(urls);
             System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -4177,6 +4177,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         // String apiKey="6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6";
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Importazione dati da explorer");
+  //  progressb.RipristinaStdout();
         AzzeraContatori();
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 

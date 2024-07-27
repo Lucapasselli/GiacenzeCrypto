@@ -165,7 +165,10 @@ public class Funzioni {
                             Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
                            }
                         else if(Rete.equalsIgnoreCase("CRO")){
-                           Desktop.getDesktop().browse(new URI("https://cronoscan.com//tx/" + IDTransazione)); 
+                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/tx/" + IDTransazione)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("ETH")){
+                           Desktop.getDesktop().browse(new URI("https://etherscan.io/tx/" + IDTransazione)); 
                         }
                     } catch (URISyntaxException | IOException ex) {
                         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);

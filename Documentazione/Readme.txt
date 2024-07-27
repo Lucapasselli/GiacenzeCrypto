@@ -26,7 +26,10 @@ Nuove implementazioni :
 	- Una volta selezionata la data dalla Funzione giacenze a data questa viene memorizzata per i successivi accessi
 	- Una volta selezionato un file da importare la path viene salvata per le successive importazioni per evitare di dover riselezionare l'intero percorso
 	- Aggiunto tipologia "finance.lockup.dpos_compound_interest.crypto_wallet" a quelle supportate dalle importazioni da CDC APP
+  - Aggiunto 3 nuove tipologie per le importazioni da Binance
 Correzione di bug :
+  - Corretto errore nelle importazioni dei wallet in DeFi per cui non venivano conteggiate le fee per le operazioni di deposito da Piattaforme DeFi
+  - Corretto tasto Dettaglio DeFi non funzionante su rete Ethereum
 
 ver. 1.0.24
 Nuove implementazioni : 

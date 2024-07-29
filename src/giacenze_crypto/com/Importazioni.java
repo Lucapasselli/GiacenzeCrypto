@@ -2256,8 +2256,15 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[10]=Mon.Qta;
 
                                 } else {
-                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_DC";
-                                    RT[5]="DEPOSITO CRYPTO";
+                                    if (Mon.Tipo.equalsIgnoreCase("FIAT")){
+                                        RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_DF";
+                                        RT[5]="DEPOSITO FIAT";
+                                        }
+                                    else 
+                                        {
+                                        RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_DC";
+                                        RT[5]="DEPOSITO CRYPTO";
+                                        }
                                     RT[6]="-> "+Mon.Moneta;
                                     RT[11]=Mon.Moneta;
                                     RT[12]=Mon.Tipo;

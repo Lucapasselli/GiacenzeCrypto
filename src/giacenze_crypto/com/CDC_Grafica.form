@@ -1136,7 +1136,7 @@
                               <Table columnCount="6" rowCount="0">
                                 <Column editable="false" title="Nome" type="java.lang.Object"/>
                                 <Column editable="false" title="Rete" type="java.lang.Object"/>
-                                <Column editable="false" title="Address Defi" type="java.lang.Object"/>
+                                <Column editable="false" title="Address Defi del Token" type="java.lang.Object"/>
                                 <Column editable="false" title="Tipo" type="java.lang.Object"/>
                                 <Column editable="false" title="Qta" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;(in Euro)&lt;/html&gt;" type="java.lang.Object"/>

@@ -980,7 +980,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Nome", "Rete", "Address Defi", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>"
+                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {

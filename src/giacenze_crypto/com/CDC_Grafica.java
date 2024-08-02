@@ -417,6 +417,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo = new javax.swing.JCheckBox();
+        Opzioni_Rewards_Pannello = new javax.swing.JPanel();
+        OpzioniRewards_JCB_PDD_CashBack = new javax.swing.JCheckBox();
+        OpzioniRewards_JCB_PDD_Staking = new javax.swing.JCheckBox();
+        OpzioniRewards_JCB_PDD_Airdrop = new javax.swing.JCheckBox();
+        OpzioniRewards_JCB_PDD_Earn = new javax.swing.JCheckBox();
+        OpzioniRewards_JCB_PDD_Reward = new javax.swing.JCheckBox();
+        jScrollPane10 = new javax.swing.JScrollPane();
+        jTextPane2 = new javax.swing.JTextPane();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -2661,6 +2669,89 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.addTab("Opzioni di Calcolo", Opzioni_Calcolo_Pannello);
 
+        OpzioniRewards_JCB_PDD_CashBack.setSelected(true);
+        OpzioniRewards_JCB_PDD_CashBack.setText("CashBack");
+        OpzioniRewards_JCB_PDD_CashBack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpzioniRewards_JCB_PDD_CashBackActionPerformed(evt);
+            }
+        });
+
+        OpzioniRewards_JCB_PDD_Staking.setSelected(true);
+        OpzioniRewards_JCB_PDD_Staking.setText("Staking Rewards");
+        OpzioniRewards_JCB_PDD_Staking.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpzioniRewards_JCB_PDD_StakingActionPerformed(evt);
+            }
+        });
+
+        OpzioniRewards_JCB_PDD_Airdrop.setSelected(true);
+        OpzioniRewards_JCB_PDD_Airdrop.setText("Airdrop");
+        OpzioniRewards_JCB_PDD_Airdrop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpzioniRewards_JCB_PDD_AirdropActionPerformed(evt);
+            }
+        });
+
+        OpzioniRewards_JCB_PDD_Earn.setSelected(true);
+        OpzioniRewards_JCB_PDD_Earn.setText("Earn");
+        OpzioniRewards_JCB_PDD_Earn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpzioniRewards_JCB_PDD_EarnActionPerformed(evt);
+            }
+        });
+
+        OpzioniRewards_JCB_PDD_Reward.setSelected(true);
+        OpzioniRewards_JCB_PDD_Reward.setText("Reward Generica");
+        OpzioniRewards_JCB_PDD_Reward.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpzioniRewards_JCB_PDD_RewardActionPerformed(evt);
+            }
+        });
+
+        jTextPane2.setEditable(false);
+        jTextPane2.setContentType("text/html"); // NOI18N
+        jTextPane2.setText("<html> \n<FONT SIZE=\"6\">Selezionare quali delle seguenti tipologie di reward sono identificabili come <b>\"provento da detezione\"</b><br><br><br>\n\n<FONT SIZE=\"4\">La legge dice che <i>“i proventiderivanti dalla detenzione di cripto-attività percepiti nel periodo di imposta sono assoggettati a tassazione senza alcuna deduzione”.</i><br><br>\nQuesto significa che questo tipo di provento, quindi quello derivante dalla detenzione di Cripto Attività,  va tassato alla fonte ovvero succede questo :<br><br>\nSupponiamo che ricevo 0,001 Eth del valore di 2 Euro al momento della ricezione derivante dallo stacking degli stessi, in questo caso quei 2 euro andranno a far cumulo per intero sulle plusvalenze dell'anno e saranno anche il nuovo costo di carico per quei 0,001 Eth appena ricevuti.<br><br>\n\nQualora invece il provento non derivi da detenzione di cripto attività, es. referral o altro il costo di carico del provento è pari a zero e verrà tassato in toto solo nel momento della vendita/scambio fiscalmente rilevante.<br>\n</html>\n");
+        jScrollPane10.setViewportView(jTextPane2);
+
+        javax.swing.GroupLayout Opzioni_Rewards_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Rewards_Pannello);
+        Opzioni_Rewards_Pannello.setLayout(Opzioni_Rewards_PannelloLayout);
+        Opzioni_Rewards_PannelloLayout.setHorizontalGroup(
+            Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1333, Short.MAX_VALUE)
+                    .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+                        .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(OpzioniRewards_JCB_PDD_CashBack, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(OpzioniRewards_JCB_PDD_Staking, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(OpzioniRewards_JCB_PDD_Airdrop, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(OpzioniRewards_JCB_PDD_Earn, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(OpzioniRewards_JCB_PDD_Reward, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        Opzioni_Rewards_PannelloLayout.setVerticalGroup(
+            Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(OpzioniRewards_JCB_PDD_CashBack)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(OpzioniRewards_JCB_PDD_Staking)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(OpzioniRewards_JCB_PDD_Airdrop)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(OpzioniRewards_JCB_PDD_Earn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(OpzioniRewards_JCB_PDD_Reward)
+                .addContainerGap(339, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("Opzioni Rewards", Opzioni_Rewards_Pannello);
+
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
@@ -2838,6 +2929,39 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if(RW_ChiudiRWsuTrasferimento!=null && RW_ChiudiRWsuTrasferimento.equalsIgnoreCase("SI")){
             this.RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento.setSelected(true);
         }else DatabaseH2.Pers_Opzioni_Scrivi("RW_ChiudiRWsuTrasferimento","NO");
+        
+        
+        //Adesso bisognerà sistemare le opzioni relative alle reward
+        String ProventoDetenzione;
+        ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack"); 
+        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_CashBack","SI");
+        else if(ProventoDetenzione.equalsIgnoreCase("NO")){
+            OpzioniRewards_JCB_PDD_CashBack.setSelected(false);
+        }
+        
+        ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("PDD_Staking"); 
+        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_Staking","SI");
+        else if(ProventoDetenzione.equalsIgnoreCase("NO")){
+            OpzioniRewards_JCB_PDD_Staking.setSelected(false);
+        }
+        
+        ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("PDD_Airdrop"); 
+        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_Airdrop","SI");
+        else if(ProventoDetenzione.equalsIgnoreCase("NO")){
+            OpzioniRewards_JCB_PDD_Airdrop.setSelected(false);
+        }
+        
+        ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("PDD_Earn"); 
+        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_Earn","SI");
+        else if(ProventoDetenzione.equalsIgnoreCase("NO")){
+            OpzioniRewards_JCB_PDD_Earn.setSelected(false);
+        }
+        
+        ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("PDD_Reward"); 
+        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_Reward","SI");
+        else if(ProventoDetenzione.equalsIgnoreCase("NO")){
+            OpzioniRewards_JCB_PDD_Reward.setSelected(false);
+        }
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -6780,6 +6904,46 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
         }
     }//GEN-LAST:event_GiacenzeaData_Data_DataChooserPropertyChange
+
+    private void OpzioniRewards_JCB_PDD_CashBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_JCB_PDD_CashBackActionPerformed
+        // TODO add your handling code here:
+        if (OpzioniRewards_JCB_PDD_CashBack.isSelected())
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_CashBack","SI");
+        else
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_CashBack","NO");
+    }//GEN-LAST:event_OpzioniRewards_JCB_PDD_CashBackActionPerformed
+
+    private void OpzioniRewards_JCB_PDD_StakingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_JCB_PDD_StakingActionPerformed
+        // TODO add your handling code here:
+        if (OpzioniRewards_JCB_PDD_Staking.isSelected())
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Staking","SI");
+        else
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Staking","NO");
+    }//GEN-LAST:event_OpzioniRewards_JCB_PDD_StakingActionPerformed
+
+    private void OpzioniRewards_JCB_PDD_AirdropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_JCB_PDD_AirdropActionPerformed
+        // TODO add your handling code here:
+        if (OpzioniRewards_JCB_PDD_Airdrop.isSelected())
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Airdrop","SI");
+        else
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Airdrop","NO");
+    }//GEN-LAST:event_OpzioniRewards_JCB_PDD_AirdropActionPerformed
+
+    private void OpzioniRewards_JCB_PDD_EarnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_JCB_PDD_EarnActionPerformed
+        // TODO add your handling code here:
+        if (OpzioniRewards_JCB_PDD_Earn.isSelected())
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Earn","SI");
+        else
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Earn","NO");
+    }//GEN-LAST:event_OpzioniRewards_JCB_PDD_EarnActionPerformed
+
+    private void OpzioniRewards_JCB_PDD_RewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_JCB_PDD_RewardActionPerformed
+        // TODO add your handling code here:
+                if (OpzioniRewards_JCB_PDD_Reward.isSelected())
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Reward","SI");
+        else
+            DatabaseH2.Pers_Opzioni_Scrivi("PDD_Reward","NO");
+    }//GEN-LAST:event_OpzioniRewards_JCB_PDD_RewardActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -8431,6 +8595,11 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JPanel Opzioni;
+    private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
+    private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;
+    private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Earn;
+    private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Reward;
+    private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Staking;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;
@@ -8452,6 +8621,7 @@ try {
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
+    private javax.swing.JPanel Opzioni_Rewards_Pannello;
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
@@ -8519,6 +8689,7 @@ try {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -8535,6 +8706,7 @@ try {
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JTextPane jTextPane2;
     // End of variables declaration//GEN-END:variables
 }
 

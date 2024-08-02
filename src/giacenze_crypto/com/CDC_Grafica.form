@@ -3590,6 +3590,121 @@
                     </Component>
                   </SubComponents>
                 </Container>
+                <Container class="javax.swing.JPanel" name="Opzioni_Rewards_Pannello">
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                      <JTabbedPaneConstraints tabName="Opzioni Rewards">
+                        <Property name="tabTitle" type="java.lang.String" value="Opzioni Rewards"/>
+                      </JTabbedPaneConstraints>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="18" pref="18" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jScrollPane10" pref="1333" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="OpzioniRewards_JCB_PDD_CashBack" alignment="0" min="-2" pref="600" max="-2" attributes="0"/>
+                                          <Component id="OpzioniRewards_JCB_PDD_Staking" min="-2" pref="600" max="-2" attributes="0"/>
+                                          <Component id="OpzioniRewards_JCB_PDD_Airdrop" min="-2" pref="600" max="-2" attributes="0"/>
+                                          <Component id="OpzioniRewards_JCB_PDD_Earn" min="-2" pref="600" max="-2" attributes="0"/>
+                                          <Component id="OpzioniRewards_JCB_PDD_Reward" min="-2" pref="600" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jScrollPane10" min="-2" pref="257" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_JCB_PDD_CashBack" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_JCB_PDD_Staking" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_JCB_PDD_Airdrop" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_JCB_PDD_Earn" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_JCB_PDD_Reward" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="339" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="OpzioniRewards_JCB_PDD_CashBack">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="CashBack"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_JCB_PDD_CashBackActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="OpzioniRewards_JCB_PDD_Staking">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Staking Rewards"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_JCB_PDD_StakingActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="OpzioniRewards_JCB_PDD_Airdrop">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Airdrop"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_JCB_PDD_AirdropActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="OpzioniRewards_JCB_PDD_Earn">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Earn"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_JCB_PDD_EarnActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="OpzioniRewards_JCB_PDD_Reward">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Reward Generica"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_JCB_PDD_RewardActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Container class="javax.swing.JScrollPane" name="jScrollPane10">
+                      <AuxValues>
+                        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                      </AuxValues>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                      <SubComponents>
+                        <Component class="javax.swing.JTextPane" name="jTextPane2">
+                          <Properties>
+                            <Property name="editable" type="boolean" value="false"/>
+                            <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
+                            <Property name="text" type="java.lang.String" value="&lt;html&gt; &#xa;&lt;FONT SIZE=&quot;6&quot;&gt;Selezionare quali delle seguenti tipologie di reward sono identificabili come &lt;b&gt;&quot;provento da detezione&quot;&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&#xa;&#xa;&lt;FONT SIZE=&quot;4&quot;&gt;La legge dice che &lt;i&gt;&#x201c;i proventiderivanti dalla detenzione di cripto-attivit&#xe0; percepiti nel periodo di imposta sono assoggettati a tassazione senza alcuna deduzione&#x201d;.&lt;/i&gt;&lt;br&gt;&lt;br&gt;&#xa;Questo significa che questo tipo di provento, quindi quello derivante dalla detenzione di Cripto Attivit&#xe0;,  va tassato alla fonte ovvero succede questo :&lt;br&gt;&lt;br&gt;&#xa;Supponiamo che ricevo 0,001 Eth del valore di 2 Euro al momento della ricezione derivante dallo stacking degli stessi, in questo caso quei 2 euro andranno a far cumulo per intero sulle plusvalenze dell&apos;anno e saranno anche il nuovo costo di carico per quei 0,001 Eth appena ricevuti.&lt;br&gt;&lt;br&gt;&#xa;&#xa;Qualora invece il provento non derivi da detenzione di cripto attivit&#xe0;, es. referral o altro il costo di carico del provento &#xe8; pari a zero e verr&#xe0; tassato in toto solo nel momento della vendita/scambio fiscalmente rilevante.&lt;br&gt;&#xa;&lt;/html&gt;&#xa;"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
               </SubComponents>
             </Container>
           </SubComponents>

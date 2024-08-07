@@ -3358,10 +3358,6 @@
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" alignment="0" min="-2" pref="1088" max="-2" attributes="0"/>
-                                          <Group type="102" attributes="0">
-                                              <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
-                                              <Component id="jScrollPane6" min="-2" pref="933" max="-2" attributes="0"/>
-                                          </Group>
                                           <Component id="jLabel14" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Group type="102" alignment="0" attributes="0">
                                               <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
@@ -3381,12 +3377,16 @@
                                                       <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" max="32767" attributes="0"/>
                                                       <Component id="RW_Opzioni_CheckBox_ChiudiRWsuTrasferimento" alignment="0" max="32767" attributes="0"/>
                                                       <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" max="32767" attributes="0"/>
-                                                      <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" alignment="0" min="-2" pref="1000" max="-2" attributes="0"/>
                                                   </Group>
+                                                  <Component id="RW_Opzioni_CheckBox_InizioSuWalletOriginale" min="-2" pref="1228" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                                              <Component id="jScrollPane6" min="-2" pref="1305" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
-                                      <EmptySpace min="0" pref="147" max="32767" attributes="0"/>
+                                      <EmptySpace min="0" pref="22" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -3418,7 +3418,7 @@
                               <Component id="RW_Opzioni_CheckBox_StakingZero" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="215" max="32767" attributes="0"/>
+                              <EmptySpace pref="232" max="32767" attributes="0"/>
                               <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" min="-2" max="-2" attributes="0"/>

@@ -244,6 +244,8 @@ public class Funzioni {
         return rilevante;
     }
         
+    
+    
     public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
        String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
@@ -255,7 +257,45 @@ public class Funzioni {
        return Tipo;
    }
     
-    
+      public static boolean RewardRilevante(String ID) {
+
+       String[] Mov=MappaCryptoWallet.get(ID);
+       String IDTS[]=ID.split("_");
+       String TipoTrasf=Mov[18].split("-")[0].trim();
+       
+       //Perchè sia una reward devo verificare se è classificata come tale alla fonte (RW) 
+       //oppure se è stata classificata dopo quindi DAI
+       if (IDTS[4].equals("RW")||
+              TipoTrasf.equals("DAI") ){
+           
+           if (Mov[5].toUpperCase().contains("CASHBACK"))
+           {               
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack").equalsIgnoreCase("SI");
+           }           
+           else if (Mov[5].toUpperCase().contains("STAKING"))
+           {               
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Staking").equalsIgnoreCase("SI");
+           }           
+           else if (Mov[5].toUpperCase().contains("AIRDROP"))
+           {               
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Airdrop").equalsIgnoreCase("SI");
+           }           
+           else if (Mov[5].toUpperCase().contains("EARN"))
+           {               
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Earn").equalsIgnoreCase("SI");
+           }           
+           else if (Mov[5].toUpperCase().contains("REWARD"))
+           {               
+               return DatabaseH2.Pers_Opzioni_Leggi("PDD_Reward").equalsIgnoreCase("SI");
+           }
+           else return true;
+
+       }
+       //se non soddisfa nessuno dei casi sopra allora metto che è fiscalmente rilevante
+       return true;
+      
+
+   }  
     
     
     

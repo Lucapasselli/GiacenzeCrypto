@@ -4,6 +4,7 @@
  */
 package giacenze_crypto.com;
 
+import static giacenze_crypto.com.CDC_Grafica.DecimaliCalcoli;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -327,7 +328,7 @@ public class Calcoli_Plusvalenze {
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).stripTrailingZeros().toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
@@ -527,8 +528,15 @@ public class Calcoli_Plusvalenze {
                 
                 //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
                 if (IDTS[4].equalsIgnoreCase("RW") || v[18].contains("DAI")) {
-
-                    if (DataSuperiore2023 || !Pre2023EarnCostoZero) {
+                   // Funzioni.RewardRilevante(IDTransazione);
+                    //Se data superiore a 2023 e la reward è fiscalmente rilvente oppure se
+                    //la data è inferiore al 2023, la reward è rilevante e non è attiva l'opzione per cui tutte le reward pre2023 sono da mettere a costo carico a zero
+                    //allore considero la reward rilevante
+                    //altrimenti non rilevante
+                    if ((DataSuperiore2023&&Funzioni.RewardRilevante(IDTransazione)) || 
+                            (!DataSuperiore2023&&!Pre2023EarnCostoZero&&Funzioni.RewardRilevante(IDTransazione))
+                            ) 
+                    {
                         NuovoPrezzoCarico = Valore;
 
                         Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);

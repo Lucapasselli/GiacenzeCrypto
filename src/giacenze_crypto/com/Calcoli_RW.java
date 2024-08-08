@@ -8,6 +8,7 @@ package giacenze_crypto.com;
 
 
 
+import static giacenze_crypto.com.CDC_Grafica.DecimaliCalcoli;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -187,11 +188,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 BigDecimal qtaRimanenteStackBD=new BigDecimal(qtaRimanenteStack);
                 //adesso devo trovare anche la QtaRimanenteOrigine = QtaRimanente / QtaEstratta x QtaOrigine
                 //Il cambio di scala nei calcoli dopo la divisione serve a togliere eventuali errori di approssimazione dovuti alla moltiplicazione successiva
-                String qtaRimanenteOrigine=qtaRimanenteStackBD.divide(qtaEstratta,40,RoundingMode.HALF_UP).multiply(QtaOrigine).setScale(30,RoundingMode.HALF_UP).stripTrailingZeros().abs().toPlainString();
+                String qtaRimanenteOrigine=qtaRimanenteStackBD.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(QtaOrigine).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().abs().toPlainString();
                 //System.out.println(qtaRimanenteStackBD+" / "+qtaEstratta+" x "+QtaOrigine);
                 //System.out.println(dataOrigine+" - "+MonetaOrigine+" - "+qtaRimanenteOrigine);
                 //Il cambio di scala nei calcoli dopo la divisione serve a togliere eventuali errori di approssimazione dovuti alla moltiplicazione successiva
-                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,40,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).setScale(30,RoundingMode.HALF_UP).abs().toPlainString();
+                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).abs().toPlainString();
                 //                System.out.println("ValRimanenteOrigine " +valoreRimanenteOrigine);
             //    String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 
@@ -511,7 +512,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
 
                 String Prz;
                 if (new BigDecimal(Valore).compareTo(new BigDecimal("0"))==0) Prz=Valore;
-                else Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), 30, RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).abs().toPlainString();
+                else Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), DecimaliCalcoli+10, RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).abs().toPlainString();
                 //System.out.println(Monete.Moneta +" + "+Monete.Qta);
              /*   String GruppoInizio="";
                 if (CDC_Grafica.MappaCryptoWallet.get(el.IDOri) != null)
@@ -1056,7 +1057,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         ElementiStack el = new ElementiStack();
 
                         el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
-                        if(IDTS[4].equals("RW")&&StakingZero) el.CostoOri="0.00";
+                        if(IDTS[4].equals("RW")&&
+                                (StakingZero||!Funzioni.RewardRilevante(IDTransazione))) 
+                            {
+                                el.CostoOri="0.00";
+                            }
                         else  el.CostoOri = Valore;//Costo di partenza della moneta originale
                         el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
                         el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
@@ -1135,7 +1140,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             else{
                                 //Altrimenti è quella calcolata
                                // System.out.println (qtaEstratta.toPlainString()+ " - "+qtaUscenteTotale.toPlainString()+" - "+qtaEntranteTotale);
-                                qtaEntrante=qtaEstratta.divide(qtaUscenteTotale,30,RoundingMode.HALF_UP).multiply(qtaEntranteTotale).stripTrailingZeros();
+                                qtaEntrante=qtaEstratta.divide(qtaUscenteTotale,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(qtaEntranteTotale).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros();
                                 el.Qta=qtaEntrante.stripTrailingZeros().abs().toPlainString();
                                 qtaEntranteRimanente=qtaEntranteRimanente.subtract(qtaEntrante);
                             }
@@ -1208,7 +1213,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         //DCZ -> Costo di carico 0 (deposito)
                         ElementiStack el = new ElementiStack();
                         el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
-                        if (v[18].contains("DAI")&&StakingZero) el.CostoOri="0.00";
+                        if (v[18].contains("DAI")&&
+                               (StakingZero||!Funzioni.RewardRilevante(IDTransazione)) )
+                        { 
+                            el.CostoOri="0.00";
+                            }
                         else  el.CostoOri = Valore;//Costo di partenza della moneta originale
                         el.MonOri = Monete[1].Moneta;//Moneta di partenza di tutto il giro del Lifo
                         el.QtaOri = Monete[1].Qta;//Qta di partenza della moneta originale
@@ -1509,7 +1518,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     ElementiStack el = StackRitorno.pop();
                                     Moneta m2=m.ClonaMoneta();
                                     if (!m2.Moneta.equals(el.Moneta))System.out.println("Errore moneta diversa");
-                                    m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),30,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).toPlainString();
+                                    m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).toPlainString();
                                     m2.Moneta=el.Moneta;
                                     m2.Qta=el.Qta;
                                     m2.GruppoRW=el.GruppoWallet;

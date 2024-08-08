@@ -4,6 +4,7 @@
  */
 package giacenze_crypto.com;
 
+import static giacenze_crypto.com.CDC_Grafica.DecimaliCalcoli;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         Tabelle.ColoraRigheTabellaCrypto(jTable1);
         String riga[]=DammiRigaTabellaDaID(ID);
         ModelloTabellaDepositiPrelievi.addRow(riga);
+        //System.out.println(riga[6]);
         String tipomov=riga[6].split("-")[0].trim();
         int ntipo=0;//e' il numero di quello che deve essere evidenziato nella combobox
         if (tipomov.equalsIgnoreCase("PWN")) {
@@ -59,7 +61,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         } else if (tipomov.equalsIgnoreCase("PTW")) {
             ntipo = 3;
             if (riga[6].contains("Scambio"))ntipo=4;
-            if (riga[6].contains("Rendita"))ntipo=5;//Prrelievo per Piattoforma a rendita
+            if (riga[6].contains("Rendita"))ntipo=5;//Prelievo per Piattoforma a rendita
             TransferSI();
         } else if (tipomov.equalsIgnoreCase("DTW")) {
             ntipo = 3;
@@ -729,7 +731,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         int numTransazione=Integer.parseInt(IDPrelivoSpezzato[2])+1;
         IDCommissione=IDPrelivoSpezzato[0]+"_"+IDPrelivoSpezzato[1]+"_"+numTransazione+"_1_CM";
         QtaCommissione=new BigDecimal(MovimentoPrelievo[10]).abs().subtract(new BigDecimal(MovimentoDeposito[13]).abs()).toPlainString();
-        ValoreTransazione=new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(),15, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaCommissione)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+        ValoreTransazione=new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(),DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaCommissione)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
         MovimentoCommissione[0]=IDCommissione;
         MovimentoCommissione[1]=MovimentoPrelievo[1];
         MovimentoCommissione[2]="1 di 1";
@@ -1269,7 +1271,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MT2[11]=Movimento[11];
         MT2[12]=Movimento[12];
         MT2[13]=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]),30, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]),DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
         MT2[18]="DAI - Reward";
         MT2[20]=ID+","+IDNuovoMov;
         MT2[22]="AU";

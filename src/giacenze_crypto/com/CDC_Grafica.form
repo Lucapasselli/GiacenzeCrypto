@@ -1351,6 +1351,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_GiacenzeExplorer">
                       <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Caladea" size="13" style="0"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;Vedi situazione &lt;br&gt;&#xa;Wallet ad Oggi&#xa;&lt;/html&gt;"/>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -1362,6 +1365,7 @@
                       </Properties>
                       <Events>
                         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_RettificaQta">

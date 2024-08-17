@@ -4,6 +4,7 @@
  */
 package giacenze_crypto.com;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -81,6 +82,15 @@ public class Stampe {
     public void AggiungiTitolo(String Titolo){
         doc.addTitle(Titolo);
      }
+    
+    public void AggiungiImmagine(String Immagine) {
+          try {
+              com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
+              doc.add(image01);
+          } catch (BadElementException | IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    }
     
     public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){
       Font font = new Font(Font.HELVETICA, 10, Font.BOLD);

@@ -704,14 +704,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addGap(1, 1, 1)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(TransazioniCrypto_Text_Plusvalenza)
-                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
+                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 277, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
                                 .addComponent(TransazioniCrypto_Bottone_DettaglioDefi)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jButton1))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                 .addGap(51, 51, 51)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1108,6 +1108,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        GiacenzeaData_Bottone_GiacenzeExplorer.setFont(new java.awt.Font("Caladea", 0, 13)); // NOI18N
         GiacenzeaData_Bottone_GiacenzeExplorer.setText("<html>\nVedi situazione <br>\nWallet ad Oggi\n</html>");
         GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
         GiacenzeaData_Bottone_GiacenzeExplorer.setMaximumSize(new java.awt.Dimension(72, 23));
@@ -1115,6 +1116,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Bottone_GiacenzeExplorer.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked(evt);
+            }
+        });
+        GiacenzeaData_Bottone_GiacenzeExplorer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed(evt);
             }
         });
 
@@ -7039,6 +7045,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_RW_Bottone_StampaActionPerformed
+
+    private void GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

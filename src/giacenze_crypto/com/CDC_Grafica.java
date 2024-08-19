@@ -206,6 +206,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
         CDC_AggiornaGui();
         FineCaricamentoDati=true;
+        //RW_Bottone_StampaActionPerformed(null);
 
 }  catch( Exception ex ) {
              Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -7001,17 +7002,43 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             
             //Tabella Totali
             Stampe stampa=new Stampe("temp.pdf");
-            String AnnoDiCompetenza="2023";
+            String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             String piede="REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
-            stampa.AggiungiTesto("     REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza+"\n\n",Font.BOLD,20);
-            stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(RW_Tabella);
-            String Titoli1[]=new String[]{"RW","Valore Iniziale","Valore Finale","Giorni di detenzione","Errori","IC Dovuta","Bollo Pagato"};
-            stampa.AggiungiTabella(Titoli1,tabella1);
+            stampa.AggiungiTestoCentrato("Quadro W Anno "+AnnoDiCompetenza+"\n\n",Font.BOLD,18);
+           // stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
+           // stampa.AggiungiTesto("\n",Font.NORMAL,12);
+            //List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(RW_Tabella);
+            //String Titoli1[]=new String[]{"RW","Valore Iniziale","Valore Finale","Giorni di detenzione","Errori","IC Dovuta","Bollo Pagato"};
+            //stampa.AggiungiTabella(Titoli1,tabella1);
+            int numeroRighe=RW_Tabella.getModel().getRowCount();
+            int numeroColonne=RW_Tabella.getModel().getColumnCount();
+            String dati[];
+            for (int i=0;i<numeroRighe;i++){
+                dati=new String[numeroColonne];
+                for (int h=0;h<numeroColonne;h++){
+                    
+                }
+            }
+            
+            
+            
+            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
+            stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png","1","1000","2000","365");
+            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
+            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
+            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
+            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
+            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
+            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
+            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
+            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
+            stampa.NuovaPagina();
+            
+            
+            
           /*  stampa.AggiungiTesto("Periodo di riferimento        : "+DataIniziale+" - "+DataFinale+"\n",Font.BOLD,12);
             stampa.AggiungiTesto("Numero di giorni del periodo  : "+this.CDC_Text_Giorni.getText()+"\n\n",Font.BOLD,12);
             stampa.AggiungiTesto("Saldo Iniziale al "+DataIniziale.trim()+"        :  "+this.CDC_FiatWallet_Text_SaldoIniziale.getText()+"\n",Font.BOLD,12);

@@ -14,6 +14,8 @@ import com.lowagie.text.HeaderFooter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.ColumnText;
+import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -22,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,14 +86,54 @@ public class Stampe {
         doc.addTitle(Titolo);
      }
     
-    public void AggiungiImmagine(String Immagine) {
+    public void AggiungiQuadroW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni) {
           try {
               com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
-              doc.add(image01);
+             // image01.s
+             float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
+             float LarghezzaImmagine=image01.getWidth();
+             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*100;
+             image01.scalePercent(PercentualeScala);
+             //doc.bottom()
+             doc.add(image01);
+             float psosizioneVeriticale=writer.getVerticalPosition(false);
+            // Paragraph par = new Paragraph("155",FontFactory.getFont(FontFactory.COURIER,6, Font.NORMAL));
+             Font font = new Font(Font.HELVETICA, 6, Font.BOLD); 
+             //Numero Quadro
+             setPara(writer.getDirectContent(), new Phrase("W"+NumeroQuadro,font), doc.leftMargin(), psosizioneVeriticale+45);
+             font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             //Codice Possesso
+             setPara(writer.getDirectContent(), new Phrase("1",font), 40+doc.leftMargin(), psosizioneVeriticale+75);
+             //Codice Individuazione Bene
+             setPara(writer.getDirectContent(), new Phrase("21",font), 140+doc.leftMargin(), psosizioneVeriticale+75);
+             //Quota di Possesso
+             setPara(writer.getDirectContent(), new Phrase("100,00",font), 245+doc.leftMargin(), psosizioneVeriticale+75);
+             //Criterio Determinazione Valore
+             setPara(writer.getDirectContent(), new Phrase("1",font), 310+doc.leftMargin(), psosizioneVeriticale+75);
+             //Valore Iniziale
+             setPara(writer.getDirectContent(), new Phrase(ValoreIniziale+",00",font), 370+doc.leftMargin(), psosizioneVeriticale+75);
+             //Valore Finale
+             setPara(writer.getDirectContent(), new Phrase(ValoreFinale+",00",font), 460+doc.leftMargin(), psosizioneVeriticale+75);
+             //Giorni IVAFE
+             setPara(writer.getDirectContent(), new Phrase(Giorni,font), 130+doc.leftMargin(), psosizioneVeriticale+40);
+             //Codice 14
+             setPara(writer.getDirectContent(), new Phrase("vedi",font), 420+doc.leftMargin(), psosizioneVeriticale+45);
+             setPara(writer.getDirectContent(), new Phrase("note",font), 420+doc.leftMargin(), psosizioneVeriticale+38);
+             
+             //Font font = new Font(Font.HELVETICA, 6, Font.NORMAL);       
+             //HeaderFooter footer = new HeaderFooter(new Phrase("155",font), false);
+             
+             //doc.add(image01);
+             
+
           } catch (BadElementException | IOException ex) {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
           }
     }
+    
+    public void setPara(PdfContentByte canvas, Phrase p, float x, float y) {
+    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, p, x, y, 0);
+}
     
     public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){
       Font font = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -131,13 +174,19 @@ public class Stampe {
     
     
     public void AggiungiTesto(String Testo,int intfont,float size){
-              Paragraph par = new Paragraph(Testo,FontFactory.getFont(FontFactory.COURIER,size, intfont));              
+              Paragraph par = new Paragraph(Testo,FontFactory.getFont(FontFactory.COURIER,size, intfont));
               doc.add(par);
 
  
      }
     
+    public void AggiungiTestoCentrato(String Testo,int intfont,float size){
+              Paragraph par = new Paragraph(Testo,FontFactory.getFont(FontFactory.COURIER,size, intfont));
+              par.setAlignment(Element.ALIGN_CENTER);
+              doc.add(par);
 
+ 
+     }
 
 
 

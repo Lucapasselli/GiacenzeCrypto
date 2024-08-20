@@ -1808,6 +1808,65 @@ for (int i=0;i<ArraydataIni.size();i++){
         }
         return ok;
     }   
+     
+          public static String RecuperaCoinsCoinCap() {
+        String ok = "ok";
+        //come prima cosa recupero l'ora atuale
+        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
+        //altrimenti tengo buona quella presente nel database
+        long adesso = System.currentTimeMillis();
+        //String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CryptoHistory");
+        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CoinCap");
+        long dataUltimoScarico = 0;
+        if (dataUltimoScaricoString != null) {
+            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
+        }
+        if (adesso > (dataUltimoScarico + 86400000)) {
+            try {
+                String apiUrl = "https://api.coincap.io/v2/assets";
+                URL url = new URI(apiUrl).toURL();
+                URLConnection connection = url.openConnection();
+                System.out.println("Recupero token gestiti da CoinCap");
+               // System.out.println(url);
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+                    //System.out.println(line);
+                }
+                List<String[]> gestiti = new ArrayList<>();
+                String jsonString=response.toString();
+               JsonElement jsonElement = JsonParser.parseString(jsonString);
+
+                if (jsonElement.isJsonArray()) {
+                    JsonArray jsonArray = jsonElement.getAsJsonArray();
+                    for (JsonElement element : jsonArray) {
+                        JsonObject jsonObject = element.getAsJsonObject();
+                        String Gestito[]=new String[2];
+                        Gestito[0]=(jsonObject.get("ticker").getAsString());
+                        Gestito[1]=(jsonObject.get("name").getAsString());
+                       gestiti.add(Gestito);
+
+
+                    }
+                    DatabaseH2.GestitiCoinCap_ScriviNuovaTabella(gestiti);
+                    DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinCap", String.valueOf(adesso));
+                } else {
+                    ok = null;
+                }
+
+                TimeUnit.SECONDS.sleep(1);
+            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
+                ok = null;
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return ok;
+    }   
+     
     
         public static String RecuperaCoinsCoingecko() {
         String ok = "ok";

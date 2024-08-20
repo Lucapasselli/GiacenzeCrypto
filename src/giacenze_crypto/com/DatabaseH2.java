@@ -767,6 +767,25 @@ public class DatabaseH2 {
         }
         return Risultato;
     } 
+        
+                public static String GestitiCoinCap_Leggi(String Gestito) {
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Symbol FROM GESTITICOINCAP WHERE Symbol = '" + Gestito + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("Symbol");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    } 
+        
+        
     public static String[] GestitiCryptohistory_LeggiInteraRiga(String Gestito) {
         String Risultato[] = new String[2];
         try {
@@ -784,6 +803,25 @@ public class DatabaseH2 {
         }
         return Risultato;
     } 
+    
+        public static String[] GestitiCoinCap_LeggiInteraRiga(String Gestito) {
+        String Risultato[] = new String[2];
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Symbol,Nome FROM GESTITICOINCAP WHERE Symbol = '" + Gestito + "'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato[0] = resultSet.getString("Symbol");
+                Risultato[1] = resultSet.getString("Nome");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    } 
+    
         public static void CoppieBinance_ScriviNuovaTabella(List<String> Coppie) {
         try {
             // Connessione al database
@@ -826,6 +864,8 @@ public class DatabaseH2 {
         }
     }
         
+        
+        
         public static void GestitiCryptohistory_ScriviNuovaTabella(List<String[]> Gestiti) {
         try {
             // Connessione al database
@@ -839,6 +879,27 @@ public class DatabaseH2 {
                 // La riga non esiste, esegui l'inserimento
                 gestito[1]=gestito[1].replace("'", "").replace("*", "");
                 String insertSQL = "INSERT INTO GESTITICRYPTOHISTORY (Symbol,Nome) VALUES ('" + gestito[0] + "','"+ gestito[1] + "')";
+                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
+                public static void GestitiCoinCap_ScriviNuovaTabella(List<String[]> Gestiti) {
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITICOINCAP";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute();
+            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINCAP  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))";
+            checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute(); 
+            for (String gestito[]:Gestiti){
+                // La riga non esiste, esegui l'inserimento
+                gestito[1]=gestito[1].replace("'", "").replace("*", "");
+                String insertSQL = "INSERT INTO GESTITICOINCAP (Symbol,Nome) VALUES ('" + gestito[0] + "','"+ gestito[1] + "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 insertStatement.executeUpdate();
             }

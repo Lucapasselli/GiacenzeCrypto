@@ -678,7 +678,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(TransazioniCrypto_Bottone_Importa)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Bottone_InserisciWallet)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 445, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 660, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -732,7 +732,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza)
@@ -1110,7 +1110,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         GiacenzeaData_Bottone_GiacenzeExplorer.setFont(new java.awt.Font("Caladea", 0, 13)); // NOI18N
-        GiacenzeaData_Bottone_GiacenzeExplorer.setText("<html>\nVedi situazione <br>\nWallet ad Oggi\n</html>");
+        GiacenzeaData_Bottone_GiacenzeExplorer.setText("<html> Vedi situazione <br> Wallet ad Oggi </html>");
         GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
         GiacenzeaData_Bottone_GiacenzeExplorer.setMaximumSize(new java.awt.Dimension(72, 23));
         GiacenzeaData_Bottone_GiacenzeExplorer.setMinimumSize(new java.awt.Dimension(72, 23));
@@ -5066,10 +5066,29 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         else if(Rete.equalsIgnoreCase("CRO")){
                            Desktop.getDesktop().browse(new URI("https://cronoscan.com/tokenholdings?a="+ Wallet)); 
                         }
+                        else if(Rete.equalsIgnoreCase("CRO")){
+                           Desktop.getDesktop().browse(new URI("https://etherscan.io/tokenholdings?a="+ Wallet)); 
+                        }
                     } catch (URISyntaxException | IOException ex) {
                         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                } else {
+                String os = System.getProperty("os.name").toUpperCase();
+                if (os.contains("LINUX")) {
+                    try {
+
+                        if (Rete.equalsIgnoreCase("BSC")) {
+                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://bscscan.com/tokenholdings?a="+ Wallet});
+                        } else if (Rete.equalsIgnoreCase("CRO")) {
+                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://cronoscan.com/tokenholdings?a="+ Wallet});
+                        } else if (Rete.equalsIgnoreCase("ETH")) {
+                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://etherscan.io/tokenholdings?a="+ Wallet});
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
+            }
             }
             else
               {

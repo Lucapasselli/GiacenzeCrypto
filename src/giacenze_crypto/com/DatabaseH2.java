@@ -604,7 +604,7 @@ public class DatabaseH2 {
         }
     }
 
-    public static String USDTEUR_Leggi(String data) {
+    public static String Obsoleto_USDTEUR_Leggi(String data) {
         String Risultato = null;
         try {
             // Connessione al database
@@ -621,7 +621,7 @@ public class DatabaseH2 {
         return Risultato;
     }
 
-    public static void USDTEUR_Scrivi(String data, String prezzo) {
+    public static void Obsoleto_USDTEUR_Scrivi(String data, String prezzo) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT COUNT(*) FROM USDTEUR WHERE data = '" + data + "'";
@@ -751,7 +751,7 @@ public class DatabaseH2 {
         return Risultato;
     } 
                         
-        public static String GestitiCryptohistory_Leggi(String Gestito) {
+        public static String Obsoleto_GestitiCryptohistory_Leggi(String Gestito) {
         String Risultato = null;
         try {
             // Connessione al database
@@ -768,15 +768,15 @@ public class DatabaseH2 {
         return Risultato;
     } 
         
-                public static String GestitiCoinCap_Leggi(String Gestito) {
+        public static String GestitiCoinCap_Leggi(String Gestito) {
         String Risultato = null;
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Symbol FROM GESTITICOINCAP WHERE Symbol = '" + Gestito + "'";
+            String checkIfExistsSQL = "SELECT NOME FROM GESTITICOINCAP WHERE Symbol = '" + Gestito + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
-                Risultato = resultSet.getString("Symbol");
+                Risultato = resultSet.getString("NOME");
             }
 
         } catch (SQLException ex) {
@@ -786,7 +786,7 @@ public class DatabaseH2 {
     } 
         
         
-    public static String[] GestitiCryptohistory_LeggiInteraRiga(String Gestito) {
+    public static String[] Obsoleto_GestitiCryptohistory_LeggiInteraRiga(String Gestito) {
         String Risultato[] = new String[2];
         try {
             // Connessione al database
@@ -866,7 +866,7 @@ public class DatabaseH2 {
         
         
         
-        public static void GestitiCryptohistory_ScriviNuovaTabella(List<String[]> Gestiti) {
+        public static void Obsoleto_GestitiCryptohistory_ScriviNuovaTabella(List<String[]> Gestiti) {
         try {
             // Connessione al database
             String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITICRYPTOHISTORY";
@@ -899,9 +899,13 @@ public class DatabaseH2 {
             for (String gestito[]:Gestiti){
                 // La riga non esiste, esegui l'inserimento
                 gestito[1]=gestito[1].replace("'", "").replace("*", "");
-                String insertSQL = "INSERT INTO GESTITICOINCAP (Symbol,Nome) VALUES ('" + gestito[0] + "','"+ gestito[1] + "')";
-                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
-                insertStatement.executeUpdate();
+                //Inserisco il simbolo della moneta solo se questa non è già stata gestita, anche perchè il simbolo è un campo univoco e mi darebbe errore
+                if (GestitiCoinCap_Leggi(gestito[0])==null)
+                {
+                    String insertSQL = "INSERT INTO GESTITICOINCAP (Symbol,Nome) VALUES ('" + gestito[0] + "','" + gestito[1] + "')";
+                    PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                    insertStatement.executeUpdate();
+                }
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);

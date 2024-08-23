@@ -1,3 +1,2 @@
 - Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
 - Verificare quando correggo un rerrore in RW che non raddoppi le righe 
-- In giacenze a date, aggiungere anche rete ETH a vedi situazione wallet

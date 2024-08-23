@@ -150,31 +150,46 @@ public class Funzioni {
     public static boolean ApriExplorer (String ID){
             
 
-            if (MappaCryptoWallet.get(ID).length<24)
-                {
-                    return false;
+        if (MappaCryptoWallet.get(ID).length < 24) {
+            return false;
+        }
+        String IDTransazione = MappaCryptoWallet.get(ID)[24];
+        // String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+        String Rete = Funzioni.TrovaReteDaID(ID);
+        if (Rete == null) {
+            return false;
+        }
+        if (IDTransazione != null) {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    if (Rete.equalsIgnoreCase("BSC")) {
+                        Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
+                    } else if (Rete.equalsIgnoreCase("CRO")) {
+                        Desktop.getDesktop().browse(new URI("https://cronoscan.com/tx/" + IDTransazione));
+                    } else if (Rete.equalsIgnoreCase("ETH")) {
+                        Desktop.getDesktop().browse(new URI("https://etherscan.io/tx/" + IDTransazione));
+                    }
+                } catch (URISyntaxException | IOException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            String IDTransazione = MappaCryptoWallet.get(ID)[24];
-           // String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            String Rete=Funzioni.TrovaReteDaID(ID);
-            if (Rete==null)return false;
-            if (IDTransazione != null) {
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            } else {
+                String os = System.getProperty("os.name").toUpperCase();
+                if (os.contains("LINUX")) {
                     try {
-                        if (Rete.equalsIgnoreCase("BSC")){
-                            Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
-                           }
-                        else if(Rete.equalsIgnoreCase("CRO")){
-                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/tx/" + IDTransazione)); 
+
+                        if (Rete.equalsIgnoreCase("BSC")) {
+                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://bscscan.com/tx/" + IDTransazione});
+                        } else if (Rete.equalsIgnoreCase("CRO")) {
+                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://cronoscan.com/tx/" + IDTransazione});
+                        } else if (Rete.equalsIgnoreCase("ETH")) {
+                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://etherscan.io/tx/" + IDTransazione});
                         }
-                        else if(Rete.equalsIgnoreCase("ETH")){
-                           Desktop.getDesktop().browse(new URI("https://etherscan.io/tx/" + IDTransazione)); 
-                        }
-                    } catch (URISyntaxException | IOException ex) {
-                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
+        }
         return true;
 
     }

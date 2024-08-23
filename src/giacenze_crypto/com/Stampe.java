@@ -119,6 +119,10 @@ public class Stampe {
              //Codice 14
              setPara(writer.getDirectContent(), new Phrase("vedi",font), 420+doc.leftMargin(), psosizioneVeriticale+45);
              setPara(writer.getDirectContent(), new Phrase("note",font), 420+doc.leftMargin(), psosizioneVeriticale+38);
+             //Solo Monitoraggio
+             if (Giorni.isBlank()){
+                setPara(writer.getDirectContent(), new Phrase("X",font), 505+doc.leftMargin(), psosizioneVeriticale+40);
+             }
              
              //Font font = new Font(Font.HELVETICA, 6, Font.NORMAL);       
              //HeaderFooter footer = new HeaderFooter(new Phrase("155",font), false);

@@ -1278,7 +1278,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
 
-        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2023" }));
+        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023" }));
+        RW_Anno_ComboBox.setSelectedIndex(6);
 
         jLabel4.setText("Anno :");
 
@@ -4897,14 +4898,19 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //e poi per scrivere il prezzo ho bisogno dell'address
                         String Address;
                         String Rete;
+                        
+                        //Questo serve per tradurre  es. 04 (wallet defi) in Wallet 04;
+                        GruppoWallet="Wallet "+GruppoWallet.split("\\(")[0].trim();
                         //cd
                         Map<String, Moneta> MappaAddressNomeMoneta = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);        
                         for (String[] v : MappaCryptoWallet.values()) {
                             Moneta a[]=Funzioni.RitornaMoneteDaID(v[0]);
                             //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
                             //E se il wallet fa parte del gruppo wallet di riferimento
-                            String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+                            //System.out.println(v[3]);
+                            String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                           
                             long dataTransazione=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                            //System.out.println(GruppoWallet+" - "+GruppoWalletMovimento);
                             if (dataTransazione<=DataCalcoli&&GruppoWallet.equals(GruppoWalletMovimento)){
                             //A questo punto controllo se la moneta è quella che sto cercando
                             for (Moneta MonTransazione : a){
@@ -7013,7 +7019,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_OpzioniRewards_JCB_PDD_RewardActionPerformed
 
     private void RW_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_StampaActionPerformed
-        // TODO add your handling code here:
+            // TODO add your handling code here:
                 try {
             // TODO add your handling code here:
            
@@ -7026,25 +7032,42 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String piede="REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
-            stampa.AggiungiTestoCentrato("Quadro W Anno "+AnnoDiCompetenza+"\n\n",Font.BOLD,18);
+            stampa.AggiungiTestoCentrato("QUADRO W PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"",Font.BOLD,12);
            // stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
            // stampa.AggiungiTesto("\n",Font.NORMAL,12);
             //List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(RW_Tabella);
             //String Titoli1[]=new String[]{"RW","Valore Iniziale","Valore Finale","Giorni di detenzione","Errori","IC Dovuta","Bollo Pagato"};
             //stampa.AggiungiTabella(Titoli1,tabella1);
             int numeroRighe=RW_Tabella.getModel().getRowCount();
-            int numeroColonne=RW_Tabella.getModel().getColumnCount();
-            String dati[];
+            int righeQuadroStampate=0;
             for (int i=0;i<numeroRighe;i++){
-                dati=new String[numeroColonne];
-                for (int h=0;h<numeroColonne;h++){
-                    
+                String NomeGruppo=RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
+                String ValIniziale=RW_Tabella.getModel().getValueAt(i, 1).toString();
+                ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                String ValFinale=RW_Tabella.getModel().getValueAt(i, 2).toString();
+                ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                String GG=RW_Tabella.getModel().getValueAt(i, 3).toString();
+                GG=new BigDecimal(GG).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                String PagaBollo=RW_Tabella.getModel().getValueAt(i, 7).toString();                
+                if (ValIniziale.equals("0")&&ValFinale.equals("0")){
+                 } else {
+                    //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
+                    righeQuadroStampate++;
+                    stampa.AggiungiTesto("\n"+NomeGruppo,Font.NORMAL,8); 
+                    if (PagaBollo.equalsIgnoreCase("SI"))GG="";
+                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    else stampa.AggiungiQuadroW("Immagini/QuadroW.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    //Se divisibile per 5 vuol dire che ho finito la pagina e devo andare alla proissima
+                    if ((righeQuadroStampate)%5==0){
+                        stampa.NuovaPagina();
+                    }
                 }
             }
+            stampa.NuovaPagina();
+            stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE\n",Font.BOLD,12);
             
             
-            
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
+          /*  stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
             stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png","1","1000","2000","365");
             stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
             stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
@@ -7054,7 +7077,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
             stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
             stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.NuovaPagina();
+            stampa.NuovaPagina();*/
             
             
             

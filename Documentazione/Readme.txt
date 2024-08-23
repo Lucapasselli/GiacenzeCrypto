@@ -21,6 +21,14 @@ La versione con installer invece basta installarla sopra quella vecchia che mant
 
 Changelog
 
+ver. 1.0.26
+Nuove Implementazioni :
+  - Implementato Api di CoinCap al posto di Cryptohistory per l'assegnazione dei prezzi poichè quest'ultima non ha più rinnovato il dominio
+  - Inserito possibilità di stampare il quadro W
+Correzione di bug :
+  - Sistemato bug che impediva di correggere il valore iniziale e finale di un token nella sezione RW
+
+
 ver. 1.0.25
 Nuove implementazioni : 
 	- Una volta selezionata la data dalla Funzione giacenze a data questa viene memorizzata per i successivi accessi

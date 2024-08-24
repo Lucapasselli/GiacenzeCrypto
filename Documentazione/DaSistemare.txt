@@ -1,3 +1,5 @@
 - Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
 - Verificare quando correggo un rerrore in RW che non raddoppi le righe 
 - Sistemare Vedi Documentazione, non funziona su Linux
+- Tasto correggi errore non reindirizza nel campo corretto
+- La classificazione DAC - Acquisto Crypto non è stata gestita nel calcolo RW, bisogna aggiungerla

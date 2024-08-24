@@ -1447,8 +1447,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             }
 
                         }
-                    } else {
+                    } else {                       
                         System.out.println("Attenzione movimento di deposito o prelievo non classificato nella funzione AggiornaRW() in CalcoliRW");
+                        System.out.println("Movimento non Gestito : " +v[18]);
                     }
                 } else {
                     System.out.println("Attenzione movimento " + IDTS[4] + " non considerato in CalcoliRW");

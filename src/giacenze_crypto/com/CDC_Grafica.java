@@ -1517,10 +1517,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(RW_Bottone_Documentazione)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 153, Short.MAX_VALUE)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Bottone_Calcola))
                     .addGroup(RWLayout.createSequentialGroup()
@@ -1571,7 +1571,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Bottone_ModificaVFinale)
                     .addComponent(RW_Bottone_ModificaVIniziale))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -6105,30 +6105,36 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        //progress.RipristinaStdout();
+        progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
-        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {            
+        
+        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {  
+           // System.out.println(key);
             String Errore="";
            // BigDecimal ValIniziale = new BigDecimal(0);
            // BigDecimal ValFinale = new BigDecimal(0);
             //BigDecimal ValFinalexggTOT = new BigDecimal(0);
             String RW1[];
-            RW1=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze           
+            RW1=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze 
             for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
                //System.out.println(lista[1]);
                 if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
                 if (lista[15].toLowerCase().contains("error"))Errore="ERRORI";
               //  ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
 
-                //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio        
+                //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio 
+                
                 RW1=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,lista[6]);
                 //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
                 //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
-                        if ((!lista[1].equals(lista[6])) && RW_Opzioni_CheckBox_InizioSuWalletOriginale.isSelected())//Se il 
+                        if ((!lista[1].equals(lista[6])) && RW_Opzioni_CheckBox_InizioSuWalletOriginale.isSelected()&&!lista[1].isBlank())//Se il 
+                            //lista[1] ovvero il wallet di origine potrebbe essere blanc nel caso di giacenza negative
+                            //in quel caso non posso trovare da dove arriva
                         {
                             String RW2[];
+                            //if (lista[1].isBlank())System.out.println("--"+lista[1]);
                             RW2=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,lista[1]);
                             RW2[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW2[1])).toPlainString();//RW1[1] è il valore iniziale
                             
@@ -6169,8 +6175,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         String ICtot="0";
         for (String[] RWx : MappaWallerQuadro.values()) {
             //Rinomino i Wallet seguendo l'Alias
+            //System.out.println(RWx[0]);
             String Gruppo="Wallet "+RWx[0].split(" ")[0].trim();
             String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+            //System.out.println(Gruppo+" - "+Valori[1]+" - "+Valori[2]);
             RWx[0]=RWx[0].split(" ")[0].trim()+" ( "+Valori[1]+" )";
             String PagaBollo="NO";
             if (Valori[2].equalsIgnoreCase("S"))
@@ -6201,8 +6209,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     private String[] RW_Funzione_RitornaRWQuadro(Map<String, String[]> MappaWallerQuadro,String GruppoWallet){
+       // System.out.println("--"+GruppoWallet);
               String RW1[] = new String[8];
-              if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta
+              if (MappaWallerQuadro.get(GruppoWallet)==null){//se la mappa è nulla la popolo per la prima volta                  
                         if(GruppoWallet.split(" ").length>1)
                             RW1[0] = GruppoWallet.split(" ")[1] + " (" + GruppoWallet + ")";
                         else

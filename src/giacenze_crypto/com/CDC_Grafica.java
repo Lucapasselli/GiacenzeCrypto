@@ -1034,6 +1034,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        GiacenzeaData_TabellaDettaglioMovimenti.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
         GiacenzeaData_TabellaDettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -1062,9 +1063,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
         GiacenzeaData_ScrollPaneDettaglioMovimenti.setViewportView(GiacenzeaData_TabellaDettaglioMovimenti);
         if (GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(100);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(100);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(100);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(120);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(120);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(120);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(2).setPreferredWidth(50);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setMinWidth(100);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setPreferredWidth(100);
@@ -1364,7 +1365,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(120);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMaxWidth(100);
@@ -1379,7 +1380,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(150);
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(120);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMaxWidth(100);
@@ -4220,7 +4221,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                 if (DataMovimento < DataRiferimento) {
                         String gruppoWallet="";
-                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
+                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
                     // adesso verifico il wallet
@@ -6007,7 +6008,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // 7 - Prezzo Fine
         // 8 - Giorni di detenzione
         // 9 - Causale
-                Download progress = new Download();
+        Download progress = new Download();
         progress.setLocationRelativeTo(this);
                 Thread thread;
         thread = new Thread() {
@@ -6105,7 +6106,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        progress.RipristinaStdout();
+        //progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -6470,6 +6471,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
            if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
 
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            int rigaselezionata2 = RW_Tabella.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             //Punto 2
             if (Errore.toLowerCase().contains("giacenza negativa")) {
@@ -6485,8 +6487,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     GiacenzeaData_Data_DataChooser.setDate(d);
                     //Punto 2c
                     String GWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
-                    String Alias=DatabaseH2.Pers_GruppoAlias_Leggi(GWallet)[1];
-                    GWallet=GWallet+" ( "+Alias+" )";
+                    //if(GWallet.isBlank())GWallet=RW_Tabella.getModel().getValueAt(rigaselezionata2, 0).toString();
+                    //Se è una giacenza negativa vado a prendere il wallet del primo movimento disponibile dalla tabella dettaglio movimenti
+                    if(RW_Tabella_DettaglioMovimenti.getValueAt(0, 2).toString().contains("Giacenza Negativa"))
+                        GWallet=RW_Tabella_DettaglioMovimenti.getValueAt(1, 1).toString().split("-")[0].trim();
+                    //System.out.println(GWallet);
+                    //String Alias=DatabaseH2.Pers_GruppoAlias_Leggi(GWallet)[1];
+                    GWallet="Wallet "+GWallet;
+                    //System.out.println(GWallet);
                     GiacenzeaData_Wallet_ComboBox.setSelectedItem("Gruppo : "+GWallet);
                     //Punto 2d
                     GiacenzeaData_CompilaTabellaToken();
@@ -6495,6 +6503,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     //Certo la riga della tabella con la moneta incriminata
                     int rigaTabellaMoneta=0;
                     String MonetaCercata=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                    if (MonetaCercata.isBlank())MonetaCercata=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString();
+                    //System.out.println("----"+MonetaCercata);
                     for (int i=0;i<righeTabella;i++){
                         if (GiacenzeaData_Tabella.getModel().getValueAt(i, 0).toString().equals(MonetaCercata)){
                             rigaTabellaMoneta=i;
@@ -7713,6 +7723,7 @@ try {
         //in futuro dovrò mettere anche un limite per data e un limite per wallet
         progress.Titolo("Calcolo Giazenze e  Prezzi in corso....");
         progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
+        //progress.RipristinaStdout();
         long DataRiferimento=0;
         //FASE 1 THREAD : RECUPERO LA DATA DI RIFERIMENTO
         if (GiacenzeaData_Data_DataChooser.getDate()!=null){

@@ -147,6 +147,32 @@ public class Funzioni {
     }
         
         
+    public static boolean ApriWeb(String Url) {
+
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+
+                Desktop.getDesktop().browse(new URI(Url));
+                return true;
+
+            } catch (URISyntaxException | IOException ex) {
+                Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            String os = System.getProperty("os.name").toUpperCase();
+            if (os.contains("LINUX")) {
+                try {
+                    Runtime.getRuntime().exec(new String[]{Url});
+
+                } catch (IOException ex) {
+                    Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public static boolean ApriExplorer (String ID){
             
 
@@ -161,33 +187,14 @@ public class Funzioni {
         }
         if (IDTransazione != null) {
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                try {
-                    if (Rete.equalsIgnoreCase("BSC")) {
-                        Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
-                    } else if (Rete.equalsIgnoreCase("CRO")) {
-                        Desktop.getDesktop().browse(new URI("https://cronoscan.com/tx/" + IDTransazione));
-                    } else if (Rete.equalsIgnoreCase("ETH")) {
-                        Desktop.getDesktop().browse(new URI("https://etherscan.io/tx/" + IDTransazione));
-                    }
-                } catch (URISyntaxException | IOException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } else {
-                String os = System.getProperty("os.name").toUpperCase();
-                if (os.contains("LINUX")) {
-                    try {
 
-                        if (Rete.equalsIgnoreCase("BSC")) {
-                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://bscscan.com/tx/" + IDTransazione});
-                        } else if (Rete.equalsIgnoreCase("CRO")) {
-                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://cronoscan.com/tx/" + IDTransazione});
-                        } else if (Rete.equalsIgnoreCase("ETH")) {
-                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://etherscan.io/tx/" + IDTransazione});
-                        }
-                    } catch (IOException ex) {
-                        Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+                    if (Rete.equalsIgnoreCase("BSC")) {
+                        ApriWeb("https://bscscan.com/tx/" + IDTransazione);
+                    } else if (Rete.equalsIgnoreCase("CRO")) {
+                        ApriWeb("https://cronoscan.com/tx/" + IDTransazione);
+                    } else if (Rete.equalsIgnoreCase("ETH")) {
+                        ApriWeb("https://etherscan.io/tx/" + IDTransazione);
                     }
-                }
             }
         }
         return true;

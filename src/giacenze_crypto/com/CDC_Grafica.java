@@ -120,7 +120,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.25 Beta");
+            this.setTitle("Giacenze_Crypto 1.26 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -5565,23 +5565,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
             int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
 
-            //String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 24).toString();
             String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            /* String Rete=Funzioni.TrovaReteDaID(ID);
-            if (IDTransazione != null) {
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    try {
-                        if (Rete.equalsIgnoreCase("BSC")){
-                            Desktop.getDesktop().browse(new URI("https://bscscan.com/tx/" + IDTransazione));
-                        }
-                        else if(Rete.equalsIgnoreCase("CRO")){
-                            Desktop.getDesktop().browse(new URI("https://cronoscan.com//tx/" + IDTransazione));
-                        }
-                    } catch (URISyntaxException | IOException ex) {
-                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }*/
+
             Funzioni.ApriExplorer(ID);
         }
 
@@ -6936,14 +6921,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void RW_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
         
-        //https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Opzioni%20di%20calcolo%20RW.pdf/download
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            try {
-                Desktop.getDesktop().browse(new URI("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Opzioni%20di%20calcolo%20RW.pdf/download"));
-            } catch (URISyntaxException | IOException ex) {
-                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            }
-}
+        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Opzioni%20di%20calcolo%20RW.pdf/download");
+      
     }//GEN-LAST:event_RW_Bottone_DocumentazioneActionPerformed
 
     private void GiacenzeaData_Data_DataChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_GiacenzeaData_Data_DataChooserPropertyChange
@@ -7082,9 +7061,41 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     }
                 }
             }
-            stampa.NuovaPagina();
-            stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE\n",Font.BOLD,12);
-            
+                    stampa.NuovaPagina();
+                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE\n", Font.BOLD, 12);
+                    String testo;
+                    testo = """
+                            Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
+                            verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.
+                            
+                            Colonna 1 \u2013 Titolo di possesso \u2013 Propriet\u00e0.
+                            Colonna 3 \u2013 Codice Individuazione Bene \u2013 Cripto-attivit\u00e0 (21).
+                            Colonna 4 \u2013 Codice Stato Estero \u2013 Vuoto
+                            Colonna 5 \u2013 Quota di possesso \u2013 100 (altro se cointestate).
+                            Colonna 6 \u2013 Criterio determinazione valore \u2013 Valore di mercato (1).
+                            \uD835 Colonna 7 \u2013 Valore Iniziale \u2013 Valore all\u2019inizio del periodo d\u2019imposta o al primo giorno di
+                            \uDDD5 detenzione dell\u2019investimento.
+                            Colonna 8 \u2013 Valore Finale - Valore al termine del periodo d\u2019imposta ovvero al termine del
+                            periodo di detenzione dell\u2019attivit\u00e0.
+                            Colonna 10 \u2013 Giorni IC \u2013 Numero giorni di detenzione per l\u2019imposta sul valore delle cripto-
+                            attivit\u00e0.
+                            Colonna 14 - Codice - Deve essere indicato un codice per indicare la compilazione di uno o
+                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il
+                            bene \u00e8 infruttifero.
+                            In particolare, indicare:
+                            \u2022 Compilazione Quadro RL (Codice 1)
+                            \u2022 Compilazione Quadro RM (Codice 2)
+                            \u2022 Compilazione Quadro RT (Codice 3)
+                            \u2022 Compilazione contemporanea di due o tre Quadri tra RL, RM e RT (Codice 4)
+                            \u2022 Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
+                                   periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
+                                   \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
+                                   attestazioni da cui risulti tale circostanza (Codice 5)
+                            Colonna 16 \u2013 Vuota""";
+                    stampa.AggiungiTesto(testo, Font.NORMAL, 8);
+                    stampa.AggiungiTesto("ciao", Font.NORMAL, 8);
+                    stampa.AggiungiTesto("pippa", Font.NORMAL, 8);
+
             
           /*  stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
             stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png","1","1000","2000","365");

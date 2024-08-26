@@ -152,6 +152,7 @@ public class Funzioni {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
 
+
                 Desktop.getDesktop().browse(new URI(Url));
                 return true;
 
@@ -162,7 +163,7 @@ public class Funzioni {
             String os = System.getProperty("os.name").toUpperCase();
             if (os.contains("LINUX")) {
                 try {
-                    Runtime.getRuntime().exec(new String[]{Url});
+                    Runtime.getRuntime().exec(new String[]{"xdg-open", Url});
 
                 } catch (IOException ex) {
                     Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
@@ -179,14 +180,15 @@ public class Funzioni {
         if (MappaCryptoWallet.get(ID).length < 24) {
             return false;
         }
+        
         String IDTransazione = MappaCryptoWallet.get(ID)[24];
         // String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
         String Rete = Funzioni.TrovaReteDaID(ID);
+        //System.out.println(IDTransazione+"-"+Rete);
         if (Rete == null) {
             return false;
         }
         if (IDTransazione != null) {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
 
                     if (Rete.equalsIgnoreCase("BSC")) {
                         ApriWeb("https://bscscan.com/tx/" + IDTransazione);
@@ -194,8 +196,7 @@ public class Funzioni {
                         ApriWeb("https://cronoscan.com/tx/" + IDTransazione);
                     } else if (Rete.equalsIgnoreCase("ETH")) {
                         ApriWeb("https://etherscan.io/tx/" + IDTransazione);
-                    }
-            }
+                    } 
         }
         return true;
 

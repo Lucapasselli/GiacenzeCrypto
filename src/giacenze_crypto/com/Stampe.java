@@ -16,6 +16,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
+import com.lowagie.text.html.simpleparser.StyleSheet;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
@@ -27,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -178,27 +180,19 @@ public class Stampe {
       
      }
     
-    public void AggiungiHtml(String html,int intfont,float size){
-
-              //try {
-              /*  Document document = Jsoup.parse(inputHTML, "UTF-8");
-              document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);*/
-           /*   String css = null;
-              ElementList elements = XMLWorkerHelper.parseToElementList(html, css);
+    public void AggiungiHtml(String html){
+          try {
+              StyleSheet style=new StyleSheet();
+              ArrayList<Element> htmlContetList = HTMLWorker.parseToList(new StringReader(html), null);
               Paragraph paragraph = new Paragraph();
-              for (Element element : elements) {
-                  paragraph.add(element);
-              }*/
-          /* HTMLWorker htmlWorker = new HTMLWorker(doc);
-           htmlWorker.*/
-              /* Paragraph paragraph = new Paragraph();
-              String htmlContent = "<html><head><title>Sample HTML</title></head><body><h1>Hello, OpenPDF!</h1><p>This is a paragraph in the generated PDF.</p></body></html>";
-              HTMLWorker htmlWorker = new HTMLWorker(doc);
-              htmlWorker.parse(new StringReader(htmlContent));
-              } catch (IOException ex) {
+              for (Element element : htmlContetList) {
+              paragraph.add(element);
+              }
+              doc.add(paragraph);
+          } catch (IOException ex) {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
-              }*/
-
+          }
+             
     }
     
     public void AggiungiTesto(String Testo, int intfont, float size) {

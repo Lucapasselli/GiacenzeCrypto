@@ -5065,38 +5065,19 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Rete=Wallet.split("\\(")[1].split("\\)")[0];
                 Wallet=Wallet.split("\\(")[0].trim();
                 
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    try {
+                if (Desktop.isDesktopSupported()) {
                         if (Rete.equalsIgnoreCase("BSC")){
-                            Desktop.getDesktop().browse(new URI("https://bscscan.com/tokenholdings?a="+ Wallet));
+                            Funzioni.ApriWeb("https://bscscan.com/tokenholdings?a="+ Wallet);
                            }
                         else if(Rete.equalsIgnoreCase("CRO")){
-                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/tokenholdings?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://cronoscan.com/tokenholdings?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("CRO")){
-                           Desktop.getDesktop().browse(new URI("https://etherscan.io/tokenholdings?a="+ Wallet)); 
+                           Funzioni.ApriWeb("https://etherscan.io/tokenholdings?a="+ Wallet); 
                         }
-                    } catch (URISyntaxException | IOException ex) {
-                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                } else {
-                String os = System.getProperty("os.name").toUpperCase();
-                if (os.contains("LINUX")) {
-                    try {
-
-                        if (Rete.equalsIgnoreCase("BSC")) {
-                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://bscscan.com/tokenholdings?a="+ Wallet});
-                        } else if (Rete.equalsIgnoreCase("CRO")) {
-                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://cronoscan.com/tokenholdings?a="+ Wallet});
-                        } else if (Rete.equalsIgnoreCase("ETH")) {
-                            Runtime.getRuntime().exec(new String[]{"xdg-open", "https://etherscan.io/tokenholdings?a="+ Wallet});
-                        }
-                    } catch (IOException ex) {
-                        Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }
-            }
+            
             else
               {
                 JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
@@ -7062,39 +7043,38 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
             }
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE\n", Font.BOLD, 12);
+                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE\n\n", Font.BOLD, 12);
                     String testo;
                     testo = """
-                            Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
-                            verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.
+                            <html><font size="2" face="Courier New, Courier, mono" >
+                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
+                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
                             
-                            Colonna 1 \u2013 Titolo di possesso \u2013 Propriet\u00e0.
-                            Colonna 3 \u2013 Codice Individuazione Bene \u2013 Cripto-attivit\u00e0 (21).
-                            Colonna 4 \u2013 Codice Stato Estero \u2013 Vuoto
-                            Colonna 5 \u2013 Quota di possesso \u2013 100 (altro se cointestate).
-                            Colonna 6 \u2013 Criterio determinazione valore \u2013 Valore di mercato (1).
-                            \uD835 Colonna 7 \u2013 Valore Iniziale \u2013 Valore all\u2019inizio del periodo d\u2019imposta o al primo giorno di
-                            \uDDD5 detenzione dell\u2019investimento.
-                            Colonna 8 \u2013 Valore Finale - Valore al termine del periodo d\u2019imposta ovvero al termine del
-                            periodo di detenzione dell\u2019attivit\u00e0.
-                            Colonna 10 \u2013 Giorni IC \u2013 Numero giorni di detenzione per l\u2019imposta sul valore delle cripto-
-                            attivit\u00e0.
-                            Colonna 14 - Codice - Deve essere indicato un codice per indicare la compilazione di uno o
-                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il
-                            bene \u00e8 infruttifero.
-                            In particolare, indicare:
-                            \u2022 Compilazione Quadro RL (Codice 1)
-                            \u2022 Compilazione Quadro RM (Codice 2)
-                            \u2022 Compilazione Quadro RT (Codice 3)
-                            \u2022 Compilazione contemporanea di due o tre Quadri tra RL, RM e RT (Codice 4)
-                            \u2022 Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
-                                   periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
-                                   \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
-                                   attestazioni da cui risulti tale circostanza (Codice 5)
-                            Colonna 16 \u2013 Vuota""";
-                    stampa.AggiungiTesto(testo, Font.NORMAL, 8);
-                    stampa.AggiungiTesto("ciao", Font.NORMAL, 8);
-                    stampa.AggiungiTesto("pippa", Font.NORMAL, 8);
+                            Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
+                            verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
+                            
+                            <b>Colonna 1</b> \u2013 TITOLO DI POSSESSO \u2013 <b>Propriet\u00e0 (1)</b><br>
+                            <b>Colonna 3</b> \u2013 CODICE INDIVIDUAZIONE BENE \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
+                            <b>Colonna 4</b> \u2013 CODICE STATO ESTERO \u2013 <b>Vuoto</b><br>
+                            <b>Colonna 5</b> \u2013 QUOTA DI POSSESSO \u2013 <b>(100)</b> (se non cointestate)<br>
+                            <b>Colonna 6</b> \u2013 CRITERIO DETERMINAZIONE VALORE \u2013 <b>Valore di mercato (1)</b><br>
+                            <b>Colonna 7</b> \u2013 VALORE INIZIALE \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
+                            <b>Colonna 8</b> \u2013 VALORE FINALE \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
+                            <b>Colonna 10</b> \u2013 GIORNI IC \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
+                            <b>Colonna 14</b> - CODICE - Deve essere indicato un codice per indicare la compilazione di uno o
+                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
+                            in particolare, indicare:<br>
+                            &emsp;\u2022 (Codice 1) x Compilazione Quadro RL &emsp;<br>
+                            &emsp;\u2022 (Codice 2) x Compilazione Quadro RM &emsp;<br>
+                            &emsp;\u2022 (Codice 3) x Compilazione Quadro RT &emsp;<br>
+                            &emsp;\u2022 (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
+                            &emsp;\u2022 (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
+                            periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
+                            \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
+                            attestazioni da cui risulti tale circostanza<br>
+                            <b>Colonna 16</b> \u2013 SOLO MONITORAGGIO \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
+                    stampa.AggiungiHtml(testo);
+
 
             
           /*  stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);

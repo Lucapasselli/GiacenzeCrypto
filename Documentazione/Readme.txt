@@ -23,10 +23,13 @@ Changelog
 
 ver. 1.0.26
 Nuove Implementazioni :
-  - Implementato Api di CoinCap al posto di Cryptohistory per l'assegnazione dei prezzi poichè quest'ultima non ha più rinnovato il dominio
-  - Inserito possibilità di stampare il quadro W
+  - Inserito nuova sezione in "Opzioni - Opzioni Rewards" dove è possibile decidere come trattare ogni tipologia di reward
+  - Implementato Api di CoinCap al posto di Cryptohistory per l'assegnazione dei prezzi poichè quest'ultima non fornisce più il servizio
+  - Inserito possibilità di stampare una prima bozza del quadro W
+  - Inserito possibilità di calcolare i valore per il quadro W anche per gli anni precedenti al 2023 (Attenzione, vengono usate le stesse regole del 2023, potrebbe essere sbagliato) 
 Correzione di bug :
   - Sistemato bug che impediva di correggere il valore iniziale e finale di un token nella sezione RW
+  - Sistemato bug che impediva di calcolare i valori con la media ponderata nel caso di classificazioni particolari
 
 
 ver. 1.0.25

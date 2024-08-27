@@ -120,7 +120,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
        
     try {
         
-            this.setTitle("Giacenze_Crypto 1.26 Beta");
+            this.setTitle("Giacenze_Crypto 1.27 Beta");
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -705,14 +705,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addGap(1, 1, 1)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(TransazioniCrypto_Text_Plusvalenza)
-                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 277, Short.MAX_VALUE)))
+                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
                                 .addComponent(TransazioniCrypto_Bottone_DettaglioDefi)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jButton1))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
+                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                 .addGap(51, 51, 51)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1281,6 +1281,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023" }));
         RW_Anno_ComboBox.setSelectedIndex(6);
+        RW_Anno_ComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                RW_Anno_ComboBoxItemStateChanged(evt);
+            }
+        });
 
         jLabel4.setText("Anno :");
 
@@ -7011,7 +7016,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String piede="REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
-            stampa.AggiungiTestoCentrato("QUADRO W PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"",Font.BOLD,12);
+            stampa.AggiungiTestoCentrato("QUADRO W PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+" (BOZZA)",Font.BOLD,12);
            // stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
            // stampa.AggiungiTesto("\n",Font.NORMAL,12);
             //List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(RW_Tabella);
@@ -7032,10 +7037,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                  } else {
                     //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
                     righeQuadroStampate++;
-                    stampa.AggiungiTesto("\n"+NomeGruppo,Font.NORMAL,8); 
-                    if (PagaBollo.equalsIgnoreCase("SI"))GG="";
-                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
-                    else stampa.AggiungiQuadroW("Immagini/QuadroW.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    stampa.AggiungiTesto(NomeGruppo,Font.NORMAL,10); 
+                    if (PagaBollo.equalsIgnoreCase("SI")&&(GG.equals("365")||GG.equals("366")))GG="";
+                    else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
+                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW("Immagini/QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    else stampa.AggiungiQuadroW("Immagini/QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
                     //Se divisibile per 5 vuol dire che ho finito la pagina e devo andare alla proissima
                     if ((righeQuadroStampate)%5==0){
                         stampa.NuovaPagina();
@@ -7043,7 +7049,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
             }
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE\n\n", Font.BOLD, 12);
+                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO W\n\n", Font.BOLD, 12);
                     String testo;
                     testo = """
                             <html><font size="2" face="Courier New, Courier, mono" >
@@ -7128,6 +7134,24 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed
+
+    private void RW_Anno_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_RW_Anno_ComboBoxItemStateChanged
+        // TODO add your handling code here:
+                 if(evt.getStateChange() == ItemEvent.SELECTED && RW_Anno_ComboBox.isShowing()) {
+             
+          // System.out.println("poroppopero");
+           // GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
+           if (!RW_Anno_ComboBox.getSelectedItem().toString().equals("2023"))
+           {
+               String Testo="<html><b>Attenzione!</b>, è stato selezionato un anno diverso dal 2023<br>"+
+                       "Gli anni precedenti al 2023 seguivano regole diverse, potrebbe essere che i dati prodotti non siano corretti<br></html>";
+               JOptionPane.showConfirmDialog(this,Testo,
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+           }
+           RW_CalcolaRW();
+           
+           }
+    }//GEN-LAST:event_RW_Anno_ComboBoxItemStateChanged
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

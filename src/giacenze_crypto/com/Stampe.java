@@ -124,7 +124,7 @@ public class Stampe {
              setPara(writer.getDirectContent(), new Phrase("vedi",font), 420+doc.leftMargin(), psosizioneVeriticale+45);
              setPara(writer.getDirectContent(), new Phrase("note",font), 420+doc.leftMargin(), psosizioneVeriticale+38);
              //Solo Monitoraggio
-             if (Giorni.isBlank()){
+             if (Giorni.isBlank()||Giorni.contains("(")){
                 setPara(writer.getDirectContent(), new Phrase("X",font), 505+doc.leftMargin(), psosizioneVeriticale+40);
              }
              

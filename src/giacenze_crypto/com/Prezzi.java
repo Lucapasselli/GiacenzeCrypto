@@ -1404,7 +1404,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             try {
                 String apiUrl = "https://api.binance.com/api/v3/klines?symbol=EURUSDT&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i) + "&limit=1000";
                 URL url = new URI(apiUrl).toURL();
-                System.out.println(url);
+                //System.out.println(url);
                             //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
             if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
                 return null;

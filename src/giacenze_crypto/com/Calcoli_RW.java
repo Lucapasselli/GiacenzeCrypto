@@ -67,7 +67,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
 
     ArrayDeque<ElementiStack> stack;
     
-    if (el.QtaOri.isBlank())System.out.println("Trovato inghippo");
+   // if (el.QtaOri.isBlank())System.out.println("Trovato inghippo");
 
     if(!el.Qta.contains("-")){//Inserisco nello stack solo valori positivi, i token con giacenze negative ovviamente non li inserisco
         if (CryptoStack.get(el.Moneta)==null){
@@ -177,12 +177,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 qtaRimanente=qtaRimanente.subtract(qtaEstratta);
                 //if (Qta.equals("6.584998"))System.out.println("porcaletta2 "+qtaRimanente);
                // System.out.println(ultimoRecupero.Moneta + " .....qta.... "+ultimoRecupero.Qta);
-     /*          System.out.println("Moneta Riferimento: "+Moneta);
-            System.out.println("Qta Estratta: "+qtaEstratta);
-            System.out.println("Completo MON: "+Moneta+" QTA Rimanente: "+qtaRimanente);
-            System.out.println("ID: "+ultimoRecupero.IDOri);
-            System.out.println("QTA: "+ultimoRecupero.QtaOri+" MON: "+ultimoRecupero.MonOri); 
-            System.out.println("-");*/
+     /*          //System.out.println("Moneta Riferimento: "+Moneta);
+            //System.out.println("Qta Estratta: "+qtaEstratta);
+           // System.out.println("Completo MON: "+Moneta+" QTA Rimanente: "+qtaRimanente);
+            //System.out.println("ID: "+ultimoRecupero.IDOri);
+            //System.out.println("QTA: "+ultimoRecupero.QtaOri+" MON: "+ultimoRecupero.MonOri); 
+            //System.out.println("-");*/
             //    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,ultimoRecupero);
                 //Aggiorno il Gruppo Wallet con quello attuale solo se è attiva l'opzione per toglierlo dallo stack
                 if (toglidaStack)ultimoRecupero.GruppoWallet=GruppoWallet;
@@ -204,7 +204,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //System.out.println(dataOrigine+" - "+MonetaOrigine+" - "+qtaRimanenteOrigine);
                 //Il cambio di scala nei calcoli dopo la divisione serve a togliere eventuali errori di approssimazione dovuti alla moltiplicazione successiva
                 String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).abs().toPlainString();
-                //                System.out.println("ValRimanenteOrigine " +valoreRimanenteOrigine);
+                // System.out.println("ValRimanenteOrigine " +valoreRimanenteOrigine);
             //    String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 
                 //Ora i valori avanzati li rimetto nello stack precedente
@@ -257,9 +257,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     
                     //System.out.println(el.Moneta + " qta "+el.Qta);
                    // System.out.println(el.Moneta + " .....elqta.... "+el.Qta);
-         /*   System.out.println("Parziale MON: "+Moneta+" QTA: "+el.Qta);
-            System.out.println("ID: "+el.IDOri);
-            System.out.println("QTA: "+el.QtaOri+" MON: "+el.MonOri);*/
+         /*  // System.out.println("Parziale MON: "+Moneta+" QTA: "+el.Qta);
+           // System.out.println("ID: "+el.IDOri);
+            //System.out.println("QTA: "+el.QtaOri+" MON: "+el.MonOri);*/
     //     if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,ultimoRecupero);
                 stackRitorno.push(el);              
                 qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
@@ -288,9 +288,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //    el.GruppoWallet = "parsimonia";
                 //  System.out.println(el.Moneta);
                     el.ListaIDcoinvolti="";
-       /*                         System.out.println("Errore MON: "+Moneta+" QTA: "+qtaRimanente);
-            System.out.println("ID: "+el.IDOri);
-            System.out.println("QTA: "+el.QtaOri+" MON: "+el.MonOri);*/
+       /*           // System.out.println("Errore MON: "+Moneta+" QTA: "+qtaRimanente);
+           // System.out.println("ID: "+el.IDOri);
+            //System.out.println("QTA: "+el.QtaOri+" MON: "+el.MonOri);*/
             
                    // System.out.println(el.Moneta + " .....finqta.... "+el.Qta);
                 stackRitorno.push(el); 
@@ -452,7 +452,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     //el.Data = Data;
                     el.Data =DataInizioAnno;
                     //System.out.println(DataInizioAnno);
-                    if (el.QtaOri.isBlank())System.out.println("Errore in Crea Primi movimenti");
+                    //if (el.QtaOri.isBlank())System.out.println("Errore in Crea Primi movimenti");
                     StackLIFO_InserisciValoreFR(CryptoStackTemp, key, el);
                     if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key) == null) {
                         List<Moneta> li = new ArrayList<>();
@@ -1097,7 +1097,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         el.Tipo=Monete[1].Tipo;
                         el.GruppoWallet=GruppoWallet;
                         el.Data =Data;
-                        if (el.QtaOri.isBlank())System.out.println("VC-CM-RW-AC : "+el.Data);
+                        //if (el.QtaOri.isBlank())System.out.println("VC-CM-RW-AC : "+el.Data);
                         StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                     }
 
@@ -1139,7 +1139,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         el.Tipo=Monete[1].Tipo;
                         el.GruppoWallet=GruppoWallet;
                         el.Data =Data;
-                        if (el.QtaOri.isBlank())System.out.println("SC : "+el.Data);
+                        //if (el.QtaOri.isBlank())System.out.println("SC : "+el.Data);
                         StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                         
 
@@ -1173,7 +1173,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 //all'elenco degli id coinvolti nel movimento anche questo id
                                 //fosse stato rilvenate fiscalmente non serviva perchè in quel caso il movimento sarebbe stato chiuso e il movimento di chiusura è sempre salvato
                                 el.AggiungiID(IDTransazione);
-                                if (el.QtaOri.isBlank())System.out.println("Scambio non rilevante : "+el.Data);
+                                //if (el.QtaOri.isBlank())System.out.println("Scambio non rilevante : "+el.Data);
                                 StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                                 }
                             //Nel caso in cui il lifo venga applicato alla totalità dei wallet devo anche spostare la qta
@@ -1225,7 +1225,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         el.Tipo=Monete[1].Tipo;
                         el.GruppoWallet=GruppoWallet;
                         el.Data =Data;
-                        if (el.QtaOri.isBlank())System.out.println("DC-PC : "+el.Data);
+                        //if (el.QtaOri.isBlank())System.out.println("DC-PC : "+el.Data);
                         StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                            // StackLIFO_InserisciValoreFR(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data, IDTransazione, GruppoWallet);
                         }
@@ -1254,7 +1254,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         el.Tipo=Monete[1].Tipo;
                         el.GruppoWallet=GruppoWallet;
                         el.Data =Data;
-                        if (el.QtaOri.isBlank())System.out.println("DAI-DCZ : "+el.Data);
+                        //if (el.QtaOri.isBlank())System.out.println("DAI-DCZ : "+el.Data);
                         StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                     } else if (v[18].contains("PTW")) {
                         // System.out.println(StessoGruppoWalletContropate(IDTransazione) + " : " + IDTransazione);
@@ -1296,7 +1296,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         el.Tipo=Monete[1].Tipo;
                         el.GruppoWallet=GruppoWallet;
                         el.Data =Data;
-                        if (el.QtaOri.isBlank())System.out.println("DAC : "+el.Data);
+                        //if (el.QtaOri.isBlank())System.out.println("DAC : "+el.Data);
                         StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                     } 
                     else if (v[18].contains("DTW")) {
@@ -1351,7 +1351,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     el.GruppoWallet=GruppoWallet;
                                     el.Data =Data;
                                   //  if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,el);
-                                  if (el.QtaOri.isBlank())System.out.println("DTW : "+el.Data);
+                                  //if (el.QtaOri.isBlank())System.out.println("DTW : "+el.Data);
                                     StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
                                 }
                                 else if (!LiFoComplessivo){//solo se LiFo complessivo è false allora sposto lo stack da un wallet all'altro
@@ -1389,7 +1389,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                         el.AggiungiID(RitornaIDControparte(IDTransazione));
                                         el.AggiungiID(IDTransazione);
                                         //System.out.println(el.ListaIDcoinvolti);
-                                        if (el.QtaOri.isBlank())System.out.println(el.Moneta+" DTW2 : "+el.MonOri+" - "+el.ListaIDcoinvolti);
+                                        //if (el.QtaOri.isBlank())System.out.println(el.Moneta+" DTW2 : "+el.MonOri+" - "+el.ListaIDcoinvolti);
                                         StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
 
                                     }
@@ -1475,7 +1475,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                     el.GruppoWallet=GruppoWallet;
                                     el.Data =Data;
                                   //  if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,el);
-                                  if (el.QtaOri.isBlank())System.out.println("scambio differito : "+el.Data);
+                                  //if (el.QtaOri.isBlank())System.out.println("scambio differito : "+el.Data);
                                     StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
                                     
                                     ChiudiRWFR(Monete[1], CryptoStackControparte, gruppoControparte, Data, Valore, "Trasferimento su altro Wallet", "Giorni Detenzione Zero");
@@ -1491,7 +1491,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                         //per ogni elemento trovato devo inserire il giusto quantitativo nello stack della moneta entrante
                                         ElementiStack el = StackRitorno.pop();
                                         //Metto nel wallet attuale di destinazione
-                                        if (el.QtaOri.isBlank())System.out.println("scambio differito 2 : "+el.Data);
+                                        //if (el.QtaOri.isBlank())System.out.println("scambio differito 2 : "+el.Data);
                                         StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
 
                                     }
@@ -1570,7 +1570,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 while (!StackRitorno.isEmpty()) {
                                     ElementiStack el = StackRitorno.pop();
                                     Moneta m2=m.ClonaMoneta();
-                                    if (!m2.Moneta.equals(el.Moneta))System.out.println("Errore moneta diversa");
+                                    //if (!m2.Moneta.equals(el.Moneta))System.out.println("AGGIORNARWFR - Errore moneta diversa");
                                     m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).toPlainString();
                                     m2.Moneta=el.Moneta;
                                     m2.Qta=el.Qta;

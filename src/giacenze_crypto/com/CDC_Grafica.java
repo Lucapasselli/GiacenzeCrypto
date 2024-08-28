@@ -7080,9 +7080,70 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             attestazioni da cui risulti tale circostanza<br>
                             <b>Colonna 16</b> \u2013 SOLO MONITORAGGIO \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
                     stampa.AggiungiHtml(testo);
+                    stampa.NuovaPagina();
+                    stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO W/RW\n\n", Font.BOLD, 12);
 
+                    if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
+                        //Con questa opzione non effettuo nessun calcolo inserisco semplicemente i valori iniziali e finali dei vari wallet e 365 come gg di detenzione
+                        testo = """
+                      <html><font size="2" face="Courier New, Courier, mono" >
+                      E' stato scelto di mostrato il Valore di ogni Wallet al 01/01/20XX e al 31/12/20XX<br>
+                      Non viene fatto nessun calcolo particolare e i GG di detenzioni sono settati a 365<br></html>
+                      """;
+                        stampa.AggiungiHtml(testo);
+                    } else {
+                        testo = """
+                      <html><font size="2" face="Courier New, Courier, mono" >
+                      E' stato scelto di utilizzarela <b>media ponderata</b> per il calcolo dei giorni di detenzione, viene poi usato <b>LiFo</b> come metodo per identificare quale Cripto-Attività si sta gestendo.<br>
+                      <br> In particolare per la <b>media ponderata</b> viene usata la segunte logica:<br>                               
+                      """;
+                        if (RW_Opzioni_RilenvanteScambiFIAT.isSelected()) {
+                            testo = testo + """
+                                    &emsp;\u2022 Ogni volta che viene fatto un cashout o una conversione in FIAT viene chiuso il periodo di possesso per la Cripto-Attività e calcolato il periodo di detenzione. <br>
+                                    &emsp;A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
+                                    """;
+                        }
+                        if (RW_Opzioni_RilevanteScambiRilevanti.isSelected()) {
+                            testo = testo + """
+                                    &emsp;\u2022 Ogni volta che avviene uno scambio fiscalmente rilevante (scambio crypto-NFT, cashout,conversione in FIAT etc…) viene chiuso il periodo di possesso per la criptoattività e calcolato il periodo di detenzione<br>
+                                    &emsp;A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
+                                    """;
+                        }
+                        if (RW_Opzioni_RilenvanteTuttigliScambi.isSelected()) {
+                            testo = testo + """
+                                    &emsp;\u2022 Ogni operazione di scambio chiude il periodo di possesso per la criptoattività e viene calcolato il periodo di detenzione<br>
+                                    &emsp;A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
+                                    """;
+                        }
+                        if (RW_Opzioni_CheckBox_LiFoComplessivo.isSelected()) {
+                            testo = testo + """                                   
+                                    Il <b>LiFo</b> viene invece applicato alle Cripto-Attività gestite sulla totalità dei Wallet<br>
+                                    (Ai fini dell'applicazione del LiFo, un BTC può essere acquistato da "Wallet 1" e venduto da "Wallet 2")<br>                                   
+                                    """;
+                        } else {
+                            testo = testo + """                                   
+                                    <br>Il <b>LiFo</b> viene invece applicato alle Cripto-Attività gestite su ogni singolo Gruppo di Wallet separatamente<br>
+                                    (Ai fini dell'applicazione del LiFo, un BTC venduto dal "Wallet 1" può essere stato acquistato o scambiato solo dal medesimo Portafoglio)<br></html>
+                                    """;
+                        }
 
-            
+                        if (RW_Opzioni_CheckBox_StakingZero.isSelected() || RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()) {
+                            testo = testo + """                                   
+                                    <br>ALTRE OPZIONI SELEZIONATE : <br>
+                                    """;
+                            if (RW_Opzioni_CheckBox_StakingZero.isSelected()) {
+                            testo = testo + """
+                                    &emsp;\u2022                                   
+                                    """;
+                            }
+                            if (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()) {
+                            testo = testo + """
+                                    &emsp;\u2022                                   
+                                    """;
+                            }
+                        }
+                stampa.AggiungiHtml(testo);
+            }
           /*  stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
             stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png","1","1000","2000","365");
             stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);

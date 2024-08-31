@@ -8,25 +8,6 @@ copy Giacenze_Crypto.com\app\Immagini\*.* Giacenze_Crypto.com\Immagini\
 del Giacenze_Crypto.com\app\logo.png
 rmdir /s /q Giacenze_Crypto.com\app\Immagini\
 
-Opzioni scelte per il calcolo del quadro W/RW :
-
-- Valore iniziale e finale divisi per Wallet
-
-- Media ponderata per il calcolo dei giorni di detenzione e LiFo come metodo per identificare la quale Cripto-Attività si sta gestendo.
-
-Per la media ponderata viene usata la segunte logica:
-- Ogni volta che viene fatto un cashout o una conversione in FIAT viene chiuso il periodo di possesso per la criptoattività e calcolato il periodo di detenzione, a fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.
-- Ogni volta che avviene uno scambio fiscalmente rilevante (scambio crypto-NFT, cashout,conversione in FIAT etc…) viene chiuso il periodo di possesso per la criptoattività e calcolato il periodo di detenzione, a fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.
-- Ogni operazione di scambio chiude il periodo di possesso per la criptoattività e viene calcolato il periodo di detenzione, a fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.
-
-- Il LiFo viene invece applicato sulla totalità dei Wallet
-- Il LiFo viene invece gestito separatamente per ogni singolo Wallet
-
-- Gestione dei Trasferimenti tra Wallet di proprietà
--I trasferimenti tra wallet di proprietà non vengono considerati (Valore Iniziale e Finale incrementano il valore dell’ultimo Wallet che ne detiene la proprietà).
--In caso di trasferimenti tra Wallet di prorprietà il Valore Iniziale resta sul Wallet di origine mentre sul wallet di destinazione viene incrementato il Valore Finale.
--Ogni trasferimento chiude il periodo di possesso della Cripto-Attività sul Wallet di origine e apre un nuovo periodo per la stessa Cripto-Attività sul Wallet di destinazione.
-
-- Per gli exchange che hanno già pagato il bollo non viene usato il metodo della media ponderata ma si riporta il valore della totalità delle Critpo Attività detenute ad inizio e fine anno.
-
--Airdrop,stacking,cashback,Earn e reward di ogni tipo non incrementano il valore iniziale del quadro.
+- Controllare perchè ogni tanto la tabella del quadro RW non si colora
+- Gestire nella documentazione RW gli Emoney Token
+- Aggiornare documentazione cartacea sull'utilizzo del programma per l'RW

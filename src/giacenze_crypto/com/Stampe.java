@@ -92,6 +92,9 @@ public class Stampe {
     
     public void AggiungiQuadroW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni) {
           try {
+              
+
+// String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
               com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
              // image01.s
              float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();

@@ -3711,22 +3711,12 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jSeparator3" alignment="1" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" min="-2" pref="1088" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="jScrollPane6" min="-2" pref="1305" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" attributes="0">
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                          </Group>
+                                          <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" alignment="0" min="-2" pref="1088" max="-2" attributes="0"/>
+                                          <Component id="jScrollPane6" alignment="0" min="-2" pref="1305" max="-2" attributes="0"/>
+                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="0" pref="141" max="32767" attributes="0"/>
                                   </Group>

@@ -7034,8 +7034,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_OpzioniRewards_JCB_PDD_RewardActionPerformed
 
-    private void RW_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_StampaActionPerformed
-            // TODO add your handling code here:
+    
+    private void RW_StampaRapporto(){
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 try {
             // TODO add your handling code here:
            
@@ -7064,12 +7065,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
                 String GG=RW_Tabella.getModel().getValueAt(i, 3).toString();
                 GG=new BigDecimal(GG).setScale(0, RoundingMode.HALF_UP).toPlainString();
-                String PagaBollo=RW_Tabella.getModel().getValueAt(i, 7).toString();                
+                String PagaBollo=RW_Tabella.getModel().getValueAt(i, 7).toString();
+                boolean errori=false;
+                if(RW_Tabella.getModel().getValueAt(i, 4).toString().toUpperCase().contains("ERROR"))errori=true;
+                String Errore="";
+                if (errori)Errore=" - Attenzione! Ci sono degli errori da correggere!";
                 if (ValIniziale.equals("0")&&ValFinale.equals("0")){
                  } else {
                     //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
                     righeQuadroStampate++;
-                    stampa.AggiungiTesto(NomeGruppo,Font.NORMAL,10); 
+                    stampa.AggiungiTesto(NomeGruppo+Errore,Font.NORMAL,10); 
                     if (PagaBollo.equalsIgnoreCase("SI")&&(GG.equals("365")||GG.equals("366")))GG="";
                     else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
                     if (righeQuadroStampate==1)stampa.AggiungiQuadroW("Immagini/QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
@@ -7084,33 +7089,33 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO W\n\n", Font.BOLD, 12);
                     String testo;
                     testo = """
-                            <html><font size="2" face="Courier New, Courier, mono" >
+                            <html><font size="2" face="Courier New,Courier, mono" >
                             <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
                             sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
                             
                             Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
                             verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
                             
-                            <b>Colonna 1</b> \u2013 TITOLO DI POSSESSO \u2013 <b>Propriet\u00e0 (1)</b><br>
-                            <b>Colonna 3</b> \u2013 CODICE INDIVIDUAZIONE BENE \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
-                            <b>Colonna 4</b> \u2013 CODICE STATO ESTERO \u2013 <b>Vuoto</b><br>
-                            <b>Colonna 5</b> \u2013 QUOTA DI POSSESSO \u2013 <b>(100)</b> (se non cointestate)<br>
-                            <b>Colonna 6</b> \u2013 CRITERIO DETERMINAZIONE VALORE \u2013 <b>Valore di mercato (1)</b><br>
-                            <b>Colonna 7</b> \u2013 VALORE INIZIALE \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
-                            <b>Colonna 8</b> \u2013 VALORE FINALE \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
-                            <b>Colonna 10</b> \u2013 GIORNI IC \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
-                            <b>Colonna 14</b> - CODICE - Deve essere indicato un codice per indicare la compilazione di uno o
+                            <b>Colonna 1</b> → \u2013 <u>TITOLO DI POSSESSO</u> \u2013 <b>Propriet\u00e0 (1)</b><br>
+                            <b>Colonna 3</b> → \u2013 <u>CODICE INDIVIDUAZIONE BENE</u> \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
+                            <b>Colonna 4</b> → \u2013 <u>CODICE STATO ESTERO</u> \u2013 <b>Vuoto</b><br>
+                            <b>Colonna 5</b> → \u2013 <u>QUOTA DI POSSESSO</u> \u2013 <b>(100)</b> (se non cointestate)<br>
+                            <b>Colonna 6</b> → \u2013 <u>CRITERIO DETERMINAZIONE VALORE</u> \u2013 <b>Valore di mercato (1)</b><br>
+                            <b>Colonna 7</b> → \u2013 <u>VALORE INIZIALE</u> \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
+                            <b>Colonna 8</b> → \u2013 <u>VALORE FINALE</u> \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
+                            <b>Colonna 10</b> \u2013 <u>GIORNI IC</u> \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
+                            <b>Colonna 14</b> \u2013 <u>CODICE</u> \u2013 Deve essere indicato un codice per indicare la compilazione di uno o
                             pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
                             in particolare, indicare:<br>
-                            &emsp;\u2022 (Codice 1) x Compilazione Quadro RL &emsp;<br>
-                            &emsp;\u2022 (Codice 2) x Compilazione Quadro RM &emsp;<br>
-                            &emsp;\u2022 (Codice 3) x Compilazione Quadro RT &emsp;<br>
-                            &emsp;\u2022 (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
-                            &emsp;\u2022 (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
+                            → → - (Codice 1) x Compilazione Quadro RL &emsp;<br>
+                            → → - (Codice 2) x Compilazione Quadro RM &emsp;<br>
+                            → → - (Codice 3) x Compilazione Quadro RT &emsp;<br>
+                            → → - (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
+                            → → - (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
                             periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
                             \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
                             attestazioni da cui risulti tale circostanza<br>
-                            <b>Colonna 16</b> \u2013 SOLO MONITORAGGIO \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
+                            <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
                     stampa.AggiungiHtml(testo);
                     stampa.NuovaPagina();
                     stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO W/RW\n\n", Font.BOLD, 12);
@@ -7131,25 +7136,40 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                       """;
                         if (RW_Opzioni_RilenvanteScambiFIAT.isSelected()) {
                             testo = testo + """
-                                    &emsp;\u2022 Ogni volta che viene fatto un cashout o una conversione in FIAT viene chiuso il periodo di possesso per la Cripto-Attività e calcolato il periodo di detenzione. <br>
-                                    &emsp;A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
+                                    \u2022 Ogni volta che viene fatto un cashout o una conversione in FIAT viene chiuso il periodo di possesso per la Cripto-Attività e calcolato il periodo di detenzione. <br>
+                                    A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
                                     """;
                         }
                         if (RW_Opzioni_RilevanteScambiRilevanti.isSelected()) {
                             testo = testo + """
-                                    &emsp;\u2022 Ogni volta che avviene uno scambio fiscalmente rilevante (scambio crypto-NFT, cashout,conversione in FIAT etc…) viene chiuso il periodo di possesso per la criptoattività e calcolato il periodo di detenzione<br>
-                                    &emsp;A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
+                                        \u2022 Ogni volta che avviene uno scambio fiscalmente rilevante (scambio crypto-NFT, cashout,conversione in FIAT etc…) viene chiuso il periodo di possesso per la criptoattività e calcolato il periodo di detenzione<br>
+                                        A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>  
+                                        Gli scambi fiscalmente rilevanti sono i seguenti : <br>
+                                        → → - Scambio da <b>Crypto</b> a <b>FIAT</b> e viceverca<br>                                         
+                                        → → - Scambio da <b>Crypto</b> a <b>NFT</b> e viceverca<br>  
+                                        → → - Scambio da <b>Crypto</b> a <b>E-Money</b> e viceverca<br>  
+                                        → → - Scambio da <b>NFT</b> a <b>E-Money</b> e viceverca<br>  
+                                        → → - Scambio da <b>NFT</b> a <b>FIAT</b> e viceverca<br>  
+                                        → → - Scambio da <b>E-Money</b> a <b>FIAT</b> e viceverca<br> 
+                                        Di seguito la lista dei token che è stato scelto di considerare come <b>E-Money</b> :<br>                                     
                                     """;
+                            int i=0;
+                            for (String a : Mappa_EMoney.keySet()) {
+                                    i++;
+                                    String Data = Mappa_EMoney.get(a);
+                                    testo = testo+"→ → - <b>"+a+"</b> dal "+Data+"<br>";
+                            }
+                            if (i==0)testo = testo+"→ → - Nessun token è stato scelto come appartenente alla cateoria degli E-Money Token<br>";
                         }
                         if (RW_Opzioni_RilenvanteTuttigliScambi.isSelected()) {
                             testo = testo + """
-                                    &emsp;\u2022 Ogni operazione di scambio chiude il periodo di possesso per la criptoattività e viene calcolato il periodo di detenzione<br>
-                                    &emsp;A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
+                                    \u2022 Ogni operazione di scambio chiude il periodo di possesso per la criptoattività e viene calcolato il periodo di detenzione<br>
+                                    A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
                                     """;
                         }
                         if (RW_Opzioni_CheckBox_LiFoComplessivo.isSelected()) {
-                            testo = testo + """                                   
-                                    Il <b>LiFo</b> viene invece applicato alle Cripto-Attività gestite sulla totalità dei Wallet<br>
+                            testo = testo + """                                  
+                                    <br>Il <b>LiFo</b> viene invece applicato alle Cripto-Attività gestite sulla totalità dei Wallet<br>
                                     (Ai fini dell'applicazione del LiFo, un BTC può essere acquistato da "Wallet 1" e venduto da "Wallet 2")<br>                                   
                                     """;
                         } else {
@@ -7165,36 +7185,36 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                     """;
                             if (RW_Opzioni_CheckBox_StakingZero.isSelected()) {
                             testo = testo + """
-                                    &emsp;\u2022 Airdrop,stacking,cashback,Earn e reward di ogni tipo incrementano il valore iniziale del quadro solo se fiscalmente rilevanti.<br>                                  
+                                    \u2022 Airdrop,stacking,cashback,Earn e reward di ogni tipo incrementano il valore iniziale del quadro solo se fiscalmente rilevanti.<br>                                  
                                     """;
                             }else {
                                 testo = testo + """
-                                    &emsp;\u2022 Airdrop,stacking,cashback,Earn e reward di ogni tipo incrementano il valore iniziale del quadro se fiscalmente rilevanti.<br>                                                                                                          
-                                    &emsp;In particolare le tipologie di Reward scelte come fiscalmente rilevanti sono :<br>                                  
+                                    \u2022 Airdrop,stacking,cashback,Earn e reward di ogni tipo incrementano il valore iniziale del quadro se fiscalmente rilevanti.<br>                                                                                                          
+                                    In particolare le tipologie di Reward scelte come fiscalmente rilevanti sono :<br>                                  
                                     """;
                                 if (OpzioniRewards_JCB_PDD_CashBack.isSelected()) {
                                 testo = testo + """
-                                    &emsp;- Cashback<br>                                  
+                                    → → - Cashback<br>                                  
                                     """;
                                 }
                                 if (OpzioniRewards_JCB_PDD_Staking.isSelected()) {
                                 testo = testo + """
-                                    &emsp;- Stacking<br>                                  
+                                    → → - Stacking<br>                                  
                                     """;
                                 }
                                 if (OpzioniRewards_JCB_PDD_Airdrop.isSelected()) {
                                 testo = testo + """
-                                    &emsp;- Airdrop<br>                                  
+                                    → → - Airdrop<br>                                  
                                     """;
                                 }
                                 if (OpzioniRewards_JCB_PDD_Earn.isSelected()) {
                                 testo = testo + """
-                                    &emsp;- Earn<br>                                  
+                                    → → - Earn<br>                                  
                                     """;
                                 }
                                 if (OpzioniRewards_JCB_PDD_Reward.isSelected()) {
                                 testo = testo + """
-                                    &emsp;- Altre Rewards<br>                                  
+                                    → → - Altre Rewards<br>                                  
                                     """;
                                 }
                             }
@@ -7266,6 +7286,40 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         } catch (FileNotFoundException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+    
+    
+    private void RW_Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_StampaActionPerformed
+            // TODO add your handling code here:
+            //Come prima cosa rielaboro il quadro per essee sicuro che sia tutto aggiornato
+           // RW_CalcolaRW();
+        if (RW_Tabella.getRowCount() == 0) {
+            // Se non trovo dati come prima cosa provo ad elaborare il quadro
+             RW_CalcolaRW();
+            if (RW_Tabella.getRowCount() == 0) {
+                String Testo = "<html>Attenzione! Non ci sono movimenti da stampare.<br>"
+                        + "Si vuole proseguire comunque con la stampa?<br>"
+                        + "Verrà stampato un report vuoto assiseme alle istruzioni di compilazione<br></html>";
+                Object[] Bottoni = {"Si", "No"};
+                int scelta = JOptionPane.showOptionDialog(this, Testo,
+                        "Quadro RW vuoto",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null,
+                        Bottoni,
+                        null);
+                if (scelta == 0) {
+                    RW_StampaRapporto();
+                }
+            } else {
+                RW_StampaRapporto();
+            }
+        } else {
+            RW_StampaRapporto();
+        }
+ 
+            
     }//GEN-LAST:event_RW_Bottone_StampaActionPerformed
 
     private void GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerActionPerformed
@@ -7336,6 +7390,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
+       
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();

@@ -1468,7 +1468,9 @@
                                       <Component id="RW_Bottone_Documentazione" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Stampa" min="-2" pref="169" max="-2" attributes="0"/>
-                                      <EmptySpace pref="153" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="jButton2" min="-2" pref="153" max="-2" attributes="0"/>
+                                      <EmptySpace pref="197" max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="46" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
@@ -1510,9 +1512,10 @@
                                   <Component id="RW_Text_IC" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="RW_Bottone_Documentazione" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="RW_Bottone_Stampa" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jButton2" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="212" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="213" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
@@ -1522,7 +1525,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="292" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="293" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1532,7 +1535,7 @@
                                   <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="173" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="174" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -1946,6 +1949,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_StampaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="jButton2">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Crea Excel"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>
@@ -3451,7 +3462,7 @@
                               <Component id="RW_Opzioni_Radio_TrasferimentiNonConteggiati" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="440" max="32767" attributes="0"/>
+                              <EmptySpace pref="441" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

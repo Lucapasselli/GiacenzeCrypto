@@ -317,6 +317,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RW_Text_IC = new javax.swing.JTextField();
         RW_Bottone_Documentazione = new javax.swing.JButton();
         RW_Bottone_Stampa = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -708,14 +709,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addGap(1, 1, 1)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(TransazioniCrypto_Text_Plusvalenza)
-                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
+                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 277, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
                                 .addComponent(TransazioniCrypto_Bottone_DettaglioDefi)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jButton1))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                                     .addComponent(TransazioniCrypto_Text_CostiCarico))
                                 .addGap(51, 51, 51)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1506,6 +1507,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        jButton2.setText("Crea Excel");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
         RWLayout.setHorizontalGroup(
@@ -1526,7 +1534,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(RW_Bottone_Documentazione)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 153, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 197, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1561,9 +1571,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(jLabel13)
                     .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_Bottone_Documentazione)
-                    .addComponent(RW_Bottone_Stampa))
+                    .addComponent(RW_Bottone_Stampa)
+                    .addComponent(jButton2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1571,7 +1582,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(jLabel5)
                         .addComponent(RW_CheckBox_VediSoloErrori)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addGap(1, 1, 1)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -1580,7 +1591,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Bottone_ModificaVFinale)
                     .addComponent(RW_Bottone_ModificaVIniziale))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2667,7 +2678,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(RW_Opzioni_Radio_TrasferimentiNonConteggiati, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(440, Short.MAX_VALUE))
+                .addContainerGap(441, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Calcolo RW/W", Opzioni_RW_Pannello);
@@ -2794,18 +2805,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 1305, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
-                                    .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti))))
+                            .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 1305, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
+                            .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti))
                         .addGap(0, 141, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -5050,7 +5055,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
         // TODO add your handling code here:
         // this.GiacenzeaData_AggiornaComboBoxWallet();
-      //  System.out.println("prrrrrrrrrrrrroroppopero");
     }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
 
     private void GiacenzeaData_Wallet_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
@@ -6266,7 +6270,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             
-           // ATTENZIONE : Correggere gli errori per calcolare i totali corretti
+           // seguente scritta -> ATTENZIONE : Correggere gli errori per calcolare i totali corretti -> Se ci sono errori sulla riga
            int rigaselezionata = RW_Tabella.getSelectedRow();
             if (RW_Tabella.getModel().getValueAt(rigaselezionata, 4).toString().toLowerCase().contains("errori"))
                 this.RW_Label_SegnalaErrori.setText("ATTENZIONE : Correggere gli errori per calcolare i totali corretti");
@@ -7387,6 +7391,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Funzioni_AggiornaTutto();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_RW_Opzioni_Radio_TrasferimentiNonConteggiatiActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        Funzioni.CreaExcel(RW_Tabella);
+    }//GEN-LAST:event_jButton2ActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -9122,6 +9131,7 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

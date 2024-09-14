@@ -6,6 +6,9 @@ package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.awt.Desktop;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
@@ -15,6 +18,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTable;
+import javax.swing.table.TableModel;
+import org.dhatim.fastexcel.Workbook;
+import org.dhatim.fastexcel.Worksheet;
 
 /**
  *
@@ -146,7 +153,55 @@ public class Funzioni {
         
     }
         
+    
+    public static void CreaExcel(JTable RW_Tabella){
+
+        try {
+            File f=new File ("temp.xlsx");
+            FileOutputStream fos = new FileOutputStream(f);
+            Workbook wb = new Workbook(fos,"excel1","1.0");
+            Worksheet wsrm=wb.newWorksheet("Riepilogo Anno");
+            
+            
+        // Per prima cosa creo la prima riga di intestazione
+        Worksheet ws[]=new Worksheet[RW_Tabella.getRowCount()];
+        TableModel model = RW_Tabella.getModel();
+        for (int i = 0; i < RW_Tabella.getRowCount(); i++) {
+            ws[i]=wb.newWorksheet(model.getValueAt(i, 0).toString());           
+        } 
+        /*for (int i = 0; i < RW_Tabella.getColumnCount(); i++) {
+            wsrm.value(0, i, model.getColumnName(i));
+           
+        } */
         
+           /* int riga=1;
+            for(String Arrayriga[]:MappaMese.values()){
+                int colonna=0;
+                for(String Valore:Arrayriga){
+                    if (Valore==null)Valore="0";
+                    double val=Double.parseDouble(Valore);
+                  if (colonna!=0)wsrm.value(riga, colonna, val);
+                  else wsrm.value(riga, colonna, Valore);
+                    colonna++;
+                
+                riga++;
+            }*/
+           
+
+            
+            wb.finish();
+            fos.close();
+            Desktop desktop = Desktop.getDesktop();
+            desktop.open(f);
+            
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    
     public static boolean ApriWeb(String Url) {
 
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {

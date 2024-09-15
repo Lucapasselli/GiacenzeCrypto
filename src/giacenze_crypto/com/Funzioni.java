@@ -10,12 +10,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTable;
@@ -154,42 +157,143 @@ public class Funzioni {
     }
         
     
-    public static void CreaExcel(JTable RW_Tabella){
+    public static void RW_CreaExcel(JTable RW_Tabella,String Anno){
 
         try {
-            File f=new File ("temp.xlsx");
+            File f=new File ("RW.xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
-            Worksheet wsrm=wb.newWorksheet("Riepilogo Anno");
-            
+            Worksheet wsrm=wb.newWorksheet("Riepilogo Anno "+Anno);
+            wsrm.value(0, 0,"Riepilogo Anno "+Anno);
+            String Intestazione[]=new String []{"RW","Valore Iniziale","Valore Finale","Giorni di detenzione","Errori",
+                    "IC Dovuta","Bollo pagato"};
+                ScriviRigaExcel(Intestazione,wsrm,1);
             
         // Per prima cosa creo la prima riga di intestazione
-        Worksheet ws[]=new Worksheet[RW_Tabella.getRowCount()];
-        TableModel model = RW_Tabella.getModel();
-        for (int i = 0; i < RW_Tabella.getRowCount(); i++) {
-            ws[i]=wb.newWorksheet(model.getValueAt(i, 0).toString());           
-        } 
-        /*for (int i = 0; i < RW_Tabella.getColumnCount(); i++) {
-            wsrm.value(0, i, model.getColumnName(i));
-           
-        } */
-        
-           /* int riga=1;
-            for(String Arrayriga[]:MappaMese.values()){
-                int colonna=0;
-                for(String Valore:Arrayriga){
-                    if (Valore==null)Valore="0";
-                    double val=Double.parseDouble(Valore);
-                  if (colonna!=0)wsrm.value(riga, colonna, val);
-                  else wsrm.value(riga, colonna, Valore);
-                    colonna++;
-                
-                riga++;
-            }*/
-           
-
+        Map<String, String[]> Mappa_Gruppo_Alias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
+            Worksheet ws,wsI,wsF;
+            TableModel model = RW_Tabella.getModel();
+            //Scrivo l'intestazione della tabella riepilogo
             
+            for (int i = 0; i < RW_Tabella.getRowCount(); i++) {
+                //Popolo il primo worksheet con il riepilogo
+                wsrm.value(i+2, 0,model.getValueAt(i, 0).toString());
+                wsrm.value(i+2, 1,model.getValueAt(i, 1).toString());
+                wsrm.value(i+2, 2,model.getValueAt(i, 2).toString());
+                wsrm.value(i+2, 3,model.getValueAt(i, 3).toString());
+                wsrm.value(i+2, 4,model.getValueAt(i, 4).toString());
+                wsrm.value(i+2, 5,model.getValueAt(i, 5).toString());
+                wsrm.value(i+2, 6,model.getValueAt(i, 7).toString());
+                
+                //Creao i Worksheet relativi ai dettagli per il calcolo dell'RW
+                String GruppoW=model.getValueAt(i, 0).toString();
+                ws = wb.newWorksheet(GruppoW+" - Calcoli RW");
+                wsI = wb.newWorksheet(GruppoW+" - Inizio "+Anno);
+                wsF = wb.newWorksheet(GruppoW+" - Fine "+Anno);
+                String Gruppo = "Wallet " + model.getValueAt(i, 0).toString().split(" ")[0].trim();
+                
+                
+                String Intestazioni[]=new String []{"Gruppo Iniziale","Moneta Iniziale","Qta Inizale","Data Iniziale","Valore Iniziale",
+                    "Gruppo Finale","Moneta Finale","Qta Finale","Data Finale","Valore Finale","Giorni di detanzione","Motivo fine detenzione"};
+                int colonna = 0;
+                ScriviRigaExcel(Intestazioni,ws,0);
+                int riga=1;
+                for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
+                    //Sistemo i nomi dei gruppi Wallet
+                    if (Mappa_Gruppo_Alias.get(lista[1]) != null) {
+                        lista[1] = lista[1].split(" ")[1].trim() + " ( " + Mappa_Gruppo_Alias.get(lista[1])[1] + " )";
+                    }
+                    if (Mappa_Gruppo_Alias.get(lista[6]) != null) {
+                        lista[6] = lista[6].split(" ")[1].trim() + " ( " + Mappa_Gruppo_Alias.get(lista[6])[1] + " )";
+                    }
+                    //Scrivo i dati sull'excel
+                    colonna = 0;
+                    
+                    for (String Valore : lista) {
+                        if (colonna>0&&colonna<13){//Scrivo solo le colonne con idati che mi interessano
+                        if (Funzioni_isNumeric(Valore,false)) {
+                            double val = Double.parseDouble(Valore);
+                            ws.value(riga, colonna-1, val);
+                        }else{
+                             ws.value(riga, colonna-1, Valore);
+                        }}
+                        colonna++;
+                        
+                    }
+                    riga++;
+                }
+                //Adesso creao il worksheet relativo alle giacenze del wallet di inizio e fine anno
+                wsI.value(0, 0, GruppoW+" - Giacenze Inizio "+Anno);
+                wsF.value(0, 0, GruppoW+" - Giacenze Fine "+Anno);
+                Intestazioni=new String []{"Nome","Rete","Address DeFi del Token","Tipo","Quantità",
+                    "Valore in Euro","Valore Unirtario","Note"};
+                ScriviRigaExcel(Intestazioni,wsI,1);
+                ScriviRigaExcel(Intestazioni,wsF,1);
+                long DataRiferimento=0;
+                String DataInizio=Anno+"-01-01";
+                String DataFine=Anno+"-12-31";
+                long lDataFine=OperazioniSuDate.ConvertiDatainLong(DataFine)+86400000;
+                long lDataInizio=OperazioniSuDate.ConvertiDatainLong(DataInizio);
+                String GruppoWNormalizzato="Wallet "+GruppoW.split(" ")[0];
+                List<String[]> ListaSaldiIniziali=RW_GiacenzeaData(lDataInizio,GruppoWNormalizzato,"");
+                List<String[]> ListaSaldiFinali=RW_GiacenzeaData(lDataFine,GruppoWNormalizzato,"");
+                int r=2;
+                Iterator Iniziali=ListaSaldiIniziali.iterator();
+                Iterator Finali=ListaSaldiFinali.iterator();
+                //Saldi Iniziali
+                for (int ii=0;ii<ListaSaldiIniziali.size();ii++){
+                    String valori[]=ListaSaldiIniziali.get(ii);
+                        String[] copy = new String[valori.length + 2];
+                        System.arraycopy(valori, 0, copy, 0, valori.length);
+                        valori = copy;
+                        String Rete=valori[1];
+                        Moneta M1=new Moneta();
+                        M1.Moneta=valori[0];
+                        M1.MonetaAddress=valori[2];
+                        M1.Qta=new String("1");
+                        M1.Tipo=valori[3];
+                        M1.Rete=Rete;
+                        valori[6]=Prezzi.DammiPrezzoTransazione(M1,null,lDataInizio, null,true,30,Rete);
+                    if (valori[0].contains(" **"))
+                    {
+                        valori[7]="Token SCAM";
+                    }
+                    ScriviRigaExcel(valori,wsI,r);
+                    r++;
+                }
+                r=2;
+                //Saldi Finali
+                for (int ii=0;ii<ListaSaldiFinali.size();ii++){
+                    String valori[]=ListaSaldiFinali.get(ii);
+                        String[] copy = new String[valori.length + 2];
+                        System.arraycopy(valori, 0, copy, 0, valori.length);
+                        valori = copy;
+                        String Rete=valori[1];
+                        Moneta M1=new Moneta();
+                        M1.Moneta=valori[0];
+                        M1.MonetaAddress=valori[2];
+                        M1.Qta=new String("1");
+                        M1.Tipo=valori[3];
+                        M1.Rete=Rete;
+                        valori[6]=Prezzi.DammiPrezzoTransazione(M1,null,lDataFine, null,true,30,Rete);
+                    if (valori[0].contains(" **"))
+                    {
+                        valori[7]="Token SCAM";
+                    }
+                    ScriviRigaExcel(valori,wsF,r);
+                    r++;
+                }
+                wsI.finish();
+                wsF.finish();
+                ws.finish();
+                wsI.close();
+                wsF.close();
+                ws.close();
+            }
+            wsrm.finish();
+            wsrm.close();
             wb.finish();
+            wb.close();
             fos.close();
             Desktop desktop = Desktop.getDesktop();
             desktop.open(f);
@@ -201,6 +305,118 @@ public class Funzioni {
         }
     }
 
+    public static Map<String, String>  MappaPrimoMovimentoXGruppoWallet() {
+        Map<String, String> Mappa_Gruppi = new TreeMap<>();//la mappa è così composta, (Gruppo,ID Primo Movimento)
+        for (String[] v : MappaCryptoWallet.values()) {
+            String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+            if (Mappa_Gruppi.get(GruppoWallet)==null)Mappa_Gruppi.put(GruppoWallet, v[0]);
+        }
+        return Mappa_Gruppi;
+    }
+    
+    
+    public static void ScriviRigaExcel(String Valori[], Worksheet ws, int riga) {
+        int colonna = 0;
+        for (String Valore : Valori) {
+            if (Funzioni_isNumeric(Valore, false)) {
+                double val = Double.parseDouble(Valore);
+                ws.value(riga, colonna, val);
+            } else {
+                ws.value(riga, colonna, Valore);
+            }
+            colonna++;
+        }
+    }
+    
+    
+        public static List<String[]> RW_GiacenzeaData(long DataRiferimento,String Wallet,String SottoWallet){
+            //Nel wallet si può mettere il nome del gruppo Wallet
+        
+         List<String[]> ListaSaldi=new ArrayList<>();  
+        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+        //in futuro dovrò mettere anche un limite per data e un limite per wallet
+        //progress.RipristinaStdout();
+        //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
+        Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+                for (String[] movimento : MappaCryptoWallet.values()) {
+                    //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
+                    //altrimenti non vado avanti
+                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+                    if (DataMovimento < DataRiferimento) {
+                        if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
+                                || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                                ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(Wallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ) {
+                            // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
+                            //Faccio la somma dei movimenti in usicta
+                            Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
+                            //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
+                            Monete[0] = new Moneta();
+                            Monete[1] = new Moneta();
+                            Monete[0].MonetaAddress = movimento[26];
+                            Monete[1].MonetaAddress = movimento[28];
+                            //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
+                            Monete[0].Moneta = movimento[8];
+                            Monete[0].Tipo = movimento[9];
+                            Monete[0].Qta = movimento[10];
+                            Monete[0].Rete=Rete;
+                            Monete[1].Moneta = movimento[11];
+                            Monete[1].Tipo = movimento[12];
+                            Monete[1].Qta = movimento[13];
+                            Monete[1].Rete=Rete;
+                            //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
+                            for (int a = 0; a < 2; a++) {
+                                //ANALIZZO MOVIMENTI
+                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress)!=null) {
+                                    //Movimento già presente da implementare
+                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress);
+                                    M1.Qta = new BigDecimal(M1.Qta)
+                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
+
+                                } else if (!Monete[a].Moneta.isBlank()) {
+                                    //Movimento Nuovo da inserire
+                                    Moneta M1 = new Moneta();
+                                    M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                                    M1.Rete = Rete;
+                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress, M1);
+
+                                }
+                            }
+                        }
+                    }
+                }
+        
+        //Adesso elenco tutte le monete e le metto il tutto in una lista   
+        
+        int i=0;
+        BigDecimal TotEuro=new BigDecimal(0);
+        for (String moneta :QtaCrypto.keySet()){
+            i++;
+            Moneta M1=QtaCrypto.get(moneta);
+            String Rete=M1.Rete;
+            String Address=M1.MonetaAddress;
+            String riga[]=new String[6];
+            riga[0]=M1.Moneta;
+            riga[2]=Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
+            riga[3]=M1.Tipo;
+            riga[4]=M1.Qta;
+            riga[1]=M1.Rete;
+            if (!M1.Qta.equals("0"))
+            {
+                if (M1.Qta.equals("0"))riga[5]="0.00";
+                else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
+                if (riga[4].contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
+                ListaSaldi.add(riga);                
+            }
+            
+        }       
+return ListaSaldi;
+}
+    
+    
+    
     
     public static boolean ApriWeb(String Url) {
 
@@ -452,19 +668,21 @@ public class Funzioni {
             }
             return array;
         }
+     
+       
+    public static boolean Funzioni_isNumeric(String str, boolean CampoVuotoContacomeNumero) {
         
-            public static boolean Funzioni_isNumeric(String str,boolean CampoVuotoContacomeNumero) {
+        if (str==null)return false;
         //ritorna vero se il campo è vuoto oppure è un numero
-  if(CampoVuotoContacomeNumero&&str.isBlank()) return true;
-        try  
-  {  
-    double d = Double.parseDouble(str);  
-  }  
-  catch(NumberFormatException nfe)  
-  {  
-    return false;  
-  }  
-  return !str.matches("^.*[a-zA-Z].*$");  
+        if (CampoVuotoContacomeNumero && str.isBlank()) {
+            return true;
+        }
+        try {
+            double d = Double.parseDouble(str);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return !str.matches("^.*[a-zA-Z].*$");
 
-}
+    }
 }

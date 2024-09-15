@@ -28,6 +28,7 @@ import java.util.TreeMap;
 public class Calcoli_RW {
     
        static String AnnoR;
+       static Map<String, String> MappaGruppo_IDPrimoMovimento = new TreeMap<>();//la mappa è così composta, (Gruppo,ID Primo Movimento)
        
        
        public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
@@ -589,6 +590,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
         
         String DataFineAnno = AnnoR + "-12-31 23:59";
         String DataInizioAnno = AnnoR + "-01-01 00:00";
+        //System.out.println(MappaGruppo_IDPrimoMovimento.get(GruppoWallet));
         //Moneta Miniziale = null;
         Map<String, Moneta[]> MappaDoppia = new TreeMap<>();//Moneta[0]=monetaIniziale, Moneta[1]=monetaFinale
         if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet) != null) {
@@ -808,7 +810,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
    
         public static void AggiornaRWFR(String AnnoRif) {
         
-            
+        MappaGruppo_IDPrimoMovimento=Funzioni.MappaPrimoMovimentoXGruppoWallet();
         String Rilevanza=DatabaseH2.Pers_Opzioni_Leggi("RW_Rilevanza");
         //Chiusura conseguente apertura di un nuovo rigo segue queste roegole
         //Rilevanza A = Solo Valori iniziali e finali (ancora da implementare)!!!!!

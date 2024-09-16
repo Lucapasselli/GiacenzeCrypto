@@ -588,8 +588,39 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
         List<String[]> ListaRW=new ArrayList<>();
         CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
         
+        String GGDetenzione="365";
+        String MotivoInizio="Giacenza Inizio Anno";
         String DataFineAnno = AnnoR + "-12-31 23:59";
         String DataInizioAnno = AnnoR + "-01-01 00:00";
+        
+        //Verifico se il primo movimento assoluto per il gruppo wallet + avvenuto nel periodo di competenza
+        //Se così fisso quella data come data di inizio detenzione per tutte le cripto di quel gruppo wallet
+        String IDPrimoMovimento = MappaGruppo_IDPrimoMovimento.get(GruppoWallet);
+        String PrimoMovimento[] = MappaCryptoWallet.get(IDPrimoMovimento);
+        String DataPrimoMovimento = PrimoMovimento[1];
+        String AnnoPrimoMovimento = DataPrimoMovimento.split("-")[0];
+        if (AnnoPrimoMovimento.equals(AnnoR))
+        {
+            DataInizioAnno=DataPrimoMovimento;
+            MotivoInizio="Primo Movimento del Wallet";
+            long DiffData = OperazioniSuDate.DifferenzaDate(DataInizioAnno.split(" ")[0], DataFineAnno.split(" ")[0]) + 1;
+            GGDetenzione=String.valueOf(DiffData);
+            Moneta PrimaMoneta[] = Moneta.RitornaMoneteDaMov(PrimoMovimento);
+            PrimaMoneta[1].Prezzo = PrimoMovimento[15];
+            if (!PrimaMoneta[1].Moneta.isBlank()) {//la moneta che sta entrando deve contenere qualcosa altrimenti non può essere il primo movimento e c'è un errore
+                if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet) != null) {
+                    CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet).add(PrimaMoneta[1]);
+                }else{
+                    List<Moneta> lf=new ArrayList<Moneta>();
+                    lf.add(PrimaMoneta[1]);
+                    CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.put(GruppoWallet, lf);
+                }
+            }
+            //Mappa_RW_GiacenzeInizioPeriodo
+                
+        }
+        
+        
         //System.out.println(MappaGruppo_IDPrimoMovimento.get(GruppoWallet));
         //Moneta Miniziale = null;
         Map<String, Moneta[]> MappaDoppia = new TreeMap<>();//Moneta[0]=monetaIniziale, Moneta[1]=monetaFinale
@@ -648,13 +679,14 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 xlista[8] = m[1].Qta;                                           //Qta Fine
                                 xlista[9] = DataFineAnno;                                         //Data Fine
                                 xlista[10] = m[1].Prezzo;                                              //Prezzo Fine
-                                xlista[11] = "365";                                               //Giorni di Detenzione
+                                xlista[11] = GGDetenzione;                                               //Giorni di Detenzione
                                 xlista[12] = "Fine Anno";                                             //Causale
-                                xlista[13] = "Giacenza Inizio Anno";                              //ID Movimento Apertura (o segnalazione inizio anno)
+                                xlista[13] = MotivoInizio;                                    //ID Movimento Apertura (o segnalazione inizio anno)
                                 xlista[14] = "Giacenza Fine Anno";                                                 //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
                                 xlista[15] = "";                                                  //Tipo Errore
                                 xlista[16] = "";                                                  //Lista ID coinvolti separati da virgola
 
+                                
                               /*  if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
                                     ListaRW = new ArrayList<>();
                                     CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
@@ -777,8 +809,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                         &&lista[14].split("_")[4].equals("PC")) {
                     lista[15] = lista[15]+"Errore (Movimento di chiusura non Classificato) <br>";
                 }
-
-                
+                //Se il valore iniziale o finale è negativo e non ho ancora segnalato il fatto che la giacenza è negativa allora aggiungo la segnalazione
+                if ((lista[8].contains("-")|lista[3].contains("-"))&&!lista[15].contains("Giacenza Negativa")) 
+                {
+                    lista[15]=lista[15]+"Errore (Giacenza Negativa) <br>";
+                }
                 lista[15]=lista[15]+"</html>";
                /* else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
                     xlista[12] = "Errore ("+Elementi[3].split("\\(")[1].replace(")", "")+" e Token non Valorizzato)";

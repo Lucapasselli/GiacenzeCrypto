@@ -1,6 +1,5 @@
 - Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
 - Verificare quando correggo un rerrore in RW che non raddoppi le righe 
-- Sistemare Documentazione Quadro W
 
 copy Giacenze_Crypto.com\app\logo.png Giacenze_Crypto.com\logo.png
 mkdir Giacenze_Crypto.com\Immagini
@@ -9,5 +8,7 @@ del Giacenze_Crypto.com\app\logo.png
 rmdir /s /q Giacenze_Crypto.com\app\Immagini\
 
 - Controllare perchè ogni tanto la tabella del quadro RW non si colora
-- Gestire nella documentazione RW gli Emoney Token
 - Aggiornare documentazione cartacea sull'utilizzo del programma per l'RW
+- Togliere numero del Wallet da Excel dettagli RW
+- Verificare Importi negativi che vanno in RW
+- Inserire note compilazione RW (Attualmente c'è solo per il W)

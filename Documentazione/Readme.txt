@@ -21,6 +21,15 @@ La versione con installer invece basta installarla sopra quella vecchia che mant
 
 Changelog
 
+ver. 1.0.27
+Nuove Implementazioni :
+  - Quadro RW/W : Adesso se si sceglie l'opzione di considerare solo le giacenze di inizio e fine anno il programma non mette di default 365 giorni di detenzione ma
+    qualora il conto/wallet fosse stato aperto nel periodo di riferimento farà il calcolo a partire dal primo movimento del wallet alla fine dell'anno.
+  - Quadro RW/W : Inserito tasto per la stampa di un report più dettagliato dei calcoli in formato Excel
+  - Quadro RW/W : Nella stampa del Report in PDF aggiunto il quadro RW e numerose istruzioni
+  - Riorganizzato la tabella delle opzioni sul quadro W/RW in modo che sia più chiara
+Correzione di bug :
+
 ver. 1.0.26
 Nuove Implementazioni :
   - Inserito nuova sezione in "Opzioni - Opzioni Rewards" dove è possibile decidere come trattare ogni tipologia di reward

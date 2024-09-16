@@ -28,6 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -136,6 +138,60 @@ public class Stampe {
              
              //doc.add(image01);
              
+
+          } catch (BadElementException | IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    }
+    
+        public void AggiungiQuadroRW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni) {
+          try {
+              
+
+// String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
+              com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
+             // image01.s
+             float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
+             float LarghezzaImmagine=image01.getWidth();
+             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*100;
+             image01.scalePercent(PercentualeScala);
+             //doc.bottom()
+             doc.add(image01);
+             float psosizioneVeriticale=writer.getVerticalPosition(false);
+            // Paragraph par = new Paragraph("155",FontFactory.getFont(FontFactory.COURIER,6, Font.NORMAL));
+             Font font = new Font(Font.HELVETICA, 8, Font.BOLD); 
+             //Numero Quadro
+             setPara(writer.getDirectContent(), new Phrase("RW"+NumeroQuadro,font), doc.leftMargin()+2, psosizioneVeriticale+95);
+             font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             //Codice Possesso
+             setPara(writer.getDirectContent(), new Phrase("1",font), 40+doc.leftMargin(), psosizioneVeriticale+130);
+             //Codice Individuazione Bene
+             setPara(writer.getDirectContent(), new Phrase("21",font), 140+doc.leftMargin(), psosizioneVeriticale+130);
+             //Quota di Possesso
+             setPara(writer.getDirectContent(), new Phrase("100,00",font), 230+doc.leftMargin(), psosizioneVeriticale+130);
+             //Criterio Determinazione Valore
+             setPara(writer.getDirectContent(), new Phrase("1",font), 290+doc.leftMargin(), psosizioneVeriticale+130);
+             //Valore Iniziale
+             setPara(writer.getDirectContent(), new Phrase(ValoreIniziale+",00",font), 360+doc.leftMargin(), psosizioneVeriticale+130);
+             //Valore Finale
+             setPara(writer.getDirectContent(), new Phrase(ValoreFinale+",00",font), 460+doc.leftMargin(), psosizioneVeriticale+130);
+             //Giorni IVAFE
+             setPara(writer.getDirectContent(), new Phrase(Giorni,font), 130+doc.leftMargin(), psosizioneVeriticale+90);
+             //Codice 14
+             setPara(writer.getDirectContent(), new Phrase("vedi",font), 405+doc.leftMargin(), psosizioneVeriticale+95);
+             setPara(writer.getDirectContent(), new Phrase("note",font), 405+doc.leftMargin(), psosizioneVeriticale+88);
+             //Solo Monitoraggio
+             if (Giorni.isBlank()||Giorni.contains("(")){
+                setPara(writer.getDirectContent(), new Phrase("X",font), 495+doc.leftMargin(), psosizioneVeriticale+85);
+             }else{
+             //Adesso calcolo l'IC per poterla mettere nei campi appositi
+             String IC = new BigDecimal(ValoreFinale)
+                         .multiply(new BigDecimal(Giorni))
+                         .multiply(new BigDecimal(0.002))
+                         .divide(new BigDecimal(365), 0, RoundingMode.HALF_UP).toPlainString() + ",00";
+                 setPara(writer.getDirectContent(), new Phrase(IC, font), 380 + doc.leftMargin(), psosizioneVeriticale + 8);
+                 setPara(writer.getDirectContent(), new Phrase(IC, font), 460 + doc.leftMargin(), psosizioneVeriticale + 8);
+             }
 
           } catch (BadElementException | IOException ex) {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);

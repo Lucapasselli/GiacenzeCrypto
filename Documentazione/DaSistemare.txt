@@ -9,6 +9,4 @@ rmdir /s /q Giacenze_Crypto.com\app\Immagini\
 
 - Controllare perchè ogni tanto la tabella del quadro RW non si colora
 - Aggiornare documentazione cartacea sull'utilizzo del programma per l'RW
-- Togliere numero del Wallet da Excel dettagli RW
 - Verificare Importi negativi che vanno in RW
-- Inserire note compilazione RW (Attualmente c'è solo per il W)

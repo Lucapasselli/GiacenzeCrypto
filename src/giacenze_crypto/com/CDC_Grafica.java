@@ -2679,7 +2679,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(RW_Opzioni_Radio_TrasferimentiNonConteggiati, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(441, Short.MAX_VALUE))
+                .addContainerGap(424, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Calcolo RW/W", Opzioni_RW_Pannello);
@@ -7063,6 +7063,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             
             //Stampa Quadro W
             int righeQuadroStampate=0;
+            int foglio=1;
+            stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
             for (int i=0;i<numeroRighe;i++){
                 String NomeGruppo=RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
                 String ValIniziale=RW_Tabella.getModel().getValueAt(i, 1).toString();
@@ -7079,16 +7081,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if (ValIniziale.equals("0")&&ValFinale.equals("0")){
                  } else {
                     //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
+                    //Se divisibile per 5 vuol dire che ho finito la pagina e devo andare alla proissima
+                    if ((righeQuadroStampate)%5==0&& righeQuadroStampate != 0){
+                        stampa.NuovaPagina();
+                        foglio++;
+                        stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
+                        righeQuadroStampate = righeQuadroStampate - 5;
+                    }
                     righeQuadroStampate++;
-                    stampa.AggiungiTesto(NomeGruppo+Errore,Font.NORMAL,10); 
+                    stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>"); 
                     if (PagaBollo.equalsIgnoreCase("SI")&&(GG.equals("365")||GG.equals("366")))GG="";
                     else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
                     if (righeQuadroStampate==1)stampa.AggiungiQuadroW("Immagini/QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
                     else stampa.AggiungiQuadroW("Immagini/QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
-                    //Se divisibile per 5 vuol dire che ho finito la pagina e devo andare alla proissima
-                    if ((righeQuadroStampate)%5==0){
-                        stampa.NuovaPagina();
-                    }
+
                 }
             }
 
@@ -7132,38 +7138,116 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 //Stampa Quadro RW
             stampa.NuovaPagina();
             stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
+            //stampa.AggiungiTesto("\n",Font.NORMAL,10);
+            stampa.AggiungiTesto("FOGLIO 1",Font.BOLD,10);
             stampa.AggiungiTesto("\n",Font.NORMAL,10);
             righeQuadroStampate=0;
-            for (int i=0;i<numeroRighe;i++){
-                String NomeGruppo=RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
-                String ValIniziale=RW_Tabella.getModel().getValueAt(i, 1).toString();
-                ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
-                String ValFinale=RW_Tabella.getModel().getValueAt(i, 2).toString();
-                ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
-                String GG=RW_Tabella.getModel().getValueAt(i, 3).toString();
-                GG=new BigDecimal(GG).setScale(0, RoundingMode.HALF_UP).toPlainString();
-                String PagaBollo=RW_Tabella.getModel().getValueAt(i, 7).toString();
-                boolean errori=false;
-                if(RW_Tabella.getModel().getValueAt(i, 4).toString().toUpperCase().contains("ERROR"))errori=true;
-                String Errore="";
-                if (errori)Errore=" - Attenzione! Ci sono degli errori da correggere!";
-                if (ValIniziale.equals("0")&&ValFinale.equals("0")){
-                 } else {
-                    //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
-                    righeQuadroStampate++;
-                    stampa.AggiungiTesto(NomeGruppo+Errore,Font.NORMAL,10); 
-                    if (PagaBollo.equalsIgnoreCase("SI")&&(GG.equals("365")||GG.equals("366")))GG="";
-                    else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
-                    stampa.AggiungiQuadroRW("Immagini/QuadroRW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
-                    stampa.AggiungiTesto("\n",Font.NORMAL,10);
-                    //Se divisibile per 5 vuol dire che ho finito la pagina e devo andare alla proissima
-                    if ((righeQuadroStampate)%3==0){
-                        stampa.NuovaPagina();
-                    }
-                }
+            boolean stampatoRW8=false;
+            String ICTotale="0";
+            for (int i = 0; i < numeroRighe; i++) {
+                BigDecimal ICriga=new BigDecimal(RW_Tabella.getModel().getValueAt(i, 5).toString()).setScale(0, RoundingMode.HALF_UP);
+                ICTotale=new BigDecimal(ICTotale).add(ICriga).toPlainString();
             }
+            ICTotale=ICTotale+",00";
+            foglio=1;
+                    for (int i = 0; i < numeroRighe; i++) {
+                        String NomeGruppo = RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
+                        String ValIniziale = RW_Tabella.getModel().getValueAt(i, 1).toString();
+                        ValIniziale = new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                        String ValFinale = RW_Tabella.getModel().getValueAt(i, 2).toString();
+                        ValFinale = new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                        String GG = RW_Tabella.getModel().getValueAt(i, 3).toString();
+                        GG = new BigDecimal(GG).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                        String PagaBollo = RW_Tabella.getModel().getValueAt(i, 7).toString();
+                        boolean errori = false;
+                        if (RW_Tabella.getModel().getValueAt(i, 4).toString().toUpperCase().contains("ERROR")) {
+                            errori = true;
+                        }
+                        String Errore = "";
+                        if (errori) {
+                            Errore = " - Attenzione! Ci sono degli errori da correggere!";
+                        }
+                        if (ValIniziale.equals("0") && ValFinale.equals("0")) {
+                        } else {
+                            //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
+                            //Se divisibile per 5 vuol dire che ho finito la pagina e devo andare alla proissima
+                            if ((righeQuadroStampate) % 3 == 0 && righeQuadroStampate != 0) {
+                                stampa.NuovaPagina();
+                                //stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
+                            }
+                            if ((righeQuadroStampate) % 5 == 0 && righeQuadroStampate != 0) {
+
+                                if (foglio == 1) {
+                                    // System.out.println("Stampo riepilogo");
+                                    stampatoRW8 = true;
+                                    stampa.AggiungiTesto("\n",Font.NORMAL,10);
+                                    stampa.AggiungiRW8("Immagini/QuadroRW8_2023.png", ICTotale);
+                                }
+                                foglio++;
+                                righeQuadroStampate = righeQuadroStampate - 5;
+                                stampa.NuovaPagina();
+                                stampa.AggiungiTesto("FOGLIO " + foglio, Font.BOLD, 10);
+                                stampa.AggiungiTesto("\n",Font.NORMAL,10);
+                            }
+                            righeQuadroStampate++;
+                            stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>");
+                            if (PagaBollo.equalsIgnoreCase("SI") && (GG.equals("365") || GG.equals("366"))) {
+                                GG = "";
+                            } else if (PagaBollo.equalsIgnoreCase("SI")) {
+                                GG = "(" + GG + ")*";
+                            }
+                            stampa.AggiungiQuadroRW("Immagini/QuadroRW_2023.png", String.valueOf(righeQuadroStampate), ValIniziale, ValFinale, GG, foglio);
+                            //stampa.AggiungiTesto("\n",Font.NORMAL,10);
+
+                        }
+                    }
+                    //Se non ho ancora stampato l'RW8 lo stampo ora
+                    if (!stampatoRW8) {
+                        stampatoRW8 = true;
+                        stampa.AggiungiTesto("\n",Font.NORMAL,10);
+                        stampa.AggiungiRW8("Immagini/QuadroRW8_2023.png", ICTotale);
+                    }
                     
                     
+                    //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW
+                    stampa.NuovaPagina();
+                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RW\n\n", Font.BOLD, 12);
+                 // String testo;
+                    testo = """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
+                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
+                            
+                            Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
+                            verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
+                            
+                            <b>Colonna 1</b> → \u2013 <u>TITOLO DI POSSESSO</u> \u2013 <b>Propriet\u00e0 (1)</b><br>
+                            <b>Colonna 3</b> → \u2013 <u>CODICE INDIVIDUAZIONE BENE</u> \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
+                            <b>Colonna 4</b> → \u2013 <u>CODICE STATO ESTERO</u> \u2013 <b>Vuoto</b><br>
+                            <b>Colonna 5</b> → \u2013 <u>QUOTA DI POSSESSO</u> \u2013 <b>(100)</b> (se non cointestate)<br>
+                            <b>Colonna 6</b> → \u2013 <u>CRITERIO DETERMINAZIONE VALORE</u> \u2013 <b>Valore di mercato (1)</b><br>
+                            <b>Colonna 7</b> → \u2013 <u>VALORE INIZIALE</u> \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
+                            <b>Colonna 8</b> → \u2013 <u>VALORE FINALE</u> \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
+                            <b>Colonna 10</b> \u2013 <u>GIORNI IC</u> \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
+                            <b>Colonna 14</b> \u2013 <u>CODICE</u> \u2013 Deve essere indicato un codice per indicare la compilazione di uno o
+                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
+                            in particolare, indicare:<br>
+                            → → - (Codice 1) x Compilazione Quadro RL &emsp;<br>
+                            → → - (Codice 2) x Compilazione Quadro RM &emsp;<br>
+                            → → - (Codice 3) x Compilazione Quadro RT &emsp;<br>
+                            → → - (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
+                            → → - (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
+                            periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
+                            \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
+                            attestazioni da cui risulti tale circostanza<br>
+                            <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)<br>
+                            <b>Colonna 33</b> \u2013 <u>IC</u> \u2013 E’ l’imposta di competenza (2x1000) calcolata rapportando il valore finale di colonna 8 a quota e giorni di possesso.<br>                           
+                            <b>Colonna 34</b> \u2013 <u>IC DOVUTA</u> \u2013 E’ l’imposta da versare che corrisponde all’importo di "Colonna 33" meno "Colonna 12".<br>
+                            <b>RW8</b> \u2013 <u>IMPOSTA CRIPTO-ATTIVITA'</u> \u2013 Deve essere compilato per determinare l’imposta sul valore
+                            delle cripto-attività. Nel caso in cui siano utilizzati più moduli va compilato esclusivamente il
+                            rigo RW8 del primo modulo indicando in esso il totale di tutti i righi compilati.<br>                            
+                            </font></html>""";
+                    stampa.AggiungiHtml(testo);       
                     
                     
                     stampa.NuovaPagina();
@@ -7442,9 +7526,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         if (RW_Tabella.getRowCount() == 0) {
             // Se non trovo dati come prima cosa provo ad elaborare il quadro
-            RW_CalcolaRW();
-            Funzioni.RW_CreaExcel(RW_Tabella, RW_Anno_ComboBox.getSelectedItem().toString());
+            RW_CalcolaRW();           
         }
+        Funzioni.RW_CreaExcel(RW_Tabella, RW_Anno_ComboBox.getSelectedItem().toString());
     }//GEN-LAST:event_jButton2ActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {

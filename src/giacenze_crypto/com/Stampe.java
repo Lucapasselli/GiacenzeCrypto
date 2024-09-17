@@ -144,7 +144,7 @@ public class Stampe {
           }
     }
     
-        public void AggiungiQuadroRW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni) {
+        public void AggiungiQuadroRW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni,int foglio) {
           try {
               
 
@@ -162,6 +162,10 @@ public class Stampe {
              Font font = new Font(Font.HELVETICA, 8, Font.BOLD); 
              //Numero Quadro
              setPara(writer.getDirectContent(), new Phrase("RW"+NumeroQuadro,font), doc.leftMargin()+2, psosizioneVeriticale+95);
+             //Numero Foglio
+             font = new Font(Font.HELVETICA, 6, Font.BOLD); 
+             setPara(writer.getDirectContent(), new Phrase("Foglio "+foglio,font), doc.leftMargin()+2, psosizioneVeriticale+85);
+             
              font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
              //Codice Possesso
              setPara(writer.getDirectContent(), new Phrase("1",font), 40+doc.leftMargin(), psosizioneVeriticale+130);
@@ -192,6 +196,32 @@ public class Stampe {
                  setPara(writer.getDirectContent(), new Phrase(IC, font), 380 + doc.leftMargin(), psosizioneVeriticale + 8);
                  setPara(writer.getDirectContent(), new Phrase(IC, font), 460 + doc.leftMargin(), psosizioneVeriticale + 8);
              }
+
+          } catch (BadElementException | IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    }
+        
+         public void AggiungiRW8(String Immagine,String Valore) {
+          try {
+              
+
+// String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
+              com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
+             // image01.s
+             float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
+             float LarghezzaImmagine=image01.getWidth();
+             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*100;
+             image01.scalePercent(PercentualeScala);
+             //doc.bottom()
+             doc.add(image01);
+             float psosizioneVeriticale=writer.getVerticalPosition(false);        
+             Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             //Codice Possesso
+             setPara(writer.getDirectContent(), new Phrase(Valore,font), 110+doc.leftMargin(), psosizioneVeriticale+8);
+             //Codice Individuazione Bene
+             setPara(writer.getDirectContent(), new Phrase(Valore,font), 390+doc.leftMargin(), psosizioneVeriticale+8);
+             
 
           } catch (BadElementException | IOException ex) {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);

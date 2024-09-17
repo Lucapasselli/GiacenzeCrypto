@@ -160,6 +160,7 @@ public class Funzioni {
     public static void RW_CreaExcel(JTable RW_Tabella,String Anno){
 
         try {
+            //System.out.println("orcapaletta");
             File f=new File ("RW.xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
@@ -187,9 +188,12 @@ public class Funzioni {
                 
                 //Creao i Worksheet relativi ai dettagli per il calcolo dell'RW
                 String GruppoW=model.getValueAt(i, 0).toString();
-                ws = wb.newWorksheet(GruppoW+" - Calcoli RW");
-                wsI = wb.newWorksheet(GruppoW+" - Inizio "+Anno);
-                wsF = wb.newWorksheet(GruppoW+" - Fine "+Anno);
+               // ws = wb.newWorksheet(GruppoW.split("\\(")[1].split("\\)")[0].trim()+" - Calcoli RW");
+               // wsI = wb.newWorksheet(GruppoW.split("\\(")[1].split("\\)")[0].trim()+" - Inizio "+Anno);
+               // wsF = wb.newWorksheet(GruppoW.split("\\(")[1].split("\\)")[0].trim()+" - Fine "+Anno);
+                ws = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Calcoli RW");
+                wsI = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Inizio "+Anno);
+                wsF = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Fine "+Anno);
                 String Gruppo = "Wallet " + model.getValueAt(i, 0).toString().split(" ")[0].trim();
                 
                 

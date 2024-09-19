@@ -98,7 +98,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 xlista[8]=el.Qta;                      //Qta Fine
                 xlista[9]="0000-00-00 00:00";       //Data Fine
                 xlista[10]="0.000";                 //Prezzo Fine
-                xlista[11]="999";                     //Giorni di Detenzione
+                xlista[11]="365";                     //Giorni di Detenzione
                 xlista[12]="Inizio Periodo";        //Causale
                 xlista[13]=el.IDOri;                //ID Movimento Apertura (o segnalazione inizio anno)
                 xlista[14]="";                     //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
@@ -131,7 +131,6 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
     if (!Qta.isBlank()&&!Moneta.isBlank()){//non faccio nulla se la momenta o la qta non è valorizzata
     ArrayDeque<ElementiStack> stack;
     
-
     BigDecimal qtaRimanente=new BigDecimal(Qta).abs();
    // BigDecimal costoTransazione=new BigDecimal("0");
     //prima cosa individuo la moneta e prendo lo stack corrispondente
@@ -211,11 +210,21 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //Ora i valori avanzati li rimetto nello stack precedente
                 ElementiStack el = new ElementiStack();
                     el.IDOri = IDOrigine;//ID del movimento da cui tutto ha avuto origine
-                    if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)"))el.CostoOri="0.00";
-                    else el.CostoOri = valoreRimanenteOrigine;//Costo di partenza della moneta originale
+                    if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)"))
+                    {
+                        el.CostoOri="0.00";
+                        el.QtaOri="";
+                    }
+                    else
+                    { 
+                        el.CostoOri = valoreRimanenteOrigine;//Costo di partenza della moneta originale
+                        el.QtaOri = qtaRimanenteOrigine;//Qta di partenza della moneta originale  
+                    }
                     el.MonOri = MonetaOrigine;//Moneta di partenza di tutto il giro del Lifo
-                    if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)"))el.QtaOri="";
-                    else el.QtaOri = qtaRimanenteOrigine;//Qta di partenza della moneta originale                    
+                   /* if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)"))
+                        el.QtaOri="";
+                    else 
+                        el.QtaOri = qtaRimanenteOrigine;//Qta di partenza della moneta originale  */                  
                     el.DataOri = dataOrigine;//Data di partenza
                     el.GruppoWalletOri =GW;
 
@@ -237,11 +246,19 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 //I nuovi valori li metto nel nuovo stack che poi dovrò gestire nella funzione preposta
                 el = new ElementiStack();
                     el.IDOri = IDOrigine;//ID del movimento da cui tutto ha avuto origine
-                    if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)"))el.CostoOri="0.00";
-                    else el.CostoOri = costoOrigine.toPlainString();//Costo di partenza della moneta originale
+                    if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)")){
+                        el.CostoOri="0.00";
+                        el.QtaOri="";
+                    }
+                    else{ 
+                        el.CostoOri = costoOrigine.toPlainString();//Costo di partenza della moneta originale
+                        el.QtaOri = qtaOrigine.toPlainString();//Qta di partenza della moneta originale
+                    }
                     el.MonOri = MonetaOrigine;//Moneta di partenza di tutto il giro del Lifo
-                    if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)"))el.QtaOri="";
-                    else el.QtaOri = qtaOrigine.toPlainString();//Qta di partenza della moneta originale
+                   /* if (IDOrigine.equalsIgnoreCase("Errore (Giacenza Negativa)"))
+                        el.QtaOri="";
+                    else 
+                        el.QtaOri = qtaOrigine.toPlainString();//Qta di partenza della moneta originale*/
                     el.DataOri = dataOrigine;//Data di partenza
                     el.GruppoWalletOri =GW;
 
@@ -274,12 +291,13 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
              //if (Qta.equals("6.584998"))System.out.println("porcaletta4");
              //Se resta ancora della qta rimanente da scaricare significa che sto vendendo crypto che non posseggo, ergo mancano dei movimenti
              //in questo caso lo segnalo mettendo la data e prezzo a zero
+             //Rettifico la data non la metto a zero ma al primo dell'anno
                     ElementiStack el = new ElementiStack();
                     el.IDOri = "Errore (Giacenza Negativa)";//ID del movimento da cui tutto ha avuto origine
                     el.CostoOri = "0.00";//Costo di partenza della moneta originale
                     el.MonOri = "";//Moneta di partenza di tutto il giro del Lifo
                     el.QtaOri = "";//Qta di partenza della moneta originale
-                    el.DataOri = "";//Data di partenza
+                    el.DataOri = AnnoR+"-01-01 00:00";//Data di partenza
                     el.TipoMonetaOri="";
                     el.GruppoWalletOri ="";
 
@@ -477,6 +495,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
         String DataDaScrivere=Data;
                         
         //System.out.println(Monete.Qta);
+        //tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
             ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStack, Monete.Moneta, Monete.Qta,GruppoWallet, true);
            // System.out.println(Monete.Moneta+" p "+Monete.Prezzo+" q "+Monete.Qta+" v "+Valore);
@@ -500,7 +519,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 xlista[8]=Monete.Qta;                                           //Qta Fine
                 xlista[9]=DataDaScrivere;                                       //Data Fine
                 xlista[10]=Valore;                                              //Prezzo Fine
-                xlista[11]="999";                                            //Giorni di Detenzione
+                xlista[11]="365";                                            //Giorni di Detenzione
                 xlista[12]=Causale;                                             //Causale
                 xlista[13]="";                                                  //ID Movimento Apertura (o segnalazione inizio anno)
                 xlista[14]=IDt;                                                 //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
@@ -1597,7 +1616,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                             CryptoStackTemp = MappaGrWallet_CryptoStack.get(GRWallet);
                             
                             //Questa parte sotto è momentaneamente disabilitata con quell'if perchè non mi sembra corretto concettualmente
-                            //anche se ho riscontrato lo stesso comportamento in tatax
+                            //anche se ho riscontrato lo stesso comportamento in altri software
+                            //con questa opzione si rischia di avere valori di chiusura rw di un wallet più alti di quelli reali
                             if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SIs")) {
                              //   ChiudiRWFR(m, CryptoStackTemp, "null", DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
 
@@ -1627,6 +1647,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 for(String GRWAL : listaDaConsolidare.keySet()){
                                     Moneta m2=listaDaConsolidare.get(GRWAL);
                                     ChiudiRWFR(m2, CryptoStackTemp, GRWAL, DataFineAnno, m2.Prezzo, "Fine Anno", "Giacenza Fine Anno");
+                                    if (m2.Qta.contains("-"))System.out.println(m2.Qta);
                                     if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(m2.GruppoRW) == null) {
                                         List<Moneta> li = new ArrayList<>();
                                         li.add(m2);
@@ -1642,9 +1663,15 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 //Solo se rilvenza è di diverso da A proseguo con i calcoli
                                 //nel caso sia uguale ad A viene gestito a fine ciclo
                                 if (!(Rilevanza.equalsIgnoreCase("A") || MostraGiacenzeSePagaBollo)) {
-                                    
+                                    //Lancio la funzione solo se la rimanenza è positiva, se è negativa non devo chiudere nulla
+                                    //anzi se lo facessi creerei solo problemi in caso di giacenze negative
+                                    if (!m.Qta.contains("-")){
                                     ChiudiRWFR(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
+                                    }
                                 }
+                               /* if (m.Qta.contains("-")){
+                                    System.out.println(m.Moneta+" - "+m.Qta);
+                                }*/
                             //Questo qua sotto popola una lista per ogni gruppo wallet contenente la giacenza di ciascuna moneta ad inizio anno
                             
                             if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key)==null){

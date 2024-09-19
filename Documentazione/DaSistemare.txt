@@ -9,4 +9,4 @@ rmdir /s /q Giacenze_Crypto.com\app\Immagini\
 
 - Controllare perchè ogni tanto la tabella del quadro RW non si colora
 - Aggiornare documentazione cartacea sull'utilizzo del programma per l'RW
-- Verificare Importi negativi che vanno in RW
+- Inserire lista movimenti dell'anno nell'excel, potrei farlo anche diviso per gruppo Wallet

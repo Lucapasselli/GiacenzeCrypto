@@ -6135,7 +6135,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        //progress.RipristinaStdout();
+        progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
@@ -7137,10 +7137,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                                 //Stampa Quadro RW
             stampa.NuovaPagina();
-            stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
+           // stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
-            stampa.AggiungiTesto("FOGLIO 1",Font.BOLD,10);
-            stampa.AggiungiTesto("\n",Font.NORMAL,10);
+           // stampa.AggiungiTesto("FOGLIO 1",Font.BOLD,10);
+           // stampa.AggiungiTesto("\n",Font.NORMAL,10);
             righeQuadroStampate=0;
             boolean stampatoRW8=false;
             String ICTotale="0";
@@ -7148,14 +7148,22 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 BigDecimal ICriga=new BigDecimal(RW_Tabella.getModel().getValueAt(i, 5).toString()).setScale(0, RoundingMode.HALF_UP);
                 ICTotale=new BigDecimal(ICTotale).add(ICriga).toPlainString();
             }
-            ICTotale=ICTotale+",00";
-            foglio=1;
+            ICTotale=ICTotale;
+                    foglio = 1;
+                    String ValoriIniziali[] = new String[5];
+                    String ValoriFinali[] = new String[5];
+                    String Giorni[] = new String[5];
+                    String IC[] = new String[5];
+                    String Exchange[] =new String [5];
+                    String Messaggi[] = new String[5];
+                    boolean mancaStampa=false;
                     for (int i = 0; i < numeroRighe; i++) {
                         String NomeGruppo = RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
                         String ValIniziale = RW_Tabella.getModel().getValueAt(i, 1).toString();
                         ValIniziale = new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
                         String ValFinale = RW_Tabella.getModel().getValueAt(i, 2).toString();
                         ValFinale = new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                        String ICs = new BigDecimal(RW_Tabella.getModel().getValueAt(i, 5).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
                         String GG = RW_Tabella.getModel().getValueAt(i, 3).toString();
                         GG = new BigDecimal(GG).setScale(0, RoundingMode.HALF_UP).toPlainString();
                         String PagaBollo = RW_Tabella.getModel().getValueAt(i, 7).toString();
@@ -7165,47 +7173,54 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         }
                         String Errore = "";
                         if (errori) {
-                            Errore = " - Attenzione! Ci sono degli errori da correggere!";
+                            Errore = "Errori da correggere!";
                         }
+
                         if (ValIniziale.equals("0") && ValFinale.equals("0")) {
                         } else {
-                            //Metto in stampa solo se almeno uno tra valore iniziale e finale è diverso da Zero
-                            //Se divisibile per 5 vuol dire che ho finito la pagina e devo andare alla proissima
-                            if ((righeQuadroStampate) % 3 == 0 && righeQuadroStampate != 0) {
-                                stampa.NuovaPagina();
-                                //stampa.AggiungiTesto("FOGLIO "+foglio,Font.BOLD,10);
-                            }
                             if ((righeQuadroStampate) % 5 == 0 && righeQuadroStampate != 0) {
-
-                                if (foglio == 1) {
-                                    // System.out.println("Stampo riepilogo");
-                                    stampatoRW8 = true;
-                                    stampa.AggiungiTesto("\n",Font.NORMAL,10);
-                                    stampa.AggiungiRW8("Immagini/QuadroRW8_2023.png", ICTotale);
-                                }
+                                //Se arrivo qua stampo il foglio con i dati
+                                stampa.AggiungiQuadroRW("Immagini/QuadroRW_2023.jpg", String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                //Poi pulisco le variabili per un nuovo foglio
+                                ValoriIniziali = new String[5];
+                                ValoriFinali = new String[5];
+                                Giorni = new String[5];
+                                IC = new String[5];
+                                Exchange =new String [5];
+                                Messaggi= new String[5];
+                                mancaStampa=false;
                                 foglio++;
                                 righeQuadroStampate = righeQuadroStampate - 5;
                                 stampa.NuovaPagina();
-                                stampa.AggiungiTesto("FOGLIO " + foglio, Font.BOLD, 10);
                                 stampa.AggiungiTesto("\n",Font.NORMAL,10);
+                            }else{
+                                mancaStampa=true;
                             }
-                            righeQuadroStampate++;
-                            stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>");
+                            
+                            //stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>");
                             if (PagaBollo.equalsIgnoreCase("SI") && (GG.equals("365") || GG.equals("366"))) {
                                 GG = "";
                             } else if (PagaBollo.equalsIgnoreCase("SI")) {
                                 GG = "(" + GG + ")*";
                             }
-                            stampa.AggiungiQuadroRW("Immagini/QuadroRW_2023.png", String.valueOf(righeQuadroStampate), ValIniziale, ValFinale, GG, foglio);
+                            //System.out.println(righeQuadroStampate);
+                            ValoriIniziali[righeQuadroStampate]=ValIniziale;
+                            ValoriFinali[righeQuadroStampate]=ValFinale;
+                            Giorni[righeQuadroStampate]=GG;
+                            IC[righeQuadroStampate]=ICs;
+                            Exchange[righeQuadroStampate]=NomeGruppo;
+                            Messaggi[righeQuadroStampate]=Errore;
+                            righeQuadroStampate++;
+                            
                             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
 
                         }
                     }
+                    
                     //Se non ho ancora stampato l'RW8 lo stampo ora
-                    if (!stampatoRW8) {
-                        stampatoRW8 = true;
-                        stampa.AggiungiTesto("\n",Font.NORMAL,10);
-                        stampa.AggiungiRW8("Immagini/QuadroRW8_2023.png", ICTotale);
+                    if (mancaStampa) {
+                        stampa.AggiungiQuadroRW("Immagini/QuadroRW_2023.jpg", String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                
                     }
                     
                     

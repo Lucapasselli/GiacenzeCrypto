@@ -144,7 +144,16 @@ public class Stampe {
           }
     }
     
-        public void AggiungiQuadroRW(String Immagine,String NumeroQuadro,String ValoreIniziale,String ValoreFinale,String Giorni,int foglio) {
+        public void AggiungiQuadroRW(String Immagine,
+                String NumeroQuadro,
+                String ValoriIniziali[],
+                String ValoriFinali[],
+                String Giorni[],
+                String IC[],
+                String Wallet[],
+                String Note[],
+                int foglio,
+                String ICTot) {
           try {
               
 
@@ -156,34 +165,94 @@ public class Stampe {
              float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*100;
              image01.scalePercent(PercentualeScala);
              //doc.bottom()
+             //doc.left(110);
+             //doc.setMargins(doc.leftMargin()+100, doc.rightMargin(), doc.topMargin(), doc.bottomMargin());
              doc.add(image01);
              float psosizioneVeriticale=writer.getVerticalPosition(false);
             // Paragraph par = new Paragraph("155",FontFactory.getFont(FontFactory.COURIER,6, Font.NORMAL));
-             Font font = new Font(Font.HELVETICA, 8, Font.BOLD); 
-             //Numero Quadro
-             setPara(writer.getDirectContent(), new Phrase("RW"+NumeroQuadro,font), doc.leftMargin()+2, psosizioneVeriticale+95);
-             //Numero Foglio
-             font = new Font(Font.HELVETICA, 6, Font.BOLD); 
-             setPara(writer.getDirectContent(), new Phrase("Foglio "+foglio,font), doc.leftMargin()+2, psosizioneVeriticale+85);
+             Font font = new Font(Font.HELVETICA, 10, Font.BOLD);
+             //Foglio
+             setPara(writer.getDirectContent(), new Phrase(String.valueOf(foglio),font), 507+doc.leftMargin(), psosizioneVeriticale+582);
+             //RW8 se foglio 1
+             if (foglio==1){                 
+                 font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                 setPara(writer.getDirectContent(), new Phrase(ICTot,font), 150+doc.leftMargin(), psosizioneVeriticale+12);
+                 setPara(writer.getDirectContent(), new Phrase(ICTot,font), 405+doc.leftMargin(), psosizioneVeriticale+12);
+             }
+             font = new Font(Font.HELVETICA, 10, Font.BOLD);
+             setPara(writer.getDirectContent(), new Phrase("QUADRO RW PER CRIPTO-ATTIVITA'",font), 200+doc.leftMargin(), psosizioneVeriticale+655);
+             for (int i=0;i<5;i++){
+                 if (ValoriIniziali[i]!=null){
+                    font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                    if (i==0){
+                        //Wallet e Note
+                        font = new Font(Font.HELVETICA, 10, Font.BOLD);
+                        setPara(writer.getDirectContent(), new Phrase(Wallet[i],font), 5+doc.leftMargin(), psosizioneVeriticale+525);
+                        font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                        setPara(writer.getDirectContent(), new Phrase(Note[i],font), 5+doc.leftMargin(), psosizioneVeriticale+510);
+                        //Codice Possesso
+                        setPara(writer.getDirectContent(), new Phrase("1",font), 142+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Codice Individuazione Bene
+                        setPara(writer.getDirectContent(), new Phrase("21",font), 220+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Quota di Possesso
+                        setPara(writer.getDirectContent(), new Phrase("100,00",font), 285+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Criterio Determinazione Valore
+                        setPara(writer.getDirectContent(), new Phrase("1",font), 330+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Valore Iniziale
+                        setPara(writer.getDirectContent(), new Phrase(ValoriIniziali[i],font), 380+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Valore Finale
+                        setPara(writer.getDirectContent(), new Phrase(ValoriFinali[i],font), 460+doc.leftMargin(), psosizioneVeriticale+540);
+                        //Giorni IVAFE
+                        setPara(writer.getDirectContent(), new Phrase(Giorni[i],font), 210+doc.leftMargin(), psosizioneVeriticale+508);
+                        //Codice 14
+                        setPara(writer.getDirectContent(), new Phrase("vedi",font), 425+doc.leftMargin(), psosizioneVeriticale+513);
+                        setPara(writer.getDirectContent(), new Phrase("note",font), 425+doc.leftMargin(), psosizioneVeriticale+506);
+                        //Solo Monitoraggio
+                        if (Giorni[i].isBlank()||Giorni[i].contains("(")){
+                            setPara(writer.getDirectContent(), new Phrase("X",font), 496+doc.leftMargin(), psosizioneVeriticale+508);
+                        }else{
+                        //IC
+                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 410 + doc.leftMargin(), psosizioneVeriticale + 445);
+                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 475 + doc.leftMargin(), psosizioneVeriticale + 445); 
+                        }
+                    }else{
+                        //Wallet e Note
+                        font = new Font(Font.HELVETICA, 10, Font.BOLD);
+                        setPara(writer.getDirectContent(), new Phrase(Wallet[i],font), 5+doc.leftMargin(), psosizioneVeriticale+410-(i-1)*84);
+                        font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                        setPara(writer.getDirectContent(), new Phrase(Note[i],font), 5+doc.leftMargin(), psosizioneVeriticale+395-(i-1)*84);
+                        //Codice Possesso
+                        setPara(writer.getDirectContent(), new Phrase("1",font), 142+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Codice Individuazione Bene
+                        setPara(writer.getDirectContent(), new Phrase("21",font), 220+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Quota di Possesso
+                        setPara(writer.getDirectContent(), new Phrase("100,00",font), 285+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Criterio Determinazione Valore
+                        setPara(writer.getDirectContent(), new Phrase("1",font), 330+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Valore Iniziale
+                        setPara(writer.getDirectContent(), new Phrase(ValoriIniziali[i],font), 380+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Valore Finale
+                        setPara(writer.getDirectContent(), new Phrase(ValoriFinali[i],font), 460+doc.leftMargin(), psosizioneVeriticale+425-(i-1)*84);
+                        //Giorni IVAFE
+                        setPara(writer.getDirectContent(), new Phrase(Giorni[i],font), 210+doc.leftMargin(), psosizioneVeriticale+404-(i-1)*84);
+                        //Codice 14
+                        setPara(writer.getDirectContent(), new Phrase("vedi",font), 425+doc.leftMargin(), psosizioneVeriticale+409-(i-1)*84);
+                        setPara(writer.getDirectContent(), new Phrase("note",font), 425+doc.leftMargin(), psosizioneVeriticale+402-(i-1)*84);
+                        //Solo Monitoraggio
+                        if (Giorni[i].isBlank()||Giorni[i].contains("(")){
+                            setPara(writer.getDirectContent(), new Phrase("X",font), 496+doc.leftMargin(), psosizioneVeriticale+404-(i-1)*84);
+                        }else{
+                        //IC
+                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 410 + doc.leftMargin(), psosizioneVeriticale +360-(i-1)*84);
+                            setPara(writer.getDirectContent(), new Phrase(IC[i], font), 475 + doc.leftMargin(), psosizioneVeriticale +360-(i-1)*84); 
+                        }
+                    }
+                    //setPara(writer.getDirectContent(), new Phrase("1",font), 140+doc.leftMargin(), psosizioneVeriticale+630-i*100);
+                 }
+             }
+         /*  
+
              
-             font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
-             //Codice Possesso
-             setPara(writer.getDirectContent(), new Phrase("1",font), 40+doc.leftMargin(), psosizioneVeriticale+130);
-             //Codice Individuazione Bene
-             setPara(writer.getDirectContent(), new Phrase("21",font), 140+doc.leftMargin(), psosizioneVeriticale+130);
-             //Quota di Possesso
-             setPara(writer.getDirectContent(), new Phrase("100,00",font), 230+doc.leftMargin(), psosizioneVeriticale+130);
-             //Criterio Determinazione Valore
-             setPara(writer.getDirectContent(), new Phrase("1",font), 290+doc.leftMargin(), psosizioneVeriticale+130);
-             //Valore Iniziale
-             setPara(writer.getDirectContent(), new Phrase(ValoreIniziale+",00",font), 360+doc.leftMargin(), psosizioneVeriticale+130);
-             //Valore Finale
-             setPara(writer.getDirectContent(), new Phrase(ValoreFinale+",00",font), 460+doc.leftMargin(), psosizioneVeriticale+130);
-             //Giorni IVAFE
-             setPara(writer.getDirectContent(), new Phrase(Giorni,font), 130+doc.leftMargin(), psosizioneVeriticale+90);
-             //Codice 14
-             setPara(writer.getDirectContent(), new Phrase("vedi",font), 405+doc.leftMargin(), psosizioneVeriticale+95);
-             setPara(writer.getDirectContent(), new Phrase("note",font), 405+doc.leftMargin(), psosizioneVeriticale+88);
              //Solo Monitoraggio
              if (Giorni.isBlank()||Giorni.contains("(")){
                 setPara(writer.getDirectContent(), new Phrase("X",font), 495+doc.leftMargin(), psosizioneVeriticale+85);
@@ -195,7 +264,7 @@ public class Stampe {
                          .divide(new BigDecimal(365), 0, RoundingMode.HALF_UP).toPlainString() + ",00";
                  setPara(writer.getDirectContent(), new Phrase(IC, font), 380 + doc.leftMargin(), psosizioneVeriticale + 8);
                  setPara(writer.getDirectContent(), new Phrase(IC, font), 460 + doc.leftMargin(), psosizioneVeriticale + 8);
-             }
+             }*/
 
           } catch (BadElementException | IOException ex) {
               Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);

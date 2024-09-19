@@ -172,6 +172,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
      }
      
      public void ChiudiFinestra (){
+        RipristinaStdout();
         this.dispose();
      }
      

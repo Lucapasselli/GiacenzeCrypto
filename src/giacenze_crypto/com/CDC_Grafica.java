@@ -6222,6 +6222,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         RW_Text_IC.setText(ICtot);
         Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
+        //progress.RipristinaStdout();
         progress.ChiudiFinestra();
         }
             };
@@ -7543,7 +7544,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             // Se non trovo dati come prima cosa provo ad elaborare il quadro
             RW_CalcolaRW();           
         }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Funzioni.RW_CreaExcel(RW_Tabella, RW_Anno_ComboBox.getSelectedItem().toString());
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_jButton2ActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {

@@ -178,19 +178,19 @@ public class Funzioni {
             
             for (int i = 0; i < RW_Tabella.getRowCount(); i++) {
                 //Popolo il primo worksheet con il riepilogo
-                wsrm.value(i+2, 0,model.getValueAt(i, 0).toString());
-                wsrm.value(i+2, 1,model.getValueAt(i, 1).toString());
-                wsrm.value(i+2, 2,model.getValueAt(i, 2).toString());
-                wsrm.value(i+2, 3,model.getValueAt(i, 3).toString());
-                wsrm.value(i+2, 4,model.getValueAt(i, 4).toString());
-                wsrm.value(i+2, 5,model.getValueAt(i, 5).toString());
-                wsrm.value(i+2, 6,model.getValueAt(i, 7).toString());
+                String RigaRiepilogo[]=new String[7];
+                RigaRiepilogo[0]=model.getValueAt(i, 0).toString();
+                RigaRiepilogo[1]=model.getValueAt(i, 1).toString();
+                RigaRiepilogo[2]=model.getValueAt(i, 2).toString();
+                RigaRiepilogo[3]=model.getValueAt(i, 3).toString();
+                RigaRiepilogo[4]=model.getValueAt(i, 4).toString();
+                RigaRiepilogo[5]=model.getValueAt(i, 5).toString();
+                RigaRiepilogo[6]=model.getValueAt(i, 7).toString();
+                ScriviRigaExcel(RigaRiepilogo,wsrm,i+2);
+                
                 
                 //Creao i Worksheet relativi ai dettagli per il calcolo dell'RW
                 String GruppoW=model.getValueAt(i, 0).toString();
-               // ws = wb.newWorksheet(GruppoW.split("\\(")[1].split("\\)")[0].trim()+" - Calcoli RW");
-               // wsI = wb.newWorksheet(GruppoW.split("\\(")[1].split("\\)")[0].trim()+" - Inizio "+Anno);
-               // wsF = wb.newWorksheet(GruppoW.split("\\(")[1].split("\\)")[0].trim()+" - Fine "+Anno);
                 ws = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Calcoli RW");
                 wsI = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Inizio "+Anno);
                 wsF = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Fine "+Anno);
@@ -311,6 +311,37 @@ public class Funzioni {
                     "Note"                              //21
                 };       
                 ScriviRigaExcel(Intestazioni,wsM,0);
+                int rli=1;
+                for (String[] v : MappaCryptoWallet.values()) {
+                    String AnnoRiga=v[1].split("-")[0];
+                    String GruppoRiga=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+                    //se l'anno è quello di riferimento e il gruppo walle è quello analizzato allora scrivo i movimenti sull'excel
+                    if(AnnoRiga.equals(Anno)&&
+                            GruppoRiga.split(" ")[1].equals(GruppoW.split(" ")[0])){
+                    String rigaT[]=new String[18];
+                    rigaT[0]=GruppoW;
+                    rigaT[1]=v[0];
+                    rigaT[2]=v[1];
+                    rigaT[3]=v[3];
+                    rigaT[4]=v[4];
+                    rigaT[5]=TrovaReteDaID(v[0]);
+                    rigaT[6]=v[5];
+                    rigaT[7]=v[8];
+                    rigaT[8]=v[9];
+                    rigaT[9]=v[26];
+                    rigaT[10]=v[10];
+                    rigaT[11]=v[11];
+                    rigaT[12]=v[12];
+                    rigaT[13]=v[28];
+                    rigaT[14]=v[13];
+                    rigaT[15]=v[15];
+                    rigaT[16]=v[20];
+                    rigaT[17]=v[21];
+                    ScriviRigaExcel(rigaT,wsM,rli);
+                    rli++;
+                    }
+                }
+                
                 
                 wsI.finish();
                 wsF.finish();

@@ -288,7 +288,6 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
         //peek - > recupera solo il dato
         //System.out.println("RIMANENTE : "+qtaRimanente);
          if (qtaRimanente.compareTo(new BigDecimal(0))==1){
-             //if (Qta.equals("6.584998"))System.out.println("porcaletta4");
              //Se resta ancora della qta rimanente da scaricare significa che sto vendendo crypto che non posseggo, ergo mancano dei movimenti
              //in questo caso lo segnalo mettendo la data e prezzo a zero
              //Rettifico la data non la metto a zero ma al primo dell'anno
@@ -302,7 +301,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     el.GruppoWalletOri ="";
 
                     el.Moneta = Moneta; //Moneta di riferimento
-                    el.Qta = qtaRimanente.toPlainString(); //Qta di riferimento
+                    el.Qta = "-"+qtaRimanente.toPlainString(); //Qta di riferimento
                     el.GruppoWallet = GruppoWallet;
                 //    el.GruppoWallet = "parsimonia";
                 //  System.out.println(el.Moneta);
@@ -657,6 +656,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 Moneta Mdoppia[] =new Moneta[2];
                 Mdoppia[0]=Miniziale;
                 Mdoppia[1]=Mfinale;
+                //Azzero il prezzo se la giacenza è negativa perchè appunto significa che non ce l'ho
+                //la voglio far vedere ma non deve incidere sul''rw
+                if (Mfinale.Qta.contains("-"))Mfinale.Prezzo="0.000";
                 MappaDoppia.put(Mfinale.Moneta, Mdoppia);
             }
         }
@@ -675,8 +677,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     Moneta Mdoppia[] = new Moneta[2];
                     Mdoppia[0] = Miniziale;
                     Mdoppia[1] = Mfinale; 
-                    MappaDoppia.put(Mfinale.Moneta, Mdoppia);
+                    MappaDoppia.put(Miniziale.Moneta, Mdoppia);
                 }else{
+                    //Azzero il prezzo se la giacenza è negativa perchè appunto significa che non ce l'ho
+                    //la voglio far vedere ma non deve incidere sul''rw
+                    if (Miniziale.Qta.contains("-"))Miniziale.Prezzo="0.000";
                     Moneta Mdoppia[] = MappaDoppia.get(Miniziale.Moneta);
                     Mdoppia[0] = Miniziale;
                 }

@@ -172,7 +172,7 @@ public class Funzioni {
             
         // Per prima cosa creo la prima riga di intestazione
         Map<String, String[]> Mappa_Gruppo_Alias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
-            Worksheet ws,wsI,wsF;
+            Worksheet ws,wsI,wsF,wsM;
             TableModel model = RW_Tabella.getModel();
             //Scrivo l'intestazione della tabella riepilogo
             
@@ -194,6 +194,7 @@ public class Funzioni {
                 ws = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Calcoli RW");
                 wsI = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Inizio "+Anno);
                 wsF = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Fine "+Anno);
+                wsM = wb.newWorksheet(GruppoW.split("\\(")[0].trim()+" - Movimenti "+Anno);
                 String Gruppo = "Wallet " + model.getValueAt(i, 0).toString().split(" ")[0].trim();
                 
                 
@@ -287,6 +288,30 @@ public class Funzioni {
                     ScriviRigaExcel(valori,wsF,r);
                     r++;
                 }
+                
+                //Lista Movimenti
+                Intestazioni = new String[]{
+                    "Gruppo Wallet x RW",               //
+                    "ID",                               //0
+                    "Data",                             //1
+                    "Wallet Principale/Exchange",       //3
+                    "Dettaglio Wallet",                 //4
+                    "Rete Wallet",                      //da calcolare
+                    "Tipo Transazione",                 //5
+                    "Token Venduto/Ceduto",             //8
+                    "Tipo Token Venduto/Ceduto",        //9
+                    "Address Token Venduto/Ceduto",     //26
+                    "Quantità Venduta/Ceduta",          //10
+                    "Token Acquistato/Ricevuto",        //11
+                    "Tipo Token Acquistato/Ricevuto",   //12
+                    "Address Token Acquistato/Ricevuto",//28
+                    "Quantità Acquistata/Ricevuta",     //13
+                    "Valore Transazione",               //15
+                    "Riferimento Trasferimenti",        //20
+                    "Note"                              //21
+                };       
+                ScriviRigaExcel(Intestazioni,wsM,0);
+                
                 wsI.finish();
                 wsF.finish();
                 ws.finish();

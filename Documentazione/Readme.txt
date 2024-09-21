@@ -29,6 +29,7 @@ Nuove Implementazioni :
   - Quadro RW/W : Nella stampa del Report in PDF aggiunto il quadro RW e numerose istruzioni
   - Riorganizzato la tabella delle opzioni sul quadro W/RW in modo che sia più chiara
 Correzione di bug :
+  - Quadro RW/W : le giacenze negative venivano segnalate ma il programma le mostrava senza il segno meno
 
 ver. 1.0.26
 Nuove Implementazioni :

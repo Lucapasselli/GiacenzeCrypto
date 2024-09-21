@@ -1,13 +1,5 @@
 - Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
 - Verificare quando correggo un rerrore in RW che non raddoppi le righe 
 
-copy Giacenze_Crypto.com\app\logo.png Giacenze_Crypto.com\logo.png
-mkdir Giacenze_Crypto.com\Immagini
-copy Giacenze_Crypto.com\app\Immagini\*.* Giacenze_Crypto.com\Immagini\
-del Giacenze_Crypto.com\app\logo.png
-rmdir /s /q Giacenze_Crypto.com\app\Immagini\
-
 - Controllare perchè ogni tanto la tabella del quadro RW non si colora
 - Aggiornare documentazione cartacea sull'utilizzo del programma per l'RW
-- Inserire lista movimenti dell'anno nell'excel, potrei farlo anche diviso per gruppo Wallet
-- Nel riepilogo generale sull'excel i numeri non vengono trattati come tali

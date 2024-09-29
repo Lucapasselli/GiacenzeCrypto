@@ -1,20 +1,24 @@
-Il programma si occupa del calcolo delle giacenze medie, saldi iniziali e finali del Fiat e Card Wallet di Crypto.com
-Offre anche la possibilità di stampare un report in pdf dei risultati.
+DISCLAIMER
+Il software fornito è in versione beta ed è destinato esclusivamente a scopi di testing e valutazione. Questo programma è progettato per assistere nei calcoli legati alla dichiarazione delle Crypto-Attività, ma non garantisce l'accuratezza, la completezza o l'affidabilità dei risultati.
+L'utente utilizza questo software a proprio rischio e pericolo. Nonostante gli sforzi per identificare e correggere eventuali errori, il programma potrebbe contenere bug o fornire risultati errati.
+Il creatore e i contributori del software non sono responsabili per eventuali danni diretti, indiretti, accidentali o consequenziali derivanti dall'uso del programma, inclusi errori nei calcoli, problemi tecnici o altre discrepanze. Si raccomanda agli utenti di verificare autonomamente i risultati prodotti e di consultare un professionista qualificato prima di presentare la propria dichiarazione.
+Utilizzando questo software, l'utente accetta integralmente questi termini.
+
+
+
+Il programma si occupa del calcolo delle giacenze medie, saldi iniziali e finali del Fiat e Card Wallet di Crypto.com.
+Offre inolte la possibilità di rendicontare le crypto detenute su diverse piattafome.
 
 Tra i file disponibili troverete sia un Installer che un Portable per Windows.
 Negli zip dove non c'è specificato nulla invece ci sono gli eseguibili multipiattaforma (Windows/mac/linux) di Java
-che richiedono però l'intallazione del runtime di Java per funzionare.
+che richiedono però l'installazione del runtime di Java per funzionare.
 
-Ovviamente non mi assumo nessuna responsabilità sull'esattezza dei calcoli.
-Ad ogni modo se doveste riscontrare problemi chiedete supporto sul gruppo telegram https://t.me/+6kfy5mjov-I2ODY8
+Se doveste riscontrare problemi chiedete supporto sul gruppo telegram https://t.me/+6kfy5mjov-I2ODY8
 
-NB: Per aggiornare la versione del programma basta sovrascrivere la cartella originale facendo prima un backup dei seguenti file per sicurezza:
-- crypto.com.cardwallet.db
-- crypto.com.fiatwallet.db
-- movimenti.crypto.db
-
-
-La versione con installer invece basta installarla sopra quella vecchia che mantiene i dati, questo dalla versione 1.0.4 in poi
+NB: Per aggiornare la versione del programma basta sovrascrivere la cartella originale facendo prima un backup della cartella per sicurezza.
+    Per gli utenti MAC attenzione che la sovrascrittura della cartella comporterà la perdita di tutti i dati, bisognerà aggiornare manualmente solo il contenuto della stessa.
+    La versione con installer invece basta installarla sopra quella vecchia e verranno mantenuti i dati, questo dalla versione 1.0.4 in poi.
+    Anche qui è consigliato sempre fare una copia di sicurezza.
 
 
 

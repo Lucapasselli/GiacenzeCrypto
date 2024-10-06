@@ -78,7 +78,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Binance CSV", "CoinTracking.info CSV", "OKX CSV (Alpha)" }));
+        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Binance CSV", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -200,7 +200,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
     private void ComboBox_TipoFileItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoFileItemStateChanged
         // TODO add your handling code here:
-        if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("CoinTracking.info CSV"))
+        if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("CoinTracking.info CSV")||
+            ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Tatax CSV"))
         {
             Label_TipoImport.setEnabled(true);
             ComboBox_TipoImport.setEnabled(true);
@@ -337,7 +338,79 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
 
         }
-        
+                else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().toUpperCase().contains("TATAX")) {
+
+            Component c = this;
+            Download progressb = new Download();
+            Bottone_SelezionaFile.setEnabled(false);
+            Bottone_Annulla.setEnabled(false);
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
+            int returnVal = fc.showOpenDialog(c);
+
+            Thread thread;
+            thread = new Thread() {
+                public void run() {
+                  //  try {
+
+                        if (returnVal == JFileChooser.APPROVE_OPTION) {
+                       //     selezioneok[0] = true;
+                            String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                            DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+                            boolean SovrascriEsistenti = CheckBox_Sovrascrivi.isSelected();
+                            Importazioni.AzzeraContatori();
+                            String nomewallet;
+                            boolean PrezzoZero = false;
+                            if (ComboBox_TipoImport.getSelectedItem().toString().trim().equalsIgnoreCase("Transazioni Blockchain")) {
+                                nomewallet = Text_NomeWallet.getText().trim() + " " + ComboBox_Exchanges.getSelectedItem().toString().trim().substring(ComboBox_Exchanges.getSelectedItem().toString().indexOf("("), ComboBox_Exchanges.getSelectedItem().toString().indexOf(")") + 1);
+                                //in questo caso siccome cointracking sbaglia molto spesso i prezzi delle shitcoin imposto il prezzo a zero
+                                //su tutti gli scambi nel caso in cui binance non abbia i prezi corretti
+                                PrezzoZero = true;
+                                //System.out.println(nomewallet);
+                            } else {
+                                nomewallet = ComboBox_Exchanges.getSelectedItem().toString().trim();
+                            }
+                            Importazioni.Importa_Crypto_Tatax(FileDaImportare, SovrascriEsistenti, nomewallet, c, PrezzoZero, progressb);
+
+                            Importazioni_Resoconto res = new Importazioni_Resoconto();
+                            res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+                            res.setLocationRelativeTo(c);
+                            res.setVisible(true);
+
+                         //   if (selezioneok[0]) {
+                                dispose();
+                          //  }
+                        }
+                        Bottone_SelezionaFile.setEnabled(true);
+                        Bottone_Annulla.setEnabled(true);
+                        progressb.dispose();
+
+                 /*   } catch (Exception ex) {
+                        //Logger.getLogger(FramePrincipale.class.getName()).log(Level.SEVERE, null, ex);
+                        System.out.println(ex);
+                        java.util.logging.Logger.getLogger(Importazioni_Gestione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+                    }*/
+                }
+
+            };
+            progressb.SetThread(thread);
+            thread.start();
+            progressb.setDefaultCloseOperation(0);
+            progressb.setLocationRelativeTo(this);
+            progressb.setVisible(true);
+            /* else {
+
+                //QUA Devo gestire il joptionpane che mi avvisa di scegliere un exchange dalla lista
+                //Poi devo anche gestire la corretta importazione del nome dell'exchange
+                JOptionPane.showInternalConfirmDialog(null, "Attenzione, non è stata fatta nessuna scelta dal menù a tendina",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                
+                
+
+            }*/
+
+
+        }
         else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV")) {
             Component c = this;
             Download progressb = new Download();

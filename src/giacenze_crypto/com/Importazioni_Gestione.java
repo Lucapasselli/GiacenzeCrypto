@@ -370,6 +370,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                             } else {
                                 nomewallet = ComboBox_Exchanges.getSelectedItem().toString().trim();
                             }
+                progressb.RipristinaStdout();
                             Importazioni.Importa_Crypto_Tatax(FileDaImportare, SovrascriEsistenti, nomewallet, c, PrezzoZero, progressb);
 
                             Importazioni_Resoconto res = new Importazioni_Resoconto();

@@ -1228,7 +1228,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
                 while ((riga = bure.readLine()) != null) {
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
-                    String splittata[] = riga.split(","); 
+                    String splittata[] = riga.split(",",-1);                     
                     if (splittata.length==11){
                             String Data=splittata[2];
                             String Movimento[]=new String[20];
@@ -1240,7 +1240,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             Movimento[5]=splittata[0];//Moneta
                             Movimento[6]=splittata[4];//Qta
                             Movimento[7]=splittata[1];//Address Moneta
-                            Movimento[8]=splittata[5];//Valore Originale Euro
+                            Movimento[8]=splittata[5].replace("-", "");//Valore Originale Euro
                             Movimento[9]="";//ID Originale
                             Movimento[10]="";//Rete 
                             
@@ -1258,7 +1258,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         }
         
     
-        
+       // System.out.println(Mappa_MovimentiTemporanea.size());
         
         
         Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -3034,9 +3034,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                */
 
          
-         
+        // System.out.println("sono qui");
          List<String[]> lista=new ArrayList<>();
          int numMovimenti=listaMovimentidaConsolidare.size();
+         //System.out.println(numMovimenti);
          String dataa="";
          long Datalong=0;
          String data="";
@@ -3044,6 +3045,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
          String IDOriginale="";
          TransazioneDefi Scambio=new TransazioneDefi();         
                         for (int k=0;k<numMovimenti;k++){
+                            //System.out.println("sono qui");
                             String RT[]=new String[ColonneTabella];
                             String movimentoSplittato[]=listaMovimentidaConsolidare.get(k);
                             data=movimentoSplittato[0];
@@ -3056,10 +3058,15 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 Mon.Tipo="FIAT";
                             else
                                 Mon.Tipo="Crypto";
+                            
                            //Questa parte del prezzo va rivista se i prezzi li prendo dal csv
-                            if (movimentoSplittato[8].isBlank())
+                            if (movimentoSplittato[8].isBlank()){
                                 Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null);
-                            else Mon.Prezzo=movimentoSplittato[8];
+                            }
+                            else{
+                                Mon.Prezzo = movimentoSplittato[8];
+                            }
+                            
                             String valoreEuro = new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                             WalletPrincipale=movimentoSplittato[1];
                             String WalletSecondario=movimentoSplittato[2];
@@ -3071,7 +3078,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
                             String movimentoConvertito=Mappa_Conversione_Causali.get(movimentoSplittato[3]);
                             if (movimentoConvertito==null)movimentoConvertito=movimentoSplittato[3];
-                            System.out.println(movimentoSplittato[3]);
+                            //System.out.println(movimentoSplittato[3]);
                             
                             
                             
@@ -3372,17 +3379,18 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     Map<String, ValoriToken> MappaTokenEntrata=Scambio.RitornaMappaTokenEntrata();
                                     //Se il tipo scambio è disverso da scambio vuol dire che c'è un errore e lo segnalo
                                     if (!TipoScambio.equalsIgnoreCase("Scambio")){
+                                        //System.out.println("Transazione sconosciuta");
                                         movimentiSconosciuti=movimentiSconosciuti+"Errore su un movimento del "+data+" \n";
                                         TrasazioniSconosciute++;
                                     }
 
-                                  /*  for (ValoriToken tokenE : MappaTokenEntrata.values()) {
-                                      //  System.out.println(tokenE.Moneta);
+                                    for (ValoriToken tokenE : MappaTokenEntrata.values()) {
+                                        System.out.println(tokenE.Moneta+" - "+tokenE.Qta+" - "+tokenE.Peso+" - "+tokenE.Prezzo);
                                     }
                                     for (ValoriToken tokenU : MappaTokenUscita.values()) {
-                                      //  System.out.println(tokenU.Moneta);
+                                        System.out.println(tokenU.Moneta+" - "+tokenU.Qta+" - "+tokenU.Peso+" - "+tokenU.Prezzo);
                                     }
-                                    //System.out.println("------");*/
+                                    System.out.println("------");
                                     int i = 1;
                                     int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
                                     //  RT = new String[ColonneTabella];

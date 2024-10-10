@@ -276,22 +276,31 @@ public class TransazioneDefi {
         {
             ValoreTransazione = ValoreTransazioneEntrata;
 
-        } //se non trovo il valore della transazione allora lo cerco nei valori in uscita
-        else {
+        } 
+        //cerco il valore della transazione anche nei valori in uscita
+        //else {
             trovatoValoreTransazione = true;
             for (ValoriToken a : MappaTokenUscita.values()) {
                 if (new BigDecimal(a.Prezzo).compareTo(new BigDecimal("0"))==0) {
                     //Se trovo un prezzo a zero valorizzo il booleano a false
                     trovatoValoreTransazione = false;
-            //        ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
                 }
                 ValoreTransazioneUscita = ValoreTransazioneUscita.add(new BigDecimal(a.Prezzo));
              //   System.out.println(a.Qta+" - "+a.Moneta+" - Euro "+a.Prezzo);
             }
             if (trovatoValoreTransazione) {
-                ValoreTransazione = ValoreTransazioneUscita;
+                //sostituisco il valore Transazione trovato preedentemente solo se questo risulta maggiore
+                //Voglio sempre avere il valore più alto tra la somma dei token in uscita e la somma dei token in entrata
+                //questo serve per valorizzare al meglio gli scambi
+                if(ValoreTransazioneUscita.compareTo(ValoreTransazione)>0)
+                    ValoreTransazione = ValoreTransazioneUscita;
             }
-        }
+        //            }
+        //adesso controllo se ho trovato il valore della transazione
+        //e lo segno nel booleano che mi servirà più avanti per l'analisi dei movimenti
+        if (ValoreTransazione.compareTo(new BigDecimal("0"))!=0) {           
+            trovatoValoreTransazione=true;
+        }else trovatoValoreTransazione=false;
         //System.out.println("APPT "+MappaTokenUscita.size());
         //System.out.println("APPT "+MappaTokenEntrata.size());
         //Ora calcolo i pesi dei vari token
@@ -306,7 +315,7 @@ public class TransazioneDefi {
                     a.Peso=PesoRimanente.toPlainString(); 
                 }
                 else{
-                    a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenEntrata.size()), 10, RoundingMode.HALF_UP).toPlainString();
+                    a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenEntrata.size()), 30, RoundingMode.HALF_UP).toPlainString();
                 }
                 PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
             }
@@ -318,7 +327,7 @@ public class TransazioneDefi {
                     a.Peso=PesoRimanente.toPlainString();
                 }
                 else{
-                    a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenUscita.size()), 10, RoundingMode.HALF_UP).toPlainString();
+                    a.Peso = new BigDecimal(1).divide(new BigDecimal(MappaTokenUscita.size()), 30, RoundingMode.HALF_UP).toPlainString();
                 }
                 PesoRimanente = PesoRimanente.subtract(new BigDecimal(a.Peso));
             }
@@ -343,7 +352,7 @@ public class TransazioneDefi {
 
                     }else   
                     {                 
-                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 20, RoundingMode.HALF_UP).toPlainString();
+                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 30, RoundingMode.HALF_UP).toPlainString();
 
                         //Se a.peso è maggiore di pesoRimanente allora a.Peso=Pesorimanente
                         if (new BigDecimal(a.Peso).compareTo(PesoRimanente)==1){
@@ -360,7 +369,7 @@ public class TransazioneDefi {
                 if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
                     // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
                     if(numTokenRimenenti==0) System.out.println(a.Moneta);
-                    else a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
+                    else a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 30, RoundingMode.HALF_UP).toPlainString();
                    // System.out.println("Siamo a zero"+a.Moneta+" - "+a.Peso);
                 }
             }
@@ -379,7 +388,7 @@ public class TransazioneDefi {
                     }
                     else   
                     {                 
-                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 10, RoundingMode.HALF_UP).toPlainString();
+                        a.Peso = new BigDecimal(a.Prezzo).divide(ValoreTransazione, 30, RoundingMode.HALF_UP).toPlainString();
                         if (new BigDecimal(a.Peso).compareTo(PesoRimanente)==1){
                             a.Peso=PesoRimanente.toPlainString();
                         }
@@ -394,7 +403,7 @@ public class TransazioneDefi {
                 if (a.Peso==null||new BigDecimal(a.Peso).compareTo(new BigDecimal("0"))==0) {//se non ha peso vuol dire che non l'ho ancora conteggiato
                     // a questo punto calcolo il peso dei token che è peso rimanente/nomTokenRimenti
                     if(numTokenRimenenti==0) System.out.println(a.Moneta +"-"+ ValoreTransazione);
-                    else a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 10, RoundingMode.HALF_UP).toPlainString();
+                    else a.Peso = PesoRimanente.divide(new BigDecimal(numTokenRimenenti), 30, RoundingMode.HALF_UP).toPlainString();
                   //  System.out.println("Siamo a zero"+a.Moneta+" - "+a.Peso);
                 }
             }

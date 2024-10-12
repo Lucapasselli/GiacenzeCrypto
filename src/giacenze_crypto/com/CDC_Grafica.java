@@ -8770,8 +8770,9 @@ try {
                 }
             }
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Prezzi.IndicaMovimentoPrezzato(v);
-
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
             if (EscludiTI == true && !v[5].trim().equalsIgnoreCase("Trasferimento Interno") || EscludiTI == false) {
                 if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {

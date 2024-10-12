@@ -379,7 +379,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                             res.setVisible(true);
 
                          //   if (selezioneok[0]) {
-                                dispose();
+                            progressb.RipristinaStdout();
+                            dispose();
                           //  }
                         }
                         Bottone_SelezionaFile.setEnabled(true);

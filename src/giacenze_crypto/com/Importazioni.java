@@ -1204,19 +1204,20 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
          Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         //Faccio una lista di causali per la conversione dei dati del csv
-        Mappa_Conversione_Causali.put("CASHBACK", "CASHBACK");              
+        Mappa_Conversione_Causali.put("CASHBACK", "CASHBACK");  
+        Mappa_Conversione_Causali.put("STAKING", "STAKING REWARDS");
         Mappa_Conversione_Causali.put("EARN", "EARN");              
         Mappa_Conversione_Causali.put("AIRDROP", "AIRDROP");            
         Mappa_Conversione_Causali.put("CREDIT", "SCAMBIO CRYPTO-CRYPTO");        
         Mappa_Conversione_Causali.put("DEBIT", "SCAMBIO CRYPTO-CRYPTO");          
         Mappa_Conversione_Causali.put("EXCHANGE_FEE", "COMMISSIONI");          
         Mappa_Conversione_Causali.put("BLOCKCHAIN_FEE", "COMMISSIONI");         
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          //Deposito di Crypto provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          //Deposito di Crypto provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          //Deposito di Crypto provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          //Deposito di Crypto provenienti da wallet esterno
-        Mappa_Conversione_Causali.put("DEPOSIT", "TRASFERIMENTO-CRYPTO");//Prelievo di una Crypto verso portafogli esterni
-        Mappa_Conversione_Causali.put("WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
+        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
+        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
+        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
+        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
+        Mappa_Conversione_Causali.put("DEPOSIT", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
+        Mappa_Conversione_Causali.put("WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
@@ -1245,7 +1246,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             Movimento[10]="";//Rete 
                             
                             //Metto il tutto in una mappa in modo che venga anche già ordinato in base alla data
-                            Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
+                            if (Mappa_MovimentiTemporanea.get(Data+" "+riga)==null){
+                                Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
+                                }
+                            else{
+                                //se arrivo qua vuol dire che ho trovato un movimento doppio
+                                //per cui non devo far altro che sommare le quantità
+                                String Mov[]=Mappa_MovimentiTemporanea.get(Data+" "+riga);
+                                Movimento[6]=new BigDecimal(Mov[6]).add(new BigDecimal(Movimento[6])).toPlainString();
+                                Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
+                            }
                             //lista.add(riga);
                         }
                 }
@@ -3135,38 +3145,11 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
+                                Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT);
                                 
-                            }
-                           else if (movimentoConvertito.trim().equalsIgnoreCase("DEPOSITO FIAT")||
-                                   (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&Mon.Tipo.equals("FIAT")&&!Mon.Qta.contains("-"))||
-                                   (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")&&Mon.Tipo.equals("FIAT"))
-                                   )
-                            {
-                                                                //trasferimento FIAT                              
-                                RT[0]=data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+IDOriginale+"_"+String.valueOf(k+1)+ "_1_DF";
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3] = WalletPrincipale;
-                                RT[4] = WalletSecondario;
-                                RT[5]="DEPOSITO FIAT";
-                                RT[6]="-> "+Mon.Moneta;
-                                RT[7]=CausaleOriginale;
-                                RT[11]=Mon.Moneta;
-                                RT[12]=Mon.Tipo;
-                                RT[13]=Mon.Qta;
-                                RT[15]=valoreEuro;
-                                RT[17]=valoreEuro;
-                                RT[18]="";
-                                RT[19]="0.00";
-                                RT[22]="A";   
-                                RT[29] = String.valueOf(TimeStamp);
-                                RT[24] = IDOriginale;
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
-                            }
-                            else if (movimentoConvertito.trim().equalsIgnoreCase("PRELIEVO FIAT")||
-                                    (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")&&Mon.Tipo.equals("FIAT")))
+                            }                           
+                            else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")&&Mon.Tipo.equals("FIAT"))
                             {
                                 //trasferimento FIAT
                                 String Codice;
@@ -3188,14 +3171,17 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[5]=Descrizione;
                                 RT[7]=CausaleOriginale; 
                                 if (Mon.Qta.contains("-")) {
-                                RT[5]="SPESA CON CARTA";
+                                RT[5]="PRELIEVO FIAT";
                                 RT[6]=Mon.Moneta+"-> ";
                                 RT[8]=Mon.Moneta;
                                 RT[9]=Mon.Tipo;
                                 RT[10]=Mon.Qta;
                                 }
                                 else{
-                                RT[5]="RIMBORSO SU CARTA";
+                                //Nel caso di depositi metto uno zero davanti al numero di movimento perchè in caso di date coincidenti
+                                //il deposito sarà sempre il primo movimento da considerare
+                                RT[0]=data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+IDOriginale+"_0"+String.valueOf(k+1)+ "_1_"+Codice;    
+                                RT[5]="DEPOSITO FIAT";
                                 RT[6]="-> "+Mon.Moneta;
                                 RT[11]=Mon.Moneta;
                                 RT[12]=Mon.Tipo;
@@ -3207,6 +3193,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
+                                Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT);
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("COMMISSIONI"))
@@ -3229,6 +3216,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
+                                Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT);     
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION")||
@@ -3280,6 +3268,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
+                                Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT);  
                                 
                                 //Se si creo anche il movimento opposto che arriva a destinazione
@@ -3312,12 +3301,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
+                                Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT); 
                                 }
                                
                             }
-                               else if ((movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")&&!Mon.Tipo.equals("FIAT"))||
-                                       movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
+                               else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")&&!Mon.Tipo.equals("FIAT"))
                             {
                                 RT = new String[ColonneTabella];
                                 RT[1]=dataa;
@@ -3351,6 +3340,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
+                                Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT);
                                 //La lista autoinvest serve per individuare i movimenti di autoinvest che sono degli scambi differiti e successivamente analizzarla e sistemarli
                             }else if (movimentoConvertito.trim().equalsIgnoreCase("NON CONSIDERARE")){
@@ -3384,13 +3374,13 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         TrasazioniSconosciute++;
                                     }
 
-                                    for (ValoriToken tokenE : MappaTokenEntrata.values()) {
+                                 /*   for (ValoriToken tokenE : MappaTokenEntrata.values()) {
                                         System.out.println(tokenE.Moneta+" - "+tokenE.Qta+" - "+tokenE.Peso+" - "+tokenE.Prezzo);
                                     }
                                     for (ValoriToken tokenU : MappaTokenUscita.values()) {
                                         System.out.println(tokenU.Moneta+" - "+tokenU.Qta+" - "+tokenU.Peso+" - "+tokenU.Prezzo);
                                     }
-                                    System.out.println("------");
+                                    System.out.println("------");*/
                                     int i = 1;
                                     int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
                                     //  RT = new String[ColonneTabella];
@@ -3409,7 +3399,11 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             M1.InserisciValori(tokenU.Moneta, QuantitaUscita, tokenU.MonetaAddress, tokenU.Tipo);
                                             Moneta M2 = new Moneta();
                                             M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
-                                            BigDecimal PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null));
+                                            BigDecimal PrezzoTransazione;
+                                            PrezzoTransazione=new BigDecimal(tokenE.Prezzo);
+                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione=new BigDecimal(tokenU.Prezzo);
+                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null));
+                                            PrezzoTransazione=PrezzoTransazione.setScale(2,RoundingMode.HALF_UP);
                                             String TipoTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 1);
                                             String CodiceTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 2);
                                             String RT[] = new String[ColonneTabella];
@@ -3434,6 +3428,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             RT[29] = String.valueOf(TimeStamp);
                                             RT[24] = tokenU.IDTransazione+"_"+tokenE.IDTransazione;
                                             Importazioni.RiempiVuotiArray(RT);
+                                            Prezzi.IndicaMovimentoPrezzato(RT);
                                             lista.add(RT);
                                             i++;
                                        // }

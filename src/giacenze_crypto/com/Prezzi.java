@@ -1773,7 +1773,11 @@ for (int i=0;i<ArraydataIni.size();i++){
         }
         
     String MonetaRete=null;
-    if (Rete!=null)MonetaRete=CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
+    if (Rete!=null){
+        String temp[]=CDC_Grafica.Mappa_ChainExplorer.get(Rete);
+        if (temp!=null)
+            MonetaRete=temp[2];
+    }
     if (MonetaRete==null)MonetaRete="";
         // boolean trovato1=false;
         // boolean trovato2=false;

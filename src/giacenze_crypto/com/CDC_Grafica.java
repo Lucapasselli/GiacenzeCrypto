@@ -4237,6 +4237,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Rete="";
+            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
+                {
+                Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+                }
             //Cambio il nome sul Bottone SCAM a seconda se il token è scam o meno
             if (Funzioni.isSCAM(mon))
                 GiacenzeaData_Bottone_Scam.setText("Rimuovi da SCAM");
@@ -4248,7 +4253,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 
             }
             //gestione bottone scam token da abilitare solo in presenza di un token in defi
-            if (Address.contains("0x"))
+            if (Address.contains("0x")&&!Rete.isBlank())
                 {
                 GiacenzeaData_Bottone_Scam.setEnabled(true);
                 GiacenzeaData_Bottone_CambiaNomeToken.setEnabled(true);
@@ -4282,6 +4287,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             //Adesso compilo i movimenti
             BigDecimal TotaleQta = new BigDecimal(0);
             for (String[] movimento : MappaCryptoWallet.values()) {
+                String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);
+                if (ReteMov==null)ReteMov="";
                 long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                 if (DataMovimento < DataRiferimento) {
                         String gruppoWallet="";
@@ -4294,7 +4301,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
                                 ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) { 
-                        if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)) {
+                        if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                             String riga[] = new String[9];
                             riga[0] = movimento[1];
@@ -4308,7 +4315,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                             riga[8] = movimento[0];
                             GiacenzeaData_ModelloTabella.addRow(riga);
                         }
-                        if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)) {
+                        if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
                             String riga[] = new String[9];
                             riga[0] = movimento[1];
@@ -7556,7 +7563,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
-            String Rete= GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Rete="";
+            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
+                {
+                Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+                }
             String Testo;
             //Come prima cosa controllo nella tabella del dettaglio se ho solo movimenti di deposito
             //solo in quel caso permetto di identificare il token come scam
@@ -7648,17 +7659,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
-            String Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            String Rete="";
+            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
+                {
+                Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+                }
             String Testo;
             String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+           // System.out.println(Address + "_" + Rete);
             Testo = "<html>Indica il nuovo nome della Moneta<b>" + NomeMoneta + "</b> con Address <b>" + Address + "</b><br>";
             if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
                 Testo = Testo
                         + "Il nome Originale da prima importazione era : <b>" + nomi[0] + "</b><br>";
             }
             Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br></html>";
-            String m = JOptionPane.showInputDialog(this, Testo, NomeMoneta).trim();
+            String m = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
             if (m != null) {
+                m = m.trim();
                 m = Funzioni.NormalizzaNome(m);//sostituisco le virgole con i punti per la separazione corretta dei decimali
                 //Se il nome toke è di almeno 3 caratteri allora proseguo
                 if (m.length() > 2) {
@@ -7671,7 +7688,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     }
                     TabellaCryptodaAggiornare = true;
                 } else {
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
+                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un nome valido!",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                 }
             }
@@ -8157,6 +8174,7 @@ try {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
                     String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    //System.out.println(Rete);
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
                         // adesso verifico il wallet
@@ -8184,12 +8202,13 @@ try {
                             Monete[1].Tipo = movimento[12];
                             Monete[1].Qta = movimento[13];
                             Monete[1].Rete=Rete;
+                            if (Rete==null)Rete="";
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
                             for (int a = 0; a < 2; a++) {
                                 //ANALIZZO MOVIMENTI
-                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress)!=null) {
+                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress+";"+Rete)!=null) {
                                     //Movimento già presente da implementare
-                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress);
+                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress+";"+Rete);
                                     M1.Qta = new BigDecimal(M1.Qta)
                                             .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
 
@@ -8198,7 +8217,7 @@ try {
                                     Moneta M1 = new Moneta();
                                     M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
                                     M1.Rete = Rete;
-                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress, M1);
+                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress+";"+Rete, M1);
 
                                 }
                             }
@@ -8752,9 +8771,10 @@ try {
             String Rete = Funzioni.TrovaReteDaID(v[0]);
             String AddressU = v[26];
             String AddressE = v[28];
-            if (!Funzioni.noData(Rete)) {
+            //if (!Funzioni.noData(Rete)) {
                 if (!Funzioni.noData(AddressU)) {
                     //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                    if (Rete==null)Rete="";
                     String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
                     if (valore != null) {
                         v[8] = valore;
@@ -8762,13 +8782,14 @@ try {
                 }
                 if (!Funzioni.noData(AddressE)) {
                     //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                    if (Rete==null)Rete="";
                     String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
                     if (valore != null) {
                         v[11] = valore;
                     }
 
                 }
-            }
+           // }
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Prezzi.IndicaMovimentoPrezzato(v);

@@ -43,6 +43,7 @@
 31 - Data Fine trasferimento crypto (viene anche utilizzata come data per lo spostamento del costo di carico tra wallet)
 32 - Movimento ha prezzo (Valorizzato a Si o No)  //Serve per sapere se l'eventuale prezzo a zero è voluto o semplicemente non ho trovato i prezzi sul movimento
 33 - Movimento che genera plusvalenza (Valorizzato a S o N)
+34 - Rete (Attualmente solo BSC,ETH,CRO)
 */
 
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
@@ -3062,6 +3063,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             Moneta Mon=new Moneta();
                             Mon.Moneta=movimentoSplittato[5];
                             Mon.Qta=new BigDecimal(movimentoSplittato[6]).toPlainString();
+                            Mon.MonetaAddress=movimentoSplittato[7];
                             Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
                             
                             if (Mon.Moneta.equalsIgnoreCase("EUR")||Mon.Moneta.equalsIgnoreCase("USD"))
@@ -3144,6 +3146,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[22] = "A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                RT[28] = Mon.MonetaAddress;
                                 RiempiVuotiArray(RT);
                                 Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT);
@@ -3215,6 +3218,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                RT[26] = Mon.MonetaAddress;
                                 RiempiVuotiArray(RT);
                                 Prezzi.IndicaMovimentoPrezzato(RT);
                                 lista.add(RT);     
@@ -3254,6 +3258,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[8]=Mon.Moneta;
                                     RT[9]=Mon.Tipo;
                                     RT[10]=Mon.Qta;
+                                    RT[26] = Mon.MonetaAddress;
                                 }else{
                                     // i movimenti di rientro vanno sempre dopo e li distinguo con la A
                                     RT[0]=data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+IDOriginale+"A_"+String.valueOf(k+1)+ "_1_TI";
@@ -3261,6 +3266,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[11]=Mon.Moneta;
                                     RT[12]=Mon.Tipo;
                                     RT[13]=Mon.Qta;
+                                    RT[28] = Mon.MonetaAddress;
                                 }                     
                                 RT[15]=valoreEuro;                                
                                 RT[19]="0.00";
@@ -3287,6 +3293,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[8]=Mon.Moneta;
                                     RT[9]=Mon.Tipo;
                                     RT[10]="-"+Mon.Qta;
+                                    RT[26] = Mon.MonetaAddress;
                                 }else{
                                     // i movimenti di rientro vanno sempre dopo e li distinguo con la A
                                     RT[0]=data.replaceAll(" |-|:", "") +"_"+movimentoSplittato[1]+IDOriginale+"A_"+String.valueOf(k+1)+ "_1_TI";
@@ -3294,6 +3301,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[11]=Mon.Moneta;
                                     RT[12]=Mon.Tipo;
                                     RT[13]=Mon.Qta.replace("-", "");
+                                    RT[28] = Mon.MonetaAddress;
                                 }                     
                                 RT[15]=valoreEuro;                                
                                 RT[19]="0.00";
@@ -3321,6 +3329,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[8]=Mon.Moneta;
                                     RT[9]=Mon.Tipo;
                                     RT[10]=Mon.Qta;
+                                    RT[26] = Mon.MonetaAddress;
 
                                 } else {
                                     RT[0]=data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+IDOriginale+"_"+String.valueOf(k+1)+"_1_DC";
@@ -3328,7 +3337,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[6]="-> "+Mon.Moneta;
                                     RT[11]=Mon.Moneta;
                                     RT[12]=Mon.Tipo;
-                                    RT[13]=Mon.Qta;                              
+                                    RT[13]=Mon.Qta;
+                                    RT[28] = Mon.MonetaAddress;
                                 }                                                                                            
                                 RT[15]=valoreEuro;
                                 RT[16]="";
@@ -3368,10 +3378,73 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     Map<String, ValoriToken> MappaTokenUscita=Scambio.RitornaMappaTokenUscita();
                                     Map<String, ValoriToken> MappaTokenEntrata=Scambio.RitornaMappaTokenEntrata();
                                     //Se il tipo scambio è disverso da scambio vuol dire che c'è un errore e lo segnalo
-                                    if (!TipoScambio.equalsIgnoreCase("Scambio")){
-                                        //System.out.println("Transazione sconosciuta");
-                                        movimentiSconosciuti=movimentiSconosciuti+"Errore su un movimento del "+data+" \n";
-                                        TrasazioniSconosciute++;
+                                    
+                                   
+                                    if (TipoScambio.equalsIgnoreCase("Deposito")){
+                                        int i = 1;
+                                        int totMov = MappaTokenEntrata.size();
+                                        for (ValoriToken tokenE : MappaTokenEntrata.values()) {
+                                            String TipoTransazione=Importazioni.RitornaTipologiaTransazione(null, tokenE.Tipo, 1);
+                                            String CodiceTransazione=Importazioni.RitornaTipologiaTransazione(null, tokenE.Tipo, 2);
+                                            String RT[] = new String[ColonneTabella];
+                                            RT[0] = data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+tokenE.IDTransazione+"_"+totMov+ "_"+i+"_"+CodiceTransazione;
+                                            RT[1] = dataa;
+                                            RT[2] = i + " di " + totMov;
+                                            RT[3] = WalletPrincipale;
+                                            RT[4] = tokenE.WalletSecondario;
+                                            RT[5] = TipoTransazione;
+                                            RT[6] = " -> " + tokenE.RitornaNomeToken();
+                                            RT[7] = tokenE.CausaleOriginale;
+                                            RT[11] = tokenE.Moneta;
+                                            RT[12] = tokenE.Tipo;
+                                            RT[13] = tokenE.Qta;
+                                            RT[14] = "";
+                                            RT[15] = tokenE.Prezzo;
+                                            RT[22] = "A";
+                                            long TimeStamp=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                            RT[29] = String.valueOf(TimeStamp);
+                                            RT[24] = tokenE.IDTransazione;
+                                            RT[26] = "";
+                                            RT[28] = tokenE.MonetaAddress;
+                                            Importazioni.RiempiVuotiArray(RT);
+                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            lista.add(RT);
+                                            i++;    
+                                        }
+                                    }
+                                    
+                                    else if (TipoScambio.equalsIgnoreCase("Prelievo")){
+                                        int i = 1;
+                                         int totMov = MappaTokenUscita.size();
+                                        for (ValoriToken tokenU : MappaTokenUscita.values()) {
+                                            String TipoTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo,null, 1);
+                                            String CodiceTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo,null, 2);
+                                            String RT[] = new String[ColonneTabella];
+                                            RT[0] = data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+tokenU.IDTransazione+"_"+totMov+ "_"+i+"_"+CodiceTransazione;
+                                            RT[1] = dataa;
+                                            RT[2] = i + " di " + totMov;
+                                            RT[3] = WalletPrincipale;
+                                            RT[4] = tokenU.WalletSecondario;
+                                            RT[5] = TipoTransazione;
+                                            RT[6] = tokenU.RitornaNomeToken() + " -> ";
+                                            RT[7] = tokenU.CausaleOriginale;
+                                            RT[8] = tokenU.Moneta;
+                                            RT[9] = tokenU.Tipo;
+                                            RT[10] = tokenU.Qta;
+                                            RT[14] = "";
+                                            RT[15] = tokenU.Prezzo;
+                                            RT[22] = "A";
+                                            long TimeStamp=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                            RT[29] = String.valueOf(TimeStamp);
+                                            RT[24] = tokenU.IDTransazione;
+                                            RT[26] = tokenU.MonetaAddress;
+                                            RT[28] = "";
+                                            Importazioni.RiempiVuotiArray(RT);
+                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            lista.add(RT);
+                                            i++; 
+                                            
+                                        }
                                     }
 
                                  /*   for (ValoriToken tokenE : MappaTokenEntrata.values()) {
@@ -3381,6 +3454,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         System.out.println(tokenU.Moneta+" - "+tokenU.Qta+" - "+tokenU.Peso+" - "+tokenU.Prezzo);
                                     }
                                     System.out.println("------");*/
+                                    else if (TipoScambio.equalsIgnoreCase("Scambio")){
                                     int i = 1;
                                     int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
                                     //  RT = new String[ColonneTabella];
@@ -3427,13 +3501,22 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             long TimeStamp=OperazioniSuDate.ConvertiDatainLongSecondo(data);
                                             RT[29] = String.valueOf(TimeStamp);
                                             RT[24] = tokenU.IDTransazione+"_"+tokenE.IDTransazione;
+                                            RT[26] = tokenU.MonetaAddress;
+                                            RT[28] = tokenE.MonetaAddress;
+                                           // System.out.println(tokenU.MonetaAddress+" - "+tokenE.MonetaAddress);
                                             Importazioni.RiempiVuotiArray(RT);
                                             Prezzi.IndicaMovimentoPrezzato(RT);
                                             lista.add(RT);
                                             i++;
                                        // }
                                    }    }
-                                }
+                                } 
+                                    else {
+                                        //se arrivo qua non so che movimento sia
+                                        movimentiSconosciuti=movimentiSconosciuti+"Errore su un movimento del "+data+" - "+TipoScambio+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
+                        }
         return lista;
     }   
     

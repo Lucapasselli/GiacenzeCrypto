@@ -132,6 +132,7 @@ public class TransazioneDefi {
             monete.Moneta=Moneta.Moneta;
             monete.Qta=Moneta.Qta;            
             monete.Prezzo=Moneta.Prezzo;
+            monete.MonetaAddress=Moneta.MonetaAddress;
             monete.WalletSecondario=Wallet;//poi sarà da vedere se esistono casi di monete identiche presi da wallet dioversi, in quel caso bisognerà differenziarli
             monete.CausaleOriginale=CausaleOriginale;
             monete.IDTransazione=IDT;

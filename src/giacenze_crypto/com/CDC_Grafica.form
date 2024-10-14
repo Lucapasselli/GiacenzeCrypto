@@ -49,7 +49,8 @@
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="CDC_Label_Giorni" min="-2" pref="44" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="CDC_Text_Giorni" min="-2" pref="88" max="-2" attributes="0"/>
+                      <Component id="CDC_Text_Giorni" min="-2" pref="82" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Component id="CDC" max="32767" attributes="0"/>
               </Group>
@@ -121,7 +122,7 @@
                                       <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_MovimentoModifica" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="736" max="32767" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_MovimentoElimina" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="TransazioniCrypto_TabbedPane" max="32767" attributes="0"/>
@@ -535,7 +536,19 @@
             </Component>
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoNuovo">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="b9" green="ff" red="be" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Nuovo Movimento"/>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed"/>
@@ -543,7 +556,19 @@
             </Component>
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoElimina">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="66" green="66" red="ff" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Elimina Movimento Selezionato"/>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed"/>
@@ -552,6 +577,15 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoModifica">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Modifica Movimento Selezionato"/>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[210, 23]"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_MovimentoModificaActionPerformed"/>
@@ -718,7 +752,7 @@
                                           </Group>
                                           <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="0" min="-2" pref="245" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace pref="508" max="32767" attributes="0"/>
+                                      <EmptySpace pref="639" max="32767" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" max="32767" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_DettaglioDefi" max="32767" attributes="0"/>
@@ -732,19 +766,20 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="703" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="DepositiPrelievi_Bottone_DettaglioDefi" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="jScrollPane2" pref="714" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" max="-2" attributes="0"/>
+                                  <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -976,13 +1011,6 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="GiacenzeaData_ScrollPane" max="32767" attributes="0"/>
                                   <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" alignment="0" max="32767" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Component id="GiacenzeaData_Totali_Label" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                                      <Component id="GiacenzeaData_Totali_TextField" min="-2" pref="117" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="GiacenzeaData_Bottone_RettificaQta" min="-2" max="-2" attributes="0"/>
-                                  </Group>
                                   <Component id="jSeparator5" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="GiacenzeaData_Bottone_MovimentiDefi" min="-2" max="-2" attributes="0"/>
@@ -997,17 +1025,13 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" pref="150" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="102" attributes="0">
-                                      <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="163" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                  </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
                                           <Group type="102" alignment="1" attributes="0">
                                               <Component id="GiacenzeaData_Wallet_Label" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="GiacenzeaData_Wallet_ComboBox" min="-2" pref="428" max="-2" attributes="0"/>
-                                              <EmptySpace pref="450" max="32767" attributes="0"/>
+                                              <EmptySpace pref="502" max="32767" attributes="0"/>
                                               <Component id="GiacenzeaData_Wallet2_Label" min="-2" pref="69" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
@@ -1032,6 +1056,17 @@
                                           </Group>
                                           <Component id="GiacenzeaData_Wallet2_ComboBox" max="32767" attributes="0"/>
                                       </Group>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="163" max="-2" attributes="0"/>
+                                      <EmptySpace pref="1289" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="GiacenzeaData_Totali_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Totali_TextField" min="-2" pref="117" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_RettificaQta" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -1066,7 +1101,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPane" pref="297" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPane" pref="314" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="GiacenzeaData_Bottone_ModificaValore" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
@@ -1082,14 +1117,15 @@
                               <Component id="jSeparator5" min="-2" pref="4" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="Giacenzeadata_Dettaglio_Label" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="275" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" min="-2" pref="275" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Totali_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_RettificaQta" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1469,7 +1505,7 @@
                                       <Component id="RW_Bottone_Stampa" min="-2" pref="169" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jButton2" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="87" max="32767" attributes="0"/>
+                                      <EmptySpace pref="208" max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="46" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
@@ -1478,9 +1514,9 @@
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="RW_Label_SegnalaErrori" min="-2" pref="628" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="RW_Label_SegnalaErrori" min="-2" pref="750" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="RW_CheckBox_VediSoloErrori" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
@@ -3382,214 +3418,6 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Container class="javax.swing.JPanel" name="Opzioni_RW_Pannello">
-                  <Constraints>
-                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                      <JTabbedPaneConstraints tabName="Opzioni Calcolo RW/W">
-                        <Property name="tabTitle" type="java.lang.String" value="Opzioni Calcolo RW/W"/>
-                      </JTabbedPaneConstraints>
-                    </Constraint>
-                  </Constraints>
-
-                  <Layout>
-                    <DimensionLayout dim="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel14" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="RW_Opzioni_RilenvanteTuttigliScambi" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_RilenvanteScambiFIAT" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_RilevanteScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="RW_Opzioni_RilevanteSoloValoriIniFin" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <Component id="jLabel15" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                              <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" pref="902" max="32767" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="RW_Opzioni_Radio_TrasferimentiNonConteggiati" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                          </Group>
-                                      </Group>
-                                  </Group>
-                                  <Component id="jLabel16" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace pref="194" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                    </DimensionLayout>
-                    <DimensionLayout dim="1">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_RilevanteSoloValoriIniFin" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_RilenvanteScambiFIAT" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_RilevanteScambiRilevanti" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_RilenvanteTuttigliScambi" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_StakingZero" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                              <Component id="jLabel16" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_Radio_TrasferimentiNonConteggiati" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="424" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                    </DimensionLayout>
-                  </Layout>
-                  <SubComponents>
-                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoComplessivo">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Il LiFo viene applicato alla totalit&#xe0; dei Wallet (BTC venduto sul Wallet 02 pu&#xf2; essere quello appena acquistato aul Wallet 01), non pi&#xf9; suddiviso per Gruppo&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_StakingZero">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Earn, airdrop, staking etc... non incrementano il valore iniziale del quadro (vengono valorizzati a Zero alla ricezione)&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_StakingZeroActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilenvanteScambiFIAT">
-                      <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                          <ComponentRef name="RW_RadioGruppo"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;B -&lt;/b&gt; Solo cashout o nuovi acquisti generano un nuori rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilenvanteScambiFIATActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteScambiRilevanti">
-                      <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                          <ComponentRef name="RW_RadioGruppo"/>
-                        </Property>
-                        <Property name="selected" type="boolean" value="true"/>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;C -&lt;/b&gt; Ogni operazione fiscalmente rilevante crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilevanteScambiRilevantiActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilenvanteTuttigliScambi">
-                      <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                          <ComponentRef name="RW_RadioGruppo"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;D -&lt;/b&gt; Ogni operazione crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata)&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilenvanteTuttigliScambiActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteSoloValoriIniFin">
-                      <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                          <ComponentRef name="RW_RadioGruppo"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;A -&lt;/b&gt; Indica come Valore Iniziale la giacenza di inizio anno e come Valore Finale quella di fine anno &lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilevanteSoloValoriIniFinActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel14">
-                      <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="0"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Scegli la &lt;b&gt;modalit&#xe0; di calcolo&lt;/b&gt; da utilizzare per il &lt;b&gt;Quadro W/RW&lt;/b&gt; : &lt;/html&gt;"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel15">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Ulteriori opzioni :&lt;/b&gt;&lt;/html&gt;"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Per i Wallet che pagano gi&#xe0; il bollo mostra solo giacenza ad inizio fine anno&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo">
-                      <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                          <ComponentRef name="RW_Trasferimenti"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Ogni trasferimento chiude il periodo di possesso della Cripto-Attivit&#xe0; sul Wallet di origine e apre un nuovo periodo per la stessa Cripto-Attivit&#xe0; sul Wallet di destinazione.&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovoActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_TrasferimentiNonConteggiati">
-                      <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                          <ComponentRef name="RW_Trasferimenti"/>
-                        </Property>
-                        <Property name="selected" type="boolean" value="true"/>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;I trasferimenti tra Wallet di propriet&#xe0; non vengono considerati (Valore Iniziale e Finale vengono incrementati sull&#x2019;ultimo Wallet che ne detiene la propriet&#xe0; a fine anno o fine periodo di detenzione).&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_TrasferimentiNonConteggiatiActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine">
-                      <Properties>
-                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                          <ComponentRef name="RW_Trasferimenti"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;In caso di trasferimenti tra Wallet di prorpriet&#xe0; il Valore Iniziale resta sul Wallet di origine mentre sul wallet di destinazione viene incrementato il Valore Finale e calcolati i giorni di detenzione.&lt;/html&gt;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigineActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel16">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Gestione dei Trasferimenti tra Wallet di propriet&#xe0; :&lt;/b&gt;&lt;/html&gt;"/>
-                      </Properties>
-                    </Component>
-                  </SubComponents>
-                </Container>
                 <Container class="javax.swing.JPanel" name="Opzioni_Rewards_Pannello">
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
@@ -3805,6 +3633,248 @@
                       </SubComponents>
                     </Container>
                     <Component class="javax.swing.JSeparator" name="jSeparator3">
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Container class="javax.swing.JPanel" name="Opzioni_RW_Pannello">
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                      <JTabbedPaneConstraints tabName="Opzioni Calcolo RW/W">
+                        <Property name="tabTitle" type="java.lang.String" value="Opzioni Calcolo RW/W"/>
+                      </JTabbedPaneConstraints>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_Radio_TrasferimentiNonConteggiati" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Bottone_Documentazione1" alignment="0" min="-2" pref="250" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                          <Component id="jLabel16" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="0" pref="426" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
+                                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                                      <Component id="RW_Opzioni_CheckBox_StakingZero" alignment="0" max="32767" attributes="0"/>
+                                                      <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" alignment="0" pref="902" max="32767" attributes="0"/>
+                                                  </Group>
+                                                  <Component id="RW_Opzioni_CheckBox_LiFoSubMovimenti" alignment="0" min="-2" pref="841" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                          <Component id="jLabel14" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="RW_Opzioni_RilenvanteTuttigliScambi" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_RilenvanteScambiFIAT" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_RilevanteScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="RW_Opzioni_RilevanteSoloValoriIniFin" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                          <Component id="jLabel15" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_RilevanteSoloValoriIniFin" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_RilenvanteScambiFIAT" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_RilevanteScambiRilevanti" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_RilenvanteTuttigliScambi" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_LiFoComplessivo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_StakingZero" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_LiFoSubMovimenti" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="jLabel16" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_Radio_TrasferimentiNonConteggiati" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
+                              <Component id="RW_Bottone_Documentazione1" min="-2" pref="60" max="-2" attributes="0"/>
+                              <EmptySpace pref="292" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoComplessivo">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Il LiFo viene applicato alla totalit&#xe0; dei Wallet (BTC venduto sul Wallet 02 pu&#xf2; essere quello appena acquistato aul Wallet 01), non pi&#xf9; suddiviso per Gruppo&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_StakingZero">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Earn, airdrop, staking etc... non incrementano il valore iniziale del quadro (vengono valorizzati a Zero alla ricezione)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_StakingZeroActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilenvanteScambiFIAT">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;B -&lt;/b&gt; Solo cashout o nuovi acquisti generano un nuori rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilenvanteScambiFIATActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteScambiRilevanti">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;C -&lt;/b&gt; Ogni operazione fiscalmente rilevante crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata) &lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilevanteScambiRilevantiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilenvanteTuttigliScambi">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;D -&lt;/b&gt; Ogni operazione crea un nuovo rigo W/RW (che poi verr&#xe0; accorpato tramite media ponderata)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilenvanteTuttigliScambiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_RilevanteSoloValoriIniFin">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_RadioGruppo"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;A -&lt;/b&gt; Indica come Valore Iniziale la giacenza di inizio anno e come Valore Finale quella di fine anno &lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_RilevanteSoloValoriIniFinActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="jLabel14">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Segoe UI" size="14" style="0"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Scegli la &lt;b&gt;modalit&#xe0; di calcolo&lt;/b&gt; da utilizzare per il &lt;b&gt;Quadro W/RW&lt;/b&gt; : &lt;/html&gt;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="jLabel15">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Ulteriori opzioni :&lt;/b&gt;&lt;/html&gt;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Per i Wallet che pagano gi&#xe0; il bollo mostra solo giacenza ad inizio fine anno&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_MostraGiacenzeSePagaBolloActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_Trasferimenti"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Ogni trasferimento chiude il periodo di possesso della Cripto-Attivit&#xe0; sul Wallet di origine e apre un nuovo periodo per la stessa Cripto-Attivit&#xe0; sul Wallet di destinazione.&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovoActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_TrasferimentiNonConteggiati">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_Trasferimenti"/>
+                        </Property>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;I trasferimenti tra Wallet di propriet&#xe0; non vengono considerati (Valore Iniziale e Finale vengono incrementati sull&#x2019;ultimo Wallet che ne detiene la propriet&#xe0; a fine anno o fine periodo di detenzione).&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_TrasferimentiNonConteggiatiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine">
+                      <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="RW_Trasferimenti"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;In caso di trasferimenti tra Wallet di prorpriet&#xe0; il Valore Iniziale resta sul Wallet di origine mentre sul wallet di destinazione viene incrementato il Valore Finale e calcolati i giorni di detenzione.&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigineActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="jLabel16">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro W/RW - &lt;b&gt;Gestione dei Trasferimenti tra Wallet di propriet&#xe0; :&lt;/b&gt;&lt;/html&gt;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_LiFoSubMovimenti">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Il LiFo viene applicato anche ai Sub-Movimenti ( Vedi Documentazione )&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_LiFoSubMovimentiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RW_Bottone_Documentazione1">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Segoe UI" size="18" style="1"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Vedi Documentazione"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_Documentazione1ActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

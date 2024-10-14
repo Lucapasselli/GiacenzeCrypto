@@ -311,14 +311,25 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
             //System.out.println("QTA: "+el.QtaOri+" MON: "+el.MonOri);*/
             
                    // System.out.println(el.Moneta + " .....finqta.... "+el.Qta);
+                
                 stackRitorno.push(el); 
          }
     }
 //System.out.println("-------------------");
     }
-
-    return stackRitorno;
-
+    if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoSubMovimenti").equalsIgnoreCase("NO"))
+    {
+        return stackRitorno;
+    }
+    else
+    {
+        //In questo caso devo invertire lo stack
+        ArrayDeque<ElementiStack> stackRitornoGirato = new ArrayDeque<ElementiStack>();
+        while (!stackRitorno.isEmpty()){
+            stackRitornoGirato.push(stackRitorno.pop());           
+        }
+        return stackRitornoGirato; 
+    }
 }      
       
   /*  public static void DAELIMINARE_SpostaQta(String GruppoWallet,ElementiStack el,String GruppoWalletOrigine) {
@@ -1611,7 +1622,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                            // long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnnoCalcoloPrezzi);
                           // m.Moneta="BTC";
                            //if (m.Moneta.equals("NEXO"))System.out.println(m.Qta);
-                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete); 
+                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete);
+                            
                            // System.out.println(m.Moneta+"-"+m.Prezzo);
                             //System.out.println(Prezzi.DammiPrezzoTransazione(m, null,fine, null, true, 15, m.Rete));
                             //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);

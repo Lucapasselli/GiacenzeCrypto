@@ -132,9 +132,9 @@ public class Tabelle {
             if (isSelected) {
 
                     c.setBackground(table.getSelectionBackground());
-                    //c.revalidate();
+
                 }
-                else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(row, 4).toString().contains("-")) {
+                else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 4).toString().contains("-")) {
                     c.setBackground(bg);
                     c.setForeground(Color.RED);
                 }

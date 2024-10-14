@@ -3,6 +3,5 @@
 
 - Controllare perchè ogni tanto la tabella del quadro RW non si colora
 - Aggiornare documentazione cartacea sull'utilizzo del programma per l'RW (soprattutto parte giacenza fine e inizio anno)
-- In Giacenze a data se riordino le colonne i colori non vengono riaggiornati
 - Inserire controllo righe senza prezzo
 - Inserire nuovo metodo calcolo RW

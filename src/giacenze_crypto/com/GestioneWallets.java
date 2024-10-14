@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -50,6 +51,8 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     public boolean TabellaDaAggiornare=false;
     public GestioneWallets() {
+        ImageIcon icon = new ImageIcon("logo.png");
+        this.setIconImage(icon.getImage());
         initComponents();
 
     }

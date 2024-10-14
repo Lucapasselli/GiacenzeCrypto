@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.Timer;
@@ -67,7 +68,8 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
      //   finestra=c;
       //  finestra.setEnabled(false);
-  
+         ImageIcon icon = new ImageIcon("logo.png");
+         this.setIconImage(icon.getImage());
          initComponents();
          Download.FineThread=false;
      /*   PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));

@@ -1657,6 +1657,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         Moneta Moneta2=null;
         if (Moneta1a != null)Moneta1=Moneta1a.ClonaMoneta();
         if (Moneta2a != null)Moneta2=Moneta2a.ClonaMoneta();
+        //System.out.println(Moneta1.Moneta+" - "+Data);
         //Se la differenza tra la data dello scambio e oggi è maggiore di 365 gg forzo l'uso di binance perchè
         //coingecko mi permette di avere i dati solo degli ultimi 365gg
         RecuperaCoinsCoingecko();
@@ -1935,7 +1936,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         if (PrezzoZero) {
             return "0.00";
         } else {
-            //System.out.println(Prezzo);
+           // System.out.println(Prezzo);
             return Prezzo;
         }
     }

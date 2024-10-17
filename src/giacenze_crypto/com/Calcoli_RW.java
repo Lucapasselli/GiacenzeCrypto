@@ -454,6 +454,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                 if (!m.Tipo.equalsIgnoreCase("FIAT") && new BigDecimal(m.Qta).compareTo(new BigDecimal(0)) != 0) {
                     //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
                     m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete);
+                    //System.out.println(m.Moneta+" - "+m.Qta+" - "+inizio+" - "+m.Prezzo);
                     //System.out.println(m.Prezzo);
                     //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
                     Map<String, ArrayDeque> CryptoStackTemp;
@@ -1623,6 +1624,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                           // m.Moneta="BTC";
                            //if (m.Moneta.equals("NEXO"))System.out.println(m.Qta);
                             m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete);
+                            //System.out.println(m.Moneta+" - "+m.Qta+" - "+fine+" - "+m.Prezzo);
                             
                            // System.out.println(m.Moneta+"-"+m.Prezzo);
                             //System.out.println(Prezzi.DammiPrezzoTransazione(m, null,fine, null, true, 15, m.Rete));

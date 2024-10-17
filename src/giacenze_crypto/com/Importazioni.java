@@ -1231,7 +1231,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 while ((riga = bure.readLine()) != null) {
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
                     String splittata[] = riga.split(",",-1);                     
-                    if (splittata.length==11){
+                    if (splittata.length==11&&Funzioni.Funzioni_isNumeric(splittata[4], false)){
                             String Data=splittata[2];
                             String Movimento[]=new String[20];
                             Movimento[0]=splittata[2];//Data
@@ -1242,7 +1242,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             Movimento[5]=splittata[0];//Moneta
                             Movimento[6]=splittata[4];//Qta
                             Movimento[7]=splittata[1];//Address Moneta
-                            Movimento[8]=splittata[5].replace("-", "");//Valore Originale Euro
+                            Movimento[8]=new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
                             Movimento[9]="";//ID Originale
                             Movimento[10]="";//Rete 
                             

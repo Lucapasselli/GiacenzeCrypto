@@ -6191,7 +6191,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         progress.SetLabel("Calcolo RW in corso.... Attendere");
         progress.NascondiBarra();
         progress.NascondiInterrompi(); 
-        //progress.RipristinaStdout();
+//progress.RipristinaStdout();
         Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
         //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
         Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto

@@ -759,102 +759,107 @@ public class Prezzi {
     
     
     
-       public static String ConvertiXXXEUR(String Crypto,String Qta, long Datalong) {
+    public static String ConvertiXXXEUR(String Crypto, String Qta, long Datalong) {
 
         String risultato;// = null;
         boolean mettereND = false;
-        
-        if (Crypto.equals("WCRO"))Crypto="CRO";//Questo serve per recuperare il prezzo dei WCRO che cmq è uguale ai CRO
-        long adesso=System.currentTimeMillis();
-        if (Datalong>adesso) return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi
-        if (Datalong<1483225200)return null;//se la data è inferioe al 2017 non recupero nessun prezzo
-        String DataOra=OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno=OperazioniSuDate.ConvertiDatadaLong(Datalong);
-        long DataInizioBinance=Long.parseLong("1502942400000");
+
+        if (Crypto.equals("WCRO")) {
+            Crypto = "CRO";//Questo serve per recuperare il prezzo dei WCRO che cmq è uguale ai CRO
+        }
+        long adesso = System.currentTimeMillis();
+        if (Datalong > adesso) {
+            return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi
+        }
+        if (Datalong < 1483225200) {
+            return null;//se la data è inferioe al 2017 non recupero nessun prezzo
+        }
+        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
+        long DataInizioBinance = Long.parseLong("1502942400000");
         //System.out.println("RecuperoCoinCap");
-        
-        risultato = DatabaseH2.XXXEUR_Leggi(DataOra+" "+Crypto);
+
+        risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
         //se il risultato è null significa che non ho il prezzo specifico dell'ora
         if (risultato == null) {
-               //a questo punto provo a recuperarlo da binance
-               RecuperaCoppieBinance();//il test sulla data lo fà già il programma
-               if (DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") != null && Datalong >= DataInizioBinance) {
-                   //scarico i prezzi da binance
-                   RecuperaTassidiCambioXXXUSDT_Binance(Crypto, DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                   risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
-               }
+            //a questo punto provo a recuperarlo da binance
+            RecuperaCoppieBinance();//il test sulla data lo fà già il programma
+            if (DatabaseH2.CoppieBinance_Leggi(Crypto + "USDT") != null && Datalong >= DataInizioBinance) {
+                //scarico i prezzi da binance
+                RecuperaTassidiCambioXXXUSDT_Binance(Crypto, DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
+            }
+        }
+        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CoinCap
+        if (risultato == null) {
+            //se non trovo un prezzo recupero le coppie gestite da binance e coincap
+            RecuperaCoinsCoinCap();
+            //System.out.println("RecuperoCoinCap");
+            if (DatabaseH2.GestitiCoinCap_Leggi(Crypto) != null) {
+                //Se gestito da CoinCap scarico i prezzi da CoinCap
+                RecuperaTassidiCambiodaSimbolo_CoinCap(Crypto, DataGiorno);
+                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
+            }
+            //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
+            //che sono i giorni per cui di solito recupero i prezzi
+            //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
+            //sicuro che non potrò farci nulla
+            mettereND = true;
+            //in sostanza va messo sempre sull'ultimo provider
 
-               //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CoinCap
-               if (risultato == null) {
-                   //se non trovo un prezzo recupero le coppie gestite da binance e coincap
-                   RecuperaCoinsCoinCap();
-                   //System.out.println("RecuperoCoinCap");
-                   if (DatabaseH2.GestitiCoinCap_Leggi(Crypto) != null) {
-                       //Se gestito da CoinCap scarico i prezzi da CoinCap
-                       RecuperaTassidiCambiodaSimbolo_CoinCap(Crypto, DataGiorno);
-                       risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
-                   }
-                   //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
-                   //che sono i giorni per cui di solito recupero i prezzi
-                   //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
-                   //sicuro che non potrò farci nulla
-                   mettereND = true;
-                   //in sostanza va messo sempre sull'ultimo provider
-               }
-               //Se il risultato è ancora null provo a recuperare il prezzo della giornata invece che quello orario
-                if (risultato == null) {
-                   //se non trovo un prezzo recupero le coppie gestite da binance e coincap
-                    risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno + " " + Crypto);                  
-               }
-           }
-        
-           if (mettereND) {
-               //Adesso conto 30 gg dalla data in cui è partita la richiesta e per tutte le ore in cui non ho trovato prezzi metto degli ND
-               //Questo serve per eveitare di fare altre richieste di prezzi che non posso recuperare
-               //Gli ND poi vengono tolti al riavvio del programma
-               long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataGiorno);
-               long timestampFinale = timestampIniziale + Long.parseLong("2592000000");
-               if (adesso < timestampFinale) {
-                   timestampFinale = adesso;
-               }
-               while (timestampIniziale < timestampFinale) {
-                   Date date = new java.util.Date(timestampIniziale);
-                   SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
-                   sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                   String DataconOra = sdf.format(date);
-                   //Metto ND su tutte le ore senza valore
-                   if (DatabaseH2.XXXEUR_Leggi(DataconOra + " " + Crypto) == null) {
-                       DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, "ND");
-                   }
+        }
 
-                   //Se le crypto senza prezzo sono le stable a questo punto prendo il prezzo del dollaro del giorno e le valorizzo così
-                   if (Crypto.equalsIgnoreCase("USDC")
-                           || Crypto.equalsIgnoreCase("BUSD")
-                           || Crypto.equalsIgnoreCase("DAI")) {
-                       String Prezzo = ConvertiUSDTEUR("1", OperazioniSuDate.ConvertiDatainLongMinuto(DataconOra + ":01"));
-                       if (Prezzo != null) {
-                           DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
-                       }
-                   }
-                   timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
-               }
-           }
-                
-                
+        //Se il risultato è ancora null provo a recuperare il prezzo della giornata invece che quello orario
+        if (risultato == null || risultato.equalsIgnoreCase("ND")) {
+            //se non trovo un prezzo recupero le coppie gestite da binance e coincap
+            risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno + " " + Crypto);
+        }
 
-           if (risultato != null) {
-               //infatti se ritorna zero vuol dire che per quella data binance o cryptohistory non forniscono nessun prezzo
-               if (risultato.equalsIgnoreCase("ND")||risultato.equalsIgnoreCase("null")) {
-                   risultato = null;
-               } else {
-                   //questa è la mappa che al termine della conversione devo scrivere nel file;
-                   //MappaConversioneXXXEUR.put(DataOra + " " + Crypto, risultato);
-                   risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(30, RoundingMode.HALF_UP).stripTrailingZeros().toString();
-               }
-           }
-      //  System.out.println(risultato);
+        if (mettereND) {
+            //Adesso conto 30 gg dalla data in cui è partita la richiesta e per tutte le ore in cui non ho trovato prezzi metto degli ND
+            //Questo serve per eveitare di fare altre richieste di prezzi che non posso recuperare
+            //Gli ND poi vengono tolti al riavvio del programma
+            long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataGiorno);
+            long timestampFinale = timestampIniziale + Long.parseLong("2592000000");
+            if (adesso < timestampFinale) {
+                timestampFinale = adesso;
+            }
+            while (timestampIniziale < timestampFinale) {
+                Date date = new java.util.Date(timestampIniziale);
+                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                String DataconOra = sdf.format(date);
+                //Metto ND su tutte le ore senza valore
+                if (DatabaseH2.XXXEUR_Leggi(DataconOra + " " + Crypto) == null) {
+                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, "ND");
+                }
+
+                //Se le crypto senza prezzo sono le stable a questo punto prendo il prezzo del dollaro del giorno e le valorizzo così
+                if (Crypto.equalsIgnoreCase("USDC")
+                        || Crypto.equalsIgnoreCase("BUSD")
+                        || Crypto.equalsIgnoreCase("DAI")) {
+                    String Prezzo = ConvertiUSDTEUR("1", OperazioniSuDate.ConvertiDatainLongMinuto(DataconOra + ":01"));
+                    if (Prezzo != null) {
+                        DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
+                    }
+                }
+                timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
+            }
+        }
+
+        if (risultato != null) {
+            //infatti se ritorna zero vuol dire che per quella data binance o cryptohistory non forniscono nessun prezzo
+            if (risultato.equalsIgnoreCase("ND") || risultato.equalsIgnoreCase("null")) {
+                risultato = null;
+            } else {
+                //questa è la mappa che al termine della conversione devo scrivere nel file;
+                //MappaConversioneXXXEUR.put(DataOra + " " + Crypto, risultato);
+                risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(30, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+            }
+        }
+        //  System.out.println(risultato);
         return risultato;
-    } 
+    }
     
     
      

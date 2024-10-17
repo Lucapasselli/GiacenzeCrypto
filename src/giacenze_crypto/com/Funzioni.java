@@ -730,7 +730,7 @@ return ListaSaldi;
         }
      
        
-    public static boolean Funzioni_isNumeric(String str, boolean CampoVuotoContacomeNumero) {
+    public static boolean Funzioni_isNumericOld(String str, boolean CampoVuotoContacomeNumero) {
         
         if (str==null)return false;
         //ritorna vero se il campo è vuoto oppure è un numero
@@ -743,6 +743,21 @@ return ListaSaldi;
             return false;
         }
         return !str.matches("^.*[a-zA-Z].*$");
+
+    }
+    public static boolean Funzioni_isNumeric(String str, boolean CampoVuotoContacomeNumero) {
+        
+        if (str==null)return false;
+        //ritorna vero se il campo è vuoto oppure è un numero
+        if (CampoVuotoContacomeNumero && str.isBlank()) {
+            return true;
+        }
+        try {
+            BigDecimal B = new BigDecimal(str);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
 
     }
 }

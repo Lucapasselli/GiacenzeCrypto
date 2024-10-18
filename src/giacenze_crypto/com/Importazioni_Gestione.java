@@ -85,6 +85,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
         });
 
+        Bottone_SelezionaFile.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Upload.png")); // NOI18N
         Bottone_SelezionaFile.setText("Seleziona file da importare");
         Bottone_SelezionaFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -101,6 +102,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         TextPane_Attenzione.setEnabled(false);
         ScrollPane_Attenzione.setViewportView(TextPane_Attenzione);
 
+        Bottone_Annulla.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Annulla.png")); // NOI18N
         Bottone_Annulla.setText("Annulla");
         Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -155,7 +157,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(Bottone_SelezionaFile, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Bottone_Annulla))
+                                .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(CheckBox_Sovrascrivi)
                             .addComponent(ComboBox_Exchanges, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(Text_NomeWallet)

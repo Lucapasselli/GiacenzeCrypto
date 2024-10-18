@@ -43,7 +43,7 @@
 31 - Data Fine trasferimento crypto (viene anche utilizzata come data per lo spostamento del costo di carico tra wallet)
 32 - Movimento ha prezzo (Valorizzato a Si o No)  //Serve per sapere se l'eventuale prezzo a zero è voluto o semplicemente non ho trovato i prezzi sul movimento
 33 - Movimento che genera plusvalenza (Valorizzato a S o N)
-34 - Rete (Attualmente solo BSC,ETH,CRO)
+34 - Rete (Attualmente solo BSC,ETH,CRO)//non ancora implementato
 */
 
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI

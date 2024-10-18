@@ -248,6 +248,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
+        Bottone_CalcolaAutomaticamente.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_EuroRicevuta.png")); // NOI18N
         Bottone_CalcolaAutomaticamente.setText("Cerca di recuperare automaticamente il Valore della Transazione");
         Bottone_CalcolaAutomaticamente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -255,6 +256,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
+        Bottone_Ok.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Salva.png")); // NOI18N
         Bottone_Ok.setText("OK");
         Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -262,6 +264,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
+        Bottone_Annulla.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Annulla.png")); // NOI18N
         Bottone_Annulla.setText("Annulla");
         Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -329,20 +332,19 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(Bottone_Ok)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Bottone_Annulla))
-                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(Note_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Note_ScrollPane))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(ValoreTransazione_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Bottone_CalcolaAutomaticamente)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Note_Label)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Note_ScrollPane)))
+                                .addComponent(Bottone_CalcolaAutomaticamente, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(19, 19, 19))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)

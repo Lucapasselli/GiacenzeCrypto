@@ -180,14 +180,14 @@
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="449" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="1" max="32767" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="1" max="32767" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -470,7 +470,7 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_Importa">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Upload.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Upload.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Carica CSV"/>
               </Properties>
@@ -492,7 +492,7 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_Salva">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Salva.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Salva.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Salva"/>
                 <Property name="enabled" type="boolean" value="false"/>
@@ -522,7 +522,7 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_Annulla">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Annulla.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Annulla.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Annulla"/>
                 <Property name="enabled" type="boolean" value="false"/>
@@ -555,7 +555,7 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_InserisciWallet">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Wallet.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Wallet.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Inserisci Wallet"/>
               </Properties>
@@ -566,18 +566,18 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_DettaglioDefi">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Defi.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Defi.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Dettaglio DeFi"/>
                 <Property name="enabled" type="boolean" value="false"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[109, 23]"/>
+                  <Dimension value="[109, 27]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[109, 23]"/>
+                  <Dimension value="[109, 27]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[109, 23]"/>
+                  <Dimension value="[109, 27]"/>
                 </Property>
               </Properties>
               <Events>
@@ -590,17 +590,17 @@
                   <Color blue="b9" green="ff" red="be" type="rgb"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Nuovo.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Nuovo.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Nuovo Movimento"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
               </Properties>
               <Events>
@@ -613,18 +613,18 @@
                   <Color blue="66" green="66" red="ff" type="rgb"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Cestino.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Cestino.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Elimina Movimento"/>
                 <Property name="enabled" type="boolean" value="false"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
               </Properties>
               <Events>
@@ -634,18 +634,18 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoModifica">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Modifica.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Modifica.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Modifica Movimento"/>
                 <Property name="enabled" type="boolean" value="false"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[210, 23]"/>
+                  <Dimension value="[210, 27]"/>
                 </Property>
               </Properties>
               <Events>
@@ -708,7 +708,7 @@
             <Component class="javax.swing.JButton" name="jButton1">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Tabella.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Tabella.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Esporta Tabella"/>
               </Properties>
@@ -752,6 +752,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Vedi solo movimenti non valorizzati"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_CheckBox_VediSenzaPrezzoActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
@@ -836,7 +839,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="704" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="716" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" max="-2" attributes="0"/>
@@ -949,7 +952,7 @@
                     <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_AssegnazioneManuale">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Modifica.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Modifica.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Modifica movimento"/>
                       </Properties>
@@ -969,7 +972,7 @@
                     <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_DettaglioDefi">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Defi.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Defi.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Dettaglio Defi"/>
                       </Properties>
@@ -1009,7 +1012,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane3" pref="770" max="32767" attributes="0"/>
+                              <Component id="jScrollPane3" pref="790" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -1093,7 +1096,7 @@
                                       <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="326" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_CambiaNomeToken" min="-2" pref="190" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Scam" min="-2" pref="190" max="-2" attributes="0"/>
@@ -1124,8 +1127,8 @@
                                       <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                           <Group type="102" attributes="0">
                                               <Component id="GiacenzeaData_Data_DataChooser" min="-2" pref="148" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" min="-2" pref="140" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
+                                              <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="GiacenzeaData_Bottone_Calcola" max="32767" attributes="0"/>
                                           </Group>
@@ -1176,12 +1179,12 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPane" pref="310" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPane" pref="318" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                  <Component id="GiacenzeaData_Bottone_CambiaNomeToken" alignment="1" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="GiacenzeaData_Bottone_ModificaValore" alignment="3" min="-2" pref="30" max="-2" attributes="0"/>
-                                      <Component id="GiacenzeaData_Bottone_CambiaNomeToken" alignment="1" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Scam" alignment="3" min="-2" pref="30" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="GiacenzeaData_Bottone_MovimentiDefi" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
@@ -1195,7 +1198,7 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="Giacenzeadata_Dettaglio_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="272" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="280" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
@@ -1328,7 +1331,7 @@
                           <Color blue="c3" green="f0" red="ff" type="rgb"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Calcolatrice.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Calcolatrice.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Calcola"/>
                       </Properties>
@@ -1444,7 +1447,7 @@
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_ModificaValore">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_EuroRicevuta.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_EuroRicevuta.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Modifica Valore"/>
                         <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Modifica il valore globale della giacenza del token evidenziato&lt;br&gt;&lt;\u005chtml&gt;" containsInvalidXMLChars="true"/>
@@ -1466,7 +1469,7 @@
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_MovimentiDefi">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Defi.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Defi.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Movimenti Defi"/>
                         <Property name="enabled" type="boolean" value="false"/>
@@ -1481,7 +1484,7 @@
                           <Font name="Caladea" size="13" style="0"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Wallet.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Wallet.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt; Vedi situazione &lt;br&gt; Wallet ad Oggi &lt;/html&gt;"/>
                         <Property name="enabled" type="boolean" value="false"/>
@@ -1500,7 +1503,7 @@
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_RettificaQta">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Numeri.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Numeri.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Sistema Qta Residua"/>
                         <Property name="enabled" type="boolean" value="false"/>
@@ -1532,7 +1535,7 @@
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_Scam">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Scam.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Scam.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Identifica come SCAM"/>
                         <Property name="enabled" type="boolean" value="false"/>
@@ -1544,7 +1547,7 @@
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_CambiaNomeToken">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_BloccoNote.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_BloccoNote.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Cambia Nome Token"/>
                         <Property name="enabled" type="boolean" value="false"/>
@@ -1666,7 +1669,7 @@
                                   <Component id="jButton2" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="211" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="216" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
@@ -1676,7 +1679,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="276" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="280" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1686,7 +1689,7 @@
                                   <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="172" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="179" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -1929,7 +1932,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_Calcola">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Calcolatrice.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Calcolatrice.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Calcola"/>
                       </Properties>
@@ -2030,7 +2033,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_CorreggiErrore">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Alert.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Scam.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Corrreggi Errore"/>
                         <Property name="enabled" type="boolean" value="false"/>
@@ -2051,7 +2054,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_IdentificaScam">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Scam.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Scam.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Identifica come SCAM"/>
                         <Property name="enabled" type="boolean" value="false"/>
@@ -2072,7 +2075,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_ModificaVFinale">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_EuroRicevuta.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_EuroRicevuta.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Modifica Valore Finale"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -2092,7 +2095,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_ModificaVIniziale">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_EuroRicevuta.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_EuroRicevuta.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Modifica Valore Iniziale"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -2140,7 +2143,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_Documentazione">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Documentazione.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Documentazione.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Vedi Documentazione"/>
                       </Properties>
@@ -2151,7 +2154,7 @@
                     <Component class="javax.swing.JButton" name="RW_Bottone_Stampa">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Testo.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Testo.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Stampa Report PDF"/>
                       </Properties>
@@ -2162,7 +2165,7 @@
                     <Component class="javax.swing.JButton" name="jButton2">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Tabella.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Tabella.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Crea Excel con i Dettagli"/>
                       </Properties>
@@ -2343,7 +2346,7 @@
             <Component class="javax.swing.JButton" name="CDC_CardWallet_Bottone_CaricaCSV">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Upload.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Upload.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Carica Dati Carta"/>
               </Properties>
@@ -2576,7 +2579,7 @@
             <Component class="javax.swing.JButton" name="CDC_CardWallet_Bottone_StampaRapporto">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Testo.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Testo.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Stampa Rapporto PDF"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -2744,7 +2747,7 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="443" max="32767" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="451" max="32767" attributes="0"/>
                           <Component id="CDC_FiatWallet_Tabella3Scroll" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -2761,7 +2764,7 @@
             <Component class="javax.swing.JButton" name="CDC_FiatWallet_Bottone_CaricaCSV">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Upload.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Upload.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Carica Dati Fiat Wallet"/>
               </Properties>
@@ -2983,7 +2986,7 @@
                   <Font name="Segoe UI" size="12" style="1"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Alert.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Alert.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Vedi Errori"/>
               </Properties>
@@ -3050,7 +3053,7 @@
             <Component class="javax.swing.JButton" name="CDC_FiatWallet_Bottone_StampaRapporto">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="2" name="C:\Users\luca.passelli\Documents\NetBeansProjects\Giacenze_Crypto.com\Immagini\Icone\20_Testo.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Testo.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Stampa Rapporto PDF"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -3134,6 +3137,9 @@
                   <SubComponents>
                     <Component class="javax.swing.JButton" name="CDC_Opzioni_Bottone_CancellaCardWallet">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Cestino.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Elimina tutti i dati dal Card Wallet"/>
                       </Properties>
                       <Events>
@@ -3179,6 +3185,9 @@
                   <SubComponents>
                     <Component class="javax.swing.JButton" name="CDC_Opzioni_Bottone_CancellaFiatWallet">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Cestino.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Elimina tutti i dati dal Fiat Wallet"/>
                       </Properties>
                       <Events>
@@ -3187,6 +3196,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Cestino.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Elimina personalizzazioni movimenti Fiat Wallet"/>
                       </Properties>
                       <Events>
@@ -3242,6 +3254,9 @@
                   <SubComponents>
                     <Component class="javax.swing.JButton" name="Opzioni_Bottone_CancellaTransazioniCrypto">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Cestino.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Elimina tutte le transazioni Crypto"/>
                       </Properties>
                       <Events>
@@ -3250,6 +3265,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_Bottone_CancellaTransazioniCryptoXwallet">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Cestino.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Elimina Dati singolo Wallet/Exchange"/>
                       </Properties>
                       <Events>
@@ -3305,7 +3323,7 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane1" min="-2" pref="52" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="605" max="32767" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="617" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="84" max="-2" attributes="0"/>
@@ -3397,6 +3415,9 @@
                     </Container>
                     <Component class="javax.swing.JButton" name="Opzioni_GruppoWallet_Bottone_Rinomina">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_BloccoNote.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Rinomina Alias"/>
                       </Properties>
                       <Events>
@@ -3437,7 +3458,7 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane5" min="-2" pref="123" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Emoney_ScrollPane" pref="612" max="32767" attributes="0"/>
+                              <Component id="Opzioni_Emoney_ScrollPane" pref="624" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_Emoney_Bottone_Aggiungi" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -3513,6 +3534,9 @@
                     </Container>
                     <Component class="javax.swing.JButton" name="Opzioni_Emoney_Bottone_Rimuovi">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Cestino.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Rimuovi Token"/>
                       </Properties>
                       <Events>
@@ -3521,6 +3545,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_Emoney_Bottone_Aggiungi">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Nuovo.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Aggiungi Token"/>
                       </Properties>
                       <Events>
@@ -3596,6 +3623,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_Export_Tatax_Bottone">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Tabella.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Genera File per Tatax"/>
                       </Properties>
                       <Events>
@@ -3655,7 +3685,7 @@
                               <Component id="OpzioniRewards_JCB_PDD_Earn" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="OpzioniRewards_JCB_PDD_Reward" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="377" max="32767" attributes="0"/>
+                              <EmptySpace pref="397" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3767,7 +3797,7 @@
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="613" max="32767" attributes="0"/>
+                              <EmptySpace pref="633" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3921,7 +3951,7 @@
                               <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                               <Component id="RW_Bottone_Documentazione1" min="-2" pref="60" max="-2" attributes="0"/>
-                              <EmptySpace pref="290" max="32767" attributes="0"/>
+                              <EmptySpace pref="310" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -4060,6 +4090,9 @@
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Segoe UI" size="18" style="1"/>
+                        </Property>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Documentazione.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Vedi Documentazione"/>
                       </Properties>

@@ -135,7 +135,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             File cryptowallet=new File (CryptoWallet_FileDB);
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
             
-         //   UIManager.setLookAndFeel( new FlatIntelliJLaf() );
+        // //   UIManager.setLookAndFeel( new FlatIntelliJLaf() );
             UIManager.setLookAndFeel( new FlatLightLaf() );
 
           //  UIManager.setLookAndFeel( new FlatDarkLaf() );
@@ -203,7 +203,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         
         
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         CDC_AggiornaGui();
         FineCaricamentoDati=true;
         //RW_Bottone_StampaActionPerformed(null);
@@ -559,7 +559,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         }
         TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));
 
-        TransazioniCrypto_Bottone_Importa.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Upload.png")); // NOI18N
+        TransazioniCrypto_Bottone_Importa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Upload.png"))); // NOI18N
         TransazioniCrypto_Bottone_Importa.setText("Carica CSV");
         TransazioniCrypto_Bottone_Importa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -571,7 +571,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         TransazioniCrypto_Label_MovimentiNonSalvati.setForeground(new java.awt.Color(255, 51, 51));
         TransazioniCrypto_Label_MovimentiNonSalvati.setText("Attenzione ci sono dei movimenti non salvati, ricordarsi di farlo o all'uscita verranno persi!");
 
-        TransazioniCrypto_Bottone_Salva.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Salva.png")); // NOI18N
+        TransazioniCrypto_Bottone_Salva.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Salva.png"))); // NOI18N
         TransazioniCrypto_Bottone_Salva.setText("Salva");
         TransazioniCrypto_Bottone_Salva.setEnabled(false);
         TransazioniCrypto_Bottone_Salva.addActionListener(new java.awt.event.ActionListener() {
@@ -595,7 +595,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        TransazioniCrypto_Bottone_Annulla.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Annulla.png")); // NOI18N
+        TransazioniCrypto_Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Annulla.png"))); // NOI18N
         TransazioniCrypto_Bottone_Annulla.setText("Annulla");
         TransazioniCrypto_Bottone_Annulla.setEnabled(false);
         TransazioniCrypto_Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
@@ -617,7 +617,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        TransazioniCrypto_Bottone_InserisciWallet.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Wallet.png")); // NOI18N
+        TransazioniCrypto_Bottone_InserisciWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Wallet.png"))); // NOI18N
         TransazioniCrypto_Bottone_InserisciWallet.setText("Inserisci Wallet");
         TransazioniCrypto_Bottone_InserisciWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -625,12 +625,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        TransazioniCrypto_Bottone_DettaglioDefi.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Defi.png")); // NOI18N
+        TransazioniCrypto_Bottone_DettaglioDefi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Defi.png"))); // NOI18N
         TransazioniCrypto_Bottone_DettaglioDefi.setText("Dettaglio DeFi");
         TransazioniCrypto_Bottone_DettaglioDefi.setEnabled(false);
-        TransazioniCrypto_Bottone_DettaglioDefi.setMaximumSize(new java.awt.Dimension(109, 23));
-        TransazioniCrypto_Bottone_DettaglioDefi.setMinimumSize(new java.awt.Dimension(109, 23));
-        TransazioniCrypto_Bottone_DettaglioDefi.setPreferredSize(new java.awt.Dimension(109, 23));
+        TransazioniCrypto_Bottone_DettaglioDefi.setMaximumSize(new java.awt.Dimension(109, 27));
+        TransazioniCrypto_Bottone_DettaglioDefi.setMinimumSize(new java.awt.Dimension(109, 27));
+        TransazioniCrypto_Bottone_DettaglioDefi.setPreferredSize(new java.awt.Dimension(109, 27));
         TransazioniCrypto_Bottone_DettaglioDefi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_DettaglioDefiActionPerformed(evt);
@@ -638,11 +638,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         TransazioniCrypto_Bottone_MovimentoNuovo.setBackground(new java.awt.Color(190, 255, 185));
-        TransazioniCrypto_Bottone_MovimentoNuovo.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Nuovo.png")); // NOI18N
+        TransazioniCrypto_Bottone_MovimentoNuovo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Nuovo.png"))); // NOI18N
         TransazioniCrypto_Bottone_MovimentoNuovo.setText("Nuovo Movimento");
-        TransazioniCrypto_Bottone_MovimentoNuovo.setMaximumSize(new java.awt.Dimension(210, 23));
-        TransazioniCrypto_Bottone_MovimentoNuovo.setMinimumSize(new java.awt.Dimension(210, 23));
-        TransazioniCrypto_Bottone_MovimentoNuovo.setPreferredSize(new java.awt.Dimension(210, 23));
+        TransazioniCrypto_Bottone_MovimentoNuovo.setMaximumSize(new java.awt.Dimension(210, 27));
+        TransazioniCrypto_Bottone_MovimentoNuovo.setMinimumSize(new java.awt.Dimension(210, 27));
+        TransazioniCrypto_Bottone_MovimentoNuovo.setPreferredSize(new java.awt.Dimension(210, 27));
         TransazioniCrypto_Bottone_MovimentoNuovo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(evt);
@@ -650,24 +650,24 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         TransazioniCrypto_Bottone_MovimentoElimina.setBackground(new java.awt.Color(255, 102, 102));
-        TransazioniCrypto_Bottone_MovimentoElimina.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Cestino.png")); // NOI18N
+        TransazioniCrypto_Bottone_MovimentoElimina.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Cestino.png"))); // NOI18N
         TransazioniCrypto_Bottone_MovimentoElimina.setText("Elimina Movimento");
         TransazioniCrypto_Bottone_MovimentoElimina.setEnabled(false);
-        TransazioniCrypto_Bottone_MovimentoElimina.setMaximumSize(new java.awt.Dimension(210, 23));
-        TransazioniCrypto_Bottone_MovimentoElimina.setMinimumSize(new java.awt.Dimension(210, 23));
-        TransazioniCrypto_Bottone_MovimentoElimina.setPreferredSize(new java.awt.Dimension(210, 23));
+        TransazioniCrypto_Bottone_MovimentoElimina.setMaximumSize(new java.awt.Dimension(210, 27));
+        TransazioniCrypto_Bottone_MovimentoElimina.setMinimumSize(new java.awt.Dimension(210, 27));
+        TransazioniCrypto_Bottone_MovimentoElimina.setPreferredSize(new java.awt.Dimension(210, 27));
         TransazioniCrypto_Bottone_MovimentoElimina.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed(evt);
             }
         });
 
-        TransazioniCrypto_Bottone_MovimentoModifica.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Modifica.png")); // NOI18N
+        TransazioniCrypto_Bottone_MovimentoModifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Modifica.png"))); // NOI18N
         TransazioniCrypto_Bottone_MovimentoModifica.setText("Modifica Movimento");
         TransazioniCrypto_Bottone_MovimentoModifica.setEnabled(false);
-        TransazioniCrypto_Bottone_MovimentoModifica.setMaximumSize(new java.awt.Dimension(210, 23));
-        TransazioniCrypto_Bottone_MovimentoModifica.setMinimumSize(new java.awt.Dimension(210, 23));
-        TransazioniCrypto_Bottone_MovimentoModifica.setPreferredSize(new java.awt.Dimension(210, 23));
+        TransazioniCrypto_Bottone_MovimentoModifica.setMaximumSize(new java.awt.Dimension(210, 27));
+        TransazioniCrypto_Bottone_MovimentoModifica.setMinimumSize(new java.awt.Dimension(210, 27));
+        TransazioniCrypto_Bottone_MovimentoModifica.setPreferredSize(new java.awt.Dimension(210, 27));
         TransazioniCrypto_Bottone_MovimentoModifica.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_Bottone_MovimentoModificaActionPerformed(evt);
@@ -709,7 +709,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         TransazioniCrypto_TabbedPane.addTab("Dettagli Riga", jScrollPane4);
 
-        jButton1.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Tabella.png")); // NOI18N
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Tabella.png"))); // NOI18N
         jButton1.setText("Esporta Tabella");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -735,6 +735,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         TransazioniCrypto_CheckBox_VediSenzaPrezzo.setText("Vedi solo movimenti non valorizzati");
+        TransazioniCrypto_CheckBox_VediSenzaPrezzo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_CheckBox_VediSenzaPrezzoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
@@ -802,14 +807,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(TransazioniCrypto_ScrollPane)
+                .addGap(9, 9, 9)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -904,7 +909,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Modifica.png")); // NOI18N
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Modifica.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setText("Modifica movimento");
         DepositiPrelievi_Bottone_AssegnazioneManuale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -920,7 +925,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        DepositiPrelievi_Bottone_DettaglioDefi.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Defi.png")); // NOI18N
+        DepositiPrelievi_Bottone_DettaglioDefi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Defi.png"))); // NOI18N
         DepositiPrelievi_Bottone_DettaglioDefi.setText("Dettaglio Defi");
         DepositiPrelievi_Bottone_DettaglioDefi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -960,7 +965,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 704, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(DepositiPrelievi_Bottone_DettaglioDefi)
@@ -1020,7 +1025,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(SituazioneImportLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 770, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 790, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1101,7 +1106,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Totali_TextField.setEditable(false);
 
         GiacenzeaData_Bottone_Calcola.setBackground(new java.awt.Color(255, 240, 195));
-        GiacenzeaData_Bottone_Calcola.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Calcolatrice.png")); // NOI18N
+        GiacenzeaData_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Calcolatrice.png"))); // NOI18N
         GiacenzeaData_Bottone_Calcola.setText("Calcola");
         GiacenzeaData_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1161,7 +1166,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         GiacenzeaData_WalletEsame_Label.setText("Wallet in Esame :");
 
-        GiacenzeaData_Bottone_ModificaValore.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_EuroRicevuta.png")); // NOI18N
+        GiacenzeaData_Bottone_ModificaValore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_EuroRicevuta.png"))); // NOI18N
         GiacenzeaData_Bottone_ModificaValore.setText("Modifica Valore");
         GiacenzeaData_Bottone_ModificaValore.setToolTipText("<html>Modifica il valore globale della giacenza del token evidenziato<br><\\html>");
         GiacenzeaData_Bottone_ModificaValore.setMaximumSize(new java.awt.Dimension(144, 22));
@@ -1178,7 +1183,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        GiacenzeaData_Bottone_MovimentiDefi.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Defi.png")); // NOI18N
+        GiacenzeaData_Bottone_MovimentiDefi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Defi.png"))); // NOI18N
         GiacenzeaData_Bottone_MovimentiDefi.setText("Movimenti Defi");
         GiacenzeaData_Bottone_MovimentiDefi.setEnabled(false);
         GiacenzeaData_Bottone_MovimentiDefi.addActionListener(new java.awt.event.ActionListener() {
@@ -1188,7 +1193,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         GiacenzeaData_Bottone_GiacenzeExplorer.setFont(new java.awt.Font("Caladea", 0, 13)); // NOI18N
-        GiacenzeaData_Bottone_GiacenzeExplorer.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Wallet.png")); // NOI18N
+        GiacenzeaData_Bottone_GiacenzeExplorer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Wallet.png"))); // NOI18N
         GiacenzeaData_Bottone_GiacenzeExplorer.setText("<html> Vedi situazione <br> Wallet ad Oggi </html>");
         GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
         GiacenzeaData_Bottone_GiacenzeExplorer.setMaximumSize(new java.awt.Dimension(72, 23));
@@ -1204,7 +1209,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        GiacenzeaData_Bottone_RettificaQta.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Numeri.png")); // NOI18N
+        GiacenzeaData_Bottone_RettificaQta.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Numeri.png"))); // NOI18N
         GiacenzeaData_Bottone_RettificaQta.setText("Sistema Qta Residua");
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
         GiacenzeaData_Bottone_RettificaQta.setMaximumSize(new java.awt.Dimension(137, 27));
@@ -1228,7 +1233,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        GiacenzeaData_Bottone_Scam.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Scam.png")); // NOI18N
+        GiacenzeaData_Bottone_Scam.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Scam.png"))); // NOI18N
         GiacenzeaData_Bottone_Scam.setText("Identifica come SCAM");
         GiacenzeaData_Bottone_Scam.setEnabled(false);
         GiacenzeaData_Bottone_Scam.addActionListener(new java.awt.event.ActionListener() {
@@ -1237,7 +1242,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        GiacenzeaData_Bottone_CambiaNomeToken.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_BloccoNote.png")); // NOI18N
+        GiacenzeaData_Bottone_CambiaNomeToken.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_BloccoNote.png"))); // NOI18N
         GiacenzeaData_Bottone_CambiaNomeToken.setText("Cambia Nome Token");
         GiacenzeaData_Bottone_CambiaNomeToken.setEnabled(false);
         GiacenzeaData_Bottone_CambiaNomeToken.setMaximumSize(new java.awt.Dimension(142, 27));
@@ -1276,7 +1281,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addGap(18, 18, 18)
                         .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 326, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1302,8 +1307,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, GiacenzeaDataLayout.createSequentialGroup()
                                 .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(15, 15, 15)
+                                .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 454, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -1341,12 +1346,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(GiacenzeaData_Bottone_ModificaValore, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(GiacenzeaData_Bottone_MovimentiDefi, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1357,7 +1362,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1495,7 +1500,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMaxWidth(0);
         }
 
-        RW_Bottone_Calcola.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Calcolatrice.png")); // NOI18N
+        RW_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Calcolatrice.png"))); // NOI18N
         RW_Bottone_Calcola.setText("Calcola");
         RW_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1535,7 +1540,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel7.setText("RW Aggregato");
 
-        RW_Bottone_CorreggiErrore.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Alert.png")); // NOI18N
+        RW_Bottone_CorreggiErrore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Scam.png"))); // NOI18N
         RW_Bottone_CorreggiErrore.setText("Corrreggi Errore");
         RW_Bottone_CorreggiErrore.setEnabled(false);
         RW_Bottone_CorreggiErrore.setMaximumSize(new java.awt.Dimension(114, 27));
@@ -1547,7 +1552,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        RW_Bottone_IdentificaScam.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Scam.png")); // NOI18N
+        RW_Bottone_IdentificaScam.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Scam.png"))); // NOI18N
         RW_Bottone_IdentificaScam.setText("Identifica come SCAM");
         RW_Bottone_IdentificaScam.setEnabled(false);
         RW_Bottone_IdentificaScam.setMaximumSize(new java.awt.Dimension(147, 27));
@@ -1559,7 +1564,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        RW_Bottone_ModificaVFinale.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_EuroRicevuta.png")); // NOI18N
+        RW_Bottone_ModificaVFinale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_EuroRicevuta.png"))); // NOI18N
         RW_Bottone_ModificaVFinale.setText("Modifica Valore Finale");
         RW_Bottone_ModificaVFinale.setMaximumSize(new java.awt.Dimension(147, 27));
         RW_Bottone_ModificaVFinale.setMinimumSize(new java.awt.Dimension(147, 27));
@@ -1570,7 +1575,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        RW_Bottone_ModificaVIniziale.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_EuroRicevuta.png")); // NOI18N
+        RW_Bottone_ModificaVIniziale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_EuroRicevuta.png"))); // NOI18N
         RW_Bottone_ModificaVIniziale.setText("Modifica Valore Iniziale");
         RW_Bottone_ModificaVIniziale.setMaximumSize(new java.awt.Dimension(152, 27));
         RW_Bottone_ModificaVIniziale.setMinimumSize(new java.awt.Dimension(152, 27));
@@ -1595,7 +1600,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         RW_Text_IC.setEditable(false);
 
-        RW_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Documentazione.png")); // NOI18N
+        RW_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Documentazione.png"))); // NOI18N
         RW_Bottone_Documentazione.setText("Vedi Documentazione");
         RW_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1603,7 +1608,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        RW_Bottone_Stampa.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Testo.png")); // NOI18N
+        RW_Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Testo.png"))); // NOI18N
         RW_Bottone_Stampa.setText("Stampa Report PDF");
         RW_Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1611,7 +1616,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Tabella.png")); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Tabella.png"))); // NOI18N
         jButton2.setText("Crea Excel con i Dettagli");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1679,7 +1684,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Bottone_Stampa)
                     .addComponent(jButton2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1687,7 +1692,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(jLabel5)
                         .addComponent(RW_CheckBox_VediSoloErrori)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -1696,7 +1701,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1719,7 +1724,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         CDC.addTab("Analisi Crypto", Analisi_Crypto);
 
-        CDC_CardWallet_Bottone_CaricaCSV.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Upload.png")); // NOI18N
+        CDC_CardWallet_Bottone_CaricaCSV.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Upload.png"))); // NOI18N
         CDC_CardWallet_Bottone_CaricaCSV.setText("Carica Dati Carta");
         CDC_CardWallet_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1862,7 +1867,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        CDC_CardWallet_Bottone_StampaRapporto.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Testo.png")); // NOI18N
+        CDC_CardWallet_Bottone_StampaRapporto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Testo.png"))); // NOI18N
         CDC_CardWallet_Bottone_StampaRapporto.setText("Stampa Rapporto PDF");
         CDC_CardWallet_Bottone_StampaRapporto.setMaximumSize(new java.awt.Dimension(150, 23));
         CDC_CardWallet_Bottone_StampaRapporto.setMinimumSize(new java.awt.Dimension(150, 23));
@@ -1995,7 +2000,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         CDC.addTab("Carta Crypto.com", CDC_CardWallet_Pannello);
 
-        CDC_FiatWallet_Bottone_CaricaCSV.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Upload.png")); // NOI18N
+        CDC_FiatWallet_Bottone_CaricaCSV.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Upload.png"))); // NOI18N
         CDC_FiatWallet_Bottone_CaricaCSV.setText("Carica Dati Fiat Wallet");
         CDC_FiatWallet_Bottone_CaricaCSV.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2126,7 +2131,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Label_Errore2.setText("Premere sul pulsante qui sotto per visualizzarli!");
 
         CDC_FiatWallet_Bottone_Errore.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        CDC_FiatWallet_Bottone_Errore.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Alert.png")); // NOI18N
+        CDC_FiatWallet_Bottone_Errore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Alert.png"))); // NOI18N
         CDC_FiatWallet_Bottone_Errore.setText("Vedi Errori");
         CDC_FiatWallet_Bottone_Errore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2176,7 +2181,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Label_Tabella3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         CDC_FiatWallet_Label_Tabella3.setText("Tabella Dettagli Aggregati");
 
-        CDC_FiatWallet_Bottone_StampaRapporto.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Testo.png")); // NOI18N
+        CDC_FiatWallet_Bottone_StampaRapporto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Testo.png"))); // NOI18N
         CDC_FiatWallet_Bottone_StampaRapporto.setText("Stampa Rapporto PDF");
         CDC_FiatWallet_Bottone_StampaRapporto.setMaximumSize(new java.awt.Dimension(150, 23));
         CDC_FiatWallet_Bottone_StampaRapporto.setMinimumSize(new java.awt.Dimension(150, 23));
@@ -2300,7 +2305,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(CDC_FiatWallet_Label_Tabella3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
                     .addComponent(CDC_FiatWallet_Tabella3Scroll))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -2319,6 +2324,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.setTabPlacement(javax.swing.JTabbedPane.LEFT);
 
+        CDC_Opzioni_Bottone_CancellaCardWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Cestino.png"))); // NOI18N
         CDC_Opzioni_Bottone_CancellaCardWallet.setText("Elimina tutti i dati dal Card Wallet");
         CDC_Opzioni_Bottone_CancellaCardWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2345,6 +2351,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.addTab("CDC Card Wallet", Opzioni_CardWallet_Pannello);
 
+        CDC_Opzioni_Bottone_CancellaFiatWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Cestino.png"))); // NOI18N
         CDC_Opzioni_Bottone_CancellaFiatWallet.setText("Elimina tutti i dati dal Fiat Wallet");
         CDC_Opzioni_Bottone_CancellaFiatWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2352,6 +2359,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Cestino.png"))); // NOI18N
         CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.setText("Elimina personalizzazioni movimenti Fiat Wallet");
         CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2382,6 +2390,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.addTab("CDC Fiat Wallet", Opzioni_FiatWallet_Pannello);
 
+        Opzioni_Bottone_CancellaTransazioniCrypto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Cestino.png"))); // NOI18N
         Opzioni_Bottone_CancellaTransazioniCrypto.setText("Elimina tutte le transazioni Crypto");
         Opzioni_Bottone_CancellaTransazioniCrypto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2389,6 +2398,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        Opzioni_Bottone_CancellaTransazioniCryptoXwallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Cestino.png"))); // NOI18N
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet.setText("Elimina Dati singolo Wallet/Exchange");
         Opzioni_Bottone_CancellaTransazioniCryptoXwallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2487,6 +2497,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jTextArea1.setPreferredSize(new java.awt.Dimension(774, 44));
         jScrollPane1.setViewportView(jTextArea1);
 
+        Opzioni_GruppoWallet_Bottone_Rinomina.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_BloccoNote.png"))); // NOI18N
         Opzioni_GruppoWallet_Bottone_Rinomina.setText("Rinomina Alias");
         Opzioni_GruppoWallet_Bottone_Rinomina.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2512,7 +2523,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+                .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina)
                 .addGap(84, 84, 84))
@@ -2553,6 +2564,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jTextPane1.setText("Nella Tabella sottostante aggiungere il nome di tutti i token che si vogliono classificare come E-Money Token (es. USDC).\nLo scambio tra Crypto ed E-Money Token verrà considerato fiscalmente rilevante e genererà quindi un eventuale plusvalenza o minusvalenza.\n\nPer casistiche particolari, ad esempio un  token che diventa E-Money solo da un certa data, è possibile indicare quest'ultima direttamente nella tabella.\nIn questi casi gli scambi tra Crypto e queste E-Money saranno fiscalmente rilevanti solo alla data indicata in poi.");
         jScrollPane5.setViewportView(jTextPane1);
 
+        Opzioni_Emoney_Bottone_Rimuovi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Cestino.png"))); // NOI18N
         Opzioni_Emoney_Bottone_Rimuovi.setText("Rimuovi Token");
         Opzioni_Emoney_Bottone_Rimuovi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2560,6 +2572,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        Opzioni_Emoney_Bottone_Aggiungi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Nuovo.png"))); // NOI18N
         Opzioni_Emoney_Bottone_Aggiungi.setText("Aggiungi Token");
         Opzioni_Emoney_Bottone_Aggiungi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2587,7 +2600,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Opzioni_Emoney_PannelloLayout.createSequentialGroup()
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 612, Short.MAX_VALUE)
+                .addComponent(Opzioni_Emoney_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_Emoney_Bottone_Aggiungi)
@@ -2601,6 +2614,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         jLabel9.setText("Scegli il wallet da esportare : ");
 
+        Opzioni_Export_Tatax_Bottone.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Tabella.png"))); // NOI18N
         Opzioni_Export_Tatax_Bottone.setText("Genera File per Tatax");
         Opzioni_Export_Tatax_Bottone.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2719,7 +2733,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(OpzioniRewards_JCB_PDD_Earn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(OpzioniRewards_JCB_PDD_Reward)
-                .addContainerGap(377, Short.MAX_VALUE))
+                .addContainerGap(397, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Rewards", Opzioni_Rewards_Pannello);
@@ -2785,7 +2799,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
-                .addContainerGap(613, Short.MAX_VALUE))
+                .addContainerGap(633, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni di Calcolo", Opzioni_Calcolo_Pannello);
@@ -2884,6 +2898,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         RW_Bottone_Documentazione1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        RW_Bottone_Documentazione1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Documentazione.png"))); // NOI18N
         RW_Bottone_Documentazione1.setText("Vedi Documentazione");
         RW_Bottone_Documentazione1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2963,7 +2978,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(58, 58, 58)
                 .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(290, Short.MAX_VALUE))
+                .addContainerGap(310, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Calcolo RW/W", Opzioni_RW_Pannello);
@@ -4113,7 +4128,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 CDC_DataIniziale=Data;
                 this.CDC_ScriviFileDatiDB();
                 CDC_AggiornaGui(); 
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
             }
             else if(Funzioni_Date_ConvertiDatainLong(Data)>Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                 try {
@@ -4140,7 +4155,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 CDC_DataFinale=Data;
                 this.CDC_ScriviFileDatiDB();
                 CDC_AggiornaGui();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                 
               
             }
@@ -4622,7 +4637,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_DaSalvare = true;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
-        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         RW_RicalcolaRWseEsiste();
         //DepositiPrelievi_Caricatabella();
     }
@@ -4941,7 +4956,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
-        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         DepositiPrelievi_Caricatabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -4978,7 +4993,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             TabellaCryptodaAggiornare = false;
             TransazioniCrypto_DaSalvare = true;
             Calcoli_Plusvalenze.AggiornaPlusvalenze();
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
             RW_RicalcolaRWseEsiste();
             //GiacenzeaData_AggiornaComboBoxWallet();
@@ -5790,7 +5805,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         try {
 
             // TODO add your handling code here:
-            this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         } catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -5804,7 +5819,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //disabilito il filtro prima dell'eleaborazioneper velocizzare il tutto
         //il filtro altrimenti viene applicato ogni volta che aggiungo una riga in tabella e rallenta tantissimo
         //     this.FiltraTabella(TransazioniCryptoTabella, "", 999);
-        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         //     this.FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_EscludiTIActionPerformed
 
@@ -5835,7 +5850,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
         //   TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti();
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
 
         //questo sotto serve per aumentare la diomensione dell'header della tabella
         //Calcoli.RecuperaTassidiCambio();
@@ -5933,7 +5948,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //TabellaCryptodaAggiornare=true;
                         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
                 }
@@ -5961,7 +5976,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Opzioni_Emoney_CaricaTabellaEmoney();
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 //TabellaCryptodaAggiornare=true;
             } else {
@@ -5984,7 +5999,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Opzioni_Emoney_CaricaTabellaEmoney();
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 // TabellaCryptodaAggiornare=true;
             }else{
@@ -6023,7 +6038,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //3 - Aggiorno le plusvalenze
                 Calcoli_Plusvalenze.AggiornaPlusvalenze();
                 //4 - Ricarico la tabella crypt
-                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }
@@ -6050,7 +6065,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if (movimentiCancellati>0){
                     Opzioni_RicreaListaWalletDisponibili();
                     Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                    TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                    TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                     TransazioniCrypto_DaSalvare=true;
                     TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
                 }
@@ -6069,7 +6084,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta == 0) {
             MappaCryptoWallet.clear();
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
             TransazioniCrypto_DaSalvare=true;
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
             Messaggio = "Sono state cancellate tutte le movimentazioni crypto \nRicordarsi di Salvare per non perdere le modifiche fatte.";
@@ -6157,7 +6172,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
-        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
 
@@ -6730,7 +6745,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
 
                        Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                       this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                       this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                        DepositiPrelievi_Caricatabella();
                        RW_CalcolaRW();
                        RW_Tabella.setRowSelectionInterval(riga, riga);
@@ -6751,7 +6766,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
 
                        Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                       this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                       this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                        DepositiPrelievi_Caricatabella();
                        RW_CalcolaRW();
                        RW_Tabella.setRowSelectionInterval(riga, riga);
@@ -7732,6 +7747,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Opzioni%20di%20calcolo%20RW.pdf/download");
     }//GEN-LAST:event_RW_Bottone_Documentazione1ActionPerformed
+
+    private void TransazioniCrypto_CheckBox_VediSenzaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_VediSenzaPrezzoActionPerformed
+        // TODO add your handling code here:
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+        //TransazioniCrypto_CheckBox_VediSenzaPrezzo
+    }//GEN-LAST:event_TransazioniCrypto_CheckBox_VediSenzaPrezzoActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -8829,7 +8850,7 @@ try {
        }
     
     
-    private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI) throws IOException {
+    private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI,boolean VediSoloSenzaPrezzo) throws IOException {
 
                 try {                    
              /*       File file = new File(CryptoWallet_FileDB);
@@ -8913,7 +8934,7 @@ try {
             Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet);
         }
         
-        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI);
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI,VediSoloSenzaPrezzo);
         /*    this.TransazioniCrypto_Text_Plusvalenza.setText("€ "+Plusvalenza.toPlainString());
         Color verde=new Color (45, 155, 103);
         Color rosso=new Color(166,16,34);
@@ -8924,7 +8945,7 @@ try {
     
        
        
-    private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI) {
+    private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI,boolean VediSoloSenzaPrezzo) {
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         //Disabilito i bottoni che devono essere attivi solo in caso vi sia qualcheria selezionata sulla tabella
@@ -8982,18 +9003,24 @@ try {
             
             //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
             if (EscludiTI == true && !v[5].trim().equalsIgnoreCase("Trasferimento Interno") || EscludiTI == false) {
-                if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale) && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
-                    ModelloTabellaCrypto.addRow(v);
-                    if (Funzioni_isNumeric(v[19], false)) {
-                        Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
+                if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
+                        && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
+                    if (VediSoloSenzaPrezzo && v[32].trim().equalsIgnoreCase("NO")||!VediSoloSenzaPrezzo) {
+                        ModelloTabellaCrypto.addRow(v);
+                        if (Funzioni_isNumeric(v[19], false)) {
+                            Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
                         }
-                    if (v[33].equals("S"))
-                        {
-                            if (!v[15].isEmpty())Vendite = Vendite.add(new BigDecimal(v[15]));
-                            if (!v[16].isEmpty())CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
+                        if (v[33].equals("S")) {
+                            if (!v[15].isEmpty()) {
+                                Vendite = Vendite.add(new BigDecimal(v[15]));
+                            }
+                            if (!v[16].isEmpty()) {
+                                CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
+                            }
                         }
                     }
-                
+                }
+
             }
 
         }

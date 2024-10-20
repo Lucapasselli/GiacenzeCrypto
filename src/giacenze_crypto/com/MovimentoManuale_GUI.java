@@ -248,7 +248,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
-        Bottone_CalcolaAutomaticamente.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_EuroRicevuta.png")); // NOI18N
+        Bottone_CalcolaAutomaticamente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_EuroRicevuta.png"))); // NOI18N
         Bottone_CalcolaAutomaticamente.setText("Cerca di recuperare automaticamente il Valore della Transazione");
         Bottone_CalcolaAutomaticamente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -256,7 +256,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
-        Bottone_Ok.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Salva.png")); // NOI18N
+        Bottone_Ok.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Salva.png"))); // NOI18N
         Bottone_Ok.setText("OK");
         Bottone_Ok.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -264,7 +264,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
-        Bottone_Annulla.setIcon(new javax.swing.ImageIcon("C:\\Users\\luca.passelli\\Documents\\NetBeansProjects\\Giacenze_Crypto.com\\Immagini\\Icone\\20_Annulla.png")); // NOI18N
+        Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Annulla.png"))); // NOI18N
         Bottone_Annulla.setText("Annulla");
         Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

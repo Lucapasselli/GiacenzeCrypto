@@ -180,17 +180,17 @@
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="454" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="1" max="32767" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="1" max="32767" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="1" max="32767" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="TransazioniCrypto_Text_Plusvalenza" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -207,9 +207,9 @@
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jButton1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
+                              <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_EscludiTI" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -217,7 +217,10 @@
                                   <Component id="TransazioniCrypto_Label_Filtro" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <Component id="TransazioniCrypto_TabbedPane" min="-2" pref="252" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="TransazioniCrypto_TabbedPane" pref="253" max="32767" attributes="0"/>
+                              <EmptySpace min="7" pref="7" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -470,7 +473,7 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_Importa">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Upload.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Upload.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Carica CSV"/>
               </Properties>
@@ -555,7 +558,7 @@
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_InserisciWallet">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Wallet.png"/>
+                  <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Wallet.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Inserisci Wallet"/>
               </Properties>
@@ -820,11 +823,11 @@
                                           <Group type="102" attributes="0">
                                               <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" min="-2" pref="200" max="-2" attributes="0"/>
                                               <EmptySpace min="-2" pref="219" max="-2" attributes="0"/>
-                                              <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" pref="290" max="-2" attributes="0"/>
                                           </Group>
                                           <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace pref="581" max="32767" attributes="0"/>
+                                      <EmptySpace pref="541" max="32767" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="DepositiPrelievi_Bottone_DettaglioDefi" max="32767" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" pref="200" max="32767" attributes="0"/>
@@ -943,6 +946,9 @@
                     </Container>
                     <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_AssegnazioneAutomatica">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Auto.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Assegnazione Automatica"/>
                       </Properties>
                       <Events>
@@ -972,7 +978,7 @@
                     <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_DettaglioDefi">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Defi.png"/>
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_DeFi.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Dettaglio Defi"/>
                       </Properties>
@@ -982,6 +988,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_CreaMovOpposto">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_FrecceContrapposte.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Crea Movimento Opposto su altro Wallet"/>
                       </Properties>
                       <Events>

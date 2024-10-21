@@ -85,7 +85,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
         });
 
-        Bottone_SelezionaFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Upload.png"))); // NOI18N
+        Bottone_SelezionaFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Upload.png"))); // NOI18N
         Bottone_SelezionaFile.setText("Seleziona file da importare");
         Bottone_SelezionaFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -102,7 +102,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
         TextPane_Attenzione.setEnabled(false);
         ScrollPane_Attenzione.setViewportView(TextPane_Attenzione);
 
-        Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Annulla.png"))); // NOI18N
+        Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Annulla.png"))); // NOI18N
         Bottone_Annulla.setText("Annulla");
         Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

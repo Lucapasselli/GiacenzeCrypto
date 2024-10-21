@@ -46,7 +46,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="Calendario" pref="259" max="32767" attributes="0"/>
+              <Component id="Calendario" pref="251" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="Bottone_Salva" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -62,6 +62,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_Salva">
       <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Salva.png"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Salva"/>
       </Properties>
       <Events>
@@ -70,6 +73,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="Bottone_Annulla">
       <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Annulla.png"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Annulla"/>
       </Properties>
       <Events>

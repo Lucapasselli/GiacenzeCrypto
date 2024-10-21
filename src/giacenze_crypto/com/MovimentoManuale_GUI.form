@@ -530,7 +530,7 @@
     <Component class="javax.swing.JButton" name="Bottone_CalcolaAutomaticamente">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_EuroRicevuta.png"/>
+          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Prezzo.png"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Cerca di recuperare automaticamente il Valore della Transazione"/>
       </Properties>
@@ -541,7 +541,7 @@
     <Component class="javax.swing.JButton" name="Bottone_Ok">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Salva.png"/>
+          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Salva.png"/>
         </Property>
         <Property name="text" type="java.lang.String" value="OK"/>
       </Properties>
@@ -552,7 +552,7 @@
     <Component class="javax.swing.JButton" name="Bottone_Annulla">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/giacenze_crypto/com/Icons/20_Annulla.png"/>
+          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Annulla.png"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Annulla"/>
       </Properties>

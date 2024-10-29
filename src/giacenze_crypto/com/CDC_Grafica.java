@@ -1606,6 +1606,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel13.setText("IC Dovuta Totale : ");
 
         RW_Text_IC.setEditable(false);
+        RW_Text_IC.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         RW_Text_IC.setMinimumSize(new java.awt.Dimension(64, 31));
         RW_Text_IC.setPreferredSize(new java.awt.Dimension(64, 31));
 
@@ -1682,16 +1683,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RWLayout.setVerticalGroup(
             RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(RWLayout.createSequentialGroup()
-                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4)
-                    .addComponent(RW_Bottone_Calcola)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel13)
-                    .addComponent(RW_Bottone_Documentazione)
-                    .addComponent(RW_Bottone_Stampa)
-                    .addComponent(jButton2)
-                    .addComponent(RW_Text_IC, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(RW_Text_IC, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel4)
+                        .addComponent(RW_Bottone_Calcola)
+                        .addComponent(jLabel7)
+                        .addComponent(jLabel13)
+                        .addComponent(RW_Bottone_Documentazione)
+                        .addComponent(RW_Bottone_Stampa)
+                        .addComponent(jButton2)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2444,7 +2446,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
                     .addComponent(jLabel8)
-                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -7518,7 +7520,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         } else {
                             testo = testo + """                                   
                                     <br>Il <b>LiFo</b> viene invece applicato alle Cripto-Attività gestite su ogni singolo Gruppo di Wallet separatamente<br>
-                                    (Ai fini dell'applicazione del LiFo, un BTC venduto dal "Wallet 1" può essere stato acquistato o scambiato solo dal medesimo Portafoglio)<br></html>
+                                    (Ai fini dell'applicazione del LiFo, un BTC venduto dal "Wallet 1" può essere stato acquistato o scambiato solo dal medesimo Portafoglio)<br>
+                                    """;
+                        }
+                        if (RW_Opzioni_CheckBox_LiFoSubMovimenti.isSelected()) {
+                            testo = testo + """                                  
+                                    Il <b>LiFo</b> viene inoltre applicato anche ai Sub-Movimenti (Vedi Documentazione per dettagli)<br></html>                                                                    
+                                    """;
+                        } else {
+                            testo = testo + """  
+                                            </html>                                
                                     """;
                         }
 

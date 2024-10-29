@@ -25,6 +25,14 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.28
+Nuove Implementazioni :
+  - Quadro RW : Introdotto un ulteriore opzione suul metodo di calcolo per l'utilizzo del LiFo anche sui SubMovimenti (Vedi Documentazione).
+  - Aggiunto Icone ai pulsanti per un più facile ed intuitivo utilizzo.
+  - Aggiunto possibilità di importare i dati da Tatax.
+  - In "Transazione Crypto" aggiunto checkbox "Vedi solo movimenti non valorizzati" che mostrerà solo i movimenti in cui il programma non è riuscito a recuperarei prezzi.
+    In questo modo tramite il tasto "Modifica Movimento" sarà facile individuarli e andare ad assegnare un prezzo alla transazione.
+
 ver. 1.0.27
 Nuove Implementazioni :
   - Quadro RW/W : Adesso se si sceglie l'opzione di considerare solo le giacenze di inizio e fine anno il programma non mette di default 365 giorni di detenzione ma

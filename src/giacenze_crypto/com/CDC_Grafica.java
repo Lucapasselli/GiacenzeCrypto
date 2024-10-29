@@ -319,6 +319,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RW_Bottone_Documentazione = new javax.swing.JButton();
         RW_Bottone_Stampa = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        RT = new javax.swing.JPanel();
+        jScrollPane11 = new javax.swing.JScrollPane();
+        RT_Tabella_Principale = new javax.swing.JTable();
+        RT_Bottone_Calcola = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -448,6 +452,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_Text_Giorni = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(1650, 850));
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
             public void windowGainedFocus(java.awt.event.WindowEvent evt) {
                 formWindowGainedFocus(evt);
@@ -1684,7 +1689,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(RWLayout.createSequentialGroup()
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(RW_Text_IC, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel4)
@@ -1717,6 +1722,64 @@ public class CDC_Grafica extends javax.swing.JFrame {
         );
 
         AnalisiCrypto.addTab("RW/W (Met.LIFO vers. di test)", RW);
+
+        RT_Tabella_Principale.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
+            },
+            new String [] {
+                "Anno", "Tot. Movimenti Rilevanti al Prezzo di Mercato", "Tot. Movimenti Rilevanti al Prezzo di Carico", "Plusvalenze Realizzate", "Plusvalenze Latenti"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane11.setViewportView(RT_Tabella_Principale);
+        if (RT_Tabella_Principale.getColumnModel().getColumnCount() > 0) {
+            RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
+            RT_Tabella_Principale.getColumnModel().getColumn(0).setPreferredWidth(100);
+            RT_Tabella_Principale.getColumnModel().getColumn(0).setMaxWidth(100);
+        }
+
+        RT_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Calcolatrice.png"))); // NOI18N
+        RT_Bottone_Calcola.setText("Calcola");
+        RT_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_CalcolaActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
+        RT.setLayout(RTLayout);
+        RTLayout.setHorizontalGroup(
+            RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RTLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 1454, Short.MAX_VALUE)
+                    .addGroup(RTLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        RTLayout.setVerticalGroup(
+            RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(RTLayout.createSequentialGroup()
+                .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
+                .addGap(465, 465, 465))
+        );
+
+        AnalisiCrypto.addTab("RT & Analisi P&L", RT);
 
         javax.swing.GroupLayout Analisi_CryptoLayout = new javax.swing.GroupLayout(Analisi_Crypto);
         Analisi_Crypto.setLayout(Analisi_CryptoLayout);
@@ -7781,6 +7844,42 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         //TransazioniCrypto_CheckBox_VediSenzaPrezzo
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_VediSenzaPrezzoActionPerformed
+
+    private void RT_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_CalcolaActionPerformed
+        // TODO add your handling code here:
+
+        DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
+        
+        BigDecimal Plusvalenza = new BigDecimal("0");
+        BigDecimal CostiCarico = new BigDecimal("0");
+        BigDecimal Vendite = new BigDecimal("0");
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        for (String[] v : MappaCryptoWallet.values()) {
+
+            //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
+            
+            Prezzi.IndicaMovimentoPrezzato(v);
+            
+            //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
+                    if (v[32].trim().equalsIgnoreCase("NO")) {
+                      //  ModelloTabellaCrypto.addRow(v);
+                        if (Funzioni_isNumeric(v[19], false)) {
+                            Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
+                        }
+                        if (v[33].equals("S")) {
+                            if (!v[15].isEmpty()) {
+                                Vendite = Vendite.add(new BigDecimal(v[15]));
+                            }
+                            if (!v[16].isEmpty()) {
+                                CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
+                            }
+                        }
+                    }                          
+        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        
+    }//GEN-LAST:event_RT_Bottone_CalcolaActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -9496,6 +9595,9 @@ try {
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
+    private javax.swing.JPanel RT;
+    private javax.swing.JButton RT_Bottone_Calcola;
+    private javax.swing.JTable RT_Tabella_Principale;
     private javax.swing.JPanel RW;
     private javax.swing.JComboBox<String> RW_Anno_ComboBox;
     private javax.swing.JButton RW_Bottone_Calcola;
@@ -9569,6 +9671,7 @@ try {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
+    private javax.swing.JScrollPane jScrollPane11;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;

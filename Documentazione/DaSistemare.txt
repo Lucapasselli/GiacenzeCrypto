@@ -1,5 +1,6 @@
 - Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
 - Verificare quando correggo un errore in RW che non raddoppi le righe 
 
+- verificare quando viene valorizzato a null il campo 34
 - Inserire Mining
 - Inserire Donazioni

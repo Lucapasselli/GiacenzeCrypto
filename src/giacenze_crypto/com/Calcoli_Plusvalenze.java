@@ -373,6 +373,8 @@ public class Calcoli_Plusvalenze {
         Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();
         Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>();
         
+    //    Map<String, String[]> MappaCryptoWalletTemp=MappaCryptoWallet;
+        
         //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
         boolean PlusXWallet=false;
         String PlusXW=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");

@@ -4,8 +4,8 @@
  */
 package giacenze_crypto.com;
 
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
+//import com.formdev.flatlaf.FlatDarkLaf;
+//import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.lowagie.text.Font;
 import com.toedter.calendar.JDateChooser;
@@ -7850,33 +7850,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
-        
-        BigDecimal Plusvalenza = new BigDecimal("0");
-        BigDecimal CostiCarico = new BigDecimal("0");
-        BigDecimal Vendite = new BigDecimal("0");
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        for (String[] v : MappaCryptoWallet.values()) {
-
-            //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
-            
-            Prezzi.IndicaMovimentoPrezzato(v);
-            
-            //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
-                    if (v[32].trim().equalsIgnoreCase("NO")) {
-                      //  ModelloTabellaCrypto.addRow(v);
-                        if (Funzioni_isNumeric(v[19], false)) {
-                            Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
-                        }
-                        if (v[33].equals("S")) {
-                            if (!v[15].isEmpty()) {
-                                Vendite = Vendite.add(new BigDecimal(v[15]));
-                            }
-                            if (!v[16].isEmpty()) {
-                                CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
-                            }
-                        }
-                    }                          
-        }
+        Calcoli_RT.CalcoliPlusvalenzeXAnno();//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         
     }//GEN-LAST:event_RT_Bottone_CalcolaActionPerformed

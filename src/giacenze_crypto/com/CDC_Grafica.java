@@ -452,7 +452,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_Text_Giorni = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1650, 850));
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
             public void windowGainedFocus(java.awt.event.WindowEvent evt) {
                 formWindowGainedFocus(evt);
@@ -1725,17 +1724,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         RT_Tabella_Principale.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "Anno", "Tot. Movimenti Rilevanti al Prezzo di Mercato", "Tot. Movimenti Rilevanti al Prezzo di Carico", "Plusvalenze Realizzate", "Plusvalenze Latenti"
+                "Anno", "Tot. Movimenti Rilevanti al Prezzo di Mercato", "Tot. Movimenti Rilevanti al Prezzo di Carico", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Errori"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1747,6 +1746,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setPreferredWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMaxWidth(100);
+            RT_Tabella_Principale.getColumnModel().getColumn(5).setMinWidth(50);
+            RT_Tabella_Principale.getColumnModel().getColumn(5).setPreferredWidth(50);
+            RT_Tabella_Principale.getColumnModel().getColumn(5).setMaxWidth(50);
         }
 
         RT_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Calcolatrice.png"))); // NOI18N
@@ -7850,7 +7852,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
-        Calcoli_RT.CalcoliPlusvalenzeXAnno();//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
+        Map<String,BigDecimal[]> PlusvalenzeXAnno=Calcoli_RT.CalcoliPlusvalenzeXAnno();//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
+        
+        for (BigDecimal[] Valori : PlusvalenzeXAnno.values()){ 
+            ModelloTabellaRT.addRow(Valori);
+        }
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         
     }//GEN-LAST:event_RT_Bottone_CalcolaActionPerformed

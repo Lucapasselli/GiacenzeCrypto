@@ -24,11 +24,11 @@ import javax.swing.table.DefaultTableModel;
 public class Calcoli_RT {
     
     
-    public static void CalcoliPlusvalenzeXAnno(){
+    public static Map<String,BigDecimal[]> CalcoliPlusvalenzeXAnno(){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
-      Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();
-        Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>();
+      Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();//Wallet - Mappa(Moneta - Stack)
+        Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>(); Moneta - Stack
         
         //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
         boolean PlusXWallet=false;
@@ -36,8 +36,8 @@ public class Calcoli_RT {
         if(PlusXW!=null && PlusXW.equalsIgnoreCase("SI")){
             PlusXWallet=true;
         }
-        String Anno="";
-        Map<String,BigDecimal[]> PlusvalenzeXAnno; 
+        String Anno;
+        Map<String,BigDecimal[]> PlusvalenzeXAnno = new TreeMap<>(); 
         //BigDecimal[] così composto
         //0 - Anno
         //1 - Tot. Costi di Carico
@@ -51,15 +51,17 @@ public class Calcoli_RT {
         BigDecimal Vendite = new BigDecimal("0");
      //   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         for (String[] v : MappaCryptoWallet.values()) {
-            if (Anno.isBlank())Anno=v[0].split("-")[0];
+            //if (Anno.isBlank())
+            Anno=v[1].split("-")[0];
             
+            //String AnnoTrans =v[0].split("-")[0];
             String TipoMU = RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
             String TipoME = RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
-            String IDTransazione=v[0];
-            String IDTS[]=IDTransazione.split("_");
+            //String IDTransazione=v[0];
+           // String IDTS[]=IDTransazione.split("_");
             String MonetaU=v[8];
             String QtaU=v[10];
-            String CostoCaricoU=v[16];
+            //String CostoCaricoU=v[16];
             String MonetaE=v[11];
             String QtaE=v[13];
             String CostoCaricoE=v[17];
@@ -93,7 +95,13 @@ public class Calcoli_RT {
                 //Aggiungo il token dallo stack
                 
                 //Qui forse ci va messo il costo di carico e non il valore della transazione
-                StackLIFO_InserisciValore(CryptoStack,MonetaE,QtaE,CostoCaricoE);
+                if (Funzioni.Funzioni_isNumeric(CostoCaricoE, false)){
+                  StackLIFO_InserisciValore(CryptoStack,MonetaE,QtaE,CostoCaricoE);
+                    }
+                else StackLIFO_InserisciValore(CryptoStack,MonetaE,QtaE,"0");
+               // Se non c'è costo di carico significa che sono trasferimenti non contabilizzati per cui li escludo dai calcoli
+               //da controllare bene la cosa
+
             }
             
             
@@ -101,39 +109,44 @@ public class Calcoli_RT {
             //Se inoltre è un movimento fiscalmente rilevante mi salvo costo di carico, valore transazione e plusvalenza divisa per anno
             //dobbiamo controllare i cashback come vengono gestiti.
             if (v[33].equals("S")) {
+                //Per prima cosa verifico se l'anno è vuoto e in quel caso lo valorizzo
+                BigDecimal PlusAnno[];
+                if (PlusvalenzeXAnno.get(Anno)==null)
+                {
+                    PlusAnno=new BigDecimal[6];   
+                    //System.out.println(Anno);
+                    PlusAnno[0]=new BigDecimal(Anno);//Anno
+                    PlusAnno[1]=new BigDecimal(0);//Costo Carico
+                    PlusAnno[2]=new BigDecimal(0);//Realizzato
+                    PlusAnno[3]=new BigDecimal(0);//Plusvalenza
+                    PlusAnno[4]=new BigDecimal(0);//Plusvalenza Latente
+                    PlusAnno[5]=new BigDecimal(0);//Errori
+                    PlusvalenzeXAnno.put(Anno, PlusAnno);
+                    
+                    
+                }
+                else
+                {
+                    PlusAnno=PlusvalenzeXAnno.get(Anno);
+                }
                 if (Funzioni_isNumeric(v[19], false)) {
                     Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
+                    PlusAnno[3] = PlusAnno[3].add(new BigDecimal(v[19]));
                 }
                 if (!v[15].isEmpty()) {
                     Vendite = Vendite.add(new BigDecimal(v[15]));
+                    PlusAnno[2] = PlusAnno[2].add(new BigDecimal(v[15]));
                 }
                 if (!v[16].isEmpty()) {
                     CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
+                    PlusAnno[1] = PlusAnno[1].add(new BigDecimal(v[16]));
                 }
             }
             
-                
-                
-                
-                
-            
-            //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
-                    
-                      //  ModelloTabellaCrypto.addRow(v);
-                        if (Funzioni_isNumeric(v[19], false)) {
-                            Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
-                        }
-                        if (v[33].equals("S")) {
-                            if (!v[15].isEmpty()) {
-                                Vendite = Vendite.add(new BigDecimal(v[15]));
-                            }
-                            if (!v[16].isEmpty()) {
-                                CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
-                            }
-                        }
+
                                             
         }
-       
+       return PlusvalenzeXAnno;
     }
     
     
@@ -186,12 +199,13 @@ public class Calcoli_RT {
         /*ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
         stack=stack2.clone();*/
         //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
-        while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && stack.size()>0){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
+        while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
            // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
             String ultimoRecupero[];
             ultimoRecupero=stack.pop();
-            BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();
+            BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();            
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
+            
          /*  if (Moneta.equalsIgnoreCase("usdt")){ 
                 System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
                 System.out.println(qtaRimanente);

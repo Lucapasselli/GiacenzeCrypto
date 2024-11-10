@@ -561,12 +561,20 @@ public class Calcoli_Plusvalenze {
 
                 //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
                 else if (IDTS[4].equalsIgnoreCase("TI") || v[18].isBlank() || v[18].contains("DTW")) {
-
+                    
+                    
+                    
+                    
+                //else if (TipoMU.isBlank()&&(IDTS[4].equalsIgnoreCase("TI") || v[18].isBlank() || v[18].contains("DTW"))) {
                     //il compito è trovare la controparte del movimento qualora questa si riferisse ad un diverso gruppo wallet
                     //e da li spostare il costo di carico
-                    String IDControparte = null;
-                    String GruppoWalletControparte = null;
-                    //comincio impostando le prime condizioni
+                   // String IDControparte = null;
+                   // String GruppoWalletControparte = null;
+                    String temp[]=RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                    String IDControparte=temp[0];
+                    String GruppoWalletControparte = temp[1];
+                    
+                 /*   //comincio impostando le prime condizioni
                     //v[20] non deve essere nullo ovvero devo avere transazioni allegate
                     //v[18] deve essere un deposito derivante da trasferimenti e deve essere o un movimento importato o uno manuale (v[22]=ad A o M)
                     if (!v[20].isBlank() && v[18].contains("DTW") && (v[22].equals("A") || v[22].equals("M"))) {
@@ -581,8 +589,9 @@ public class Calcoli_Plusvalenze {
                             for (String IdM : Movimenti) {
                                 String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
                                 //devo trovare la controparte che in questo caso è il movimento di prelievo creato automaticamente dal sistema
-                                //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
+                                //inoltre devo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
                                 //perchè se fanno parte dello stesso gruppo non devo fare nulla
+                                //se fanno parte dello stesso gruppo infatti è lo stesso movimento di scambio a spostare il costo di carico
 
                                 if (Mov[18].contains("PTW") && Mov[22].contains("AU")
                                         && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
@@ -607,7 +616,7 @@ public class Calcoli_Plusvalenze {
 
                         }
 
-                    }
+                    }*/
                     //Se ID controparte è diverso da null vuol dire che devo gestire il calcolo delle plusvalenze, altrimenti no
                     if (IDControparte != null) {
                         Plusvalenza = "0.00";
@@ -618,12 +627,13 @@ public class Calcoli_Plusvalenze {
                         String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
                     Map<String, ArrayDeque> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
                     Mov[31]=v[1];
-                    if (CryptoStack2==null){
-                        NuovoPrezzoCarico="0.00";
+                        if (CryptoStack2 == null) {
+                            //questa situazione in teoria non si dovrebbe mai verificare
+                            NuovoPrezzoCarico = "0.00";
                         } else {
-                        NuovoPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack2,Mov[8],Mov[10],true);
-                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                    }
+                            NuovoPrezzoCarico = Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true);
+                            Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+                        }
 
                     } else {
                         Plusvalenza = "0.00";
@@ -697,12 +707,22 @@ public class Calcoli_Plusvalenze {
                 //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
                 else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("PTW")) {
                                         
-                     Plusvalenza="0.00";
-                     CalcoloPlusvalenza="N";
+                    Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";
                      
-                     NuovoPrezzoCarico="";
+                    NuovoPrezzoCarico="";
                      
-                     VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,false);
+                    String temp[]=RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                    String GruppoWalletControparte = temp[1];
+                     
+                    if (v[18].contains("PTW") && GruppoWalletControparte!=null &&!GruppoWallet.equalsIgnoreCase(GruppoWalletControparte)) {
+                        //Inserisco il prezzo di carico del token in uscita solo se va poi a finire su un gruppoWallet diverso
+                        //altrimenti lo tratto alla stregua di un trasferimento interno e non metto nulla, tanto è un movimento completamente irrilevante
+                        //In ogni caso non lo tolgo dal LiFo perchè lo tolgo dal LiFo nel momento in cui c'è il deposito nel nuovo wallet
+                        VecchioPrezzoCarico = Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, false);
+                    } else
+                        VecchioPrezzoCarico = "";
+
                 } 
                 
                 //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo)
@@ -1173,7 +1193,66 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
        return Tipo;
    }
    
-   
+   public static String[] RitornaIDeGruppoControparteSeGruppoDiverso(String v[]){
+                           //il compito è trovare la controparte del movimento qualora questa si riferisse ad un diverso gruppo wallet
+                    //e da li spostare il costo di carico
+                    String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+                    String IDControparte = null;
+                    String GruppoWalletControparte = null;
+                    //comincio impostando le prime condizioni
+                    //v[20] non deve essere nullo ovvero devo avere transazioni allegate
+                    //v[18] deve essere un deposito derivante da trasferimenti e deve essere o un movimento importato o uno manuale (v[22]=ad A o M)
+                    if (!v[20].isBlank() && (v[18].contains("DTW")||v[18].contains("PTW")) && (v[22].equals("A") || v[22].equals("M"))) {
+
+                        //Se è un movimento di Trasferimento tra wallet (2 o 3 movimenti a seconda se ci sono le commissioni) il movimento controparte è l'unico PTW
+                        //Se è un movimento di scambio differito (5 movimenti) il movimento controparte è un PTW classificato come AU (posizione 22)
+                        //Tutto questo lo faccio però solo se il movimento di controparte PTW fa parte di un altro gruppo di wallet, altrimentio non faccio nulla.
+                        String Movimenti[] = v[20].split(",");
+
+                        if (Movimenti.length > 3)//Sono in presenza di uno scambio differito
+                        {
+                            for (String IdM : Movimenti) {
+                                String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
+                                //devo trovare la controparte che in questo caso è il movimento di prelievo creato automaticamente dal sistema
+                                //inoltre devo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
+                                //perchè se fanno parte dello stesso gruppo non devo fare nulla
+                                //se fanno parte dello stesso gruppo infatti è lo stesso movimento di scambio a spostare il costo di carico
+                                
+                                if (v[18].contains("DTW")&&Mov[18].contains("PTW") && Mov[22].contains("AU")
+                                        && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
+                                    IDControparte = IdM;
+                                    GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
+                                }
+                                //non faccio niente in caso di prelievo PTW perchè quello non è mai rilevante essendo un mero trasferimento interno
+                            }
+                        } else {//Scambio tra wallet
+
+                            for (String IdM : Movimenti) {
+                                String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
+                                //devo trovare la controparte che in questo caso è l'unico movimento di prelievo
+                                //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
+                                //perchè se fanno parte dello stesso gruppo non devo fare nulla
+                                if (v[18].contains("DTW")&&Mov[18].contains("PTW")
+                                        && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
+                                    IDControparte = IdM;
+                                    GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
+                                }
+                                else if (v[18].contains("PTW")&&Mov[18].contains("DTW")
+                                        && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
+                                    IDControparte = IdM;
+                                    GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
+                                }
+
+                            }
+
+                        }
+
+                    }
+                    String IDeGruppo[]=new String[2];
+                    IDeGruppo[0]=IDControparte;
+                    IDeGruppo[1]=GruppoWalletControparte;
+                    return IDeGruppo;
+   }
 
 }   
     

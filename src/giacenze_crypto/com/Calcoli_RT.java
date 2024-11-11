@@ -61,7 +61,7 @@ public class Calcoli_RT {
            // String IDTS[]=IDTransazione.split("_");
             String MonetaU=v[8];
             String QtaU=v[10];
-            //String CostoCaricoU=v[16];
+            String CostoCaricoU=v[16];
             String MonetaE=v[11];
             String QtaE=v[13];
             String CostoCaricoE=v[17];
@@ -84,21 +84,38 @@ public class Calcoli_RT {
                 
             //ATTENZIONE : vedere come gestire i trasferimenti
             
-            //Se ci sono token in uscita gli tolgo dallo stack (costo di carico e prezzo li leggo dalla mappa)
-            if (!TipoMU.isBlank()){
-                //Tolgo il token dallo stack
-                StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+            //Se ci sono token in uscita, non sono FIAT e hanno un costo di carico gli tolgo dallo stack (costo di carico e prezzo li leggo dalla mappa)
+            //Se non hanno costo di carico significa infatti che sono movimenti irrilevanti quali traferimenti interni o tra wallet dello stesso gruppo
+            if (!TipoMU.isBlank()&&!TipoMU.equalsIgnoreCase("FIAT")&&!CostoCaricoU.isBlank()){
+                //Tolgo il token dallo stack se non sono PTW, i PTW infatti vengono scaricati nel momento in cui arrivano a detinazione
+                //e solo se si è deciso di distinguere le plusvalenze per gruppo wallet altrimenti vengono considerati alla stregua di un trasferimento interno
+                //PTW sono prelievi che vanno ad altro wallet di proprietà
+                //in ogni caso non vanno trasferiti in questa sezione
+                if (!v[18].contains("PTW")) StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
             }
             
             //Se ci sono token in entrata gli aggiungo allo stack (costo di carico e prezzo li leggo dalla mappa che ha già tutti i dati)
-            if (!TipoME.isBlank()){
-                //Aggiungo il token dallo stack
-                
-                //Qui forse ci va messo il costo di carico e non il valore della transazione
-                if (Funzioni.Funzioni_isNumeric(CostoCaricoE, false)){
+            if (!TipoME.isBlank()&&!TipoME.equalsIgnoreCase("FIAT")&&!CostoCaricoE.isBlank()){
+
                   StackLIFO_InserisciValore(CryptoStack,MonetaE,QtaE,CostoCaricoE);
-                    }
-                else StackLIFO_InserisciValore(CryptoStack,MonetaE,QtaE,"0");
+                  
+                  if (v[18].contains("DTW")){
+                      //Se è un DTW devo quindi anche scaricare il movimento PTW contrario
+                      //se è attiva la funzione delle divisione delle plusvalenze per gruppo
+                      //e se lo scambio avviene tra wallet di gruppi diversi
+                      //Recupero quindi il tutto dalla funzione che c'è nel calcolo delle pluvalenze
+                      String ris[]=Calcoli_Plusvalenze.RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                      String IDControparte=ris[0];
+                      String WalletControparte=ris[0];
+                      //IDControparte è null e i wallet di origine e destinazione sono uguali o se
+                      //non è attiva la funzione per separare le plusvalenze per wallet
+                      if (IDControparte!=null){
+                          Map<String, ArrayDeque> CryptoStack2=MappaGrWallet_CryptoStack.get(WalletControparte);
+                          String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
+                          StackLIFO_TogliQta(CryptoStack2,Mov[8],Mov[10],true);
+                      }
+                      
+                  }
                // Se non c'è costo di carico significa che sono trasferimenti non contabilizzati per cui li escludo dai calcoli
                //da controllare bene la cosa
 

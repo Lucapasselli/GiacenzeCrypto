@@ -27,8 +27,13 @@ public class Calcoli_RT {
     public static Map<String,BigDecimal[]> CalcoliPlusvalenzeXAnno(){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
-      Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();//Wallet - Mappa(Moneta - Stack)
-        Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>(); Moneta - Stack
+        Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();//Wallet - Mappa(Moneta - Stack)
+        Map<String, ArrayDeque> CryptoStack;//  - Stack
+        
+        //Questa la mappa che momorizzerà la Quantità di ogni singola moneta che poi dovrò sottrarre dallo stack per i calcoli
+        //GRUPPO WALLET,MONETA,QTA
+        Map<String, Map<String, BigDecimal>> MappaGrWallet_QtaCrypto = new TreeMap<>();
+        Map<String, BigDecimal> QtaCrypto;
         
         //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
         boolean PlusXWallet=false;
@@ -36,7 +41,7 @@ public class Calcoli_RT {
         if(PlusXW!=null && PlusXW.equalsIgnoreCase("SI")){
             PlusXWallet=true;
         }
-        String Anno;
+        String Anno=null;
         Map<String,BigDecimal[]> PlusvalenzeXAnno = new TreeMap<>(); 
         //BigDecimal[] così composto
         //0 - Anno
@@ -52,6 +57,55 @@ public class Calcoli_RT {
      //   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         for (String[] v : MappaCryptoWallet.values()) {
             //if (Anno.isBlank())
+            if (Anno!=null&&!Anno.equals(v[1].split("-")[0])){
+                //Questa funzione va poi replicata a fine ciclo
+                //Se sto facendo un cambio anno allora devo prendere l'intero stack e calcolare la pluvalenza latente per ogni crypto quindi fare le somme
+                //inoltre mi copio lo stack che poi mi servirà in futuro
+               
+                //Questa mappa sarà quela che poi andrò a popolare e terrò da parte per analisi future
+                //Per ora non la utilizzerò
+                //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
+                Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
+                
+                //1 - Prendo ogni wallet
+                //2 - Per ogni wallet estraggo tutte le monete che lo compongono
+                //3 - Per ogni moneta trovo la plusvalenza sottraendo le rimanenze (QTA)
+                
+                for (String Wallet : MappaGrWallet_QtaCrypto.keySet()){
+                    Map<String, BigDecimal> Mappa_Qta=MappaGrWallet_QtaCrypto.get(Wallet);
+                    Map<String, ArrayDeque> Crypto_Stack=MappaGrWallet_CryptoStack.get(Wallet);
+                    for (String Moneta : Mappa_Qta.keySet()){
+                        BigDecimal qta=Mappa_Qta.get(Moneta);
+                        ArrayDeque stack=Crypto_Stack.get(Moneta);
+                        
+                        //questa funzione ritorna il valore al costo di carico della moneta appena levata dallo stack
+                        StackLIFO_TogliQta(Crypto_Stack,Moneta,qta.toPlainString(),false);
+                        //per trovare la plusvalenza devo quindi prima trovare il prezzo a fine anno e fare la sottrazione
+                    }
+                }
+                
+                
+                
+                
+            }
+                        //Identifico e creo una o più mappe per il cryptostack a seconda che sia o meno gestiti gli stack divisi per Wallet
+            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+                if(!PlusXWallet)GruppoWallet="Wallet 01";
+                if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
+                    //se non esiste ancora lo stack lo creo e lo associo alla mappa
+                    CryptoStack = new TreeMap<>();
+                    MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);
+                            
+                    QtaCrypto = new TreeMap<>();
+                    MappaGrWallet_QtaCrypto.put(GruppoWallet, QtaCrypto);                  
+                } else {
+                    //altrimenti lo recupero per i calcoli
+                    CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);
+                    QtaCrypto = MappaGrWallet_QtaCrypto.get(GruppoWallet);
+                }
+            
+            
+            
             Anno=v[1].split("-")[0];
             
             //String AnnoTrans =v[0].split("-")[0];
@@ -68,35 +122,56 @@ public class Calcoli_RT {
             String Valore=v[15];
             
 
-            //Identifico e creo una o più mappe per il cryptostack a seconda che sia o meno gestiti gli stack divisi per Wallet
-            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
-                if(!PlusXWallet)GruppoWallet="Wallet 01";
-                if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
-                    //se non esiste ancora lo stack lo creo e lo associo alla mappa
-                    CryptoStack = new TreeMap<>();
-                    MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);
-                } else {
-                    //altrimenti lo recupero per i calcoli
-                    CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);
-                }
+
             
                 
-                
-            //ATTENZIONE : vedere come gestire i trasferimenti
+               
             
             //Se ci sono token in uscita, non sono FIAT e hanno un costo di carico gli tolgo dallo stack (costo di carico e prezzo li leggo dalla mappa)
             //Se non hanno costo di carico significa infatti che sono movimenti irrilevanti quali traferimenti interni o tra wallet dello stesso gruppo
-            if (!TipoMU.isBlank()&&!TipoMU.equalsIgnoreCase("FIAT")&&!CostoCaricoU.isBlank()){
+            if (!TipoMU.isBlank()&&!TipoMU.equalsIgnoreCase("FIAT")){
+                
+                //PARTE 1
+                //Faccio la somma delle qta e le scrivo nella mappa
+                //Questa parte va fatta senza filtri perchè per le quantità conto tutte le uscite e le entrate
+                if (QtaCrypto.get(MonetaU)==null){
+                    //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco con qta 0
+                    QtaCrypto.put(MonetaU, new BigDecimal(0));
+                }
+                //adesso faccio la somma della qta nuova sulla vecchia
+                BigDecimal Qta=QtaCrypto.get(MonetaU);
+                Qta=Qta.add(new BigDecimal(QtaU));
+                QtaCrypto.put(MonetaU, Qta);
+                
+                //PARTE 2
                 //Tolgo il token dallo stack se non sono PTW, i PTW infatti vengono scaricati nel momento in cui arrivano a detinazione
                 //e solo se si è deciso di distinguere le plusvalenze per gruppo wallet altrimenti vengono considerati alla stregua di un trasferimento interno
                 //PTW sono prelievi che vanno ad altro wallet di proprietà
                 //in ogni caso non vanno trasferiti in questa sezione
-                if (!v[18].contains("PTW")) StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                if (!CostoCaricoU.isBlank()&&!v[18].contains("PTW")) StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
             }
+
             
             //Se ci sono token in entrata gli aggiungo allo stack (costo di carico e prezzo li leggo dalla mappa che ha già tutti i dati)
-            if (!TipoME.isBlank()&&!TipoME.equalsIgnoreCase("FIAT")&&!CostoCaricoE.isBlank()){
-
+            if (!TipoME.isBlank()&&!TipoME.equalsIgnoreCase("FIAT")){
+                
+                //PARTE 1
+                //Faccio la somma delle qta e le scrivo nella mappa
+                //Questa parte va fatta senza filtri perchè per le quantità conto tutte le uscite e le entrate
+                if (QtaCrypto.get(MonetaE)==null){
+                    //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco con qta 0
+                    QtaCrypto.put(MonetaE, new BigDecimal(0));
+                }
+                //adesso faccio la somma della qta nuova sulla vecchia
+                BigDecimal Qta=QtaCrypto.get(MonetaE);
+                Qta=Qta.add(new BigDecimal(QtaE));
+                QtaCrypto.put(MonetaE, Qta);
+                
+                
+                
+                
+                //PARTE 2
+                  if(!CostoCaricoE.isBlank()){
                   StackLIFO_InserisciValore(CryptoStack,MonetaE,QtaE,CostoCaricoE);
                   
                   if (v[18].contains("DTW")){
@@ -106,7 +181,7 @@ public class Calcoli_RT {
                       //Recupero quindi il tutto dalla funzione che c'è nel calcolo delle pluvalenze
                       String ris[]=Calcoli_Plusvalenze.RitornaIDeGruppoControparteSeGruppoDiverso(v);
                       String IDControparte=ris[0];
-                      String WalletControparte=ris[0];
+                      String WalletControparte=ris[1];
                       //IDControparte è null e i wallet di origine e destinazione sono uguali o se
                       //non è attiva la funzione per separare le plusvalenze per wallet
                       if (IDControparte!=null){
@@ -118,7 +193,7 @@ public class Calcoli_RT {
                   }
                // Se non c'è costo di carico significa che sono trasferimenti non contabilizzati per cui li escludo dai calcoli
                //da controllare bene la cosa
-
+                }
             }
             
             

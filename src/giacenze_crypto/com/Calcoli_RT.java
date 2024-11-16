@@ -32,8 +32,8 @@ public class Calcoli_RT {
         
         //Questa la mappa che momorizzerà la Quantità di ogni singola moneta che poi dovrò sottrarre dallo stack per i calcoli
         //GRUPPO WALLET,MONETA,QTA
-        Map<String, Map<String, BigDecimal>> MappaGrWallet_QtaCrypto = new TreeMap<>();
-        Map<String, BigDecimal> QtaCrypto;
+        Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto = new TreeMap<>();
+        Map<String, Moneta> QtaCrypto;
         
         //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
         boolean PlusXWallet=false;
@@ -67,23 +67,11 @@ public class Calcoli_RT {
                 //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
                 Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
                 
-                //1 - Prendo ogni wallet
-                //2 - Per ogni wallet estraggo tutte le monete che lo compongono
-                //3 - Per ogni moneta trovo la plusvalenza sottraendo le rimanenze (QTA)
+
                 
-                for (String Wallet : MappaGrWallet_QtaCrypto.keySet()){
-                    Map<String, BigDecimal> Mappa_Qta=MappaGrWallet_QtaCrypto.get(Wallet);
-                    Map<String, ArrayDeque> Crypto_Stack=MappaGrWallet_CryptoStack.get(Wallet);
-                    for (String Moneta : Mappa_Qta.keySet()){
-                        BigDecimal qta=Mappa_Qta.get(Moneta);
-                        ArrayDeque stack=Crypto_Stack.get(Moneta);
-                        
-                        //questa funzione ritorna il valore al costo di carico della moneta appena levata dallo stack
-                        StackLIFO_TogliQta(Crypto_Stack,Moneta,qta.toPlainString(),false);
-                        //per trovare la plusvalenza devo quindi prima trovare il prezzo a fine anno e fare la sottrazione
-                    }
-                }
                 
+                ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto);
+              
                 
                 
                 
@@ -116,10 +104,13 @@ public class Calcoli_RT {
             String MonetaU=v[8];
             String QtaU=v[10];
             String CostoCaricoU=v[16];
+            String AddressU=v[26];
             String MonetaE=v[11];
             String QtaE=v[13];
             String CostoCaricoE=v[17];
+            String AddressE=v[28];
             String Valore=v[15];
+            String Rete=Funzioni.TrovaReteDaID(v[0]);
             
 
 
@@ -135,13 +126,23 @@ public class Calcoli_RT {
                 //Faccio la somma delle qta e le scrivo nella mappa
                 //Questa parte va fatta senza filtri perchè per le quantità conto tutte le uscite e le entrate
                 if (QtaCrypto.get(MonetaU)==null){
-                    //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco con qta 0
-                    QtaCrypto.put(MonetaU, new BigDecimal(0));
+                    //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco
+                    Moneta mon=new Moneta();
+                    mon.Moneta=MonetaU;
+                    mon.Qta=QtaU;
+                    mon.MonetaAddress=AddressU;
+                    mon.Rete=Rete;
+                    mon.Tipo=TipoMU;
+                    QtaCrypto.put(MonetaU, mon);
                 }
+                else{
                 //adesso faccio la somma della qta nuova sulla vecchia
-                BigDecimal Qta=QtaCrypto.get(MonetaU);
+                Moneta mon=QtaCrypto.get(MonetaU);
+                BigDecimal Qta=new BigDecimal(mon.Qta);
                 Qta=Qta.add(new BigDecimal(QtaU));
-                QtaCrypto.put(MonetaU, Qta);
+                mon.Qta=Qta.toPlainString();
+                }
+
                 
                 //PARTE 2
                 //Tolgo il token dallo stack se non sono PTW, i PTW infatti vengono scaricati nel momento in cui arrivano a detinazione
@@ -159,14 +160,22 @@ public class Calcoli_RT {
                 //Faccio la somma delle qta e le scrivo nella mappa
                 //Questa parte va fatta senza filtri perchè per le quantità conto tutte le uscite e le entrate
                 if (QtaCrypto.get(MonetaE)==null){
-                    //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco con qta 0
-                    QtaCrypto.put(MonetaE, new BigDecimal(0));
+                    //Se non ho ancora codificato la moneta la inserisco nella mappa
+                    Moneta mon=new Moneta();
+                    mon.Moneta=MonetaE;
+                    mon.Qta=QtaE;
+                    mon.MonetaAddress=AddressE;
+                    mon.Rete=Rete;
+                    mon.Tipo=TipoME;
+                    QtaCrypto.put(MonetaE, mon);
                 }
+                else{
                 //adesso faccio la somma della qta nuova sulla vecchia
-                BigDecimal Qta=QtaCrypto.get(MonetaE);
+                Moneta mon=QtaCrypto.get(MonetaE);
+                BigDecimal Qta=new BigDecimal(mon.Qta);
                 Qta=Qta.add(new BigDecimal(QtaE));
-                QtaCrypto.put(MonetaE, Qta);
-                
+                mon.Qta=Qta.toPlainString();
+                }
                 
                 
                 
@@ -238,11 +247,57 @@ public class Calcoli_RT {
 
                                             
         }
+         ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto);
        return PlusvalenzeXAnno;
     }
     
     
-    
+    public static void ChiudiAnno(Map<String,BigDecimal[]> PlusvalenzeXAnno,
+            String Anno,
+            Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack,
+            Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto){
+        
+        
+            //1 - Prendo ogni wallet
+            //2 - Per ogni wallet estraggo tutte le monete che lo compongono
+            //3 - Per ogni moneta trovo la plusvalenza sottraendo le rimanenze (QTA)
+            //Recupero i dati dell'anno da analizzare
+                BigDecimal PlusAnno[]=PlusvalenzeXAnno.get(Anno);
+                //BigDecimal PluvalenzaLatente=PlusAnno[4];
+                
+                long d=System.currentTimeMillis();
+                String DataAttualeAllOra=OperazioniSuDate.ConvertiDatadaLongallOra(d)+":00";
+               String AnnoAttuale=DataAttualeAllOra.split("-")[0];
+               d=OperazioniSuDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
+                if (!AnnoAttuale.equals(Anno)){
+                    String Data=String.valueOf(Integer.parseInt(Anno)+1)+"-01-01 00:00";
+                    d= OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+                }
+                
+                for (String Wallet : MappaGrWallet_QtaCrypto.keySet()){
+                    Map<String, Moneta> Mappa_Qta=MappaGrWallet_QtaCrypto.get(Wallet);
+                    Map<String, ArrayDeque> Crypto_Stack=MappaGrWallet_CryptoStack.get(Wallet);
+                    for (String Moneta : Mappa_Qta.keySet()){
+                        Moneta mon=Mappa_Qta.get(Moneta);
+                        BigDecimal qta = new BigDecimal(mon.Qta);
+                        //Se la qyìta è minoreo uguale a zeno non faccio nulla
+                        if (qta.compareTo(new BigDecimal(0)) > 0) {
+                            //if (Moneta.equals("CRO"))System.out.println(qta);
+                            ArrayDeque stack = Crypto_Stack.get(Moneta);
+
+                            //questa funzione ritorna il valore al costo di carico della moneta appena levata dallo stack
+                            BigDecimal CostoCarico = new BigDecimal(StackLIFO_TogliQta(Crypto_Stack, Moneta, qta.toPlainString(), false));
+
+                            //Adesso devo trovare il Valore di Vendita della Moneta
+                            BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, null, true, 15, mon.Rete));
+
+                            //per trovare la plusvalenza devo quindi prima trovare il prezzo a fine anno e fare la sottrazione
+                            BigDecimal PluvalenzaLatente = PrezzoV.subtract(CostoCarico);
+                            PlusAnno[4] = PlusAnno[4].add(PluvalenzaLatente);
+                        }
+                    }
+                }
+    }
     
     
     

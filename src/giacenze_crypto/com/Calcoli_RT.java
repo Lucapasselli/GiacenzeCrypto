@@ -5,17 +5,14 @@
 package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.DecimaliCalcoli;
-import static giacenze_crypto.com.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
 import static giacenze_crypto.com.CDC_Grafica.Funzioni_isNumeric;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import static giacenze_crypto.com.Calcoli_Plusvalenze.RitornaTipoCrypto;
-import java.awt.Cursor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -24,9 +21,16 @@ import javax.swing.table.DefaultTableModel;
 public class Calcoli_RT {
     
     
-    public static Map<String,BigDecimal[]> CalcoliPlusvalenzeXAnno(){
+    public static AnalisiPlus CalcoliPlusvalenzeXAnno(){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
+        AnalisiPlus ritorno=new AnalisiPlus();
+        
+        //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
+        Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta = new TreeMap<>();
+        Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta;
+        Map<String,PlusXMoneta> MappaMoneta_PlusXMoneta;
+        
         Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();//Wallet - Mappa(Moneta - Stack)
         Map<String, ArrayDeque> CryptoStack;//  - Stack
         
@@ -65,18 +69,13 @@ public class Calcoli_RT {
                 //Questa mappa sarà quela che poi andrò a popolare e terrò da parte per analisi future
                 //Per ora non la utilizzerò
                 //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
-                Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
-                
+              //  Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
 
-                
-                
-                ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto);
-              
-                
-                
-                
+                ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto);               
             }
-                        //Identifico e creo una o più mappe per il cryptostack a seconda che sia o meno gestiti gli stack divisi per Wallet
+            
+            Anno=v[1].split("-")[0];
+            //Identifico e creo una o più mappe per il cryptostack a seconda che sia o meno gestiti gli stack divisi per Wallet
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
                 if(!PlusXWallet)GruppoWallet="Wallet 01";
                 if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
@@ -85,16 +84,40 @@ public class Calcoli_RT {
                     MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);
                             
                     QtaCrypto = new TreeMap<>();
-                    MappaGrWallet_QtaCrypto.put(GruppoWallet, QtaCrypto);                  
+                    MappaGrWallet_QtaCrypto.put(GruppoWallet, QtaCrypto);                     
                 } else {
                     //altrimenti lo recupero per i calcoli
                     CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);
                     QtaCrypto = MappaGrWallet_QtaCrypto.get(GruppoWallet);
                 }
+            //Adesso creo le mappe divise per anno
+            //Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_PlusXMoneta = new TreeMap<>();
+            if (MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno)==null){
+                //Se non esiste la mappa per l'anno la creo
+                MappaGrWallet_MappaMoneta_PlusXMoneta= new TreeMap<>();                                   
+                }
+            else {
+                MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
+            }
+            if (MappaGrWallet_MappaMoneta_PlusXMoneta.get(GruppoWallet)==null){
+                //Se non esiste la mappa per l'anno la creo
+                MappaMoneta_PlusXMoneta= new TreeMap<>();
+                
+                
+                }
+            else {
+                MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(GruppoWallet);
+            }
+            
+            
+                //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
+        //Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta = new TreeMap<>();
+       // Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta;
+        //Map<String,PlusXMoneta> MappaMoneta_PlusXMoneta;
+                
             
             
             
-            Anno=v[1].split("-")[0];
             
             //String AnnoTrans =v[0].split("-")[0];
             String TipoMU = RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
@@ -142,7 +165,35 @@ public class Calcoli_RT {
                 Qta=Qta.add(new BigDecimal(QtaU));
                 mon.Qta=Qta.toPlainString();
                 }
+        //Stessa cosa la inserisco nella mappa dei dettagli delle moneta        
+if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
+                    //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco
+                    Moneta mon=new Moneta();
+                    mon.Moneta=MonetaU;
+                    mon.Qta=QtaU;
+                    mon.MonetaAddress=AddressU;
+                    mon.Rete=Rete;
+                    mon.Tipo=TipoMU;
+                    
+                    //Stessa cosa la inserisco nella mappa dei dettagli delle moneta
+                    PlusXMoneta PlusXm=new PlusXMoneta();
+                    PlusXm.CompilaCampiDaMoneta(mon);
+                    PlusXm.Put_Anno(Anno);
+                    PlusXm.Put_Wallet(GruppoWallet);                     
+                    MappaMoneta_PlusXMoneta.put(MonetaU, PlusXm);
+                }
+                else{
+                //adesso faccio la somma della qta nuova sulla vecchia                
+                PlusXMoneta PlusXm=MappaMoneta_PlusXMoneta.get(MonetaU);
+                BigDecimal Qta=PlusXm.Get_Giacenza();
+                Qta=Qta.add(new BigDecimal(QtaU));
+                PlusXm.Put_Giacenza(Qta.toPlainString());
+                
+                }
 
+                
+                
+                
                 
                 //PARTE 2
                 //Tolgo il token dallo stack se non sono PTW, i PTW infatti vengono scaricati nel momento in cui arrivano a detinazione
@@ -177,6 +228,29 @@ public class Calcoli_RT {
                 mon.Qta=Qta.toPlainString();
                 }
                 
+                if (MappaMoneta_PlusXMoneta.get(MonetaE)==null){
+                    //Se non ho ancora codificato la moneta la inserisco nella mappa
+                    Moneta mon=new Moneta();
+                    mon.Moneta=MonetaE;
+                    mon.Qta=QtaE;
+                    mon.MonetaAddress=AddressE;
+                    mon.Rete=Rete;
+                    mon.Tipo=TipoME;                   
+                    //Stessa cosa la inserisco nella mappa dei dettagli delle moneta
+                    PlusXMoneta PlusXm=new PlusXMoneta();
+                    PlusXm.CompilaCampiDaMoneta(mon);
+                    PlusXm.Put_Anno(Anno);
+                    PlusXm.Put_Wallet(GruppoWallet);                  
+                    MappaMoneta_PlusXMoneta.put(mon.Moneta, PlusXm);
+                }
+                else{
+                //adesso faccio la somma della qta nuova sulla vecchia               
+                PlusXMoneta PlusXm=MappaMoneta_PlusXMoneta.get(MonetaE);
+                BigDecimal Qta=PlusXm.Get_Giacenza();
+                Qta=Qta.add(new BigDecimal(QtaE));
+                PlusXm.Put_Giacenza(Qta.toPlainString());
+                }
+                
                 
                 
                 //PARTE 2
@@ -205,6 +279,10 @@ public class Calcoli_RT {
                 }
             }
             
+            
+            
+            //PARTE B
+            //ANALISI MOVIMENTI RILEVANTI
             
             
             //Se inoltre è un movimento fiscalmente rilevante mi salvo costo di carico, valore transazione e plusvalenza divisa per anno
@@ -248,7 +326,9 @@ public class Calcoli_RT {
                                             
         }
          ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto);
-       return PlusvalenzeXAnno;
+      // return PlusvalenzeXAnno;
+       ritorno.Put_PluvalenzeXAnno(PlusvalenzeXAnno);
+       return ritorno;
     }
     
     
@@ -266,7 +346,7 @@ public class Calcoli_RT {
                 //BigDecimal PluvalenzaLatente=PlusAnno[4];
                 
                 long d=System.currentTimeMillis();
-                String DataAttualeAllOra=OperazioniSuDate.ConvertiDatadaLongallOra(d)+":00";
+                String DataAttualeAllOra=OperazioniSuDate.ConvertiDatadaLong(d)+" 00:00";
                String AnnoAttuale=DataAttualeAllOra.split("-")[0];
                d=OperazioniSuDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
                 if (!AnnoAttuale.equals(Anno)){
@@ -393,4 +473,94 @@ public class Calcoli_RT {
 }      
      
      
+  public static class AnalisiPlus {
+
+
+  Map<String,BigDecimal[]> PlusvalenzeXAnno;
+  
+  //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
+  Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack;
+  //ANNO,GRUPPOWALLET,MONETA,Classe PlusXMoneta
+  Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_PlusXMoneta;
+
+  
+  public String ListaIDcoinvolti="";
+  
+  public void Put_PluvalenzeXAnno(Map<String,BigDecimal[]> PlusXAnno){
+      PlusvalenzeXAnno=PlusXAnno;
+  }
+  
+  public Map<String,BigDecimal[]>  Get_TabellaPlusXAnno(){
+      return PlusvalenzeXAnno;
+  }
+  
+ }
+  
+      public static class PlusXMoneta {
+
+          String Anno;
+          String Wallet;
+          String Moneta;
+          String Tipo;
+          String ValVendita;
+          String CostoVendite;
+          String PlusRealizzata;
+          String PlusLatente;
+          String Giacenza;
+          String Errori;
+          
+          public void Put_Anno(String PMAnno)
+          {
+            Anno=PMAnno;
+          }  
+          public void Put_Wallet(String PMWallet)
+          {
+            Wallet=PMWallet;
+          } 
+          public void Put_Moneta(String PMMoneta)
+          {
+            Moneta=PMMoneta;
+          } 
+          public void Put_Tipo(String PMTipo)
+          {
+            Tipo=PMTipo;
+          } 
+          public void Put_ValVendite(String PMValVendite)
+          {
+            ValVendita=PMValVendite;
+          } 
+          public void Put_ValCosto(String Put_ValCosto)
+          {
+            CostoVendite=Put_ValCosto;
+          } 
+          public void Put_PlusRealizzata(String PMPlusRealizzata)
+          {
+            PlusRealizzata=PMPlusRealizzata;
+          } 
+          public void Put_PlusLatente(String PMPlusLatente)
+          {
+            PlusLatente=PMPlusLatente;
+          } 
+          public void Put_Giacenza(String PMGiacenza)
+          {
+            Giacenza=PMGiacenza;
+          } 
+          public BigDecimal Get_Giacenza()
+          {
+            return new BigDecimal(Giacenza);
+          } 
+          public void Put_Errori(String PMErrori)
+          {
+            Errori=PMErrori;
+          } 
+          public void CompilaCampiDaMoneta(Moneta mon){
+              Put_Moneta(mon.Moneta);
+              Put_Giacenza(mon.Qta);
+              Put_Tipo(mon.Tipo);
+          }
+      }     
+      
+      
+      
+      
 }

@@ -473,6 +473,11 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
 }      
      
      
+  public void InizializzaMappe(){
+  }    
+      
+      
+      
   public static class AnalisiPlus {
 
 

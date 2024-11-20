@@ -1765,17 +1765,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Wallet", "Moneta", "Tipo", "Prezzo Vendite/Scambi rilevanti", "Costo Carico vendite rilevanti", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti"
+                "Wallet", "Moneta", "Tipo", "Prezzo Vendite/Scambi rilevanti", "Costo Carico vendite rilevanti", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {

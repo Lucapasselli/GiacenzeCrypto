@@ -28,11 +28,12 @@ public class Calcoli_RT {
         
         //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
         Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta = new TreeMap<>();
-        Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta;
+        Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta= new TreeMap<>();
         Map<String,PlusXMoneta> MappaMoneta_PlusXMoneta;
         
         Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();//Wallet - Mappa(Moneta - Stack)
         Map<String, ArrayDeque> CryptoStack;//  - Stack
+       // Map<String, ArrayDeque> CryptoStack2;//  - Stack
         
         //Questa la mappa che momorizzerà la Quantità di ogni singola moneta che poi dovrò sottrarre dallo stack per i calcoli
         //GRUPPO WALLET,MONETA,QTA
@@ -71,41 +72,60 @@ public class Calcoli_RT {
                 //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
               //  Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
 
-                ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto);               
+                ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta);               
             }
             
             Anno=v[1].split("-")[0];
             //Identifico e creo una o più mappe per il cryptostack a seconda che sia o meno gestiti gli stack divisi per Wallet
+            
+            
+            
+            
+           //A1 - INIZIALIZZA MAPPE PER GRUPPO WALLET
+            
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
                 if(!PlusXWallet)GruppoWallet="Wallet 01";
                 if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
                     //se non esiste ancora lo stack lo creo e lo associo alla mappa
-                    CryptoStack = new TreeMap<>();
-                    MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);
+                    CryptoStack = new TreeMap<>();                              //Nuova Mappa degli Stack (Per Moneta)
+                    MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);   //Mappa delle mappe degli Stack (Per Wallet)
                             
-                    QtaCrypto = new TreeMap<>();
-                    MappaGrWallet_QtaCrypto.put(GruppoWallet, QtaCrypto);                     
+                    QtaCrypto = new TreeMap<>();                                //Nuova Mappa delle Qta (Per Moneta)
+                    MappaGrWallet_QtaCrypto.put(GruppoWallet, QtaCrypto);       //Mappa delle mappe degli Qta (Per Wallet)            
                 } else {
                     //altrimenti lo recupero per i calcoli
-                    CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);
-                    QtaCrypto = MappaGrWallet_QtaCrypto.get(GruppoWallet);
+                    CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);  //Mappa delle mappe degli Stack (Per Wallet)
+                    QtaCrypto = MappaGrWallet_QtaCrypto.get(GruppoWallet);      //Mappa delle mappe degli Qta (Per Wallet) 
                 }
-            //Adesso creo le mappe divise per anno
-            //Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_PlusXMoneta = new TreeMap<>();
+            
+            //A2 - INIZIALIZZA MAPPE PER ANNO
+
             if (MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno)==null){
-                //Se non esiste la mappa per l'anno la creo
-                MappaGrWallet_MappaMoneta_PlusXMoneta= new TreeMap<>();                                   
+                //Se non esiste la mappa per l'anno controllo se esiste già una mappa che arriva dagli anni passati
+                //Se non esiste ne creo una nuova
+                //Altrimenti duplico quella precedente e la aggiungo alla mappa
+                //La mappa es. del 2022 deve infatti contenere tutti i dati degli anni passati + quelli del 2022 e così via per gli anni successivi
+                if (MappaGrWallet_MappaMoneta_PlusXMoneta.isEmpty())
+                   { 
+                       MappaGrWallet_MappaMoneta_PlusXMoneta= new TreeMap<>();
+                   }
+                else{
+                    MappaGrWallet_MappaMoneta_PlusXMoneta=new TreeMap<>(MappaGrWallet_MappaMoneta_PlusXMoneta);
+                }
+                MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.put(Anno, MappaGrWallet_MappaMoneta_PlusXMoneta);
                 }
             else {
+                //Altrimenti la recupero
                 MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
             }
+            // Se adesso non esiste la mappa per wallet la creo
             if (MappaGrWallet_MappaMoneta_PlusXMoneta.get(GruppoWallet)==null){
-                //Se non esiste la mappa per l'anno la creo
+               // CryptoStack2 = new TreeMap<>();
                 MappaMoneta_PlusXMoneta= new TreeMap<>();
-                
-                
+                MappaGrWallet_MappaMoneta_PlusXMoneta.put(GruppoWallet, MappaMoneta_PlusXMoneta);
                 }
             else {
+                //Altrimenti la recupero
                 MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(GruppoWallet);
             }
             
@@ -165,8 +185,8 @@ public class Calcoli_RT {
                 Qta=Qta.add(new BigDecimal(QtaU));
                 mon.Qta=Qta.toPlainString();
                 }
-        //Stessa cosa la inserisco nella mappa dei dettagli delle moneta        
-if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
+                //Stessa cosa la inserisco nella mappa dei dettagli delle moneta        
+                if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
                     //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco
                     Moneta mon=new Moneta();
                     mon.Moneta=MonetaU;
@@ -311,21 +331,24 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
                 if (Funzioni_isNumeric(v[19], false)) {
                     Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
                     PlusAnno[3] = PlusAnno[3].add(new BigDecimal(v[19]));
+                    //adesso solo per le moete uscite salvo la pluvalenza per moneta
                 }
                 if (!v[15].isEmpty()) {
                     Vendite = Vendite.add(new BigDecimal(v[15]));
                     PlusAnno[2] = PlusAnno[2].add(new BigDecimal(v[15]));
+                    //adesso solo per le moete uscite salvo il valore della vendita per moneta
                 }
                 if (!v[16].isEmpty()) {
                     CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
                     PlusAnno[1] = PlusAnno[1].add(new BigDecimal(v[16]));
+                    //adesso solo per le moete uscite salvo il costo di carico per moneta
                 }
             }
             
 
                                             
         }
-         ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto);
+         ChiudiAnno(PlusvalenzeXAnno,Anno,MappaGrWallet_CryptoStack,MappaGrWallet_QtaCrypto,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta);
       // return PlusvalenzeXAnno;
        ritorno.Put_PluvalenzeXAnno(PlusvalenzeXAnno);
        return ritorno;
@@ -335,7 +358,8 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
     public static void ChiudiAnno(Map<String,BigDecimal[]> PlusvalenzeXAnno,
             String Anno,
             Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack,
-            Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto){
+            Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto,
+            Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta){
         
         
             //1 - Prendo ogni wallet
@@ -345,7 +369,7 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
                 BigDecimal PlusAnno[]=PlusvalenzeXAnno.get(Anno);
                 //BigDecimal PluvalenzaLatente=PlusAnno[4];
                 
-                long d=System.currentTimeMillis();
+                long d=System.currentTimeMillis()-86400000*2;//DA SISTEMARE CON DATA CORRETTA
                 String DataAttualeAllOra=OperazioniSuDate.ConvertiDatadaLong(d)+" 00:00";
                String AnnoAttuale=DataAttualeAllOra.split("-")[0];
                d=OperazioniSuDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
@@ -362,8 +386,10 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
                         BigDecimal qta = new BigDecimal(mon.Qta);
                         //Se la qyìta è minoreo uguale a zeno non faccio nulla
                         if (qta.compareTo(new BigDecimal(0)) > 0) {
-                            //if (Moneta.equals("CRO"))System.out.println(qta);
+                            //Recupero lo stack e lo passo alla Mappa con la suddivisione per anno
                             ArrayDeque stack = Crypto_Stack.get(Moneta);
+                            MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Put_CryptoStack(stack);
+                            
 
                             //questa funzione ritorna il valore al costo di carico della moneta appena levata dallo stack
                             BigDecimal CostoCarico = new BigDecimal(StackLIFO_TogliQta(Crypto_Stack, Moneta, qta.toPlainString(), false));
@@ -373,6 +399,7 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
 
                             //per trovare la plusvalenza devo quindi prima trovare il prezzo a fine anno e fare la sottrazione
                             BigDecimal PluvalenzaLatente = PrezzoV.subtract(CostoCarico);
+                            MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Put_PlusLatente(PluvalenzaLatente.toPlainString());
                             PlusAnno[4] = PlusAnno[4].add(PluvalenzaLatente);
                         }
                     }
@@ -473,7 +500,48 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
 }      
      
      
-  public void InizializzaMappe(){
+  public static void InizializzaMappe(boolean PlusXWallet,String Anno,String GruppoWallet,
+          Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,
+          Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta,
+          Map<String,PlusXMoneta> MappaMoneta_PlusXMoneta,
+          Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack,
+          Map<String, ArrayDeque> CryptoStack,
+          Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto,
+          Map<String, Moneta> QtaCrypto){
+                  
+                if(!PlusXWallet)GruppoWallet="Wallet 01";
+                if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
+                    //se non esiste ancora lo stack lo creo e lo associo alla mappa
+                    CryptoStack = new TreeMap<>();
+                    MappaGrWallet_CryptoStack.put(GruppoWallet, CryptoStack);
+                            
+                    QtaCrypto = new TreeMap<>();
+                    MappaGrWallet_QtaCrypto.put(GruppoWallet, QtaCrypto);                     
+                } else {
+                    //altrimenti lo recupero per i calcoli
+                    CryptoStack = MappaGrWallet_CryptoStack.get(GruppoWallet);
+                    QtaCrypto = MappaGrWallet_QtaCrypto.get(GruppoWallet);
+                }
+            //Adesso creo le mappe divise per anno
+            //Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_PlusXMoneta = new TreeMap<>();
+            if (MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno)==null){
+                //Se non esiste la mappa per l'anno la creo
+                MappaGrWallet_MappaMoneta_PlusXMoneta= new TreeMap<>();                                   
+                }
+            else {
+                MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
+            }
+            if (MappaGrWallet_MappaMoneta_PlusXMoneta.get(GruppoWallet)==null){
+                //Se non esiste la mappa per l'anno la creo
+                MappaMoneta_PlusXMoneta= new TreeMap<>();
+                
+                
+                }
+            else {
+                MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(GruppoWallet);
+            }
+      
+      
   }    
       
       
@@ -513,7 +581,13 @@ if (MappaMoneta_PlusXMoneta.get(MonetaU)==null){
           String PlusLatente;
           String Giacenza;
           String Errori;
+          ArrayDeque<String[]> Stack;
           
+          
+          public void Put_CryptoStack(ArrayDeque<String[]> PMStack)
+          {
+            Stack=PMStack;
+          }  
           public void Put_Anno(String PMAnno)
           {
             Anno=PMAnno;

@@ -327,6 +327,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane12 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jButton3 = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -1728,17 +1729,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         RT_Tabella_Principale.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Anno", "Tot. Movimenti Rilevanti al Prezzo di Mercato", "Tot. Movimenti Rilevanti al Prezzo di Carico", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Errori"
+                "Anno", "Tot. Movimenti Rilevanti al Prezzo di Mercato", "Tot. Movimenti Rilevanti al Prezzo di Carico", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore di Fine Anno", "Errori"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1750,9 +1751,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setPreferredWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMaxWidth(100);
-            RT_Tabella_Principale.getColumnModel().getColumn(5).setMinWidth(50);
-            RT_Tabella_Principale.getColumnModel().getColumn(5).setPreferredWidth(50);
-            RT_Tabella_Principale.getColumnModel().getColumn(5).setMaxWidth(50);
+            RT_Tabella_Principale.getColumnModel().getColumn(6).setMinWidth(50);
+            RT_Tabella_Principale.getColumnModel().getColumn(6).setPreferredWidth(50);
+            RT_Tabella_Principale.getColumnModel().getColumn(6).setMaxWidth(50);
         }
 
         RT_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Calcolatrice.png"))); // NOI18N
@@ -1800,6 +1801,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Dettagli Anno", jPanel1);
 
+        jButton3.setText("jButton3");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
         RT.setLayout(RTLayout);
         RTLayout.setHorizontalGroup(
@@ -1810,6 +1818,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(jScrollPane11)
                     .addGroup(RTLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton3)
+                        .addGap(39, 39, 39)
                         .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jTabbedPane1))
                 .addContainerGap())
@@ -1817,7 +1827,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RTLayout.setVerticalGroup(
             RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(RTLayout.createSequentialGroup()
-                .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -7904,6 +7916,18 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         
     }//GEN-LAST:event_RT_Bottone_CalcolaActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+                DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
+        Calcoli_RT.AnalisiPlus Analisi=Calcoli_RT.CalcoliPlusvalenzeXAnno_OLD();//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
+        Map<String,BigDecimal[]> PlusvalenzeXAnno=Analisi.Get_TabellaPlusXAnno();
+        for (BigDecimal[] Valori : PlusvalenzeXAnno.values()){ 
+            ModelloTabellaRT.addRow(Valori);
+        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_jButton3ActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -8509,6 +8533,7 @@ try {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
             DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86400000;
+           // System.out.println("DataRiferimento"+DataRiferimento);
            // DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86399000;
             //DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86340000;//Riferito alle 23:59 del giorno
             long DatadiOggi = System.currentTimeMillis();
@@ -9677,6 +9702,7 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

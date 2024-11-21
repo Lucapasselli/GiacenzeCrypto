@@ -1672,6 +1672,13 @@ for (int i=0;i<ArraydataIni.size();i++){
         //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
         String AddressMoneta1 = null;
         if (Moneta1 != null) {
+          /*  if (Moneta1.Moneta.equalsIgnoreCase("USDT")) {
+                                System.out.println(Moneta1.Moneta + " - "+Moneta1.Qta);
+                                System.out.println("DataFunzione " +Data);
+                                System.out.println("-----");
+                                }*/
+            
+            
             if ((Moneta1.MonetaAddress==null||Moneta1.MonetaAddress.isBlank())&&Moneta1.Moneta.equalsIgnoreCase("CRO")){
             //Questo serve solo nel caso interroghi i prezzi di CRO
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko

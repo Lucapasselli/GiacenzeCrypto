@@ -626,7 +626,7 @@ public class Calcoli_Plusvalenze {
                         VecchioPrezzoCarico = "";
                         
                         //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
-                        String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
+                    String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
                     Map<String, ArrayDeque> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
                     Mov[31]=v[1];
                         if (CryptoStack2 == null) {

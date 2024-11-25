@@ -111,6 +111,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public static Object JDialog_Ritorno;
     public boolean VersioneCambiata=false;
     public boolean FineCaricamentoDati=false;
+    public Calcoli_RT.AnalisiPlus APlus;
 
     
     //static String Appoggio="";
@@ -326,7 +327,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane12 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        RT_Tabella_DettaglioMonete = new javax.swing.JTable();
         jButton3 = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
@@ -1746,6 +1747,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        RT_Tabella_Principale.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RT_Tabella_PrincipaleMouseReleased(evt);
+            }
+        });
+        RT_Tabella_Principale.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                RT_Tabella_PrincipaleKeyReleased(evt);
+            }
+        });
         jScrollPane11.setViewportView(RT_Tabella_Principale);
         if (RT_Tabella_Principale.getColumnModel().getColumnCount() > 0) {
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
@@ -1764,7 +1775,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        RT_Tabella_DettaglioMonete.setAutoCreateRowSorter(true);
+        RT_Tabella_DettaglioMonete.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null, null, null, null},
                 {null, null, null, null, null, null, null, null, null},
@@ -1783,13 +1795,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane12.setViewportView(jTable1);
+        jScrollPane12.setViewportView(RT_Tabella_DettaglioMonete);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 1454, Short.MAX_VALUE)
+            .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 1456, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -7905,11 +7917,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void RT_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
-
+        APlus=null;
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
-        Calcoli_RT.AnalisiPlus Analisi=Calcoli_RT.CalcoliPlusvalenzeXAnno();//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
-        Map<String,BigDecimal[]> PlusvalenzeXAnno=Analisi.Get_TabellaPlusXAnno();
+        APlus=Calcoli_RT.CalcoliPlusvalenzeXAnno();//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
+        Map<String,BigDecimal[]> PlusvalenzeXAnno=APlus.Get_TabellaPlusXAnno();
         for (BigDecimal[] Valori : PlusvalenzeXAnno.values()){ 
             ModelloTabellaRT.addRow(Valori);
         }
@@ -7917,6 +7929,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
     }//GEN-LAST:event_RT_Bottone_CalcolaActionPerformed
 
+    private void RT_CompilaTabellaDettagli(){
+       // Map<String, String[]> Mappa_Gruppo_Alias =DatabaseH2.Pers_GruppoAlias_LeggiTabella();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (RT_Tabella_Principale.getSelectedRow()>=0){
+            //Cancello Contenuto Tabella Dettagli
+            DefaultTableModel ModelloTabella = (DefaultTableModel) RT_Tabella_DettaglioMonete.getModel();
+            Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+           int rigaselezionata = RT_Tabella_Principale.getSelectedRow();
+           String Anno = RT_Tabella_Principale.getModel().getValueAt(rigaselezionata, 0).toString();
+           List<String[]> tab=APlus.RitornaTabellaAnno(Anno);
+           Iterator<String[]> it=tab.iterator();
+           while (it.hasNext()){
+               ModelloTabella.addRow(it.next());
+           }
+           /*for (String[] riga : tab.iterato)
+          */
+           } 
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+    
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
                 DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
@@ -7928,6 +7960,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void RT_Tabella_PrincipaleKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RT_Tabella_PrincipaleKeyReleased
+        // TODO add your handling code here:
+        this.RT_CompilaTabellaDettagli();
+    }//GEN-LAST:event_RT_Tabella_PrincipaleKeyReleased
+
+    private void RT_Tabella_PrincipaleMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_PrincipaleMouseReleased
+        // TODO add your handling code here:
+        this.RT_CompilaTabellaDettagli();
+    }//GEN-LAST:event_RT_Tabella_PrincipaleMouseReleased
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -9646,6 +9688,7 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;
+    private javax.swing.JTable RT_Tabella_DettaglioMonete;
     private javax.swing.JTable RT_Tabella_Principale;
     private javax.swing.JPanel RW;
     private javax.swing.JComboBox<String> RW_Anno_ComboBox;
@@ -9737,7 +9780,6 @@ try {
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextPane jTextPane1;

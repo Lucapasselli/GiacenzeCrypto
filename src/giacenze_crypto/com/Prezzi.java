@@ -524,10 +524,7 @@ public class Prezzi {
      
         
     public static String ConvertiUSDEUR(String Valore, String Data) {
-        if (MappaConversioneUSDEUR.isEmpty())
-            {
-                GeneraMappaCambioUSDEUR();
-            }
+        RecuperaTassiCambioEURUSD();
         
         
         String risultato = null;
@@ -538,53 +535,38 @@ public class Prezzi {
         String UltimaData;//e' l'ultima data disponibile nel file delle conversioni
         String DatadiOggi = f.format(System.currentTimeMillis());                   
                     
-                    
-        if (dateDisponibili.length > 0) {// se il file ha dei dati recupero prima e ultima data      
+        // se il file ha dei dati recupero prima e ultima data      
             PrimaData = (String) dateDisponibili[0];
             UltimaData = (String) dateDisponibili[dateDisponibili.length - 1];
-            long DataOggiLong=OperazioniSuDate.ConvertiDatainLong(DatadiOggi);
-            long DataUltimaLong=OperazioniSuDate.ConvertiDatainLong(UltimaData);
-            long diffDate=DataOggiLong-DataUltimaLong;//86400000 di differenza significa 1 giorno
+            long DataOggiLong = OperazioniSuDate.ConvertiDatainLong(DatadiOggi);
+            long DataUltimaLong = OperazioniSuDate.ConvertiDatainLong(UltimaData);
+            long diffDate = DataOggiLong - DataUltimaLong;//86400000 di differenza significa 1 giorno
             //a questo punto siccome non posso ottenere i dati della giornata odierna
             //se sto cercando di ottenere quelli e l'ultimo dato che ho è inferiore a 10gg prendo quello come dato valido per la giornata
             //metto 10gg invece che 1 perchè potrebbero esserci delle feste e banchitalia non restituisce valori in quel caso
-            if(OperazioniSuDate.ConvertiDatainLong(Data)==OperazioniSuDate.ConvertiDatainLong(DatadiOggi)&&diffDate<864000000){
-                risultato=MappaConversioneUSDEUR.get(UltimaData);
-            }
-            //se la data di cui cerco il valore è compreso tra i range cerco il tasso di cambio corretto
-            else if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong(PrimaData) && OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(UltimaData)) {
-                for (int i = 0; i < 10; i++) {
-                    risultato = MappaConversioneUSDEUR.get(Data);
-                    if (risultato == null) {
-                        Data = OperazioniSuDate.GiornoMenoUno(Data);//questo appunto serve per andare a prendere i sabati e le domeniche dove non ho dati
-                    } else {
-                        break;
+            if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong("2015-01-01") && 
+                    OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(DatadiOggi)) {
+            risultato = MappaConversioneUSDEUR.get(Data);
+            if (risultato == null) {
+                //Se non trovo il tasso di cambio e comunque so che è compreso nel range che drovrebbe avere provo a trovarlo a ritroso
+                //questo serve nel caso che to cercando di recuperare il tasso di una festività o della data attuale
+                //in quel caso prendo il prezzo della giornata precedente o quello ancora prima
+                    for (int i = 0; i < 10; i++) {
+                        risultato = MappaConversioneUSDEUR.get(Data);
+                        if (risultato == null) {
+                            Data = OperazioniSuDate.GiornoMenoUno(Data);//questo appunto serve per andare a prendere i sabati e le domeniche dove non ho dati
+                        } else {
+                            break;
+                        }
                     }
                 }
-            }
-            else if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong("2015-01-01") && OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(DatadiOggi)) {
-                if (OperazioniSuDate.ConvertiDatainLong(Data) < OperazioniSuDate.ConvertiDatainLong(PrimaData)) {
-                    //in questo caso richiedo i 90 gg precedenti la data richiesta
-                    //anche perchè in questo modo comincio a compilare la tabella dei cambi
-                    String DataMeno10 = OperazioniSuDate.ConvertiDatadaLong(OperazioniSuDate.ConvertiDatainLong(Data) - Long.parseLong("7776000000"));
-                    if(RecuperaTassidiCambio(DataMeno10, PrimaData)!=null)risultato = ConvertiUSDEUR("1", Data);
-                } else if (OperazioniSuDate.ConvertiDatainLong(Data) > OperazioniSuDate.ConvertiDatainLong(UltimaData)) {
-                    //in questo caso richiedo i 90 gg successivi la data richiesta
-                    //anche perchè in questo modo comincio a compilare la tabella dei cambi
-                    String DataPiu10 = OperazioniSuDate.ConvertiDatadaLong(OperazioniSuDate.ConvertiDatainLong(Data) + Long.parseLong("7776000000"));
-                    if(RecuperaTassidiCambio(UltimaData, DataPiu10)!=null)risultato = ConvertiUSDEUR("1", Data);
+            else {
+                    risultato = null;//avviene solo quando la data non è compresa tra oggi e il primo gennaio 2018
+                    //Se arrivo qua significa che non sono stato in grado di ottenere i prezzi del dollaro a questa data
+                    //allora li chiedo a Binance (Questo è necessario quando la banch'italia non mi fornisce ancora i prezzi di conversione con il dollaro)
                 }
-                //  risultato = "Fuori range di date";
-            } else {
-                risultato = null;//avviene solo quando la data non è compresa tra oggi e il primo gennaio 2018
             }
-        } else {
-            if (dateDisponibili.length == 0) {
-                PrimaData = "2015-01-01";
-                UltimaData = DatadiOggi;
-                if(RecuperaTassidiCambio(PrimaData, UltimaData)!=null)risultato = ConvertiUSDEUR("1", Data);
-            }
-        }
+        
 
         if (risultato != null) {
 
@@ -1647,6 +1629,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
 
+      // System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
         /*Questa funzione si divide in 4 punti fondamentali:
         1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
         2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
@@ -1700,13 +1683,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                         //Se arrivo qua vuol dire che il token è gestito da coingecko
                         //adesso devo veriicare se è gestito anche da CryptoHistory e qualora lo fosse che abbia oltre allo stesso simbolo anche lo stesso nome
                         //se queste situazioni sono soddisfatte allora per quel token utilizzarò i prezzi di cryptohistory anzichè coingecko
-                        String Simbolo=RigaCoingecko[1];
-                        String RigaCryptoHistory[]=DatabaseH2.Obsoleto_GestitiCryptohistory_LeggiInteraRiga(Simbolo.toUpperCase().trim());
-                        if (RigaCryptoHistory[0]!=null){
-                            if(RigaCryptoHistory[1].toUpperCase().replace(" ", "").equals(RigaCoingecko[2].toUpperCase().replace(" ", ""))){
+                        
                                 ForzaUsoBinanceM1=true;
-                            }
-                        }
+                        
                     }
                   //  if (AddressNoPrezzo!=null) System.out.println(AddressNoPrezzo);
                     //se la moneta è gestita da coingecko e il movimento ha più di 365gg allora dico di usare binance per trovare il prezzo
@@ -1736,13 +1715,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                         //Se arrivo qua vuol dire che il token è gestito da coingecko
                         //adesso devo veriicare se è gestito anche da CryptoHistory e qualora lo fosse che abbia oltre allo stesso simbolo anche lo stesso nome
                         //se queste situazioni sono soddisfatte allora per quel token utilizzarò i prezzi di cryptohistory anzichè coingecko
-                        String Simbolo=RigaCoingecko[1];
-                        String RigaCryptoHistory[]=DatabaseH2.Obsoleto_GestitiCryptohistory_LeggiInteraRiga(Simbolo.toUpperCase().trim());
-                        if (RigaCryptoHistory[0]!=null){
-                            if(RigaCryptoHistory[1].toUpperCase().replace(" ", "").equals(RigaCoingecko[2].toUpperCase().replace(" ", ""))){
                                 ForzaUsoBinanceM2=true;
-                            }
-                        }
+                        
                     }
                 }
             }
@@ -2011,6 +1985,42 @@ for (int i=0;i<ArraydataIni.size();i++){
             } catch (URISyntaxException ex) {
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+        return ok;
+    }
+    
+    //questa funzione la chiamo sempre una sola volta per verificare quali sono le coppie di trading di cui binance mi fornisce i dati    
+    public static String RecuperaTassiCambioEURUSD() {
+        if (MappaConversioneUSDEUR.isEmpty())
+            {
+                GeneraMappaCambioUSDEUR();
+            }
+        Object dateDisponibili[] = MappaConversioneUSDEUR.keySet().toArray();
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String PrimaData="0000-00-00";//è la prima data disponibile nel file delle conversioni
+        String UltimaData="0000-00-00";//e' l'ultima data disponibile nel file delle conversioni                                 
+        if (dateDisponibili.length > 0) {// se il file ha dei dati recupero prima e ultima data      
+            PrimaData = (String) dateDisponibili[0];
+            UltimaData = (String) dateDisponibili[dateDisponibili.length - 1];
+        }
+        String ok = "ok";
+        //come prima cosa recupero l'ora atuale
+        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
+        //altrimenti tengo buona quella presente nel database
+        long adesso = System.currentTimeMillis();
+        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_TassiCambio_USDEUR");
+        long dataUltimoScarico = 0;
+        if (dataUltimoScaricoString != null) {
+            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
+        }
+        if (adesso > (dataUltimoScarico + 86400000)) {
+            String DataIniziale=UltimaData;
+            String DataFinale=OperazioniSuDate.ConvertiDatadaLong(adesso);
+            if (!PrimaData.equals("2015-01-02"))DataIniziale="2015-01-02";
+            ok=RecuperaTassidiCambio(DataIniziale,OperazioniSuDate.ConvertiDatadaLong(adesso));
+            if (ok!=null){
+                DatabaseH2.Opzioni_Scrivi("Data_TassiCambio_USDEUR", String.valueOf(adesso));
+                }
         }
         return ok;
     }

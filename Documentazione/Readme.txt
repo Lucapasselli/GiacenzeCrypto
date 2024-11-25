@@ -25,9 +25,16 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.29
+Nuove Implementazioni :
+
+Correzione di bug :
+  - Corretto bug che impediva in taluni casi il recupero del prezzo
+  - Corretto bug che portava ad errori sugli arrotondamenti sulle plusvalenze nel caso di scambi tra diversi wallet
+
 ver. 1.0.28
 Nuove Implementazioni :
-  - Quadro RW : Introdotto un ulteriore opzione suul metodo di calcolo per l'utilizzo del LiFo anche sui SubMovimenti (Vedi Documentazione).
+  - Quadro RW : Introdotto un ulteriore opzione sul metodo di calcolo per l'utilizzo del LiFo anche sui SubMovimenti (Vedi Documentazione).
   - Aggiunto Icone ai pulsanti per un più facile ed intuitivo utilizzo.
   - Aggiunto possibilità di importare i dati da Tatax.
   - In "Transazione Crypto" aggiunto checkbox "Vedi solo movimenti non valorizzati" che mostrerà solo i movimenti in cui il programma non è riuscito a recuperarei prezzi.

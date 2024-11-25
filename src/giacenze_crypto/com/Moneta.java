@@ -15,6 +15,7 @@ public class Moneta {
   public String MonetaAddress;
 //  public String MonetaNomeCompleto;
  // public String IndirizzoNoWallet;
+  public String CostoCarico;
   public String Prezzo;
   public String Tipo; //NFT, FIAT o CRYPTO
   public String Rete;//da gestire, anzi forse conviene gestire rete e address come tipologia multipla
@@ -68,10 +69,12 @@ public String GetTipologia(){
             Monete[0].Moneta = v[8];
             Monete[0].Tipo = v[9];
             Monete[0].Qta = v[10];
+            Monete[0].CostoCarico = v[16];
             Monete[0].Rete = Rete;
             Monete[1].Moneta = v[11];
             Monete[1].Tipo = v[12];
             Monete[1].Qta = v[13];
+            Monete[1].CostoCarico = v[17];
             Monete[1].Rete = Rete;
             
             return Monete;

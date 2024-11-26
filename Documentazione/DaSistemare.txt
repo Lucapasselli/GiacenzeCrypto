@@ -4,3 +4,5 @@
 - verificare quando viene valorizzato a null il campo 34
 - Inserire Mining
 - Inserire Donazioni
+
+-Nelle Plusvalenze ora gestire anche i movimenti non classificati Depositi come costo carico zero e prelievi come vendite

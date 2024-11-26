@@ -560,7 +560,7 @@ public class Calcoli_Plusvalenze {
                 }
 
                 //Tipologia = 5; (Deposito Criptoattività x spostamento tra wallet)
-                else if (IDTS[4].equalsIgnoreCase("TI") || v[18].isBlank() || v[18].contains("DTW")) {
+                else if (IDTS[4].equalsIgnoreCase("TI") || v[18].contains("DTW")) {
                     
                     
                     
@@ -671,6 +671,18 @@ public class Calcoli_Plusvalenze {
                                          
                     VecchioPrezzoCarico=""; 
                 }
+                //Tipologia = XY; (Deposito non categorizzato) -> Vengono caricati sul LiFo a costo di carico Zero
+                else if(v[18].isBlank()){
+                     
+                    NuovoPrezzoCarico="0.00";
+                     Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                     
+                     Plusvalenza="0.00";
+                     CalcoloPlusvalenza="N";
+                     
+                     VecchioPrezzoCarico="";
+                    //System.out.println(IDTS[0]+" - "+MonetaE+" - "+QtaE);
+                }
             } 
             
             //TIPOLOGIA = 6 , 8 e 10 -> Prelievo Criptoattività di vario tipo
@@ -707,7 +719,7 @@ public class Calcoli_Plusvalenze {
                    // else Plusvalenza="ERRORE";
                 }
                 //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
-                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].isBlank()||v[18].contains("PTW")) {
+                else if (IDTS[4].equalsIgnoreCase("TI")||v[18].contains("PTW")) {
                                         
                     Plusvalenza="0.00";
                     CalcoloPlusvalenza="N";
@@ -737,6 +749,20 @@ public class Calcoli_Plusvalenze {
                     
                     Plusvalenza="0.00";
                     CalcoloPlusvalenza="N";                    
+                    
+                }
+                //Tipologia = XY;//(Movimento non categorizzato) - Lo Considero come un cashOut
+                else if(v[18].isBlank()){
+                    
+                  //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                
+                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                    NuovoPrezzoCarico="";
+                
+                    //Calcolo la plusvalenza
+                        Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        CalcoloPlusvalenza="S";            
                     
                 }
             } 

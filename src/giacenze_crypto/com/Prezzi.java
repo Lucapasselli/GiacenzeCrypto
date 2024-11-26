@@ -560,11 +560,6 @@ public class Prezzi {
                         }
                     }
                 }
-            else {
-                    risultato = null;//avviene solo quando la data non è compresa tra oggi e il primo gennaio 2018
-                    //Se arrivo qua significa che non sono stato in grado di ottenere i prezzi del dollaro a questa data
-                    //allora li chiedo a Binance (Questo è necessario quando la banch'italia non mi fornisce ancora i prezzi di conversione con il dollaro)
-                }
             }
         
 
@@ -698,7 +693,6 @@ public class Prezzi {
 
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
         
-        
         Address = Address.toUpperCase();
         if (!Address.contains("0X"))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
         long DataRiferimento=Datalong/1000;       
@@ -706,7 +700,10 @@ public class Prezzi {
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
         risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
-        
+      /* if (Address.equalsIgnoreCase("0x2170ed0880ac9a755fd29b2688956bd959f933f8")){
+            System.out.println("SONO QUI22222222 - "+DataOra);
+            System.out.println(DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete));
+        }*/
 
         if (risultato == null) {
             //se il token non è gestito da coingecko e non è già nel database ritorno null
@@ -730,10 +727,17 @@ public class Prezzi {
 
         //quindi se il risultato non è nullo faccio i calcoli
         //DA CAPIRE SE MANTENERE LA DICITURA "nullo" per i prezzi non gestiti o mettere direttamente "0" oppure ancora "ND" che sta per non disponibile
-        if (risultato != null && risultato.equalsIgnoreCase("ND")) risultato=null;
+        if (risultato != null && risultato.equalsIgnoreCase("ND"))
+        {
+            //Se il risultato è ND vuol dire che per quell'ora non ho da coingecko il dato ma significa che il token è gestito
+            // quindi non è scam e quindi posso andare a carcae il prezzo altrove (CoinCap o Binance)
+            return ConvertiXXXEUR(Simbolo,Qta,Datalong);
+            //risultato=null;
+            }
         else if (risultato != null && risultato.equalsIgnoreCase("null")) risultato=null;
         else if (risultato != null) {
             risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(25, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+            
             }
         return risultato;
     }
@@ -1655,7 +1659,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
         String AddressMoneta1 = null;
         if (Moneta1 != null) {
-          /*  if (Moneta1.Moneta.equalsIgnoreCase("USDT")) {
+          /*  if (Moneta1.Moneta.equalsIgnoreCase("ETH")) {
                                 System.out.println(Moneta1.Moneta + " - "+Moneta1.Qta);
                                 System.out.println("DataFunzione " +Data);
                                 System.out.println("-----");
@@ -1675,7 +1679,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             if (Moneta1.MonetaAddress!=null&&!Moneta1.MonetaAddress.equals("")) {
                 AddressMoneta1 = Moneta1.MonetaAddress;
 
-                if ((adesso-Data)>Long.parseLong("31536000000")){  
+                if ((adesso-Data)>Long.parseLong("31536000000")){
                    // System.out.println(AddressMoneta1);
                     //String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(AddressMoneta1 + "_" + Rete);
                     String RigaCoingecko[]=DatabaseH2.GestitiCoingecko_LeggiInteraRiga(AddressMoneta1 + "_" + Rete);
@@ -1683,7 +1687,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                         //Se arrivo qua vuol dire che il token è gestito da coingecko
                         //adesso devo veriicare se è gestito anche da CryptoHistory e qualora lo fosse che abbia oltre allo stesso simbolo anche lo stesso nome
                         //se queste situazioni sono soddisfatte allora per quel token utilizzarò i prezzi di cryptohistory anzichè coingecko
-                        
+                         
                                 ForzaUsoBinanceM1=true;
                         
                     }
@@ -1847,6 +1851,12 @@ for (int i=0;i<ArraydataIni.size();i++){
                         PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
                     } else {
                         PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
+                      /*  if (Moneta1.Moneta.equalsIgnoreCase("ETH")) {
+                                System.out.println(Moneta1.Moneta + " - "+Moneta1.Qta);
+                                System.out.println("DataFunzioneCoppiePrioritarie " +Data+" - "+Rete+" - "+AddressMoneta1);
+                                System.out.println(PrezzoTransazione);
+                                System.out.println("-----");
+                                }*/
                         
                     }
                     if (PrezzoTransazione != null) {

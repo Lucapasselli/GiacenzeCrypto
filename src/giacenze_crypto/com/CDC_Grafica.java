@@ -1787,9 +1787,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "Wallet", "Moneta", "Tipo", "Prezzo Vendite/Scambi rilevanti", "Costo Carico vendite rilevanti", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze"
             }
         ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Double.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, false, false, false, false, false
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
@@ -7920,6 +7927,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         APlus=null;
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
+        Tabelle.ColoraTabellaSemplice(RT_Tabella_Principale);
+        DefaultTableModel ModelloTabella = (DefaultTableModel) RT_Tabella_DettaglioMonete.getModel();
+            Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+            Tabelle.ColoraTabellaSemplice(RT_Tabella_DettaglioMonete);
+          //  Tabelle.ColoraTabellaSempliceDouble(RT_Tabella_DettaglioMonete);
         APlus=Calcoli_RT.CalcoliPlusvalenzeXAnno();//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
         Map<String,BigDecimal[]> PlusvalenzeXAnno=APlus.Get_TabellaPlusXAnno();
         for (BigDecimal[] Valori : PlusvalenzeXAnno.values()){ 
@@ -7938,14 +7950,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             Funzioni_Tabelle_PulisciTabella(ModelloTabella);
            int rigaselezionata = RT_Tabella_Principale.getSelectedRow();
            String Anno = RT_Tabella_Principale.getModel().getValueAt(rigaselezionata, 0).toString();
-           List<String[]> tab=APlus.RitornaTabellaAnno(Anno);
-           Iterator<String[]> it=tab.iterator();
+           List<Object[]> tab=APlus.RitornaTabellaAnno(Anno);
+           Iterator<Object[]> it=tab.iterator();
            while (it.hasNext()){
                ModelloTabella.addRow(it.next());
            }
            /*for (String[] riga : tab.iterato)
           */
            } 
+        Tabelle.ColoraTabellaSemplice(RT_Tabella_DettaglioMonete);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     

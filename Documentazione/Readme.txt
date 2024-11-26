@@ -27,6 +27,13 @@ Changelog
 
 ver. 1.0.29
 Nuove Implementazioni :
+  - Cambiato come il programma gestisce il calcolo per le plusvalenze dei movimenti di deposito e prelievo non categorizzati
+	Con le versioni precedenti il programma semplicemente ignorava quelle transazioni (non veniva generata nessuna plusvalenza fino a che il movimento non veniva categorizzato)
+	Con la versione attuale il programma si comporta nel seguente modo : 
+		- Deposito non categorizzato = Deposito con Costo di Carico Zero
+		- Prelievo non categorizzato = CashOut
+	Facendo in questo modo avrò delle plusvalenze più alte fino a che non categorizzerò correttamente i movimenti ma altresì qualora dimenticassi di
+	categorizzarli, questi sarebbero comunque conteggiati nella maniera meno vantaggiosa per il contribuente e quindi meno contestabile dal fisco.
 
 Correzione di bug :
   - Corretto bug che impediva in taluni casi il recupero del prezzo

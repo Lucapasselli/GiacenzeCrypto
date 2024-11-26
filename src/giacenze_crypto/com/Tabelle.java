@@ -246,7 +246,46 @@ public class Tabelle {
         return table;
     }  
     
-       public static JTable ColoraTabellaSemplice(final JTable table) {
+public static JTable ColoraTabellaSemplice(final JTable table) {
+    // Definizione dei colori
+  //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
+  //  final Color bianco = Color.WHITE;                   // Colore bianco
+
+    // Renderer generico per alternare i colori delle righe
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int col) {
+            // Ottieni il componente standard per la cella
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+            // Imposta il colore di sfondo alternato
+            if (isSelected) {
+                c.setBackground(table.getSelectionBackground());
+            } else {
+                c.setBackground(row % 2 == 0 ? grigioChiaro : bianco);
+            }
+
+            return c;
+        }
+    };
+
+    // Configura il renderer per i tipi più comuni
+    table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
+    
+
+    // Restituisci la tabella
+    return table;
+}
+
+    
+    
+    public static JTable ColoraTabellaSempliceDouble(final JTable table) {
       //  bg=grigioChiaro;
      //   Data="";
 
@@ -254,7 +293,7 @@ public class Tabelle {
 
      
 
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        table.setDefaultRenderer(Number.class, new DefaultTableCellRenderer() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -284,11 +323,14 @@ public class Tabelle {
               // riga=row;
                 return this;
             }
-        });
+        }
+        
+        
+        );
         return table;
-    }  
-    
-    
+    }     
+       
+       
        
        
            public static JTable ColoraTabellaEvidenzaRigheErrore(final JTable table) {

@@ -122,7 +122,7 @@ public class Tabelle {
 
         public static JTable ColoraRigheTabella0GiacenzeaData(final JTable table) {
 
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -149,9 +149,12 @@ public class Tabelle {
                   
 
                 }
-                return this;
+                return c;
             }
-        });
+        };
+        // Configura il renderer per i tipi più comuni
+        table.setDefaultRenderer(Object.class, renderer);
+        table.setDefaultRenderer(Double.class, renderer);
         return table;
     }
 

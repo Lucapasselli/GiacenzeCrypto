@@ -359,7 +359,7 @@ public class Calcoli_RT {
        return ritorno;
     }
     
-    public static AnalisiPlus CalcoliPlusvalenzeXAnno(){
+    public static AnalisiPlus CalcoliPlusvalenzeXAnno(Download progress){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
         AnalisiPlus ritorno=new AnalisiPlus();
@@ -391,6 +391,11 @@ public class Calcoli_RT {
         BigDecimal Vendite = new BigDecimal("0");
      //   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         for (String[] v : MappaCryptoWallet.values()) {
+           //System.out.println(progress.FineThread());
+            if (progress.FineThread())
+            {
+                return null;
+            }
             //if (Anno.isBlank())
             if (Anno!=null&&!Anno.equals(v[1].split("-")[0])){
                 //Questa funzione va poi replicata a fine ciclo
@@ -402,7 +407,8 @@ public class Calcoli_RT {
                 //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
               //  Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
 
-                ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta);               
+              //la funzione ritorna false solo se ho premuto il pulsante interrompi nella progress bar
+                if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress))return null;               
             }
             
             Anno=v[1].split("-")[0];
@@ -413,7 +419,7 @@ public class Calcoli_RT {
 
             
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
-                if(!PlusXWallet)GruppoWallet="Wallet 01";
+                if(!PlusXWallet)GruppoWallet="Globale";
 
             //A - INIZIALIZZA MAPPE PER ANNO
 
@@ -436,6 +442,7 @@ public class Calcoli_RT {
                         for(String Monetaa:MappaMoneta_PlusXMoneta.keySet()){
                             PlusXMoneta a = MappaMoneta_PlusXMoneta.get(Monetaa);
                             PlusXMoneta b = new PlusXMoneta();
+                            b.movimentatoAnno=false;
                             b.Mon=a.Mon.ClonaMoneta();
                             b.CostoVendite="0.00";
                             b.ValVendita="0.00";
@@ -475,6 +482,7 @@ public class Calcoli_RT {
             int Uscita=0;
             int Entrata=1;
             String IDTS[]=v[0].split("_");
+            String Data=v[1];
             Moneta Monete[]=Moneta.RitornaMoneteDaMov(v);
             
 
@@ -488,6 +496,7 @@ public class Calcoli_RT {
                         //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco
                         //e la inserisco nella mappa dei dettagli delle moneta
                         PlusXMoneta PlusXm = new PlusXMoneta();
+                        PlusXm.movimentatoAnno=true;
                         PlusXm.CompilaCampiDaMoneta(Monete[i]);
                         PlusXm.Put_Anno(Anno);
                         PlusXm.Put_Wallet(GruppoWallet);
@@ -516,7 +525,7 @@ public class Calcoli_RT {
                     if (i == Entrata && !Monete[Entrata].CostoCarico.isBlank()) {
                         if (!IDTS[4].equalsIgnoreCase("TI")) {
                             if (!v[18].contains("DTW")) {
-                                StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico);
+                                StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data);
                             } else {
                                 //Se è un DTW devo quindi anche scaricare il movimento PTW contrario
                                 //se è attiva la funzione delle divisione delle plusvalenze per gruppo
@@ -528,7 +537,7 @@ public class Calcoli_RT {
                                 //IDControparte è null se i wallet di origine e destinazione sono uguali o se
                                 //non è attiva la funzione per separare le plusvalenze per wallet
                                 if (IDControparte != null) {
-                                    StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico);
+                                    StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data);
                                     Map<String, PlusXMoneta> CryptoStack2 = MappaGrWallet_MappaMoneta_PlusXMoneta.get(WalletControparte);
                                     String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
                                     StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true);
@@ -602,8 +611,7 @@ public class Calcoli_RT {
                             .get(GruppoWallet)
                             .get(Monete[Uscita].Moneta)
                             .Put_PlusRealizzata(PlusVal.toPlainString());
-                    //adesso solo per le moete uscite salvo la pluvalenza per moneta
-                    //DA FARE!!!!!
+                    
                     }
                 }
                 if (!v[15].isEmpty()) {
@@ -680,7 +688,8 @@ public class Calcoli_RT {
 
                                             
         }
-         ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta);
+              //ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress);
+          if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress))return null;
       // return PlusvalenzeXAnno;
        ritorno.Put_PluvalenzeXAnno(PlusvalenzeXAnno);
        ritorno.Put_MappaCompleta(MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta);
@@ -739,19 +748,22 @@ public class Calcoli_RT {
                 }
     }
     
-       public static void ChiudiAnno(Map<String,BigDecimal[]> PlusvalenzeXAnno,
+       public static boolean ChiudiAnno(Map<String,BigDecimal[]> PlusvalenzeXAnno,
             String Anno,
-            Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta){
+            Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,
+            Download progress){
         
-        
+           
             //1 - Prendo ogni wallet
             //2 - Per ogni wallet estraggo tutte le monete che lo compongono
             //3 - Per ogni moneta trovo la plusvalenza sottraendo le rimanenze (QTA)
             //Recupero i dati dell'anno da analizzare
                 BigDecimal PlusAnno[]=PlusvalenzeXAnno.get(Anno);
                 //BigDecimal PluvalenzaLatente=PlusAnno[4];
-                long d=Long.parseLong("1731667965000");
-                //long d=System.currentTimeMillis();
+               // long d=Long.parseLong("1731667965000");
+                long d=System.currentTimeMillis();
+                //i prezzi attuali saranno quelli di inizio giornata
+                
                 String DataAttualeAllOra=OperazioniSuDate.ConvertiDatadaLong(d)+" 00:00";
                String AnnoAttuale=DataAttualeAllOra.split("-")[0];
                d=OperazioniSuDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
@@ -764,7 +776,11 @@ public class Calcoli_RT {
                 for (String Wallet : MappaGrWallet_MappaMoneta_PlusXMoneta.keySet()){
                     Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(Wallet);
                     for (String Moneta : MappaMoneta_PlusXMoneta.keySet()){
-                        
+                        if (progress.FineThread())
+                        {
+                            progress.dispose();
+                            return false;
+                        }
                         Moneta mon=MappaMoneta_PlusXMoneta.get(Moneta).Get_Moneta();
                         BigDecimal qta = new BigDecimal(mon.Qta);
                         //Se la qyìta è minoreo uguale a zeno non faccio nulla
@@ -780,11 +796,11 @@ public class Calcoli_RT {
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo=PrezzoV.toPlainString();
                             //BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, null, true, 15, null));
                             PlusAnno[5] = PlusAnno[5].add(PrezzoV);
-                            if (Anno.equals("2023")&&Moneta.equalsIgnoreCase("ETH")) {
+                            /*if (Anno.equals("2023")&&Moneta.equalsIgnoreCase("ETH")) {
                                 System.out.println(mon.Moneta + " - " + Wallet+" - "+mon.Qta+" - "+Anno+" - "+PrezzoV);
                                 System.out.println(mon.Rete + " - " + Wallet+" - "+mon.MonetaAddress+" - "+Anno+" - "+PrezzoV);
                                 System.out.println(d);
-                                }
+                                }*/
                             //per trovare la plusvalenza devo quindi prima trovare il prezzo a fine anno e fare la sottrazione
                             BigDecimal PluvalenzaLatente = PrezzoV.subtract(CostoCarico);
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Put_PlusLatente(PluvalenzaLatente.toPlainString());
@@ -793,18 +809,23 @@ public class Calcoli_RT {
                             System.out.println(Wallet+" - "+qta+" - "+Anno+" - "+PluvalenzaLatente);
                         }*/
                         }
+                        else{
+                            MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo="0.00";
+                        }
                     }
                 }
+                return true;
     } 
     
-     public static void StackLIFO_InserisciValore(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,String Valore) {
+     public static void StackLIFO_InserisciValore(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,String Valore,String Data) {
    // MappaMoneta_PlusXMoneta
            // Map<String, ArrayDeque> CryptoStack
     ArrayDeque<String[]> stack;
-    String valori[]=new String[3];
+    String valori[]=new String[4];
     valori[0]=Moneta;
     valori[1]=new BigDecimal(Qta).abs().toPlainString();
     valori[2]=Valore;
+    valori[3]=Data;
 
         if(MappaMoneta_PlusXMoneta.get(Moneta).Get_CryptoStack()==null){
            stack = new ArrayDeque<>(); 
@@ -867,6 +888,7 @@ public class Calcoli_RT {
             ultimoRecupero=stack.pop();
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();            
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
+            String Data=ultimoRecupero[3];
             
          /*  if (Moneta.equalsIgnoreCase("usdt")){ 
                 System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
@@ -889,7 +911,7 @@ public class Calcoli_RT {
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
                 String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
-                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
+                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,Data};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
                 qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
@@ -1009,23 +1031,140 @@ public class Calcoli_RT {
       Object rigaTabella[];
       for(String Wallet : MappaGrWallet_MappaMoneta_PlusXMoneta.keySet()){
           Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(Wallet);
-          for(String Moneta : MappaMoneta_PlusXMoneta.keySet()){ 
-              PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
-              rigaTabella=new Object[9];
-              rigaTabella[0]=Wallet;
-              rigaTabella[1]=Moneta;
-              rigaTabella[2]=plus.Mon.Tipo;
-              rigaTabella[3]=Double.valueOf(plus.ValVendita);
-              rigaTabella[4]=Double.valueOf(plus.CostoVendite);
-              rigaTabella[5]=Double.valueOf(plus.PlusRealizzata);
-              rigaTabella[6]=Double.valueOf(plus.PlusLatente);
-              rigaTabella[7]=new BigDecimal(plus.Mon.Qta).stripTrailingZeros().toPlainString();
-              rigaTabella[8]=plus.Mon.Prezzo;  
-              Tabella.add(rigaTabella);
+          for(String Moneta : MappaMoneta_PlusXMoneta.keySet()){
+              //Non voglio vedere i token SCAM
+              if (!Funzioni.isSCAM(Moneta)){ 
+                  //NON voglio vedere i token con giacenza zero e che non hanno avuto movimentazioni nell'anno
+                  PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
+                if (plus.movimentatoAnno||!(new BigDecimal(plus.Mon.Qta).compareTo(BigDecimal.ZERO)==0)){ 
+                    
+                    rigaTabella=new Object[9];
+                    rigaTabella[0]=Wallet;
+                    rigaTabella[1]=Moneta;
+                    rigaTabella[2]=plus.Mon.Tipo;
+                    rigaTabella[3]=Double.valueOf(plus.ValVendita);
+                    rigaTabella[4]=Double.valueOf(plus.CostoVendite);
+                    rigaTabella[5]=Double.valueOf(plus.PlusRealizzata);
+                    rigaTabella[6]=Double.valueOf(plus.PlusLatente);
+                    rigaTabella[7]=new BigDecimal(plus.Mon.Qta).stripTrailingZeros().toPlainString();
+                    rigaTabella[8]=Double.valueOf(plus.Mon.Prezzo);  
+                    Tabella.add(rigaTabella);
+                }
+              }
           }
       }
       return Tabella;
   }
+  
+  public List<Object[]> RitornaTabellaLiFo(String Anno,String Wallet,String Moneta){
+        PlusXMoneta PlusXMon=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta);
+        List<Object[]> Tabella=new ArrayList<>();
+        Object rigaTabella[];
+        ArrayDeque<String[]> stack;
+        if (PlusXMon!=null&&PlusXMon.Stack!=null){
+        stack=PlusXMon.Stack.clone();
+        BigDecimal qtaRimanente=new BigDecimal(PlusXMon.Mon.Qta).abs();
+        BigDecimal costoTransazione=new BigDecimal("0");
+        BigDecimal QtaProgressiva=new BigDecimal("0");
+        BigDecimal PlusLatenteProgressiva=new BigDecimal("0");
+        
+        //Prendo la data corretta per i prezzi
+        //Che sarà per gli anni precedenti la mezzanotte del 31/12
+        //per l'anno attuale le ore 00:00 del giorno corrente
+        //Questo perchè non sempre posso avere i prezzi dell'ultimo minuto dai provider
+            long d = System.currentTimeMillis();
+            //i prezzi attuali saranno quelli di inizio giornata
+
+            String DataAttualeAllOra = OperazioniSuDate.ConvertiDatadaLong(d) + " 00:00";
+            String AnnoAttuale = DataAttualeAllOra.split("-")[0];
+            d = OperazioniSuDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
+            if (!AnnoAttuale.equals(Anno)) {
+                String Data1 = String.valueOf(Integer.parseInt(Anno) + 1) + "-01-01 00:00";
+                d = OperazioniSuDate.ConvertiDatainLongMinuto(Data1);
+            }
+
+        while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
+           // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
+            String ultimoRecupero[];
+            ultimoRecupero=stack.pop();
+            BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();            
+            BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
+            String Data=ultimoRecupero[3];
+            
+         /*  if (Moneta.equalsIgnoreCase("usdt")){ 
+                System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
+                System.out.println(qtaRimanente);
+                }*/
+            //System.out.println(qtaEstratta+" - "+costoEstratta);
+            if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta è minore o uguale alla qta rimanente allora
+                {
+                //imposto il nuovo valore su qtarimanente che è uguale a qtarimanente-qtaestratta
+                qtaRimanente=qtaRimanente.subtract(qtaEstratta);
+                //System.out.println(qtaRimanente);
+                //recupero il valore di quella transazione e la aggiungo al costoTransazione
+                costoTransazione=costoTransazione.add(costoEstratta);
+                rigaTabella=new Object[9];
+                rigaTabella[0]=Data;
+                rigaTabella[1]=PlusXMon.Mon.Moneta;
+                rigaTabella[2]=Wallet;
+                rigaTabella[3]=qtaEstratta.stripTrailingZeros().toPlainString();
+                QtaProgressiva=QtaProgressiva.add(qtaEstratta);
+                rigaTabella[4]=costoEstratta.setScale(2, RoundingMode.HALF_UP);
+                Moneta monCalcoli=PlusXMon.Mon.ClonaMoneta();
+                monCalcoli.Qta=qtaEstratta.stripTrailingZeros().toPlainString();
+                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete);
+                rigaTabella[5]=new BigDecimal(PrezzoEsatto).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                BigDecimal PlusLatenteEsatta=new BigDecimal(PrezzoEsatto).subtract(costoEstratta);
+                rigaTabella[6]=new BigDecimal((String)rigaTabella[5]).subtract(costoEstratta).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                PlusLatenteProgressiva=PlusLatenteProgressiva.add(PlusLatenteEsatta);
+                rigaTabella[7]=QtaProgressiva.stripTrailingZeros().toPlainString();
+                rigaTabella[8]=PlusLatenteProgressiva.stripTrailingZeros().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                Tabella.add(rigaTabella);
+            }else{
+                //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
+                //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
+                //recuperare il prezzo della qta rimanente e la qta rimanente e riaggiungerla allo stack
+                //non ho più qta rimanente
+                String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
+                //System.out.println(qtaRimanenteStack);
+               // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
+                stack.push(valori);
+                costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
+                qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
+                rigaTabella=new Object[9];
+                rigaTabella[0]=Data;
+                rigaTabella[1]=PlusXMon.Mon.Moneta;
+                rigaTabella[2]=Wallet;
+                rigaTabella[3]=qtaEstratta.stripTrailingZeros().toPlainString();
+                QtaProgressiva=QtaProgressiva.add(qtaEstratta);
+                rigaTabella[4]=costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)).setScale(2, RoundingMode.HALF_UP);
+                Moneta monCalcoli=PlusXMon.Mon.ClonaMoneta();
+                monCalcoli.Qta=qtaEstratta.stripTrailingZeros().toPlainString();
+                //System.out.println(DecimaliCalcoli);
+                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete);
+                rigaTabella[5]=new BigDecimal(PrezzoEsatto).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                BigDecimal PlusLatenteEsatta=new BigDecimal(PrezzoEsatto).subtract(costoEstratta);
+                rigaTabella[6]=new BigDecimal((String)rigaTabella[5]).subtract(costoEstratta).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                PlusLatenteProgressiva=PlusLatenteProgressiva.add(PlusLatenteEsatta);
+                rigaTabella[7]=QtaProgressiva.stripTrailingZeros().toPlainString();
+                rigaTabella[8]=PlusLatenteProgressiva.stripTrailingZeros().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                Tabella.add(rigaTabella);
+            }
+            
+        }
+        }
+        //pop -> toglie dello stack l'ultimo e recupera il dato
+        //peek - > recupera solo il dato
+
+    
+    //ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
+
+      return Tabella;
+  }
+  
+  
   
  }
   
@@ -1033,6 +1172,7 @@ public class Calcoli_RT {
 
           String Anno;
           String Wallet;
+          boolean movimentatoAnno=false;
           String ValVendita="0.00";
           String CostoVendite="0.00";
           String PlusRealizzata="0.00";

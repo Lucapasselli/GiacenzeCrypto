@@ -36,8 +36,9 @@
           <Group type="102" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="Bottone_Titolo" min="-2" pref="553" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="jLabel1" min="-2" pref="236" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="jLabel2" min="-2" pref="63" max="-2" attributes="0"/>
@@ -67,6 +68,7 @@
                       <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                           <Component id="jLabel2" alignment="3" max="32767" attributes="0"/>
                           <Component id="jLabel1" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
+                          <Component id="Bottone_Titolo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="CDC_DataChooser_Iniziale" max="32767" attributes="0"/>
                       <Component id="jLabel3" alignment="0" max="32767" attributes="0"/>
@@ -258,11 +260,11 @@
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Tipo&lt;br&gt;Moneta&lt;br&gt;Acq./Ric.&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Acq./Ric.&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore &lt;br&gt;transazione&lt;br&gt;come da CSV&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Double"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Non Utilizzata&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Nuovo&lt;br&gt;Costo di Carico&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;html&gt;&lt;center&gt;Non Utilizzata&lt;/html&gt;&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plusvalenza&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plusvalenza&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Double"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Riferimento&lt;br&gt;Trasferimento&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="Note" type="java.lang.Object"/>
                         <Column editable="false" title="Auto" type="java.lang.Object"/>
@@ -595,6 +597,9 @@
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="b9" green="ff" red="be" type="rgb"/>
                 </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="33" green="33" red="33" type="rgb"/>
+                </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Nuovo.png"/>
                 </Property>
@@ -617,6 +622,9 @@
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="66" green="66" red="ff" type="rgb"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="33" green="33" red="33" type="rgb"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Cestino.png"/>
@@ -1191,7 +1199,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPane" pref="326" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPane" pref="334" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="GiacenzeaData_Bottone_CambiaNomeToken" alignment="1" max="32767" attributes="0"/>
@@ -1210,7 +1218,7 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="Giacenzeadata_Dettaglio_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="288" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="296" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
@@ -1320,7 +1328,7 @@
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="GiacenzeaData_TabellaKeyReleased"/>
                           </Events>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 32));"/>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 32));"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>
@@ -1342,6 +1350,9 @@
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="c3" green="f0" red="ff" type="rgb"/>
+                        </Property>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="33" green="33" red="33" type="rgb"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Calcolatrice.png"/>
@@ -1637,7 +1648,7 @@
                                       <Component id="RW_Bottone_Stampa" min="-2" pref="190" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jButton2" min="-2" pref="190" max="-2" attributes="0"/>
-                                      <EmptySpace pref="88" max="32767" attributes="0"/>
+                                      <EmptySpace pref="89" max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="46" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="100" max="-2" attributes="0"/>
@@ -1672,8 +1683,8 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Text_IC" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RW_Anno_ComboBox" alignment="0" max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="RW_Anno_ComboBox" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                                       <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Calcola" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1684,7 +1695,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="220" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="225" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
@@ -1694,7 +1705,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="283" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="288" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1704,7 +1715,7 @@
                                   <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="184" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="190" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -2223,6 +2234,8 @@
                                   <Component id="jScrollPane11" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="RT_Label_Avviso" min="-2" pref="689" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RT_Bottone_Calcola" min="-2" pref="150" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
@@ -2234,7 +2247,13 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="RT_Bottone_Calcola" min="-2" pref="32" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="RT_Bottone_Calcola" min="-2" pref="32" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                                      <Component id="RT_Label_Avviso" min="-2" pref="19" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jScrollPane11" min="-2" pref="182" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -2255,7 +2274,7 @@
                         <Component class="javax.swing.JTable" name="RT_Tabella_Principale">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="7" rowCount="4">
+                              <Table columnCount="7" rowCount="0">
                                 <Column editable="false" title="Anno" type="java.lang.Object"/>
                                 <Column editable="false" title="Tot. Movimenti Rilevanti al Prezzo di Mercato" type="java.lang.Object"/>
                                 <Column editable="false" title="Tot. Movimenti Rilevanti al Prezzo di Carico" type="java.lang.Object"/>
@@ -2297,7 +2316,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="50" minWidth="50" prefWidth="50" resizable="true">
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -2342,15 +2361,20 @@
                           <Layout>
                             <DimensionLayout dim="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane12" alignment="0" pref="1456" max="32767" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jLabel17" min="-2" pref="195" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jScrollPane13" min="-2" pref="1104" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane12" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="jLabel17" min="-2" pref="195" max="-2" attributes="0"/>
+                                              <EmptySpace max="32767" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" attributes="0">
+                                              <Component id="jScrollPane13" pref="1188" max="32767" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Component id="RT_Bottone_ModificaPrezzo" min="-2" pref="262" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
@@ -2360,10 +2384,18 @@
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Component id="jScrollPane12" pref="326" max="32767" attributes="0"/>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel17" min="-2" pref="22" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="jScrollPane13" pref="195" max="32767" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="jLabel17" min="-2" pref="22" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                                              <Component id="jScrollPane13" pref="195" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" attributes="0">
+                                              <Component id="RT_Bottone_ModificaPrezzo" min="-2" pref="49" max="-2" attributes="0"/>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
@@ -2380,12 +2412,12 @@
                                   <Properties>
                                     <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                      <Table columnCount="10" rowCount="4">
+                                      <Table columnCount="10" rowCount="0">
                                         <Column editable="false" title="Wallet" type="java.lang.Object"/>
                                         <Column editable="false" title="Moneta" type="java.lang.Object"/>
                                         <Column editable="false" title="Tipo" type="java.lang.Object"/>
-                                        <Column editable="false" title="Prezzo Vendite/Scambi rilevanti" type="java.lang.Double"/>
-                                        <Column editable="false" title="Costo Carico vendite rilevanti" type="java.lang.Double"/>
+                                        <Column editable="false" title="&lt;html&gt;Valore Movimenti&lt;br&gt;Fiscalmente Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
+                                        <Column editable="false" title="&lt;html&gt;Costo Carico Movimenti&lt;br&gt;Fiscalmente Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
                                         <Column editable="false" title="Plusvalenze Realizzate" type="java.lang.Double"/>
                                         <Column editable="false" title="Plusvalenze Latenti" type="java.lang.Double"/>
                                         <Column editable="false" title="Giacenze Rimanenti" type="java.lang.Object"/>
@@ -2455,6 +2487,9 @@
                                     <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="RT_Tabella_DettaglioMoneteMouseReleased"/>
                                     <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="RT_Tabella_DettaglioMoneteKeyReleased"/>
                                   </Events>
+                                  <AuxValues>
+                                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 32));"/>
+                                  </AuxValues>
                                 </Component>
                               </SubComponents>
                             </Container>
@@ -2468,7 +2503,7 @@
                                 <Component class="javax.swing.JTable" name="RT_Tabella_LiFo">
                                   <Properties>
                                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                      <Table columnCount="9" rowCount="4">
+                                      <Table columnCount="9" rowCount="0">
                                         <Column editable="false" title="Data ultimo acquisto" type="java.lang.Object"/>
                                         <Column editable="false" title="Moneta" type="java.lang.Object"/>
                                         <Column editable="false" title="Wallet" type="java.lang.Object"/>
@@ -2541,10 +2576,42 @@
                                 <Property name="text" type="java.lang.String" value="Dettaglio del LiFo sulle rimanenze"/>
                               </Properties>
                             </Component>
+                            <Component class="javax.swing.JButton" name="RT_Bottone_ModificaPrezzo">
+                              <Properties>
+                                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                                  <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Prezzo.png"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Modifica Prezzo di Fine Anno"/>
+                                <Property name="enabled" type="boolean" value="false"/>
+                                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                              </Properties>
+                              <Events>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_ModificaPrezzoActionPerformed"/>
+                              </Events>
+                            </Component>
                           </SubComponents>
                         </Container>
                       </SubComponents>
                     </Container>
+                    <Component class="javax.swing.JLabel" name="RT_Label_Avviso">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Segoe UI" size="12" style="1"/>
+                        </Property>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="0" red="cc" type="rgb"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere &quot;Calcola&quot; per aggiornare la tabella."/>
+                      </Properties>
+                    </Component>
                   </SubComponents>
                 </Container>
               </SubComponents>
@@ -4474,6 +4541,46 @@
                     </Component>
                   </SubComponents>
                 </Container>
+                <Container class="javax.swing.JPanel" name="Opzioni_Varie">
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                      <JTabbedPaneConstraints tabName="Varie">
+                        <Property name="tabTitle" type="java.lang.String" value="Varie"/>
+                      </JTabbedPaneConstraints>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Checkbox_TemaScuro" min="-2" pref="474" max="-2" attributes="0"/>
+                              <EmptySpace pref="1059" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Checkbox_TemaScuro" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="802" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_TemaScuro">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Usa Tema Scuro"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Checkbox_TemaScuroActionPerformed"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
               </SubComponents>
             </Container>
           </SubComponents>
@@ -4493,8 +4600,10 @@
     <Component class="com.toedter.calendar.JDateChooser" name="CDC_DataChooser_Iniziale">
       <Properties>
         <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Segoe UI" size="12" style="1"/>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+          <FontInfo relative="true">
+            <Font bold="true" component="CDC_DataChooser_Iniziale" property="font" relativeSize="true" size="0"/>
+          </FontInfo>
         </Property>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[100, 31]"/>
@@ -4543,6 +4652,21 @@
           <Font name="Segoe UI" size="12" style="1"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Titolo">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="cc" green="cc" red="cc" type="rgb"/>
+        </Property>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Segoe UI" size="18" style="1"/>
+        </Property>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="33" green="33" red="33" type="rgb"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Titolo"/>
+        <Property name="focusPainted" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>

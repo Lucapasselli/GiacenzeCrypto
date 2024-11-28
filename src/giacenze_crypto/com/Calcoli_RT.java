@@ -792,7 +792,7 @@ public class Calcoli_RT {
                            // MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Qta="100";
                             //Adesso devo trovare il Valore di Vendita della Moneta
                             //mon.MonetaAddress="";
-                            BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, null, true, 2, mon.Rete));
+                            BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete));
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo=PrezzoV.toPlainString();
                             //BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, null, true, 15, null));
                             PlusAnno[5] = PlusAnno[5].add(PrezzoV);
@@ -1038,7 +1038,7 @@ public class Calcoli_RT {
                   PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
                 if (plus.movimentatoAnno||!(new BigDecimal(plus.Mon.Qta).compareTo(BigDecimal.ZERO)==0)){ 
                     
-                    rigaTabella=new Object[9];
+                    rigaTabella=new Object[10];
                     rigaTabella[0]=Wallet;
                     rigaTabella[1]=Moneta;
                     rigaTabella[2]=plus.Mon.Tipo;
@@ -1047,7 +1047,10 @@ public class Calcoli_RT {
                     rigaTabella[5]=Double.valueOf(plus.PlusRealizzata);
                     rigaTabella[6]=Double.valueOf(plus.PlusLatente);
                     rigaTabella[7]=new BigDecimal(plus.Mon.Qta).stripTrailingZeros().toPlainString();
-                    rigaTabella[8]=Double.valueOf(plus.Mon.Prezzo);  
+                    rigaTabella[8]=new BigDecimal(plus.Mon.Prezzo); 
+                    String Errori="";
+                    if (plus.Mon.Prezzo.equals("0"))Errori="Token senza prezzo";
+                    rigaTabella[9]=Errori;
                     Tabella.add(rigaTabella);
                 }
               }

@@ -14,15 +14,18 @@ import javax.swing.table.DefaultTableCellRenderer;
  * @author luca.passelli
  */
 public class Tabelle {
-    static Color verdeScuro=new Color (23, 114, 69);
+    //static Color verdeScuro=new Color (23, 114, 69);
+    //static Color verdeScuro=new Color (43, 130, 81);
+    static Color verdeScuro=new Color (145, 255, 143);
     static Color verde=new Color (145, 255, 143);
     static Color verdeChiaro=new Color (172, 255, 171);
-    static Color rosso=new Color(255, 120, 120);
+    static Color rosso=new Color(255, 80, 80);
     static Color rossoChiaro=new Color(255, 133, 133);
     static Color giallo=new Color(255, 255, 156);
     static Color gialloChiaro=new Color(255, 255, 176);
     static Color bianco=new Color(255, 255, 255);
     static Color grigioChiaro=new Color(245, 245, 245);
+    static Color grigio=new Color(70, 70, 70);
     static Color arancione=new Color(255, 216, 166);
     static Color arancioneChiaro=new Color(255, 226, 189);
 
@@ -39,7 +42,7 @@ public class Tabelle {
 
      
 
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer()  {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -48,8 +51,17 @@ public class Tabelle {
              
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
-
-            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+        Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
  
             if (isSelected) {
 
@@ -70,7 +82,7 @@ public class Tabelle {
                          //   {
                    // c.setBackground(MappaColori.get(row));
                     setBackground(bg);
-                    setForeground(Color.RED);
+                    setForeground(rosso);
                    // }
 
                 } 
@@ -92,12 +104,12 @@ public class Tabelle {
                 else if (value!=null && col==11 && value.toString().trim().contains("-")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
-                    setForeground(Color.RED);
+                    setForeground(rosso);
                 } 
                 else if (value!=null &&col==9&& table.getModel().getColumnCount()>32 && table.getModel().getValueAt(row, 32).toString().toUpperCase().contains("NO")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
-                    setForeground(Color.RED);
+                    setForeground(rosso);
                 } 
                 else if (value!=null && col==11 && !value.toString().trim().equalsIgnoreCase("0.00")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
@@ -106,16 +118,20 @@ public class Tabelle {
                 }   
                 else {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
-                    setForeground(Color.black);
+                    setForeground(fore);
                   c.setBackground(bg);
                   
 
                 }
 
               // riga=row;
-                return this;
+                return c;
             }
-        });
+        };
+        
+        // Configura il renderer per i tipi più comuni
+    table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
         return table;
     }
     
@@ -132,7 +148,17 @@ public class Tabelle {
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
 
-            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
  
             if (isSelected) {
 
@@ -141,10 +167,10 @@ public class Tabelle {
                 }
                 else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 4).toString().contains("-")) {
                     c.setBackground(bg);
-                    c.setForeground(Color.RED);
+                    c.setForeground(rosso);
                 }
                 else {
-                    setForeground(Color.black);
+                    setForeground(fore);
                   c.setBackground(bg);
                   
 
@@ -171,7 +197,17 @@ public class Tabelle {
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
 
-            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
  
             if (isSelected&&col!=7) {
 
@@ -184,7 +220,7 @@ public class Tabelle {
                 }
             else if (col==7 && value.toString().toLowerCase().contains("-")) {
                     setForeground(Color.black);
-                  c.setBackground(Color.RED);
+                  c.setBackground(rosso);
                 }
             else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 5).toString().contains("-")) {
                     setBackground(bg);
@@ -192,10 +228,10 @@ public class Tabelle {
                 } 
                 else if (table.getModel().getColumnCount()>4 && table.getModel().getValueAt(row, 5).toString().contains("-")) {
                     c.setBackground(bg);
-                    c.setForeground(Color.RED);
+                    c.setForeground(rosso);
                 }
                 else {
-                    setForeground(Color.black);
+                    setForeground(fore);
                   c.setBackground(bg);
                   
 
@@ -225,7 +261,17 @@ public class Tabelle {
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
 
-            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
  
             if (isSelected) {
 
@@ -265,12 +311,23 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
                                                        int col) {
             // Ottieni il componente standard per la cella
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
 
             // Imposta il colore di sfondo alternato
             if (isSelected) {
                 c.setBackground(table.getSelectionBackground());
             } else {
-                c.setBackground(row % 2 == 0 ? grigioChiaro : bianco);
+                c.setBackground(bg);
             }
 
             return c;
@@ -288,51 +345,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
 
     
     
-    public static JTable ColoraTabellaSempliceDouble(final JTable table) {
-      //  bg=grigioChiaro;
-     //   Data="";
 
-     //System.out.println("test");
-
-     
-
-        table.setDefaultRenderer(Number.class, new DefaultTableCellRenderer() {
-            @Override
-            
-            public Component getTableCellRendererComponent(JTable table,
-                    Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-                
-             
-        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-
-
-            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
- 
-            if (isSelected) {
-
-                    c.setBackground(table.getSelectionBackground());
-                    c.revalidate();
-                }
-                 
-                else {
-                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
-                   // setForeground(Color.gray);
-                  c.setBackground(bg);
-                  
-                  
-
-                }
-
-              // riga=row;
-                return this;
-            }
-        }
-        
-        
-        );
-        return table;
-    }     
-       
        
        
        
@@ -354,26 +367,36 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
 
-            Color bg= (row % 2 == 0  ? grigioChiaro : bianco);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
  
             if (isSelected) {
 
                     c.setBackground(table.getSelectionBackground());
                     c.revalidate();
                 }else if (table.getModel().getColumnCount()>1 && table.getModel().getValueAt(row, 2).toString().toLowerCase().contains("error")) {
-                    setForeground(Color.RED);
+                    setForeground(rosso);
                   c.setBackground(bg);
                 }else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(row, 4).toString().toLowerCase().contains("error")) {
-                    setForeground(Color.RED);
+                    setForeground(rosso);
                   c.setBackground(bg);
                 }else if (table.getModel().getColumnCount()>11 && table.getModel().getValueAt(row, 15).toString().toLowerCase().contains("error")) {          
-                    setForeground(Color.RED);
+                    setForeground(rosso);
                   c.setBackground(bg);                
                 }
                  
                 else {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
-                  setForeground(Color.black);
+                  setForeground(fore);
                   c.setBackground(bg);
                   
                   

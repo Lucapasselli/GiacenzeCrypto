@@ -6,10 +6,12 @@ package giacenze_crypto.com;
 
 //import com.formdev.flatlaf.FlatDarkLaf;
 //import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.lowagie.text.Font;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JDateChooserCellEditor;
+import com.toedter.calendar.JTextFieldDateEditor;
 import static giacenze_crypto.com.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
 import static giacenze_crypto.com.Importazioni.ColonneTabella;
 import static giacenze_crypto.com.Importazioni.RiempiVuotiArray;
@@ -44,6 +46,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -52,13 +56,22 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
+import java.time.Year;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 //import org.apache.commons.codec.binary.Hex;
@@ -73,6 +86,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
     /**
      * Creates new form com
      */
+    private Point initialClick;
+
+
+
     static int DecimaliCalcoli=30;
     static Map<String, String> CDC_FiatWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -112,16 +129,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public boolean VersioneCambiata=false;
     public boolean FineCaricamentoDati=false;
     public Calcoli_RT.AnalisiPlus APlus;
+    public static String tema;
 
     
     //static String Appoggio="";
     
     
-    public CDC_Grafica() {
-       
-    try {
+    public CDC_Grafica() {     
         
-            this.setTitle("Giacenze_Crypto 1.28 Beta");
+    try {        
+        
+            String Titolo="Giacenze Crypto 1.29 Beta";          
+            this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
@@ -135,18 +154,28 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         
             File cryptowallet=new File (CryptoWallet_FileDB);
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
-            
-        // //   UIManager.setLookAndFeel( new FlatIntelliJLaf() );
-            UIManager.setLookAndFeel( new FlatLightLaf() );
 
-          //  UIManager.setLookAndFeel( new FlatDarkLaf() );
-        
+
+ 
+            
+            
         initComponents();
-        if (!DatabaseH2.CreaoCollegaDatabase()){
+        Bottone_Titolo.setText(Titolo);
+       // SwingUtilities.updateComponentTreeUI(this);
+      /*  if (!DatabaseH2.CreaoCollegaDatabase()){
             JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             System.exit(0);
-        }
-        
+        }*/
+              if (tema!=null&&tema.equalsIgnoreCase("Scuro"))
+        {
+            ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
+            ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
+            ((JTextFieldDateEditor)GiacenzeaData_Data_DataChooser.getDateEditor()).setBackground(Color.lightGray);
+            Opzioni_Varie_Checkbox_TemaScuro.setSelected(true);
+        }else tema="Chiaro";      
+      
+      //System.out.println("test");
+      
         if (Funzioni.CambiataVersione(this.getTitle())) {
             System.out.println("Versione Cambiata");
             VersioneCambiata = true;
@@ -185,6 +214,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
+        this.RT_Label_Avviso.setVisible(false);
         //Optioni_Export_Wallets_Combobox=GiacenzeaData_Wallet_ComboBox;
         DatabaseH2.CancellaPrezziVuoti();//pulisce il database dai prezzi vuoti delle precedenti sessioni
                                         //in modo tale che se i prezzi tornano ad essere disponibili questi vengono riscaricati
@@ -208,14 +238,25 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_AggiornaGui();
         FineCaricamentoDati=true;
         //RW_Bottone_StampaActionPerformed(null);
+        
+       // DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
+
+        
+       
+
 
 }  catch( Exception ex ) {
              Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            System.err.println( "Failed to initialize LaF" );
+            System.err.println( "Failed to initialize jFrame" );
         }
         
          
     }
+    
+     /*   public static void main(String[] args) {
+        
+    }*/
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -331,6 +372,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jScrollPane13 = new javax.swing.JScrollPane();
         RT_Tabella_LiFo = new javax.swing.JTable();
         jLabel17 = new javax.swing.JLabel();
+        RT_Bottone_ModificaPrezzo = new javax.swing.JButton();
+        RT_Label_Avviso = new javax.swing.JLabel();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -451,6 +494,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel16 = new javax.swing.JLabel();
         RW_Opzioni_CheckBox_LiFoSubMovimenti = new javax.swing.JCheckBox();
         RW_Bottone_Documentazione1 = new javax.swing.JButton();
+        Opzioni_Varie = new javax.swing.JPanel();
+        Opzioni_Varie_Checkbox_TemaScuro = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -458,6 +503,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
         CDC_Label_Giorni = new javax.swing.JLabel();
         CDC_Text_Giorni = new javax.swing.JTextField();
+        Bottone_Titolo = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
@@ -482,9 +528,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Non Utilizzata</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Non Utilizzata</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND"
             }
         ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
@@ -650,6 +703,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         TransazioniCrypto_Bottone_MovimentoNuovo.setBackground(new java.awt.Color(190, 255, 185));
+        TransazioniCrypto_Bottone_MovimentoNuovo.setForeground(new java.awt.Color(51, 51, 51));
         TransazioniCrypto_Bottone_MovimentoNuovo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Nuovo.png"))); // NOI18N
         TransazioniCrypto_Bottone_MovimentoNuovo.setText("Nuovo Movimento");
         TransazioniCrypto_Bottone_MovimentoNuovo.setMaximumSize(new java.awt.Dimension(210, 27));
@@ -662,6 +716,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         TransazioniCrypto_Bottone_MovimentoElimina.setBackground(new java.awt.Color(255, 102, 102));
+        TransazioniCrypto_Bottone_MovimentoElimina.setForeground(new java.awt.Color(51, 51, 51));
         TransazioniCrypto_Bottone_MovimentoElimina.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
         TransazioniCrypto_Bottone_MovimentoElimina.setText("Elimina Movimento");
         TransazioniCrypto_Bottone_MovimentoElimina.setEnabled(false);
@@ -1123,7 +1178,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
         }
-        GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 32));
+        GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 32));
 
         GiacenzeaData_Totali_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         GiacenzeaData_Totali_Label.setText("TOTALE in EURO : ");
@@ -1131,6 +1186,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         GiacenzeaData_Totali_TextField.setEditable(false);
 
         GiacenzeaData_Bottone_Calcola.setBackground(new java.awt.Color(255, 240, 195));
+        GiacenzeaData_Bottone_Calcola.setForeground(new java.awt.Color(51, 51, 51));
         GiacenzeaData_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Calcolatrice.png"))); // NOI18N
         GiacenzeaData_Bottone_Calcola.setText("Calcola");
         GiacenzeaData_Bottone_Calcola.addActionListener(new java.awt.event.ActionListener() {
@@ -1371,7 +1427,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1387,7 +1443,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1676,7 +1732,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(RW_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 88, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 89, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1705,8 +1761,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(RWLayout.createSequentialGroup()
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel4)
                         .addComponent(RW_Bottone_Calcola)
                         .addComponent(jLabel7)
@@ -1715,7 +1771,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(RW_Bottone_Stampa)
                         .addComponent(jButton2)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1723,7 +1779,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(jLabel5)
                         .addComponent(RW_CheckBox_VediSoloErrori)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -1732,7 +1788,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1740,10 +1796,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         RT_Tabella_Principale.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+
             },
             new String [] {
                 "Anno", "Tot. Movimenti Rilevanti al Prezzo di Mercato", "Tot. Movimenti Rilevanti al Prezzo di Carico", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore di Fine Anno", "Errori"
@@ -1772,9 +1825,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setPreferredWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMaxWidth(100);
-            RT_Tabella_Principale.getColumnModel().getColumn(6).setMinWidth(50);
-            RT_Tabella_Principale.getColumnModel().getColumn(6).setPreferredWidth(50);
-            RT_Tabella_Principale.getColumnModel().getColumn(6).setMaxWidth(50);
+            RT_Tabella_Principale.getColumnModel().getColumn(6).setMinWidth(0);
+            RT_Tabella_Principale.getColumnModel().getColumn(6).setPreferredWidth(0);
+            RT_Tabella_Principale.getColumnModel().getColumn(6).setMaxWidth(0);
         }
 
         RT_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/20_Calcolatrice.png"))); // NOI18N
@@ -1788,13 +1841,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RT_Tabella_DettaglioMonete.setAutoCreateRowSorter(true);
         RT_Tabella_DettaglioMonete.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null}
+
             },
             new String [] {
-                "Wallet", "Moneta", "Tipo", "Prezzo Vendite/Scambi rilevanti", "Costo Carico vendite rilevanti", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "Errori"
+                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Fiscalmente Rilevanti</html>", "<html>Costo Carico Movimenti<br>Fiscalmente Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "Errori"
             }
         ) {
             Class[] types = new Class [] {
@@ -1828,13 +1878,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
             RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setPreferredWidth(100);
             RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMaxWidth(100);
         }
+        RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 32));
 
         RT_Tabella_LiFo.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null}
+
             },
             new String [] {
                 "Data ultimo acquisto", "Moneta", "Wallet", "Qta", "Costo di Carico", "Prz Attuale / Fine Anno", "Plusvalenza Latente", "Qta Progressiva", "Plus Latente Progressiva"
@@ -1852,18 +1900,33 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         jLabel17.setText("Dettaglio del LiFo sulle rimanenze");
 
+        RT_Bottone_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Prezzo.png"))); // NOI18N
+        RT_Bottone_ModificaPrezzo.setText("Modifica Prezzo di Fine Anno");
+        RT_Bottone_ModificaPrezzo.setEnabled(false);
+        RT_Bottone_ModificaPrezzo.setMaximumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaPrezzo.setMinimumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaPrezzo.setPreferredSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_ModificaPrezzoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 1456, Short.MAX_VALUE)
+            .addComponent(jScrollPane12)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 1104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 1188, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1871,13 +1934,22 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
         jTabbedPane1.addTab("Dettagli Anno", jPanel1);
+
+        RT_Label_Avviso.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        RT_Label_Avviso.setForeground(new java.awt.Color(204, 0, 0));
+        RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare la tabella.");
 
         javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
         RT.setLayout(RTLayout);
@@ -1889,6 +1961,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(jScrollPane11)
                     .addGroup(RTLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 689, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jTabbedPane1))
                 .addContainerGap())
@@ -1896,7 +1970,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RTLayout.setVerticalGroup(
             RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(RTLayout.createSequentialGroup()
-                .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(RTLayout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -3182,6 +3260,32 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.addTab("Opzioni Calcolo RW/W", Opzioni_RW_Pannello);
 
+        Opzioni_Varie_Checkbox_TemaScuro.setText("Usa Tema Scuro");
+        Opzioni_Varie_Checkbox_TemaScuro.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Checkbox_TemaScuroActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
+        Opzioni_Varie.setLayout(Opzioni_VarieLayout);
+        Opzioni_VarieLayout.setHorizontalGroup(
+            Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_VarieLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Varie_Checkbox_TemaScuro, javax.swing.GroupLayout.PREFERRED_SIZE, 474, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(1059, Short.MAX_VALUE))
+        );
+        Opzioni_VarieLayout.setVerticalGroup(
+            Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_VarieLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Varie_Checkbox_TemaScuro)
+                .addContainerGap(802, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
+
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
         OpzioniLayout.setHorizontalGroup(
@@ -3203,7 +3307,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel2.setText("Data Inizio :");
 
         CDC_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
-        CDC_DataChooser_Iniziale.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        CDC_DataChooser_Iniziale.setFont(CDC_DataChooser_Iniziale.getFont().deriveFont(CDC_DataChooser_Iniziale.getFont().getStyle() | java.awt.Font.BOLD));
         CDC_DataChooser_Iniziale.setMinimumSize(new java.awt.Dimension(100, 31));
         CDC_DataChooser_Iniziale.setPreferredSize(new java.awt.Dimension(100, 31));
         CDC_DataChooser_Iniziale.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -3240,6 +3344,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_Text_Giorni.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         CDC_Text_Giorni.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
+        Bottone_Titolo.setBackground(new java.awt.Color(204, 204, 204));
+        Bottone_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        Bottone_Titolo.setForeground(new java.awt.Color(51, 51, 51));
+        Bottone_Titolo.setText("Titolo");
+        Bottone_Titolo.setFocusPainted(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -3248,7 +3358,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(Bottone_Titolo, javax.swing.GroupLayout.PREFERRED_SIZE, 553, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3273,7 +3384,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_Titolo))
                         .addComponent(CDC_DataChooser_Iniziale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
@@ -4328,6 +4440,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         // TODO add your handling code here:
        // System.out.println(CDC_DataChooser_Iniziale.getDate());
        //System.out.println(CDC_DataChooser_Iniziale.getDate());
+
         if (CDC_DataChooser_Iniziale.getDate()!=null){
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String Data=f.format(CDC_DataChooser_Iniziale.getDate());
@@ -4842,6 +4955,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void Funzioni_AggiornaTutto() {
         TransazioniCrypto_DaSalvare = true;
+        if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
@@ -5262,10 +5376,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
                         BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
                         if (Address != null && Rete != null) {
-                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString());
+                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
                            // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
-                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString());
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                         }
                     } else {
                         JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
@@ -5377,10 +5491,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                       //  System.out.println(DataconOra+"-"+mon+"-"+PrezzoUnitario);
                         if (Address != null && Rete != null) {
                           //  System.out.println("Scrivo prezzo per Address");
-                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString());
+                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
                            // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
-                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString());
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                         }
                         } 
                     } else {
@@ -5412,7 +5526,110 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             
         }
     }
-    
+        
+        private void RT_Funzione_ModificaValore() {
+            //InizioFine=0 -> Prezzo Iniziale
+            //InizioFine=1 -> Prezzo Finale
+            //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
+            //Altrimenti cambio il prezzo sulla transazione
+            String ID;
+        if (RT_Tabella_Principale.getSelectedRow()>=0 && RT_Tabella_DettaglioMonete.getSelectedRow() >= 0) {
+            int rigaselezionata = RT_Tabella_DettaglioMonete.getSelectedRow();
+            int rigaTabellaPrincipale=RT_Tabella_Principale.getSelectedRow();
+            String Anno=RT_Tabella_Principale.getModel().getValueAt(rigaTabellaPrincipale, 0).toString();
+            //String GruppoWalletInizio=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+            //String GruppoWalletFine=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
+            String GruppoWallet;
+            String DataPrezzo=String.valueOf(Integer.parseInt(Anno)+1)+"-01-01 00:00";
+            String Prezzo;
+            String mon;
+            BigDecimal Qta;
+                    mon = RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 1).toString();
+                    Qta = new BigDecimal(RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 7).toString());
+                    Prezzo = RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 8).toString();
+
+                long DataCalcoli = 0;
+                DataCalcoli=OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo);
+                String DataconOra=String.valueOf(Integer.parseInt(Anno)+1)+"-01-01 00";
+            //long DataRiferimento = 0;
+                
+                
+               // BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
+                
+
+                String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
+                if (Prezz != null) {
+                    Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                    if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+                        //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
+                        //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
+                        //Scansiono la tabella della movimentazioni e salvo in una mappa Monete tutte le monete che trovo con Address_Nome come key
+                        //ovvimente solo quelle facente parti del Gruppo wallet analizzato
+                        //Devo scansionare tutto perchè potrei trovarmi con monete con lo stesso nome ma address diversi
+                        //Siccome l'RW tiene conto solo del NomeToken, per essere sicuro che quel prezzo sia associato a quel nome token in tutte le sue derivazioni
+                        //e poi per scrivere il prezzo ho bisogno dell'address
+                        String Address;
+                        String Rete;
+                        
+                        //Questo serve per tradurre  es. 04 (wallet defi) in Wallet 04;
+                        //GruppoWallet="Wallet "+GruppoWallet.split("\\(")[0].trim();
+                        //cd
+                        Map<String, Moneta> MappaAddressNomeMoneta = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);        
+                        for (String[] v : MappaCryptoWallet.values()) {
+                            Moneta a[]=Funzioni.RitornaMoneteDaID(v[0]);
+                            //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
+                            //E se il wallet fa parte del gruppo wallet di riferimento                          
+                            long dataTransazione=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                            //System.out.println(GruppoWallet+" - "+GruppoWalletMovimento);
+                            if (dataTransazione<=DataCalcoli){
+                            //A questo punto controllo se la moneta è quella che sto cercando
+                            for (Moneta MonTransazione : a){
+                                //controllo sia la moneta in uscita che quella in ingresso, nel caso trovi una corrispondenza inserisco la moneta nella mappa
+                                
+                                if (MonTransazione.Moneta.equals(mon)){
+                                    MappaAddressNomeMoneta.put(MonTransazione.MonetaAddress+"_"+MonTransazione.Moneta, MonTransazione);
+                                }
+                            }
+                            }else  {
+                                //in caso devo mettere un break se la funzione risulta troppo lenta
+                            }
+                        }
+                        
+                        for (Moneta Mone : MappaAddressNomeMoneta.values()){
+                            Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
+                            Rete=Mone.Rete;
+                           // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
+                           // System.out.println(DataconOra);
+                        //Se è un numero inserisco il prezzo e lo salvo a sistema
+                        BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
+                      //  System.out.println(DataconOra+"-"+mon+"-"+PrezzoUnitario);
+                        if (Address != null && Rete != null) {
+                          //  System.out.println("Scrivo prezzo per Address");
+                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
+                           // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
+                        } else {
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
+                        }
+                        } 
+                    } else {
+                        JOptionPane.showConfirmDialog(this, "Attenzione, " + Prezz + " non è un numero valido!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+                }
+
+         
+            
+                         //Una volta cambiato il prezzo aggiorno la tabella
+                RT_CalcolaRT();
+                RT_Tabella_Principale.setRowSelectionInterval(rigaTabellaPrincipale, rigaTabellaPrincipale);
+                RT_CompilaTabellaDettagli();
+                if(RT_Tabella_DettaglioMonete.getRowCount()>rigaselezionata)RT_Tabella_DettaglioMonete.setRowSelectionInterval(rigaselezionata, rigaselezionata);
+                RT_CompilaTabellaLiFo();
+                RT_Tabella_DettaglioMonete.requestFocus();
+                //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima   
+            
+        }
+    }
     
     private void GiacenzeaData_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
@@ -6122,6 +6339,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void CDC_DataChooser_InizialeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialeFocusLost
         // TODO add your handling code here:
        // System.out.println("lost");
+        
     }//GEN-LAST:event_CDC_DataChooser_InizialeFocusLost
 
     private void OpzioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_OpzioniComponentShown
@@ -6378,7 +6596,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+      //  Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        Funzioni_AggiornaTutto();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_GruppoWallet_CheckBox_PlusXWalletActionPerformed
@@ -7970,8 +8189,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //TransazioniCrypto_CheckBox_VediSenzaPrezzo
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_VediSenzaPrezzoActionPerformed
 
-    private void RT_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_CalcolaActionPerformed
-        // TODO add your handling code here:
+    
+    private void RT_CalcolaRT(){
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        RT_Bottone_ModificaPrezzo.setEnabled(false);
+        this.RT_Label_Avviso.setVisible(false);
         APlus=null;
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
@@ -8012,11 +8234,18 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
                 }
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+    
+    private void RT_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_CalcolaActionPerformed
+        // TODO add your handling code here:
+        RT_CalcolaRT();
+        
         
     }//GEN-LAST:event_RT_Bottone_CalcolaActionPerformed
 
     private void RT_CompilaTabellaDettagli(){
        // Map<String, String[]> Mappa_Gruppo_Alias =DatabaseH2.Pers_GruppoAlias_LeggiTabella();
+        RT_Bottone_ModificaPrezzo.setEnabled(false);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
@@ -8040,12 +8269,19 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     private void RT_CompilaTabellaLiFo(){
+        
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
         if (RT_Tabella_Principale.getSelectedRow()>=0){
             int rigaselezionata = RT_Tabella_Principale.getSelectedRow();
             String Anno = RT_Tabella_Principale.getModel().getValueAt(rigaselezionata, 0).toString();
+            //Attivo il bottone per poter modificare il prezzo dei token solo nel caso l'anno attuale non sia lo stesso di quello analizzato
+            //non posso infatti modificare i prezzi di fine anno dell'anno in corso
+            String AnnoAttuale = Year.now().toString();
+            if (!Anno.equals(AnnoAttuale))RT_Bottone_ModificaPrezzo.setEnabled(true);
+            
+            
             if (RT_Tabella_DettaglioMonete.getSelectedRow()>=0){
                 rigaselezionata = RT_Tabella_DettaglioMonete.getSelectedRow();
                 rigaselezionata = RT_Tabella_DettaglioMonete.getRowSorter().convertRowIndexToModel(rigaselezionata);
@@ -8080,6 +8316,44 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         this.RT_CompilaTabellaLiFo();
     }//GEN-LAST:event_RT_Tabella_DettaglioMoneteKeyReleased
+
+    private void RT_Bottone_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_ModificaPrezzoActionPerformed
+        // TODO add your handling code here:
+        RT_Funzione_ModificaValore();
+    }//GEN-LAST:event_RT_Bottone_ModificaPrezzoActionPerformed
+
+    private void Opzioni_Varie_Checkbox_TemaScuroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
+        // TODO add your handling code here:
+        if (Opzioni_Varie_Checkbox_TemaScuro.isSelected()){ 
+            try {
+                UIManager.setLookAndFeel( new FlatDarkLaf() );
+                ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
+                ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
+                ((JTextFieldDateEditor)GiacenzeaData_Data_DataChooser.getDateEditor()).setBackground(Color.lightGray);
+                tema="Scuro";
+                DatabaseH2.Opzioni_Scrivi("Tema","Scuro");
+                Tabelle.verdeScuro=new Color (145, 255, 143);
+                Tabelle.rosso=new Color(255, 40, 40);
+                
+            } catch (UnsupportedLookAndFeelException ex) {
+                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else{ 
+            try {
+                UIManager.setLookAndFeel( new FlatLightLaf() );
+                ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+                ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+                ((JTextFieldDateEditor)GiacenzeaData_Data_DataChooser.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+                DatabaseH2.Opzioni_Scrivi("Tema","Chiaro");
+                tema="Chiaro";
+                Tabelle.verdeScuro=new Color (23, 114, 69);
+                Tabelle.rosso=Color.RED;
+            } catch (UnsupportedLookAndFeelException ex) {
+                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+    }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -8128,7 +8402,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
                             //e aggiungergli gli asterisci recupero il suo nome originale
                             //gli asterischi gli aggiungo al nome orioginale del token e non al nome rinominato
-                            if (nomi[0] == null)
+                            if (nomi==null || nomi[0] == null)
                                 {
                                 DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NomeMoneta + " **");
                                 //il comando sotto indica al database che quel token essendo scam non avrà mai prezzo
@@ -8156,20 +8430,25 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 }
                         }
                         else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
-                            //Da gestire parte di descammizzazione
                             //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
                             //vada nuovamente a cercare il prezzo del token
                             //RinominaToken_LeggiTabellaDatabaseH2.AddressSenzaPrezzo_Scrivi(Address + "_" + Rete, "9999999999");
                             //leggo la riga per individuare il nome originale del token
                             String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
                             //lo scrivo nel database
+                            if (nomi!=null&&nomi[0]!=null){
                             DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], nomi[0]);
                             GiacenzeaData_Tabella.getModel().setValueAt(nomi[0], rigaselezionata, 0);
+                            }else{
+                                NomeMoneta=NomeMoneta.replace(" **", "");
+                                DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NomeMoneta);
+                                GiacenzeaData_Tabella.getModel().setValueAt(NomeMoneta, rigaselezionata, 0);
+                            }
                             //aggiorno l'intera tabella crypto
                             TabellaCryptodaAggiornare = true;
                          //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
                         }
-                                    NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+                                NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             if (Funzioni.isSCAM(NomeMoneta)) {
                 GiacenzeaData_Bottone_Scam.setText("Rimuovi da SCAM");
             } else {
@@ -9335,7 +9614,9 @@ try {
                 if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
                         && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                     if (VediSoloSenzaPrezzo && v[32].trim().equalsIgnoreCase("NO")||!VediSoloSenzaPrezzo) {
-                        ModelloTabellaCrypto.addRow(v);
+                        Object z[]=Funzioni.Converti_String_Object(v);
+                        ModelloTabellaCrypto.addRow(z);
+                       // ModelloTabellaCrypto.addRow(v);
                         if (Funzioni_isNumeric(v[19], false)) {
                             Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
                         }
@@ -9610,9 +9891,10 @@ try {
         }
         //</editor-fold>
         //</editor-fold>
-
+//SwingUtilities.invokeLater(CDC_Grafica::new);
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            
             public void run() {
                 new CDC_Grafica().setVisible(true);
             }
@@ -9667,6 +9949,7 @@ try {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane AnalisiCrypto;
     private javax.swing.JPanel Analisi_Crypto;
+    private javax.swing.JButton Bottone_Titolo;
     private javax.swing.JTabbedPane CDC;
     private javax.swing.JButton CDC_CardWallet_Bottone_CaricaCSV;
     private javax.swing.JButton CDC_CardWallet_Bottone_StampaRapporto;
@@ -9795,10 +10078,14 @@ try {
     private javax.swing.JPanel Opzioni_RW_Pannello;
     private javax.swing.JPanel Opzioni_Rewards_Pannello;
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
+    private javax.swing.JPanel Opzioni_Varie;
+    private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;
+    private javax.swing.JButton RT_Bottone_ModificaPrezzo;
+    private javax.swing.JLabel RT_Label_Avviso;
     private javax.swing.JTable RT_Tabella_DettaglioMonete;
     private javax.swing.JTable RT_Tabella_LiFo;
     private javax.swing.JTable RT_Tabella_Principale;

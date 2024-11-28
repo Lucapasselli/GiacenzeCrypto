@@ -6,6 +6,7 @@
 - Inserire Donazioni
 
 
-- Aggiungere gestione degli errori in RT (Prezzi mancanti e giacenze negative)
+- Aggiungere gestione degli errori in RT (mancano le giacenze negative)
 - Aggiungere gestione dei prezzi mancanti in "Giacenze a Data"
-- Inserire messaggio che dice di aggiornare perché sono variati i dati nel calcolo RT
+- Aggiungere Tema Scuro
+- Prezzi di fine anno personalizzati nel database personale (Segue stessa logica generale)

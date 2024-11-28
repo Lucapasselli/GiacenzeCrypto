@@ -665,7 +665,7 @@ public class Prezzi {
                 String DataconOra = sdf.format(date);
                 //Metto ND su tutte le ore senza valore
                 if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT") == null) {
-                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", "ND");
+                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", "ND",false);
                 }
 
                 timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
@@ -819,7 +819,7 @@ public class Prezzi {
                 String DataconOra = sdf.format(date);
                 //Metto ND su tutte le ore senza valore
                 if (DatabaseH2.XXXEUR_Leggi(DataconOra + " " + Crypto) == null) {
-                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, "ND");
+                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, "ND",false);
                 }
 
                 //Se le crypto senza prezzo sono le stable a questo punto prendo il prezzo del dollaro del giorno e le valorizzo così
@@ -828,7 +828,7 @@ public class Prezzi {
                         || Crypto.equalsIgnoreCase("DAI")) {
                     String Prezzo = ConvertiUSDTEUR("1", OperazioniSuDate.ConvertiDatainLongMinuto(DataconOra + ":01"));
                     if (Prezzo != null) {
-                        DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
+                        DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo,false);
                     }
                 }
                 timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
@@ -980,7 +980,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
            // System.out.println(url);
-            System.out.println("Recupero prezzi "+Address+" da coingecko su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
+            System.out.println("Recupero prezzi token "+Simbolo+" con Address "+Address+" da coingecko su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int statusCode = connection.getResponseCode();
@@ -999,7 +999,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                     data = new java.util.Date(DataProggressiva);                   
                     sdfx.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                     Data = sdfx.format(data);
-                    DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, "ND");
+                    DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, "ND",false);
                  //   MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, "ND");
                     DataProggressiva=DataProggressiva+3600000;
                 }
@@ -1024,6 +1024,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                 errorReader.close();
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                if (jsonObject==null){
+                    System.out.println("Errore nel recupero dei prezzi del token "+Simbolo+" con Address "+Address+" su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
+                }
                 JsonElement errore=jsonObject.get("error");
                 if (errore!=null && errore.toString().contains("coin not found"))
                     {
@@ -1065,8 +1068,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String DataconOra = sdf.format(date);
                         String Data = sdf2.format(date);
                         //QUESTO SECONDO ME E' SBAGLIATO E DA RIVEDERE
-                        if (DatabaseH2.PrezzoAddressChain_Leggi(Data+"_"+Address+"_"+Rete)==null) DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, price);
-                        DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra+"_"+Address+"_"+Rete, price);
+                        if (DatabaseH2.PrezzoAddressChain_Leggi(Data+"_"+Address+"_"+Rete)==null) DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, price,false);
+                        DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra+"_"+Address+"_"+Rete, price,false);
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
                         //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
                         //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
@@ -1196,9 +1199,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String DataconOra = sdf.format(date);
                         String Data = sdf2.format(date);
                         if (DatabaseH2.XXXEUR_Leggi(Data + " USDT")==null||DatabaseH2.XXXEUR_Leggi(Data + " USDT").equals("ND")) 
-                            DatabaseH2.XXXEUR_Scrivi(Data + " USDT", price);
+                            DatabaseH2.XXXEUR_Scrivi(Data + " USDT", price,false);
                         if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT")==null||DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT").equals("ND")) 
-                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", price);
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", price,false);
                         //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
                         //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
                         //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
@@ -1323,9 +1326,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                                     // System.out.println(DataconOra+" "+Crypto+" - "+Prezzo);
                                 String Data=DataconOra.split(" ")[0];
                                 if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto)==null||DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) 
-                                    DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, Prezzo);
+                                    DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, Prezzo,false);
                                 if (DatabaseH2.XXXEUR_Leggi(DataconOra+ " " + Crypto)==null||DatabaseH2.XXXEUR_Leggi(DataconOra + " " + Crypto).equals("ND")) 
-                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo);
+                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + Crypto, Prezzo,false);
                                 
                                 ok = "ok";
                                 //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
@@ -1441,9 +1444,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                                 
                                 String Data=DataconOra.split(" ")[0];
                                 if (DatabaseH2.XXXEUR_Leggi(Data + " USDT")==null||DatabaseH2.XXXEUR_Leggi(Data + " USDT").equals("ND")) 
-                                    DatabaseH2.XXXEUR_Scrivi(Data + " USDT", Prezzo);
+                                    DatabaseH2.XXXEUR_Scrivi(Data + " USDT", Prezzo,false);
                                 if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT")==null||DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT").equals("ND")) 
-                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", Prezzo);
+                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", Prezzo,false);
 
                                 
                                 ok = "ok";
@@ -1525,11 +1528,11 @@ for (int i=0;i<ArraydataIni.size();i++){
                             //Controllo ora se non ha il prezzo e in quel caso lo scrivo
                             if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) 
                             {
-                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro);
+                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro,false);
                             }
                             if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) 
                             {
-                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro);
+                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
                             }
 
                         }
@@ -1598,9 +1601,9 @@ for (int i=0;i<ArraydataIni.size();i++){
                            // CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put("https://cryptohistory.one/api/" + Crypto+"/"+DataRichiesta, "ok");
                             String Data =ogg.get("real_date").getAsString();
                             String PrezzoEuro=ogg.get("price_usd").getAsString();
-                            if (!DataRichiesta.equals(Data))DatabaseH2.XXXEUR_Scrivi(DataRichiesta + " " + Crypto, "ND");
+                            if (!DataRichiesta.equals(Data))DatabaseH2.XXXEUR_Scrivi(DataRichiesta + " " + Crypto, "ND",false);
                             PrezzoEuro=ConvertiUSDEUR(PrezzoEuro,Data);
-                            DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro);
+                            DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
                            // System.out.println("Prezzi.RecuperaTassiCambiodaSimbolo "+Data + " " + Crypto+" - "+PrezzoEuro);
                             
                         }

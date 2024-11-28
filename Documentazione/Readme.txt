@@ -34,6 +34,7 @@ Nuove Implementazioni :
 		- Prelievo non categorizzato = CashOut
 	Facendo in questo modo avrò delle plusvalenze più alte fino a che non categorizzerò correttamente i movimenti ma altresì qualora dimenticassi di
 	categorizzarli, questi sarebbero comunque conteggiati nella maniera meno vantaggiosa per il contribuente e quindi meno contestabile dal fisco.
+  - Cambiato il tipo dato della colonna Plusvalenza e Valore Transazione ora sono di tipo numerico quindi ordinabili correttamente
 
 Correzione di bug :
   - Corretto bug che impediva in taluni casi il recupero del prezzo

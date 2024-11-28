@@ -685,6 +685,23 @@ return ListaSaldi;
             return SCAM;
         }
         
+        public static Object[] Converti_String_Object(String[] riga){
+            Object ritorno[]=new Object[riga.length];
+           /* ritorno=riga.clone();
+            ritorno[15]=new BigDecimal(riga[15]);
+            ritorno[19]=new BigDecimal(riga[19]);*/
+            for (int i=0;i<ritorno.length;i++){
+                
+                if (i==19||i==15){
+                    ritorno[i]=new BigDecimal(riga[i]);
+                }else
+                  {
+                      ritorno[i]=riga[i];
+                  }  
+            }
+            return ritorno;
+        }
+        
         public static boolean noData(String Valore){
             boolean noData=false;
             //verifico se la moneta è già considerata come scam

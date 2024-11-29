@@ -1,0 +1,7 @@
+Cosa fare quando si aggiunge rete ETH like
+
+- Aggiungere a Mappa_chain in Funzioni
+- Sistemare tasto dettaglio defi
+- sistemare tasto gestione wallet a oggi
+- Sistemare prezzi coingecko
+- Aggiungere a funzione "Aggiorna wallet" la nuova rete

@@ -27,18 +27,23 @@ Changelog
 
 ver. 1.0.29
 Nuove Implementazioni :
-  - Cambiato come il programma gestisce il calcolo per le plusvalenze dei movimenti di deposito e prelievo non categorizzati
-	Con le versioni precedenti il programma semplicemente ignorava quelle transazioni (non veniva generata nessuna plusvalenza fino a che il movimento non veniva categorizzato)
+  - Cambiato come il programma gestisce il calcolo per le plusvalenze dei movimenti di deposito e prelievo non categorizzati.
+Con le versioni precedenti il programma semplicemente ignorava quelle transazioni (non veniva generata nessuna plusvalenza fino a che il movimento non veniva categorizzato)
 	Con la versione attuale il programma si comporta nel seguente modo : 
 		- Deposito non categorizzato = Deposito con Costo di Carico Zero
 		- Prelievo non categorizzato = CashOut
 	Facendo in questo modo avrò delle plusvalenze più alte fino a che non categorizzerò correttamente i movimenti ma altresì qualora dimenticassi di
 	categorizzarli, questi sarebbero comunque conteggiati nella maniera meno vantaggiosa per il contribuente e quindi meno contestabile dal fisco.
   - Cambiato il tipo dato della colonna Plusvalenza e Valore Transazione ora sono di tipo numerico quindi ordinabili correttamente
-
+  - In Opzioni - Varie aggiunto la possibilità di abilitare il tema scuro.
+  - Implementata nuova funzione in "Analisi Crypto" - "RT & Analisi P&L" dove si potrà vedere l'analisi delle plusvalenze realizzate e non per ogni singolo anno, inoltre per ogni anno si potranno vedere le plusvalenze per ogni token e nel caso sia abilita l'opzione "Abilita Calcolo plusvalenze per gruppo Wallet" anche divise per gruppo wallet.
+Per ogni token poi ci sarà la possibilità di vedere lo stack del LiFo con i vari costi di carico in modo da poter pianificare al meglio la realizzazione delle plusvalenze future. 
+  - Inserito nuove casistiche riguardanti le importazioni da Binance
+  - Aggiunta Blockchain BASE alla lista di quelle gestite nativamente.
 Correzione di bug :
   - Corretto bug che impediva in taluni casi il recupero del prezzo
-  - Corretto bug che portava ad errori sugli arrotondamenti sulle plusvalenze nel caso di scambi tra diversi wallet
+  - Corretto bug che portava ad errori sugli arrotondamenti sulle plusvalenze nel caso di scambi tra diversi wallet e qualora non fosse biffata l'opzione "Abilita Calcolo plusvalenze per gruppo wallet"
+  - Sistemato un bug i un caso particolarissimo che impediva il caricamento dei dati da CDCApp
 
 ver. 1.0.28
 Nuove Implementazioni :

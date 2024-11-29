@@ -2204,6 +2204,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String BSCAddress = platformsObject.has("binance-smart-chain") ? platformsObject.get("binance-smart-chain").getAsString() : null;
                         String cronosAddress = platformsObject.has("cronos") ? platformsObject.get("cronos").getAsString() : null;
                         String ethereumAddress = platformsObject.has("ethereum") ? platformsObject.get("ethereum").getAsString() : null;
+                        String baseAddress = platformsObject.has("base") ? platformsObject.get("base").getAsString() : null;
                         
                         if (cronosAddress!=null&&!cronosAddress.isEmpty()){
                             String Gestito[]=new String[3];
@@ -2225,6 +2226,14 @@ for (int i=0;i<ArraydataIni.size();i++){
                         if (BSCAddress!=null&&!BSCAddress.isEmpty()){
                             String Gestito[]=new String[3];
                             Gestito[0]=(BSCAddress+"_BSC").toUpperCase();
+                            Gestito[1]=Simbolo;
+                            Gestito[2]=Nome;
+                            gestiti.add(Gestito);
+                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
+                        }
+                        if (baseAddress!=null&&!baseAddress.isEmpty()){
+                            String Gestito[]=new String[3];
+                            Gestito[0]=(baseAddress+"_BASE").toUpperCase();
                             Gestito[1]=Simbolo;
                             Gestito[2]=Nome;
                             gestiti.add(Gestito);

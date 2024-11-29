@@ -150,7 +150,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Base (BASE)" }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
@@ -287,6 +287,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Component c = giacenze_crypto.com.GestioneWallets.this;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
+  //      progress.RipristinaStdout();
 
         Thread thread;
         thread = new Thread() {
@@ -304,7 +305,8 @@ public class GestioneWallets extends javax.swing.JDialog {
 
                     if (splittata[1].equalsIgnoreCase("BSC")
                             ||splittata[1].equalsIgnoreCase("CRO")
-                            ||splittata[1].equalsIgnoreCase("ETH")) {
+                            ||splittata[1].equalsIgnoreCase("ETH")
+                            ||splittata[1].equalsIgnoreCase("BASE")) {
                         Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
                     }
                 }

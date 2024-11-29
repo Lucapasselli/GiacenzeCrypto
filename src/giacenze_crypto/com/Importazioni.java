@@ -526,6 +526,9 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Launchpool Earnings Withdrawal",             "EARN");//
         Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
         Mappa_Conversione_Causali.put("Airdrop Assets",                             "REWARD");//
+        Mappa_Conversione_Causali.put("Launchpool Airdrop",                         "REWARD");//non li metto in airdrop perchè sono comunque rewards date per detenzione
+        Mappa_Conversione_Causali.put("Cashback Voucher",                           "CASHBACK");
+        Mappa_Conversione_Causali.put("Megadrop Rewards",                           "REWARD");
         Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING REWARDS");//
         Mappa_Conversione_Causali.put("Distribution",                               "REWARD");//
         Mappa_Conversione_Causali.put("BNB Vault Rewards",                          "REWARD");//
@@ -562,6 +565,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fiat Deposit",                               "DEPOSITO FIAT");
         Mappa_Conversione_Causali.put("Binance Card Spending",                      "PRELIEVO FIAT");
+        Mappa_Conversione_Causali.put("Fund Recovery",                              "PRELIEVO FIAT");
+        
         Mappa_Conversione_Causali.put("Buy Crypto",                                 "ACQUISTO CRYPTO");
         
         Mappa_Conversione_Causali.put("Referral Commission",                        "REWARD");//Inserito il 21/07/2024
@@ -853,14 +858,15 @@ public class Importazioni {
                 {
                     //se trovo movimento con stessa data oppure la data differisce di un solo secondosolo se è un dust conversion allora lo aggiungo alla lista che compone il movimento e vado avanti
                     //ho dovuto aggiungere la parte del secondo perchè quando fa i dust conversion può capitare che ci metta 1 secondo a fare tutti i movimenti
-                    String secondo=splittata[0].split(":")[2];
+                    String data_1=OperazioniSuDate.ConvertiDatadaLongAlSecondo(OperazioniSuDate.ConvertiDatainLongSecondo(splittata[0])-1000);
+                   /* String secondo=splittata[0].split(":")[2];
                     int secondoInt=Integer.parseInt(secondo)-1;
                     secondo=String.valueOf(secondoInt);
                     if (secondo.length()==1)secondo="0"+secondo;
-                    String DataMeno1Secondo=splittata[0].split(":")[0]+":"+splittata[0].split(":")[1]+":"+secondo;
+                    String DataMeno1Secondo=splittata[0].split(":")[0]+":"+splittata[0].split(":")[1]+":"+secondo;*/
                     if (splittata[0].equalsIgnoreCase(ultimaData)) {
                         listaMovimentidaConsolidare.add(riga);
-                    }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[9].contains("dust_")){//SOLO per i dust conversion
+                    }else if(data_1.equalsIgnoreCase(ultimaData)&&splittata[9].contains("dust_")){//SOLO per i dust conversion
                         listaMovimentidaConsolidare.add(riga);
                         }
                     else //altrimenti consolido il movimento precedente
@@ -1811,7 +1817,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     }
                                     else
                                     {
-                                       // System.out.println("ACCREDITI : "+movimento);
+                                       //System.out.println("ACCREDITI : "+movimento);
                                        dust_accreditati=movimento;
                                     }   
                                 
@@ -1829,8 +1835,13 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         RT[4] = "Crypto Wallet";
                                         RT[5] = "SCAMBIO CRYPTO";
                                         //System.out.println(splittata[0]);
-                                        //System.out.println(dust_accreditati);
-                                       // System.out.println("-------");
+                                       /* System.out.println(splittata.length);
+                                        System.out.println(splittata[2]);
+                                        System.out.println(dust_accreditati.length());
+                                        System.out.println(dust_accreditati);
+                                        System.out.println(numeroAddebiti);
+                                        System.out.println(dataa);
+                                        System.out.println("-------");*/
                                         RT[6] = splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
                                         RT[7] = splittata[9] + "(" + splittata[1] + ")";
                                         RT[8] = splittata[2];
@@ -4897,10 +4908,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         // String apiKey="6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6";
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Importazione dati da explorer");
-  //  progressb.RipristinaStdout();
+//  progressb.RipristinaStdout();
         AzzeraContatori();
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
+        
         for (String wallets : Portafogli) {
             int ava = 0;
             String walletAddress = wallets.split(";")[0];

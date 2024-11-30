@@ -10,6 +10,7 @@ import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import static giacenze_crypto.com.Calcoli_Plusvalenze.RitornaTipoCrypto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Year;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -408,7 +409,7 @@ public class Calcoli_RT {
               //  Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
 
               //la funzione ritorna false solo se ho premuto il pulsante interrompi nella progress bar
-                if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress))return null;               
+                if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,v[1].split("-")[0]))return null;               
             }
             
             Anno=v[1].split("-")[0];
@@ -689,7 +690,8 @@ public class Calcoli_RT {
                                             
         }
               //ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress);
-          if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress))return null;
+          String year = String.valueOf(Year.now().getValue()+1);
+          if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,year))return null;
       // return PlusvalenzeXAnno;
        ritorno.Put_PluvalenzeXAnno(PlusvalenzeXAnno);
        ritorno.Put_MappaCompleta(MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta);
@@ -751,14 +753,27 @@ public class Calcoli_RT {
        public static boolean ChiudiAnno(Map<String,BigDecimal[]> PlusvalenzeXAnno,
             String Anno,
             Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,
-            Download progress){
+            Download progress,
+            String AnnoSuccessivo){//Questo serve se ci sono anni buchi tra quello che sto analizzando e il prossimo
         
-           
+            boolean ritorno=true;
             //1 - Prendo ogni wallet
             //2 - Per ogni wallet estraggo tutte le monete che lo compongono
             //3 - Per ogni moneta trovo la plusvalenza sottraendo le rimanenze (QTA)
             //Recupero i dati dell'anno da analizzare
                 BigDecimal PlusAnno[]=PlusvalenzeXAnno.get(Anno);
+                if (PlusAnno==null){
+                    PlusAnno=new BigDecimal[7];   
+                    //System.out.println(Anno);
+                    PlusAnno[0]=new BigDecimal(Anno);//Anno
+                    PlusAnno[1]=new BigDecimal(0);//Costo Carico
+                    PlusAnno[2]=new BigDecimal(0);//Realizzato
+                    PlusAnno[3]=new BigDecimal(0);//Plusvalenza
+                    PlusAnno[4]=new BigDecimal(0);//Plusvalenza Latente
+                    PlusAnno[5]=new BigDecimal(0);//Valore Rimanenze
+                    PlusAnno[6]=new BigDecimal(0);//Errori
+                    PlusvalenzeXAnno.put(Anno, PlusAnno);
+                }
                 //BigDecimal PluvalenzaLatente=PlusAnno[4];
                // long d=Long.parseLong("1731667965000");
                 long d=System.currentTimeMillis();
@@ -814,7 +829,18 @@ public class Calcoli_RT {
                         }
                     }
                 }
-                return true;
+                //Se anno successivo non è il successivo ma magari è 2 anni più in la significa che negli anni intermedi non ho avuto movimenti
+           //In ogni caso dovrò creare la riga anche per gli anni senza movimenti per cui richiamo la stessa funzione in maniera ricorsiva aggiungendo 1 anno
+           if (Integer.valueOf(AnnoSuccessivo)-Integer.valueOf(Anno)>1){
+                //Qua va scritto il tutto
+                //clono la mappa dell'anno e la metto sull'anno successivo
+                Map<String, Map<String, PlusXMoneta>> temp=new TreeMap<>(MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno));
+                Anno=String.valueOf(Integer.parseInt(Anno)+1);
+                MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.put(Anno, temp);
+                //richiamo la funzione
+                ritorno=ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,AnnoSuccessivo);
+           }
+                return ritorno;
     } 
     
      public static void StackLIFO_InserisciValore(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,String Valore,String Data) {

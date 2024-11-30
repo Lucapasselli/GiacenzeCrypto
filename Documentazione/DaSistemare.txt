@@ -8,11 +8,8 @@
 
 - Aggiungere gestione degli errori in RT (mancano le giacenze negative)
 - Aggiungere gestione dei prezzi mancanti in "Giacenze a Data"
-- Quando aggiungo movimenti manuali fare in modo che i prelievi vengano messi per ultimi (di solito infatti sono commissioni e vanno messe dopo lo scambio)
 - Inserire tasto per classificare i movimenti di deposito e prelievo anche in prima pagina
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Alcuni trasferimenti non si possono scegliere (Verificare motivo)
-- Alcuni token airdroppati scam vengono comunque mostrati nei movimenti da sistemare
 - Controllare se le rettifiche di CRO servono ancora
-- Prezzi su rete Base non ci sono
-- Escludere i token scam da quelli visualizzabili in "Scambio Differito"
+- Escludere i token Scam da quelli visualizzabili in "Scambio Differito"

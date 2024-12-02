@@ -131,6 +131,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public Calcoli_RT.AnalisiPlus APlus;
     public static String tema;
     public int NumErroriMovSconosciuti=0;
+    public int NumErroriMovNoPrezzo=0;
 
     
     //static String Appoggio="";
@@ -815,6 +816,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Bottone_Errori.setText("Errori (0)");
         Bottone_Errori.setToolTipText("Attenzione!\nSono presenti errori che se non corretti possono portare ad errori di calcolo sulle plusvalenze.\nPremere per sistemare.");
         Bottone_Errori.setEnabled(false);
+        Bottone_Errori.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ErroriActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
@@ -992,7 +998,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Modifica.png"))); // NOI18N
-        DepositiPrelievi_Bottone_AssegnazioneManuale.setText("Modifica movimento");
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setText("Classifica Movimento");
         DepositiPrelievi_Bottone_AssegnazioneManuale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed(evt);
@@ -5544,7 +5550,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Altrimenti cambio il prezzo sulla transazione
             String ID;
         if (RT_Tabella_Principale.getSelectedRow()>=0 && RT_Tabella_DettaglioMonete.getSelectedRow() >= 0) {
-            int rigaselezionata = RT_Tabella_DettaglioMonete.getSelectedRow();
+            //int rigaselezionata = RT_Tabella_DettaglioMonete.getSelectedRow();
+            int rigaselezionata = RT_Tabella_DettaglioMonete.getRowSorter().convertRowIndexToModel(RT_Tabella_DettaglioMonete.getSelectedRow());
             int rigaTabellaPrincipale=RT_Tabella_Principale.getSelectedRow();
             String Anno=RT_Tabella_Principale.getModel().getValueAt(rigaTabellaPrincipale, 0).toString();
             //String GruppoWalletInizio=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
@@ -5625,11 +5632,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         JOptionPane.showConfirmDialog(this, "Attenzione, " + Prezz + " non è un numero valido!",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                     }
-                }
-
-         
-            
-                         //Una volta cambiato il prezzo aggiorno la tabella
+                
+                //Una volta cambiato il prezzo aggiorno la tabella
+                //FORSE NON SERVE FARE IL RICALCOLO COMPLETO BASTA AGGIORNARE IL PREZZO E RICARICARE LA TABELLA
+                //DA FARE DEI TEST
                 RT_CalcolaRT();
                 RT_Tabella_Principale.setRowSelectionInterval(rigaTabellaPrincipale, rigaTabellaPrincipale);
                 RT_CompilaTabellaDettagli();
@@ -5637,6 +5643,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 RT_CompilaTabellaLiFo();
                 RT_Tabella_DettaglioMonete.requestFocus();
                 //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima   
+                }
+
+         
+            
+                
             
         }
     }
@@ -8258,6 +8269,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void RT_CompilaTabellaDettagli(){
        // Map<String, String[]> Mappa_Gruppo_Alias =DatabaseH2.Pers_GruppoAlias_LeggiTabella();
+       //System.out.println("eh");
         RT_Bottone_ModificaPrezzo.setEnabled(false);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
@@ -8367,6 +8379,70 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         SwingUtilities.updateComponentTreeUI(this);
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
+
+    private void Bottone_ErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ErroriActionPerformed
+        // TODO add your handling code here:
+        // TODO add your handling code here:
+        //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
+        //PCO -> Cashout o similare (prelievo)
+        //PTW -> Trasferimento tra Wallet (prelievo)
+        //DTW -> Trasferimento tra Wallet (deposito)
+        //DAI -> Airdrop o similare (deposito)
+        //DCZ -> Costo di carico 0 (deposito)
+
+
+            //in questo caso sono in presenza di un movimento di deposito
+           
+                
+                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
+                    boolean completato=true;
+                    String descrizione = "";
+                    String Testo = "<html>"
+                            + "<b>SCEGLIRE QUALE TIPOLOGIA DI ERRORE CORREGGERE.<br><br><b>"
+                            + "</html>";
+                   // A
+                    Object[] Bottoni = {"Annulla", "MOVIMENTO NON CLASSIFICATO ("+(String.valueOf(NumErroriMovSconosciuti))+")", 
+                    "TRANSAZIONE SENZA PREZZO ("+NumErroriMovNoPrezzo+")"};
+                    int scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Correzione errori",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                JOptionPane.showConfirmDialog(this, "<html>Si verrà ora reindirizzati alla maschera per la correzione dei movimenti non classificati.<br><br>"
+                                        + "<b>NB: E' molto importante classificare tutti i movimenti di deposito e prelievo affinchè il calcolo delle plusvalenze sia esatto!</b><br><br>"
+                                        + "Dalla versione 1.29, ai fini del calcolo della plusvalenza, tutti i movimenti di deposito non classificati verranno considerati <br>"
+                                        + "come un deposito a costo Zero mentre tutti i prelievi non classificati verranno considerati alla stregua di un cashout.</html>",
+                            "Movimenti non classificati", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                             CDC.setSelectedIndex(1);
+                             AnalisiCrypto.setSelectedIndex(0);
+                             DepositiPrelievi.requestFocus();
+                                
+                            }
+                            case 2 -> {
+                                JOptionPane.showConfirmDialog(this, "<html>Verranno ora mostrati tutti i prodotti senza prezzo dei token non SCAM del periodo selezionato.<br><br>"
+                                        + "<b>ATTENZIONE! Per vedere tutt i movimenti senza prezzo agire sulle date di inizio e fine posizionati in alto a destra</b><br><br>"
+                                        + "Per tornare alla visualizzazione precedente togliere la biffatura dall'opzione \"<b>Vedi solo movimenti non valorizzati</b>\"<br></html>",
+                            "Movimenti senza prezzo", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                TransazioniCrypto_CheckBox_VediSenzaPrezzo.setSelected(true);
+                                this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+                             
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        completato=false;
+                    }
+    }//GEN-LAST:event_Bottone_ErroriActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -9568,6 +9644,7 @@ try {
        
     private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI,boolean VediSoloSenzaPrezzo) {
         NumErroriMovSconosciuti=0;
+        NumErroriMovNoPrezzo=0;
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         //Disabilito i bottoni che devono essere attivi solo in caso vi sia qualcheria selezionata sulla tabella
@@ -9621,7 +9698,9 @@ try {
            // }
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
             
-            Prezzi.IndicaMovimentoPrezzato(v);
+            if (!Prezzi.IndicaMovimentoPrezzato(v)) {
+                NumErroriMovNoPrezzo++;
+            }
             
             
             
@@ -9684,13 +9763,14 @@ try {
         
         
         //Questo attiva il tasto degli errori qualora ve ne trovassimo
-         if(NumErroriMovSconosciuti==0){
+        int err=NumErroriMovNoPrezzo+NumErroriMovSconosciuti;
+         if(err==0){
             Bottone_Errori.setEnabled(false);
             Bottone_Errori.setText("Errori (0)");
         }
         else{
             Bottone_Errori.setEnabled(true);
-            Bottone_Errori.setText("Errori ("+NumErroriMovSconosciuti+")");
+            Bottone_Errori.setText("Errori ("+err+")");
 
         }
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);

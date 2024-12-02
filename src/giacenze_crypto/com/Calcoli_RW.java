@@ -1032,49 +1032,6 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     
                     CreaPrimiMovimenti(MappaGrWallet_QtaCryptoInizio,MappaGrWallet_CryptoStack,inizio,DataInizioAnno);
                     PrimoMovimentoAnno = false;
-                   /* for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
-                        Map<String, Moneta> a = MappaGrWallet_QtaCryptoInizio.get(key);
-                        for (Moneta m : a.values()) {
-                            if (!m.Tipo.equalsIgnoreCase("FIAT")&&new BigDecimal(m.Qta).compareTo(new BigDecimal(0))!=0) {
-                                //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
-                                m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete);
-                                //System.out.println(m.Prezzo);
-                                //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
-                                Map<String, ArrayDeque> CryptoStackTemp;
-                                String WR=key;
-                                if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) WR = "Unico 01";
-                                CryptoStackTemp = MappaGrWallet_CryptoStack.get(WR);
-
-                                ElementiStack el = new ElementiStack();
-
-                                el.IDOri = "Giacenza Inizio Anno";//ID del movimento da cui tutto ha avuto origine
-                                el.CostoOri = m.Prezzo;//Costo di partenza della moneta originale
-                                el.MonOri = m.Moneta;//Moneta di partenza di tutto il giro del Lifo
-                                el.QtaOri = m.Qta;//Qta di partenza della moneta originale
-                                el.DataOri = DataInizioAnno;//Data di partenza
-                                el.GruppoWalletOri = key;//Gruppo Wallet di partenza
-
-                                el.Moneta = m.Moneta; //Moneta di riferimento
-                                el.Qta = m.Qta; //Qta di riferimento    
-                                el.TipoMonetaOri=m.Tipo;
-                                el.Tipo=Monete[1].Tipo;
-                                el.GruppoWallet=key;
-                                el.Data =Data;
-
-                                StackLIFO_InserisciValoreFR(CryptoStackTemp,key,el);
-                                if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key)==null){
-                                    List<Moneta> li=new ArrayList<>();
-                                    Moneta mo=m.ClonaMoneta();
-                                    li.add(mo);
-                                    CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.put(key, li);
-                                }else{
-                                    List<Moneta> li=CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key);
-                                    Moneta mo=m.ClonaMoneta();
-                                    li.add(mo);
-                                }
-                            }
-                        }
-                    }*/
                     
                 }
 
@@ -1624,7 +1581,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                           // m.Moneta="BTC";
                            //if (m.Moneta.equals("NEXO"))System.out.println(m.Qta);
                             m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete);
-                            //System.out.println(m.Moneta+" - "+m.Qta+" - "+fine+" - "+m.Prezzo);
+                         //   if(m.Moneta.equalsIgnoreCase("USDT")) System.out.println(m.Moneta+" - "+m.Qta+" - "+fine+" - "+m.Prezzo+" - "+m.MonetaAddress+" - "+m.Rete);
                             
                            // System.out.println(m.Moneta+"-"+m.Prezzo);
                             //System.out.println(Prezzi.DammiPrezzoTransazione(m, null,fine, null, true, 15, m.Rete));

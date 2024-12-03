@@ -20,7 +20,7 @@ public class Tabelle {
     static Color verde=new Color (145, 255, 143);
     static Color verdeChiaro=new Color (172, 255, 171);
     static Color rosso=new Color(255, 80, 80);
-    static Color rossoChiaro=new Color(255, 133, 133);
+    static Color rossoChiaro=new Color(255, 160, 160);
     static Color giallo=new Color(255, 255, 156);
     static Color gialloChiaro=new Color(255, 255, 176);
     static Color bianco=new Color(255, 255, 255);
@@ -187,7 +187,7 @@ public class Tabelle {
     
         public static JTable ColoraRigheTabella1GiacenzeaData(final JTable table) {
 
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             
             public Component getTableCellRendererComponent(JTable table,
@@ -197,16 +197,23 @@ public class Tabelle {
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
 
-                    Color bg; 
+        Color bg;
+        Color bg2;
         Color fore;
+        Color fore2;
+        
         if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            bg2= (row % 2 == 0  ? rossoChiaro : rosso);
             fore=Color.lightGray;
+            fore2=Color.lightGray;
         }
             else 
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            bg2= (row % 2 == 0  ? rosso : rossoChiaro);
             fore=Color.BLACK;
+            fore2=Color.BLACK;
         }
  
             if (isSelected&&col!=7) {
@@ -214,13 +221,22 @@ public class Tabelle {
                     c.setBackground(table.getSelectionBackground());
                     //c.revalidate();
                 }
+            else if (isSelected&&col==7&& value.toString().toLowerCase().contains("-")) {
+
+                    c.setBackground(table.getSelectionBackground());
+                    c.setForeground(rosso);
+                }
+            else if (isSelected&&col==7) {
+
+                    c.setBackground(table.getSelectionBackground());
+                }
             else if (col==7 && !value.toString().toLowerCase().contains("-")) {
-                    setForeground(Color.black);
+                    setForeground(fore2);
                   c.setBackground(bg);
                 }
             else if (col==7 && value.toString().toLowerCase().contains("-")) {
                     setForeground(Color.black);
-                  c.setBackground(rosso);
+                  c.setBackground(bg2);
                 }
             else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 5).toString().contains("-")) {
                     setBackground(bg);
@@ -236,9 +252,11 @@ public class Tabelle {
                   
 
                 }
-                return this;
+                return c;
             }
-        });
+        };
+         table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
         return table;
     }
     
@@ -343,9 +361,115 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
     return table;
 }
 
-    
+public static JTable ColoraTabellaRTDettaglio(final JTable table) {
+    // Definizione dei colori
+  //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
+  //  final Color bianco = Color.WHITE;                   // Colore bianco
+
+    // Renderer generico per alternare i colori delle righe
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int col) {
+            // Ottieni il componente standard per la cella
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
+
+            // Imposta il colore di sfondo alternato
+            if (isSelected) {
+                c.setBackground(table.getSelectionBackground());
+            } 
+            else {
+                c.setBackground(bg);
+            }
+            if (col==7 && value.toString().toLowerCase().contains("-")) {
+                    setForeground(rosso);
+                }
+            else if (col==9)setForeground(rosso);
+            else{
+                setForeground(fore);
+            }
+            return c;
+        }
+    };
+
+    // Configura il renderer per i tipi più comuni
+    table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
     
 
+    // Restituisci la tabella
+    return table;
+}    
+    
+public static JTable ColoraTabellaRTPrincipale(final JTable table) {
+    // Definizione dei colori
+  //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
+  //  final Color bianco = Color.WHITE;                   // Colore bianco
+
+    // Renderer generico per alternare i colori delle righe
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int col) {
+            // Ottieni il componente standard per la cella
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
+
+            // Imposta il colore di sfondo alternato
+            if (isSelected) {
+                c.setBackground(table.getSelectionBackground());
+            } 
+            else {
+                c.setBackground(bg);
+            }
+            if (col==3 && value.toString().toLowerCase().contains("-")) {
+                    setForeground(rosso);
+                }
+            else if (col==3)setForeground(verde);
+            else{
+                setForeground(fore);
+            }
+            return c;
+        }
+    };
+
+    // Configura il renderer per i tipi più comuni
+    table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
+    
+
+    // Restituisci la tabella
+    return table;
+}    
        
        
        

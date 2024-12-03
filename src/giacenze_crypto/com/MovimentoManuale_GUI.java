@@ -6,6 +6,7 @@
 package giacenze_crypto.com;
 
 
+import com.toedter.calendar.JTextFieldDateEditor;
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -59,6 +60,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     public MovimentoManuale_GUI() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
+        ((JTextFieldDateEditor)Data_Datachooser.getDateEditor()).setBackground(Color.lightGray.brighter());
         
         //questo serve affinchè succeda qualcosa quando scrivo nei combobox
          MonetaUscita_ComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
@@ -193,6 +195,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         MonetaEntrataTipo_Label.setText("Tipo Moneta Entrata : ");
 
+        MonetaEntrataTipo_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
         MonetaEntrataTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT" }));
         MonetaEntrataTipo_ComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -200,6 +203,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             }
         });
 
+        MonetaUscitaTipo_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
         MonetaUscitaTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT" }));
         MonetaUscitaTipo_ComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -209,6 +213,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         MonetaUscitaQuantita_Label.setText("Quantità Uscita : ");
 
+        MonetaUscitaQuantita_TextField.setForeground(new java.awt.Color(51, 51, 51));
         MonetaUscitaQuantita_TextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 MonetaUscitaQuantita_TextFieldActionPerformed(evt);
@@ -222,6 +227,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         MonetaEntrataQuantita_Label.setText("Quantità Entrata : ");
 
+        MonetaEntrataQuantita_TextField.setForeground(new java.awt.Color(51, 51, 51));
         MonetaEntrataQuantita_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 MonetaEntrataQuantita_TextFieldKeyReleased(evt);
@@ -242,6 +248,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
         ValoreTransazione_Label.setText("Valore Transazione in EURO : ");
 
+        ValoreTransazione_TextField.setForeground(new java.awt.Color(51, 51, 51));
         ValoreTransazione_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 ValoreTransazione_TextFieldKeyReleased(evt);
@@ -279,6 +286,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         WalletDettaglio_Label.setText("Dettagli Wallet : ");
 
         Wallet_ComboBox.setEditable(true);
+        Wallet_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
         Wallet_ComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Wallet_ComboBoxActionPerformed(evt);
@@ -286,6 +294,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         });
 
         WalletDettaglio_ComboBox.setEditable(true);
+        WalletDettaglio_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
         WalletDettaglio_ComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 WalletDettaglio_ComboBoxActionPerformed(evt);
@@ -297,6 +306,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         Secondo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59" }));
 
         MonetaUscita_ComboBox.setEditable(true);
+        MonetaUscita_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
         MonetaUscita_ComboBox.setMaximumSize(new java.awt.Dimension(250, 250));
         MonetaUscita_ComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -305,6 +315,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         });
 
         MonetaEntrata_ComboBox.setEditable(true);
+        MonetaEntrata_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
         MonetaEntrata_ComboBox.setMaximumSize(new java.awt.Dimension(250, 250));
         MonetaEntrata_ComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {

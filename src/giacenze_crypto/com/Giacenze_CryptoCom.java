@@ -40,9 +40,10 @@ public class Giacenze_CryptoCom {
             Tabelle.verdeScuro=new Color (23, 114, 69);
             Tabelle.rosso=Color.RED;
        }
+
        // UIManager.setLookAndFeel( new FlatDarkLaf() );
         CDC_Grafica g=new CDC_Grafica();
-        //   SwingUtilities.updateComponentTreeUI(this);   //Questo è molto utile per aggiornare il look and feel al volo 
+        //SwingUtilities.updateComponentTreeUI(g);   //Questo è molto utile per aggiornare il look and feel al volo 
         g.setVisible(true);
     }
     

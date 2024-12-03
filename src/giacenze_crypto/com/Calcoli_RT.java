@@ -1063,7 +1063,7 @@ public class Calcoli_RT {
                   //NON voglio vedere i token con giacenza zero e che non hanno avuto movimentazioni nell'anno
                   PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
                 if (plus.movimentatoAnno||!(new BigDecimal(plus.Mon.Qta).compareTo(BigDecimal.ZERO)==0)){ 
-                    
+                    String Errori="<html>";
                     rigaTabella=new Object[10];
                     rigaTabella[0]=Wallet;
                     rigaTabella[1]=Moneta;
@@ -1072,12 +1072,13 @@ public class Calcoli_RT {
                     rigaTabella[4]=Double.valueOf(plus.CostoVendite);
                     rigaTabella[5]=Double.valueOf(plus.PlusRealizzata);
                     rigaTabella[6]=Double.valueOf(plus.PlusLatente);
+                    if (plus.Mon.Qta.contains("-"))Errori=Errori+"Giacenza Negativa<br>";
                     rigaTabella[7]=new BigDecimal(plus.Mon.Qta).stripTrailingZeros().toPlainString();
                     rigaTabella[8]=new BigDecimal(plus.Mon.Prezzo); 
-                    String Errori="";
-                    if (plus.Mon.Prezzo.equals("0"))Errori="Token senza prezzo";
+                    if (plus.Mon.Prezzo.equals("0"))Errori=Errori+"Token senza prezzo";
                     rigaTabella[9]=Errori;
                     Tabella.add(rigaTabella);
+                    Errori=Errori+"</html>";
                 }
               }
           }

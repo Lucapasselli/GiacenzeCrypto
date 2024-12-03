@@ -1024,6 +1024,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
                 errorReader.close();
                 Gson gson = new Gson();
+                System.out.println(response.toString());
                 JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
                 if (jsonObject==null){
                     System.out.println("Errore nel recupero dei prezzi del token "+Simbolo+" con Address "+Address+" su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);

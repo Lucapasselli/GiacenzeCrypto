@@ -185,12 +185,13 @@
     <Component class="javax.swing.JComboBox" name="ComboBox_Rete">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="5">
+          <StringArray count="6">
             <StringItem index="0" value="--- nessuna selezione ---"/>
             <StringItem index="1" value="Binance Smart Chain (BSC)"/>
             <StringItem index="2" value="Cronos Chain (CRO)"/>
             <StringItem index="3" value="Ethereum (ETH)"/>
             <StringItem index="4" value="Base (BASE)"/>
+            <StringItem index="5" value="Arbitrum (ARB)"/>
           </StringArray>
         </Property>
       </Properties>

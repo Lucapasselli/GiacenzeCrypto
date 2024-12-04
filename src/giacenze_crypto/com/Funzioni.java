@@ -125,12 +125,15 @@ public class Funzioni {
             String CRO[]=new String[]{"https://api.cronoscan.com","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
             String ETH[]=new String[]{"https://api.etherscan.com","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","ETH","ethereum"};
             String BASE[]=new String[]{"https://api.basescan.org/","33t9n2uL57c70zqqMVLHjAvSZQZhLZf3AXSpbZos2iLlHHHxc57q6pfGLlPOCRIb","ETH","base"};
+            String ARB[]=new String[]{"https://api.arbiscan.io","SXjGvBDWRR+BL1vdXcwjcPXGvK+jBUu2Ku88bLYXrcpsL3Nd+rrWeU3pEWrsISV4","ETH","arbitrum-one"};
+    
            // String CRO[]=new String[]{"https://cronos.org/explorer","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
            //oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc
             CDC_Grafica.Mappa_ChainExplorer.put("CRO", CRO);
             CDC_Grafica.Mappa_ChainExplorer.put("BSC", BSC);  
             CDC_Grafica.Mappa_ChainExplorer.put("ETH", ETH);
             CDC_Grafica.Mappa_ChainExplorer.put("BASE", BASE);
+            CDC_Grafica.Mappa_ChainExplorer.put("ARB", ARB);
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xC74D59A548ecf7fc1754bb7810D716E9Ac3e3AE5_CRO", "BUSD");
@@ -531,6 +534,8 @@ return ListaSaldi;
                         ApriWeb("https://etherscan.io/tx/" + IDTransazione);
                     } else if (Rete.equalsIgnoreCase("BASE")){
                         ApriWeb("https://basescan.org/tx/" + IDTransazione);
+                    } else if (Rete.equalsIgnoreCase("ARB")){
+                        ApriWeb("https://arbiscan.io/tx/" + IDTransazione);
                     }
         }
         return true;
@@ -719,6 +724,7 @@ return ListaSaldi;
 
 
         String Rete=null;
+        //System.out.println(ID);
         //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
 
             String IDSplittato[]=ID.split("_");

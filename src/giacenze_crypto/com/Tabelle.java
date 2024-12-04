@@ -106,7 +106,8 @@ public class Tabelle {
                     c.setBackground(bg);
                     setForeground(rosso);
                 } 
-                else if (value!=null &&col==9&& table.getModel().getColumnCount()>32 && table.getModel().getValueAt(row, 32).toString().toUpperCase().contains("NO")) {
+                else if (value!=null &&col==9&& table.getModel().getColumnCount()>32 && 
+                        table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 32).toString().toUpperCase().contains("NO")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(rosso);

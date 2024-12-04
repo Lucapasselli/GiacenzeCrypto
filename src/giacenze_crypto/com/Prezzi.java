@@ -693,7 +693,7 @@ public class Prezzi {
     public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
 
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
-        
+       // System.out.println(Rete);
         Address = Address.toUpperCase();
         if (!Address.contains("0X"))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
         long DataRiferimento=Datalong/1000;       
@@ -1647,7 +1647,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
         */
        //System.out.println("DammiPrezzoTransazione : "+Moneta1.Moneta+" - "+Moneta1.Qta+" - "+Data+" - "+Prezzo+" - "+PrezzoZero+" - "+Decimali+" - "+Rete);
-        String PrezzoTransazione;
+       String PrezzoTransazione;
         long adesso = System.currentTimeMillis();
         boolean ForzaUsoBinanceM1=false;
         boolean ForzaUsoBinanceM2=false;
@@ -2207,6 +2207,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String cronosAddress = platformsObject.has("cronos") ? platformsObject.get("cronos").getAsString() : null;
                         String ethereumAddress = platformsObject.has("ethereum") ? platformsObject.get("ethereum").getAsString() : null;
                         String baseAddress = platformsObject.has("base") ? platformsObject.get("base").getAsString() : null;
+                        String arbitrumAddress = platformsObject.has("arbitrum-one") ? platformsObject.get("arbitrum-one").getAsString() : null;
                         
                         if (cronosAddress!=null&&!cronosAddress.isEmpty()){
                             String Gestito[]=new String[3];
@@ -2236,6 +2237,14 @@ for (int i=0;i<ArraydataIni.size();i++){
                         if (baseAddress!=null&&!baseAddress.isEmpty()){
                             String Gestito[]=new String[3];
                             Gestito[0]=(baseAddress+"_BASE").toUpperCase();
+                            Gestito[1]=Simbolo;
+                            Gestito[2]=Nome;
+                            gestiti.add(Gestito);
+                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
+                        }
+                        if (arbitrumAddress!=null&&!arbitrumAddress.isEmpty()){
+                            String Gestito[]=new String[3];
+                            Gestito[0]=(arbitrumAddress+"_ARB").toUpperCase();
                             Gestito[1]=Simbolo;
                             Gestito[2]=Nome;
                             gestiti.add(Gestito);

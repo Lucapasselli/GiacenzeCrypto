@@ -189,13 +189,15 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="TransazioniCrypto_ScrollPane" pref="479" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="0" min="-2" pref="31" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">

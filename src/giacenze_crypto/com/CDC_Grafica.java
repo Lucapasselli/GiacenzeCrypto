@@ -886,13 +886,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(TransazioniCrypto_Label_Plusvalenza)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)
-                    .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(TransazioniCrypto_Label_Plusvalenza)
+                        .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton1)))
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -5766,6 +5767,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         else if(Rete.equalsIgnoreCase("BASE")){
                            Funzioni.ApriWeb("https://basescan.org/tokenholdings?a="+ Wallet); 
                         }
+                        else if(Rete.equalsIgnoreCase("ARBITRUM")){
+                           Funzioni.ApriWeb("https://arbiscan.io/tokenholdings?a="+ Wallet); 
+                        }
+                        
                     }
                 }
             

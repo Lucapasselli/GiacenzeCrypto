@@ -1248,7 +1248,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             Movimento[5]=splittata[0];//Moneta
                             Movimento[6]=splittata[4];//Qta
                             Movimento[7]=splittata[1];//Address Moneta
-                            Movimento[8]=new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
+                            if (Funzioni.Funzioni_isNumeric(splittata[5], false)) Movimento[8]=new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
+                            else Movimento[8]="";
                             Movimento[9]="";//ID Originale
                             Movimento[10]="";//Rete 
                             
@@ -3091,6 +3092,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             }
                             
                             String valoreEuro = new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                            
                             WalletPrincipale=movimentoSplittato[1];
                             String WalletSecondario=movimentoSplittato[2];
                             String CausaleOriginale=movimentoSplittato[4];
@@ -3410,7 +3412,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             RT[12] = tokenE.Tipo;
                                             RT[13] = tokenE.Qta;
                                             RT[14] = "";
-                                            RT[15] = tokenE.Prezzo;
+                                            RT[15] = new BigDecimal(tokenE.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                                             RT[22] = "A";
                                             long TimeStamp=OperazioniSuDate.ConvertiDatainLongSecondo(data);
                                             RT[29] = String.valueOf(TimeStamp);
@@ -3443,7 +3445,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             RT[9] = tokenU.Tipo;
                                             RT[10] = tokenU.Qta;
                                             RT[14] = "";
-                                            RT[15] = tokenU.Prezzo;
+                                            RT[15] = new BigDecimal(tokenU.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                                             RT[22] = "A";
                                             long TimeStamp=OperazioniSuDate.ConvertiDatainLongSecondo(data);
                                             RT[29] = String.valueOf(TimeStamp);

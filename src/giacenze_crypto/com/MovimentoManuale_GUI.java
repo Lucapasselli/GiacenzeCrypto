@@ -55,6 +55,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     String Wallet="";
     String WalletDettaglio="";
     String TipoMovimentoAM="M";//M se è un movimento inserito a mano, A se deriva da importazioni
+    String IDOriginale="";
     long DataLong=0;
     
     public MovimentoManuale_GUI() {
@@ -637,6 +638,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
             
             //prima cosa genero l'id della transazione
             String ID=CalcolaID();
+            System.out.println(ID);
             //verifico che non esista già una transazione non lo stesso id in quel caso chiedo se sovrascriverla o aggiungerla
             //per trovare l'id ovviamente devo cercarla nella mappa delle transazioni
             if(MappaCryptoWallet.get(ID)!=null && !ModificaMovimento){
@@ -848,13 +850,15 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void Bottone_CalcolaAutomaticamenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CalcolaAutomaticamenteActionPerformed
         // TODO add your handling code here:
-        String ID=CalcolaID();
-        String RT[]=null;
-        String Rete=Funzioni.TrovaReteDaID(ID);
+       // String ID=CalcolaID();
+        //String RT[]=null;
+        String Rete=null;
+        if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
+        //System.out.println(Rete);
         //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
-        if (ModificaMovimento) {
-            RT=MappaCryptoWallet.get(ID);
-        }
+     /*   if (ModificaMovimento) {
+            RT=MappaCryptoWallet.get(MovimentoRiportato[0]);
+        }*/
        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
        Moneta MonetaUscita=null;
        Moneta MonetaEntrata=null;
@@ -863,20 +867,22 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
        MonetaUscita.Moneta=MonetaU;
        MonetaUscita.Qta=MonetaUQta;
        MonetaUscita.Tipo=MonetaUTipo;
-       if(RT!=null&&RT.length>23&&!RT[26].equals("")){
+       MonetaUscita.MonetaAddress=this.MonetaUAddress;
+      /* if(RT!=null&&RT.length>23&&!RT[26].equals("")){
            MonetaUscita.MonetaAddress=RT[26];
          //  System.out.println(MonetaUscita.MonetaAddress);
-          } 
+          } */
         }
        if(!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&MonetaETipo!=null){
        MonetaEntrata=new Moneta();
        MonetaEntrata.Moneta=MonetaE;
        MonetaEntrata.Qta=MonetaEQta;
        MonetaEntrata.Tipo=MonetaETipo;
-       if(RT!=null&&RT.length>23&&!RT[28].equals("")){
+       MonetaEntrata.MonetaAddress=this.MonetaEAddress;
+     /*  if(RT!=null&&RT.length>23&&!RT[28].equals("")){
            MonetaEntrata.MonetaAddress=RT[28];
           // System.out.println(MonetaEntrata.MonetaAddress);
-           }
+           }*/
         }
        
        
@@ -940,6 +946,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
 
         String Rete = Funzioni.TrovaReteDaID(ID);
+        if (ModificaMovimento&&Rete==null) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
 
         //Se il prezzo scritto è zero controllo se i token hanno un valore, così non fosse chiedo all'utente se vuole confermare che il prezzo sia zero
         if (ValoreTransazione.equals("0.00")) {

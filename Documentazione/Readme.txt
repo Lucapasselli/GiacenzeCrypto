@@ -39,11 +39,14 @@ Con le versioni precedenti il programma semplicemente ignorava quelle transazion
   - Implementata nuova funzione in "Analisi Crypto" - "RT & Analisi P&L" dove si potrà vedere l'analisi delle plusvalenze realizzate e non per ogni singolo anno, inoltre per ogni anno si potranno vedere le plusvalenze per ogni token e nel caso sia abilita l'opzione "Abilita Calcolo plusvalenze per gruppo Wallet" anche divise per gruppo wallet.
 Per ogni token poi ci sarà la possibilità di vedere lo stack del LiFo con i vari costi di carico in modo da poter pianificare al meglio la realizzazione delle plusvalenze future. 
   - Inserito nuove casistiche riguardanti le importazioni da Binance
-  - Aggiunta Blockchain BASE alla lista di quelle gestite nativamente.
+  - Aggiunta Blockchain BASE alla lista di quelle gestite nativamente. (Funzione Inserisci Wallet)
+  - Aggiunta Blockchain ABITRUM alla lista di quelle gestite nativamente. (Funzione Inserisci Wallet)
 Correzione di bug :
   - Corretto bug che impediva in taluni casi il recupero del prezzo
   - Corretto bug che portava ad errori sugli arrotondamenti sulle plusvalenze nel caso di scambi tra diversi wallet e qualora non fosse biffata l'opzione "Abilita Calcolo plusvalenze per gruppo wallet"
   - Sistemato un bug i un caso particolarissimo che impediva il caricamento dei dati da CDCApp
+  - Corretto possibile mancata imputazione del prezzo dalla funzione automatica della modifica transazione
+  - Corretto errore bloccante in importazione da Tatax
 
 ver. 1.0.28
 Nuove Implementazioni :

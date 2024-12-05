@@ -302,6 +302,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_CheckBox_movimentiClassificati = new javax.swing.JCheckBox();
         DepositiPrelievi_Bottone_DettaglioDefi = new javax.swing.JButton();
         DepositiPrelievi_Bottone_CreaMovOpposto = new javax.swing.JButton();
+        RW_Bottone_Documentazione2 = new javax.swing.JButton();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -1015,10 +1016,18 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         DepositiPrelievi_Bottone_CreaMovOpposto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_FrecceContrapposte.png"))); // NOI18N
-        DepositiPrelievi_Bottone_CreaMovOpposto.setText("Crea Movimento Opposto su altro Wallet");
+        DepositiPrelievi_Bottone_CreaMovOpposto.setText("<html>Crea movimento opposto <br>su altro Wallet</html>");
         DepositiPrelievi_Bottone_CreaMovOpposto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(evt);
+            }
+        });
+
+        RW_Bottone_Documentazione2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Libro.png"))); // NOI18N
+        RW_Bottone_Documentazione2.setText("Vedi Documentazione");
+        RW_Bottone_Documentazione2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Bottone_Documentazione2ActionPerformed(evt);
             }
         });
 
@@ -1031,13 +1040,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                                .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(219, 219, 219)
-                                .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 383, Short.MAX_VALUE)
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                            .addComponent(RW_Bottone_Documentazione2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 428, Short.MAX_VALUE)
+                        .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))))
@@ -1047,17 +1057,21 @@ public class CDC_Grafica extends javax.swing.JFrame {
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 748, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 768, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(DepositiPrelievi_Bottone_DettaglioDefi)
-                    .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
-                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)
-                    .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto))
-                .addGap(6, 6, 6))
+                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(DepositiPrelievi_Bottone_DettaglioDefi)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(RW_Bottone_Documentazione2)
+                                .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica)
+                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale)))
+                    .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         AnalisiCrypto.addTab("Calssificazione Trasferimenti Crypto", DepositiPrelievi);
@@ -8524,6 +8538,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                 }
     }//GEN-LAST:event_RT_Bottone_ModificaGiacenzaActionPerformed
+
+    private void RW_Bottone_Documentazione2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_Documentazione2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_RW_Bottone_Documentazione2ActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -9834,12 +9852,12 @@ try {
         TransazioniCrypto_Text_Plusvalenza.setText("€ " + Plusvalenza.toPlainString());
         TransazioniCrypto_Text_CostiCarico.setText("€ " + CostiCarico.toPlainString());
         TransazioniCrypto_Text_Vendite.setText("€ " + Vendite.toPlainString());
-        Color verde = new Color(45, 155, 103);
-        Color rosso = new Color(166, 16, 34);
+        //Color verde = new Color(45, 155, 103);
+      //  Color rosso = new Color(166, 16, 34);
         if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-")) {
-            TransazioniCrypto_Text_Plusvalenza.setForeground(verde);
+            TransazioniCrypto_Text_Plusvalenza.setForeground(Tabelle.verde);
         } else {
-            TransazioniCrypto_Text_Plusvalenza.setForeground(rosso);
+            TransazioniCrypto_Text_Plusvalenza.setForeground(Tabelle.rosso);
         }
         
         
@@ -10305,6 +10323,7 @@ try {
     private javax.swing.JButton RW_Bottone_CorreggiErrore;
     private javax.swing.JButton RW_Bottone_Documentazione;
     private javax.swing.JButton RW_Bottone_Documentazione1;
+    private javax.swing.JButton RW_Bottone_Documentazione2;
     private javax.swing.JButton RW_Bottone_IdentificaScam;
     private javax.swing.JButton RW_Bottone_ModificaVFinale;
     private javax.swing.JButton RW_Bottone_ModificaVIniziale;

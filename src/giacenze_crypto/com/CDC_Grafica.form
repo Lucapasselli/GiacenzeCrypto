@@ -852,15 +852,15 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane2" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" min="-2" pref="200" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="219" max="-2" attributes="0"/>
-                                              <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" pref="290" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" pref="200" max="32767" attributes="0"/>
+                                          <Component id="RW_Bottone_Documentazione2" max="32767" attributes="0"/>
                                       </Group>
-                                      <EmptySpace pref="383" max="32767" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
+                                      <EmptySpace pref="428" max="32767" attributes="0"/>
+                                      <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="DepositiPrelievi_Bottone_DettaglioDefi" max="32767" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" pref="200" max="32767" attributes="0"/>
@@ -875,19 +875,26 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="748" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="jScrollPane2" pref="768" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" max="-2" attributes="0"/>
-                                  <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" max="-2" attributes="0"/>
+                                          <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                              <Component id="RW_Bottone_Documentazione2" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" pref="68" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1023,10 +1030,21 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_FrecceContrapposte.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Crea Movimento Opposto su altro Wallet"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Crea movimento opposto &lt;br&gt;su altro Wallet&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RW_Bottone_Documentazione2">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Libro.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Vedi Documentazione"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Bottone_Documentazione2ActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

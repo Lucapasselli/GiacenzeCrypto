@@ -38,6 +38,7 @@ public class Giacenze_CryptoCom {
             {        
             UIManager.setLookAndFeel( new FlatLightLaf() );
             Tabelle.verdeScuro=new Color (23, 114, 69);
+           // Tabelle.verde=Tabelle.verdeScuro;
             Tabelle.rosso=Color.RED;
        }
 

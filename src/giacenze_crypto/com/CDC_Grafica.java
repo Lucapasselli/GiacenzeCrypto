@@ -133,7 +133,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.29 Beta";          
+            String Titolo="Giacenze Crypto 1.30al Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -302,7 +302,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         DepositiPrelievi_CheckBox_movimentiClassificati = new javax.swing.JCheckBox();
         DepositiPrelievi_Bottone_DettaglioDefi = new javax.swing.JButton();
         DepositiPrelievi_Bottone_CreaMovOpposto = new javax.swing.JButton();
-        RW_Bottone_Documentazione2 = new javax.swing.JButton();
+        DepositiPrelievi_Bottone_Documentazione = new javax.swing.JButton();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -1024,11 +1024,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
-        RW_Bottone_Documentazione2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Libro.png"))); // NOI18N
-        RW_Bottone_Documentazione2.setText("Vedi Documentazione");
-        RW_Bottone_Documentazione2.addActionListener(new java.awt.event.ActionListener() {
+        DepositiPrelievi_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Libro.png"))); // NOI18N
+        DepositiPrelievi_Bottone_Documentazione.setText("Vedi Documentazione");
+        DepositiPrelievi_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RW_Bottone_Documentazione2ActionPerformed(evt);
+                DepositiPrelievi_Bottone_DocumentazioneActionPerformed(evt);
             }
         });
 
@@ -1043,7 +1043,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                            .addComponent(RW_Bottone_Documentazione2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
                         .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 424, Short.MAX_VALUE)
@@ -1065,7 +1065,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(DepositiPrelievi_Bottone_DettaglioDefi)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(RW_Bottone_Documentazione2)
+                                .addComponent(DepositiPrelievi_Bottone_Documentazione)
                                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -8540,9 +8540,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
     }//GEN-LAST:event_RT_Bottone_ModificaGiacenzaActionPerformed
 
-    private void RW_Bottone_Documentazione2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_Documentazione2ActionPerformed
+    private void DepositiPrelievi_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_RW_Bottone_Documentazione2ActionPerformed
+        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Classificazioni%20Movimenti.pdf/download");
+    }//GEN-LAST:event_DepositiPrelievi_Bottone_DocumentazioneActionPerformed
     
     private void GiacenzeaData_Funzione_IdentificaComeScam() {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -9708,6 +9709,15 @@ try {
                             //Adesso verifico se ho prezzi a zero non perchè valgano zero ma perchè non è presente un prezzo sul movimento e li segnalo
                             //col 32 a SI se il movimento è senza prezzo invece a NO se ha prezzo
                             Prezzi.IndicaMovimentoPrezzato(splittata);
+                            
+                            //Adesso controllo se ho aumentato il numero delle colonne e in quel caso aumento l'array
+                            if (Importazioni.ColonneTabella!=splittata.length){
+                                String nuovoArray[]=new String[Importazioni.ColonneTabella];
+                                //splittata = java.util.Arrays.copyOf(splittata, Importazioni.ColonneTabella);
+                                System.arraycopy(splittata, 0, nuovoArray, 0, Importazioni.ColonneTabella);
+                                splittata=nuovoArray;
+                                Importazioni.RiempiVuotiArray(splittata);
+                            }
                             }
                             MappaCryptoWallet.put(splittata[0], splittata);
 
@@ -10248,6 +10258,7 @@ try {
     private javax.swing.JButton DepositiPrelievi_Bottone_AssegnazioneManuale;
     private javax.swing.JButton DepositiPrelievi_Bottone_CreaMovOpposto;
     private javax.swing.JButton DepositiPrelievi_Bottone_DettaglioDefi;
+    private javax.swing.JButton DepositiPrelievi_Bottone_Documentazione;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JPanel GiacenzeaData;
@@ -10324,7 +10335,6 @@ try {
     private javax.swing.JButton RW_Bottone_CorreggiErrore;
     private javax.swing.JButton RW_Bottone_Documentazione;
     private javax.swing.JButton RW_Bottone_Documentazione1;
-    private javax.swing.JButton RW_Bottone_Documentazione2;
     private javax.swing.JButton RW_Bottone_IdentificaScam;
     private javax.swing.JButton RW_Bottone_ModificaVFinale;
     private javax.swing.JButton RW_Bottone_ModificaVIniziale;

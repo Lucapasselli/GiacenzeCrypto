@@ -43,7 +43,8 @@
 31 - Data Fine trasferimento crypto (viene anche utilizzata come data per lo spostamento del costo di carico tra wallet)
 32 - Movimento ha prezzo (Valorizzato a Si o No)  //Serve per sapere se l'eventuale prezzo a zero è voluto o semplicemente non ho trovato i prezzi sul movimento
 33 - Movimento che genera plusvalenza (Valorizzato a S o N)
-34 - Rete (Attualmente solo BSC,ETH,CRO)//non ancora implementato
+34 - Rete (Attualmente solo BSC,ETH,CRO,ARB,BASE)//non ancora implementato
+35 - Costo Carico Donazione (Da capire se implementare o meno)... attualmente basterebbe cambiare il valore della transazione
 */
 
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
@@ -127,7 +128,7 @@ public class Importazioni {
     public static int TransazioniAggiunte=0;
     public static int TrasazioniScartate=0;
     public static int TrasazioniSconosciute=0;
-    public static int ColonneTabella=35;
+    public static int ColonneTabella=40;
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
     public static String movimentiSconosciuti="";
     
@@ -192,7 +193,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Simple Earn subscription",               "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Simple Earn redemption",                 "TRASFERIMENTO-CRYPTO-INTERNO");
         
-        Mappa_Conversione_Causali.put("withdrawal",                               "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("withdrawal",                             "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                "TRASFERIMENTO-CRYPTO");
         
         Mappa_Conversione_Causali.put("Convert",                                "SCAMBIO CRYPTO-CRYPTO");
@@ -1225,6 +1226,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
         Mappa_Conversione_Causali.put("DEPOSIT", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
         Mappa_Conversione_Causali.put("WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
+        Mappa_Conversione_Causali.put("CREDIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
+        Mappa_Conversione_Causali.put("DEBIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
 
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
@@ -3134,6 +3137,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[8] = Mon.Moneta;
                                     RT[9] = Mon.Tipo;
                                     RT[10] = Mon.Qta;
+                                    RT[14] = movimentoSplittato[8];
                                     RT[15] = "0.00";
                                 } 
                                 else 
@@ -3142,7 +3146,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[11] = Mon.Moneta;
                                     RT[12] = Mon.Tipo;
                                     RT[13] = Mon.Qta;
-                                    RT[14] = "";
+                                    RT[14] = movimentoSplittato[8];
 
                                     RT[15] = valoreEuro;
                                     BigDecimal QTA = new BigDecimal(movimentoSplittato[6]);
@@ -3203,6 +3207,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[12]=Mon.Tipo;
                                 RT[13]=Mon.Qta;    
                                 }
+                                RT[14] = movimentoSplittato[8];
                                 RT[15]=valoreEuro;
                                 RT[19]="0.00";
                                 RT[22]="A";   
@@ -3226,7 +3231,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[7]=CausaleOriginale;
                                 RT[8]=Mon.Moneta;
                                 RT[9]=Mon.Tipo;
-                                RT[10]=Mon.Qta;                                                                                                                            
+                                RT[10]=Mon.Qta;    
+                                RT[14] = movimentoSplittato[8];
                                 RT[15]=valoreEuro;
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
@@ -3280,7 +3286,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[12]=Mon.Tipo;
                                     RT[13]=Mon.Qta;
                                     RT[28] = Mon.MonetaAddress;
-                                }                     
+                                }
+                                RT[14] = movimentoSplittato[8];
                                 RT[15]=valoreEuro;                                
                                 RT[19]="0.00";
                                 RT[22]="A";
@@ -3315,7 +3322,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[12]=Mon.Tipo;
                                     RT[13]=Mon.Qta.replace("-", "");
                                     RT[28] = Mon.MonetaAddress;
-                                }                     
+                                }
+                                RT[14] = movimentoSplittato[8];
                                 RT[15]=valoreEuro;                                
                                 RT[19]="0.00";
                                 RT[22]="A";
@@ -3352,7 +3360,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     RT[12]=Mon.Tipo;
                                     RT[13]=Mon.Qta;
                                     RT[28] = Mon.MonetaAddress;
-                                }                                                                                            
+                                }
+                                RT[14] = movimentoSplittato[8];
                                 RT[15]=valoreEuro;
                                 RT[16]="";
                                 RT[17]="Da calcolare";

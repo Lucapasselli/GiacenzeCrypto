@@ -86,7 +86,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 "AIRDROP, CASHBACK, EARN etc...",
                 "DEPOSITO CON COSTO DI CARICO A ZERO",
                 "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)",
-                "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...)",
+                "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE",
                 "SCAMBIO CRYPTO DIFFERITO",
                 "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
 
@@ -503,22 +503,54 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 case 4 -> {
                     descrizione = "ACQUISTO CRYPTO";
                     dettaglio = "DAC - Acquisto Crypto";
-                    String m = JOptionPane.showInputDialog(this, "Indica il valore di acquisto corretto in Euro : ", attuale[15]);
-                    completato = m != null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
-                    if (m != null) {
-                        m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                        if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
-                            attuale[15] = m;
-                            PrzCarico = attuale[15];
-                            plusvalenza = "0.00";
-                        } else {
-                            completato = false;
-                            JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
-                                    "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    
+                    String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
+                            + "<b>Come classifichiamo il movimento?<br><br><b>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "ACQUISTO CRYPTO", "DONAZIONE"};
+                    scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Classificazione del movimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    String testo="";
+                    if (scelta != 0 && scelta != -1) {
+                        
+                        switch (scelta) {
+                            case 1 -> {
+                               // descrizione = "ACQUISTO CRYPTO";
+                               // dettaglio = "DAC - Acquisto Crypto";
+                                testo="Indica il valore di acquisto corretto in Euro : ";
+                            }
+                            case 2 -> {
+                                descrizione = "DONAZIONE";
+                                dettaglio = "DAC - Donazione";
+                                testo="Indica il costo di carico della donazione ricevuta : ";
+                            }
+                            default -> {
+                            }
                         }
+                        String m = JOptionPane.showInputDialog(this, testo, attuale[15]);
+                        completato = m != null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
+                        if (m != null) {
+                            m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                            if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
+                                attuale[15] = m;
+                                PrzCarico = attuale[15];
+                                plusvalenza = "0.00";
+                            } else {
+                                completato = false;
+                                JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
+                                        "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                            }
+                        }
+                    }else completato=false;
                     }
-
-                }
+                    
                 case 5 -> {
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
                     trasferimento = true;

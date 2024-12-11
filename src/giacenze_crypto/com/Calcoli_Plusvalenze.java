@@ -61,7 +61,7 @@ public class Calcoli_Plusvalenze {
      *           Comprende:    -> FIAT
      */
     
-    public static int CategorizzaTransazione(String[] movimento){
+    public static int CategorizzaTransazioneOLD(String[] movimento){
 //Questa prima funzione si occupa di categorizzare le movimentazioni in 10 Categorie
 //Leggi la documentazione in fondo alla classe per le spiegazioni del caso
 
@@ -802,7 +802,7 @@ public class Calcoli_Plusvalenze {
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, ArrayDeque> CryptoStack = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
-            int TipoMovimento=Calcoli_Plusvalenze.CategorizzaTransazione(v);
+            int TipoMovimento=Calcoli_Plusvalenze.CategorizzaTransazioneOLD(v);
             int TipologieCalcoli[]=Calcoli_Plusvalenze.RitornaTipologieCalcoli(TipoMovimento);
             String MonetaU=v[8];
             String QtaU=v[10];
@@ -1015,7 +1015,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
        // System.out.println(stack.pop());
         Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String[] v : MappaCryptoWallet.values()) {
-            Calcoli_Plusvalenze.CategorizzaTransazione(v);
+            Calcoli_Plusvalenze.CategorizzaTransazioneOLD(v);
             
             //Plusvalenze.
             //Se deposito crypto non associato o prelievo crypto non associato non lo considero e lo salto - DC-PC()

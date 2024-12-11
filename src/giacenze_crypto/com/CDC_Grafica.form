@@ -39,7 +39,7 @@
                   <Component id="CDC" pref="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="Bottone_Titolo" min="-2" pref="553" max="-2" attributes="0"/>
-                      <EmptySpace pref="154" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="jLabel1" min="-2" pref="236" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="jLabel2" min="-2" pref="63" max="-2" attributes="0"/>

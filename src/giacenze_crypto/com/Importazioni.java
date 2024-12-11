@@ -544,9 +544,11 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Main and Funding Account Transfer",          "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("transfer_in",                                "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("transfer_out",                               "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy Account", "TRASFERIMENTO-CRYPTO-INTERNO");
 
         Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
+        
         // La causale di autoinvestimento la dovrò poi convertire in Scambio Crypto Differito
         // Possono passare infatti anche diversi minuti tra il movimento di uscita e quello di entrata
         Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "SCAMBIO DIFFERITO");
@@ -562,17 +564,23 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Transaction Related",                        "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("ETH 2.0 Staking",                            "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("ETH 2.0 Staking Withdrawals",                "SCAMBIO CRYPTO-CRYPTO");//
+        
         Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
+        Mappa_Conversione_Causali.put("Strategy Trading Fee Rebate",                "COMMISSIONI");//Da Verificare
+        
+        
         Mappa_Conversione_Causali.put("Fiat Deposit",                               "DEPOSITO FIAT");
         Mappa_Conversione_Causali.put("Binance Card Spending",                      "PRELIEVO FIAT");
         Mappa_Conversione_Causali.put("Fund Recovery",                              "PRELIEVO FIAT");
         
         Mappa_Conversione_Causali.put("Buy Crypto",                                 "ACQUISTO CRYPTO");
+        Mappa_Conversione_Causali.put("Buy Crypto With Fiat",                       "ACQUISTO CRYPTO");//Inserito il 11/12/2024
+        Mappa_Conversione_Causali.put("Convert Fiat to Stablecoin Paysafe",         "ACQUISTO CRYPTO");//Inserito il 21/07/2024
         
         Mappa_Conversione_Causali.put("Referral Commission",                        "REWARD");//Inserito il 21/07/2024
         Mappa_Conversione_Causali.put("Crypto Box",                                 "REWARD"); // Red carpet Binance rewards, Inserito il 21/07/2024
-        Mappa_Conversione_Causali.put("Convert Fiat to Stablecoin Paysafe",         "ACQUISTO CRYPTO");//Inserito il 21/07/2024
+        
         //,Auto-Invest Transaction
         //Binance Card Spending
       /*  Mappa_Conversione_Causali.put("Fiat Deposit", "DEPOSITO FIAT");        //Scambio di una Crypto per un'altra Crypto*/
@@ -1262,9 +1270,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 }
                             else{
                                 //se arrivo qua vuol dire che ho trovato un movimento doppio
-                                //per cui non devo far altro che sommare le quantità
+                                //per cui non devo far altro che sommare le quantità e i prezzi
                                 String Mov[]=Mappa_MovimentiTemporanea.get(Data+" "+riga);
                                 Movimento[6]=new BigDecimal(Mov[6]).add(new BigDecimal(Movimento[6])).toPlainString();
+                                if (!Movimento[8].isBlank()) Movimento[8]=new BigDecimal(Mov[8]).add(new BigDecimal(Movimento[8])).toPlainString();
                                 Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
                             }
                             //lista.add(riga);
@@ -1386,12 +1395,15 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
     
     
     
-        public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti) {
+        public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti,boolean SalvataggioPermanente) {
         File f = new File("movimenti.crypto.db");
         File f2 = new File("movimenti.crypto.backup");
+        File cartellaBackup=new File ("Backup");
+        if (!cartellaBackup.exists()) cartellaBackup.mkdir();
+        if (SalvataggioPermanente)f2 = new File(cartellaBackup+"/movimenti.crypto.backup."+System.currentTimeMillis());
     if(f.exists()){
         if(f2.exists())f2.delete();
-        f.renameTo(new File("movimenti.crypto.backup"));
+        f.renameTo(f2);
     }
          try { 
             FileWriter w=new FileWriter("movimenti.crypto.db");
@@ -1399,6 +1411,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
        for (String[] v : Mappa_Movimenti.values()) {
            String riga="";
                 for (String v1 : v) {
+                    if(v1==null)v1="";
                     riga = riga + v1 + ";";
                 }
            //Questa serve per togliere l'ultimo ";" dalla stringa in quanto superfluo
@@ -2136,7 +2149,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         }
      
         
-                  public static List<String[]> ConsolidaMovimenti_Binance(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest){
+          public static List<String[]> ConsolidaMovimenti_Binance(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
@@ -2322,12 +2335,24 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[3]="Binance";
                                 //RT[4]=WalletSecondario;
                                 RT[4] = "Principale";
-                                RT[5]="COMMISSIONI";
-                                RT[6]=Mon.Moneta+" -> ";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                                
-                                RT[7]=CausaleOriginale;
-                                RT[8]=Mon.Moneta;
-                                RT[9]=Mon.Tipo;
-                                RT[10]=Mon.Qta;                                                                                                                            
+                                if (Mon.Qta.contains("-")){
+                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_C"+String.valueOf(k+1)+ "_1_CM";
+                                    RT[5]="COMMISSIONI";                                
+                                    RT[6]=Mon.Moneta+" -> ";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                                
+                                    RT[7]=CausaleOriginale;
+                                    RT[8]=Mon.Moneta;
+                                    RT[9]=Mon.Tipo;
+                                    RT[10]=Mon.Qta;   
+                                }else
+                                {
+                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_C"+String.valueOf(k+1)+ "_1_RW";
+                                    RT[5]="RIMBORSO COMMISSIONI";//GESTIRE RIMBORSO COMMISSIONI!!!!!!!!
+                                    RT[6]=" -> "+Mon.Moneta;//da sistemare con ulteriore dettaglio specificando le monete trattate                                                                
+                                    RT[7]=CausaleOriginale;
+                                    RT[11]=Mon.Moneta;
+                                    RT[12]=Mon.Tipo;
+                                    RT[13]=Mon.Qta; 
+                                }
                                 RT[15]=valoreEuro;
                                 RT[22]="A";
                                 RiempiVuotiArray(RT);
@@ -2485,7 +2510,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                            
                         }
                               
-
+                        //Mancano le transazioni di solo acquisto o solo vendita!!!!!!!
+                        
                             // A fine ciclo verifico se ho degli scambi da inserire e li inserisco
                             // Li inserisco alla fine perchè non so quando teminino
                         //  if (k == numMovimenti - 1) {
@@ -3490,14 +3516,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                             }*/
                                             //peso transazione                  
                                             String QuantitaEntrata = new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
+                                            String PrezzoEntrata = new BigDecimal(tokenE.Prezzo).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
                                             String QuantitaUscita = new BigDecimal(tokenU.Qta).multiply(new BigDecimal(tokenE.Peso)).stripTrailingZeros().toPlainString();
+                                            String PrezzoUscita = new BigDecimal(tokenU.Prezzo).multiply(new BigDecimal(tokenE.Peso)).stripTrailingZeros().toPlainString();
                                             Moneta M1 = new Moneta();
                                             M1.InserisciValori(tokenU.Moneta, QuantitaUscita, tokenU.MonetaAddress, tokenU.Tipo);
                                             Moneta M2 = new Moneta();
                                             M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
                                             BigDecimal PrezzoTransazione;
-                                            PrezzoTransazione=new BigDecimal(tokenE.Prezzo);
-                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione=new BigDecimal(tokenU.Prezzo);
+                                            PrezzoTransazione=new BigDecimal(PrezzoEntrata);
+                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione=new BigDecimal(PrezzoUscita);
                                             if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null));
                                             PrezzoTransazione=PrezzoTransazione.setScale(2,RoundingMode.HALF_UP);
                                             String TipoTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 1);

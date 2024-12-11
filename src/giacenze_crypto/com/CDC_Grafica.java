@@ -133,7 +133,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.30al Beta";          
+            String Titolo="Giacenze Crypto 1.30v1 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -6311,7 +6311,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void TransazioniCrypto_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
         // TODO add your handling code here:
-        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
         Importazioni.TransazioniAggiunte=0;
         TransazioniCrypto_DaSalvare=false;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
@@ -7390,7 +7390,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //No=1
                 switch (risposta) {
                     case 0 -> {
-                        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+                        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,false);
                     }
 
                 } 
@@ -9711,7 +9711,7 @@ try {
                             Prezzi.IndicaMovimentoPrezzato(splittata);
                             
                             //Adesso controllo se ho aumentato il numero delle colonne e in quel caso aumento l'array
-                            if (Importazioni.ColonneTabella!=splittata.length){
+                            if (Importazioni.ColonneTabella>splittata.length){
                                 String nuovoArray[]=new String[Importazioni.ColonneTabella];
                                 //splittata = java.util.Arrays.copyOf(splittata, Importazioni.ColonneTabella);
                                 System.arraycopy(splittata, 0, nuovoArray, 0, Importazioni.ColonneTabella);
@@ -9738,7 +9738,7 @@ try {
             //Se c'è un cambio versione può essere che vi sia anche una modifica del file
             //per questo salverei una copia di backup del vecchio file e ne creerei uno nuovo con le modifiche
 
-            Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet);
+            Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,true);
         }
         
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI,VediSoloSenzaPrezzo);

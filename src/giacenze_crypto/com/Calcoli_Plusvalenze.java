@@ -369,6 +369,11 @@ public class Calcoli_Plusvalenze {
      public static void AggiornaPlusvalenze(){
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
+
+       //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
+       boolean ConsideraMovimentiNC=true;
+       if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
+       
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();
         Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>();
@@ -673,15 +678,24 @@ public class Calcoli_Plusvalenze {
                 }
                 //Tipologia = XY; (Deposito non categorizzato) -> Vengono caricati sul LiFo a costo di carico Zero
                 else if(v[18].isBlank()){
-                     
-                    NuovoPrezzoCarico="0.00";
-                     Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
-                     
-                     Plusvalenza="0.00";
-                     CalcoloPlusvalenza="N";
-                     
-                     VecchioPrezzoCarico="";
-                    //System.out.println(IDTS[0]+" - "+MonetaE+" - "+QtaE);
+                    // nel caso la variabile considera movimenti non classficati sia a trueconsidero il movimento come deposito a zero
+                     if (ConsideraMovimentiNC) {
+                        NuovoPrezzoCarico = "0.00";
+                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+
+                        Plusvalenza = "0.00";
+                        CalcoloPlusvalenza = "N";
+
+                        VecchioPrezzoCarico = "";
+                    } else {
+                        //altrimenti non lo considero
+                        Plusvalenza = "0.00";
+                        CalcoloPlusvalenza = "N";
+
+                        NuovoPrezzoCarico = "";
+
+                        VecchioPrezzoCarico = "";
+                    }
                 }
             } 
             
@@ -753,17 +767,22 @@ public class Calcoli_Plusvalenze {
                 }
                 //Tipologia = XY;//(Movimento non categorizzato) - Lo Considero come un cashOut
                 else if(v[18].isBlank()){
-                    
-                  //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
-                
-                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                    NuovoPrezzoCarico="";
-                
-                    //Calcolo la plusvalenza
-                        Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
-                        CalcoloPlusvalenza="S";            
-                    
+                    if (ConsideraMovimentiNC) {
+                        //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                        VecchioPrezzoCarico = Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true);
+
+                        //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                        NuovoPrezzoCarico = "";
+
+                        //Calcolo la plusvalenza
+                        Plusvalenza = new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        CalcoloPlusvalenza = "S";
+                    } else {
+                        Plusvalenza = "0.00";
+                        CalcoloPlusvalenza = "N";
+                        NuovoPrezzoCarico = "";
+                        VecchioPrezzoCarico = "";
+                    }
                 }
             } 
             //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT

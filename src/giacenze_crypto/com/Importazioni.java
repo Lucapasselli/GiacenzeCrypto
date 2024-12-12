@@ -2200,7 +2200,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                              //   String inputValue = "2012-08-15T22:56:02.038Z";
 
                             String movimentoConvertito=Mappa_Conversione_Causali.get(movimentoSplittato[3]);
-                           // System.out.println(movimentoSplittato[9]);
+                            //System.out.println(movimentoConvertito);
+                           
                            if (movimentoConvertito==null)
                                 {
                                 //   System.out.println("Errore in importazione da CDCAPP csv: "+movimento);
@@ -2346,7 +2347,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 }else
                                 {
                                     RT[0]=data.replaceAll(" |-|:", "") +"_Binance_C"+String.valueOf(k+1)+ "_1_RW";
-                                    RT[5]="RIMBORSO COMMISSIONI";//GESTIRE RIMBORSO COMMISSIONI!!!!!!!!
+                                    RT[5]="CASHBACK";//IL RIMBORSO DELLE COMMISSIONI LO TRATTO COME UN CASHBACK
                                     RT[6]=" -> "+Mon.Moneta;//da sistemare con ulteriore dettaglio specificando le monete trattate                                                                
                                     RT[7]=CausaleOriginale;
                                     RT[11]=Mon.Moneta;
@@ -2364,6 +2365,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&!Mon.Tipo.equals("FIAT"))
                                     )
                             {
+                               // System.out.println(movimentoConvertito);
                                // System.out.println(Mon.Moneta);
                                 // serve solo per il calcolo della percentuale di cro da attivare
                                     Scambio.InserisciMoneteCEX(Mon,"Principale",CausaleOriginale,"");
@@ -2515,7 +2517,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             // A fine ciclo verifico se ho degli scambi da inserire e li inserisco
                             // Li inserisco alla fine perchè non so quando teminino
                         //  if (k == numMovimenti - 1) {
-                                    Scambio.IdentificaTipoTransazioneCEX();
+                        
+                                    if(Scambio.lenght()>0){
+                                    String TipoScambio=Scambio.IdentificaTipoTransazioneCEX();
                                     Scambio.AssegnaPesiaPartiTransazione();
                                     Map<String, ValoriToken> MappaTokenUscita=Scambio.RitornaMappaTokenUscita();
                                     Map<String, ValoriToken> MappaTokenEntrata=Scambio.RitornaMappaTokenEntrata();
@@ -2523,6 +2527,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                     int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
                                     //  RT = new String[ColonneTabella];
                                     //  RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
+                                    if(TipoScambio.equalsIgnoreCase("Scambio")){
                                     for (ValoriToken tokenE : MappaTokenEntrata.values()) {
                                         for (ValoriToken tokenU : MappaTokenUscita.values()) {
                                           /*  if (new BigDecimal(tokenU.Peso).compareTo(new BigDecimal(1)) != 0 || new BigDecimal(tokenE.Peso).compareTo(new BigDecimal(1)) != 0) {
@@ -2563,6 +2568,68 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                        // }
                                    }   
                                 }
+                                    }else if(TipoScambio.equalsIgnoreCase("Deposito")){
+                                        for (ValoriToken tokenE : MappaTokenEntrata.values()) {
+                                            Moneta M2 = new Moneta();
+                                            M2.InserisciValori(tokenE.Moneta, tokenE.Qta, tokenE.MonetaAddress, tokenE.Tipo);
+                                            BigDecimal PrezzoTransazione;
+                                            if (tokenE.Prezzo.isBlank())
+                                                PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M2,null, Datalong, "0", true, 2, null));
+                                            else
+                                                PrezzoTransazione=new BigDecimal(tokenE.Prezzo).setScale(2, RoundingMode.HALF_UP);
+                                            String RT[] = new String[ColonneTabella];
+                                            RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+totMov+ "_"+i+"_DC";
+                                            RT[1] = dataa;
+                                            RT[2] = i + " di " + totMov;
+                                            RT[3] = "Binance";
+                                            RT[4] = "Principale";
+                                            RT[5] = "Deposito";
+                                            RT[6] = " -> " + tokenE.RitornaNomeToken();
+                                            RT[7] = tokenE.CausaleOriginale;
+                                            RT[11] = tokenE.Moneta;
+                                            RT[12] = tokenE.Tipo;
+                                            RT[13] = tokenE.Qta;
+                                            RT[14] = "";
+                                            RT[15] = PrezzoTransazione.toPlainString();
+                                            RT[22] = "A";
+                                            Importazioni.RiempiVuotiArray(RT);
+                                            lista.add(RT);
+                                            i++;
+                                        }
+                                     
+                                
+                                    }
+                                    else if(TipoScambio.equalsIgnoreCase("Prelievo")){                                       
+                                        for (ValoriToken tokenU : MappaTokenUscita.values()) {
+                                            Moneta M2 = new Moneta();
+                                            M2.InserisciValori(tokenU.Moneta, tokenU.Qta, tokenU.MonetaAddress, tokenU.Tipo);
+                                            BigDecimal PrezzoTransazione;
+                                            if (tokenU.Prezzo!=null&&tokenU.Prezzo.isBlank())
+                                                PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M2,null, Datalong, "0", true, 2, null));
+                                            else
+                                                PrezzoTransazione=new BigDecimal(tokenU.Prezzo).setScale(2, RoundingMode.HALF_UP);
+                                            String RT[] = new String[ColonneTabella];
+                                            RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+totMov+ "_"+i+"_PC";
+                                            RT[1] = dataa;
+                                            RT[2] = i + " di " + totMov;
+                                            RT[3] = "Binance";
+                                            RT[4] = "Principale";
+                                            RT[5] = "Prelievo";
+                                            RT[6] = tokenU.RitornaNomeToken()+" ->";
+                                            RT[7] = tokenU.CausaleOriginale;
+                                            RT[8] = tokenU.Moneta;
+                                            RT[9] = tokenU.Tipo;
+                                            RT[10] = tokenU.Qta;
+                                            RT[14] = "";
+                                            RT[15] = PrezzoTransazione.toPlainString();
+                                            RT[22] = "A";
+                                            Importazioni.RiempiVuotiArray(RT);
+                                            lista.add(RT);
+                                            i++;
+                                        }
+                                    
+                                    }else{System.out.println("Errore assegnazione tipologia (ConsolidaMovimenti_Binance)");}
+                                    }
         return lista;
     }   
      

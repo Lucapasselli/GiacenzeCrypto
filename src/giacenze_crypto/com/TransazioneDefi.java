@@ -118,6 +118,10 @@ public class TransazioneDefi {
             }
     }
     
+    public int lenght(){
+        return MappaToken.size();
+    }
+    
      //FUNZIONE TUTTA DA VERIFICARE   
     public void InserisciMoneteCEX(Moneta Moneta,String Wallet,String CausaleOriginale,String IDT){
         ValoriToken monete;

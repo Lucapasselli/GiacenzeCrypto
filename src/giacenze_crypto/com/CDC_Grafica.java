@@ -9705,12 +9705,28 @@ try {
                     Mappa_Wallets_e_Dettagli.clear();
                     try (FileReader fire = new FileReader(fileDaImportare); BufferedReader bure = new BufferedReader(fire);) {
                         while ((riga = bure.readLine()) != null) {
-                            String splittata1[] = riga.split(";");
-                            String splittata[] = new String[ColonneTabella];
-                            System.arraycopy(splittata1, 0, splittata, 0, splittata1.length);
+                            String splittata[] = riga.split(";",-1);
                             //questo serve affinchè ogni movimento abbia sempre un numero di colonne pari a ColonneTabella
                             //serve affinchè possa incrementare a piacimento il numero di colonne senza avere problemi poi
                             //----------------------------------------------------------------------------------------
+                            
+                            //Come prima cosa controllo se ho aumentato il numero delle colonne e in quel caso aumento l'array
+                            //Inoltre metto a true VersioneCambiata perchè questo è un caso che non dovrebbe mai capitare
+                            //può capitare solo se metto in una versione nuova un file di una vecchia versione del programma
+                            if (Importazioni.ColonneTabella>splittata.length){
+                                String nuovoArray[]=new String[Importazioni.ColonneTabella];
+                                //splittata = java.util.Arrays.copyOf(splittata, Importazioni.ColonneTabella);
+                                System.arraycopy(splittata, 0, nuovoArray, 0, splittata.length);
+                                splittata=nuovoArray;
+                                Importazioni.RiempiVuotiArray(splittata);
+                                VersioneCambiata=true;
+                            }
+                            
+                            
+                            
+                            
+                            
+                            
                             //Adesso faccio in modo che che i sottowallet CRO Transaction, BSC transaction etc.... vengano convertiti in
                             if (VersioneCambiata){
                             if (Funzioni.TrovaReteDaID(splittata[0]) != null && !Funzioni.TrovaReteDaID(splittata[0]).isBlank()) {
@@ -9739,16 +9755,7 @@ try {
 
                             //Adesso verifico se ho prezzi a zero non perchè valgano zero ma perchè non è presente un prezzo sul movimento e li segnalo
                             //col 32 a SI se il movimento è senza prezzo invece a NO se ha prezzo
-                            Prezzi.IndicaMovimentoPrezzato(splittata);
-                            
-                            //Adesso controllo se ho aumentato il numero delle colonne e in quel caso aumento l'array
-                            if (Importazioni.ColonneTabella>splittata.length){
-                                String nuovoArray[]=new String[Importazioni.ColonneTabella];
-                                //splittata = java.util.Arrays.copyOf(splittata, Importazioni.ColonneTabella);
-                                System.arraycopy(splittata, 0, nuovoArray, 0, Importazioni.ColonneTabella);
-                                splittata=nuovoArray;
-                                Importazioni.RiempiVuotiArray(splittata);
-                            }
+                            Prezzi.IndicaMovimentoPrezzato(splittata);                            
                             }
                             MappaCryptoWallet.put(splittata[0], splittata);
 

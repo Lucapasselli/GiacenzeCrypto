@@ -633,6 +633,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
 
     private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
         // TODO add your handling code here:
+        
         if(!EvidenziaProblemi()){
             //se non trovo problemi nella compilazione allora procedo con l'inserimento del movimento
             
@@ -1293,7 +1294,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         
                if (!nonCompleto)Bottone_Ok.setEnabled(true);
         else Bottone_Ok.setEnabled(false);
-               
+    
     return nonCompleto;
     
     }  
@@ -1316,6 +1317,8 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
         
         if (WalletDettaglio_ComboBox.getSelectedItem()!=null)
             ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+"_1_1_";
+        else
+            ID=ID+"Principale"+"_1_1_";//Se non esiste il Wallet dettaglio lo chiamo Principale
         //Adesso devo individuare la tipologia di movimento quindi possono essere le seguenti
          //TI=Trasferimento Interno
          //DC=Deposito Criptoattività

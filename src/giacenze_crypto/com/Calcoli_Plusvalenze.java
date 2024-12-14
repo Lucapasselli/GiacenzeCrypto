@@ -133,7 +133,7 @@ public class Calcoli_Plusvalenze {
                 if(IDTS[4].equalsIgnoreCase("RW"))Tipologia = 4;//Significa che sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
                 else if(IDTS[4].equalsIgnoreCase("CM")||movimento[18].contains("PCO")) Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc...
                 else if (IDTS[4].equalsIgnoreCase("TI")||movimento[18].isBlank()||movimento[18].contains("PTW")) Tipologia = 6; //Prelievo Criptoattività x spostamento tra wallet
-                else if(movimento[18].contains("PWN")) Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) 
+                else if(movimento[18].contains("PWN")) Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo, FORTO o DONAZIONE) 
             } 
             //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
             else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
@@ -754,7 +754,7 @@ public class Calcoli_Plusvalenze {
 
                 } 
                 
-                //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo)
+                //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) FURTO o DONAZIONE
                 else if(v[18].contains("PWN")){
                     
                     VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);

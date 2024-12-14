@@ -28,6 +28,7 @@ public class Tabelle {
     static Color grigio=new Color(70, 70, 70);
     static Color arancione=new Color(255, 216, 166);
     static Color arancioneChiaro=new Color(255, 226, 189);
+    static Color bluChiaro=new Color(3, 182, 252);
 
 
 
@@ -65,9 +66,21 @@ public class Tabelle {
  
             if (isSelected) {
 
-                    c.setBackground(table.getSelectionBackground());
-                    c.revalidate();
+                    setBackground(table.getSelectionBackground());
+                    setForeground(Color.BLACK);
+                   // c.revalidate();//NON CREDO SERVA PIU'
                 }
+           /*  else if (table.isRowSelected(row)&&table.hasFocus()){
+                  setBackground(bluChiaro); 
+                  setForeground(Color.DARK_GRAY);
+                } else if (isSelected&&!table.hasFocus()){
+                 setBackground(Color.GRAY);  
+             }else if (table.isRowSelected(row)&&!table.hasFocus()){
+                 setBackground(Color.GRAY);  
+             }
+            
+            
+            */
                 else if (col==3 && value.toString().toLowerCase().contains("deposito")) {
                        // if (value.toString().equalsIgnoreCase("da calcolare"))
                          //   {
@@ -116,7 +129,7 @@ public class Tabelle {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(verdeScuro);
-                }   
+                }
                 else {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     setForeground(fore);

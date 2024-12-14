@@ -187,7 +187,7 @@
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="479" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="385" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="0" min="-2" pref="31" max="-2" attributes="0"/>
@@ -217,7 +217,7 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Bottone_Errori" min="-2" pref="36" max="-2" attributes="0"/>
-                              <EmptySpace pref="29" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_EscludiTI" min="-2" max="-2" attributes="0"/>
@@ -287,6 +287,7 @@
                         <Column editable="false" title="ND" type="java.lang.Object"/>
                       </Table>
                     </Property>
+                    <Property name="cellSelectionEnabled" type="boolean" value="true"/>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                       <TableColumnModel selectionModel="0">
                         <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
@@ -496,8 +497,8 @@
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Segoe UI" size="12" style="1"/>
                 </Property>
-                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="33" green="33" red="ff" type="rgb"/>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Tabelle.rosso" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Attenzione ci sono dei movimenti non salvati, ricordarsi di farlo o all&apos;uscita verranno persi!"/>
               </Properties>
@@ -628,8 +629,8 @@
             </Component>
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_MovimentoElimina">
               <Properties>
-                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="66" green="66" red="ff" type="rgb"/>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Tabelle.rosso" type="code"/>
                 </Property>
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="33" green="33" red="33" type="rgb"/>
@@ -861,16 +862,15 @@
                                       </Group>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
-                                      <EmptySpace pref="398" max="32767" attributes="0"/>
+                                      <EmptySpace pref="404" max="32767" attributes="0"/>
                                       <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="DepositiPrelievi_Bottone_DettaglioDefi" max="32767" attributes="0"/>
-                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" pref="200" max="32767" attributes="0"/>
+                                      <Group type="103" groupAlignment="1" attributes="0">
+                                          <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" pref="200" max="-2" attributes="0"/>
+                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="200" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -878,7 +878,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="772" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="631" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
@@ -889,10 +889,15 @@
                                               <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="3" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <EmptySpace max="32767" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
                                   </Group>
                                   <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" pref="68" max="-2" attributes="0"/>
@@ -1069,15 +1074,14 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane3" pref="1261" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jScrollPane3" pref="1267" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="jScrollPane3" pref="852" max="32767" attributes="0"/>
+                              <Component id="jScrollPane3" pref="711" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -1188,23 +1192,21 @@
                                       <Component id="GiacenzeaData_Bottone_RettificaQta" min="-2" pref="190" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="GiacenzeaData_Bottone_MovimentiDefi" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
-                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_CambiaNomeToken" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_Scam" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" pref="190" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="163" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="0" pref="125" max="32767" attributes="0"/>
+                                      <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="163" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="1104" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="GiacenzeaData_Bottone_MovimentiDefi" min="-2" pref="190" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_CambiaNomeToken" min="-2" pref="190" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_Scam" min="-2" pref="190" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_ModificaValore" min="-2" pref="190" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -1239,7 +1241,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPane" pref="345" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPane" pref="274" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="GiacenzeaData_Bottone_CambiaNomeToken" alignment="1" max="32767" attributes="0"/>
@@ -1258,7 +1260,7 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="Giacenzeadata_Dettaglio_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="313" max="32767" attributes="0"/>
+                              <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="243" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
@@ -1704,12 +1706,12 @@
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Stampa" min="-2" pref="184" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="jButton2" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="7" max="32767" attributes="0"/>
-                                      <Component id="jLabel4" min="-2" pref="46" max="-2" attributes="0"/>
+                                      <Component id="jButton2" min="-2" pref="185" max="-2" attributes="0"/>
+                                      <EmptySpace pref="26" max="32767" attributes="0"/>
+                                      <Component id="jLabel4" min="-2" pref="37" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_Anno_ComboBox" min="-2" pref="72" max="-2" attributes="0"/>
-                                      <EmptySpace pref="8" max="32767" attributes="0"/>
+                                      <Component id="RW_Anno_ComboBox" min="-2" pref="64" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Calcola" min="-2" pref="112" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="jScrollPane9" alignment="0" max="32767" attributes="0"/>
@@ -1722,7 +1724,6 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel13" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Documentazione" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1733,10 +1734,11 @@
                                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                                       <Component id="RW_Anno_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Calcola" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="228" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="181" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
@@ -1744,7 +1746,7 @@
                                   <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="298" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="251" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1754,7 +1756,7 @@
                                   <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="202" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="155" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -2267,33 +2269,30 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane11" max="32767" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                      <Component id="RT_Label_Avviso" min="-2" pref="689" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="RT_Label_Avviso" min="-2" pref="683" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="RT_Bottone_Calcola" min="-2" pref="150" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="RT_Bottone_Calcola" min="-2" pref="32" max="-2" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                                      <Component id="RT_Label_Avviso" min="-2" pref="19" max="-2" attributes="0"/>
-                                  </Group>
+                              <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="RT_Label_Avviso" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+                                  <Component id="RT_Bottone_Calcola" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Component id="jScrollPane11" min="-2" pref="182" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jTabbedPane1" max="32767" attributes="0"/>
@@ -2409,7 +2408,7 @@
                                               <EmptySpace max="32767" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
-                                              <Component id="jScrollPane13" pref="993" max="32767" attributes="0"/>
+                                              <Component id="jScrollPane13" pref="999" max="32767" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
@@ -2424,13 +2423,13 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="jScrollPane12" pref="343" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane12" pref="272" max="32767" attributes="0"/>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" attributes="0">
                                               <Component id="jLabel17" min="-2" pref="22" max="-2" attributes="0"/>
                                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                                              <Component id="jScrollPane13" pref="206" max="32767" attributes="0"/>
+                                              <Component id="jScrollPane13" pref="136" max="32767" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
                                               <Component id="RT_Bottone_ModificaPrezzo" min="-2" pref="49" max="-2" attributes="0"/>
@@ -2671,8 +2670,8 @@
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Segoe UI" size="12" style="1"/>
                         </Property>
-                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="0" green="0" red="cc" type="rgb"/>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Tabelle.rosso" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere &quot;Calcola&quot; per aggiornare la tabella."/>
                       </Properties>
@@ -2831,7 +2830,7 @@
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="CDC_CardWallet_Tabella2Scroll" pref="538" max="32767" attributes="0"/>
+                                  <Component id="CDC_CardWallet_Tabella2Scroll" pref="421" max="32767" attributes="0"/>
                                   <Component id="CDC_CardWallet_Tabella1Scroll" pref="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
@@ -3251,8 +3250,8 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="491" max="32767" attributes="0"/>
-                          <Component id="CDC_FiatWallet_Tabella3Scroll" max="32767" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="374" max="32767" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Tabella3Scroll" pref="374" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -3827,7 +3826,7 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane1" min="-2" pref="52" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="649" max="32767" attributes="0"/>
+                              <Component id="Opzioni_GruppoWallet_ScrollTabella" pref="532" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_GruppoWallet_Bottone_Rinomina" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="84" max="-2" attributes="0"/>
@@ -3962,7 +3961,7 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jScrollPane5" min="-2" pref="123" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Emoney_ScrollPane" pref="656" max="32767" attributes="0"/>
+                              <Component id="Opzioni_Emoney_ScrollPane" pref="539" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_Emoney_Bottone_Aggiungi" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -4189,7 +4188,7 @@
                               <Component id="OpzioniRewards_JCB_PDD_Earn" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="OpzioniRewards_JCB_PDD_Reward" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="429" max="32767" attributes="0"/>
+                              <EmptySpace pref="312" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -4311,7 +4310,7 @@
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="651" max="32767" attributes="0"/>
+                              <EmptySpace pref="510" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -4473,7 +4472,7 @@
                               <Component id="RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                               <Component id="RW_Bottone_Documentazione1" min="-2" pref="60" max="-2" attributes="0"/>
-                              <EmptySpace pref="342" max="32767" attributes="0"/>
+                              <EmptySpace pref="225" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -4648,7 +4647,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_Checkbox_TemaScuro" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="802" max="32767" attributes="0"/>
+                              <EmptySpace pref="685" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

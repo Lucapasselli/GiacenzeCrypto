@@ -94,7 +94,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         {
             papele=new String[]{"- nessuna selezione -",
                 "CASHOUT O SIMILARE (verrà calcolata la plusvalenza)",
-                "PRELIEVO SCONOSCIUTO (qta e valore verrà tolta dal calcolo della Plus con LIFO)",
+                "DONAZIONE o FURTO Crypto-Attività",
                 "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)",
                 "SCAMBIO CRYPTO DIFFERITO",
                 "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
@@ -364,6 +364,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String PartiCoinvolte[] = (IDTrans + "," + attuale[20]).split(",");
         String PrzCarico = "Da calcolare";
         String plusvalenza = "Da calcolare";
+        String PrzVecchio ="";//Viene usato per spostare il prezzo orginale delle donazioni/acquisti
         boolean trasferimento = false;
         if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
             //in questo caso sono in presenza di un movimento di deposito
@@ -539,6 +540,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                         if (m != null) {
                             m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
                             if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
+                                //Se trovo un prezzo vecchio in 35 significa che sto ricodificando lo stesso movimento
+                                //A questo punto prima di andare avanti ripristino la situazione orginale
+                                if (attuale[35]!=null&&!attuale[35].isBlank()){
+                                    attuale[15]=attuale[35];
+                                    attuale[35]="";
+                                }
+                                PrzVecchio = attuale[15];
                                 attuale[15] = m;
                                 PrzCarico = attuale[15];
                                 plusvalenza = "0.00";
@@ -608,8 +616,42 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     }
                 }
                 case 2 -> {
-                    descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
+                    //descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
+                   // dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+                    descrizione = "FURTO o DONAZIONE";
                     dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
+                    String Testo = "<html>Furto o Donazione?<br><br>"
+                            + "<b>Come classifichiamo il movimento?<br><br><b>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "FURTO", "DONAZIONE"};
+                    scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Classificazione del movimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                descrizione = "FURTO";
+                                dettaglio = "PWN - Furto";
+                            }
+                            case 2 -> {
+                                descrizione = "DONAZIONE";
+                                dettaglio = "PWN - Donazione";
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        completato=false;
+                    }
                     plusvalenza = "0";
                 }
                 case 3 -> {
@@ -633,12 +675,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             }
         }
 
-        if (PartiCoinvolte.length > 1) {
+        if (completato) {
+         if (PartiCoinvolte.length > 1) {
             //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
             //a cancellare le eventuali commissioni e riportare i prezzi e qta allo stato originale
             RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
         }
-        if (completato) {
+            //System.out.println("Completato");
             if (descrizione.equalsIgnoreCase("TRASFERIMENTO A PIATTAFORMA")) {
                 //creo movimento di deposito su Vault e movifico il movimento originale
                 //in questa funzione non devo controllare nulla di particolare
@@ -654,6 +697,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 attuale[19] = plusvalenza;
                 attuale[20] = "";
                 attuale[21] = Note;
+                //Se trovo un prezzo vecchio (originale) messo da parte, lo ripristino
+                if (attuale[35]!=null&&!attuale[35].isBlank())attuale[15]=attuale[35];
+                attuale[35] = PrzVecchio;
+                
                 //in teoria avendo preso l'oggetto e modificandone il contenuto non serve questa seconda parte
                 MappaCryptoWallet.put(IDTrans, attuale);
                 JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
@@ -661,7 +708,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 ModificaEffettuata = true;
                 this.dispose();
             } else {
-
+                //Se arrivo qua sono in presenza di un trasferimento tra wallet o uno scambio differito
                 if (Tabella_MovimentiAbbinati.getSelectedRow() >= 0) {
                     int rigaselezionata = Tabella_MovimentiAbbinati.getSelectedRow();
                     String IDTransazioneControparte = Tabella_MovimentiAbbinati.getValueAt(rigaselezionata, 0).toString();
@@ -1538,7 +1585,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
         for (String ID:IDPartiConvolte){
            // System.out.println(ID);
-            //come prima cosa cerco movimenti AC con e classificati come CM (Commissione)
+            //come prima cosa cerco movimenti AU classificati come CM (Commissione)
             //Se lo trovo recupero i dati che mi servono e cancello la transazione
             //i dati sono la qta e il prezzo che dovrò andare a sommarli al movimento di prelievo per far tornare tutto alla situazione originale
             String attuale[]=MappaCryptoWallet.get(ID);

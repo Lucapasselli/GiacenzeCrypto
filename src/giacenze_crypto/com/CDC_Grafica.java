@@ -9757,7 +9757,9 @@ try {
                             
                             //Come prima cosa controllo se ho aumentato il numero delle colonne e in quel caso aumento l'array
                             //Inoltre metto a true VersioneCambiata perchè questo è un caso che non dovrebbe mai capitare
-                            //può capitare solo se metto in una versione nuova un file di una vecchia versione del programma
+                            //può capitare solo se metto in una versione nuova un file di una vecchia versione del programma 
+                            
+                            
                             if (Importazioni.ColonneTabella>splittata.length){
                                 String nuovoArray[]=new String[Importazioni.ColonneTabella];
                                 //splittata = java.util.Arrays.copyOf(splittata, Importazioni.ColonneTabella);

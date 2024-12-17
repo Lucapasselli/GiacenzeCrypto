@@ -25,6 +25,16 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.30
+Nuove Implementazioni :
+  - In "Opzioni" - "Opzioni di calcolo" aggiunto la possibilità di non considerare nei calcoli per la plusvalenza i movimenti non classificati (come succedeva prima della versione 1.29)
+  - In "Modifica Movimento" aggiunto tasto "Sblocca Modifiche" per poter modificare tutti i campi del movimento
+  - In "Classificazione Depositi/Prelievi" aggiunto la possibilità di classificare i movimenti come "Donazione"
+Correzione di bug :
+  - Corretto bug nelle importazioni di Binance che portava alla non classificazione di alcuni movimenti.
+  - Corretto bug nelle importazioni da Tatax che portava ad un errore sui prezzi
+  - Corretto bug nelle importazioni di Tatax riguardante l'orario, su file csv infatti l'orario viene riportato in UTC, adesso viene convertito nell'orario italiano.
+
 ver. 1.0.29
 Nuove Implementazioni :
   - Cambiato come il programma gestisce il calcolo per le plusvalenze dei movimenti di deposito e prelievo non categorizzati.
@@ -53,7 +63,7 @@ Nuove Implementazioni :
   - Quadro RW : Introdotto un ulteriore opzione sul metodo di calcolo per l'utilizzo del LiFo anche sui SubMovimenti (Vedi Documentazione).
   - Aggiunto Icone ai pulsanti per un più facile ed intuitivo utilizzo.
   - Aggiunto possibilità di importare i dati da Tatax.
-  - In "Transazione Crypto" aggiunto checkbox "Vedi solo movimenti non valorizzati" che mostrerà solo i movimenti in cui il programma non è riuscito a recuperarei prezzi.
+  - In "Transazione Crypto" aggiunto checkbox "Vedi solo movimenti non valorizzati" che mostrerà solo i movimenti in cui il programma non è riuscito a recuperare i prezzi.
     In questo modo tramite il tasto "Modifica Movimento" sarà facile individuarli e andare ad assegnare un prezzo alla transazione.
 
 ver. 1.0.27

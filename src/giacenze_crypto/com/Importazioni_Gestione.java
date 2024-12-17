@@ -22,7 +22,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
      * Creates new form Gestione_Importazioni
      */
     static String Exchanges[]=new String[]{"----------",
-    "Abra","Acx","AscendEX","BSDEX","BTC Markets","BTCPay Bybit",
+    "Abra","Acx","AscendEX","BSDEX","BTC Markets","BTCPay Bybit","Bybit",
     "BYDFI","Binance","Binance US","Bison","Bitcoin Suisse","Bitcoin.de",
     "Bitfinex","Bithumb Glo.","Bitpanda","Bitpanda Pro","Bitrue","Bitstamp",
     "Bittrex","BlockFi","CEX","Cake Defl","Celsius","Changelly",
@@ -32,14 +32,14 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     "Haru","Hodinaut","Hotbit","Iconomi","Idex","Kraken",
     "KuCoin","Localbitcoins","Luxor","MEXC","Mercatox","NFTBank",
     "Nexo","Northcrypto","OKColn","OKX","Phemex","Pocket Bitcoin",
-    "Poloniex","Relal","STEX","SwissBorg","Swyftx","Tradeogre",
+    "Poloniex","Relal","Revolut","STEX","SwissBorg","Swyftx","Tradeogre",
     "Uphold","Voyager","Yield App","Zerion"};
     
     static String Wallets[]=new String[]{"----------",
     "BitBox","Citcoin Core Client","Blochchain.com","Electrum","Exodus","Gate Hub","Ledger Live","Mycellum","Trezor"};
     
     static String BlockChain[]=new String[]{"----------",
-    "Avalanche (AVAX)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
+    "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
     "Cronos Chain (CRO)","Dash (DASH)","Dogecoin (DOGE)","Polkadot (DOT)","Eos (EOS)","Ethereum (ETH)",
     "Fantom (FTM)","Litecoin (LTC)","Terra Classic (LUNA)","Poligon (MATIC)","Tron (TRX)","Solana (SOL)",
     "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)"};

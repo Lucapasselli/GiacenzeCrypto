@@ -124,16 +124,16 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public static String tema;
     public int NumErroriMovSconosciuti=0;
     public int NumErroriMovNoPrezzo=0;
+    public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
 
     
-    //static String Appoggio="";
     
     
     public CDC_Grafica() {     
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.30.03 Beta";          
+            String Titolo="Giacenze Crypto 1.30.04 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -149,7 +149,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             File cryptowallet=new File (CryptoWallet_FileDB);
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
 
-
+            Funzioni.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
  
             
             

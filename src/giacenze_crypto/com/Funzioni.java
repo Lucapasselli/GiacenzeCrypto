@@ -5,6 +5,7 @@
 package giacenze_crypto.com;
 
 import static giacenze_crypto.com.CDC_Grafica.MappaCryptoWallet;
+import static giacenze_crypto.com.CDC_Grafica.MappaRetiSupportate;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -141,6 +142,7 @@ public class Funzioni {
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xe44Fd7fCb2b1581822D0c862B68222998a0c299a_CRO", "ETH");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56_BSC", "BUSD");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xF2001B145b43032AAF5Ee2884e456CCd805F677D_CRO", "DAI");
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0x4200000000000000000000000000000000000006_BASE", "ETH");
             CDC_Grafica.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
             
         }
@@ -735,16 +737,53 @@ return ListaSaldi;
             }
             
             //Se il primo if non trova la rete la cerco tra i movimenti manuali, a patto che venga inserito il contratto del token
-            if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
+         /*   if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
                 String Mov[] = MappaCryptoWallet.get(ID);
                 if (Mov!=null&&(!Mov[26].isEmpty() || !Mov[28].isEmpty())) {
                     Rete = IDSplittato[1].split("\\(")[1].split("\\)")[0];
                     return Rete;
                 }
+            }*/
+         
+            //Se il primo if non trova la rete la cerco tra i movimenti manuali, a patto che la chain sia supportata
+            if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
+               // String Mov[] = MappaCryptoWallet.get(ID);
+                String ret=IDSplittato[1].split("\\(")[1].split("\\)")[0].trim();
+                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allra la gestisco come tale
+                    Rete = ret;
+                    return Rete;
+                }
             }
+            
         return Rete;
         }
        
+        public static void CompilaMappaRetiSupportate(){
+            
+            MappaRetiSupportate.put("ARB", "");
+            MappaRetiSupportate.put("AVAX", "");
+            MappaRetiSupportate.put("BASE", "");
+            MappaRetiSupportate.put("ADA", "");
+            MappaRetiSupportate.put("BNB", "");
+            MappaRetiSupportate.put("BSC", "");
+            MappaRetiSupportate.put("CRO", "");
+            MappaRetiSupportate.put("DASH", "");
+            MappaRetiSupportate.put("DOGE", "");
+            MappaRetiSupportate.put("DOT", "");
+            MappaRetiSupportate.put("EOS", "");
+            MappaRetiSupportate.put("ETH", "");
+            MappaRetiSupportate.put("FTM", "");
+            MappaRetiSupportate.put("LTC", "");
+            MappaRetiSupportate.put("LUNA", "");
+            MappaRetiSupportate.put("MATIC", "");
+            MappaRetiSupportate.put("TRX", "");
+            MappaRetiSupportate.put("SOL", "");
+            MappaRetiSupportate.put("XLM", "");
+            MappaRetiSupportate.put("XRP", "");
+            MappaRetiSupportate.put("ZEC", "");
+            
+            //Funzione da scrivere
+        }
      
         
        public static String[] RiempiVuotiArray(String[] array){

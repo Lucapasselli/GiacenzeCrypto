@@ -113,6 +113,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
@@ -1254,9 +1255,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
                     String splittata[] = riga.split(",",-1);                     
                     if (splittata.length==11&&Funzioni.Funzioni_isNumeric(splittata[4], false)){
-                            String Data=splittata[2];
+                        // Definisci il formato della data
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        String utcDateStr = splittata[2];
+                        LocalDateTime localDateTime = LocalDateTime.parse(utcDateStr, formatter);
+                        ZonedDateTime utcZonedDateTime = localDateTime.atZone(ZoneId.of("UTC"));
+                        ZonedDateTime romeZonedDateTime = utcZonedDateTime.withZoneSameInstant(ZoneId.of("Europe/Rome"));
+                        String Data = romeZonedDateTime.format(formatter);
+
                             String Movimento[]=new String[20];
-                            Movimento[0]=splittata[2];//Data
+                            Movimento[0]=Data;//Data
                             Movimento[1]=Exchange;//Wallet Principale
                             Movimento[2]="Principale";//Wallet Secondario                            
                             Movimento[3]=splittata[3];//Tipologia di Movimento

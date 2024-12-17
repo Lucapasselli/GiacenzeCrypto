@@ -133,7 +133,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.30.02 Beta";          
+            String Titolo="Giacenze Crypto 1.30.03 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -541,7 +541,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        TransazioniCryptoTabella.setCellSelectionEnabled(true);
         TransazioniCryptoTabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 TransazioniCryptoTabellaMouseReleased(evt);
@@ -5445,7 +5444,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     }
                 }
                 //Una volta cambiato il prezzo aggiorno la tabella
-                GiacenzeaData_CompilaTabellaToken();
+                GiacenzeaData_CompilaTabellaToken(true);
             }
         }
     }
@@ -5697,7 +5696,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void GiacenzeaData_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
-        GiacenzeaData_CompilaTabellaToken();
+        GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
 
     private void GiacenzeaData_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaKeyReleased
@@ -5918,26 +5917,47 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 String IDOriSplittato[] = RTOri[0].split("_");
                                 switch (scelta) {
                                     case 1 -> {
-                                        //Non Classifico Movimento                                
-                                        RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_1_PC";
+                                        //Non Classifico Movimento 
+                                        //Ciclo per creare un movimento con il primo ID libero
+                                        for(int ki=1;ki<30;ki++){
+                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                               break;
+                                            }
+                                        }
                                         RT[5] = "PRELIEVO "+TipoMoneta.toUpperCase();
                                         RT[18] = "";
                                     }
                                     case 2 -> {
                                         //CashOut
-                                        RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_1_PC";
+                                        for(int ki=1;ki<30;ki++){
+                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(RT[0])==null){                                              
+                                               break;
+                                            }
+                                        }
                                         RT[5] = "CASHOUT O SIMILARE";
                                         RT[18] = "PCO - CASHOUT O SIMILARE";
                                     }
                                     case 3 -> {
-                                        //Commissione
-                                        RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_1_CM";
+                                        //Commissione                                        
+                                        for(int ki=1;ki<30;ki++){
+                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
+                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                               break;
+                                            }
+                                        }
                                         RT[5] = "COMMISSIONE";
                                         RT[18] = "";
                                     }
                                     case 4 -> {
-                                        //Rettifica Giacenza
-                                        RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_1_PC";
+                                        //Rettifica Giacenza                                       
+                                        for(int ki=1;ki<30;ki++){
+                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                               break;
+                                            }
+                                        }
                                         RT[5] = "RETTIFICA GIACENZA";
                                         RT[18] = "PWN - RETTIFICA GIACENZA";
                                     }
@@ -5986,7 +6006,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 //quindi tolgo 1 secondo al tempo del movimento originale per trovare quello da mettere
                                 long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) - 1;
                                 String RT[] = new String[ColonneTabella];
-                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_1_DC";
+                                for(int ki=1;ki<30;ki++){
+                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                               break;
+                                            }
+                                        }
                                 RT[1] = RTOri[1];
                                 RT[2] = "1 di 1";
                                 RT[3] = RTOri[3];
@@ -6047,8 +6072,17 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                                             Ricordarsi di salvare i movimenti nella sezione 'Transazioni Crypto'.""",
                                 "Movimento Creato", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                         //Ora sistemo i valori sulla tabella principale
-                        GiacenzeaData_Tabella.getModel().setValueAt(GiacenzaVoluta, rigaselezionataTabPrincipale, 4);
-                        GiacenzeaData_CompilaTabellaMovimenti();
+                       // GiacenzeaData_Tabella.getModel().setValueAt(GiacenzaVoluta, rigaselezionataTabPrincipale, 4);
+                        int rigadettagli=this.GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow();
+                        Map <String,Object[]> tab=GiacenzeaData_CompilaTabellaToken(false);
+                        double giacFinale=Double.parseDouble(tab.get(Moneta)[4].toString()); 
+                        GiacenzeaData_Tabella.getModel().setValueAt(giacFinale, rigaselezionataTabPrincipale, 4);
+                        double PrezzoFinale=Double.parseDouble(tab.get(Moneta)[5].toString());
+                        GiacenzeaData_Tabella.getModel().setValueAt(PrezzoFinale, rigaselezionataTabPrincipale, 5);
+                         //System.out.println(giacFinale+PrezzoFinale);
+                        GiacenzeaData_Tabella.setRowSelectionInterval(rigaselezionataTabPrincipale, rigaselezionataTabPrincipale);
+                        GiacenzeaData_CompilaTabellaMovimenti();                       
+                        GiacenzeaData_TabellaDettaglioMovimenti.setRowSelectionInterval(rigadettagli, rigadettagli);
                         //E ricarico la tabella secondaria
 
                         // GiacenzeaData_CompilaTabellaToken();
@@ -6096,7 +6130,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed
         // TODO add your handling code here:
         if(GiacenzeaData_Tabella.getRowCount()!=0)
-            GiacenzeaData_CompilaTabellaToken();
+            GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed
 
     private void GiacenzeaData_Bottone_ModificaValoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ModificaValoreActionPerformed
@@ -7196,7 +7230,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     //System.out.println(GWallet);
                     GiacenzeaData_Wallet_ComboBox.setSelectedItem("Gruppo : "+GWallet);
                     //Punto 2d
-                    GiacenzeaData_CompilaTabellaToken();
+                    GiacenzeaData_CompilaTabellaToken(true);
                     //Punto 2e
                     int righeTabella=GiacenzeaData_Tabella.getModel().getRowCount();
                     //Certo la riga della tabella con la moneta incriminata
@@ -7295,7 +7329,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             GWallet=GWallet+" ( "+Alias+" )";
             GiacenzeaData_Wallet_ComboBox.setSelectedItem("Gruppo : "+GWallet);
             //Punto 2d
-            GiacenzeaData_CompilaTabellaToken();
+            GiacenzeaData_CompilaTabellaToken(true);
             //Punto 2e
             int righeTabella=GiacenzeaData_Tabella.getModel().getRowCount();
             //Certo la riga della tabella con la moneta incriminata
@@ -7415,7 +7449,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void GiacenzeaData_CheckBox_NascondiScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
         // TODO add your handling code here:
                 if(GiacenzeaData_Tabella.getRowCount()!=0)
-            GiacenzeaData_CompilaTabellaToken();
+            GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
 
     private void RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed
@@ -8523,7 +8557,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     System.out.println(GWallet);
                     GiacenzeaData_Wallet_ComboBox.setSelectedItem(GWallet);
                     //Punto 2d
-                    GiacenzeaData_CompilaTabellaToken();
+                    GiacenzeaData_CompilaTabellaToken(true);
                     //Punto 2e
                     int righeTabella=GiacenzeaData_Tabella.getModel().getRowCount();
                     //Certo la riga della tabella con la moneta incriminata
@@ -9147,22 +9181,26 @@ try {
         }
       
       
-    private void GiacenzeaData_CompilaTabellaToken(){
+    private Map<String, Object[]> GiacenzeaData_CompilaTabellaToken(boolean CompiloTabella){
         
         //Gestisco i bottoni
+        Map<String, Object[]> TabellaToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
 
             
         //FASE 1 PULIZIA TABELLA
         //questo serve per evitare errori di sorting nel thread
         //azzera il sort ogni volta in sostanza ed evita errori
+        
         DefaultTableModel GiacenzeaData_ModelloTabellaDettagli = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel(); 
-        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
+        if(CompiloTabella)Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
         
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_Tabella.getModel();
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
-        GiacenzeaData_Tabella.setRowSorter(sorter);
-        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella); 
+        if(CompiloTabella){
+            TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
+            GiacenzeaData_Tabella.setRowSorter(sorter);
+            Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+        }
         //Fase 2 Preparazione thead
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
@@ -9252,7 +9290,7 @@ try {
         //Adesso elenco tutte le monete e le metto in tabella
         progress.SetMassimo(QtaCrypto.size());       
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+        if(CompiloTabella)Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
         int i=0;
         BigDecimal TotEuro=new BigDecimal(0);
@@ -9261,10 +9299,14 @@ try {
             if (progress.FineThread())
                 {
                     //Questo succede nel caso in cui termino il ciclo forzatamente
-                    Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);                    
-                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
-                    GiacenzeaData_Tabella.setRowSorter(sorter);
+                    
+                    if(CompiloTabella){
+                        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);                    
+                        TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
+                        GiacenzeaData_Tabella.setRowSorter(sorter);
+                    }
                     GiacenzeaData_Totali_TextField.setText("");
+                    
                     JOptionPane.showConfirmDialog(progress, "Elaborazione Interrotta!",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
                     progress.ChiudiFinestra();
@@ -9284,6 +9326,7 @@ try {
             riga[3]=M1.Tipo;
             riga[4]=M1.Qta;
             riga[1]=M1.Rete;
+            TabellaToken.put(riga[0].toString(), riga);
             if ((GiacenzeaData_CheckBox_MostraQtaZero.isSelected()||!M1.Qta.equals("0"))
                     &&(!GiacenzeaData_CheckBox_NascondiScam.isSelected()||!Funzioni.isSCAM(M1.Moneta))
                     ){
@@ -9293,9 +9336,9 @@ try {
                 //System.out.println(riga[4]);
                 riga[5]=Double.valueOf((String)riga[5]);
                 
-                GiacenzeaData_ModelloTabella.addRow(riga);
+                if(CompiloTabella)GiacenzeaData_ModelloTabella.addRow(riga);                
                 TotEuro=TotEuro.add(new BigDecimal((Double)riga[5]));
-                GiacenzeaData_Totali_TextField.setText(TotEuro.toString());                
+                GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());                
             }
             
         }
@@ -9308,7 +9351,9 @@ try {
             };
         
         thread.start();
-        progress.setVisible(true);}
+        progress.setVisible(true);
+        return TabellaToken;
+    }
     
     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet() {
        // int Selezionata=GiacenzeaData_Wallet_ComboBox.getSelectedIndex();

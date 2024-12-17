@@ -645,7 +645,8 @@ public class Importazioni {
                     String DataMeno1Secondo=splittata[1].split(":")[0]+":"+splittata[1].split(":")[1]+":"+secondo;
                     if (splittata[1].equalsIgnoreCase(ultimaData)) {
                         listaMovimentidaConsolidare.add(riga);
-                    }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Small Assets Exchange BNB")){//SOLO per i dust conversion
+                    }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Small Assets Exchange BNB")||
+                            DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Binance Convert")){//SOLO per i dust conversion e binance convert
                         listaMovimentidaConsolidare.add(riga);
                         }
                     else //altrimenti consolido il movimento precedente

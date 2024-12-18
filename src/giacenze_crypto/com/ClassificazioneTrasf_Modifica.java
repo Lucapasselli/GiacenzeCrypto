@@ -1387,7 +1387,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MovimentoDeposito[5]="TRASFERIMENTO PER SCAMBIO";
 
          
-        
+        //System.out.println(IDPrelievo);
         String IDTrasferimento1;
         String IDScambio;
         String IDTrasferimento2;
@@ -1396,12 +1396,15 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String MT2[]=new String[Importazioni.ColonneTabella];
         String IDSpezzato[]=IDPrelievo.split("_");
         IDTrasferimento1=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
-        IDSpezzato=IDDeposito.split("_");
-        IDScambio=IDSpezzato[0]+"_"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_SC";
-        IDTrasferimento2=IDSpezzato[0]+"_"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+        String IDSpezzatoDeposito[]=IDDeposito.split("_");
+        IDScambio=IDSpezzatoDeposito[0]+"_00"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_SC";
+        IDTrasferimento2=IDSpezzatoDeposito[0]+"_00"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
         MT1[0]=IDTrasferimento1;
         MS[0]=IDScambio;
         MT2[0]=IDTrasferimento2;
+        /*System.out.println(IDTrasferimento1);
+        System.out.println(IDScambio);
+        System.out.println(IDTrasferimento2);*/
         MT1[1]=MovimentoPrelievo[1];
         MS[1]=MovimentoDeposito[1];
         MT2[1]=MovimentoDeposito[1];

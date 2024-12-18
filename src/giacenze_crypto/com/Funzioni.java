@@ -731,7 +731,8 @@ return ListaSaldi;
 
             String IDSplittato[]=ID.split("_");
             String IDDettSplittato[]=IDSplittato[1].split("\\.");
-            if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && IDDettSplittato[0].equalsIgnoreCase("BC")){
+            if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && 
+                    (IDDettSplittato[0].equalsIgnoreCase("BC")||IDDettSplittato[0].equalsIgnoreCase("00BC"))){//00BC viene usato negli scambi differiti automatici
                 Rete=IDDettSplittato[1];
                 return Rete;
             }

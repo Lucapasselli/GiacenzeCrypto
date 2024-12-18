@@ -1401,7 +1401,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(GiacenzeaData_Wallet_Label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 264, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 454, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1415,14 +1415,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addComponent(GiacenzeaData_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(Giacenzeadata_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 1104, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(GiacenzeaData_Bottone_MovimentiDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addGap(18, 18, 18)
                         .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 140, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -5039,7 +5039,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Adesso controllo se il token è scam e in quel caso non lo faccio vedere che creo solo confusione
               if (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])
                       ||
-                  TipoMovimento.equalsIgnoreCase("PC"))
+                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8]))
               {
             //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
             if (v[18].trim().equalsIgnoreCase("")||this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
@@ -5748,6 +5748,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         else if(Rete.equalsIgnoreCase("CRO")){
                            Desktop.getDesktop().browse(new URI("https://cronoscan.com/token/"+Address +"?a="+ Wallet)); 
                         }
+                        else if(Rete.equalsIgnoreCase("ETH")){
+                           Desktop.getDesktop().browse(new URI("https://etherscan.io/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("BASE")){
+                           Desktop.getDesktop().browse(new URI("https://basescan.org/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("ARB")){
+                           Desktop.getDesktop().browse(new URI("https://arbiscan.io/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        
                     } catch (URISyntaxException | IOException ex) {
                         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -8625,13 +8635,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
                 }
             String Testo;
-            //Come prima cosa controllo nella tabella del dettaglio se ho solo movimenti di deposito
-            //solo in quel caso permetto di identificare il token come scam
+            //Come prima cosa controllo nella tabella del dettaglio se il token ha mai avuto prezzo
+            //se non ha avuto mai prezzo permetto di identificare il token come scam
             //il tipo movimento è il 4
-            boolean SoloDepositi=true;
+            boolean haPrezzo=true;
             for (int i=0;i<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();i++){
                String ID = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 8).toString();
-               if (!ID.split("_")[4].equalsIgnoreCase("DC"))SoloDepositi=false;
+               String dati[]=MappaCryptoWallet.get(ID);
+               if (dati[32].equalsIgnoreCase("SI")&&Double.parseDouble(dati[15])!=0){
+                   haPrezzo=false;
+               }
             }
             
             
@@ -8653,7 +8666,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 Bottoni,
                                 null);
                         if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                            if (SoloDepositi){//proseguo solo se il token ha solo movimenti di diposito
+                            if (haPrezzo){//proseguo solo se il token non ha mai prezzo
                             String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
                             //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
                             //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
@@ -8681,7 +8694,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                            }
                             else{
                                 //Se ci sono altri movimenti emetto un messaggio di avviso
-                                JOptionPane.showConfirmDialog(this, "<html>Attenzione! Possono essere considerati SCAM solo i token con solo movimenti di deposito<br>"
+                                JOptionPane.showConfirmDialog(this, "<html>Attenzione! Possono essere considerati SCAM solo i token che non hanno prezzo<br>"
                                         + "L'operazione verrà annullata!<br></html>",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                                 }
@@ -9894,7 +9907,7 @@ try {
                 }
            // }
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
-            
+            String TipoMovimento=v[0].split("_")[4].trim();
             if (!Prezzi.IndicaMovimentoPrezzato(v)) {
                 NumErroriMovNoPrezzo++;
             }
@@ -9903,7 +9916,7 @@ try {
             
             //SEZIONE CONTEGGIO ERRORI
             //Questo serve per incrementare il numero degli errori qualora vi fossero
-            String TipoMovimento=v[0].split("_")[4].trim();
+            
           //AU sono equiparati a dei trasferimenti interni, da verifixcare accuratamente perchè così rischio di fare casino nelle esportazioni
           if ((v[22]!=null&&!v[22].equalsIgnoreCase("AU"))//Escludo movimenti automatici
                   &&
@@ -9911,7 +9924,7 @@ try {
                   &&
                   (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])//Includo movimenti di deposito non scam
                       ||
-                  TipoMovimento.equalsIgnoreCase("PC")))//Includo movimenti di prelievo
+                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])))//Includo movimenti di prelievo
           {
 
                     NumErroriMovSconosciuti++;

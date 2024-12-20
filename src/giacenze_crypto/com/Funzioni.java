@@ -546,6 +546,138 @@ return ListaSaldi;
     }
     
     
+    
+        //Questa funzione è da lanciare al termine di un importazione dati DeFi e se imposto un token come scam
+    //controlla se ci sono commissioni imputate a movimenti di prelievo defi scam
+    //questi movimenti non sono veri movimenti ma vengono solo visti dagli explorer come tali
+    //le commissioni non vanno quindi imputate al wallet e vanno quindi tolte.
+    
+    //Questa funzione che si occupa di:
+                    //1 - Eliminae le commissioni fittizzie sui movimenti di prelievo scam
+                    //2 - Cancellare i prelievi e le commissioni con quantità zero perchè anch'essi scam
+                    //3 - Trasformare i prelievi fatti da se stessi per se stessi in scambio con la stessa moneta
+                    //Se per sbaglio infatti invio cripto al mio stesso wallet questo viene identificato come prelievo
+                    //ma non vi è nessun movimento di deposito, il risultato sarebbero delle giacenze errate
+    
+    //Da Lanciare a fine importazione wallets e dopo aver identificato un token come scam
+    public static void EliminaCommissioniPrelievoTokenScam(){
+        Map<String,String> Mappa_CommissioniDaCancellare=new TreeMap<>();
+        Map<String,String> Mappa_CommissioniPerHash=new TreeMap<>();
+        Map<String,String> Mappa_MovimentiDaEliminare=new TreeMap<>();
+        Map<String,String[]> Mappa_MovimentiDaCreare=new TreeMap<>();
+        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
+        for (String[] v : MappaCryptoWallet.values()) {
+            
+            
+            
+            //PASSO 1 - RINOMINO I TOKEN CHE DEVONO ESSERE RINOMINATI
+            String Rete = Funzioni.TrovaReteDaID(v[0]);
+            String AddressU = v[26];
+            String AddressE = v[28];
+            //if (!Funzioni.noData(Rete)) {
+                if (!Funzioni.noData(AddressU)) {
+                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                    if (Rete==null)Rete="";
+                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
+                    if (valore != null) {
+                        v[8] = valore;
+                    }
+                }
+                if (!Funzioni.noData(AddressE)) {
+                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
+                    if (Rete==null)Rete="";
+                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
+                    if (valore != null) {
+                        v[11] = valore;
+                    }
+
+                }
+                      
+            
+            //PASSO 1A - SALVO UNA MAPPA tutti i movimenti di prelievo o commissione con qta zero
+            //questi infatti sono movimenti scam e non servono a nulla
+            String TipoMovimento=v[0].split("_")[4].trim();
+             if ( (TipoMovimento.equalsIgnoreCase("CM")&&v[10].equalsIgnoreCase("-0"))
+                     ||
+                  (TipoMovimento.equalsIgnoreCase("PC")&&v[10].equalsIgnoreCase("-0"))){
+                 //salvo nella mappa delle commissioni tutti gli id e come indice uso l'hash
+                Mappa_MovimentiDaEliminare.put(v[0],"");
+                
+                //per i movimenti di prelievo mi salvo anchel'hash perchè dovrò andare a cancellare le commissioni
+                if ( TipoMovimento.equalsIgnoreCase("PC")&&v[24]!=null&&!v[24].isBlank()){
+                    //Salvo tutti gli hash delle commissioni che devo cancellare
+                    Mappa_CommissioniDaCancellare.put(v[24], "");  
+                    //System.out.println(v[24]);
+            }
+            }   
+             
+            //PASSO 1B - Se ho un prelievo dove l'address controparte è uguale al mio wallet
+            //vuol dire che mi sono autoinviato dei fondi, in quel caso il movimento va convertito in scambio
+            if (TipoMovimento.equalsIgnoreCase("PC")&&v[3].split("\\(")[0].trim().equalsIgnoreCase(v[30])){
+                String clone[]=v.clone();
+                String partiID[]=clone[0].split("_");
+                clone[0]=partiID[0]+"_"+partiID[1]+"_"+partiID[2]+"_"+partiID[3]+"_SC";
+                clone[5]="SCAMBIO CRYPTO";
+                clone[6]= clone[8]+" -> "+clone[8];
+                clone[11]=clone[8];
+                clone[12]=clone[9];
+                clone[13]=clone[10].replace("-", "");
+                clone[27]=clone[25];
+                clone[28]=clone[26];
+                //il movimento errato lo metto qua sotto in questa mappa perchè venga elimnato a fine ciclo
+                Mappa_MovimentiDaEliminare.put(v[0],"");
+                Mappa_MovimentiDaCreare.put(clone[0], clone);
+            }
+            
+            
+                
+            //PASSO 2 - SALVO UNA MAPPA HASHCommissione_ID
+             if ( TipoMovimento.equalsIgnoreCase("CM")){
+                 //salvo nella mappa delle commissioni tutti gli id e come indice uso l'hash
+                Mappa_CommissioniPerHash.put(v[24],v[0]);
+            }
+             
+             
+             
+             
+             
+             //PASSAO 3 - SALVO UNA MAPPA CON LA LISTA DELLE COMMISSIONI DA ELIMINARE per HASH
+            if ( TipoMovimento.equalsIgnoreCase("PC")&&Funzioni.isSCAM(v[8])&&v[24]!=null&&!v[24].isBlank()){
+               //Salvo tutti gli hash delle commissioni che devo cancellare
+               Mappa_CommissioniDaCancellare.put(v[24], "");  
+               //System.out.println(v[24]);
+            }
+            
+            
+        }
+        
+        //Adesso cancello le commissioni imputate erroneamente      
+        for (String hash : Mappa_CommissioniDaCancellare.keySet()) {
+            //String TipoMovimento=v[0].split("_")[4].trim();
+            String ID=Mappa_CommissioniPerHash.get(hash);
+            if ( ID!=null){
+                MappaCryptoWallet.remove(ID);
+            }
+        }
+        
+        //Adesso cancello i movimenti di prelievo e commissioni a quantità zero in quanto irrilevanti      
+        for (String ID : Mappa_MovimentiDaEliminare.keySet()) {
+
+                MappaCryptoWallet.remove(ID);
+            
+        }
+        
+        //Adesso creo i movimenti da creare
+        for (String ID : Mappa_MovimentiDaCreare.keySet()) {
+
+                MappaCryptoWallet.put(ID, Mappa_MovimentiDaCreare.get(ID));
+            
+        }
+        
+    }
+    
+    
+    
     public static boolean MovimentoRilevante(String[] Mov){
         String ID=Mov[0];
         String IDTS[]=ID.split("_");

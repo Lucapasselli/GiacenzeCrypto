@@ -8689,7 +8689,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 GiacenzeaData_Tabella.getModel().setValueAt(nomi[0] + " **", rigaselezionata, 0);
                                 }
                             //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
-                            //Lancio la funzione rinomina token
+                            //Lancio la funzione rinomina token e cancello eventuali commissioni su prelievi di token scam che non sarebbero dovute
+                            Funzioni.EliminaCommissioniPrelievoTokenScam();
+                            
+                            //Aggiorno le tabelle
                             TabellaCryptodaAggiornare = true;
                            }
                             else{
@@ -8714,6 +8717,19 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NomeMoneta);
                                 GiacenzeaData_Tabella.getModel().setValueAt(NomeMoneta, rigaselezionata, 0);
                             }
+                            //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
+                            //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
+                            for (int i=0;i<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();i++){
+                                String ID = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 8).toString();
+                                String dati[]=MappaCryptoWallet.get(ID);
+                                dati[32]="";
+                                //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
+                                //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
+                            }
+                            
+                            
+                            
+                            
                             //aggiorno l'intera tabella crypto
                             TabellaCryptodaAggiornare = true;
                          //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
@@ -9992,67 +10008,7 @@ try {
         
     }    
     
-    //Questa funzione è da lanciare al termine di un importazione dati DeFi e se imposto un token come scam
-    private void EliminaCommissioniTokenScam(){
-        Map<String,String> Mappa_CommissioniDaCancellare=new TreeMap<>();
-        Map<String,String> Mappa_CommissioniPerHash=new TreeMap<>();
-        Map<String,String> Mappa_CommissioniPerHashDaCancellare=new TreeMap<>();
-        Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
-        for (String[] v : MappaCryptoWallet.values()) {
-            
-            
-            
-            //PASSO 1 - RINOMINO I TOKEN CHE DEVONO ESSERE RINOMINATI
-            String Rete = Funzioni.TrovaReteDaID(v[0]);
-            String AddressU = v[26];
-            String AddressE = v[28];
-            //if (!Funzioni.noData(Rete)) {
-                if (!Funzioni.noData(AddressU)) {
-                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                    if (Rete==null)Rete="";
-                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressU + "_" + Rete);
-                    if (valore != null) {
-                        v[8] = valore;
-                    }
-                }
-                if (!Funzioni.noData(AddressE)) {
-                    //Se ho dati allora verifico se ho nomitoken da cambiare e lo faccio
-                    if (Rete==null)Rete="";
-                    String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
-                    if (valore != null) {
-                        v[11] = valore;
-                    }
 
-                }
-                      
-            
-                
-                
-            //PASSO 2 - SALVO UNA MAPPA HASHCommissione_ID
-            String TipoMovimento=v[0].split("_")[4].trim();
-             if ( TipoMovimento.equalsIgnoreCase("CM")&&Mappa_CommissioniDaCancellare.get(v[24])!=null){
-                 //salvo nella mappa delle commissioni tutti gli id e come indice uso l'hash
-                Mappa_CommissioniPerHash.put(v[24],v[0]);
-            }
-             
-             
-             
-             
-             
-             //PASSAO 3 - SALVO UNA MAPPA CON LA LISTA DELLE COMMISSIONI DA ELIMINARE per HASH
-            if ( TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])&&v[24]!=null&&!v[24].isBlank()){
-               //Salvo tutti gli hash delle commissioni che devo cancellare
-               Mappa_CommissioniDaCancellare.put(v[24], "");         
-            }
-        }
-        /*
-        for (String[] v : MappaCryptoWallet.values()) {
-            String TipoMovimento=v[0].split("_")[4].trim();
-            if ( TipoMovimento.equalsIgnoreCase("CM")&&Mappa_CommissioniDaCancellare.get(v[24])!=null){
-                
-            }
-        }*/
-    }
 
     
     private void TransazioniCrypto_Funzioni_AbilitaBottoneSalva(boolean Attivo) { 

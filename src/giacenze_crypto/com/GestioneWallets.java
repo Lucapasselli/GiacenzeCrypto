@@ -329,6 +329,14 @@ public class GestioneWallets extends javax.swing.JDialog {
                     if (Importazioni.TransazioniAggiunte != 0) {
                         CDC_Grafica.TabellaCryptodaAggiornare = true;
                     }
+                    
+                    //Adesso lancio questa funzione che si occupa di:
+                    //1 - Eliminae le commissioni fittizzie sui movimenti di prelievo scam
+                    //2 - Cancellare i prelievi e le commissioni con quantità zero perchè anch'essi scam
+                    //3 - Trasformare i prelievi fatti da se stessi per se stessi in scambio con la stessa moneta
+                    //4 - Se per sbaglio infatti invio denaro al mio wallet questo viene identificato come prelievo
+                    //ma non vi è nessun movimento di deposito
+                    Funzioni.EliminaCommissioniPrelievoTokenScam();
                 }
                 
                 progress.dispose();

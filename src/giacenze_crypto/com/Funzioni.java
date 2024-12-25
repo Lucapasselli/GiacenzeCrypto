@@ -560,7 +560,12 @@ return ListaSaldi;
                     //ma non vi è nessun movimento di deposito, il risultato sarebbero delle giacenze errate
     
     //Da Lanciare a fine importazione wallets e dopo aver identificato un token come scam
-    public static void EliminaCommissioniPrelievoTokenScam(){
+
+    /**
+     *Questa funzione non serve più e la rinomino
+     */
+    
+    public static void Dismessa_ConvertiInvioSuStessoWallet(){
         Map<String,String> Mappa_CommissioniDaCancellare=new TreeMap<>();
         Map<String,String> Mappa_CommissioniPerHash=new TreeMap<>();
         Map<String,String> Mappa_MovimentiDaEliminare=new TreeMap<>();
@@ -594,10 +599,11 @@ return ListaSaldi;
                 }
                       
             
-            //PASSO 1A - SALVO UNA MAPPA tutti i movimenti di prelievo o commissione con qta zero
-            //questi infatti sono movimenti scam e non servono a nulla
+            //PASSO 1A - SALVO UNA MAPPA tutti i movimenti con commissione con qta zero
+            //questi infatti sono movimenti che non servono a nulla e gli eliminerò
+            //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
             String TipoMovimento=v[0].split("_")[4].trim();
-             if ( (TipoMovimento.equalsIgnoreCase("CM")&&v[10].equalsIgnoreCase("-0"))
+          /*   if ( (TipoMovimento.equalsIgnoreCase("CM")&&v[10].equalsIgnoreCase("-0"))
                      ||
                   (TipoMovimento.equalsIgnoreCase("PC")&&v[10].equalsIgnoreCase("-0"))){
                  //salvo nella mappa delle commissioni tutti gli id e come indice uso l'hash
@@ -609,7 +615,7 @@ return ListaSaldi;
                     Mappa_CommissioniDaCancellare.put(v[24], "");  
                     //System.out.println(v[24]);
             }
-            }   
+            }   */
              
             //PASSO 1B - Se ho un prelievo dove l'address controparte è uguale al mio wallet
             //vuol dire che mi sono autoinviato dei fondi, in quel caso il movimento va convertito in scambio
@@ -632,35 +638,38 @@ return ListaSaldi;
             
                 
             //PASSO 2 - SALVO UNA MAPPA HASHCommissione_ID
-             if ( TipoMovimento.equalsIgnoreCase("CM")){
+            //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
+         /*    if ( TipoMovimento.equalsIgnoreCase("CM")){
                  //salvo nella mappa delle commissioni tutti gli id e come indice uso l'hash
                 Mappa_CommissioniPerHash.put(v[24],v[0]);
-            }
+            }*/
              
              
              
              
              
              //PASSAO 3 - SALVO UNA MAPPA CON LA LISTA DELLE COMMISSIONI DA ELIMINARE per HASH
-            if ( TipoMovimento.equalsIgnoreCase("PC")&&Funzioni.isSCAM(v[8])&&v[24]!=null&&!v[24].isBlank()){
+             //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
+        /*    if ( TipoMovimento.equalsIgnoreCase("PC")&&Funzioni.isSCAM(v[8])&&v[24]!=null&&!v[24].isBlank()){
                //Salvo tutti gli hash delle commissioni che devo cancellare
                Mappa_CommissioniDaCancellare.put(v[24], "");  
                //System.out.println(v[24]);
-            }
+            }*/
             
             
         }
         
-        //Adesso cancello le commissioni imputate erroneamente      
-        for (String hash : Mappa_CommissioniDaCancellare.keySet()) {
+        //Adesso cancello le commissioni imputate erroneamente  
+        //QUESTA FUNZIONE NON SERVE PIU', VIENE SISTEMATO TUTTO IN FASE DI IMPORTAZIONE DATI
+      /*  for (String hash : Mappa_CommissioniDaCancellare.keySet()) {
             //String TipoMovimento=v[0].split("_")[4].trim();
             String ID=Mappa_CommissioniPerHash.get(hash);
             if ( ID!=null){
                 MappaCryptoWallet.remove(ID);
             }
-        }
+        }*/
         
-        //Adesso cancello i movimenti di prelievo e commissioni a quantità zero in quanto irrilevanti      
+        //Adesso cancello i movimenti da eliminare     
         for (String ID : Mappa_MovimentiDaEliminare.keySet()) {
 
                 MappaCryptoWallet.remove(ID);

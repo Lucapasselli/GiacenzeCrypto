@@ -138,7 +138,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.30.05 Beta";          
+            String Titolo="Giacenze Crypto 1.30 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -498,8 +498,11 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel16 = new javax.swing.JLabel();
         RW_Opzioni_CheckBox_LiFoSubMovimenti = new javax.swing.JCheckBox();
         RW_Bottone_Documentazione1 = new javax.swing.JButton();
-        Opzioni_Varie = new javax.swing.JPanel();
+        Opzioni_Temi = new javax.swing.JPanel();
         Opzioni_Varie_Checkbox_TemaScuro = new javax.swing.JCheckBox();
+        Opzioni_Varie = new javax.swing.JPanel();
+        Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
+        Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -3069,7 +3072,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(OpzioniRewards_JCB_PDD_Earn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(OpzioniRewards_JCB_PDD_Reward)
-                .addContainerGap(316, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Rewards", Opzioni_Rewards_Pannello);
@@ -3149,7 +3152,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addGap(18, 18, 18)
                 .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC)
-                .addContainerGap(514, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni di Calcolo", Opzioni_Calcolo_Pannello);
@@ -3273,7 +3276,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                     .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 224, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(Opzioni_RW_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_RW_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Opzioni_RW_PannelloLayout.createSequentialGroup()
@@ -3328,7 +3331,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(58, 58, 58)
                 .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(229, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Calcolo RW/W", Opzioni_RW_Pannello);
@@ -3340,24 +3343,61 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        javax.swing.GroupLayout Opzioni_TemiLayout = new javax.swing.GroupLayout(Opzioni_Temi);
+        Opzioni_Temi.setLayout(Opzioni_TemiLayout);
+        Opzioni_TemiLayout.setHorizontalGroup(
+            Opzioni_TemiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_TemiLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Varie_Checkbox_TemaScuro, javax.swing.GroupLayout.PREFERRED_SIZE, 474, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        Opzioni_TemiLayout.setVerticalGroup(
+            Opzioni_TemiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_TemiLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Varie_Checkbox_TemaScuro)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("Temi", Opzioni_Temi);
+
+        Opzioni_Varie_Bottone_Disclaimer.setText("Discalimer");
+        Opzioni_Varie_Bottone_Disclaimer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Bottone_DisclaimerActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Varie_Bottone_ProblemiNoti.setText("Avvertenze / Problemi Noti");
+        Opzioni_Varie_Bottone_ProblemiNoti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Bottone_ProblemiNotiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
         Opzioni_Varie.setLayout(Opzioni_VarieLayout);
         Opzioni_VarieLayout.setHorizontalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_VarieLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Opzioni_Varie_Checkbox_TemaScuro, javax.swing.GroupLayout.PREFERRED_SIZE, 474, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(851, Short.MAX_VALUE))
+                .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(1096, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_VarieLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Opzioni_Varie_Checkbox_TemaScuro)
-                .addContainerGap(689, Short.MAX_VALUE))
+                .addComponent(Opzioni_Varie_Bottone_Disclaimer)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        Opzioni_TabbedPane.addTab("Temi", Opzioni_Varie);
+        Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
@@ -8719,6 +8759,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         }
     }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
+
+    private void Opzioni_Varie_Bottone_DisclaimerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_DisclaimerActionPerformed
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Disclaimer.pdf/download");
+    }//GEN-LAST:event_Opzioni_Varie_Bottone_DisclaimerActionPerformed
+
+    private void Opzioni_Varie_Bottone_ProblemiNotiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_ProblemiNotiActionPerformed
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Avvertenze%20e%20Problemi%20Noti.pdf/download");
+    }//GEN-LAST:event_Opzioni_Varie_Bottone_ProblemiNotiActionPerformed
     
     private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete) {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -8778,7 +8828,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 }
                             //A questo punto devo cambiare il nome a tutti i token dello stesso tipo che trovo nelle transazioni
                             //Lancio la funzione rinomina token e cancello eventuali commissioni su prelievi di token scam che non sarebbero dovute
-                            Funzioni.EliminaCommissioniPrelievoTokenScam();
+                            //Questa funzione forse non servirà perchè verrà gestito tutto in maniera corretta in fase di importazione dati
+                            //Funzioni.ConvertiInvioSuStessoWallet();
                             
                             //Aggiorno le tabelle
                             TabellaCryptodaAggiornare = true;
@@ -10531,7 +10582,10 @@ try {
     private javax.swing.JPanel Opzioni_RW_Pannello;
     private javax.swing.JPanel Opzioni_Rewards_Pannello;
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
+    private javax.swing.JPanel Opzioni_Temi;
     private javax.swing.JPanel Opzioni_Varie;
+    private javax.swing.JButton Opzioni_Varie_Bottone_Disclaimer;
+    private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;

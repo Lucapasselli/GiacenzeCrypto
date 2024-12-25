@@ -5102,6 +5102,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 // System.out.println(transaction.toString());
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
+                
                 String to = transaction.getString("to");
                 String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
@@ -5123,7 +5124,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
                 BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
                 String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni = "-" + qtaCommissione;
+                trans.QtaCommissioni=null;
+                //trans.QtaCommissioni = "-" + qtaCommissione;
                 trans.TipoTransazione = transaction.getString("functionName");
                 if (!value.equalsIgnoreCase("0")) {
                     if (from.equalsIgnoreCase(walletAddress)) {
@@ -5137,6 +5139,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     trans.InserisciMonete(MonetaRete, MonetaRete, MonetaRete, AddressNoWallet, qta, "Crypto");
 
                 }
+                if (from.equalsIgnoreCase(walletAddress)) {
+                        //le commissioni le ho solo quando è il mio wallet che chiama la transazione
+                        trans.QtaCommissioni = "-" + qtaCommissione;
+                    }
+                
+                //System.out.println(from + " - "+hash+" - B1 - "+trans.QtaCommissioni );
                 ava++;
                 progressb.SetAvanzamento(ava);
             }
@@ -5158,6 +5166,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 String tokenDecimal = transaction.getString("tokenDecimal");
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
+                //System.out.println(from + " - "+hash+" B2");
                 String to = transaction.getString("to");
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
@@ -5168,13 +5177,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
                 }
                 trans.Rete = Rete;
-                if (from.equalsIgnoreCase(walletAddress)) {
-                    AddressNoWallet = to;
-                    qta = "-" + value;
-                } else {
-                    AddressNoWallet = from;
-                    qta = value;
-                }
+                
+                
+                
                 trans.Blocco = transaction.getString("blockNumber");
                 trans.Wallet = walletAddress;
                 trans.DataOra = Data;//Da modificare con data e ora reale
@@ -5185,12 +5190,22 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
                 BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
                 BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
-                String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni = "-" + qtaCommissione;
+                //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
+                //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+
+                if (from.equalsIgnoreCase(walletAddress)) {
+                    //trans.QtaCommissioni = "-" + qtaCommissione;
+                    AddressNoWallet = to;
+                    qta = "-" + value;
+                } else {
+                    AddressNoWallet = from;
+                    qta = value;
+                }
                 progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
+                
                // System.out.println(tokenSymbol+" - "+qta);
-              
+              //System.out.println(from + " - "+hash+" - B2 - "+trans.QtaCommissioni );
                 ava++;
                 progressb.SetAvanzamento(ava);
             }
@@ -5212,6 +5227,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 // String tokenDecimal=transaction.getString("tokenDecimal");
                 String hash = transaction.getString("hash");
                 String from = transaction.getString("from");
+                //System.out.println(from + " - "+hash+" B3");
                 String to = transaction.getString("to");
                 //  String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
                 String value = "1";
@@ -5223,13 +5239,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
                 }
                 trans.Rete = Rete;
-                if (from.equalsIgnoreCase(walletAddress)) {
-                    AddressNoWallet = to;
-                    qta = "-" + value;
-                } else {
-                    AddressNoWallet = from;
-                    qta = value;
-                }
+                
 
                 trans.Blocco = transaction.getString("blockNumber");
                 trans.Wallet = walletAddress;
@@ -5241,10 +5251,20 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
                 BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
                 BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
-                String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni = "-" + qtaCommissione;
+                //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
+                //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                //trans.QtaCommissioni=null;
+                if (from.equalsIgnoreCase(walletAddress)) {
+                    //trans.QtaCommissioni = "-" + qtaCommissione;
+                    AddressNoWallet = to;
+                    qta = "-" + value;
+                } else {
+                    AddressNoWallet = from;
+                    qta = value;
+                }
                 progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
                 trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "NFT");
+               // System.out.println(from + " - "+hash+" - B3 - "+trans.QtaCommissioni );
                 ava++;
                 progressb.SetAvanzamento(ava);
             }
@@ -5262,6 +5282,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
           //      String hash =transaction.getString("transactionHash");
                 String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
                 String from = transaction.getString("from");
+                //System.out.println(from + " - "+hash+" B4");
                 String to = transaction.getString("to");
                 String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                 TransazioneDefi trans;
@@ -5303,6 +5324,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 }
 
                 //  System.out.println(value+" - "+hash);
+                //System.out.println(from + " - "+hash+" - B4 - "+trans.QtaCommissioni );
                 ava++;
                 progressb.SetAvanzamento(ava);
             }

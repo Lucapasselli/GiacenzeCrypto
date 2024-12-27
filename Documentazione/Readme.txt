@@ -27,13 +27,22 @@ Changelog
 
 ver. 1.0.30
 Nuove Implementazioni :
+  - Compilato i pacchetti con la versione Opensource del Runtime Java (in caso di problemi sulla versione multipiattaforma scaricare il jre su questo sito https://adoptium.net/temurin/releases/)
+  - in "Opzioni" - "Varie" aggiunto bottone "Disclaimer" e "Avvertenze/Problemi Noti" per raggiungere velocemente la documentazione.
   - In "Opzioni" - "Opzioni di calcolo" aggiunto la possibilità di non considerare nei calcoli per la plusvalenza i movimenti non classificati (come succedeva prima della versione 1.29)
   - In "Modifica Movimento" aggiunto tasto "Sblocca Modifiche" per poter modificare tutti i campi del movimento
   - In "Classificazione Depositi/Prelievi" aggiunto la possibilità di classificare i movimenti come "Donazione"
+  - In "Analisi Crypto" "Classificazione Depositi/Prelievi" aggiunto pulsante "Identifica come SCAM" (già presente nella funzione Giacenze a data)
 Correzione di bug :
+  - Import da Wallet : Gli Explorer possono riconoscere come transazioni reali log di smartcontract (solitamente sono prelievi di token SCAM), ovviamente essendo transazioni fittizie non sono da considerare le fee.
+    Da questa versione il programma non imputa più quelle fee al wallet per questo tipo di transazioni.
+    Le transazioni resteranno comunque visibili per coerenza con quanto presente nell'explorer, saranno poi eventualmente da escludere da eventuali calcoli classificandole come SCAM.
+  - Import da Wallet : Se per sbaglio si inviano fondi allo stesso wallet di partenza il programma prima riconosceva solo un movimento di prelievo, ora lo considera come uno scambio a vuoto.
+    Di fatto non c'è nessun movimento di fondi se non le fee.
   - Corretto bug nelle importazioni di Binance che portava alla non classificazione di alcuni movimenti.
   - Corretto bug nelle importazioni da Tatax che portava ad un errore sui prezzi
   - Corretto bug nelle importazioni di Tatax riguardante l'orario, su file csv infatti l'orario viene riportato in UTC, adesso viene convertito nell'orario italiano.
+  - Corretto bug nelle esportazioni di Tatax, ora l'orario prima di essere esportato viene convertito in UTC
 
 ver. 1.0.29
 Nuove Implementazioni :

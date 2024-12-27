@@ -201,8 +201,8 @@ public class Calcoli_RT {
                     //Stessa cosa la inserisco nella mappa dei dettagli delle moneta
                     PlusXMoneta PlusXm=new PlusXMoneta();
                     PlusXm.CompilaCampiDaMoneta(mon);
-                    PlusXm.Put_Anno(Anno);
-                    PlusXm.Put_Wallet(GruppoWallet);                     
+                //    PlusXm.Put_Anno(Anno);
+                 //   PlusXm.Put_Wallet(GruppoWallet);                     
                     MappaMoneta_PlusXMoneta.put(MonetaU, PlusXm);
                 }
                 else{
@@ -262,8 +262,8 @@ public class Calcoli_RT {
                     //Stessa cosa la inserisco nella mappa dei dettagli delle moneta
                     PlusXMoneta PlusXm=new PlusXMoneta();
                     PlusXm.CompilaCampiDaMoneta(mon);
-                    PlusXm.Put_Anno(Anno);
-                    PlusXm.Put_Wallet(GruppoWallet);                  
+                  //  PlusXm.Put_Anno(Anno);
+                  //  PlusXm.Put_Wallet(GruppoWallet);                  
                     MappaMoneta_PlusXMoneta.put(mon.Moneta, PlusXm);
                 }
                 else{
@@ -499,12 +499,13 @@ public class Calcoli_RT {
                         PlusXMoneta PlusXm = new PlusXMoneta();
                         PlusXm.movimentatoAnno=true;
                         PlusXm.CompilaCampiDaMoneta(Monete[i]);
-                        PlusXm.Put_Anno(Anno);
-                        PlusXm.Put_Wallet(GruppoWallet);
+                       // PlusXm.Put_Anno(Anno);
+                      //  PlusXm.Put_Wallet(GruppoWallet);
                         MappaMoneta_PlusXMoneta.put(Monete[i].Moneta, PlusXm);
                     } else {
                         //adesso faccio la somma della qta nuova sulla vecchia                
                         PlusXMoneta PlusXm = MappaMoneta_PlusXMoneta.get(Monete[i].Moneta);
+                        PlusXm.movimentatoAnno=true;
                         BigDecimal Qta = PlusXm.Get_Giacenza();
                         Qta = Qta.add(new BigDecimal(Monete[i].Qta));
                         PlusXm.Put_Giacenza(Qta.toPlainString());
@@ -616,6 +617,7 @@ public class Calcoli_RT {
                     }
                 }
                 if (!v[15].isEmpty()) {
+                    //System.out.println(Monete[Uscita].Moneta);
                     Vendite = Vendite.add(new BigDecimal(v[15]));
                     PlusAnno[2] = PlusAnno[2].add(new BigDecimal(v[15]));
                     //adesso solo per le moete uscite salvo il valore della vendita per moneta
@@ -1059,9 +1061,11 @@ public class Calcoli_RT {
           Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(Wallet);
           for(String Moneta : MappaMoneta_PlusXMoneta.keySet()){
               //Non voglio vedere i token SCAM
+              
               if (!Funzioni.isSCAM(Moneta)){ 
                   //NON voglio vedere i token con giacenza zero e che non hanno avuto movimentazioni nell'anno
                   PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
+                  //System.out.println(Moneta+" - "+plus.movimentatoAnno+" - "+plus.Mon.Qta);
                 if (plus.movimentatoAnno||!(new BigDecimal(plus.Mon.Qta).compareTo(BigDecimal.ZERO)==0)){ 
                     String Errori="<html>";
                     rigaTabella=new Object[10];
@@ -1200,8 +1204,8 @@ public class Calcoli_RT {
   
       public static class PlusXMoneta {
 
-          String Anno;
-          String Wallet;
+          //String Anno;
+          //String Wallet;
           boolean movimentatoAnno=false;
           String ValVendita="0.00";
           String CostoVendite="0.00";
@@ -1220,14 +1224,14 @@ public class Calcoli_RT {
           {
             return Stack;
           }  
-          public void Put_Anno(String PMAnno)
+        /*  public void Put_Anno(String PMAnno)
           {
             Anno=PMAnno;
-          }  
-          public void Put_Wallet(String PMWallet)
+          }  */
+         /* public void Put_Wallet(String PMWallet)
           {
             Wallet=PMWallet;
-          } 
+          } */
           public void Put_Moneta(String PMMoneta)
           {
             Mon.Moneta=PMMoneta;

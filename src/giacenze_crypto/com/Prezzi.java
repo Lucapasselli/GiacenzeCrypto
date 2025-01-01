@@ -1657,7 +1657,10 @@ for (int i=0;i<ArraydataIni.size();i++){
         Moneta Moneta2=null;
         if (Moneta1a != null)Moneta1=Moneta1a.ClonaMoneta();
         if (Moneta2a != null)Moneta2=Moneta2a.ClonaMoneta();
-        //System.out.println(Moneta1.Moneta+" - "+Data);
+        
+        //System.setOut(System.out);
+       /* if (Moneta1.Moneta.equalsIgnoreCase("HARE"))
+        System.out.println(Moneta1.Moneta+" - "+Data + " - "+Moneta1.MonetaAddress+" - "+Moneta1.Rete);*/
         //Se la differenza tra la data dello scambio e oggi è maggiore di 365 gg forzo l'uso di binance perchè
         //coingecko mi permette di avere i dati solo degli ultimi 365gg
         RecuperaCoinsCoingecko();
@@ -1893,18 +1896,15 @@ for (int i=0;i<ArraydataIni.size();i++){
 
             //PARTE 4 - Prendo il prezzo della prima moneta disponibile
             if (Moneta1 != null && Moneta1.Tipo.trim().equalsIgnoreCase("Crypto")) {
+                PrezzoTransazione=null;
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
                 if(AddressMoneta1 == null || ForzaUsoBinanceM1){
-                    PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);
+                    PrezzoTransazione = ConvertiXXXEUR(Moneta1.Moneta, Moneta1.Qta, Data);  
                 }
-                else if(Rete != null)
+                if(Rete != null && AddressMoneta1 != null && PrezzoTransazione==null)
                   {
-                      PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);
+                      PrezzoTransazione = ConvertiAddressEUR(Moneta1.Qta, Data, AddressMoneta1, Rete, Moneta1.Moneta);                      
                   }  
-                else
-                   { 
-                    PrezzoTransazione=null;
-                    }
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                   //  System.out.println(Moneta1.Moneta+" - "+Data+" - "+PrezzoTransazione);
@@ -1913,20 +1913,16 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }
             }
             if (Moneta2 != null && Moneta2.Tipo.trim().equalsIgnoreCase("Crypto")) {
-                
+                PrezzoTransazione=null;
                 if(AddressMoneta2 == null || ForzaUsoBinanceM2){
                     PrezzoTransazione = ConvertiXXXEUR(Moneta2.Moneta, Moneta2.Qta, Data);
                    // System.out.println("ConvertiXXXEUR "+Moneta2.Moneta+" - "+Data);
                 }
-                else if(Rete != null)
+                if(Rete != null && AddressMoneta2 != null && PrezzoTransazione==null)
                   {
                       PrezzoTransazione = ConvertiAddressEUR(Moneta2.Qta, Data, AddressMoneta2, Rete, Moneta2.Moneta);
                     //  System.out.println(Moneta2.Moneta+" - "+Data+" - "+PrezzoTransazione);
                   }  
-                else
-                   { 
-                    PrezzoTransazione=null;
-                    }
                 
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();

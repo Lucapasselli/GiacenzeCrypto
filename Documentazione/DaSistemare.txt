@@ -10,6 +10,6 @@
 - Aggiungere gestione dei prezzi mancanti in "Giacenze a Data"
 - Inserire tasto per classificare i movimenti di deposito e prelievo anche in prima pagina
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
-- Alcuni trasferimenti non si possono scegliere (Verificare motivo)
-- Controllare se le rettifiche di CRO servono ancora
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
+- Modifica Valore in Giacenze a Data non funziona
+- Modifica Valore non funziona con tutti i token

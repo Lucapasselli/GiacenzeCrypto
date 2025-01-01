@@ -138,7 +138,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.30 Beta";          
+            String Titolo="Giacenze Crypto 1.31.01 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -5604,6 +5604,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 //controllo sia la moneta in uscita che quella in ingresso, nel caso trovi una corrispondenza inserisco la moneta nella mappa
                                 
                                 if (MonTransazione.Moneta.equals(mon)){
+                                    //System.out.println(MonTransazione.MonetaAddress);
                                     MappaAddressNomeMoneta.put(MonTransazione.MonetaAddress+"_"+MonTransazione.Moneta, MonTransazione);
                                 }
                             }
@@ -5615,6 +5616,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         for (Moneta Mone : MappaAddressNomeMoneta.values()){
                             Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
                             Rete=Mone.Rete;
+                            //System.out.println(Mone.MonetaAddress+" - "+Mone.Rete);
                            // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
                            // System.out.println(DataconOra);
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
@@ -5622,10 +5624,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                       //  System.out.println(DataconOra+"-"+mon+"-"+PrezzoUnitario);
                         if (Address != null && Rete != null) {
                           //  System.out.println("Scrivo prezzo per Address");
-                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
-                           // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
+                                DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
+                            //System.out.println(DatabaseH2.PrezzoAddressChain_Leggi(DataconOra + "_" + Address + "_" + Rete));
+                            //System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
-                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
+                                DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                         }
                         } 
                     } else {

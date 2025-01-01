@@ -11,5 +11,4 @@
 - Inserire tasto per classificare i movimenti di deposito e prelievo anche in prima pagina
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
-- Modifica Valore in Giacenze a Data non funziona
-- Modifica Valore non funziona con tutti i token
+- da sistemare gestione della modifica prezzi sui token con address ma su cui non viene preso in considerazione in fase di assegnazione dei prezzi (es. BNB o CRO)+ monete tipo USDT in defi

@@ -9389,7 +9389,7 @@ try {
         //in futuro dovrò mettere anche un limite per data e un limite per wallet
         progress.Titolo("Calcolo Giazenze e  Prezzi in corso....");
         progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
-progress.RipristinaStdout();
+//progress.RipristinaStdout();
         long DataRiferimento=0;
         //FASE 1 THREAD : RECUPERO LA DATA DI RIFERIMENTO
         if (GiacenzeaData_Data_DataChooser.getDate()!=null){

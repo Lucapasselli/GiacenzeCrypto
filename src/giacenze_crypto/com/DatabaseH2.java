@@ -695,6 +695,50 @@ public class DatabaseH2 {
         return Risultato;
     }
 
+       
+       public static String LeggiPrezzoPersonalizzato(Moneta moneta,long timestamp) {
+        String dataora=OperazioniSuDate.ConvertiDatadaLongallOra(timestamp);
+        String dataSimbolo=dataora+"_"+moneta.Moneta;
+        
+        String Risultato = null;
+        
+        try {
+            String checkIfExistsSQL;
+            PreparedStatement checkStatement;
+            if (moneta.MonetaAddress!=null && moneta.Rete!=null){
+                //se è un movimento in defi allora cerco il prezzo nella defi
+                String ora_address_chain=dataora+"_"+moneta.MonetaAddress+"_"+moneta.Rete;
+                ora_address_chain=ora_address_chain.toUpperCase();
+                // Connessione al database
+                checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
+                checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+                var resultSet = checkStatement.executeQuery();
+                if (resultSet.next()) {
+                    Risultato = resultSet.getString("prezzo");
+                }
+            }
+            else{
+                // altrimenti lo cerco per il solo nome
+                // Connessione al database
+                checkIfExistsSQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
+                checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+                var resultSet = checkStatement.executeQuery();
+                if (resultSet.next()) {
+                    Risultato = resultSet.getString("prezzo");
+                }          
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (Risultato!=null && Risultato.equalsIgnoreCase("null"))
+            {
+                System.out.println("DatabaseH2.XXXEUR_LEGGI prezzo Errato "+dataSimbolo);
+            return null;
+            }
+        return Risultato;
+    }
+       
+       
     public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo,boolean personalizzato) {
         try {
             Connection connessione;

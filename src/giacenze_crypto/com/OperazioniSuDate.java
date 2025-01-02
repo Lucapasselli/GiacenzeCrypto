@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +26,7 @@ public class OperazioniSuDate {
 
   
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
             Date d = new Date(Data1);
             //d=f.format(d);
             String m1=f.format(d);
@@ -38,6 +40,7 @@ public class OperazioniSuDate {
 
   
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
             Date d = new Date(Data1);
             //d=f.format(d);
             String m1=f.format(d);
@@ -63,6 +66,7 @@ public class OperazioniSuDate {
 
   
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH");
+            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
             Date d = new Date(Data1);
             //d=f.format(d);
             String m1=f.format(d);

@@ -114,6 +114,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
@@ -969,12 +970,33 @@ public class Importazioni {
         
         public static String Formatta_Data_UTC(String Data) {
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            return LocalDateTime.parse(Data, formatter)
+            //come prima cosa controllo che l'ora abbia effettivamente 2 caratteri per quanto riguarda le ore
+            //può capitare infatti che l'ra sia 9:36:11 al posto di 09:36:11
+            // Elenco di formati possibili
+            String[] FormatiPossibili = {
+            "yyyy-MM-dd HH:mm:ss",  // Formato con ora a una cifra
+            "yyyy-MM-dd H:mm:ss"  // Formato con ora a due cifre
+            };
+            LocalDateTime localDateTime = null;
+            DateTimeFormatter formatter =null;
+
+        // Prova ciascun formato fino a trovare quello giusto
+        for (String format : FormatiPossibili) {
+            try {
+                formatter = DateTimeFormatter.ofPattern(format);
+                localDateTime = LocalDateTime.parse(Data, formatter);
+                break; // Se il parsing riesce, esci dal ciclo
+            } catch (DateTimeParseException e) {
+                // Ignora e prova il prossimo formato
+            }
+        }
+        if (localDateTime != null) {
+            return localDateTime
             .atOffset(ZoneOffset.UTC)
             .atZoneSameInstant(ZoneId.of("Europe/Rome"))
             .format(formatter);
-
+        }else return null;
+        
     }    
         
     
@@ -1252,16 +1274,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         Map<String, String[]> Mappa_MovimentiTemporanea = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
                 while ((riga = bure.readLine()) != null) {
+                    String riga2=riga;
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
                     String splittata[] = riga.split(",",-1);                     
                     if (splittata.length==11&&Funzioni.Funzioni_isNumeric(splittata[4], false)){
                         // Definisci il formato della data
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         String utcDateStr = splittata[2];
-                        LocalDateTime localDateTime = LocalDateTime.parse(utcDateStr, formatter);
-                        ZonedDateTime utcZonedDateTime = localDateTime.atZone(ZoneId.of("UTC"));
-                        ZonedDateTime romeZonedDateTime = utcZonedDateTime.withZoneSameInstant(ZoneId.of("Europe/Rome"));
-                        String Data = romeZonedDateTime.format(formatter);
+                        String Data=Formatta_Data_UTC(utcDateStr);
+                        if (Data==null) {
+                            //In questo caso verrà segnalato lo scarto a fine importazione
+                            Data="2021-01-01 00:00:00";
+                            splittata[3]="FORMATO DATA ERRATO : "+riga2;
+                        }
 
                             String Movimento[]=new String[20];
                             Movimento[0]=Data;//Data
@@ -1488,10 +1513,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             String movimentoSplittato[]=movimento.split(",");
                             String data=movimentoSplittato[0];
                             data=Formatta_Data_UTC(data);
-                            String dataa=data.trim().substring(0, data.length()-3);
+                            String dataa="";
+                            String movimentoConvertito=Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                            if (data==null) {
+                                movimentoConvertito=null;
+                                movimento="FORMATO DATA ERRATO : "+movimento;
+                            }
+                            else dataa=data.trim().substring(0, data.length()-3);
                              //   String inputValue = "2012-08-15T22:56:02.038Z";
 
-                            String movimentoConvertito=Mappa_Conversione_Causali.get(movimentoSplittato[9]);
+                            
                            // System.out.println(movimentoSplittato[9]);
                            if (movimentoConvertito==null)
                                 {
@@ -2208,12 +2239,14 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                            // String WalletSecondario=movimentoSplittato[2];
                            // WalletSecondario="Principale";
                             String CausaleOriginale=movimentoSplittato[3];
-
-                            dataa=data.trim().substring(0, data.length()-3);
-                             //   String inputValue = "2012-08-15T22:56:02.038Z";
-
+                              
+                                                  
                             String movimentoConvertito=Mappa_Conversione_Causali.get(movimentoSplittato[3]);
-                            //System.out.println(movimentoConvertito);
+                            if (data==null) {
+                                movimentoConvertito=null;
+                                movimento="FORMATO DATA ERRATO : "+movimento;
+                            }
+                            else dataa=data.trim().substring(0, data.length()-3);
                            
                            if (movimentoConvertito==null)
                                 {

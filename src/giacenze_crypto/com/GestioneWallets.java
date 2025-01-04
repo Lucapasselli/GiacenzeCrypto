@@ -324,6 +324,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                             i++;
                         }
                     }
+                   // Importazioni.GiacenzeL1_Rimanze(Portafogli,"pippo");
                  //   Prezzi.ScriviFileConversioneXXXEUR();
                     Importazioni.TransazioniAggiunte = i;
                     if (Importazioni.TransazioniAggiunte != 0) {

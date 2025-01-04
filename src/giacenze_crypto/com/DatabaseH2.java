@@ -5,6 +5,7 @@
 package giacenze_crypto.com;
 
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -695,7 +696,19 @@ public class DatabaseH2 {
         return Risultato;
     }
 
-       
+       /**
+        * Questa funzione ritorna il prezzo personalizzato di un token se c'è altrimenti ritorna null<br>
+        * Il Prezzo è rapportato al quantitativo non è unitario
+        * @param moneta
+        * Moneta di cui devo cercare il prezzo<br>
+        * Dati Obbligatori : NomeToken e la Qta<br>
+        * Dati Opzionali : Address e Rete<br>
+        * @param timestamp
+        * timestamp in formato long relativo all'ora esatta in cui devo cercare il prezzo
+        * @return 
+        * ritorna null in caso non vi siano prezzi personalizzati<br>
+        * ritorna il prezzo rapportato alle qta richieste in caso contrario
+        */
        public static String LeggiPrezzoPersonalizzato(Moneta moneta,long timestamp) {
         String dataora=OperazioniSuDate.ConvertiDatadaLongallOra(timestamp);
         String dataSimbolo=dataora+"_"+moneta.Moneta;
@@ -735,6 +748,11 @@ public class DatabaseH2 {
                 System.out.println("DatabaseH2.XXXEUR_LEGGI prezzo Errato "+dataSimbolo);
             return null;
             }
+        if (Risultato!=null&&moneta.Qta!=null){
+            //Devo calcolare ora il prezzo rapportato alla Qta
+            Risultato=new BigDecimal(Risultato).multiply(new BigDecimal(moneta.Qta)).toPlainString();
+        }
+        else return null;
         return Risultato;
     }
        

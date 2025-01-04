@@ -4819,6 +4819,43 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
         return Valore;
     }
+    
+    public static String GiacenzeL1_Rimanze(String walletAddress,String Rete) {
+        //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
+        //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
+        String Valore = null;
+         try {
+            String apiKey = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[1];
+            String Indirizzo = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[0];
+            String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
+            String vespa = vespa(apiKey, "paperino");
+             
+            String urls = Indirizzo+"/api?module=account&action=balance&address="+walletAddress+"&apikey="+vespa;
+            
+            System.out.println("Controllo giacenze "+MonetaRete+" per il Wallet "+ walletAddress);
+            URL url = new URI(urls).toURL();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            StringBuilder responseTxlist = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                responseTxlist.append(inputLine);
+            }
+            in.close();
+            JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
+            Valore = jsonObjectTxlist.getString("result");
+            Valore = (Funzioni.hexToDecimal(Valore)).toString();
+            Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
+            TimeUnit.SECONDS.sleep(2);
+
+        } catch (InterruptedException | URISyntaxException | IOException ex) {
+            // Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+
+        return Valore;
+    }
      
      public static String[] GiacenzeCRO_CreaMovCorretivo(String IDrif,BigDecimal QtaTot,BigDecimal QtaVoluta) {
          BigDecimal differenzaQta=QtaVoluta.subtract(QtaTot).stripTrailingZeros();
@@ -5050,6 +5087,143 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             if (!MovDaEliminare.isEmpty())CDC_Grafica.TabellaCryptodaAggiornare=true;
     return "Ok";
         
+    }
+        
+    public static String GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
+
+        progressb.setDefaultCloseOperation(0);
+        progressb.Titolo("Sistemazione Giacenze moneta di Scambio su Wallet " + Wallet);
+        progressb.SetLabel("Sistemazione Giacenze");
+        progressb.SetMassimo(MappaCryptoWallet.size());
+        progressb.avanzamento = 0;
+        int avanzamento = 0;
+        BigDecimal TotaleQta = new BigDecimal(0);
+        String IDUltimoMovimento="";
+        List<String[]> RigheTabella = new ArrayList<>();
+        String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
+        for (String[] movimento : MappaCryptoWallet.values()) {
+            progressb.SetAvanzamento(avanzamento);
+            avanzamento++;
+            if (progressb.FineThread()) {
+                //thread.join();
+                return null;
+
+            }
+
+            // long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+            String AddressU = movimento[26];
+            String AddressE = movimento[28];
+            String WalletRiga = movimento[3];
+            if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")) {
+                //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
+                if (AddressU.equalsIgnoreCase(MonetaRete)) {
+                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                    IDUltimoMovimento=movimento[0];
+                }
+                if (AddressE.equalsIgnoreCase(MonetaRete)) {
+                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                    IDUltimoMovimento=movimento[0];
+                }
+            }
+        }
+        String GiacenzaReale=GiacenzeL1_Rimanze(Wallet.split(" ")[0],Rete);
+        String QtaNuovoMovimento = new BigDecimal(GiacenzaReale).subtract(TotaleQta).stripTrailingZeros().toPlainString();
+        if (!QtaNuovoMovimento.equals("0") && QtaNuovoMovimento.contains("-")) {
+                        
+                                //adesso compilo la parte comune del movimento
+                                String RTOri[] = MappaCryptoWallet.get(IDUltimoMovimento);
+                                long DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
+                                //il movimento in questo caso deve finire successivamente a quello selezionato
+                                //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
+                                long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) + 1;
+                                String RT[] = new String[ColonneTabella];
+                                RT[0] = "";//questo può variare in caso di movimento di commissione per cui lo metto nel capitolo successivo
+                                String IDOriSplittato[] = RTOri[0].split("_");
+                                for(int ki=1;ki<30;ki++){
+                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                               break;
+                                            }
+                                        }
+                                RT[1] = RTOri[1];
+                                RT[2] = "1 di 1";
+                                RT[3] = RTOri[3];
+                                RT[4] = RTOri[4];
+                                RT[5] = "COMMISSIONE";
+                                RT[18] = "PCO - COMMISSIONE";
+                                RT[6] = MonetaRete + " ->";
+                                RT[8] = MonetaRete;
+                                RT[9] = "CRYPTO";//da prendere dalla tabella prima
+                                RT[10] = QtaNuovoMovimento;
+                                Moneta M1 = new Moneta();
+                                M1.Moneta = MonetaRete;
+                                M1.MonetaAddress = MonetaRete;
+                                M1.Qta = QtaNuovoMovimento;
+                                M1.Tipo = "CRYPTO";
+                                M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
+                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
+                                /*if (Prezzo.compareTo(new BigDecimal(0))==0){
+                                    Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(QtaNuovoMovimento)).setScale(2,RoundingMode.HALF_UP).abs();
+                                }*/
+                                RT[15] = Prezzo.toPlainString();
+                                RT[21] = "Rettifica Giacenza";
+                                RT[22] = "M";
+                                RT[26] = MonetaRete;
+                                RT[29] = RTOri[29];
+                                RiempiVuotiArray(RT);
+                                //Adesso scrivo il movimento
+                                MappaCryptoWallet.put(RT[0], RT);
+                                CDC_Grafica.TabellaCryptodaAggiornare = true;        
+                            
+                        
+                    } else if (!QtaNuovoMovimento.equals("0")){
+                        //Gestisco i movimenti di Carico (Depositi)
+                                //adesso compilo la parte comune del movimento
+                                String RTOri[] = MappaCryptoWallet.get(IDUltimoMovimento);
+                                String IDOriSplittato[] = RTOri[0].split("_");
+                                long DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
+                                //il movimento in questo caso deve finire successivamente a quello selezionato
+                                //quindi tolgo 1 secondo al tempo del movimento originale per trovare quello da mettere
+                                long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) - 1;
+                                String RT[] = new String[ColonneTabella];
+                                for(int ki=1;ki<30;ki++){
+                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                               break;
+                                            }
+                                        }
+                                RT[1] = RTOri[1];
+                                RT[2] = "1 di 1";
+                                RT[3] = RTOri[3];
+                                RT[4] = RTOri[4];
+                                RT[5] = "DEPOSITO A COSTO 0";
+                                RT[18] = "DCZ - DEPOSITO A COSTO 0";
+                                RT[6] = " ->" + MonetaRete;
+                                RT[11] = MonetaRete;
+                                RT[12] = "CRYPTO";
+                                RT[13] = QtaNuovoMovimento;
+                                Moneta M1 = new Moneta();
+                                M1.Moneta = MonetaRete;
+                                M1.MonetaAddress = MonetaRete;
+                                M1.Qta = QtaNuovoMovimento;
+                                M1.Tipo = "CRYPTO";
+                                M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
+                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
+                                /*if (Prezzo.compareTo(new BigDecimal(0))==0){
+                                    Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
+                                }*/
+                                RT[15] = Prezzo.toPlainString();
+                                RT[21] = "Rettifica Giacenza";
+                                RT[22] = "M";
+                                RT[28] = MonetaRete;
+                                RT[29] = RTOri[29];
+                                RiempiVuotiArray(RT);
+                                //Adesso scrivo il movimento
+                                MappaCryptoWallet.put(RT[0], RT);
+                                CDC_Grafica.TabellaCryptodaAggiornare = true;
+                    }
+        return "Ok";
+
     }
       
       

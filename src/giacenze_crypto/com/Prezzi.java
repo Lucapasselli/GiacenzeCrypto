@@ -75,7 +75,7 @@ public class Prezzi {
     }
     
     public static String DammiPrezzoDaTransazione(String[] v){
-        
+
             long data=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
             String Rete = Funzioni.TrovaReteDaID(v[0]);
             //if (v[0].equals("20221230131704_CDCAPP_1_1_RW")) System.out.println(Rete);

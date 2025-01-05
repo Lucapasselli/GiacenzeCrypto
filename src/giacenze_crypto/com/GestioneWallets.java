@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -312,6 +313,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                     }
                 }
                 //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
+                Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, c, progress);
                 if (MappaTransazioniDefi != null) {
                     //Scrivo tutte le nuove transazioni nella mappa principale
@@ -322,7 +324,25 @@ public class GestioneWallets extends javax.swing.JDialog {
                             Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
                          //   MappaCryptoWallet.put(st[0], st);
                             i++;
+                            
+                            //Questa parte serve per memorizzare in una mappa tutti i wallet che hanno avuto aggiornamenti con questa funzione
+                            //in questo modo posso poi andare a cercare le giacenze di fine importazione per quanbto riguarda il token di riferimento
+                            //ad es. eth per base, o bnb per la binance smart chain
+                            //Salto la cronoschain perchè quella viene gestita a parte
+                            String WalletRete=st[3];
+                            String Wallet=st[3].split("\\(")[0].trim();
+                            String ReteW=Funzioni.TrovaReteDaID(st[0]);
+                            String Dati[]=new String[]{Wallet,ReteW};
+                            if (!ReteW.equals("CRO"))Mappa_Wallet_Dati.put(WalletRete,Dati);
+
+                            
                         }
+                    }
+                    
+                    //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
+                    //Salto la cronoschain perchè quella viene gestita a parte
+                    for (String Dati[]:Mappa_Wallet_Dati.values()){
+                        Importazioni.GiacenzeL1_Sistema(Dati[0], Dati[1], c, progress);
                     }
                    // Importazioni.GiacenzeL1_Rimanze(Portafogli,"pippo");
                  //   Prezzi.ScriviFileConversioneXXXEUR();

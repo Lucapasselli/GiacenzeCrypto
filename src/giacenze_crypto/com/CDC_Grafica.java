@@ -138,7 +138,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.31.01 Beta";          
+            String Titolo="Giacenze Crypto 1.31.02 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -10014,6 +10014,8 @@ try {
        
        
     private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI,boolean VediSoloSenzaPrezzo) {
+        
+        
         NumErroriMovSconosciuti=0;
         NumErroriMovNoPrezzo=0;
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
@@ -10149,6 +10151,8 @@ try {
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
         //Adesso aggiorno i componenti delle funzioni secondarie
         GiacenzeaData_Funzione_AggiornaComboBoxWallet();
+        
+        
         
         
     }    

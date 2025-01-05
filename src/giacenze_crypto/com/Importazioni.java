@@ -1716,6 +1716,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             {
                                 //Vendita Crypto x Servizio
                                 if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment")||movimentoSplittato[9].equalsIgnoreCase("card_top_up")){
+                                //if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment")){   
                                 RT=new String[ColonneTabella];
                                 RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_VC"; 
                                 RT[1]=dataa;
@@ -1732,7 +1733,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];///////
                                 String valoreEuro="";
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     }
@@ -4845,7 +4846,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             in.close();
             JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
             Valore = jsonObjectTxlist.getString("result");
-            Valore = (Funzioni.hexToDecimal(Valore)).toString();
+            //Valore = (Funzioni.hexToDecimal(Valore)).toString();
             Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
             TimeUnit.SECONDS.sleep(2);
 
@@ -5098,7 +5099,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         progressb.avanzamento = 0;
         int avanzamento = 0;
         BigDecimal TotaleQta = new BigDecimal(0);
-        String IDUltimoMovimento="";
+        String IDUltimoMovimento=null;
         List<String[]> RigheTabella = new ArrayList<>();
         String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
         for (String[] movimento : MappaCryptoWallet.values()) {
@@ -5113,8 +5114,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             // long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
             String AddressU = movimento[26];
             String AddressE = movimento[28];
-            String WalletRiga = movimento[3];
-            if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")) {
+            String WalletRiga = movimento[3].split("\\(")[0].trim();
+            String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);
+            if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")&&ReteMov.equalsIgnoreCase(Rete)) {
                 //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
                 if (AddressU.equalsIgnoreCase(MonetaRete)) {
                     TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
@@ -5127,8 +5129,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             }
         }
         String GiacenzaReale=GiacenzeL1_Rimanze(Wallet.split(" ")[0],Rete);
-        String QtaNuovoMovimento = new BigDecimal(GiacenzaReale).subtract(TotaleQta).stripTrailingZeros().toPlainString();
-        if (!QtaNuovoMovimento.equals("0") && QtaNuovoMovimento.contains("-")) {
+        String QtaNuovoMovimento = new BigDecimal(GiacenzaReale).subtract(TotaleQta).stripTrailingZeros().toPlainString();       
+        if (IDUltimoMovimento!=null && !QtaNuovoMovimento.equals("0") && QtaNuovoMovimento.contains("-")) {
                         
                                 //adesso compilo la parte comune del movimento
                                 String RTOri[] = MappaCryptoWallet.get(IDUltimoMovimento);
@@ -5153,13 +5155,13 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[18] = "PCO - COMMISSIONE";
                                 RT[6] = MonetaRete + " ->";
                                 RT[8] = MonetaRete;
-                                RT[9] = "CRYPTO";//da prendere dalla tabella prima
+                                RT[9] = "Crypto";//da prendere dalla tabella prima
                                 RT[10] = QtaNuovoMovimento;
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = MonetaRete;
                                 M1.MonetaAddress = MonetaRete;
                                 M1.Qta = QtaNuovoMovimento;
-                                M1.Tipo = "CRYPTO";
+                                M1.Tipo = "Crypto";
                                 M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
                                 /*if (Prezzo.compareTo(new BigDecimal(0))==0){
@@ -5176,9 +5178,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 CDC_Grafica.TabellaCryptodaAggiornare = true;        
                             
                         
-                    } else if (!QtaNuovoMovimento.equals("0")){
+                    } else if (IDUltimoMovimento!=null && !QtaNuovoMovimento.equals("0")){
                         //Gestisco i movimenti di Carico (Depositi)
                                 //adesso compilo la parte comune del movimento
+                               //System.out.println(IDUltimoMovimento);
                                 String RTOri[] = MappaCryptoWallet.get(IDUltimoMovimento);
                                 String IDOriSplittato[] = RTOri[0].split("_");
                                 long DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
@@ -5200,13 +5203,13 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[18] = "DCZ - DEPOSITO A COSTO 0";
                                 RT[6] = " ->" + MonetaRete;
                                 RT[11] = MonetaRete;
-                                RT[12] = "CRYPTO";
+                                RT[12] = "Crypto";
                                 RT[13] = QtaNuovoMovimento;
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = MonetaRete;
                                 M1.MonetaAddress = MonetaRete;
                                 M1.Qta = QtaNuovoMovimento;
-                                M1.Tipo = "CRYPTO";
+                                M1.Tipo = "Crypto";
                                 M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
                                 /*if (Prezzo.compareTo(new BigDecimal(0))==0){

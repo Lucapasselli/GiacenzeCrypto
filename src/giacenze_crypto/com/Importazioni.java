@@ -551,6 +551,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("transfer_in",                                "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("transfer_out",                               "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy Account", "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Launchpool Subscription/Redemption",         "TRASFERIMENTO-CRYPTO-INTERNO");
 
         Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
@@ -558,6 +559,8 @@ public class Importazioni {
         // La causale di autoinvestimento la dovrò poi convertire in Scambio Crypto Differito
         // Possono passare infatti anche diversi minuti tra il movimento di uscita e quello di entrata
         Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "SCAMBIO DIFFERITO");
+        Mappa_Conversione_Causali.put("Asset Recovery",                             "SCAMBIO DIFFERITO");//08-01-2025
+        Mappa_Conversione_Causali.put("Token Swap - Distribution",                  "SCAMBIO DIFFERITO");//08-01-2025
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
@@ -565,6 +568,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Transaction Spend",                          "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Revenue",                        "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Binance Convert",                            "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Sell Crypto To Fiat",                        "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Buy",                                        "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Sell",                                       "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Related",                        "SCAMBIO CRYPTO-CRYPTO");
@@ -579,10 +583,12 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("Fiat Deposit",                               "DEPOSITO FIAT");
         Mappa_Conversione_Causali.put("Binance Card Spending",                      "PRELIEVO FIAT");
         Mappa_Conversione_Causali.put("Fund Recovery",                              "PRELIEVO FIAT");
+        Mappa_Conversione_Causali.put("Fiat Withdraw",                              "PRELIEVO FIAT");
         
         Mappa_Conversione_Causali.put("Buy Crypto",                                 "ACQUISTO CRYPTO");
         Mappa_Conversione_Causali.put("Buy Crypto With Fiat",                       "ACQUISTO CRYPTO");//Inserito il 11/12/2024
         Mappa_Conversione_Causali.put("Convert Fiat to Stablecoin Paysafe",         "ACQUISTO CRYPTO");//Inserito il 21/07/2024
+        Mappa_Conversione_Causali.put("Tax Liquidation",                            "VENDITA CRYPTO");//Inserito il 08/01/2025
         
         Mappa_Conversione_Causali.put("Referral Commission",                        "REWARD");//Inserito il 21/07/2024
         Mappa_Conversione_Causali.put("Crypto Box",                                 "REWARD"); // Red carpet Binance rewards, Inserito il 21/07/2024
@@ -648,7 +654,8 @@ public class Importazioni {
                     if (splittata[1].equalsIgnoreCase(ultimaData)) {
                         listaMovimentidaConsolidare.add(riga);
                     }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Small Assets Exchange BNB")||
-                            DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Binance Convert")){//SOLO per i dust conversion e binance convert
+                            DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Binance Convert")||
+                            DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Transaction Related")){//SOLO per i dust conversion,binance convert e transaction related
                         listaMovimentidaConsolidare.add(riga);
                         }
                     else //altrimenti consolido il movimento precedente
@@ -2354,7 +2361,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[5]=Descrizione;
                                 RT[7]=CausaleOriginale; 
                                 if (Mon.Qta.contains("-")) {
-                                RT[5]="SPESA CON CARTA";
+                                if (CausaleOriginale.trim().equalsIgnoreCase("Fiat Withdraw"))RT[5]="PRELIEVO FIAT";
+                                else RT[5]="SPESA CON CARTA";
                                 RT[6]=Mon.Moneta+"-> ";
                                 RT[8]=Mon.Moneta;
                                 RT[9]=Mon.Tipo;
@@ -2367,6 +2375,28 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 RT[12]=Mon.Tipo;
                                 RT[13]=Mon.Qta;    
                                 }
+                                RT[15]=valoreEuro;
+                                RT[19]="0.00";
+                                RT[22]="A";                              
+                                RiempiVuotiArray(RT);
+                                lista.add(RT);
+                            }
+                            else if (movimentoConvertito.trim().equalsIgnoreCase("VENDITA CRYPTO"))
+                            {
+                                //Vendita Crypto, ad esempio per pagamento tasse
+                                String Codice;
+                                String Descrizione;  
+                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_VC";
+                                RT[1]=dataa;
+                                RT[2]=1+" di "+1;
+                                RT[3]="Binance";
+                                RT[4] = "Principale";                                
+                                RT[5]="VENDITA CRYPTO";
+                                RT[7]=CausaleOriginale; 
+                                RT[6]=Mon.Moneta+"-> ";
+                                RT[8]=Mon.Moneta;
+                                RT[9]=Mon.Tipo;
+                                RT[10]=Mon.Qta;                          
                                 RT[15]=valoreEuro;
                                 RT[19]="0.00";
                                 RT[22]="A";                              

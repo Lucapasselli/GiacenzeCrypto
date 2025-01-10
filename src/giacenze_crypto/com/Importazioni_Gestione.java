@@ -39,7 +39,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     "BitBox","Citcoin Core Client","Blochchain.com","Electrum","Exodus","Gate Hub","Ledger Live","Mycellum","Trezor"};
     
     static String BlockChain[]=new String[]{"----------",
-    "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
+    "Arbitrum (ARB)","Avalanche (AVAX)","Base (BASE)","Bitcoin (BTC)","Cardano (ADA)","Binance Chain (BNB)","Binance Smart Chain (BSC)",
     "Cronos Chain (CRO)","Dash (DASH)","Dogecoin (DOGE)","Polkadot (DOT)","Eos (EOS)","Ethereum (ETH)",
     "Fantom (FTM)","Litecoin (LTC)","Terra Classic (LUNA)","Poligon (MATIC)","Tron (TRX)","Solana (SOL)",
     "Stellar (XLM)","Ripple (XRP)","Zcash (ZEC)"};

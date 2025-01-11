@@ -468,7 +468,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
             if (col==3 && value.toString().toLowerCase().contains("-")) {
                     setForeground(rosso);
                 }
-            else if (col==3)setForeground(verde);
+            else if (col==3)setForeground(verdeScuro);
             else{
                 setForeground(fore);
             }

@@ -237,11 +237,18 @@ public class DatabaseH2 {
 
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }        
+        
+        private static String NormalizzaCampo(String campo){
+            //Questa funzione serve per pulire le stringhe dai campi che potrebbero far casino nelle query del database
+            return campo.replace("'", "''");
+        }
     
         public static void Pers_GruppoWallet_Scrivi(String Wallet, String Gruppo) {
         Mappa_Wallet_Gruppo.put(Wallet, Gruppo);
         try {
             // Connessione al database
+            Wallet=NormalizzaCampo(Wallet);
+            Gruppo=NormalizzaCampo(Gruppo);
             String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
             PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
             int rowCount = 0;
@@ -276,6 +283,8 @@ public class DatabaseH2 {
         if(Risultato==null){//se non lo trovo nella mappa lo cerco nel database
         try {
             // Connessione al database
+            //normalizzo il nome del wallet
+            Wallet=NormalizzaCampo(Wallet);
             String checkIfExistsSQL = "SELECT Wallet,Gruppo FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
             PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();

@@ -138,7 +138,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.31.02 Beta";          
+            String Titolo="Giacenze Crypto 1.31.03 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());

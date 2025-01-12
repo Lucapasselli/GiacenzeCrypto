@@ -766,7 +766,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("crypto_earn_interest_paid", "EARN");               //Interessi maturati da una Crypto in Earn
 
         Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
-        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito   
+        Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito 
+        Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito
         
         Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
         Mappa_Conversione_Causali.put("crypto_withdrawal", "TRASFERIMENTO-CRYPTO");       //Prelievo di una Crypto verso portafogli esterni
@@ -825,6 +826,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.lockup.dpos_compound_interest.crypto_wallet", "STAKING REWARD");//Reward da staking con Carta 20/07/2024
 
         Mappa_Conversione_Causali.put("pay_checkout_reward", "REWARD");                   //Ricompesa di Crypto.com Pay
+        Mappa_Conversione_Causali.put("finance.crypto_earn.loyalty_program_extra_interest_paid.crypto_wallet", "REWARD"); //12-01-2024
         Mappa_Conversione_Causali.put("referral_gift", "REWARD");                         //Bonus di iscrizione sbloccato
         Mappa_Conversione_Causali.put("reimbursement", "REWARD");                         //Rimborsi (Es. Netflix, Promozioni)
         Mappa_Conversione_Causali.put("reimbursement_reverted", "REWARD");                //Annullamento di un rimborso (o parte)
@@ -877,6 +879,7 @@ public class Importazioni {
                 riga=righeFile.get(w);
                 //System.out.println(riga);
                 String splittata[] = riga.split(",");
+                String TipologiaOperazione=Mappa_Conversione_Causali.get(splittata[9]);
                 if (Funzioni_Date_ConvertiDatainLong(splittata[0]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
                     //se trovo movimento con stessa data oppure la data differisce di un solo secondosolo se è un dust conversion allora lo aggiungo alla lista che compone il movimento e vado avanti
@@ -889,7 +892,7 @@ public class Importazioni {
                     String DataMeno1Secondo=splittata[0].split(":")[0]+":"+splittata[0].split(":")[1]+":"+secondo;*/
                     if (splittata[0].equalsIgnoreCase(ultimaData)) {
                         listaMovimentidaConsolidare.add(riga);
-                    }else if(data_1.equalsIgnoreCase(ultimaData)&&splittata[9].contains("dust_")){//SOLO per i dust conversion
+                    }else if(data_1.equalsIgnoreCase(ultimaData)&&TipologiaOperazione!=null&&TipologiaOperazione.contains("DUST")){//SOLO per i dust conversion
                         listaMovimentidaConsolidare.add(riga);
                         }
                     else //altrimenti consolido il movimento precedente
@@ -1911,6 +1914,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                         System.out.println(numeroAddebiti);
                                         System.out.println(dataa);
                                         System.out.println("-------");*/
+                                      /* if (dust_accreditati.split(",").length<3){
+                                           System.out.println("ERRORE - "+dust_accreditati);
+                                           System.out.println("ERRORE - "+splittata[0]);
+                                       }*/
                                         RT[6] = splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
                                         RT[7] = splittata[9] + "(" + splittata[1] + ")";
                                         RT[8] = splittata[2];
@@ -5145,16 +5152,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String AddressU = movimento[26];
             String AddressE = movimento[28];
             String WalletRiga = movimento[3].split("\\(")[0].trim();
-            String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);
-            if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")&&ReteMov.equalsIgnoreCase(Rete)) {
-                //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
-                if (AddressU.equalsIgnoreCase(MonetaRete)) {
-                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                    IDUltimoMovimento=movimento[0];
-                }
-                if (AddressE.equalsIgnoreCase(MonetaRete)) {
-                    TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                    IDUltimoMovimento=movimento[0];
+            String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);           
+            if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")){
+                if (ReteMov==null)System.out.println("ERRORE NEL RECUPERO DELLA RETE : "+movimento[0]);
+                if (ReteMov.equalsIgnoreCase(Rete)) {
+                    //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
+                    if (AddressU.equalsIgnoreCase(MonetaRete)) {
+                        TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                        IDUltimoMovimento = movimento[0];
+                    }
+                    if (AddressE.equalsIgnoreCase(MonetaRete)) {
+                        TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                        IDUltimoMovimento = movimento[0];
+                    }
                 }
             }
         }

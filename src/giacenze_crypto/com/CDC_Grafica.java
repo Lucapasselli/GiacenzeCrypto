@@ -138,7 +138,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.31.03 Beta";          
+            String Titolo="Giacenze Crypto 1.31.04 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -5867,6 +5867,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
             String Rete;        
             String Wallet=Giacenzeadata_Walleta_Label.getText().trim();
+            System.out.println(Wallet);
             
             if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")) {
                 Rete=Wallet.split("\\(")[1].split("\\)")[0];
@@ -5879,13 +5880,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         else if(Rete.equalsIgnoreCase("CRO")){
                            Funzioni.ApriWeb("https://cronoscan.com/tokenholdings?a="+ Wallet); 
                         }
-                        else if(Rete.equalsIgnoreCase("CRO")){
+                        else if(Rete.equalsIgnoreCase("ETH")){
                            Funzioni.ApriWeb("https://etherscan.io/tokenholdings?a="+ Wallet); 
                         }
                         else if(Rete.equalsIgnoreCase("BASE")){
                            Funzioni.ApriWeb("https://basescan.org/tokenholdings?a="+ Wallet); 
                         }
-                        else if(Rete.equalsIgnoreCase("ARBITRUM")){
+                        else if(Rete.equalsIgnoreCase("ARB")){
                            Funzioni.ApriWeb("https://arbiscan.io/tokenholdings?a="+ Wallet); 
                         }
                         
@@ -9440,6 +9441,7 @@ try {
                             Monete[1].Tipo = movimento[12];
                             Monete[1].Qta = movimento[13];
                             Monete[1].Rete=Rete;
+                            //System.out.println(Rete+" - "+movimento[0]);
                             if (Rete==null)Rete="";
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
                             for (int a = 0; a < 2; a++) {

@@ -5154,8 +5154,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String WalletRiga = movimento[3].split("\\(")[0].trim();
             String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);           
             if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")){
-                if (ReteMov==null)System.out.println("ERRORE NEL RECUPERO DELLA RETE : "+movimento[0]);
-                if (ReteMov.equalsIgnoreCase(Rete)) {
+                //if (ReteMov==null)System.out.println("ERRORE NEL RECUPERO DELLA RETE : "+movimento[0]);
+                if (ReteMov!=null&&ReteMov.equalsIgnoreCase(Rete)) {
                     //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
                     if (AddressU.equalsIgnoreCase(MonetaRete)) {
                         TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();

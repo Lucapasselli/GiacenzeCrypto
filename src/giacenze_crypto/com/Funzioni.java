@@ -909,6 +909,7 @@ return ListaSaldi;
             MappaRetiSupportate.put("ADA", "");
             MappaRetiSupportate.put("BNB", "");
             MappaRetiSupportate.put("BSC", "");
+            MappaRetiSupportate.put("BTC", "");
             MappaRetiSupportate.put("CRO", "");
             MappaRetiSupportate.put("DASH", "");
             MappaRetiSupportate.put("DOGE", "");

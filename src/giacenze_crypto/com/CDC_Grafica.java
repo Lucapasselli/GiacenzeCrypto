@@ -997,6 +997,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Auto.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("Assegnazione Automatica");
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setMaximumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setMinimumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_AssegnazioneAutomatica.setPreferredSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(evt);
@@ -1005,6 +1008,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Modifica.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setText("Classifica Movimento");
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setMaximumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setMinimumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setPreferredSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneManuale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed(evt);
@@ -1020,6 +1026,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DepositiPrelievi_Bottone_DettaglioDefi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Catena.png"))); // NOI18N
         DepositiPrelievi_Bottone_DettaglioDefi.setText("Dettaglio Defi");
+        DepositiPrelievi_Bottone_DettaglioDefi.setMaximumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_DettaglioDefi.setMinimumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_DettaglioDefi.setPreferredSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_DettaglioDefi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(evt);
@@ -1028,6 +1037,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DepositiPrelievi_Bottone_CreaMovOpposto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_FrecceContrapposte.png"))); // NOI18N
         DepositiPrelievi_Bottone_CreaMovOpposto.setText("<html>Crea movimento opposto <br>su altro Wallet</html>");
+        DepositiPrelievi_Bottone_CreaMovOpposto.setMaximumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_CreaMovOpposto.setMinimumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_CreaMovOpposto.setPreferredSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_CreaMovOpposto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(evt);
@@ -1036,6 +1048,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DepositiPrelievi_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Libro.png"))); // NOI18N
         DepositiPrelievi_Bottone_Documentazione.setText("Vedi Documentazione");
+        DepositiPrelievi_Bottone_Documentazione.setMaximumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_Documentazione.setMinimumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_Documentazione.setPreferredSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_DocumentazioneActionPerformed(evt);
@@ -1044,6 +1059,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         DepositiPrelievi_Bottone_Scam.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Banana.png"))); // NOI18N
         DepositiPrelievi_Bottone_Scam.setText("Identifica come SCAM");
+        DepositiPrelievi_Bottone_Scam.setMaximumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_Scam.setMinimumSize(new java.awt.Dimension(200, 35));
+        DepositiPrelievi_Bottone_Scam.setPreferredSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_Scam.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DepositiPrelievi_Bottone_ScamActionPerformed(evt);
@@ -1060,14 +1078,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
                     .addComponent(jScrollPane2)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 404, Short.MAX_VALUE)
-                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                .addGap(0, 660, Short.MAX_VALUE)
+                                .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1081,22 +1102,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi)
-                        .addComponent(DepositiPrelievi_Bottone_Scam))
+                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(DepositiPrelievi_Bottone_Documentazione)
+                        .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale))))
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -1189,14 +1205,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>"
+                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "Errori"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -5085,8 +5101,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
 
     private void Funzioni_AggiornaTutto() {
-        TransazioniCrypto_DaSalvare = true;
+        //Se selezionato Situazione Import Crypto lo aggiorno
+        if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1();       
+        //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
+        TransazioniCrypto_DaSalvare = true;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
@@ -5416,6 +5435,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
         // TODO add your handling code here:
         SituazioneImport_Caricatabella1();
+      
+      
     }//GEN-LAST:event_SituazioneImportComponentShown
 
     private void DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificatiMouseReleased
@@ -6263,7 +6284,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
        
     }//GEN-LAST:event_GiacenzeaData_Bottone_ScamActionPerformed
 
-    private void BinanceApi()
+ /*   private void BinanceApi()
          {   
                     BufferedReader reader = null;
         HttpURLConnection connection = null;
@@ -6314,7 +6335,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //System.out.println(signature);
          //   System.out.println(timestamp);
         }
- }
+ }*/
     
     private void GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CambiaNomeTokenActionPerformed
         // TODO add your handling code here:
@@ -6714,10 +6735,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString());
                 if (movimentiCancellati>0){
                     Opzioni_RicreaListaWalletDisponibili();
-                    Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                    TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-                    TransazioniCrypto_DaSalvare=true;
-                    TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+                    Funzioni_AggiornaTutto();
                 }
                 Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
                 Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
@@ -9358,22 +9376,23 @@ try {
         }
       
       
-    private Map<String, Object[]> GiacenzeaData_CompilaTabellaToken(boolean CompiloTabella){
-        
+    private Map<String, Object[]> GiacenzeaData_CompilaTabellaToken(boolean CompiloTabella) {
+
+        //
         //Gestisco i bottoni
         Map<String, Object[]> TabellaToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
 
-            
         //FASE 1 PULIZIA TABELLA
         //questo serve per evitare errori di sorting nel thread
         //azzera il sort ogni volta in sostanza ed evita errori
-        
-        DefaultTableModel GiacenzeaData_ModelloTabellaDettagli = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel(); 
-        if(CompiloTabella)Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
-        
+        DefaultTableModel GiacenzeaData_ModelloTabellaDettagli = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+        if (CompiloTabella) {
+            Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
+        }
+
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_Tabella.getModel();
-        if(CompiloTabella){
+        if (CompiloTabella) {
             TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
             GiacenzeaData_Tabella.setRowSorter(sorter);
             Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
@@ -9386,29 +9405,31 @@ try {
         thread = new Thread() {
             public void run() {
 
-        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
-        //in futuro dovrò mettere anche un limite per data e un limite per wallet
-        progress.Titolo("Calcolo Giazenze e  Prezzi in corso....");
-        progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
+                //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+                //in futuro dovrò mettere anche un limite per data e un limite per wallet
+                progress.Titolo("Calcolo Giazenze e  Prezzi in corso....");
+                progress.SetLabel("Calcolo Giazenze e  Prezzi in corso....");
 //progress.RipristinaStdout();
-        long DataRiferimento=0;
-        //FASE 1 THREAD : RECUPERO LA DATA DI RIFERIMENTO
-        if (GiacenzeaData_Data_DataChooser.getDate()!=null){
-            //DA FARE : IMPEDIRE DI METTERE DATE FUTURE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            String Data=f.format(GiacenzeaData_Data_DataChooser.getDate());
-            DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86400000;
-           // System.out.println("DataRiferimento"+DataRiferimento);
-           // DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86399000;
-            //DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86340000;//Riferito alle 23:59 del giorno
-            long DatadiOggi = System.currentTimeMillis();
-            if (DatadiOggi<DataRiferimento) DataRiferimento=DatadiOggi;
-        } 
-        //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
-        Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+                long DataRiferimento = 0;
+                //FASE 1 THREAD : RECUPERO LA DATA DI RIFERIMENTO
+                if (GiacenzeaData_Data_DataChooser.getDate() != null) {
+                    //DA FARE : IMPEDIRE DI METTERE DATE FUTURE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                    String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
+                    DataRiferimento = OperazioniSuDate.ConvertiDatainLong(Data) + 86400000;
+                    // System.out.println("DataRiferimento"+DataRiferimento);
+                    // DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86399000;
+                    //DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86340000;//Riferito alle 23:59 del giorno
+                    long DatadiOggi = System.currentTimeMillis();
+                    if (DatadiOggi < DataRiferimento) {
+                        DataRiferimento = DatadiOggi;
+                    }
+                }
+                //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
+                Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
 
-        String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
-        String SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString().trim();
+                String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
+                String SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString().trim();
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
@@ -9417,12 +9438,14 @@ try {
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
                         // adesso verifico il wallet
-                        String gruppoWallet="";
-                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
+                        String gruppoWallet = "";
+                        if (Wallet.contains("Gruppo :")) {
+                            gruppoWallet = Wallet.split(" : ")[1].split("\\(")[0].trim();
+                        }
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
-                                || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
-                                ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
-                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                                || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
+                                || DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) {
                             // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
                             //Faccio la somma dei movimenti in usicta
@@ -9436,19 +9459,21 @@ try {
                             Monete[0].Moneta = movimento[8];
                             Monete[0].Tipo = movimento[9];
                             Monete[0].Qta = movimento[10];
-                            Monete[0].Rete=Rete;
+                            Monete[0].Rete = Rete;
                             Monete[1].Moneta = movimento[11];
                             Monete[1].Tipo = movimento[12];
                             Monete[1].Qta = movimento[13];
-                            Monete[1].Rete=Rete;
+                            Monete[1].Rete = Rete;
                             //System.out.println(Rete+" - "+movimento[0]);
-                            if (Rete==null)Rete="";
+                            if (Rete == null) {
+                                Rete = "";
+                            }
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
                             for (int a = 0; a < 2; a++) {
                                 //ANALIZZO MOVIMENTI
-                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress+";"+Rete)!=null) {
+                                if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete) != null) {
                                     //Movimento già presente da implementare
-                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress+";"+Rete);
+                                    Moneta M1 = QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete);
                                     M1.Qta = new BigDecimal(M1.Qta)
                                             .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
 
@@ -9457,82 +9482,96 @@ try {
                                     Moneta M1 = new Moneta();
                                     M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
                                     M1.Rete = Rete;
-                                    QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo+";"+Monete[a].MonetaAddress+";"+Rete, M1);
+                                    QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo + ";" + Monete[a].MonetaAddress + ";" + Rete, M1);
 
                                 }
                             }
                         }
                     }
                 }
-        
-        //Adesso elenco tutte le monete e le metto in tabella
-        progress.SetMassimo(QtaCrypto.size());       
-        DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
-        if(CompiloTabella)Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
-        Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
-        int i=0;
-        BigDecimal TotEuro=new BigDecimal(0);
-        for (String moneta :QtaCrypto.keySet()){
-            i++;
-            if (progress.FineThread())
-                {
-                    //Questo succede nel caso in cui termino il ciclo forzatamente
-                    
-                    if(CompiloTabella){
-                        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);                    
-                        TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
-                        GiacenzeaData_Tabella.setRowSorter(sorter);
-                    }
-                    GiacenzeaData_Totali_TextField.setText("");
-                    
-                    JOptionPane.showConfirmDialog(progress, "Elaborazione Interrotta!",
-                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
-                    progress.ChiudiFinestra();
-                try {
-                    this.join();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+
+                //Adesso elenco tutte le monete e le metto in tabella
+                progress.SetMassimo(QtaCrypto.size());
+                DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
+                if (CompiloTabella) {
+                    Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
                 }
-                }
-            if (i<=progress.Massimo) progress.SetAvanzamento(i);
-            Moneta M1=QtaCrypto.get(moneta);
-            String Rete=M1.Rete;
-            String Address=M1.MonetaAddress;
-            Object riga[]=new Object[6];
-            riga[0]=M1.Moneta;
-            riga[2]=Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
-            riga[3]=M1.Tipo;
-            riga[4]=M1.Qta;
-            riga[1]=M1.Rete;
-            TabellaToken.put(riga[0].toString(), riga);
-            if ((GiacenzeaData_CheckBox_MostraQtaZero.isSelected()||!M1.Qta.equals("0"))
-                    &&(!GiacenzeaData_CheckBox_NascondiScam.isSelected()||!Funzioni.isSCAM(M1.Moneta))
-                    ){
-                if (M1.Qta.equals("0"))riga[5]="0.00";
-                else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
-                if (riga[4].toString().contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
-                //System.out.println(riga[4]);
-                riga[5]=Double.valueOf((String)riga[5]);
-                
-                if(CompiloTabella)GiacenzeaData_ModelloTabella.addRow(riga);                
-                TotEuro=TotEuro.add(new BigDecimal((Double)riga[5]));
-                GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());                
-            }
-            
-        }
-       // Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
-        Giacenzeadata_Walleta_Label.setText(Wallet);
-        Giacenzeadata_Walletb_Label.setText(SottoWallet);
-        progress.ChiudiFinestra();
-        
+                Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
+                int i = 0;
+                BigDecimal TotEuro = new BigDecimal(0);
+                for (String moneta : QtaCrypto.keySet()) {
+                    i++;
+                    if (progress.FineThread()) {
+                        //Questo succede nel caso in cui termino il ciclo forzatamente
+
+                        if (CompiloTabella) {
+                            Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+                            TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
+                            GiacenzeaData_Tabella.setRowSorter(sorter);
                         }
-            };
-        
+                        GiacenzeaData_Totali_TextField.setText("");
+
+                        JOptionPane.showConfirmDialog(progress, "Elaborazione Interrotta!",
+                                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                        progress.ChiudiFinestra();
+                        try {
+                            this.join();
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    if (i <= progress.Massimo) {
+                        progress.SetAvanzamento(i);
+                    }
+                    Moneta M1 = QtaCrypto.get(moneta);
+                    String Rete = M1.Rete;
+                    String Address = M1.MonetaAddress;
+                    Object riga[] = new Object[7];
+                    riga[0] = M1.Moneta;
+                    riga[2] = Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
+                    riga[3] = M1.Tipo;
+                    riga[4] = M1.Qta;
+                    riga[1] = M1.Rete;
+                    riga[6] = "";
+                    TabellaToken.put(riga[0].toString(), riga);
+                    if ((GiacenzeaData_CheckBox_MostraQtaZero.isSelected() || !M1.Qta.equals("0"))
+                            && (!GiacenzeaData_CheckBox_NascondiScam.isSelected() || !Funzioni.isSCAM(M1.Moneta))) {
+                        if (M1.Qta.equals("0")) {
+                            riga[5] = "0.00";
+                        } else {
+                            riga[5] = Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, false, 2, Rete);
+                            if (riga[5]==null){
+                                riga[5]="0.00";
+                                riga[6]="Token senza prezzo";
+                            }
+                        }
+                        if (riga[4].toString().contains("-") && !riga[5].equals("0.00")) {
+                            riga[5] = "-" + riga[5];
+                        }
+                        //System.out.println(riga[4]);
+                        riga[5] = Double.valueOf((String) riga[5]);
+
+                        if (CompiloTabella) {
+                            GiacenzeaData_ModelloTabella.addRow(riga);
+                        }
+                        TotEuro = TotEuro.add(new BigDecimal((Double) riga[5]));
+                        GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());
+                    }
+
+                }
+                // Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
+                Giacenzeadata_Walleta_Label.setText(Wallet);
+                Giacenzeadata_Walletb_Label.setText(SottoWallet);
+                progress.ChiudiFinestra();
+
+            }
+        };
+
         thread.start();
         progress.setVisible(true);
         return TabellaToken;
     }
-    
+  
     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet() {
        // int Selezionata=GiacenzeaData_Wallet_ComboBox.getSelectedIndex();
         String VecchioValore=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();

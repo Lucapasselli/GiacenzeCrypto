@@ -183,6 +183,10 @@ public class Tabelle {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
+                else if (col==6) {
+                    c.setBackground(bg);
+                    c.setForeground(rosso);
+                }
                 else {
                     setForeground(fore);
                   c.setBackground(bg);

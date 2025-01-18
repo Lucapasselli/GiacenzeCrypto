@@ -126,7 +126,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
           String v[]=MappaCryptoWallet.get(ID);
           String TipoMovimento=v[0].split("_")[4].trim();
 
-            String riga[]=new String[7];
+            String riga[]=new String[8];
             riga[0]=v[0];
             riga[1]=v[1];
             riga[2]=v[3];
@@ -142,6 +142,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 riga[5]=new BigDecimal(v[13]).stripTrailingZeros().toPlainString();
                 }
             riga[6]=v[18];
+            riga[7]=v[15];
            return riga;                                              
     }                
 
@@ -202,14 +203,14 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         jTable1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta"
+                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta", "null", "Prezzo"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -235,10 +236,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             jTable1.getColumnModel().getColumn(3).setMaxWidth(200);
             jTable1.getColumnModel().getColumn(4).setMinWidth(60);
             jTable1.getColumnModel().getColumn(4).setPreferredWidth(60);
-            jTable1.getColumnModel().getColumn(4).setMaxWidth(60);
-            jTable1.getColumnModel().getColumn(5).setMinWidth(100);
-            jTable1.getColumnModel().getColumn(5).setPreferredWidth(100);
-            jTable1.getColumnModel().getColumn(5).setMaxWidth(100);
+            jTable1.getColumnModel().getColumn(4).setMaxWidth(100);
+            jTable1.getColumnModel().getColumn(6).setMinWidth(0);
+            jTable1.getColumnModel().getColumn(6).setPreferredWidth(0);
+            jTable1.getColumnModel().getColumn(6).setMaxWidth(0);
         }
 
         Tabella_MovimentiAbbinati.setModel(new javax.swing.table.DefaultTableModel(
@@ -246,11 +247,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
             },
             new String [] {
-                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta"
+                "ID", "Data e Ora", "Exchange/Wallet", "Tipo", "Moneta", "Qta", "null", "Prezzo"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -273,10 +274,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(3).setMaxWidth(200);
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(4).setMinWidth(60);
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(4).setPreferredWidth(60);
-            Tabella_MovimentiAbbinati.getColumnModel().getColumn(4).setMaxWidth(60);
-            Tabella_MovimentiAbbinati.getColumnModel().getColumn(5).setMinWidth(100);
-            Tabella_MovimentiAbbinati.getColumnModel().getColumn(5).setPreferredWidth(100);
-            Tabella_MovimentiAbbinati.getColumnModel().getColumn(5).setMaxWidth(100);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(4).setMaxWidth(100);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(6).setMinWidth(0);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(6).setPreferredWidth(0);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(6).setMaxWidth(0);
         }
 
         jLabel4.setText("Note :");
@@ -298,7 +299,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                         .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Annulla))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 854, Short.MAX_VALUE)
                     .addComponent(jScrollPane2)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1705,7 +1706,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                             && DataOra > (DataOraAttuale - 86400000)
                             && !WalletRiferimento.equals(WalletAttuale)
                             && SommaQta.compareTo(new BigDecimal(0)) <= 0) {
-                        String riga[] = new String[7];
+                        String riga[] = new String[8];
                         riga[0] = v[0];
                         riga[1] = v[1];
                         riga[2] = v[3];
@@ -1713,6 +1714,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                         riga[4] = Moneta;
                         riga[5] = QtanoABS.stripTrailingZeros().toPlainString();
                         riga[6] = v[18];
+                        riga[7] = v[15];
+                        
                         ModelloTabellaDepositiPrelievi.addRow(riga);
 
                     }
@@ -1774,7 +1777,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                             ) 
                     {
                                             
-                        String riga[] = new String[7];
+                        String riga[] = new String[8];
                         riga[0] = v[0];
                         riga[1] = v[1];
                         riga[2] = v[3];
@@ -1782,6 +1785,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                         riga[4] = Moneta;
                         riga[5] = QtanoABS.stripTrailingZeros().toPlainString();
                         riga[6] = v[18];
+                        riga[7] = v[15];
                         ModelloTabellaDepositiPrelievi.addRow(riga);                 
                     
                     }

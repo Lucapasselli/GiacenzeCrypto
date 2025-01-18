@@ -856,15 +856,20 @@
                                   <Component id="jScrollPane2" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" pref="200" max="32767" attributes="0"/>
+                                          <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" max="32767" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_Documentazione" max="32767" attributes="0"/>
                                       </Group>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
-                                      <EmptySpace pref="404" max="32767" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="DepositiPrelievi_Bottone_Scam" max="32767" attributes="0"/>
-                                          <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="1" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <EmptySpace min="0" pref="660" max="32767" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
+                                              <EmptySpace max="32767" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_Scam" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -885,7 +890,7 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="DepositiPrelievi_Bottone_DettaglioDefi" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="DepositiPrelievi_Bottone_Scam" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="DepositiPrelievi_Bottone_Scam" alignment="1" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="103" alignment="1" groupAlignment="3" attributes="0">
                                       <Component id="DepositiPrelievi_Bottone_Documentazione" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -996,6 +1001,15 @@
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Auto.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Assegnazione Automatica"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed"/>
@@ -1007,6 +1021,15 @@
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Modifica.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Classifica Movimento"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed"/>
@@ -1026,6 +1049,15 @@
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Catena.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Dettaglio Defi"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_DettaglioDefiActionPerformed"/>
@@ -1037,6 +1069,15 @@
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_FrecceContrapposte.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;Crea movimento opposto &lt;br&gt;su altro Wallet&lt;/html&gt;"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed"/>
@@ -1048,6 +1089,15 @@
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Libro.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Vedi Documentazione"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_DocumentazioneActionPerformed"/>
@@ -1059,6 +1109,15 @@
                           <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Banana.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Identifica come SCAM"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_ScamActionPerformed"/>
@@ -1327,13 +1386,14 @@
                           <Properties>
                             <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="6" rowCount="0">
+                              <Table columnCount="7" rowCount="0">
                                 <Column editable="false" title="Nome" type="java.lang.Object"/>
                                 <Column editable="false" title="Rete" type="java.lang.Object"/>
                                 <Column editable="false" title="Address Defi del Token" type="java.lang.Object"/>
                                 <Column editable="false" title="Tipo" type="java.lang.Object"/>
                                 <Column editable="false" title="Qta" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;(in Euro)&lt;/html&gt;" type="java.lang.Double"/>
+                                <Column editable="false" title="Errori" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -1364,6 +1424,11 @@
                                   <Renderer/>
                                 </Column>
                                 <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>

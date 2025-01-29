@@ -78,10 +78,6 @@ import javax.swing.table.TableColumn;
  */
 public class CDC_Grafica extends javax.swing.JFrame {
 
-    /**
-     * Creates new form com
-     */
-    private Point initialClick;
 
 
 
@@ -138,7 +134,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.31.04 Beta";          
+            String Titolo="Giacenze Crypto 1.31.05 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -229,6 +225,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
         //Aggiorno lo stato del checkbox relativo al calcolo delle plusvalenze
+        
+        //Aggiorna spunte sistema sia le varie spunte del programma sia le date per le pulizie che tanto sono fisse
         AggiornaSpunte();
 
         
@@ -438,16 +436,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
         CDC_FiatWallet_Bottone_StampaRapporto = new javax.swing.JButton();
         Opzioni = new javax.swing.JPanel();
         Opzioni_TabbedPane = new javax.swing.JTabbedPane();
-        Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
-        CDC_Opzioni_Bottone_CancellaCardWallet = new javax.swing.JButton();
-        Opzioni_FiatWallet_Pannello = new javax.swing.JPanel();
-        CDC_Opzioni_Bottone_CancellaFiatWallet = new javax.swing.JButton();
-        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet = new javax.swing.JButton();
-        Opzioni_Crypto_Pannello = new javax.swing.JPanel();
-        Opzioni_Bottone_CancellaTransazioniCrypto = new javax.swing.JButton();
-        Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
-        jLabel8 = new javax.swing.JLabel();
-        Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
         Opzioni_GruppoWallet_Pannello = new javax.swing.JPanel();
         Opzioni_GruppoWallet_ScrollTabella = new javax.swing.JScrollPane();
         Opzioni_GruppoWallet_Tabella = new javax.swing.JTable();
@@ -503,6 +491,23 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Varie = new javax.swing.JPanel();
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jTabbedPane2 = new javax.swing.JTabbedPane();
+        Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
+        CDC_Opzioni_Bottone_CancellaCardWallet = new javax.swing.JButton();
+        Opzioni_FiatWallet_Pannello = new javax.swing.JPanel();
+        CDC_Opzioni_Bottone_CancellaFiatWallet = new javax.swing.JButton();
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet = new javax.swing.JButton();
+        Opzioni_Crypto_Pannello = new javax.swing.JPanel();
+        Opzioni_Bottone_CancellaTransazioniCrypto = new javax.swing.JButton();
+        Opzioni_Bottone_CancellaTransazioniCryptoXwallet = new javax.swing.JButton();
+        jLabel8 = new javax.swing.JLabel();
+        Opzioni_Combobox_CancellaTransazioniCryptoXwallet = new javax.swing.JComboBox<>();
+        Opzioni_Pulizie_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
+        Opzioni_Pulizie_DataChooser_Finale = new com.toedter.calendar.JDateChooser();
+        jLabel18 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -1101,9 +1106,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)))
@@ -2679,123 +2684,6 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         Opzioni_TabbedPane.setTabPlacement(javax.swing.JTabbedPane.LEFT);
 
-        CDC_Opzioni_Bottone_CancellaCardWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
-        CDC_Opzioni_Bottone_CancellaCardWallet.setText("Elimina tutti i dati dal Card Wallet");
-        CDC_Opzioni_Bottone_CancellaCardWallet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout Opzioni_CardWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_CardWallet_Pannello);
-        Opzioni_CardWallet_Pannello.setLayout(Opzioni_CardWallet_PannelloLayout);
-        Opzioni_CardWallet_PannelloLayout.setHorizontalGroup(
-            Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1319, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        Opzioni_CardWallet_PannelloLayout.setVerticalGroup(
-            Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        Opzioni_TabbedPane.addTab("Pulizia CDC Card Wallet", Opzioni_CardWallet_Pannello);
-
-        CDC_Opzioni_Bottone_CancellaFiatWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
-        CDC_Opzioni_Bottone_CancellaFiatWallet.setText("Elimina tutti i dati dal Fiat Wallet");
-        CDC_Opzioni_Bottone_CancellaFiatWallet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(evt);
-            }
-        });
-
-        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
-        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.setText("Elimina personalizzazioni movimenti Fiat Wallet");
-        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout Opzioni_FiatWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_FiatWallet_Pannello);
-        Opzioni_FiatWallet_Pannello.setLayout(Opzioni_FiatWallet_PannelloLayout);
-        Opzioni_FiatWallet_PannelloLayout.setHorizontalGroup(
-            Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1319, Short.MAX_VALUE)
-                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1319, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        Opzioni_FiatWallet_PannelloLayout.setVerticalGroup(
-            Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        Opzioni_TabbedPane.addTab("Pulizia CDC Fiat Wallet", Opzioni_FiatWallet_Pannello);
-
-        Opzioni_Bottone_CancellaTransazioniCrypto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
-        Opzioni_Bottone_CancellaTransazioniCrypto.setText("Elimina tutte le transazioni Crypto");
-        Opzioni_Bottone_CancellaTransazioniCrypto.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(evt);
-            }
-        });
-
-        Opzioni_Bottone_CancellaTransazioniCryptoXwallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
-        Opzioni_Bottone_CancellaTransazioniCryptoXwallet.setText("Elimina Dati singolo Wallet/Exchange");
-        Opzioni_Bottone_CancellaTransazioniCryptoXwallet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(evt);
-            }
-        });
-
-        jLabel8.setText("->");
-
-        Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
-
-        javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
-        Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
-        Opzioni_Crypto_PannelloLayout.setHorizontalGroup(
-            Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
-                        .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 993, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        Opzioni_Crypto_PannelloLayout.setVerticalGroup(
-            Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
-                    .addComponent(jLabel8)
-                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        Opzioni_TabbedPane.addTab("Pulizia Crypto", Opzioni_Crypto_Pannello);
-
         Opzioni_GruppoWallet_Tabella.setAutoCreateRowSorter(true);
         Opzioni_GruppoWallet_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -2867,7 +2755,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Opzioni_GruppoWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1325, Short.MAX_VALUE)
+                    .addComponent(Opzioni_GruppoWallet_ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1327, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(Opzioni_GruppoWallet_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_GruppoWallet_Bottone_Rinomina, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2942,7 +2830,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Opzioni_Emoney_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 1325, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 1327, Short.MAX_VALUE)
                     .addComponent(Opzioni_Emoney_ScrollPane)
                     .addGroup(Opzioni_Emoney_PannelloLayout.createSequentialGroup()
                         .addComponent(Opzioni_Emoney_Bottone_Aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3062,7 +2950,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                 .addGap(18, 18, 18)
                 .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1307, Short.MAX_VALUE)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1309, Short.MAX_VALUE)
                     .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(OpzioniRewards_JCB_PDD_CashBack, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3100,6 +2988,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected(true);
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setText("Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti (calcola plusvalenza e nuovo costo di carico)");
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3401,7 +3290,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(1096, Short.MAX_VALUE))
+                .addContainerGap(1098, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3414,6 +3303,210 @@ public class CDC_Grafica extends javax.swing.JFrame {
         );
 
         Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
+
+        CDC_Opzioni_Bottone_CancellaCardWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
+        CDC_Opzioni_Bottone_CancellaCardWallet.setText("Elimina tutti i dati dal Card Wallet");
+        CDC_Opzioni_Bottone_CancellaCardWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_CardWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_CardWallet_Pannello);
+        Opzioni_CardWallet_Pannello.setLayout(Opzioni_CardWallet_PannelloLayout);
+        Opzioni_CardWallet_PannelloLayout.setHorizontalGroup(
+            Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1309, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        Opzioni_CardWallet_PannelloLayout.setVerticalGroup(
+            Opzioni_CardWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_CardWallet_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(CDC_Opzioni_Bottone_CancellaCardWallet)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Pulizia CDC Card Wallet", Opzioni_CardWallet_Pannello);
+
+        CDC_Opzioni_Bottone_CancellaFiatWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
+        CDC_Opzioni_Bottone_CancellaFiatWallet.setText("Elimina tutti i dati dal Fiat Wallet");
+        CDC_Opzioni_Bottone_CancellaFiatWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(evt);
+            }
+        });
+
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.setText("Elimina personalizzazioni movimenti Fiat Wallet");
+        CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_FiatWallet_PannelloLayout = new javax.swing.GroupLayout(Opzioni_FiatWallet_Pannello);
+        Opzioni_FiatWallet_Pannello.setLayout(Opzioni_FiatWallet_PannelloLayout);
+        Opzioni_FiatWallet_PannelloLayout.setHorizontalGroup(
+            Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1309, Short.MAX_VALUE)
+                    .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet, javax.swing.GroupLayout.DEFAULT_SIZE, 1309, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        Opzioni_FiatWallet_PannelloLayout.setVerticalGroup(
+            Opzioni_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_FiatWallet_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(CDC_Opzioni_Bottone_CancellaFiatWallet)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWallet)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Pulizia CDC Fiat Wallet", Opzioni_FiatWallet_Pannello);
+
+        Opzioni_Bottone_CancellaTransazioniCrypto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
+        Opzioni_Bottone_CancellaTransazioniCrypto.setText("Elimina tutte le transazioni Crypto");
+        Opzioni_Bottone_CancellaTransazioniCrypto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Bottone_CancellaTransazioniCryptoXwallet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Cestino.png"))); // NOI18N
+        Opzioni_Bottone_CancellaTransazioniCryptoXwallet.setText("Elimina Dati singolo Wallet/Exchange");
+        Opzioni_Bottone_CancellaTransazioniCryptoXwallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(evt);
+            }
+        });
+
+        jLabel8.setText("->");
+
+        Opzioni_Combobox_CancellaTransazioniCryptoXwallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "----------" }));
+
+        javax.swing.GroupLayout Opzioni_Crypto_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Crypto_Pannello);
+        Opzioni_Crypto_Pannello.setLayout(Opzioni_Crypto_PannelloLayout);
+        Opzioni_Crypto_PannelloLayout.setHorizontalGroup(
+            Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
+                        .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, 0, 983, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        Opzioni_Crypto_PannelloLayout.setVerticalGroup(
+            Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_Crypto_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_Bottone_CancellaTransazioniCrypto)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_Crypto_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_Bottone_CancellaTransazioniCryptoXwallet)
+                    .addComponent(jLabel8)
+                    .addComponent(Opzioni_Combobox_CancellaTransazioniCryptoXwallet, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Pulizia Crypto", Opzioni_Crypto_Pannello);
+
+        Opzioni_Pulizie_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");
+        Opzioni_Pulizie_DataChooser_Iniziale.setFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().deriveFont(Opzioni_Pulizie_DataChooser_Iniziale.getFont().getStyle() | java.awt.Font.BOLD));
+        Opzioni_Pulizie_DataChooser_Iniziale.setMinimumSize(new java.awt.Dimension(100, 31));
+        Opzioni_Pulizie_DataChooser_Iniziale.setPreferredSize(new java.awt.Dimension(100, 31));
+        Opzioni_Pulizie_DataChooser_Iniziale.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                Opzioni_Pulizie_DataChooser_InizialeFocusLost(evt);
+            }
+        });
+        Opzioni_Pulizie_DataChooser_Iniziale.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                Opzioni_Pulizie_DataChooser_InizialePropertyChange(evt);
+            }
+        });
+        Opzioni_Pulizie_DataChooser_Iniziale.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                Opzioni_Pulizie_DataChooser_InizialeKeyPressed(evt);
+            }
+        });
+
+        Opzioni_Pulizie_DataChooser_Finale.setDateFormatString("yyyy-MM-dd");
+        Opzioni_Pulizie_DataChooser_Finale.setFont(Opzioni_Pulizie_DataChooser_Finale.getFont().deriveFont(Opzioni_Pulizie_DataChooser_Finale.getFont().getStyle() | java.awt.Font.BOLD));
+        Opzioni_Pulizie_DataChooser_Finale.setMinimumSize(new java.awt.Dimension(100, 31));
+        Opzioni_Pulizie_DataChooser_Finale.setPreferredSize(new java.awt.Dimension(100, 31));
+        Opzioni_Pulizie_DataChooser_Finale.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                Opzioni_Pulizie_DataChooser_FinaleFocusLost(evt);
+            }
+        });
+        Opzioni_Pulizie_DataChooser_Finale.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                Opzioni_Pulizie_DataChooser_FinalePropertyChange(evt);
+            }
+        });
+        Opzioni_Pulizie_DataChooser_Finale.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                Opzioni_Pulizie_DataChooser_FinaleKeyPressed(evt);
+            }
+        });
+
+        jLabel18.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel18.setText("Selezionare in che range di date deve essere effettuata l'eventuale pulizia di dati :");
+
+        jLabel19.setText("Inizio : ");
+
+        jLabel20.setText("Fine : ");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTabbedPane2)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel19)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Opzioni_Pulizie_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(61, 61, 61)
+                                .addComponent(jLabel20)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Opzioni_Pulizie_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 652, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Pulizie_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel19)
+                    .addComponent(Opzioni_Pulizie_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel20))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        Opzioni_TabbedPane.addTab("Pulizie", jPanel2);
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
@@ -3538,11 +3631,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
     }
     
     
-    private void AggiornaSpunte(){
+    private void AggiornaSpunte() throws ParseException{
         
    
-        
-        
+        //Scrivo la data sulle pulizie
+        Opzioni_Pulizie_DataChooser_Iniziale.setDate(new SimpleDateFormat("yyyy-MM-dd").parse("2010-01-01"));
+        Opzioni_Pulizie_DataChooser_Finale.setDate(new SimpleDateFormat("yyyy-MM-dd").parse("2030-12-31"));
         //Aggiorno lo stato del checkbox relativo al calcolo delle plusvalenze
         String PlusXWallet=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
         if(PlusXWallet!=null && PlusXWallet.equalsIgnoreCase("SI")){
@@ -3553,8 +3647,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             this.Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero.setSelected(true);
         }
         String Plusvalenze_Pre2023ScambiRilevanti=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
-        if(Plusvalenze_Pre2023ScambiRilevanti!=null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")){
-            this.Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected(true);
+        if(Plusvalenze_Pre2023ScambiRilevanti!=null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("NO")){
+            this.Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected(false);
         }
         
         //Verifico se esiste l'opzione rilevanza e in caso la creo e gli assegno il valore C, qua sotto la simbologia
@@ -6814,6 +6908,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (risposta==0){
             try
             {
+                
+             /*   try (FileReader fire = new FileReader(CDC_Grafica.CDC_CardWallet_FileDB); BufferedReader bure = new BufferedReader(fire);) {
+                        String rigas;
+                        while (rigas = bure.readLine()) != null) {
+                            
+                        }
+                }*/
                 FileWriter w=new FileWriter(CDC_Grafica.CDC_CardWallet_FileDB);
                 BufferedWriter b=new BufferedWriter (w);
                 b.write("");
@@ -8791,6 +8892,30 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Avvertenze%20e%20Problemi%20Noti.pdf/download");
     }//GEN-LAST:event_Opzioni_Varie_Bottone_ProblemiNotiActionPerformed
+
+    private void Opzioni_Pulizie_DataChooser_InizialeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_InizialeFocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_InizialeFocusLost
+
+    private void Opzioni_Pulizie_DataChooser_InizialePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_InizialePropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_InizialePropertyChange
+
+    private void Opzioni_Pulizie_DataChooser_InizialeKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_InizialeKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_InizialeKeyPressed
+
+    private void Opzioni_Pulizie_DataChooser_FinaleFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_FinaleFocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_FinaleFocusLost
+
+    private void Opzioni_Pulizie_DataChooser_FinalePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_FinalePropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_FinalePropertyChange
+
+    private void Opzioni_Pulizie_DataChooser_FinaleKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_FinaleKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_FinaleKeyPressed
     
     private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete) {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -10627,6 +10752,8 @@ try {
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
+    private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Finale;
+    private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Iniziale;
     private javax.swing.JPanel Opzioni_RW_Pannello;
     private javax.swing.JPanel Opzioni_Rewards_Pannello;
     private javax.swing.JTabbedPane Opzioni_TabbedPane;
@@ -10710,7 +10837,10 @@ try {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -10719,6 +10849,7 @@ try {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane11;
@@ -10737,6 +10868,7 @@ try {
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextPane jTextPane1;

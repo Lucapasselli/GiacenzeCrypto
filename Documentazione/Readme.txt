@@ -25,6 +25,18 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.31
+Nuove Implementazioni :
+  - Aggiunto ulteriori causali di Binance per le importazioni
+  - Ad ogni fine importazione dalla chain  aggiunto controllo ed eventuale sistemazione giacenza sul token di riferimento della chain.
+	Questo si rente necessario per i layer 2 in quanto le api non ritornano la parte di commissione relativa al layer 1.
+	Fortunatamente questa parte di commissione è di circa 1 centesimo per ogni transazione quindi i movimenti correttivi saranno di piccola entità.
+  - Aggiunto BTC alle chain disponibili per importazioni da tatax e cointracking.
+  - Nelle Pulizie adesso è possibile impostare dei range di date entro quale cancellare i dati.
+Correzione di bug :
+  - Corretto erroreche poteva portare ad un blocco delle importazioni di Crypto.com
+  - Corretto errore che impediva di gestire correttamente i gruppi wallet se sul nome dei wallet erano presenti degli apici
+
 ver. 1.0.30
 Nuove Implementazioni :
   - Compilato i pacchetti con la versione Opensource del Runtime Java (in caso di problemi sulla versione multipiattaforma scaricare il jre su questo sito https://adoptium.net/temurin/releases/)

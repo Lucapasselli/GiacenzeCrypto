@@ -32,8 +32,10 @@ import org.dhatim.fastexcel.Worksheet;
  * @author Luca
  */
 public class Funzioni {
-        public static int CancellaMovimentazioniXWallet(String Wallet){
-         
+    
+        public static int CancellaMovimentazioniXWallet(String Wallet,long DataIniziale,long DataFinale){
+        
+        //Se Wallet=null  allora la pulizia la faccio su tutti i wallet
         int movimentiCancellati=0;
        //this.TransazioniCryptoFiltro_Text.setText("");
         //questo server per velocizzare la ricerca
@@ -42,14 +44,19 @@ public class Funzioni {
         List<String> Cancellare=new ArrayList<>();
         
 
-        for (String v : CDC_Grafica.MappaCryptoWallet.keySet()) {
-            if (CDC_Grafica.MappaCryptoWallet.get(v)[3].trim().equalsIgnoreCase(Wallet.trim()))
-            {
-                //MappaCryptoWallet.remove(v);
-                Cancellare.add(v);
-                movimentiCancellati++;
+            for (String v : CDC_Grafica.MappaCryptoWallet.keySet()) {
+                String WalletRiga = CDC_Grafica.MappaCryptoWallet.get(v)[3].trim();
+                long DataMovimento=OperazioniSuDate.ConvertiDatainLong(CDC_Grafica.MappaCryptoWallet.get(v)[1].split(" ")[0]);
+                if (Wallet==null || WalletRiga.equalsIgnoreCase(Wallet.trim())) {
+                    if ((DataMovimento >= DataIniziale
+                            && DataMovimento < DataFinale) ||
+                            (DataIniziale==0)&&(DataFinale==0)) {//Se data finale e iniziale sono a zero significa che non valgolo i limiti di date
+                        Cancellare.add(v);
+                        movimentiCancellati++;
+                    }
+
+                }
             }
-        }
         Iterator I=Cancellare.iterator();
         while (I.hasNext()){
             String daRimuovere=I.next().toString();

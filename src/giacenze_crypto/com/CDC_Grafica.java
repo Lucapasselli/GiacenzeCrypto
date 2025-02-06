@@ -166,6 +166,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
             ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
             ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
             ((JTextFieldDateEditor)GiacenzeaData_Data_DataChooser.getDateEditor()).setBackground(Color.lightGray);
+            ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
+            ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
             Opzioni_Varie_Checkbox_TemaScuro.setSelected(true);
         }else tema="Chiaro";      
       
@@ -3462,7 +3464,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         });
 
         jLabel18.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel18.setText("Selezionare in che range di date deve essere effettuata l'eventuale pulizia di dati :");
+        jLabel18.setText("Selezionare in che range di date deve essere effettuata la pulizia dei dati :");
 
         jLabel19.setText("Inizio : ");
 
@@ -6820,13 +6822,17 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
         // TODO add your handling code here:
         if(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedIndex()!=0) {
-
-            String Messaggio="Sicuro di voler cancellare tutti i dati delle Transazioni Crypto del Wallet "+Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString()+"?";
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+            String Messaggio="Sicuro di voler cancellare tutti i dati delle Transazioni Crypto del Wallet "+Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString()+"dal "+DataIniziale+" al "+DataFinale+" compreso?";
             int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
             if (risposta==0)
             {
                 Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
-                int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString());
+                int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString(),timeStampIniziale,timeStampFinale);
                 if (movimentiCancellati>0){
                     Opzioni_RicreaListaWalletDisponibili();
                     Funzioni_AggiornaTutto();
@@ -6842,15 +6848,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
         // TODO add your handling code here:
         // TODO add your handling code here:
-        String Messaggio = "Sicuro di voler cancellare tutti i dati delle Transazioni Crypto?";
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+        String Messaggio = "Sicuro di voler cancellare tutti i dati delle Transazioni Crypto dal "+DataIniziale+" al "+DataFinale+" compreso?";
         int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta == 0) {
-            MappaCryptoWallet.clear();
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-            TransazioniCrypto_DaSalvare=true;
-            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-            Messaggio = "Sono state cancellate tutte le movimentazioni crypto \nRicordarsi di Salvare per non perdere le modifiche fatte.";
-            JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
+            Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+                int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(null,timeStampIniziale,timeStampFinale);
+                if (movimentiCancellati>0){
+                    Opzioni_RicreaListaWalletDisponibili();
+                    Funzioni_AggiornaTutto();
+                }
+                Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+                Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
+                JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
         }
     }//GEN-LAST:event_Opzioni_Bottone_CancellaTransazioniCryptoActionPerformed
 
@@ -6882,14 +6896,40 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
         // TODO add your handling code here:
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet?";
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+        String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
         int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta==0){
             try
             {
+                //Leggo il file e metto in un array tutto quello da mantenere
+               FileReader fire = new FileReader(CDC_Grafica.CDC_FiatWallet_FileDB); 
+               BufferedReader bure = new BufferedReader(fire);
+                        String rigas;
+                        
+                        
+                        List<String> DaMantenere = new ArrayList<>();
+                        while ((rigas = bure.readLine()) != null) {
+                            long timeStampMovimento=OperazioniSuDate.ConvertiDatainLong(rigas.split(" ")[0]);
+                            if (timeStampMovimento<timeStampIniziale ||
+                                  timeStampMovimento>=timeStampFinale  ){
+                                    DaMantenere.add(rigas);
+                            }
+                        }
+                        bure.close();
+                        fire.close();
+                
+                //Tutto quello da mantenere lo riscrivo in un nuovo file
                 FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileDB);
                 BufferedWriter b=new BufferedWriter (w);
-                b.write("");
+                Iterator It=DaMantenere.iterator();
+                while(It.hasNext()){
+                    b.write((String)It.next()+"\n");
+                }
                 b.close();
                 w.close();
             }catch (IOException ex)
@@ -6903,21 +6943,40 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
         // TODO add your handling code here:
-        String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet?";
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+        String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
+        String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
+        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+        String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
         int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione CardWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta==0){
             try
             {
                 
-             /*   try (FileReader fire = new FileReader(CDC_Grafica.CDC_CardWallet_FileDB); BufferedReader bure = new BufferedReader(fire);) {
+               //Leggo il file e metto in un array tutto quello da mantenere
+               FileReader fire = new FileReader(CDC_Grafica.CDC_CardWallet_FileDB); 
+               BufferedReader bure = new BufferedReader(fire);
                         String rigas;
-                        while (rigas = bure.readLine()) != null) {
-                            
+                        
+                        List<String> DaMantenere = new ArrayList<>();
+                        while ((rigas = bure.readLine()) != null) {
+                            long timeStampMovimento=OperazioniSuDate.ConvertiDatainLong(rigas.split(" ")[0]);
+                            if (timeStampMovimento<timeStampIniziale ||
+                                  timeStampMovimento>=timeStampFinale  ){
+                                    DaMantenere.add(rigas);
+                            }
                         }
-                }*/
+                        bure.close();
+                        fire.close();
+                
+                //Tutto quello da mantenere lo riscrivo in un nuovo file
                 FileWriter w=new FileWriter(CDC_Grafica.CDC_CardWallet_FileDB);
                 BufferedWriter b=new BufferedWriter (w);
-                b.write("");
+                Iterator It=DaMantenere.iterator();
+                while(It.hasNext()){
+                    b.write((String)It.next()+"\n");
+                }
                 b.close();
                 w.close();
             }catch (IOException ex)
@@ -8678,10 +8737,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
                 ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
                 ((JTextFieldDateEditor)GiacenzeaData_Data_DataChooser.getDateEditor()).setBackground(Color.lightGray);
+                ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
+                ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
                 tema="Scuro";
                 DatabaseH2.Opzioni_Scrivi("Tema","Scuro");
                 Tabelle.verdeScuro=new Color (145, 255, 143);
-                Tabelle.rosso=new Color(255, 40, 40);
+                Tabelle.rosso=new Color(255, 133, 133);
+                Bottone_Errori.setForeground(Tabelle.rosso);
+                
+                //Tabelle.rosso=new Color(255, 40, 40);
                 
             } catch (UnsupportedLookAndFeelException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -8692,10 +8756,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
                 ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
                 ((JTextFieldDateEditor)GiacenzeaData_Data_DataChooser.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+                ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Iniziale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+                ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Finale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
                 DatabaseH2.Opzioni_Scrivi("Tema","Chiaro");
                 tema="Chiaro";
                 Tabelle.verdeScuro=new Color (23, 114, 69);
                 Tabelle.rosso=Color.RED;
+                Bottone_Errori.setForeground(Tabelle.rosso);
             } catch (UnsupportedLookAndFeelException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             }

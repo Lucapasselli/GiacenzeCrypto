@@ -422,8 +422,9 @@ public class GestioneWallets extends javax.swing.JDialog {
                 String Messaggio = "Il Wallet è stato cancellato \nVuoi cancellare anche tutte le movimentazioni importate finora?";
             r=JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"SI","NO"}, "OK");
            if(r==0){
-               //System.out.println(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
-             int movEliminati=Funzioni.CancellaMovimentazioniXWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")");
+               //Sicome devo mettere dei limiti di data metto l'anno 2100 come limite superiore e zero (1970) come limite inferiore
+             //  long Data2100=Long.parseLong("4105615230000");
+             int movEliminati=Funzioni.CancellaMovimentazioniXWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")",0,0);
              if (movEliminati>0){
                  CDC_Grafica.TabellaCryptodaAggiornare=true;
                  Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";

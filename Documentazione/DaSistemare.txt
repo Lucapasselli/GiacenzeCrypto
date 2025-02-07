@@ -7,9 +7,7 @@
 
 
 - Aggiungere gestione degli errori in RT (mancano le giacenze negative)
-- Aggiungere gestione dei prezzi mancanti in "Giacenze a Data"
 - Inserire tasto per classificare i movimenti di deposito e prelievo anche in prima pagina
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
 - aggiungere gestione dei prezzi personalizzati
-- Sistemare giacenze token una volta finita importazione da DeFi

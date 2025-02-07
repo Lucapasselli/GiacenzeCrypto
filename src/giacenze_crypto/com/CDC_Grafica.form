@@ -2347,13 +2347,14 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane11" max="32767" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="RT_Bottone_Documentazione" min="-2" pref="274" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="RT_Label_Avviso" min="-2" pref="683" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="RT_Bottone_Calcola" min="-2" pref="150" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jTabbedPane1" alignment="0" pref="1272" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -2365,11 +2366,12 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="RT_Label_Avviso" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
                                   <Component id="RT_Bottone_Calcola" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
+                                  <Component id="RT_Bottone_Documentazione" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Component id="jScrollPane11" min="-2" pref="182" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jTabbedPane1" max="32767" attributes="0"/>
+                              <Component id="jTabbedPane1" pref="489" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -2749,6 +2751,17 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere &quot;Calcola&quot; per aggiornare la tabella."/>
                       </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RT_Bottone_Documentazione">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Libro.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Vedi Documentazione sulle Plusvalenze"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_DocumentazioneActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -4179,6 +4192,11 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="RT_Bottone_Documentazione1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -4196,7 +4214,9 @@
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="91" max="-2" attributes="0"/>
+                              <Component id="RT_Bottone_Documentazione1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="392" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -4261,6 +4281,17 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_NonConsiderareMovimentiNCActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RT_Bottone_Documentazione1">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/giacenze_crypto/com/Icons/24_Libro.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Vedi Documentazione sulle Plusvalenze"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_Documentazione1ActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

@@ -33,6 +33,8 @@ Nuove Implementazioni :
 	Fortunatamente questa parte di commissione è di circa 1 centesimo per ogni transazione quindi i movimenti correttivi saranno di piccola entità.
   - Aggiunto BTC alle chain disponibili per importazioni da tatax e cointracking.
   - Nelle Pulizie adesso è possibile impostare dei range di date entro quale cancellare i dati.
+  - Nella funzione "Giacenze a Data" aggiunto segnalazione per i token senza prezzo
+  - Nella funzione "Calssificazione Depositi/Prelievi" - "Classifica Movimento" ora c'è una nuova colonna con il controvalore in euro della transazione.
 Correzione di bug :
   - Corretto erroreche poteva portare ad un blocco delle importazioni di Crypto.com
   - Corretto errore che impediva di gestire correttamente i gruppi wallet se sul nome dei wallet erano presenti degli apici

@@ -46,13 +46,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -134,7 +129,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.31.05 Beta";          
+            String Titolo="Giacenze Crypto 1.0.31 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -377,6 +372,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RT_Bottone_ModificaPrezzo = new javax.swing.JButton();
         RT_Bottone_ModificaGiacenza = new javax.swing.JButton();
         RT_Label_Avviso = new javax.swing.JLabel();
+        RT_Bottone_Documentazione = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -472,6 +468,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jTextArea2 = new javax.swing.JTextArea();
         jSeparator3 = new javax.swing.JSeparator();
         Plusvalenze_Opzioni_NonConsiderareMovimentiNC = new javax.swing.JCheckBox();
+        RT_Bottone_Documentazione1 = new javax.swing.JButton();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_StakingZero = new javax.swing.JCheckBox();
@@ -2037,6 +2034,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
         RT_Label_Avviso.setForeground(Tabelle.rosso);
         RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare la tabella.");
 
+        RT_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Libro.png"))); // NOI18N
+        RT_Bottone_Documentazione.setText("Vedi Documentazione sulle Plusvalenze");
+        RT_Bottone_Documentazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_DocumentazioneActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
         RT.setLayout(RTLayout);
         RTLayout.setHorizontalGroup(
@@ -2046,11 +2051,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane11)
                     .addGroup(RTLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(RT_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 683, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jTabbedPane1)))
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1272, Short.MAX_VALUE)))
         );
         RTLayout.setVerticalGroup(
             RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2058,11 +2064,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addGap(1, 1, 1)
                 .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_Documentazione))
                 .addGap(5, 5, 5)
                 .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -3022,6 +3029,14 @@ public class CDC_Grafica extends javax.swing.JFrame {
             }
         });
 
+        RT_Bottone_Documentazione1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/giacenze_crypto/com/Icons/24_Libro.png"))); // NOI18N
+        RT_Bottone_Documentazione1.setText("Vedi Documentazione sulle Plusvalenze");
+        RT_Bottone_Documentazione1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_Documentazione1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
         Opzioni_Calcolo_PannelloLayout.setHorizontalGroup(
@@ -3043,6 +3058,10 @@ public class CDC_Grafica extends javax.swing.JFrame {
                                 .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC, javax.swing.GroupLayout.PREFERRED_SIZE, 741, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
+            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(RT_Bottone_Documentazione1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_Calcolo_PannelloLayout.setVerticalGroup(
             Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3059,7 +3078,9 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addGap(18, 18, 18)
                 .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(91, 91, 91)
+                .addComponent(RT_Bottone_Documentazione1)
+                .addContainerGap(392, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni di Calcolo", Opzioni_Calcolo_Pannello);
@@ -8983,6 +9004,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Opzioni_Pulizie_DataChooser_FinaleKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_Pulizie_DataChooser_FinaleKeyPressed
         // TODO add your handling code here:
     }//GEN-LAST:event_Opzioni_Pulizie_DataChooser_FinaleKeyPressed
+
+    private void RT_Bottone_DocumentazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_DocumentazioneActionPerformed
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Calcolo%20Plusvalenze%20e%20Opzioni.pdf/download");
+    }//GEN-LAST:event_RT_Bottone_DocumentazioneActionPerformed
+
+    private void RT_Bottone_Documentazione1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_Documentazione1ActionPerformed
+        // TODO add your handling code here:
+         Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Calcolo%20Plusvalenze%20e%20Opzioni.pdf/download");
+    }//GEN-LAST:event_RT_Bottone_Documentazione1ActionPerformed
     
     private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete) {
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
@@ -10834,6 +10865,8 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;
+    private javax.swing.JButton RT_Bottone_Documentazione;
+    private javax.swing.JButton RT_Bottone_Documentazione1;
     private javax.swing.JButton RT_Bottone_ModificaGiacenza;
     private javax.swing.JButton RT_Bottone_ModificaPrezzo;
     private javax.swing.JLabel RT_Label_Avviso;

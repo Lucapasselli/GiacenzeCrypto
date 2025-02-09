@@ -8959,7 +8959,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Address=Movimento[28];
             }
             GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete);
-           // Funzioni_AggiornaTutto();
+            Funzioni_AggiornaTutto();
             DepositiPrelievi_Caricatabella();
         
         }else{

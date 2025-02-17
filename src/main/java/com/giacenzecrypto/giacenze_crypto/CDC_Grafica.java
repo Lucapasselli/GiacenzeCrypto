@@ -64,11 +64,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.json.JSONObject;
 //import org.apache.commons.codec.binary.Hex;
 
 
@@ -496,7 +491,7 @@ public class CDC_Grafica extends javax.swing.JFrame {
         Opzioni_Varie = new javax.swing.JPanel();
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
+        Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_Opzioni_Bottone_CancellaCardWallet = new javax.swing.JButton();
@@ -513,6 +508,12 @@ public class CDC_Grafica extends javax.swing.JFrame {
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
+        Opzioni_ApiKey = new javax.swing.JPanel();
+        Opzioni_ApiKey_Helius_Label = new javax.swing.JLabel();
+        Opzioni_ApiKey_Helius_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Helius_LabelSito = new javax.swing.JLabel();
+        Opzioni_ApiKey_Bottone_Salva = new javax.swing.JButton();
+        Opzioni_ApiKey_Bottone_Annulla = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -3507,17 +3508,17 @@ public class CDC_Grafica extends javax.swing.JFrame {
 
         jLabel20.setText("Fine : ");
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout Opzioni_PulizieLayout = new javax.swing.GroupLayout(Opzioni_Pulizie);
+        Opzioni_Pulizie.setLayout(Opzioni_PulizieLayout);
+        Opzioni_PulizieLayout.setHorizontalGroup(
+            Opzioni_PulizieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_PulizieLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(Opzioni_PulizieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jTabbedPane2)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addGroup(Opzioni_PulizieLayout.createSequentialGroup()
+                        .addGroup(Opzioni_PulizieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(Opzioni_PulizieLayout.createSequentialGroup()
                                 .addComponent(jLabel19)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(Opzioni_Pulizie_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3529,13 +3530,13 @@ public class CDC_Grafica extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        Opzioni_PulizieLayout.setVerticalGroup(
+            Opzioni_PulizieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_PulizieLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(Opzioni_PulizieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Opzioni_Pulizie_DataChooser_Iniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel19)
                     .addComponent(Opzioni_Pulizie_DataChooser_Finale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3545,7 +3546,61 @@ public class CDC_Grafica extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        Opzioni_TabbedPane.addTab("Pulizie", jPanel2);
+        Opzioni_TabbedPane.addTab("Pulizie", Opzioni_Pulizie);
+
+        Opzioni_ApiKey_Helius_Label.setText("ApiKey Helius x Solana :");
+
+        Opzioni_ApiKey_Helius_LabelSito.setText("https://www.helius.dev/");
+
+        Opzioni_ApiKey_Bottone_Salva.setText("Salva");
+        Opzioni_ApiKey_Bottone_Salva.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_ApiKey_Bottone_SalvaActionPerformed(evt);
+            }
+        });
+
+        Opzioni_ApiKey_Bottone_Annulla.setText("Annulla");
+        Opzioni_ApiKey_Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_ApiKey_Bottone_AnnullaActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
+        Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
+        Opzioni_ApiKeyLayout.setHorizontalGroup(
+            Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addComponent(Opzioni_ApiKey_Bottone_Salva)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_ApiKey_Bottone_Annulla))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(380, Short.MAX_VALUE))
+        );
+        Opzioni_ApiKeyLayout.setVerticalGroup(
+            Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_Helius_Label)
+                    .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_Helius_LabelSito))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_Bottone_Salva)
+                    .addComponent(Opzioni_ApiKey_Bottone_Annulla))
+                .addContainerGap(676, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
@@ -3800,6 +3855,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
         else if(ProventoDetenzione.equalsIgnoreCase("NO")){
             OpzioniRewards_JCB_PDD_Reward.setSelected(false);
         }
+        
+        Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -9048,6 +9105,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
         
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void Opzioni_ApiKey_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
+        // TODO add your handling code here:
+        DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", this.Opzioni_ApiKey_Helius_TextField.getText());
+    }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
+
+    private void Opzioni_ApiKey_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
+        // TODO add your handling code here:
+        Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
+    }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
     
     
     
@@ -10865,6 +10932,12 @@ try {
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Earn;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Reward;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Staking;
+    private javax.swing.JPanel Opzioni_ApiKey;
+    private javax.swing.JButton Opzioni_ApiKey_Bottone_Annulla;
+    private javax.swing.JButton Opzioni_ApiKey_Bottone_Salva;
+    private javax.swing.JLabel Opzioni_ApiKey_Helius_Label;
+    private javax.swing.JLabel Opzioni_ApiKey_Helius_LabelSito;
+    private javax.swing.JTextField Opzioni_ApiKey_Helius_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;
@@ -10886,6 +10959,7 @@ try {
     private javax.swing.JPanel Opzioni_GruppoWallet_Pannello;
     private javax.swing.JScrollPane Opzioni_GruppoWallet_ScrollTabella;
     private javax.swing.JTable Opzioni_GruppoWallet_Tabella;
+    private javax.swing.JPanel Opzioni_Pulizie;
     private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Finale;
     private com.toedter.calendar.JDateChooser Opzioni_Pulizie_DataChooser_Iniziale;
     private javax.swing.JPanel Opzioni_RW_Pannello;
@@ -10986,7 +11060,6 @@ try {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane11;

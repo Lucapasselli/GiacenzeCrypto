@@ -55,13 +55,6 @@
     <version>2.0.3</version>
 </dependency>
 
-<!-- https://mvnrepository.com/artifact/com.mmorrell/solanaj -->
-<dependency>
-    <groupId>com.mmorrell</groupId>
-    <artifactId>solanaj</artifactId>
-    <version>1.19.2</version>
-    <type>jar</type>
-</dependency>
 	 <dependency>
 	  <groupId>org.dhatim</groupId>
 	  <artifactId>fastexcel</artifactId>

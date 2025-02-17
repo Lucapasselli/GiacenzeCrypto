@@ -15,8 +15,8 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class SolanaHeliusAnalyzer {
-
-    private static final String HELIUS_API_KEY = "apiHelius"; // Inserisci la tua API key
+    
+    private static final String HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius"); // Inserisci la tua API key
     private static final String HELIUS_RPC_URL = "https://api.helius.xyz/v0/addresses/";
     private static final String HELIUS_RPC_URL2 = "https://mainnet.helius-rpc.com/";
     private static final OkHttpClient httpClient = new OkHttpClient();

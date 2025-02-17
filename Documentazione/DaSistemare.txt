@@ -1,0 +1,13 @@
+- Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
+- Verificare quando correggo un errore in RW che non raddoppi le righe 
+
+- verificare quando viene valorizzato a null il campo 34
+- Inserire Mining
+- Inserire Donazioni
+
+
+- Aggiungere gestione degli errori in RT (mancano le giacenze negative)
+- Inserire tasto per classificare i movimenti di deposito e prelievo anche in prima pagina
+- Sistemare posizione del cursore quando si scrive un numero in modifica transazione
+- Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
+- aggiungere gestione dei prezzi personalizzati

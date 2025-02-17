@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.giacenzecrypto</groupId>
+    <artifactId>Giacenze_Crypto</artifactId>
+    <version>1.0.31</version>
+    <packaging>jar</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>18</maven.compiler.source>
+        <maven.compiler.target>18</maven.compiler.target>
+        <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_CryptoCom</exec.mainClass>
+    </properties>
+	<dependencies>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>4.9.3</version>
+		</dependency>
+	<!-- https://mvnrepository.com/artifact/org.jdatepicker/jdatepicker -->
+	<dependency>
+		<groupId>org.jdatepicker</groupId>
+		<artifactId>jdatepicker</artifactId>
+		<version>1.3.4</version>
+	</dependency>
+<!-- https://mvnrepository.com/artifact/com.formdev/flatlaf -->
+<dependency>
+    <groupId>com.formdev</groupId>
+    <artifactId>flatlaf</artifactId>
+    <version>3.5.4</version>
+    <type>jar</type>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+<dependency>
+    <groupId>com.google.code.gson</groupId>
+    <artifactId>gson</artifactId>
+    <version>2.12.1</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.toedter/jcalendar -->
+<dependency>
+    <groupId>com.toedter</groupId>
+    <artifactId>jcalendar</artifactId>
+    <version>1.4</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.json/json -->
+<dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20250107</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.github.librepdf/openpdf -->
+<dependency>
+    <groupId>com.github.librepdf</groupId>
+    <artifactId>openpdf</artifactId>
+    <version>2.0.3</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/com.mmorrell/solanaj -->
+<dependency>
+    <groupId>com.mmorrell</groupId>
+    <artifactId>solanaj</artifactId>
+    <version>1.19.2</version>
+    <type>jar</type>
+</dependency>
+	 <dependency>
+	  <groupId>org.dhatim</groupId>
+	  <artifactId>fastexcel</artifactId>
+	  <version>0.18.4</version>
+	  <type>jar</type>
+	 </dependency>
+	 
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <version>2.2.224</version>
+</dependency>
+	</dependencies>
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-shade-plugin</artifactId>
+      <version>3.4.1</version>
+      <executions>
+        <execution>
+          <phase>package</phase>
+          <goals>
+            <goal>shade</goal>
+          </goals>
+          <configuration>
+            <!-- Aggiungi queste due configurazioni -->
+            <shadedArtifactAttached>true</shadedArtifactAttached>
+            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+            <filters>
+              <filter>
+                <!-- Applica il filtro a tutte le dipendenze -->
+                <artifact>*:*</artifact>
+                <!-- Escludi i file di firma -->
+                <excludes>
+                  <exclude>META-INF/*.SF</exclude>
+                  <exclude>META-INF/*.DSA</exclude>
+                  <exclude>META-INF/*.RSA</exclude>
+                </excludes>
+              </filter>
+            </filters>
+            <transformers>
+              <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_CryptoCom</mainClass>
+              </transformer>
+            </transformers>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+
+
+</project>

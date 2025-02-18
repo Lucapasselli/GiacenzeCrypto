@@ -20,8 +20,9 @@ import java.math.RoundingMode;
  * @author luca.passelli
  */
 public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
+    private static final long serialVersionUID = 1L;
 
-    /**
+    /*
      * Creates new form ClassificazioneTrasf_Modifica
      */
     //CLASSIFICAZIONE TRASFERIMENTI
@@ -29,7 +30,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
     //PCO -> Cashout o similare (prelievo)
     //PTW -> Trasferimento tra Wallet (prelievo)
-    /////////////PSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Non Utilizzato per ora)
+    //PSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Non Utilizzato per ora)
     //DTW -> Trasferimento tra Wallet (deposito)
     //DAI -> Airdrop o similare (deposito)
     //DCZ -> Costo di carico 0 (deposito)
@@ -39,6 +40,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     
     static String IDTrans="";
     boolean ModificaEffettuata=false;
+    @SuppressWarnings("unchecked")
     public ClassificazioneTrasf_Modifica(String ID) {
         ModificaEffettuata=false;
         IDTrans=ID;
@@ -100,10 +102,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
 
         }
-            ArrayList<String> elements = new ArrayList<>();
+            ArrayList<String> elements = new ArrayList<String>();
             elements.addAll(java.util.Arrays.asList(papele));
-            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
-            this.ComboBox_TipoMovimento.setModel(model);
+       
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
+            ComboBox_TipoMovimento.setModel(model);
             this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
             String v[]=MappaCryptoWallet.get(ID);
             TextArea_Note.setText(v[21].replace("<br>" ,"\n"));
@@ -1728,6 +1731,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //PARTE RELATIVA ASCAMBIO DIFFERITO
         }else if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().contains("SCAMBIO CRYPTO DIFFERITO")) {
            // System.out.println("Differito");
+           
            long DataMinima=0;
            long DataMassima=0;
            long Mese=Long.parseLong("2592000000");

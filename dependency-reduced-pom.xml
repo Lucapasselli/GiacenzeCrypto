@@ -37,6 +37,15 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <compilerArgs>
+            <arg>-Xlint</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <properties>

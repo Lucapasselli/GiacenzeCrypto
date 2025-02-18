@@ -72,7 +72,7 @@ import javax.swing.table.TableColumn;
  * @author luca.passelli
  */
 public class CDC_Grafica extends javax.swing.JFrame {
-
+private static final long serialVersionUID = 3L;
 
 
 
@@ -116,7 +116,8 @@ public class CDC_Grafica extends javax.swing.JFrame {
     public static Object JDialog_Ritorno;
     public boolean VersioneCambiata=false;
     public boolean FineCaricamentoDati=false;
-    public Calcoli_RT.AnalisiPlus APlus;
+    
+    public transient Calcoli_RT.AnalisiPlus APlus;
     public static String tema;
     public int NumErroriMovSconosciuti=0;
     public int NumErroriMovNoPrezzo=0;
@@ -10778,7 +10779,7 @@ try {
     
     
     public class JDateChooserRenderer extends JDateChooser implements TableCellRenderer{
-
+        private static final long serialVersionUID = 2L;
   //  Date inDate;
         
        /*CDC_DataChooser_Iniziale.setDateFormatString("yyyy-MM-dd");

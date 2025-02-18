@@ -24,7 +24,7 @@ import java.util.TreeMap;
 public class Calcoli_RT {
     
     
-    public static AnalisiPlus CalcoliPlusvalenzeXAnno_OLD(){
+   /* public static AnalisiPlus CalcoliPlusvalenzeXAnno_OLD(){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
         AnalisiPlus ritorno=new AnalisiPlus();
@@ -358,7 +358,7 @@ public class Calcoli_RT {
       // return PlusvalenzeXAnno;
        ritorno.Put_PluvalenzeXAnno(PlusvalenzeXAnno);
        return ritorno;
-    }
+    }*/
     
     public static AnalisiPlus CalcoliPlusvalenzeXAnno(Download progress){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
@@ -701,7 +701,7 @@ public class Calcoli_RT {
     }
     
     
-    public static void ChiudiAnno_OLD(Map<String,BigDecimal[]> PlusvalenzeXAnno,
+  /*  public static void ChiudiAnno_OLD(Map<String,BigDecimal[]> PlusvalenzeXAnno,
             String Anno,
             Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack,
             Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto,
@@ -750,7 +750,7 @@ public class Calcoli_RT {
                         }
                     }
                 }
-    }
+    }*/
     
        public static boolean ChiudiAnno(Map<String,BigDecimal[]> PlusvalenzeXAnno,
             String Anno,
@@ -867,7 +867,7 @@ public class Calcoli_RT {
 
 }  
      
-       public static void StackLIFO_InserisciValore_OLD(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String Valore) {
+   /*    public static void StackLIFO_InserisciValore_OLD(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String Valore) {
     
     ArrayDeque<String[]> stack;
     String valori[]=new String[3];
@@ -884,7 +884,7 @@ public class Calcoli_RT {
         CryptoStack.put(Moneta, stack);
     }
    // System.out.println(Moneta +" - "+stack.size());
-}     
+}   */  
      
   
       public static String StackLIFO_TogliQta(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,boolean toglidaStack) {
@@ -907,8 +907,8 @@ public class Calcoli_RT {
             ArrayDeque<String[]> stack2=MappaMoneta_PlusXMoneta.get(Moneta).Get_CryptoStack();
             stack=stack2.clone();
         }
-        /*ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
-        stack=stack2.clone();*/
+       // ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
+       // stack=stack2.clone();
         //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
         while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
            // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
@@ -918,10 +918,10 @@ public class Calcoli_RT {
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
             String Data=ultimoRecupero[3];
             
-         /*  if (Moneta.equalsIgnoreCase("usdt")){ 
-                System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
-                System.out.println(qtaRimanente);
-                }*/
+         //  if (Moneta.equalsIgnoreCase("usdt")){ 
+         //       System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
+          //      System.out.println(qtaRimanente);
+          //      }
             //System.out.println(qtaEstratta+" - "+costoEstratta);
             if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta è minore o uguale alla qta rimanente allora
                 {
@@ -957,7 +957,7 @@ public class Calcoli_RT {
    // System.out.println(Moneta +" - "+stack.size());
 }      
      
-        public static String StackLIFO_TogliQta_OLD(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,boolean toglidaStack) {
+   /*     public static String StackLIFO_TogliQta_OLD(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,boolean toglidaStack) {
     
     //come ritorno ci invio il valore della movimentazione
     String ritorno="0.00";
@@ -977,8 +977,8 @@ public class Calcoli_RT {
             ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
             stack=stack2.clone();
         }
-        /*ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
-        stack=stack2.clone();*/
+      //  ArrayDeque<String[]> stack2=CryptoStack.get(Moneta);
+     //   stack=stack2.clone();
         //System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
         while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack
            // System.out.println(Moneta+" - "+stack.size()+" - "+qtaRimanente.compareTo(new BigDecimal ("0")));
@@ -987,10 +987,10 @@ public class Calcoli_RT {
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();            
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
             
-         /*  if (Moneta.equalsIgnoreCase("usdt")){ 
-                System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
-                System.out.println(qtaRimanente);
-                }*/
+         //  if (Moneta.equalsIgnoreCase("usdt")){ 
+         //       System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
+         //       System.out.println(qtaRimanente);
+         //       }
             //System.out.println(qtaEstratta+" - "+costoEstratta);
             if (qtaEstratta.compareTo(qtaRimanente)<=0)//se qta estratta è minore o uguale alla qta rimanente allora
                 {
@@ -1025,7 +1025,7 @@ public class Calcoli_RT {
     return ritorno;
    // System.out.println(Moneta +" - "+stack.size());
 }      
-     
+     */
      
  
 

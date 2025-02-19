@@ -4313,7 +4313,7 @@ private static final long serialVersionUID = 3L;
         CDC_FiatWallet_MappaErrori.clear();
         int errori=0;
        
-       boolean TrovataCorrispondenzaTipo=false;
+       boolean TrovataCorrispondenzaTipo;//=false;
        List<String> listaSaldi=new ArrayList<>();
        List<String> listaSaldiconMassimoGiornaliero=new ArrayList<>();
             String UltimaData="";
@@ -4720,6 +4720,7 @@ private static final long serialVersionUID = 3L;
                 Object CDC_CardWallet_RigaTabella1[]=new Object[2];
                 CDC_CardWallet_RigaTabella1[0]=key;
                 CDC_CardWallet_RigaTabella1[1]=Double.parseDouble(CDC_CardWallet_MappaCausali.get(key));
+                //CDC_CardWallet_RigaTabella1[1]=Double.parseDouble(CDC_CardWallet_MappaCausali.get(key));
                 CDC_CardWallet_ModelloTabella1.addRow(CDC_CardWallet_RigaTabella1);
             }
             this.CDC_CardWallet_Text_Spese.setText("€ "+TotaleSpese.multiply(new BigDecimal ("-1")).toString());
@@ -5171,7 +5172,7 @@ private static final long serialVersionUID = 3L;
         DefaultTableModel Emoney_ModelloTabella = (DefaultTableModel) this.Opzioni_Emoney_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(Emoney_ModelloTabella);
         TableColumn column1 = Opzioni_Emoney_Tabella.getColumnModel().getColumn(1);
-        JDateChooser DataChooser = new com.toedter.calendar.JDateChooser();
+        //JDateChooser DataChooser = new com.toedter.calendar.JDateChooser();
         
         //DataChooser.get
         column1.setCellRenderer(new JDateChooserRenderer());
@@ -5693,7 +5694,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void GiacenzeaData_Funzione_ModificaValore() {  
         
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
-            long DataRiferimento = 0;
+            long DataRiferimento;// = 0;
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
                 SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                 String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
@@ -5884,7 +5885,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //InizioFine=1 -> Prezzo Finale
             //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
             //Altrimenti cambio il prezzo sulla transazione
-            String ID;
+            //String ID;
         if (RT_Tabella_Principale.getSelectedRow()>=0 && RT_Tabella_DettaglioMonete.getSelectedRow() >= 0) {
             //int rigaselezionata = RT_Tabella_DettaglioMonete.getSelectedRow();
             int rigaselezionata = RT_Tabella_DettaglioMonete.getRowSorter().convertRowIndexToModel(RT_Tabella_DettaglioMonete.getSelectedRow());
@@ -5892,7 +5893,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String Anno=RT_Tabella_Principale.getModel().getValueAt(rigaTabellaPrincipale, 0).toString();
             //String GruppoWalletInizio=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
             //String GruppoWalletFine=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
-            String GruppoWallet;
+            //String GruppoWallet;
             String DataPrezzo=String.valueOf(Integer.parseInt(Anno)+1)+"-01-01 00:00";
             String Prezzo;
             String mon;
@@ -6448,9 +6449,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void GiacenzeaData_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ScamActionPerformed
         // TODO add your handling code here:
-        String mon="";
-        String Rete="";
-        String Address="";
+        String mon;//="";
+        String Rete;//="";
+        String Address;//="";
          if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
@@ -7601,7 +7602,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
            if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
 
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
-            int rigaselezionata2 = RW_Tabella.getSelectedRow();
+            //int rigaselezionata2 = RW_Tabella.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             //Punto 2
             if (Errore.toLowerCase().contains("giacenza negativa")) {
@@ -8247,13 +8248,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
            // stampa.AggiungiTesto("FOGLIO 1",Font.BOLD,10);
            // stampa.AggiungiTesto("\n",Font.NORMAL,10);
             righeQuadroStampate=0;
-            boolean stampatoRW8=false;
+            //boolean stampatoRW8=false;
             String ICTotale="0";
             for (int i = 0; i < numeroRighe; i++) {
                 BigDecimal ICriga=new BigDecimal(RW_Tabella.getModel().getValueAt(i, 5).toString()).setScale(0, RoundingMode.HALF_UP);
                 ICTotale=new BigDecimal(ICTotale).add(ICriga).toPlainString();
             }
-            ICTotale=ICTotale;
+            //ICTotale=ICTotale;
                     foglio = 1;
                     String ValoriIniziali[] = new String[5];
                     String ValoriFinali[] = new String[5];
@@ -8967,7 +8968,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     int righeTabella=GiacenzeaData_Tabella.getModel().getRowCount();
                     //Certo la riga della tabella con la moneta incriminata
                     int rigaTabellaMoneta=0;
-                    String MonetaCercata=RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionataDettaglio, 1).toString().toString();
+                    String MonetaCercata=RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionataDettaglio, 1).toString();
                     for (int i=0;i<righeTabella;i++){
                         if (GiacenzeaData_Tabella.getModel().getValueAt(i, 0).toString().equals(MonetaCercata)){
                             rigaTabellaMoneta=i;

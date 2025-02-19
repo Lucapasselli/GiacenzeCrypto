@@ -4,8 +4,8 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-//import com.formdev.flatlaf.FlatDarkLaf;
-//import com.formdev.flatlaf.FlatIntelliJLaf;
+//ultimo serial versionUID
+// private static final long serialVersionUID = 9L;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.lowagie.text.Font;
@@ -55,6 +55,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
@@ -104,12 +105,12 @@ private static final long serialVersionUID = 3L;
     static String CDC_CardWallet_DataSaldoIniziale="";
     static boolean CDC_FiatWallet_ConsideroValoreMassimoGiornaliero=false;
     static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
-    static List<String>[] CDC_CardWallet_ListaSaldi;
+    static Map<Integer, List<String>> CDC_CardWallet_ListaSaldi;
     static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeInizioPeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeFinePeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
-    static public List<String>[] CDC_FiatWallet_ListaSaldi;
+    static public Map<Integer, List<String>> CDC_FiatWallet_ListaSaldi;
     static public boolean TabellaCryptodaAggiornare=false;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
     public boolean tabDepositiPrelieviCaricataprimavolta=false;
@@ -4304,7 +4305,7 @@ private static final long serialVersionUID = 3L;
 
    } 
     
-   public List<String>[] CDC_FiatWallet_Funzione_CalcolaListaSaldi() {
+   public Map<Integer, List<String>> CDC_FiatWallet_Funzione_CalcolaListaSaldi() {
        
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
@@ -4391,15 +4392,17 @@ private static final long serialVersionUID = 3L;
                                 listaSaldiconMassimoGiornaliero.add(Funzioni_Date_ConvertiDatadaLong(Funzioni_Date_ConvertiDatainLong(UltimaData)+86400000)+","+totale);
                             
                                 listaSaldi.add(UltimaData+","+totale);
-                                
-                   List<String>[] group2 = (ArrayList<String>[]) new ArrayList[2];
+                Map<Integer, List<String>> map = new HashMap<>();  
+                map.put(0, listaSaldi);
+                map.put(1, listaSaldiconMassimoGiornaliero);
+                  /* List<String>[] group2 = (ArrayList<String>[]) new ArrayList[2];
     group2[0]=listaSaldi;
-    group2[1]=listaSaldiconMassimoGiornaliero;
-    return group2;
+    group2[1]=listaSaldiconMassimoGiornaliero;*/
+    return map;
    }
    
     
-     private List<String>[] CDC_CardWallet_Funzione_CalcolaListaSaldi() {
+     private Map<Integer, List<String>> CDC_CardWallet_Funzione_CalcolaListaSaldi() {
       //da rivedere le doppie liste
             
        List<String> listaSaldi=new ArrayList<>();
@@ -4471,11 +4474,14 @@ private static final long serialVersionUID = 3L;
                                 //System.out.println(UltimaData+","+totale);
                                 
     //                  //      System.out.println("----------------------------"+UltimaData+","+totale+"---------------------------");
-    
-    List<String>[] group2 = (ArrayList<String>[]) new ArrayList[2];
+    Map<Integer, List<String>> map = new HashMap<>();  
+    map.put(0, listaSaldi);
+    map.put(1, listaSaldiconMassimoGiornaliero);
+    return map;
+   /* List<String>[] group2 = (ArrayList<String>[]) new ArrayList[2];
     group2[0]=listaSaldi;
     group2[1]=listaSaldiconMassimoGiornaliero;
-    return group2;
+    return group2;*/
     /*if (conPicco)
     return listaSaldiconMassimoGiornaliero;
     else return listaSaldi;*/
@@ -5222,7 +5228,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                   
                   if(Mappa_Wallets_e_Dettagli.get(v[3])==null)
                   {
-                      List<String> Lista=new ArrayList();
+                      List<String> Lista=new ArrayList<>();
                       Lista.add(v[4]);
                       Mappa_Wallets_e_Dettagli.put(v[3], Lista);
                   }
@@ -6541,9 +6547,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
         String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
         if (!Funzioni.ApriExplorer(ID)){
-            JOptionPane.showConfirmDialog(this, """
-                                                Non è possibile aprire l'explorer per questa transazione.
-                                                        """,
+            JOptionPane.showConfirmDialog(this, "Non è possibile aprire l'explorer per questa transazione.",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
         }
@@ -7021,9 +7025,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Tutto quello da mantenere lo riscrivo in un nuovo file
                 FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileDB);
                 BufferedWriter b=new BufferedWriter (w);
-                Iterator It=DaMantenere.iterator();
+                Iterator<String> It=DaMantenere.iterator();
                 while(It.hasNext()){
-                    b.write((String)It.next()+"\n");
+                    b.write(It.next()+"\n");
                 }
                 b.close();
                 w.close();
@@ -7068,9 +7072,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Tutto quello da mantenere lo riscrivo in un nuovo file
                 FileWriter w=new FileWriter(CDC_Grafica.CDC_CardWallet_FileDB);
                 BufferedWriter b=new BufferedWriter (w);
-                Iterator It=DaMantenere.iterator();
+                Iterator<String> It=DaMantenere.iterator();
                 while(It.hasNext()){
-                    b.write((String)It.next()+"\n");
+                    b.write(It.next()+"\n");
                 }
                 b.close();
                 w.close();
@@ -10570,7 +10574,7 @@ try {
 
 }
     
-    public String[] Funzioni_Calcolo_SaldieMedie(List<String>[] listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
+    public String[] Funzioni_Calcolo_SaldieMedie(Map<Integer, List<String>> listaSaldi, String DataInizialeS, String DataFinaleS, String SaldoInizioPeriodo, boolean MediaconPicchi) {
 
         //  System.out.println(DataInizialeS+" "+DataFinaleS);
         //  System.out.println (listaSaldi.length);
@@ -10592,7 +10596,7 @@ try {
         long longDatainiziale = Funzioni_Date_ConvertiDatainLong(DataIniziale);
         long longDataFinale = Funzioni_Date_ConvertiDatainLong(DataFinale);
         int contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
-        for (String valori : listaSaldi[0]) {
+        for (String valori : listaSaldi.get(0)) {
             String splittata[] = valori.split(",");
             // long longDatainiziale=ConvertiDatainLong(DataIniziale);
 
@@ -10628,7 +10632,7 @@ try {
             SaldoIniziale = new BigDecimal("0");
             UltimoValore = new BigDecimal("0");
             contatore = 0;//il numero di giorni che serviranno per il calcolo della giacenza media
-            for (String valori : listaSaldi[1]) {
+            for (String valori : listaSaldi.get(1)) {
                 String splittata[] = valori.split(",");
                 if (longDatainiziale > Funzioni_Date_ConvertiDatainLong(splittata[0])) {
                     UltimoValore = new BigDecimal(splittata[1]);

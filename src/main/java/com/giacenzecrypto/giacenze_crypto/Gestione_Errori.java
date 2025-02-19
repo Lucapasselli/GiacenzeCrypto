@@ -16,7 +16,7 @@ import javax.swing.table.DefaultTableModel;
  * @author luca.passelli
  */
 public class Gestione_Errori extends javax.swing.JDialog {
-
+private static final long serialVersionUID = 5L;
     /**
      * Creates new form Gestione_Errori
      */

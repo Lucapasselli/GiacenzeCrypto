@@ -117,8 +117,8 @@ public class Prezzi {
                          MappaConversioneSwapTransIDCoins.put(rigaSplittata[0], rigaSplittata[1]+","+rigaSplittata[2]+","+rigaSplittata[3]+","+rigaSplittata[4]);
                      }
                  }
-                 bure.close();
-                 fire.close();        
+            //     bure.close();
+            //     fire.close();        
              } catch (FileNotFoundException ex) {
                  Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              } catch (IOException ex) {
@@ -151,8 +151,8 @@ public class Prezzi {
                          MappaConversioneUSDEUR.put(rigaSplittata[0], rigaSplittata[1]);
                      }
                  }
-                 bure.close();
-                 fire.close();        
+             //    bure.close();
+             //    fire.close();        
              } catch (FileNotFoundException ex) {
                  Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
              } catch (IOException ex) {

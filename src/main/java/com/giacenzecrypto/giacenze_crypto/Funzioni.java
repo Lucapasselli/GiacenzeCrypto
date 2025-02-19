@@ -57,7 +57,7 @@ public class Funzioni {
 
                 }
             }
-        Iterator I=Cancellare.iterator();
+        Iterator<String> I=Cancellare.iterator();
         while (I.hasNext()){
             String daRimuovere=I.next().toString();
             RimuoviMovimentazioneXID(daRimuovere);
@@ -249,7 +249,7 @@ public class Funzioni {
                     "Valore in Euro","Valore Unirtario","Note"};
                 ScriviRigaExcel(Intestazioni,wsI,1);
                 ScriviRigaExcel(Intestazioni,wsF,1);
-                long DataRiferimento=0;
+                //long DataRiferimento=0;
                 String DataInizio=Anno+"-01-01";
                 String DataFine=Anno+"-12-31";
                 long lDataFine=OperazioniSuDate.ConvertiDatainLong(DataFine)+86400000;
@@ -258,8 +258,8 @@ public class Funzioni {
                 List<String[]> ListaSaldiIniziali=RW_GiacenzeaData(lDataInizio,GruppoWNormalizzato,"");
                 List<String[]> ListaSaldiFinali=RW_GiacenzeaData(lDataFine,GruppoWNormalizzato,"");
                 int r=2;
-                Iterator Iniziali=ListaSaldiIniziali.iterator();
-                Iterator Finali=ListaSaldiFinali.iterator();
+                //Iterator<String[]> Iniziali=ListaSaldiIniziali.iterator();
+                //Iterator<String[]> Finali=ListaSaldiFinali.iterator();
                 //Saldi Iniziali
                 for (int ii=0;ii<ListaSaldiIniziali.size();ii++){
                     String valori[]=ListaSaldiIniziali.get(ii);
@@ -270,7 +270,7 @@ public class Funzioni {
                         Moneta M1=new Moneta();
                         M1.Moneta=valori[0];
                         M1.MonetaAddress=valori[2];
-                        M1.Qta=new String("1");
+                        M1.Qta="1";
                         M1.Tipo=valori[3];
                         M1.Rete=Rete;
                         valori[6]=Prezzi.DammiPrezzoTransazione(M1,null,lDataInizio, null,true,30,Rete);

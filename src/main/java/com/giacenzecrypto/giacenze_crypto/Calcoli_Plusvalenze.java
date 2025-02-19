@@ -279,7 +279,7 @@ public class Calcoli_Plusvalenze {
         return tipo;
     }
     
- public static String StackLIFO_TogliQta(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,boolean toglidaStack) {
+ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack) {
     
     //come ritorno ci invio il valore della movimentazione
     String ritorno="0.00";
@@ -347,7 +347,7 @@ public class Calcoli_Plusvalenze {
    // System.out.println(Moneta +" - "+stack.size());
 }      
     
-   public static void StackLIFO_InserisciValore(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String Valore) {
+   public static void StackLIFO_InserisciValore(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,String Valore) {
     
     ArrayDeque<String[]> stack;
     String valori[]=new String[3];
@@ -355,7 +355,7 @@ public class Calcoli_Plusvalenze {
     valori[1]=new BigDecimal(Qta).abs().toPlainString();
     valori[2]=Valore;
     if (CryptoStack.get(Moneta)==null){
-        stack = new ArrayDeque<String[]>();
+        stack = new ArrayDeque<>();
         stack.push(valori);
         CryptoStack.put(Moneta, stack);
     }else{
@@ -375,8 +375,8 @@ public class Calcoli_Plusvalenze {
        if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
        
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();
-        Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>();
+        Map<String, Map<String, ArrayDeque<String[]>>> MappaGrWallet_CryptoStack = new TreeMap<>();
+        Map<String, ArrayDeque<String[]>> CryptoStack;// = new TreeMap<>();
         
     //    Map<String, String[]> MappaCryptoWalletTemp=MappaCryptoWallet;
         
@@ -632,7 +632,7 @@ public class Calcoli_Plusvalenze {
                         
                         //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
                     String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
-                    Map<String, ArrayDeque> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
+                    Map<String, ArrayDeque<String[]>> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
                     Mov[31]=v[1];
                         if (CryptoStack2 == null) {
                             //In teoria qua non ci dovrei mai entrare
@@ -819,7 +819,7 @@ public class Calcoli_Plusvalenze {
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        Map<String, ArrayDeque> CryptoStack = new TreeMap<>();
+        Map<String, ArrayDeque<String[]>> CryptoStack = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
             int TipoMovimento=Calcoli_Plusvalenze.CategorizzaTransazioneOLD(v);
             int TipologieCalcoli[]=Calcoli_Plusvalenze.RitornaTipologieCalcoli(TipoMovimento);
@@ -1032,7 +1032,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
        // System.out.println(stack.size());
        // System.out.println(stack.pop());
        // System.out.println(stack.pop());
-        Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, ArrayDeque<String[]>> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String[] v : MappaCryptoWallet.values()) {
             Calcoli_Plusvalenze.CategorizzaTransazioneOLD(v);
             

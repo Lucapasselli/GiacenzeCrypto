@@ -17,7 +17,6 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
@@ -30,16 +29,17 @@ import javax.swing.text.StyledDocument;
  * @author luca.passelli
  */
 public class Download extends javax.swing.JDialog {
+     private static final long serialVersionUID = 4L;
 
     /**
      * Creates new form Attesa
      */
 public int Massimo;
 public int avanzamento;
-public Thread thread;
+public transient Thread thread;
 public static boolean FineThread=false;
-PrintStream oldStdout = System.out;
-PrintStream oldStderr = System.err;
+transient PrintStream oldStdout = System.out;
+transient PrintStream oldStderr = System.err;
 public boolean nascondiLog=false;
 
 //    static boolean DownloadTerminato=false;

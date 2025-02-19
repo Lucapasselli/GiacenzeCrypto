@@ -300,8 +300,8 @@ public class Importazioni {
                         righeFile.add(riga);
                     }
                 }
-                bure.close();
-                fire.close();
+             //   bure.close();
+              //  fire.close();
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
@@ -697,8 +697,8 @@ System.out.println(response.body().string());
                     riga=riga.replace("\"", "");//rimuovo le virgolette dal file
                     righeFile.add(riga);
                 }
-                bure.close();
-                fire.close();
+              //  bure.close();
+              //  fire.close();
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
@@ -1172,8 +1172,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                        } 
                         }
                 }
-                bure.close();
-                fire.close();
+             //   bure.close();
+             //   fire.close();
               } catch (FileNotFoundException ex) {  
             Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -1410,8 +1410,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             //lista.add(riga);
                         }
                 }
-                bure.close();
-                fire.close();
+            //    bure.close();
+            //    fire.close();
               } catch (FileNotFoundException ex) {  
             Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

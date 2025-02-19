@@ -62,7 +62,7 @@ public class Calcoli_RW {
    
        
     
-public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoStack,String GruppoWallet,ElementiStack el) {
+public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiStack>> CryptoStack,String GruppoWallet,ElementiStack el) {
     
     //System.out.println(Moneta+" <> "+Qta);
 
@@ -72,7 +72,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
 
     if(!el.Qta.contains("-")){//Inserisco nello stack solo valori positivi, i token con giacenze negative ovviamente non li inserisco
         if (CryptoStack.get(el.Moneta)==null){
-            stack = new ArrayDeque<ElementiStack>();
+            stack = new ArrayDeque<>();
             stack.push(el);
             CryptoStack.put(el.Moneta, stack);
         }else{
@@ -121,12 +121,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
        
 
     
-      public static ArrayDeque<ElementiStack> StackLIFO_TogliQtaFR (Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String GruppoWallet,boolean toglidaStack) {
+      public static ArrayDeque<ElementiStack> StackLIFO_TogliQtaFR (Map<String, ArrayDeque<ElementiStack>> CryptoStack, String Moneta,String Qta,String GruppoWallet,boolean toglidaStack) {
     
     //in ritorno devo avere la lista delle qta estratte  e valore con relative date
     //es. ListaRitorno[0]=1,025;15550;2023-01-01 00:00   (qta iniziale;valore iniziale;data iniziale)
 
-    ArrayDeque<ElementiStack> stackRitorno = new ArrayDeque<ElementiStack>();//è lo stack con le nuove movimentazioni da inserire
+    ArrayDeque<ElementiStack> stackRitorno = new ArrayDeque<>();//è lo stack con le nuove movimentazioni da inserire
    // String ritorno="0.00";
     if (!Qta.isBlank()&&!Moneta.isBlank()){//non faccio nulla se la momenta o la qta non è valorizzata
     ArrayDeque<ElementiStack> stack;
@@ -446,7 +446,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
     
         
       public static void CreaPrimiMovimenti(Map<String, Map<String, Moneta>> MappaGrWallet_QtaCryptoInizio,Map<String,
-              Map<String, ArrayDeque>> MappaGrWallet_CryptoStack, long inizio, String DataInizioAnno) {
+              Map<String, ArrayDeque<ElementiStack>>> MappaGrWallet_CryptoStack, long inizio, String DataInizioAnno) {
 
         for (String key : MappaGrWallet_QtaCryptoInizio.keySet()) {
             Map<String, Moneta> a = MappaGrWallet_QtaCryptoInizio.get(key);
@@ -457,7 +457,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                     //System.out.println(m.Moneta+" - "+m.Qta+" - "+inizio+" - "+m.Prezzo);
                     //System.out.println(m.Prezzo);
                     //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
-                    Map<String, ArrayDeque> CryptoStackTemp;
+                    Map<String, ArrayDeque<ElementiStack>> CryptoStackTemp;
                     String WR = key;
                     if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) {
                         WR = "Unico 01";
@@ -500,7 +500,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
     }
       
       
-        public static void ChiudiRWFR (Moneta Monete,Map<String, ArrayDeque> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale,String IDt) {
+        public static void ChiudiRWFR (Moneta Monete,Map<String, ArrayDeque<ElementiStack>> CryptoStack,String GruppoWallet,String Data,String Valore,String Causale,String IDt) {
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         List<String[]> ListaRW;
         String DataDaScrivere=Data;
@@ -918,11 +918,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
 
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
         // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        Map<String, Map<String, ArrayDeque>> MappaGrWallet_CryptoStack = new TreeMap<>();
+        Map<String, Map<String, ArrayDeque<ElementiStack>>> MappaGrWallet_CryptoStack = new TreeMap<>();
         Map<String, Map<String, Moneta>> MappaGrWallet_QtaCrypto = new TreeMap<>();
         Map<String, Map<String, Moneta>> MappaGrWallet_QtaCryptoInizio = new TreeMap<>();
         //Map<String, Map<String, Moneta>> MappaGrWallet_QtaCryptoTOT = new TreeMap<>();
-        Map<String, ArrayDeque> CryptoStack;// = new TreeMap<>();
+        Map<String, ArrayDeque<ElementiStack>> CryptoStack;// = new TreeMap<>();
         Map<String, Moneta> QtaCrypto;
         Map<String, Moneta> QtaCryptoInizio;
        // Map<String, Moneta> QtaCryptoTOT;
@@ -1389,7 +1389,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                                             //Se Lifo complessivo è true non serve spostare nulla perchè lo stack è lo stesso
                                     //Se non esistono le mappe per il wallet controparte le genero
                                     String gruppoControparte = RitornaGruppoWalletControparte(IDTransazione);
-                                    Map<String, ArrayDeque> CryptoStackControparte;
+                                    Map<String, ArrayDeque<ElementiStack>> CryptoStackControparte;
                                   //  Map<String, Moneta> QtaCryptoControparte;
                                     if (MappaGrWallet_CryptoStack.get(gruppoControparte) == null) {
                                         //se non esiste ancora lo stack lo creo e lo associo alla mappa
@@ -1468,7 +1468,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                                 String gruppoControparte;
                                 if(LiFoComplessivo)gruppoControparte=GruppoWallet;//il gruppoControparte nel caso di LiFo complessivo è uguale al gruppo originale
                                 else gruppoControparte=RitornaGruppoWalletControparte(IDTransazione);
-                                Map<String, ArrayDeque> CryptoStackControparte;  
+                                Map<String, ArrayDeque<ElementiStack>> CryptoStackControparte;  
                              //   Map<String, Moneta> QtaCryptoControparte;
                                 //Se non ho lifo complessivo e non esiste wallet controparte lo creao vuoto
                                 if (MappaGrWallet_CryptoStack.get(gruppoControparte) == null) {
@@ -1586,7 +1586,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque> CryptoSta
                            // System.out.println(m.Moneta+"-"+m.Prezzo);
                             //System.out.println(Prezzi.DammiPrezzoTransazione(m, null,fine, null, true, 15, m.Rete));
                             //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo+ " - "+m.MonetaAddress+ " - "+ m.Rete);
-                            Map<String, ArrayDeque> CryptoStackTemp;
+                            Map<String, ArrayDeque<ElementiStack>> CryptoStackTemp;
                             String GRWallet=key;
                             if (LiFoComplessivo)GRWallet="Unico 01";
                             CryptoStackTemp = MappaGrWallet_CryptoStack.get(GRWallet);

@@ -918,6 +918,7 @@ public class Calcoli_RT {
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
             String Data=ultimoRecupero[3];
             
+            
          //  if (Moneta.equalsIgnoreCase("usdt")){ 
          //       System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
           //      System.out.println(qtaRimanente);

@@ -11,7 +11,8 @@ import java.util.Date;
  * @author luca.passelli
  */
 public class GUI_ScegliData extends javax.swing.JDialog {
-
+    private static final long serialVersionUID = 6L;
+    
     /**
      * Creates new form GUI_ScegliData
      */

@@ -17,6 +17,7 @@ import javax.swing.JFileChooser;
  * @author luca.passelli
  */
 public class Importazioni_Gestione extends javax.swing.JDialog {
+    private static final long serialVersionUID = 7L;
 
     /**
      * Creates new form Gestione_Importazioni
@@ -516,9 +517,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             ComboBox_Exchanges.setEnabled(true);
             Label_NomeExchange.setEnabled(true);
             
-            ArrayList<String> elements = new ArrayList<String>();
+            ArrayList<String> elements = new ArrayList<>();
             elements.addAll(java.util.Arrays.asList(Exchanges));
-            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
             ComboBox_Exchanges.setModel(model);
             Bottone_SelezionaFile.setEnabled(false);
 
@@ -529,9 +530,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             TextPane_Attenzione.setEnabled(true);
             ComboBox_Exchanges.setEnabled(true);
             Label_NomeExchange.setEnabled(true);
-            ArrayList<String> elements = new ArrayList<String>();
+            ArrayList<String> elements = new ArrayList<>();
             elements.addAll(java.util.Arrays.asList(Wallets));
-            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
             ComboBox_Exchanges.setModel(model);
             Bottone_SelezionaFile.setEnabled(false);
 
@@ -544,7 +545,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             Label_NomeExchange.setEnabled(true);
             ArrayList<String> elements = new ArrayList<String>();
             elements.addAll(java.util.Arrays.asList(BlockChain));
-            ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
             ComboBox_Exchanges.setModel(model);
             Bottone_SelezionaFile.setEnabled(false);
 

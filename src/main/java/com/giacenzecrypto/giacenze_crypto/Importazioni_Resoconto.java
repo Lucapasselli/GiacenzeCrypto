@@ -18,7 +18,7 @@ import java.awt.datatransfer.StringSelection;
  * @author luca.passelli
  */
 public class Importazioni_Resoconto extends javax.swing.JDialog {
-
+private static final long serialVersionUID = 8L;
     /**
      * Creates new form Importazioni_Resoconto
      */

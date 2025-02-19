@@ -32,14 +32,14 @@ import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Mappa_Wallets_e_Det
  * @author luca.passelli
  */
 public class MovimentoManuale_GUI extends javax.swing.JDialog {
-
+private static final long serialVersionUID = 9L;
     /**
      * Creates new form MovimentoManuale_GUI
      */
     //Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    List<String> Lista_Cryptovalute = new ArrayList<>();
-    List<String> Lista_NFT = new ArrayList<>();
-    List<String> Lista_FIAT = new ArrayList<>();
+    transient List<String> Lista_Cryptovalute = new ArrayList<>();
+    transient List<String> Lista_NFT = new ArrayList<>();
+    transient List<String> Lista_FIAT = new ArrayList<>();
     boolean ModificaMovimento=false;
     String MovimentoRiportato[]=new String[Importazioni.ColonneTabella];
     String MonetaE="";
@@ -573,7 +573,7 @@ public class MovimentoManuale_GUI extends javax.swing.JDialog {
     
  
     
-        private void FiltraItemsComboBoxMonete(JComboBox combobox,String filter,JComboBox comboboxTipo,boolean apriMenu) {
+        private void FiltraItemsComboBoxMonete(JComboBox<String> combobox,String filter,JComboBox<String> comboboxTipo,boolean apriMenu) {
         String Tipo=comboboxTipo.getSelectedItem().toString();
         List<String> Lista=new ArrayList<>();
         if (Tipo.equalsIgnoreCase("Crypto")) {

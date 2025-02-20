@@ -519,7 +519,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             
             ArrayList<String> elements = new ArrayList<>();
             elements.addAll(java.util.Arrays.asList(Exchanges));
-            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
             ComboBox_Exchanges.setModel(model);
             Bottone_SelezionaFile.setEnabled(false);
 
@@ -532,7 +532,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             Label_NomeExchange.setEnabled(true);
             ArrayList<String> elements = new ArrayList<>();
             elements.addAll(java.util.Arrays.asList(Wallets));
-            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
             ComboBox_Exchanges.setModel(model);
             Bottone_SelezionaFile.setEnabled(false);
 
@@ -543,9 +543,9 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             TextPane_Attenzione.setEnabled(true);
             ComboBox_Exchanges.setEnabled(true);
             Label_NomeExchange.setEnabled(true);
-            ArrayList<String> elements = new ArrayList<String>();
+            ArrayList<String> elements = new ArrayList<>();
             elements.addAll(java.util.Arrays.asList(BlockChain));
-            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
             ComboBox_Exchanges.setModel(model);
             Bottone_SelezionaFile.setEnabled(false);
 

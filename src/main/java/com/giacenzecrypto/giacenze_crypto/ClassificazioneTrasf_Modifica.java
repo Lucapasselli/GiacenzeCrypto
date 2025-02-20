@@ -102,10 +102,11 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
 
         }
-            ArrayList<String> elements = new ArrayList<String>();
+            ArrayList<String> elements = new ArrayList<>();
             elements.addAll(java.util.Arrays.asList(papele));
        
-            ComboBoxModel<String> model = new DefaultComboBoxModel<>((String[])elements.toArray());
+            //ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
             ComboBox_TipoMovimento.setModel(model);
             this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
             String v[]=MappaCryptoWallet.get(ID);

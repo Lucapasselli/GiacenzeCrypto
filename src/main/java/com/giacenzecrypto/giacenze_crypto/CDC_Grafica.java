@@ -9100,13 +9100,29 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             // TODO add your handling code here:
             // Importazioni.Importa_Solana_OKHTTP();
             // SolanaTransactionAnalyzer t =new SolanaTransactionAnalyzer();
-            String walletAddress = "Wallet";
-            SolanaHeliusAnalyzer.fetchAndParseTransactions(walletAddress,null);
-            System.out.println("finito porca vacca");
+            String walletAddress = DatabaseH2.Opzioni_Leggi("SolWallet");
+            //Trans_Solana.fetchAndParseTransactions(walletAddress,null);
+            
+            Map<String, TransazioneDefi> MappaTransazioniDefi = Trans_Solana.fetchAndParseTransactions(walletAddress,null);
+                if (MappaTransazioniDefi != null) {
+                    //Scrivo tutte le nuove transazioni nella mappa principale
+                    for (TransazioneDefi v : MappaTransazioniDefi.values()) {
+                        for (String[] st : v.RitornaRigheTabella()) {
+                            CDC_Grafica.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
+                            //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
+                            Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);                         
+                        }
+                    }
+            }
+            
+            
+            
         } catch (InterruptedException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
-       
+        TabellaCryptodaAggiornare = true;
+        TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
+       System.out.println("finito porca vacca");
         
         
         

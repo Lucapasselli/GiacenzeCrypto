@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -151,7 +152,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Base (BASE)", "Arbitrum (ARB)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Base (BASE)", "Arbitrum (ARB)", "Solana (SOL)" }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
@@ -212,6 +213,17 @@ public class GestioneWallets extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public static boolean isValidAddress(String address,String Rete) {
+        if (Rete.equalsIgnoreCase("SOL")){
+            String BASE58_REGEX = "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{44}$";
+            return address != null && address.length() == 44 && Pattern.matches(BASE58_REGEX, address);
+        }
+        else{
+            Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}$");
+            return address != null && ETH_ADDRESS_PATTERN.matcher(address).matches();
+        }
+    }
+    
     private void Bottone_InserisciWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciWalletActionPerformed
         // TODO add your handling code here:
         String Wallet=TextField_IndirizzoWallet.getText().trim();
@@ -220,15 +232,17 @@ public class GestioneWallets extends javax.swing.JDialog {
             Rete=Rete.split("\\(")[1].trim().substring(0, Rete.split("\\(")[1].length()-1);
         } else {
         }
-        if (Wallet.length()!=42 || !Wallet.substring(1, 2).equalsIgnoreCase("x")){
-            //non è un indirizzo di wallet valido
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nIl Wallet specificato non è valido",
-                            "Wallet non Valido",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-        }else if(ComboBox_Rete.getSelectedIndex()==0){
+        if(ComboBox_Rete.getSelectedIndex()==0){
             //non è valido la selezione della combobox
             JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare una rete valida",
                             "Rete non valida",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);            
-        }else{
+        }
+        else if (!isValidAddress(Wallet,Rete)){
+                //non è un indirizzo di wallet valido
+            JOptionPane.showConfirmDialog(this, "Attenzione! \nIl Wallet specificato non è valido",
+                            "Wallet non Valido",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+        }
+        else{
             //Se arrivo qui i dati sono corretti adesso devo
             //1 - Controllare se non esiste già un wallet della stessa rete con lo stesso indirizzo
             if (MappaWallets.get(Wallet+"_"+Rete)!=null){
@@ -238,6 +252,7 @@ public class GestioneWallets extends javax.swing.JDialog {
             //2 - Inserisco il wallet nella lista
             else{
                 MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
+                System.out.println(Wallet+"_"+Rete);
                 ScriviFileWallets();
                 PopolaTabella();
             }
@@ -308,13 +323,15 @@ public class GestioneWallets extends javax.swing.JDialog {
                             ||splittata[1].equalsIgnoreCase("CRO")
                             ||splittata[1].equalsIgnoreCase("ETH")
                             ||splittata[1].equalsIgnoreCase("BASE")
-                            ||splittata[1].equalsIgnoreCase("ARB")) {
+                            ||splittata[1].equalsIgnoreCase("ARB")
+                            ||splittata[1].equalsIgnoreCase("SOL")
+                            ) {
                         Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
                     }
                 }
                 //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
                 Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
-                Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli, c, progress);
+                Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli, c, progress);
                 if (MappaTransazioniDefi != null) {
                     //Scrivo tutte le nuove transazioni nella mappa principale
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {

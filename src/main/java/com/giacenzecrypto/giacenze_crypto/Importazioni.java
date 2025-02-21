@@ -4838,7 +4838,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         }    
     */
 
-     public static Object[] RitornaArrayJsonBSC(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
+     public static Object[] DeFi_RitornaArrayJson(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
          //L'oogetto in ritorno è un array di 2 oggetti
          //il primo è un int che indica il numero di transazioni
          //il secondo è un JsonArray con tutte le transazioni
@@ -5211,7 +5211,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
     }
         
     public static String GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
-
+        //sistemo le giacenze sulle rete ethereum compatibili
+        if (!Rete.equals("SOL")){
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Sistemazione Giacenze moneta di Scambio su Wallet " + Wallet);
         progressb.SetLabel("Sistemazione Giacenze");
@@ -5348,12 +5349,13 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                                 MappaCryptoWallet.put(RT[0], RT);
                                 CDC_Grafica.TabellaCryptodaAggiornare = true;
                     }
+        }
         return "Ok";
 
     }
       
       
-    public static Map<String, TransazioneDefi> RitornaTransazioniBSC(List<String> Portafogli, Component ccc, Download progressb) {
+    public static Map<String, TransazioneDefi> DeFi_RitornaTransazioni(List<String> Portafogli, Component ccc, Download progressb) {
         //Portafigli contiene la lista dei portafogli da analizzare e comprende indirizzo,ultimoblocco e rete
         //la mappa seguente va popolata per ogni chain explorer che viene implementato a programma 
 
@@ -5363,105 +5365,180 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 //  progressb.RipristinaStdout();
         AzzeraContatori();
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        
+        int avaTot=0;
         for (String wallets : Portafogli) {
+            avaTot++;
             int ava = 0;
             String walletAddress = wallets.split(";")[0];
-            progressb.Titolo("Importazione portafoglio " + walletAddress + "da explorer");
+            progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
             String Blocco = wallets.split(";")[1];
             Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);
             String Rete = wallets.split(";")[2];
-            String apiKey = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[1];
-            String Indirizzo = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[0];
-            String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
-            String vespa = vespa(apiKey, "paperino");
-            progressb.SetLabel("Scaricamento transazioni da " + walletAddress + " in corso...");
+            if (Rete.equalsIgnoreCase("SOL")) {
+                try {
+                    Map<String, TransazioneDefi> MappaTransazioniDefiSol = Trans_Solana.fetchAndParseTransactions(walletAddress,null);
+                    if (MappaTransazioniDefiSol!=null)
+                        for(TransazioneDefi T:MappaTransazioniDefiSol.values()){
+                            MappaTransazioniDefi.put(walletAddress+"."+T.HashTransazione, T);
+                        }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                String apiKey = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[1];
+                String Indirizzo = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[0];
+                String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
+                String vespa = vespa(apiKey, "paperino");
+                progressb.SetLabel("Scaricamento da " + walletAddress + " ("+Rete+") in corso...");
 
-            //Come prima cosa recupero tutte le risposte per riuscire poi ad avere il numero totale di transazioni da elaborare
-            //e popolare correttamente la progressbar
-            progressb.SetAvanzamento(0);
-            progressb.SetMassimo(4);
-            int numeroTrans = 0;
+                //Come prima cosa recupero tutte le risposte per riuscire poi ad avere il numero totale di transazioni da elaborare
+                //e popolare correttamente la progressbar
+                progressb.SetAvanzamento(0);
+                progressb.SetMassimo(4);
+                int numeroTrans = 0;
 
+                //PARTE 1 : Recupero la lista delle transazioni
+                progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 4");
+                Object Risposta[] = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlist", Blocco, vespa, ccc, progressb);
+                if (Risposta == null) {
+                    return null;//se in errore termino il ciclo
+                }
+                JSONArray transactionsTxlist = (JSONArray) Risposta[1];
+                numeroTrans = numeroTrans + (int) Risposta[0];
 
-            //PARTE 1 : Recupero la lista delle transazioni
-            progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 4");
-            Object Risposta[] = RitornaArrayJsonBSC(Indirizzo, walletAddress, "txlist", Blocco, vespa, ccc, progressb);
-            if (Risposta == null) {
-                return null;//se in errore termino il ciclo
-            }
-            JSONArray transactionsTxlist = (JSONArray) Risposta[1];
-            numeroTrans = numeroTrans + (int) Risposta[0];
+                //PARTE 2  : Recupero la lista delle transazioni dei token bsc20 
+                progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 4");
+                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokentx", Blocco, vespa, ccc, progressb);
+                if (Risposta == null) {
+                    return null;//se in errore termino il ciclo
+                }
+                JSONArray transactionsTokentx = (JSONArray) Risposta[1];
+                numeroTrans = numeroTrans + (int) Risposta[0];
 
-            //PARTE 2  : Recupero la lista delle transazioni dei token bsc20 
-            progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 4");
-            Risposta = RitornaArrayJsonBSC(Indirizzo, walletAddress, "tokentx", Blocco, vespa, ccc, progressb);
-            if (Risposta == null) {
-                return null;//se in errore termino il ciclo
-            }
-            JSONArray transactionsTokentx = (JSONArray) Risposta[1];
-            numeroTrans = numeroTrans + (int) Risposta[0];
+                //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT) 
+                progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 4");
+                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokennfttx", Blocco, vespa, ccc, progressb);
+                if (Risposta == null) {
+                    return null;//se in errore termino il ciclo
+                }
+                JSONArray transactionsTokenntfttx = (JSONArray) Risposta[1];
+                numeroTrans = numeroTrans + (int) Risposta[0];
 
-            //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT) 
-            progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 4");
-            Risposta = RitornaArrayJsonBSC(Indirizzo, walletAddress, "tokennfttx", Blocco, vespa, ccc, progressb);
-            if (Risposta == null) {
-                return null;//se in errore termino il ciclo
-            }
-            JSONArray transactionsTokenntfttx = (JSONArray) Risposta[1];
-            numeroTrans = numeroTrans + (int) Risposta[0];
+                //PARTE 4: Recupero delle transazioni interne
+                progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 4");
+                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlistinternal", Blocco, vespa, ccc, progressb);
+                if (Risposta == null) {
+                    return null;//se in errore termino il ciclo
+                }
+                JSONArray transactionsTxlistinternal = (JSONArray) Risposta[1];
+                numeroTrans = numeroTrans + (int) Risposta[0];
 
-            //PARTE 4: Recupero delle transazioni interne
-            progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 4");
-            Risposta = RitornaArrayJsonBSC(Indirizzo, walletAddress, "txlistinternal", Blocco, vespa, ccc, progressb);
-            if (Risposta == null) {
-                return null;//se in errore termino il ciclo
-            }
-            JSONArray transactionsTxlistinternal = (JSONArray) Risposta[1];
-            numeroTrans = numeroTrans + (int) Risposta[0];
-
-            //   System.out.println(numeroTransTemp);
-            progressb.SetMassimo(numeroTrans);
-            // return null;
+                //   System.out.println(numeroTransTemp);
+                progressb.SetMassimo(numeroTrans);
+                // return null;
 
 // PARTE B1:  ANALIZZO I RISULTATO DELLA PARTE 1 E SCRIVO I DATI 
-            for (int i = 0; i < transactionsTxlist.length(); i++) {
-                if (progressb.FineThread()) {
-                    return null;
-                }
-                String AddressNoWallet;
-                String qta;
-                JSONObject transaction = transactionsTxlist.getJSONObject(i);
-                // System.out.println(transaction.toString());
-                String hash = transaction.getString("hash");
-                String from = transaction.getString("from");
-                
-                String to = transaction.getString("to");
-                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
-                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
-                    trans = new TransazioneDefi();
-                    MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
-                } else {
-                    trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
-                }
-                trans.Rete = Rete;
-                trans.Blocco = transaction.getString("blockNumber");
-                trans.DataOra = Data;//Da modificare con data e ora reale
-                trans.TimeStamp = transaction.getString("timeStamp");
-                trans.HashTransazione = hash;
-                trans.MonetaCommissioni = MonetaRete;
-                trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-                trans.Wallet = walletAddress;
-                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
-                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
-                String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                trans.QtaCommissioni=null;
-                //trans.QtaCommissioni = "-" + qtaCommissione;
-                trans.TipoTransazione = transaction.getString("functionName");
-                if (!value.equalsIgnoreCase("0")) {
+                for (int i = 0; i < transactionsTxlist.length(); i++) {
+                    if (progressb.FineThread()) {
+                        return null;
+                    }
+                    String AddressNoWallet;
+                    String qta;
+                    JSONObject transaction = transactionsTxlist.getJSONObject(i);
+                    // System.out.println(transaction.toString());
+                    String hash = transaction.getString("hash");
+                    String from = transaction.getString("from");
+
+                    String to = transaction.getString("to");
+                    String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                    String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                    TransazioneDefi trans;
+                    if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                        trans = new TransazioneDefi();
+                        MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                    } else {
+                        trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                    }
+                    trans.Rete = Rete;
+                    trans.Blocco = transaction.getString("blockNumber");
+                    trans.DataOra = Data;//Da modificare con data e ora reale
+                    trans.TimeStamp = transaction.getString("timeStamp");
+                    trans.HashTransazione = hash;
+                    trans.MonetaCommissioni = MonetaRete;
+                    trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                    trans.Wallet = walletAddress;
+                    BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
+                    BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
+                    String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                    trans.QtaCommissioni = null;
+                    //trans.QtaCommissioni = "-" + qtaCommissione;
+                    trans.TipoTransazione = transaction.getString("functionName");
+                    if (!value.equalsIgnoreCase("0")) {
+                        if (from.equalsIgnoreCase(walletAddress)) {
+                            AddressNoWallet = to;
+                            qta = "-" + value;
+                        } else {
+                            AddressNoWallet = from;
+                            qta = value;
+                        }
+                        progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
+                        trans.InserisciMonete(MonetaRete, MonetaRete, MonetaRete, AddressNoWallet, qta, "Crypto");
+
+                    }
                     if (from.equalsIgnoreCase(walletAddress)) {
+                        //le commissioni le ho solo quando è il mio wallet che chiama la transazione
+                        trans.QtaCommissioni = "-" + qtaCommissione;
+                    }
+
+                    //System.out.println(from + " - "+hash+" - B1 - "+trans.QtaCommissioni );
+                    ava++;
+                    progressb.SetAvanzamento(ava);
+                }
+
+                //PARTE B2: Recupero la lista delle transazioni dei token bsc20   
+                for (int i = 0; i < transactionsTokentx.length(); i++) {
+                    if (progressb.FineThread()) {
+                        return null;
+                    }
+                    //System.out.println("sono qui");
+                    String AddressNoWallet;
+                    String qta;
+                    JSONObject transaction = transactionsTokentx.getJSONObject(i);
+                    //    System.out.println(transaction.toString());
+                    String tokenSymbol = transaction.getString("tokenSymbol");
+                    String tokenName = transaction.getString("tokenName");
+                    String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                    String tokenAddress = transaction.getString("contractAddress");
+                    String tokenDecimal = transaction.getString("tokenDecimal");
+                    String hash = transaction.getString("hash");
+                    String from = transaction.getString("from");
+                    //System.out.println(from + " - "+hash+" B2");
+                    String to = transaction.getString("to");
+                    String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
+                    TransazioneDefi trans;
+                    if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                        trans = new TransazioneDefi();
+                        MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                    } else {
+                        trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                    }
+                    trans.Rete = Rete;
+
+                    trans.Blocco = transaction.getString("blockNumber");
+                    trans.Wallet = walletAddress;
+                    trans.DataOra = Data;//Da modificare con data e ora reale
+                    trans.TimeStamp = transaction.getString("timeStamp");
+                    trans.HashTransazione = hash;
+
+                    trans.MonetaCommissioni = MonetaRete;
+                    // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                    BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
+                    BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
+                    //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
+                    //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+
+                    if (from.equalsIgnoreCase(walletAddress)) {
+                        //trans.QtaCommissioni = "-" + qtaCommissione;
                         AddressNoWallet = to;
                         qta = "-" + value;
                     } else {
@@ -5469,205 +5546,139 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                         qta = value;
                     }
                     progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
-                    trans.InserisciMonete(MonetaRete, MonetaRete, MonetaRete, AddressNoWallet, qta, "Crypto");
+                    trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
 
+                    // System.out.println(tokenSymbol+" - "+qta);
+                    //System.out.println(from + " - "+hash+" - B2 - "+trans.QtaCommissioni );
+                    ava++;
+                    progressb.SetAvanzamento(ava);
                 }
-                if (from.equalsIgnoreCase(walletAddress)) {
-                        //le commissioni le ho solo quando è il mio wallet che chiama la transazione
-                        trans.QtaCommissioni = "-" + qtaCommissione;
+
+                //PARTE B3: Recupero la lista delle transazioni dei token erc721 (NFT)  
+                for (int i = 0; i < transactionsTokenntfttx.length(); i++) {
+                    if (progressb.FineThread()) {
+                        return null;
                     }
-                
-                //System.out.println(from + " - "+hash+" - B1 - "+trans.QtaCommissioni );
-                ava++;
-                progressb.SetAvanzamento(ava);
-            }
+                    //System.out.println("sono qui");
+                    String AddressNoWallet;
+                    String qta;
+                    JSONObject transaction = transactionsTokenntfttx.getJSONObject(i);
+                    //    System.out.println(transaction.toString());
+                    String tokenSymbol = transaction.getString("tokenID");
+                    String tokenName = transaction.getString("tokenName");
+                    String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                    String tokenAddress = transaction.getString("contractAddress");
+                    // String tokenDecimal=transaction.getString("tokenDecimal");
+                    String hash = transaction.getString("hash");
+                    String from = transaction.getString("from");
+                    //System.out.println(from + " - "+hash+" B3");
+                    String to = transaction.getString("to");
+                    //  String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
+                    String value = "1";
+                    TransazioneDefi trans;
+                    if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                        trans = new TransazioneDefi();
+                        MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                    } else {
+                        trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                    }
+                    trans.Rete = Rete;
 
-            //PARTE B2: Recupero la lista delle transazioni dei token bsc20   
-            for (int i = 0; i < transactionsTokentx.length(); i++) {
-                if (progressb.FineThread()) {
-                    return null;
-                }
-                //System.out.println("sono qui");
-                String AddressNoWallet;
-                String qta;
-                JSONObject transaction = transactionsTokentx.getJSONObject(i);
-                //    System.out.println(transaction.toString());
-                String tokenSymbol = transaction.getString("tokenSymbol");
-                String tokenName = transaction.getString("tokenName");
-                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
-                String tokenAddress = transaction.getString("contractAddress");
-                String tokenDecimal = transaction.getString("tokenDecimal");
-                String hash = transaction.getString("hash");
-                String from = transaction.getString("from");
-                //System.out.println(from + " - "+hash+" B2");
-                String to = transaction.getString("to");
-                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
-                TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
-                    trans = new TransazioneDefi();
-                    MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
-                } else {
-                    trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
-                }
-                trans.Rete = Rete;
-                
-                
-                
-                trans.Blocco = transaction.getString("blockNumber");
-                trans.Wallet = walletAddress;
-                trans.DataOra = Data;//Da modificare con data e ora reale
-                trans.TimeStamp = transaction.getString("timeStamp");
-                trans.HashTransazione = hash;
+                    trans.Blocco = transaction.getString("blockNumber");
+                    trans.Wallet = walletAddress;
+                    trans.DataOra = Data;//Da modificare con data e ora reale
+                    trans.TimeStamp = transaction.getString("timeStamp");
+                    trans.HashTransazione = hash;
 
-                trans.MonetaCommissioni = MonetaRete;
-                // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
-                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
-                //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
-                //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-
-                if (from.equalsIgnoreCase(walletAddress)) {
-                    //trans.QtaCommissioni = "-" + qtaCommissione;
-                    AddressNoWallet = to;
-                    qta = "-" + value;
-                } else {
-                    AddressNoWallet = from;
-                    qta = value;
-                }
-                progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
-                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
-                
-               // System.out.println(tokenSymbol+" - "+qta);
-              //System.out.println(from + " - "+hash+" - B2 - "+trans.QtaCommissioni );
-                ava++;
-                progressb.SetAvanzamento(ava);
-            }
-
-            //PARTE B3: Recupero la lista delle transazioni dei token erc721 (NFT)  
-            for (int i = 0; i < transactionsTokenntfttx.length(); i++) {
-                if (progressb.FineThread()) {
-                    return null;
-                }
-                //System.out.println("sono qui");
-                String AddressNoWallet;
-                String qta;
-                JSONObject transaction = transactionsTokenntfttx.getJSONObject(i);
-                //    System.out.println(transaction.toString());
-                String tokenSymbol = transaction.getString("tokenID");
-                String tokenName = transaction.getString("tokenName");
-                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
-                String tokenAddress = transaction.getString("contractAddress");
-                // String tokenDecimal=transaction.getString("tokenDecimal");
-                String hash = transaction.getString("hash");
-                String from = transaction.getString("from");
-                //System.out.println(from + " - "+hash+" B3");
-                String to = transaction.getString("to");
-                //  String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-"+tokenDecimal)).stripTrailingZeros().toPlainString();
-                String value = "1";
-                TransazioneDefi trans;
-                if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
-                    trans = new TransazioneDefi();
-                    MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
-                } else {
-                    trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
-                }
-                trans.Rete = Rete;
-                
-
-                trans.Blocco = transaction.getString("blockNumber");
-                trans.Wallet = walletAddress;
-                trans.DataOra = Data;//Da modificare con data e ora reale
-                trans.TimeStamp = transaction.getString("timeStamp");
-                trans.HashTransazione = hash;
-
-                trans.MonetaCommissioni = MonetaRete;
-                // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
-                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
-                //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
-                //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                //trans.QtaCommissioni=null;
-                if (from.equalsIgnoreCase(walletAddress)) {
-                    //trans.QtaCommissioni = "-" + qtaCommissione;
-                    AddressNoWallet = to;
-                    qta = "-" + value;
-                } else {
-                    AddressNoWallet = from;
-                    qta = value;
-                }
-                progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
-                trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "NFT");
-               // System.out.println(from + " - "+hash+" - B3 - "+trans.QtaCommissioni );
-                ava++;
-                progressb.SetAvanzamento(ava);
-            }
-
-            //PARTE B4: Recupero delle transazioni interne
-            for (int i = 0; i < transactionsTxlistinternal.length(); i++) {
-                if (progressb.FineThread()) {
-                    return null;
-                }
-
-                String qta;
-                String AddressNoWallet;
-                JSONObject transaction = transactionsTxlistinternal.getJSONObject(i);
-                String hash = transaction.getString("hash");
-          //      String hash =transaction.getString("transactionHash");
-                String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
-                String from = transaction.getString("from");
-                //System.out.println(from + " - "+hash+" B4");
-                String to = transaction.getString("to");
-                String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
-                TransazioneDefi trans;
-
-                if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
-                    trans = new TransazioneDefi();
-                    MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
-                } else {
-                    trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
-                }
-                trans.Rete = Rete;
-                if (from.equalsIgnoreCase(walletAddress)) {
-                    AddressNoWallet = to;
-                    qta = "-" + value;
-                } else {
-                    AddressNoWallet = from;
-                    qta = value;
-                }
-                trans.Blocco = transaction.getString("blockNumber");
-                trans.Wallet = walletAddress;
-                trans.DataOra = Data;
-                trans.TimeStamp = transaction.getString("timeStamp");
-                trans.HashTransazione = hash;
-
-                trans.MonetaCommissioni = MonetaRete;
-                if (trans.QtaCommissioni != null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs()) == 1
-                        && !(trans.TipoTransazione != null && trans.TipoTransazione.toLowerCase().contains("swap") && (trans.RitornaNumeroTokenUscita() > 0 && trans.RitornaNumeroTokenentrata() > 0))) {
-                    // se il valore della commissione è maggiore del bnb di ritorno allora lo sottraggo dalle commissioni
-                    //anzichè metterlo come importo dei trasferimenti
-                    // questo non deve essere fatto però se è uno swap di cui questi bnb sono gli unici in ritorno
-                    //questa cosa la devo gestire
-                    //System.out.println(trans.QtaCommissioni +" ---- "+qta);
-                    //faccio somma e non sottrazione perchè le commissioni sono già negative
-                    trans.QtaCommissioni = new BigDecimal(trans.QtaCommissioni).add(new BigDecimal(qta)).toPlainString();
-                } else {
+                    trans.MonetaCommissioni = MonetaRete;
+                    // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                    BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
+                    BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
+                    //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
+                    //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                    //trans.QtaCommissioni=null;
+                    if (from.equalsIgnoreCase(walletAddress)) {
+                        //trans.QtaCommissioni = "-" + qtaCommissione;
+                        AddressNoWallet = to;
+                        qta = "-" + value;
+                    } else {
+                        AddressNoWallet = from;
+                        qta = value;
+                    }
                     progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
-                    trans.InserisciMonete(MonetaRete, MonetaRete, MonetaRete, AddressNoWallet, qta, "Crypto");
-                    //   System.out.println(trans.HashTransazione+ " - "+ qta);
+                    trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "NFT");
+                    // System.out.println(from + " - "+hash+" - B3 - "+trans.QtaCommissioni );
+                    ava++;
+                    progressb.SetAvanzamento(ava);
                 }
 
-                //  System.out.println(value+" - "+hash);
-                //System.out.println(from + " - "+hash+" - B4 - "+trans.QtaCommissioni );
-                ava++;
-                progressb.SetAvanzamento(ava);
-            }
+                //PARTE B4: Recupero delle transazioni interne
+                for (int i = 0; i < transactionsTxlistinternal.length(); i++) {
+                    if (progressb.FineThread()) {
+                        return null;
+                    }
 
-            //   TimeUnit.SECONDS.sleep(1);
+                    String qta;
+                    String AddressNoWallet;
+                    JSONObject transaction = transactionsTxlistinternal.getJSONObject(i);
+                    String hash = transaction.getString("hash");
+                    //      String hash =transaction.getString("transactionHash");
+                    String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                    String from = transaction.getString("from");
+                    //System.out.println(from + " - "+hash+" B4");
+                    String to = transaction.getString("to");
+                    String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                    TransazioneDefi trans;
+
+                    if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                        trans = new TransazioneDefi();
+                        MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                    } else {
+                        trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                    }
+                    trans.Rete = Rete;
+                    if (from.equalsIgnoreCase(walletAddress)) {
+                        AddressNoWallet = to;
+                        qta = "-" + value;
+                    } else {
+                        AddressNoWallet = from;
+                        qta = value;
+                    }
+                    trans.Blocco = transaction.getString("blockNumber");
+                    trans.Wallet = walletAddress;
+                    trans.DataOra = Data;
+                    trans.TimeStamp = transaction.getString("timeStamp");
+                    trans.HashTransazione = hash;
+
+                    trans.MonetaCommissioni = MonetaRete;
+                    if (trans.QtaCommissioni != null && new BigDecimal(trans.QtaCommissioni).abs().compareTo(new BigDecimal(qta).abs()) == 1
+                            && !(trans.TipoTransazione != null && trans.TipoTransazione.toLowerCase().contains("swap") && (trans.RitornaNumeroTokenUscita() > 0 && trans.RitornaNumeroTokenentrata() > 0))) {
+                        // se il valore della commissione è maggiore del bnb di ritorno allora lo sottraggo dalle commissioni
+                        //anzichè metterlo come importo dei trasferimenti
+                        // questo non deve essere fatto però se è uno swap di cui questi bnb sono gli unici in ritorno
+                        //questa cosa la devo gestire
+                        //System.out.println(trans.QtaCommissioni +" ---- "+qta);
+                        //faccio somma e non sottrazione perchè le commissioni sono già negative
+                        trans.QtaCommissioni = new BigDecimal(trans.QtaCommissioni).add(new BigDecimal(qta)).toPlainString();
+                    } else {
+                        progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
+                        trans.InserisciMonete(MonetaRete, MonetaRete, MonetaRete, AddressNoWallet, qta, "Crypto");
+                        //   System.out.println(trans.HashTransazione+ " - "+ qta);
+                    }
+
+                    //  System.out.println(value+" - "+hash);
+                    //System.out.println(from + " - "+hash+" - B4 - "+trans.QtaCommissioni );
+                    ava++;
+                    progressb.SetAvanzamento(ava);
+                }
+
+                //   TimeUnit.SECONDS.sleep(1);
+            }
         }
 //        Prezzi.ScriviFileConversioneXXXEUR();
         return MappaTransazioniDefi;
-    }    
-    
+    }
+
     
     
     

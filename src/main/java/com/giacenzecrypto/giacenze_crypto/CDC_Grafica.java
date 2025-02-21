@@ -9983,7 +9983,7 @@ try {
         Thread thread;
             thread = new Thread() {
             public void run() {
-        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.RitornaTransazioniBSC(Portafogli,c,progress);
+        Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli,c,progress);
         if (MappaTransazioniDefi != null) {
 
             int i=0;

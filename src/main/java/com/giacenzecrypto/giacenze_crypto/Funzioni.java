@@ -134,6 +134,7 @@ public class Funzioni {
             String ETH[]=new String[]{"https://api.etherscan.io","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","ETH","ethereum"};
             String BASE[]=new String[]{"https://api.basescan.org","33t9n2uL57c70zqqMVLHjAvSZQZhLZf3AXSpbZos2iLlHHHxc57q6pfGLlPOCRIb","ETH","base"};
             String ARB[]=new String[]{"https://api.arbiscan.io","SXjGvBDWRR+BL1vdXcwjcPXGvK+jBUu2Ku88bLYXrcpsL3Nd+rrWeU3pEWrsISV4","ETH","arbitrum-one"};
+            String SOL[]=new String[]{"https://solscan.io/","","SOL","solana"};
     
            // String CRO[]=new String[]{"https://cronos.org/explorer","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
            //oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc
@@ -142,6 +143,7 @@ public class Funzioni {
             CDC_Grafica.Mappa_ChainExplorer.put("ETH", ETH);
             CDC_Grafica.Mappa_ChainExplorer.put("BASE", BASE);
             CDC_Grafica.Mappa_ChainExplorer.put("ARB", ARB);
+            CDC_Grafica.Mappa_ChainExplorer.put("SOL", SOL);
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");

@@ -45,9 +45,12 @@ public class Trans_Solana {
     JSONArray allTransactions = new JSONArray();
     String beforeSignature = null; // Per iterare le pagine delle transazioni
     boolean hasMore = true;
-    int limit = 20; // Numero di transazioni per richiesta
+    int limit = 25; // Numero di transazioni per richiesta
+    int Ntrans = 1;
 
     while (hasMore) {
+        System.out.println("Scaricamento Transazioni da "+Ntrans+" a "+(Ntrans+limit-1));
+        Ntrans=Ntrans+limit;
         String url = HELIUS_RPC_URL + walletAddress + "/transactions?api-key=" + HELIUS_API_KEY + "&limit=" + limit;
 
         // Se abbiamo una signature precedente, la usiamo per continuare indietro nel tempo
@@ -63,6 +66,7 @@ public class Trans_Solana {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String jsonString = response.body().string();
+               // System.out.println(jsonString);
                 JSONArray transactions = new JSONArray(jsonString);
 
                 if (transactions.length() > 0) {
@@ -89,7 +93,7 @@ public class Trans_Solana {
 
         // Aggiunge un ritardo tra le richieste per evitare di sovraccaricare l'API
         try {
-            Thread.sleep(500); // 500 ms di pausa tra una richiesta e l'altra
+            Thread.sleep(1000); // 500 ms di pausa tra una richiesta e l'altra
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -115,11 +119,11 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
 
     private static Map<String, TransazioneDefi> parseTransactions(JSONArray transactions, String walletAddress) {
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        System.out.println("\n Transazioni per il wallet: " + walletAddress);
-        
-        
+        //System.out.println("\n Transazioni per il wallet: " + walletAddress);
+        boolean verbose = false;
+
         for (int i = 0; i < transactions.length(); i++) {
-            int numMovimenti=0;
+            int numMovimenti = 0;
             TransazioneDefi trans = new TransazioneDefi();
             trans.Rete = "SOL";
             trans.Wallet = walletAddress;
@@ -128,105 +132,112 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
             String description = tx.optString("description", "N/A");
             String signature = tx.optString("signature", "N/A");
             long timestamp = tx.optLong("timestamp", 0);
-            String formattedTimestamp = OperazioniSuDate.ConvertiDatadaLongAlSecondo(timestamp*1000);
+            String formattedTimestamp = OperazioniSuDate.ConvertiDatadaLongAlSecondo(timestamp * 1000);
             BigDecimal fee = tx.optBigDecimal("fee", BigDecimal.ZERO).divide(new BigDecimal(1_000_000_000));
             String feePayer = tx.optString("feePayer", "N/A");
 
-            System.out.println("\nTransazione #" + (i + 1));
-            System.out.println("Signature: " + signature);
+            // System.out.println("\nTransazione #" + (i + 1));
+            // System.out.println("Signature: " + signature);
             trans.Blocco = signature;
             trans.HashTransazione = signature;
             trans.MonetaCommissioni = "SOL";
-            System.out.println("Timestamp: " + formattedTimestamp);
+            if (verbose) {
+                System.out.println("\nTimestamp: " + formattedTimestamp + " - Transazione #" + (i + 1) + " - Signature: " + signature);
+            }
             trans.DataOra = formattedTimestamp;
             if (feePayer.equalsIgnoreCase(walletAddress)) {
                 numMovimenti++;
-                System.out.println("Fee: " + fee + " SOL");
-                System.out.println("Fee Payer: " + feePayer);
-                trans.QtaCommissioni="-"+fee.toPlainString();
+                // System.out.println("Fee: " + fee + " SOL");
+                // System.out.println("Fee Payer: " + feePayer);
+                trans.QtaCommissioni = "-" + fee.toPlainString();
             }
-            System.out.println("Descrizione: " + description);
+            if (verbose) {
+                System.out.println("Descrizione: " + description);
+            }
 
             // Token Transfers
             JSONArray tokenTransfers = tx.optJSONArray("tokenTransfers");
-            BigDecimal TotTransferSOL=new BigDecimal(0);
+            //   BigDecimal TotTransferSOL=new BigDecimal(0);
+            String AddressNoWallet = "";
             if (tokenTransfers != null && tokenTransfers.length() > 0) {
-                
-                System.out.println("Token Transfers:");
+
+                if (verbose) {
+                    System.out.println("Token Transfers:");
+                }
                 for (int j = 0; j < tokenTransfers.length(); j++) {
                     JSONObject transfer = tokenTransfers.getJSONObject(j);
                     String fromUser = transfer.optString("fromUserAccount", "N/A");
                     String toUser = transfer.optString("toUserAccount", "N/A");
                     BigDecimal amount = transfer.optBigDecimal("tokenAmount", BigDecimal.ZERO);
                     String mint = transfer.optString("mint", "N/A");
-                    
+
                     // Recupera il nome del token
                     String tokenName = "N/A";
                     String tokenSymbol;
-                    String AddressNoWallet = "";
+
                     try {
                         tokenSymbol = getTokenName(mint)[0];
                         tokenName = getTokenName(mint)[1];
 
-                        if (fromUser.equalsIgnoreCase(walletAddress)&&amount.compareTo(BigDecimal.ZERO)!=0) {
+                        if (fromUser.equalsIgnoreCase(walletAddress)) {
+                            AddressNoWallet = toUser;
+                            amount = BigDecimal.ZERO.subtract(amount);
+                        }
+                        if (toUser.equalsIgnoreCase(walletAddress)) {
+                            AddressNoWallet = fromUser;
+                        }
+                        //se è un movimento di SOL , se amount è zero o destinazione e origine coincidono non salvo il movimento
+                        if (!tokenSymbol.equalsIgnoreCase("SOL") && amount.compareTo(BigDecimal.ZERO) != 0 && !fromUser.equals(toUser)) {
                             numMovimenti++;
-                            //Questo significa che i solana o i token sono in uscita dal mio wallet quindi li sottraggo dal TotaleNativoSOL
-                            if (tokenSymbol.equalsIgnoreCase("SOL")) {
-                                TotTransferSOL = TotTransferSOL.subtract(amount);
-                                mint="SOL";
-                            }
-                            //inoltre metto il valore di amount negativo
-                            amount=BigDecimal.ZERO.subtract(amount);
-                            AddressNoWallet=toUser;
+                            //inserisco subito la moneta solo se non è sol
+                            //se è sol la inserisco dalla somma dei native token
                             trans.InserisciMonete(tokenSymbol, tokenName, mint, AddressNoWallet, amount.toPlainString(), "Crypto");
                         }
-                        if (toUser.equalsIgnoreCase(walletAddress)&&amount.compareTo(BigDecimal.ZERO)!=0) {
-                            numMovimenti++;
-                            //Questo invece significa che i SOL stanno entrando nel wallet quindi li sommo al totale
-                            if (tokenSymbol.equalsIgnoreCase("SOL")) {
-                                TotTransferSOL = TotTransferSOL.add(amount);
-                                mint="SOL";
-                            }
-                            //questo if serve per mettere addressnowallet a blanc nel caso in cui indirizzo di destinazione e origine corrispondano
-                            //ad esempio se invio dei fondi per sbaglio sul mio stesso wallet
-                            if(AddressNoWallet.equalsIgnoreCase(walletAddress))AddressNoWallet="";
-                            else AddressNoWallet=fromUser;
-                            trans.InserisciMonete(tokenSymbol, tokenName, mint, AddressNoWallet, amount.toPlainString(), "Crypto");
-                        }
-
                     } catch (IOException e) {
                         System.err.println("   - Errore nel recupero dei metadati per il token " + mint + ": " + e.getMessage());
                     }
-                    
-                    System.out.println("   - " + fromUser + " -> " + toUser + " | " + amount + " " + tokenName + " (Mint: " + mint + ")");
+
+                    if (verbose) {
+                        System.out.println("   - " + fromUser + " -> " + toUser + " | " + amount + " " + tokenName + " (Mint: " + mint + ")");
+                    }
                 }
             }
 
             // Native SOL Transfers
             JSONArray nativeTransfers = tx.optJSONArray("nativeTransfers");
-            BigDecimal TotaleNativeSOL=new BigDecimal(0);
-            if (nativeTransfers != null && nativeTransfers.length() > 0) {               
-                System.out.println("Native SOL Transfers:");               
+            BigDecimal TotaleNativeSOL = new BigDecimal(0);
+            if (nativeTransfers != null && nativeTransfers.length() > 0) {
+                if (verbose) {
+                    System.out.println("Native SOL Transfers:");
+                }
                 for (int j = 0; j < nativeTransfers.length(); j++) {
                     JSONObject transfer = nativeTransfers.getJSONObject(j);
                     String fromUser = transfer.optString("fromUserAccount", "N/A");
                     String toUser = transfer.optString("toUserAccount", "N/A");
                     BigDecimal solAmount = transfer.optBigDecimal("amount", BigDecimal.ZERO).divide(new BigDecimal(1_000_000_000));
 
-                        if (fromUser.equalsIgnoreCase(walletAddress)&&!solAmount.equals(0)){
+                    if (fromUser.equalsIgnoreCase(walletAddress) && !solAmount.equals(0)) {
                         //Questo significa che i solana sono in uscita dal mio wallet quindi li sottraggo dal TotaleNativoSOL
-                            TotaleNativeSOL=TotaleNativeSOL.subtract(solAmount);
-                        }
-                       if (toUser.equalsIgnoreCase(walletAddress)&&!solAmount.equals(0)){
+                        TotaleNativeSOL = TotaleNativeSOL.subtract(solAmount);
+                    }
+                    if (toUser.equalsIgnoreCase(walletAddress) && !solAmount.equals(0)) {
                         //Questo invece significa che i SOL stanno entrando nel wallet quindi li sommo al totale
-                            TotaleNativeSOL=TotaleNativeSOL.add(solAmount);                           
-                        }
+                        TotaleNativeSOL = TotaleNativeSOL.add(solAmount);
+                    }
+                    if (verbose) {
                         System.out.println("   - " + fromUser + " -> " + toUser + " | " + solAmount + " SOL");
-                    
+                    }
+
                 }
-                System.out.println("Totale Token Nativi Entrati = "+TotaleNativeSOL);
+                if (TotaleNativeSOL.compareTo(BigDecimal.ZERO) != 0) {
+                    numMovimenti++;
+                    trans.InserisciMonete("SOL", "SOL", "SOL", AddressNoWallet, TotaleNativeSOL.toPlainString(), "Crypto");
+                }
+                //System.out.println("Totale Token Nativi Entrati = "+TotaleNativeSOL);
             }
-            
+            if (numMovimenti > 0) {
+                MappaTransazioniDefi.put(walletAddress + "." + trans.HashTransazione, trans);
+            }
             //Fine analisi Transazione
             //Adesso analizzo i NativeTokenTrasnfer con i SOL movimentati
             //Faccio "Native SOL Transfer - SOL Transfer"
@@ -234,32 +245,19 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
             //Se totale negativo e SOL Transfer valorizzato aggiungo la differenza alle commissioni
             //Se totale positivo e SOL Transfer = 0 allora creo rigo di deposito
             //Se totale positivo e SOL Transfer valorizzato creo un nuovo rigo separato di deposito
-            BigDecimal differenza=TotaleNativeSOL.subtract(TotTransferSOL);
-            if(TotTransferSOL.compareTo(BigDecimal.ZERO)==0){
-                //Se TotTransferSOL=0 e TotNativeSOL!=0 allora inserisco il movimento in SOL
-                if (TotaleNativeSOL.compareTo(BigDecimal.ZERO)!=0){
-                    //trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
-                    numMovimenti++;
-                    trans.InserisciMonete("SOL", "SOL", "SOL", "", TotaleNativeSOL.toPlainString(), "Crypto");
-                }
-            }else{
-                if (differenza.compareTo(BigDecimal.ZERO)==-1){
-                //differenza negativa
-                if (trans.QtaCommissioni!=null)
-                {
-                    trans.QtaCommissioni=new BigDecimal(trans.QtaCommissioni).add(differenza).toPlainString();
-                    //trans.QtaCommissioni=differenza.toPlainString();
-                }
-                else trans.QtaCommissioni=differenza.toPlainString();
-                }
-                else if (differenza.compareTo(BigDecimal.ZERO)==1){
-                //differenza positiva
-                trans.InserisciMonete("SOL", "SOL", "SOL", "", differenza.toPlainString(), "Crypto");
-                }            
-            }
-            System.out.println("Numero movimenti validi = "+numMovimenti);
-            if (numMovimenti>0) MappaTransazioniDefi.put(walletAddress+"."+trans.HashTransazione, trans);
-            
+            /*  BigDecimal differenza=TotaleNativeSOL.subtract(TotTransferSOL);
+            System.out.println("Differenza "+differenza);
+            System.out.println("TotaleNativeSOL "+TotaleNativeSOL);
+            System.out.println("TotTransferSOL "+TotTransferSOL);
+                    
+                    //TotaleNativeSOL=TotaleNativeSOL.add(differenza);
+                    if (TotaleNativeSOL.compareTo(BigDecimal.ZERO)!=0){
+                        numMovimenti++;
+                        trans.InserisciMonete("SOL", "SOL", "SOL", AddressNoWallet, TotaleNativeSOL.toPlainString(), "Crypto");
+                    }
+             */
+
+            //System.out.println("Numero movimenti validi = "+numMovimenti);
         }
         return MappaTransazioniDefi;
     }
@@ -298,7 +296,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String jsonString = response.body().string();
-                System.out.println("Risposta JSON completa getTokenName: " + jsonString);
+                //System.out.println("Risposta JSON completa getTokenName: " + jsonString);
                 JSONObject jsonResponse = new JSONObject(jsonString);
                 if (jsonResponse.has("result")) {
                     JSONObject metadata = jsonResponse.getJSONObject("result").optJSONObject("content").optJSONObject("metadata");

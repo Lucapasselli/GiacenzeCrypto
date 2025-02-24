@@ -9096,7 +9096,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
-        try {
+       /* try {
             // TODO add your handling code here:
             // Importazioni.Importa_Solana_OKHTTP();
             // SolanaTransactionAnalyzer t =new SolanaTransactionAnalyzer();
@@ -9122,7 +9122,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         TabellaCryptodaAggiornare = true;
         TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
-       System.out.println("finito porca vacca");
+       System.out.println("finito porca vacca");*/
         
         
         

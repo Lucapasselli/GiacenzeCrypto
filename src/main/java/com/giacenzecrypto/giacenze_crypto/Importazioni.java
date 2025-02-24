@@ -5372,11 +5372,13 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String walletAddress = wallets.split(";")[0];
             progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
             String Blocco = wallets.split(";")[1];
-            Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);
             String Rete = wallets.split(";")[2];
+            //In caso di SOL devo passargli l'ultimo blocco disponibile, non il blocco+1
+            if (!Rete.equalsIgnoreCase("SOL")) Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);            
             if (Rete.equalsIgnoreCase("SOL")) {
                 try {
-                    Map<String, TransazioneDefi> MappaTransazioniDefiSol = Trans_Solana.fetchAndParseTransactions(walletAddress,null);
+                    int BloccoSol=Integer.parseInt(Blocco);
+                    Map<String, TransazioneDefi> MappaTransazioniDefiSol = Trans_Solana.fetchAndParseTransactions(walletAddress,BloccoSol);
                     if (MappaTransazioniDefiSol!=null)
                         for(TransazioneDefi T:MappaTransazioniDefiSol.values()){
                             MappaTransazioniDefi.put(walletAddress+"."+T.HashTransazione, T);

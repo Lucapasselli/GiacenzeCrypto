@@ -21,12 +21,13 @@ public class Trans_Solana {
     private static final String HELIUS_RPC_URL2 = "https://mainnet.helius-rpc.com/";
     private static final OkHttpClient httpClient = new OkHttpClient();
     private static final Map<String, String> tokenNameCache = new HashMap<>();
+    static boolean verbose = false;
 
 
-    public static Map<String, TransazioneDefi> fetchAndParseTransactions(String walletAddress, String afterSignature) throws InterruptedException {
+    public static Map<String, TransazioneDefi> fetchAndParseTransactions(String walletAddress, int afterBlock) throws InterruptedException {
         try {
             //JSONArray transactions = getParsedTransactions(walletAddress, afterSignature);
-            JSONArray transactions =  getAllTransactions(walletAddress, afterSignature);
+            JSONArray transactions =  getAllTransactions(walletAddress, afterBlock);
             
             if (transactions != null) {
                 return parseTransactions(transactions, walletAddress);
@@ -41,7 +42,7 @@ public class Trans_Solana {
     }
 
     
-  private static JSONArray getAllTransactions(String walletAddress, String afterSignature) throws IOException {
+  private static JSONArray getAllTransactions(String walletAddress, int afterBlock) throws IOException {
     JSONArray allTransactions = new JSONArray();
     String beforeSignature = null; // Per iterare le pagine delle transazioni
     boolean hasMore = true;
@@ -66,16 +67,17 @@ public class Trans_Solana {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String jsonString = response.body().string();
-               // System.out.println(jsonString);
+               if (verbose) System.out.println(jsonString);
                 JSONArray transactions = new JSONArray(jsonString);
 
                 if (transactions.length() > 0) {
                     for (int i = 0; i < transactions.length(); i++) {
                         JSONObject tx = transactions.getJSONObject(i);
-                        String currentSignature = tx.getString("signature");
-
-                        // Se incontriamo la afterSignature, ci fermiamo
-                        if (afterSignature != null && currentSignature.equals(afterSignature)) {
+                       // String currentSignature = tx.getString("signature");
+                        //String currentBlock = tx.getString("slot");
+                        int currentBlock = tx.optInt("slot", 0);
+                        // se il blocco trovato è minore o uguale al blocco di riferimento fermo lo scaricamento delle transazioni
+                        if (currentBlock<=afterBlock) {
                             hasMore = false;
                             break;
                         }
@@ -120,7 +122,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
     private static Map<String, TransazioneDefi> parseTransactions(JSONArray transactions, String walletAddress) {
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         //System.out.println("\n Transazioni per il wallet: " + walletAddress);
-        boolean verbose = false;
+        
 
         for (int i = 0; i < transactions.length(); i++) {
             int numMovimenti = 0;
@@ -131,6 +133,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
 
             String description = tx.optString("description", "N/A");
             String signature = tx.optString("signature", "N/A");
+            String block = tx.optString("slot", "N/A");
             long timestamp = tx.optLong("timestamp", 0);
             String formattedTimestamp = OperazioniSuDate.ConvertiDatadaLongAlSecondo(timestamp * 1000);
             BigDecimal fee = tx.optBigDecimal("fee", BigDecimal.ZERO).divide(new BigDecimal(1_000_000_000));
@@ -138,7 +141,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
 
             // System.out.println("\nTransazione #" + (i + 1));
             // System.out.println("Signature: " + signature);
-            trans.Blocco = signature;
+            trans.Blocco = block;
             trans.HashTransazione = signature;
             trans.MonetaCommissioni = "SOL";
             if (verbose) {

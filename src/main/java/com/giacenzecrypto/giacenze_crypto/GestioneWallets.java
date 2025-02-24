@@ -268,9 +268,9 @@ public class GestioneWallets extends javax.swing.JDialog {
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         for (String[] v : MappaCryptoWallet.values()) {
             
-            if (Funzioni.Funzioni_isNumeric(v[23], false))
+            //if (Funzioni.Funzioni_isNumeric(v[23], false))
+            //tolgo questo if perchè con Solana i blocchi li identifico con le signature che non sono numeriche
                 Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
-            //System.out.println(v[1]+";"+v[23]);
             
         }
         for (String riga:MappaWallets.values())
@@ -304,6 +304,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
 // progress.RipristinaStdout();
+
 
         Thread thread;
         thread = new Thread() {

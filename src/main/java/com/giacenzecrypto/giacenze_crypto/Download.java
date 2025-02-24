@@ -10,7 +10,6 @@ package com.giacenzecrypto.giacenze_crypto;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-//import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -339,15 +338,14 @@ private Timer timer = new Timer(1000, new ActionListener() {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Download.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Download.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Download.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Download.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+         //</editor-fold>
+         //</editor-fold>
+         //</editor-fold>
+         //</editor-fold>
+         /* Create and display the form */
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
@@ -380,7 +378,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
   
        
 
-    private JTextPane textPane;
+    private final JTextPane textPane;
 
     public CustomOutputStream(JTextPane textPane) {
         this.textPane = textPane;

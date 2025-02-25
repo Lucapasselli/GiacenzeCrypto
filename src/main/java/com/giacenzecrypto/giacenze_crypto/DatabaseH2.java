@@ -808,10 +808,12 @@ public class DatabaseH2 {
             // Connessione al database
             String checkIfExistsSQL = "SELECT Coppia FROM GESTITIBINANCE WHERE Coppia = '" + Coppia + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
+            ResultSet resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 Risultato = resultSet.getString("Coppia");
             }
+            resultSet.close();
+            checkStatement.close();
 
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
@@ -819,35 +821,42 @@ public class DatabaseH2 {
         return Risultato;
     }
         
-            public static String GestitiCoingecko_Leggi(String Gestito) {
+    public static String GestitiCoingecko_Leggi(String Gestito) {
         String Risultato = null;
+        String Rete=Gestito.split("_")[1];
+        if (!Rete.equals("SOL"))Gestito=Gestito.toUpperCase();
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Address_Chain FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito.toUpperCase() + "'";
+            String checkIfExistsSQL = "SELECT Address_Chain FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
+            ResultSet resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 Risultato = resultSet.getString("Address_Chain");
             }
-
+            resultSet.close();
+            checkStatement.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Risultato;
-    }  
+    }
             
         public static String[] GestitiCoingecko_LeggiInteraRiga(String Gestito) {
         String Risultato[]=new String[3];
+        String Rete=Gestito.split("_")[1];
+        if (!Rete.equals("SOL"))Gestito=Gestito.toUpperCase();
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Address_Chain,Simbolo,Nome FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito.toUpperCase() + "'";
+            String checkIfExistsSQL = "SELECT Address_Chain,Simbolo,Nome FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
+            ResultSet resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 Risultato[0] = resultSet.getString("Address_Chain");
                 Risultato[1] = resultSet.getString("Simbolo");
                 Risultato[2] = resultSet.getString("Nome");
             }
+            resultSet.close();
+            checkStatement.close();
 
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);

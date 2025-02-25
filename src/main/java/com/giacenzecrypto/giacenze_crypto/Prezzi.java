@@ -705,10 +705,6 @@ public class Prezzi {
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
         risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
-      /* if (Address.equalsIgnoreCase("0x2170ed0880ac9a755fd29b2688956bd959f933f8")){
-            System.out.println("SONO QUI22222222 - "+DataOra);
-            System.out.println(DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete));
-        }*/
 
         if (risultato == null) {
             //se il token non è gestito da coingecko e non è già nel database ritorno null
@@ -717,6 +713,7 @@ public class Prezzi {
             String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
             //System.out.println(Address + "_" + Rete);
             if (AddressNoPrezzo == null) {
+               // System.out.println("noprezzo "+Address);
                 return null;
             }
             else

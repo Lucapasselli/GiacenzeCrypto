@@ -3542,9 +3542,16 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_ApiKey_Helius_Label.setText("ApiKey Helius x Solana :");
 
+        Opzioni_ApiKey_Helius_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ApiKey_Helius_TextFieldKeyReleased(evt);
+            }
+        });
+
         Opzioni_ApiKey_Helius_LabelSito.setText("https://www.helius.dev/");
 
         Opzioni_ApiKey_Bottone_Salva.setText("Salva");
+        Opzioni_ApiKey_Bottone_Salva.setEnabled(false);
         Opzioni_ApiKey_Bottone_Salva.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_ApiKey_Bottone_SalvaActionPerformed(evt);
@@ -3552,6 +3559,7 @@ private static final long serialVersionUID = 3L;
         });
 
         Opzioni_ApiKey_Bottone_Annulla.setText("Annulla");
+        Opzioni_ApiKey_Bottone_Annulla.setEnabled(false);
         Opzioni_ApiKey_Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_ApiKey_Bottone_AnnullaActionPerformed(evt);
@@ -9092,8 +9100,27 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Opzioni_ApiKey_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
         // TODO add your handling code here:
         Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
+        Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
+
+    private void Opzioni_ApiKey_Helius_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ApiKey_Helius_TextFieldKeyReleased
     
+    private void Opzioni_ApiKey_ControllaPulsanti(){
+            // TODO add your handling code here:
+        String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
+        String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
+        if (!NuovoValore.equals(ValoreSalvato)){
+            Opzioni_ApiKey_Bottone_Salva.setEnabled(true);
+            Opzioni_ApiKey_Bottone_Annulla.setEnabled(true);
+        }
+        else{
+            Opzioni_ApiKey_Bottone_Salva.setEnabled(false);
+            Opzioni_ApiKey_Bottone_Annulla.setEnabled(false);
+        }
+    }
     
     
     private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete) {

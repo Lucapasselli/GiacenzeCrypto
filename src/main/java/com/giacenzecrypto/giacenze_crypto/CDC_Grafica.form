@@ -5004,6 +5004,9 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Helius_TextField">
+                      <Events>
+                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Helius_TextFieldKeyReleased"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Helius_LabelSito">
                       <Properties>
@@ -5013,6 +5016,7 @@
                     <Component class="javax.swing.JButton" name="Opzioni_ApiKey_Bottone_Salva">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Salva"/>
+                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_ApiKey_Bottone_SalvaActionPerformed"/>
@@ -5021,6 +5025,7 @@
                     <Component class="javax.swing.JButton" name="Opzioni_ApiKey_Bottone_Annulla">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Annulla"/>
+                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_ApiKey_Bottone_AnnullaActionPerformed"/>

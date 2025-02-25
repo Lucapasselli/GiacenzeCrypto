@@ -66,7 +66,7 @@ public class DatabaseH2 {
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
             
-            createTableSQL = "CREATE TABLE IF NOT EXISTS TOKENSOLANA  (Address VARCHAR(255) PRIMARY KEY, Simbolo VARCHAR(255), Nome VARCHAR (255))";
+            createTableSQL = "CREATE TABLE IF NOT EXISTS TOKENSOLANA  (Address VARCHAR(255) PRIMARY KEY, Simbolo VARCHAR(255), Nome VARCHAR (255), Tipo VARCHAR (255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
@@ -967,7 +967,7 @@ public class DatabaseH2 {
         }
     }
         
-     public static void TokenSolana_AggiungiToken(String Address,String Simbolo, String Nome) {
+     public static void TokenSolana_AggiungiToken(String Address,String Simbolo, String Nome,String Tipo) {
         try {
             String checkIfExistsSQL = "SELECT COUNT(*) FROM TOKENSOLANA WHERE Address = '" + Address + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
@@ -978,13 +978,13 @@ public class DatabaseH2 {
             }
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE TOKENSOLANA SET (Simbolo, Nome) = ('" + Simbolo + "','" + Nome+ "') WHERE Address = '" + Address + "'";
+                String updateSQL = "UPDATE TOKENSOLANA SET (Simbolo, Nome,Tipo) = ('" + Simbolo + "','" + Nome+ "','" + Tipo+ "') WHERE Address = '" + Address + "'";
                 PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
                 updateStatement.executeUpdate();   
 
             } else {
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO TOKENSOLANA (Address,Simbolo,Nome) VALUES ('" + Address + "','"+ Simbolo + "','" + Nome + "')";
+                String insertSQL = "INSERT INTO TOKENSOLANA (Address,Simbolo,Nome,Tipo) VALUES ('" + Address + "','"+ Simbolo + "','" + Nome + "','" + Tipo+ "')";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
                 insertStatement.executeUpdate();
 
@@ -996,15 +996,16 @@ public class DatabaseH2 {
     }   
      
         public static String[] TokenSolana_Leggi(String Address) {
-        String Risultato[]=new String[2];
+        String Risultato[]=new String[3];
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT Simbolo,Nome FROM TOKENSOLANA WHERE Address = '" + Address + "'";
+            String checkIfExistsSQL = "SELECT Simbolo,Nome,Tipo FROM TOKENSOLANA WHERE Address = '" + Address + "'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 Risultato[0] = resultSet.getString("Simbolo");
                 Risultato[1] = resultSet.getString("Nome");
+                Risultato[2] = resultSet.getString("Tipo");
             }else return null;
 
         } catch (SQLException ex) {

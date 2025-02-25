@@ -294,7 +294,6 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Text_Vendite = new javax.swing.JTextField();
         TransazioniCrypto_CheckBox_VediSenzaPrezzo = new javax.swing.JCheckBox();
         Bottone_Errori = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -840,13 +839,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jButton3.setText("jButton3");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -877,9 +869,7 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
                                         .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
-                                        .addComponent(jButton3)
-                                        .addGap(60, 60, 60)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 209, Short.MAX_VALUE)
                                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(TransazioniCrypto_TabbedPane))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -918,7 +908,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -927,8 +917,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton1)
-                        .addComponent(jButton3)))
+                        .addComponent(jButton1)))
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -945,7 +934,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
@@ -9094,40 +9083,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
          Funzioni.ApriWeb("https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/Calcolo%20Plusvalenze%20e%20Opzioni.pdf/download");
     }//GEN-LAST:event_RT_Bottone_Documentazione1ActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-
-       /* try {
-            // TODO add your handling code here:
-            // Importazioni.Importa_Solana_OKHTTP();
-            // SolanaTransactionAnalyzer t =new SolanaTransactionAnalyzer();
-            String walletAddress = DatabaseH2.Opzioni_Leggi("SolWallet");
-            //Trans_Solana.fetchAndParseTransactions(walletAddress,null);
-            
-            Map<String, TransazioneDefi> MappaTransazioniDefi = Trans_Solana.fetchAndParseTransactions(walletAddress,null);
-                if (MappaTransazioniDefi != null) {
-                    //Scrivo tutte le nuove transazioni nella mappa principale
-                    for (TransazioneDefi v : MappaTransazioniDefi.values()) {
-                        for (String[] st : v.RitornaRigheTabella()) {
-                            CDC_Grafica.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
-                            //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
-                            Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);                         
-                        }
-                    }
-            }
-            
-            
-            
-        } catch (InterruptedException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        TabellaCryptodaAggiornare = true;
-        TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
-       System.out.println("finito porca vacca");*/
-        
-        
-        
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void Opzioni_ApiKey_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
         // TODO add your handling code here:
         DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", this.Opzioni_ApiKey_Helius_TextField.getText());
@@ -11060,7 +11015,6 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

@@ -267,11 +267,15 @@ public class GestioneWallets extends javax.swing.JDialog {
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         for (String[] v : MappaCryptoWallet.values()) {
-            
-            //if (Funzioni.Funzioni_isNumeric(v[23], false))
-            //tolgo questo if perchè con Solana i blocchi li identifico con le signature che non sono numeriche
-                Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
-            
+            if (Funzioni.Funzioni_isNumeric(v[23], false)){
+                if (Mappa_Wallet.get(v[3])!=null && Mappa_Wallet.get(v[3]).split(";").length>1){
+                        int bloccoMaggiore=Integer.parseInt(Mappa_Wallet.get(v[3]).split(";")[1]);
+                        int bloccoUltimaTransazione=Integer.parseInt(v[23]);
+                        if(bloccoUltimaTransazione>bloccoMaggiore){
+                            Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
+                        }                   
+                }else Mappa_Wallet.put(v[3], v[1]+";"+v[23]);               
+            }           
         }
         for (String riga:MappaWallets.values())
         {
@@ -303,7 +307,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Component c = com.giacenzecrypto.giacenze_crypto.GestioneWallets.this;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
-// progress.RipristinaStdout();
+ progress.RipristinaStdout();
 
 
         Thread thread;

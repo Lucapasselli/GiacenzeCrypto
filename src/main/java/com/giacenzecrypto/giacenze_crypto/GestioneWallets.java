@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import org.bitcoinj.core.Base58;
 
 /**
  *
@@ -213,16 +214,27 @@ public class GestioneWallets extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public static boolean isValidAddress(String address,String Rete) {
+  /*  public static boolean isValidAddress(String address,String Rete) {
         if (Rete.equalsIgnoreCase("SOL")){
-            String BASE58_REGEX = "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{44}$";
-            return address != null && address.length() == 44 && Pattern.matches(BASE58_REGEX, address);
+           // String BASE58_REGEX = "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$";
+           // return address != null && address.length() == 44 && Pattern.matches(BASE58_REGEX, address);
+            return isValidSolanaAddress(address);
         }
         else{
             Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}$");
             return address != null && ETH_ADDRESS_PATTERN.matcher(address).matches();
         }
     }
+    
+    private static boolean isValidSolanaAddress(String address) {
+        try {
+            byte[] decoded = Base58.decode(address);
+            return decoded.length == 32; // Gli indirizzi Solana devono essere di 32 byte decodificati
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    */
     
     private void Bottone_InserisciWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciWalletActionPerformed
         // TODO add your handling code here:
@@ -237,7 +249,7 @@ public class GestioneWallets extends javax.swing.JDialog {
             JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare una rete valida",
                             "Rete non valida",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);            
         }
-        else if (!isValidAddress(Wallet,Rete)){
+        else if (!Funzioni.isValidAddress(Wallet,Rete)){
                 //non è un indirizzo di wallet valido
             JOptionPane.showConfirmDialog(this, "Attenzione! \nIl Wallet specificato non è valido",
                             "Wallet non Valido",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);

@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -967,33 +968,49 @@ public class DatabaseH2 {
         }
     }
         
-     public static void TokenSolana_AggiungiToken(String Address,String Simbolo, String Nome,String Tipo) {
+      public static void TokenSolana_AggiungiToken(String Address, String Simbolo, String Nome, String Tipo) {
         try {
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM TOKENSOLANA WHERE Address = '" + Address + "'";
+            // Controllo se il token esiste già
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM TOKENSOLANA WHERE Address = ?";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Address);
+            ResultSet resultSet = checkStatement.executeQuery();
+
             int rowCount = 0;
-            var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 rowCount = resultSet.getInt(1);
             }
+
             if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE TOKENSOLANA SET (Simbolo, Nome,Tipo) = ('" + Simbolo + "','" + Nome+ "','" + Tipo+ "') WHERE Address = '" + Address + "'";
+                // Il token esiste già, aggiorno i dati
+                String updateSQL = "UPDATE TOKENSOLANA SET Simbolo = ?, Nome = ?, Tipo = ? WHERE Address = ?";
                 PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
-                updateStatement.executeUpdate();   
-
+                updateStatement.setString(1, Simbolo);
+                updateStatement.setString(2, Nome);
+                updateStatement.setString(3, Tipo);
+                updateStatement.setString(4, Address);
+                updateStatement.executeUpdate();
+                updateStatement.close();
             } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO TOKENSOLANA (Address,Simbolo,Nome,Tipo) VALUES ('" + Address + "','"+ Simbolo + "','" + Nome + "','" + Tipo+ "')";
+                // Il token non esiste, lo inserisco
+                String insertSQL = "INSERT INTO TOKENSOLANA (Address, Simbolo, Nome, Tipo) VALUES (?, ?, ?, ?)";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.setString(1, Address);
+                insertStatement.setString(2, Simbolo);
+                insertStatement.setString(3, Nome);
+                insertStatement.setString(4, Tipo);
                 insertStatement.executeUpdate();
-
+                insertStatement.close();
             }
 
+            // Chiudo il ResultSet e lo Statement per evitare memory leak
+            resultSet.close();
+            checkStatement.close();
+
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, "Errore durante l'inserimento/aggiornamento del token", ex);
         }
-    }   
+    } 
      
         public static String[] TokenSolana_Leggi(String Address) {
         String Risultato[]=new String[3];

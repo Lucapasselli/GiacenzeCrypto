@@ -49,7 +49,7 @@ public class Prezzi {
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
     static String CoppiePrioritarie[]=new String []{"USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","BTCUSDT",
-        "ETHUSDT","BNBUSDT","LTCUSDT","ADAUSDT","XRPUSDT","NEOUSDT",
+        "ETHUSDT","BNBUSDT","SOLUSDT","LTCUSDT","ADAUSDT","XRPUSDT","NEOUSDT",
         "IOTAUSDT","EOSUSDT","XLMUSDT","SOLUSDT","PAXUSDT","TRXUSDT","ATOMUSDT","MATICUSDT"};
 
     
@@ -695,9 +695,12 @@ public class Prezzi {
 
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
        // System.out.println(Rete);
-        Address = Address.toUpperCase();
-        if (!Address.contains("0X"))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
-        long DataRiferimento=Datalong/1000;       
+        if (!Rete.equalsIgnoreCase("SOL"))Address = Address.toUpperCase();
+        //System.out.println("cosacosa "+Address);
+        if(!Funzioni.isValidAddress(Address, Rete))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
+        //System.out.println("daie "+Address);
+       // if (!Address.contains("0X"))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
+        //long DataRiferimento=Datalong/1000;       
         String risultato;// = null;
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
@@ -912,7 +915,7 @@ public class Prezzi {
         //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
 
 
-
+       // System.out.println("Recupero Prezzi Coingecko");
 
             
         
@@ -1643,7 +1646,9 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
 
-      // System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
+      /* System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
+       System.out.println(Rete);
+       System.out.println(Moneta1a.MonetaAddress);*/
         /*Questa funzione si divide in 4 punti fondamentali:
         1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
         2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
@@ -1751,6 +1756,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         String temp[]=CDC_Grafica.Mappa_ChainExplorer.get(Rete);
         if (temp!=null){
             MonetaRete=temp[2];
+            //System.out.println(MonetaRete);
         }
     }
     if (MonetaRete==null)MonetaRete="";
@@ -1849,6 +1855,12 @@ for (int i=0;i<ArraydataIni.size();i++){
                     if (AddressMoneta[k] == null || ForzaUsoBinance[k]) {
                         PrezzoTransazione = ConvertiXXXEUR(mon[k].Moneta, mon[k].Qta, Data);
                     } else {
+                        /*System.out.println(mon[k].Qta);
+                        System.out.println(AddressMoneta[k]);
+                        System.out.println(Data);
+                        System.out.println(Rete);
+                        System.out.println(mon[k].Moneta);
+                        System.out.println("---");*/
                         PrezzoTransazione = ConvertiAddressEUR(mon[k].Qta, Data, AddressMoneta[k], Rete, mon[k].Moneta);
                     }
                 }
@@ -2133,6 +2145,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String ethereumAddress = platformsObject.has("ethereum") ? platformsObject.get("ethereum").getAsString() : null;
                         String baseAddress = platformsObject.has("base") ? platformsObject.get("base").getAsString() : null;
                         String arbitrumAddress = platformsObject.has("arbitrum-one") ? platformsObject.get("arbitrum-one").getAsString() : null;
+                        String solanaAddress = platformsObject.has("solana") ? platformsObject.get("solana").getAsString() : null;
                         
                         if (cronosAddress!=null&&!cronosAddress.isEmpty()){
                             String Gestito[]=new String[3];
@@ -2170,6 +2183,14 @@ for (int i=0;i<ArraydataIni.size();i++){
                         if (arbitrumAddress!=null&&!arbitrumAddress.isEmpty()){
                             String Gestito[]=new String[3];
                             Gestito[0]=(arbitrumAddress+"_ARB").toUpperCase();
+                            Gestito[1]=Simbolo;
+                            Gestito[2]=Nome;
+                            gestiti.add(Gestito);
+                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
+                        }
+                        if (solanaAddress!=null&&!solanaAddress.isEmpty()){
+                            String Gestito[]=new String[3];
+                            Gestito[0]=(solanaAddress+"_SOL");
                             Gestito[1]=Simbolo;
                             Gestito[2]=Nome;
                             gestiti.add(Gestito);

@@ -67,6 +67,12 @@
     <artifactId>h2</artifactId>
     <version>2.2.224</version>
 </dependency>
+	 <dependency>
+	  <groupId>org.bitcoinj</groupId>
+	  <artifactId>bitcoinj-core</artifactId>
+	  <version>0.16.5</version>
+	  <type>jar</type>
+	 </dependency>
 	</dependencies>
 <build>
   <plugins>

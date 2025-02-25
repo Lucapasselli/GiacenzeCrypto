@@ -48,7 +48,7 @@ public class Trans_Solana {
     JSONArray allTransactions = new JSONArray();
     String beforeSignature = null; // Per iterare le pagine delle transazioni
     boolean hasMore = true;
-    int limit = 25; // Numero di transazioni per richiesta
+    int limit = 40; // Numero di transazioni per richiesta
     int Ntrans = 1;
 
     while (hasMore) {
@@ -69,28 +69,39 @@ public class Trans_Solana {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String jsonString = response.body().string();
-               if (verbose) System.out.println(jsonString);
-                JSONArray transactions = new JSONArray(jsonString);
+                if (verbose) {
+                    System.out.println(jsonString);
+                }
+                if (Funzioni.isValidJSONArray(jsonString)&&!CDC_Grafica.InterrompiCiclo) {
+                    JSONArray transactions = new JSONArray(jsonString);
 
-                if (transactions.length() > 0) {
-                    for (int i = 0; i < transactions.length(); i++) {
-                        JSONObject tx = transactions.getJSONObject(i);
-                       // String currentSignature = tx.getString("signature");
-                        //String currentBlock = tx.getString("slot");
-                        int currentBlock = tx.optInt("slot", 0);
-                        // se il blocco trovato è minore o uguale al blocco di riferimento fermo lo scaricamento delle transazioni
-                        if (currentBlock<=afterBlock) {
-                            hasMore = false;
-                            break;
+                    if (transactions.length() > 0) {
+                        for (int i = 0; i < transactions.length(); i++) {
+                            JSONObject tx = transactions.getJSONObject(i);
+                            // String currentSignature = tx.getString("signature");
+                            //String currentBlock = tx.getString("slot");
+                            int currentBlock = tx.optInt("slot", 0);
+                            // se il blocco trovato è minore o uguale al blocco di riferimento fermo lo scaricamento delle transazioni
+                            if (currentBlock <= afterBlock) {
+                                hasMore = false;
+                                break;
+                            }
+                            //System.out.println("Transazione scaricata"+tx);
+                            allTransactions.put(tx);
                         }
-                        //System.out.println("Transazione scaricata"+tx);
-                        allTransactions.put(tx);
-                    }
 
-                    // Imposta la signature dell'ultima transazione per continuare il download
-                    beforeSignature = transactions.getJSONObject(transactions.length() - 1).getString("signature");
-                } else {
-                    hasMore = false; // Se non ci sono più transazioni, fermiamo il ciclo
+                        // Imposta la signature dell'ultima transazione per continuare il download
+                        beforeSignature = transactions.getJSONObject(transactions.length() - 1).getString("signature");
+                    } else {
+                        hasMore = false; // Se non ci sono più transazioni, fermiamo il ciclo
+                    }
+                }else{
+                    //Se trovo un errore devo pulire tutte le transazioni e interrompere il ciclo
+                    //Siccome le transazioni vengono prese a ritroso poi si rischierebbe di non importare quelle vecchie
+                    CDC_Grafica.InterrompiCiclo=false;
+                    allTransactions.clear();
+                    hasMore = false;
+                    break;
                 }
             }
         }
@@ -107,6 +118,9 @@ public class Trans_Solana {
 }
 
 
+  
+  
+  
 // Funzione per ordinare le transazioni dal più vecchio al più recente
 private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
     List<JSONObject> transactionList = new ArrayList<>();
@@ -261,7 +275,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.body() != null) {
                 String jsonString = response.body().string();
-                System.out.println("Risposta JSON completa getTokenName: " + jsonString);
+                //System.out.println("Risposta JSON completa getTokenName: " + jsonString);
                 JSONObject jsonResponse = new JSONObject(jsonString);
                 if (jsonResponse.has("result")) {
                     JSONObject metadata = jsonResponse.getJSONObject("result").optJSONObject("content").optJSONObject("metadata");

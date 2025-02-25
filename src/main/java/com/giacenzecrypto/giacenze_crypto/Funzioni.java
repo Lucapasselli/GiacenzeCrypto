@@ -22,10 +22,14 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JTable;
 import javax.swing.table.TableModel;
+import org.bitcoinj.core.Base58;
 import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  *
@@ -174,6 +178,16 @@ public class Funzioni {
     }
         
     
+        public static boolean isValidJSONArray(String jsonString) {
+        try {
+            new JSONArray(jsonString); // Prova a creare un JSONArray
+            return true;
+        } catch (JSONException e) {
+            System.out.println("ERRORE : "+jsonString+" non è un array di stringhe valido");
+            return false; // Se genera un'eccezione, non è un JSONArray valido
+        }
+    }
+        
     public static void RW_CreaExcel(JTable RW_Tabella,String Anno){
 
         try {
@@ -404,6 +418,29 @@ public class Funzioni {
             colonna++;
         }
     }
+    
+    
+        public static boolean isValidAddress(String address,String Rete) {
+        if (Rete.equalsIgnoreCase("SOL")){
+           // String BASE58_REGEX = "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$";
+           // return address != null && address.length() == 44 && Pattern.matches(BASE58_REGEX, address);
+            return isValidSolanaAddress(address);
+        }
+        else{
+            Pattern ETH_ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}$");
+            return address != null && ETH_ADDRESS_PATTERN.matcher(address).matches();
+        }
+    }
+    
+    private static boolean isValidSolanaAddress(String address) {
+        try {
+            byte[] decoded = Base58.decode(address);
+            return decoded.length == 32; // Gli indirizzi Solana devono essere di 32 byte decodificati
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
     
     
         public static List<String[]> RW_GiacenzeaData(long DataRiferimento,String Wallet,String SottoWallet){

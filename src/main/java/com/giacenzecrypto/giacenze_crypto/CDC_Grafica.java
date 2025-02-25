@@ -123,6 +123,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovSconosciuti=0;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
+    public static boolean InterrompiCiclo=false;
 
     
     

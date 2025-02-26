@@ -132,7 +132,7 @@ private static final long serialVersionUID = 3L;
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.0.31 Beta";          
+            String Titolo="Giacenze Crypto 1.0.32 CR1 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());

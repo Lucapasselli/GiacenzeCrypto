@@ -419,6 +419,20 @@ public class Funzioni {
         }
     }
     
+    public static boolean isValidDefiWallet(String wallet) {
+        //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
+        //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||";
+        String sWallet[]=wallet.split("\\(");
+        String address;
+        String Rete;
+        if (sWallet.length==2){
+            address=sWallet[0].trim();
+            Rete=sWallet[1].replace(")", "").trim();
+            if (RetiSupportate.contains("||"+Rete+"||"))return Funzioni.isValidAddress(address, Rete);
+        }
+        return false;
+    }
     
         public static boolean isValidAddress(String address,String Rete) {
         if (Rete.equalsIgnoreCase("SOL")){
@@ -585,6 +599,8 @@ return ListaSaldi;
                         ApriWeb("https://basescan.org/tx/" + IDTransazione);
                     } else if (Rete.equalsIgnoreCase("ARB")){
                         ApriWeb("https://arbiscan.io/tx/" + IDTransazione);
+                    }else if (Rete.equalsIgnoreCase("SOL")){
+                        ApriWeb("https://solscan.io/tx/" + IDTransazione);
                     }
         }
         return true;

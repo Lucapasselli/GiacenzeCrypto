@@ -5093,7 +5093,7 @@ private static final long serialVersionUID = 3L;
                     //ABILITO BOTTONE DEFI SE CI SONO LE CONDIZIONI
         String Wallet=Giacenzeadata_Walleta_Label.getText().trim(); 
         String SottoWallet=Giacenzeadata_Walletb_Label.getText().trim();
-        if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")&&!Address.equalsIgnoreCase("")) {
+        if (Funzioni.isValidDefiWallet(Wallet)) {
                 this.GiacenzeaData_Bottone_MovimentiDefi.setEnabled(true);
             }
         else{
@@ -6032,7 +6032,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Address=GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();            
             String Wallet=Giacenzeadata_Walleta_Label.getText();
             
-            if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")&&Address!=null&&Rete!=null) {
+            if (Address!=null&&Rete!=null&&Funzioni.isValidAddress(Address, Rete)) {
                 Wallet=Wallet.split("\\(")[0].trim();
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     try {
@@ -6051,6 +6051,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         else if(Rete.equalsIgnoreCase("ARB")){
                            Desktop.getDesktop().browse(new URI("https://arbiscan.io/token/"+Address +"?a="+ Wallet)); 
                         }
+                        else if(Rete.equalsIgnoreCase("SOL")){
+                           Desktop.getDesktop().browse(new URI("https://solscan.io/token/"+Address +"?a="+ Wallet)); 
+                        }
                         
                     } catch (URISyntaxException | IOException ex) {
                         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
@@ -6068,15 +6071,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Giacenzeadata_Walleta_LabelPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Giacenzeadata_Walleta_LabelPropertyChange
         // TODO add your handling code here:
         //System.out.println("Cambiato Wallet");
-                    String Wallet=Giacenzeadata_Walleta_Label.getText();
-            
-        if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")) {
+        String Wallet=Giacenzeadata_Walleta_Label.getText();
+            if(Funzioni.isValidDefiWallet(Wallet)){
                 this.GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(true);
-            }
-        else{
+            }else{
             this.GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
             this.GiacenzeaData_Bottone_MovimentiDefi.setEnabled(false);
         }
+        
     }//GEN-LAST:event_Giacenzeadata_Walleta_LabelPropertyChange
 
     private void GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GiacenzeExplorerMouseClicked
@@ -6086,7 +6088,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String Wallet=Giacenzeadata_Walleta_Label.getText().trim();
             System.out.println(Wallet);
             
-            if (Wallet.contains("0x")&&Wallet.contains("(")&&Wallet.contains(")")) {
+            if (Funzioni.isValidDefiWallet(Wallet)) {
                 Rete=Wallet.split("\\(")[1].split("\\)")[0];
                 Wallet=Wallet.split("\\(")[0].trim();
                 
@@ -6106,13 +6108,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         else if(Rete.equalsIgnoreCase("ARB")){
                            Funzioni.ApriWeb("https://arbiscan.io/tokenholdings?a="+ Wallet); 
                         }
-                        
+                        else if(Rete.equalsIgnoreCase("SOL")){
+                           Funzioni.ApriWeb("https://solscan.io/account/"+ Wallet+"#portfolio"); 
+                        }
                     }
                 }
             
             else
               {
-                JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
+                JOptionPane.showConfirmDialog(this, "Il Wallet selezionato non è valido \nselezionare un altro Wallet",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
               }  
         
@@ -10034,13 +10038,14 @@ try {
         String Wallet=Transazione[3].trim();
         String appoggio[]=Wallet.split(" ");
         String Rete="";
+        String ReteAppoggio;
         // Se soddisfa le seguenti condizioni significa che ho trovato un wallet in defi e posso tornare il nome della Rete DEFI
         // Quindi restituisco il nome della rete oltre le condizioni principali solo se hop la transaction hash
-        if (appoggio.length==2&&appoggio[1].contains("(")&&
-                appoggio[1].contains(")")&&
-                appoggio[0].contains("0x")&&
-                ID.split("_")[1].startsWith("BC.")){
-            Rete=ID.split("_")[1].split("\\.")[1];
+        if (appoggio.length==2&&appoggio[1].contains("(")&&appoggio[1].contains(")")&&ID.split("_")[1].startsWith("BC.")){
+            ReteAppoggio=ID.split("_")[1].split("\\.")[1];
+            if (Funzioni.isValidAddress(appoggio[0],ReteAppoggio)){
+                Rete=ReteAppoggio;
+            }
         }
         return Rete;
     }
@@ -10064,7 +10069,9 @@ try {
         //per controllare verifico di avere il transaction hash e il nome della rete quindi
         String Transazione[]=MappaCryptoWallet.get(IDTransazione);
         String ReteDefi=RitornaReteDefi(IDTransazione);
+        //System.out.println("retedefi:"+ReteDefi);
         String THash=Transazione[24];
+        //System.out.println("hash:"+THash);
             if(!THash.isEmpty()&&!ReteDefi.isEmpty()){
                 this.TransazioniCrypto_Bottone_DettaglioDefi.setEnabled(true);
             }else{

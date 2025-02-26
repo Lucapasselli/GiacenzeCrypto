@@ -24,11 +24,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import org.bitcoinj.core.Base58;
 
 /**
  *
@@ -319,7 +317,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Component c = com.giacenzecrypto.giacenze_crypto.GestioneWallets.this;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
- progress.RipristinaStdout();
+ //progress.RipristinaStdout();
 
 
         Thread thread;

@@ -5,3 +5,4 @@ Cosa fare quando si aggiunge rete ETH like
 - sistemare tasto gestione wallet a oggi
 - Sistemare prezzi coingecko
 - Aggiungere a funzione "Aggiorna wallet" la nuova rete
+- Aggiungere alla Funzione Funzioni.isValidDefiWallet la nuova rete supportata

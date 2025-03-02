@@ -11,3 +11,6 @@
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
 - aggiungere gestione dei prezzi personalizzati
+
+
+Verificare 202404092050 ee su rete base

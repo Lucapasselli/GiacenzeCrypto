@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 public class Trans_Solana {
     
-    private static final String HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius"); // Inserisci la tua API key
+    private static String HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius"); // Inserisci la tua API key
     private static final String HELIUS_RPC_URL = "https://api.helius.xyz/v0/addresses/";
     private static final String HELIUS_RPC_URL2 = "https://mainnet.helius-rpc.com/";
     private static final OkHttpClient httpClient = new OkHttpClient();
@@ -28,6 +28,7 @@ public class Trans_Solana {
 
     public static Map<String, TransazioneDefi> fetchAndParseTransactions(String walletAddress, int afterBlock) throws InterruptedException {
         try {
+            
             //JSONArray transactions = getParsedTransactions(walletAddress, afterSignature);
             JSONArray transactions =  getAllTransactions(walletAddress, afterBlock);
             
@@ -45,6 +46,7 @@ public class Trans_Solana {
 
     
   private static JSONArray getAllTransactions(String walletAddress, int afterBlock) throws IOException {
+    HELIUS_API_KEY = DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
     JSONArray allTransactions = new JSONArray();
     String beforeSignature = null; // Per iterare le pagine delle transazioni
     boolean hasMore = true;
@@ -118,7 +120,35 @@ public class Trans_Solana {
 }
 
 
-  
+  public static boolean isApiKeyValida(String ApiKey) {
+      //HELIUS_RPC_URL2+"?api-key="+ApiKey
+        //System.out.println(ApiKey);
+        String jsonPayload = "{"
+                + "\"jsonrpc\":\"2.0\","
+                + "\"id\":1,"
+                + "\"method\":\"getBalance\","
+                + "\"params\":[\"11111111111111111111111111111111\"]"
+                + "}";
+
+        
+        RequestBody body = RequestBody.create(jsonPayload, MediaType.get("application/json"));
+        Request request = new Request.Builder()
+                .url(HELIUS_RPC_URL2+"?api-key="+ApiKey)
+                .post(body)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.body() != null) {
+                String responseString = response.body().string();
+                //System.out.println(responseString);
+                return response.isSuccessful() && responseString.contains("\"result\"");
+            }
+        } catch (Exception e) {
+            System.err.println("Errore nella verifica API Key: " + e.getMessage());
+        }
+        return false;
+    }
+
   
   
 // Funzione per ordinare le transazioni dal più vecchio al più recente

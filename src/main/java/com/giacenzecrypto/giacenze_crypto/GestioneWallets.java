@@ -317,7 +317,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Component c = com.giacenzecrypto.giacenze_crypto.GestioneWallets.this;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
- //progress.RipristinaStdout();
+// progress.RipristinaStdout();
 
 
         Thread thread;

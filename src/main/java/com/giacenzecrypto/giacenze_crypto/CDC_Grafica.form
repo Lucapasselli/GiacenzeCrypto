@@ -4970,11 +4970,11 @@
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="Opzioni_ApiKey_Helius_TextField" min="-2" pref="658" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="Opzioni_ApiKey_Helius_LabelSito" min="-2" pref="150" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_ApiKey_Helius_LabelSito" min="-2" pref="230" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="380" max="32767" attributes="0"/>
+                              <EmptySpace pref="288" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -5010,8 +5010,13 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Helius_LabelSito">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="https://www.helius.dev/"/>
+                        <Property name="text" type="java.lang.String" value="https://dashboard.helius.dev/dashboard"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Helius_LabelSitoMouseClicked"/>
+                        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Helius_LabelSitoMouseEntered"/>
+                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Helius_LabelSitoMouseExited"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_ApiKey_Bottone_Salva">
                       <Properties>

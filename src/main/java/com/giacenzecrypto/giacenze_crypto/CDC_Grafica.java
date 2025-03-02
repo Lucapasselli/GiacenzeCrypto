@@ -3548,7 +3548,18 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_ApiKey_Helius_LabelSito.setText("https://www.helius.dev/");
+        Opzioni_ApiKey_Helius_LabelSito.setText("https://dashboard.helius.dev/dashboard");
+        Opzioni_ApiKey_Helius_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Helius_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Helius_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Helius_LabelSitoMouseExited(evt);
+            }
+        });
 
         Opzioni_ApiKey_Bottone_Salva.setText("Salva");
         Opzioni_ApiKey_Bottone_Salva.setEnabled(false);
@@ -3581,9 +3592,9 @@ private static final long serialVersionUID = 3L;
                         .addComponent(Opzioni_ApiKey_Bottone_Annulla))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(380, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(288, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -9098,7 +9109,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void Opzioni_ApiKey_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
         // TODO add your handling code here:
-        DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", this.Opzioni_ApiKey_Helius_TextField.getText());
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||Opzioni_ApiKey_Helius_TextField.getText().isBlank()){
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", Opzioni_ApiKey_Helius_TextField.getText().trim());
+        }else{
+            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br></html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        Opzioni_ApiKey_ControllaPulsanti();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
 
     private void Opzioni_ApiKey_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
@@ -9111,6 +9131,21 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Helius_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_Helius_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://dashboard.helius.dev/dashboard");
+    }//GEN-LAST:event_Opzioni_ApiKey_Helius_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_Helius_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Helius_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_Helius_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Helius_LabelSitoMouseExited
     
     private void Opzioni_ApiKey_ControllaPulsanti(){
             // TODO add your handling code here:

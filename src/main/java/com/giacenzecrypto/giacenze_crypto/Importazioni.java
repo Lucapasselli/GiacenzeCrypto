@@ -5241,11 +5241,15 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 //if (ReteMov==null)System.out.println("ERRORE NEL RECUPERO DELLA RETE : "+movimento[0]);
                 if (ReteMov!=null&&ReteMov.equalsIgnoreCase(Rete)) {
                     //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
-                    if (AddressU.equalsIgnoreCase(MonetaRete)) {
+                    if (AddressU.equalsIgnoreCase(MonetaRete)&&!movimento[8].isBlank()) {
+                       /* System.out.println(movimento[0]);
+                        System.out.println(movimento[3]+" - " +AddressU+" - "+MonetaRete);
+                        System.out.println(movimento[10]+" - "+TotaleQta);
+                        System.out.println("----");*/
                         TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                         IDUltimoMovimento = movimento[0];
                     }
-                    if (AddressE.equalsIgnoreCase(MonetaRete)) {
+                    if (AddressE.equalsIgnoreCase(MonetaRete)&&!movimento[11].isBlank()) {
                         TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
                         IDUltimoMovimento = movimento[0];
                     }
@@ -5376,16 +5380,25 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             //In caso di SOL devo passargli l'ultimo blocco disponibile, non il blocco+1
             if (!Rete.equalsIgnoreCase("SOL")) Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);            
             if (Rete.equalsIgnoreCase("SOL")) {
+
                 try {
-                    int BloccoSol=Integer.parseInt(Blocco);
-                    Map<String, TransazioneDefi> MappaTransazioniDefiSol = Trans_Solana.fetchAndParseTransactions(walletAddress,BloccoSol);
-                    if (MappaTransazioniDefiSol!=null)
-                        for(TransazioneDefi T:MappaTransazioniDefiSol.values()){
-                            MappaTransazioniDefi.put(walletAddress+"."+T.HashTransazione, T);
+                    if (Trans_Solana.isApiKeyValida(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))) {
+                        int BloccoSol = Integer.parseInt(Blocco);
+                        Map<String, TransazioneDefi> MappaTransazioniDefiSol = Trans_Solana.fetchAndParseTransactions(walletAddress, BloccoSol);
+                        if (MappaTransazioniDefiSol != null) {
+                            for (TransazioneDefi T : MappaTransazioniDefiSol.values()) {
+                                MappaTransazioniDefi.put(walletAddress + "." + T.HashTransazione, T);
+                            }
                         }
+                    } else {
+                        System.out.println("Non possono essere scaricate le transazioni del Wallet Solana " + walletAddress + " per mancaza di ApiKey");
+                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Helius");
+                        TimeUnit.SECONDS.sleep(3);
+                    }
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
                 }
+
             } else {
                 String apiKey = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[1];
                 String Indirizzo = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[0];

@@ -105,6 +105,11 @@ public class Funzioni {
          }     
         
          
+        
+        public static String TrasformaNullinBlanc(String stringa){
+            if (stringa==null)return "";
+            else return stringa;
+        }
          
         public static String NormalizzaNome(String Nome){
             String NuovoNome=Nome.replace(";", "")

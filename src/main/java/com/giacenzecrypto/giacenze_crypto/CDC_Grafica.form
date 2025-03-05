@@ -4958,15 +4958,23 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_ApiKey_Helius_Label" min="-2" pref="129" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="Opzioni_ApiKey_Helius_Label" min="-2" pref="129" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_Etherscan_Label" alignment="0" min="-2" pref="129" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="Opzioni_ApiKey_Bottone_Salva" min="-2" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_ApiKey_Bottone_Salva" min="-2" pref="100" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="Opzioni_ApiKey_Bottone_Annulla" min="-2" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_ApiKey_Bottone_Annulla" min="-2" pref="100" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="Opzioni_ApiKey_Etherscan_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_ApiKey_Etherscan_LabelSito" min="-2" pref="230" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="Opzioni_ApiKey_Helius_TextField" min="-2" pref="658" max="-2" attributes="0"/>
@@ -4981,18 +4989,24 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ApiKey_Helius_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Helius_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Helius_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="Opzioni_ApiKey_Bottone_Salva" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_ApiKey_Bottone_Annulla" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_Etherscan_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_Etherscan_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_Etherscan_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="676" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="Opzioni_ApiKey_Bottone_Salva" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_Bottone_Annulla" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace pref="593" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -5020,6 +5034,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_ApiKey_Bottone_Salva">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Salva.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Salva"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
@@ -5029,11 +5046,34 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_ApiKey_Bottone_Annulla">
                       <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Annulla.png"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="Annulla"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_ApiKey_Bottone_AnnullaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Etherscan_TextField">
+                      <Events>
+                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Etherscan_TextFieldKeyReleased"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Etherscan_Label">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="ApiKey Etherscan :"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Etherscan_LabelSito">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="https://etherscan.io/apidashboard"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_LabelSitoMouseClicked"/>
+                        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_LabelSitoMouseEntered"/>
+                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
                   </SubComponents>

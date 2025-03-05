@@ -516,6 +516,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Helius_LabelSito = new javax.swing.JLabel();
         Opzioni_ApiKey_Bottone_Salva = new javax.swing.JButton();
         Opzioni_ApiKey_Bottone_Annulla = new javax.swing.JButton();
+        Opzioni_ApiKey_Etherscan_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Etherscan_Label = new javax.swing.JLabel();
+        Opzioni_ApiKey_Etherscan_LabelSito = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -3561,6 +3564,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ApiKey_Bottone_Salva.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
         Opzioni_ApiKey_Bottone_Salva.setText("Salva");
         Opzioni_ApiKey_Bottone_Salva.setEnabled(false);
         Opzioni_ApiKey_Bottone_Salva.addActionListener(new java.awt.event.ActionListener() {
@@ -3569,11 +3573,33 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ApiKey_Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
         Opzioni_ApiKey_Bottone_Annulla.setText("Annulla");
         Opzioni_ApiKey_Bottone_Annulla.setEnabled(false);
         Opzioni_ApiKey_Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_ApiKey_Bottone_AnnullaActionPerformed(evt);
+            }
+        });
+
+        Opzioni_ApiKey_Etherscan_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ApiKey_Etherscan_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Opzioni_ApiKey_Etherscan_Label.setText("ApiKey Etherscan :");
+
+        Opzioni_ApiKey_Etherscan_LabelSito.setText("https://etherscan.io/apidashboard");
+        Opzioni_ApiKey_Etherscan_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Etherscan_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Etherscan_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Etherscan_LabelSitoMouseExited(evt);
             }
         });
 
@@ -3583,13 +3609,19 @@ private static final long serialVersionUID = 3L;
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addComponent(Opzioni_ApiKey_Bottone_Salva)
+                        .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_ApiKey_Bottone_Annulla))
+                        .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
@@ -3604,11 +3636,16 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Helius_Label)
                     .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Helius_LabelSito))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Opzioni_ApiKey_Bottone_Salva)
-                    .addComponent(Opzioni_ApiKey_Bottone_Annulla))
-                .addContainerGap(676, Short.MAX_VALUE))
+                    .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_Etherscan_Label)
+                    .addComponent(Opzioni_ApiKey_Etherscan_LabelSito))
+                .addGap(18, 18, 18)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(593, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
@@ -9110,20 +9147,39 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Opzioni_ApiKey_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
         // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||Opzioni_ApiKey_Helius_TextField.getText().isBlank()){
+        boolean HeliusDiversa=true;
+        boolean EtherscanDiversa=true;
+        if (Opzioni_ApiKey_Helius_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
+        if (Opzioni_ApiKey_Etherscan_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherescan"))))EtherscanDiversa=false;
+        
+        //Controllo ed eventualmente salvo le api Helius
+        if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())){
             DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", Opzioni_ApiKey_Helius_TextField.getText().trim());
         }else{
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey inserita non è valida o manca la connessione internet<br>"
+            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Helius inserita non è valida o manca la connessione internet<br>"
                                         + "L'operazione verrà annullata!<br></html>",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
+        
+        //Controllo ed eventualmente salvo le api Etherscan  DA FAREEEEEEE
+        if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())){
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", Opzioni_ApiKey_Helius_TextField.getText().trim());
+        }else{
+            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Helius inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br></html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        
         Opzioni_ApiKey_ControllaPulsanti();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
 
     private void Opzioni_ApiKey_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
         // TODO add your handling code here:
-        Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
+        Opzioni_ApiKey_Helius_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius")));
+        Opzioni_ApiKey_Etherscan_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 
@@ -9146,11 +9202,36 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Helius_LabelSitoMouseExited
+
+    private void Opzioni_ApiKey_Etherscan_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Etherscan_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_Etherscan_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Etherscan_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://etherscan.io/apidashboard");
+    }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_Etherscan_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Etherscan_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_Etherscan_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Etherscan_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_LabelSitoMouseExited
     
     private void Opzioni_ApiKey_ControllaPulsanti(){
             // TODO add your handling code here:
-        String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
-        String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
+        String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText()+
+                Opzioni_ApiKey_Etherscan_TextField.getText();
+        //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
+        String ValoreSalvato=Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
+       // System.out.println(ValoreSalvato);
+        //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){
             Opzioni_ApiKey_Bottone_Salva.setEnabled(true);
             Opzioni_ApiKey_Bottone_Annulla.setEnabled(true);
@@ -10982,6 +11063,9 @@ try {
     private javax.swing.JPanel Opzioni_ApiKey;
     private javax.swing.JButton Opzioni_ApiKey_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ApiKey_Bottone_Salva;
+    private javax.swing.JLabel Opzioni_ApiKey_Etherscan_Label;
+    private javax.swing.JLabel Opzioni_ApiKey_Etherscan_LabelSito;
+    private javax.swing.JTextField Opzioni_ApiKey_Etherscan_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_Helius_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Helius_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Helius_TextField;

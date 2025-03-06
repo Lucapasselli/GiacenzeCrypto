@@ -3615,17 +3615,17 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(Opzioni_ApiKey_Etherscan_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addComponent(Opzioni_ApiKey_Helius_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(288, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
@@ -3905,6 +3905,7 @@ private static final long serialVersionUID = 3L;
         }
         
         Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
+        Opzioni_ApiKey_Etherscan_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -9149,25 +9150,29 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         boolean HeliusDiversa=true;
         boolean EtherscanDiversa=true;
+        
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
         if (Opzioni_ApiKey_Etherscan_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherescan"))))EtherscanDiversa=false;
         
         //Controllo ed eventualmente salvo le api Helius
-        if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())){
+        if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||
+                Opzioni_ApiKey_Helius_TextField.getText().isBlank()){
             DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", Opzioni_ApiKey_Helius_TextField.getText().trim());
-        }else{
+        }else if (HeliusDiversa){
             JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Helius inserita non è valida o manca la connessione internet<br>"
                                         + "L'operazione verrà annullata!<br></html>",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
         
-        //Controllo ed eventualmente salvo le api Etherscan  DA FAREEEEEEE
-        if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())){
-            DatabaseH2.Opzioni_Scrivi("ApiKey_Helius", Opzioni_ApiKey_Helius_TextField.getText().trim());
-        }else{
-            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Helius inserita non è valida o manca la connessione internet<br>"
+        //Controllo ed eventualmente salvo le api Etherscan
+        if (EtherscanDiversa&&Trans_Solana.isApiKeyValidaEtherscan(Opzioni_ApiKey_Etherscan_TextField.getText().trim())||
+                Opzioni_ApiKey_Etherscan_TextField.getText().isBlank()){
+            //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Etherscan", Opzioni_ApiKey_Etherscan_TextField.getText().trim());
+        }else if (EtherscanDiversa){
+            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Etherscan inserita non è valida o manca la connessione internet<br>"
                                         + "L'operazione verrà annullata!<br></html>",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }

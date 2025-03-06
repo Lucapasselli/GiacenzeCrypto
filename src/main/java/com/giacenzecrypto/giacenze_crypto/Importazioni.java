@@ -4853,9 +4853,11 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             if (progressb!=null&&progressb.FineThread()) {
                 return null;
             }
-            String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            //String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            String urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+
             if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
-            //System.out.println(urls);
+        //System.out.println(urls);
             System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -4951,7 +4953,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
             String vespa = vespa(apiKey, "paperino");
              
-            String urls = Indirizzo+"/api?module=account&action=balance&address="+walletAddress+"&apikey="+vespa;
+           // String urls = Indirizzo+"/api?module=account&action=balance&address="+walletAddress+"&apikey="+vespa;
+            String urls = Indirizzo+"&module=account&action=balance&address="+walletAddress+"&apikey="+vespa;
             
             System.out.println("Controllo giacenze "+MonetaRete+" per il Wallet "+ walletAddress);
             URL url = new URI(urls).toURL();

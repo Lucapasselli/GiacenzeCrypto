@@ -8,6 +8,8 @@ package com.giacenzecrypto.giacenze_crypto;
  *
  * @author luca.passelli
  */
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import okhttp3.*;
 import org.json.*;
 import java.io.IOException;
@@ -149,7 +151,36 @@ public class Trans_Solana {
         return false;
     }
 
-  
+  public static boolean isApiKeyValidaEtherscan(String ApiKey) {
+        String ETHERSCAN_URL = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=";
+        OkHttpClient client = new OkHttpClient();
+        String url = ETHERSCAN_URL + ApiKey;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                return false; // Errore di connessione o chiave non valida
+            }
+
+            String responseBody = response.body().string();
+           // System.out.println(responseBody);
+           //Risposta se ok -> {"jsonrpc":"2.0","id":83,"result":"0x14f857d"}
+           //Risposta se non ok -> {"status": "0","message": "NOTOK","result": "Invalid API Key"}
+
+            // Parsing JSON con Gson
+            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
+            return json.has("jsonrpc") && "2.0".equals(json.get("jsonrpc").getAsString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    
+    
+    }  
   
 // Funzione per ordinare le transazioni dal più vecchio al più recente
 private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {

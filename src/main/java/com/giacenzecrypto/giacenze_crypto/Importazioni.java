@@ -4857,7 +4857,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             String urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
 
             if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
-        //System.out.println(urls);
+        System.out.println(urls);
             System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -4943,18 +4943,19 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         return Valore;
     }
     
-    public static String GiacenzeL1_Rimanze(String walletAddress,String Rete) {
+    public static String DeFi_GiacenzeL1_Rimanze(String walletAddress,String Rete) {
         //In questa funzione dovrò recuperare le rimanenze CRO del wallet ad un determinato Blocco
         //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
         String Valore = null;
          try {
-            String apiKey = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[1];
+             if (Trans_Solana.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
+            String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
             String Indirizzo = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[0];
             String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
-            String vespa = vespa(apiKey, "paperino");
+            //String vespa = vespa(apiKey, "paperino");
              
            // String urls = Indirizzo+"/api?module=account&action=balance&address="+walletAddress+"&apikey="+vespa;
-            String urls = Indirizzo+"&module=account&action=balance&address="+walletAddress+"&apikey="+vespa;
+            String urls = Indirizzo+"&module=account&action=balance&address="+walletAddress+"&apikey="+apiKey;
             
             System.out.println("Controllo giacenze "+MonetaRete+" per il Wallet "+ walletAddress);
             URL url = new URI(urls).toURL();
@@ -4970,8 +4971,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
             Valore = jsonObjectTxlist.getString("result");
             //Valore = (Funzioni.hexToDecimal(Valore)).toString();
+            //System.out.println(Valore);
             Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
             TimeUnit.SECONDS.sleep(2);
+             }
 
         } catch (InterruptedException | URISyntaxException | IOException ex) {
             // Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
@@ -5213,7 +5216,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         
     }
         
-    public static String GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
+    public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
         //sistemo le giacenze sulle rete ethereum compatibili
         if (!Rete.equals("SOL")){
         progressb.setDefaultCloseOperation(0);
@@ -5259,7 +5262,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 }
             }
         }
-        String GiacenzaReale=GiacenzeL1_Rimanze(Wallet.split(" ")[0],Rete);
+        String GiacenzaReale=DeFi_GiacenzeL1_Rimanze(Wallet.split(" ")[0],Rete);
         String QtaNuovoMovimento = new BigDecimal(GiacenzaReale).subtract(TotaleQta).stripTrailingZeros().toPlainString();       
         if (IDUltimoMovimento!=null && !QtaNuovoMovimento.equals("0") && QtaNuovoMovimento.contains("-")) {
                         
@@ -5396,17 +5399,22 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     } else {
                         System.out.println("Non possono essere scaricate le transazioni del Wallet Solana " + walletAddress + " per mancaza di ApiKey");
                         System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Helius");
-                        TimeUnit.SECONDS.sleep(3);
+                        TimeUnit.SECONDS.sleep(5);
                     }
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             } else {
-                String apiKey = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[1];
+                
+                //Inizio
+                if (Trans_Solana.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
+                
+                
+                String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
                 String Indirizzo = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[0];
                 String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
-                String vespa = vespa(apiKey, "paperino");
+                //String vespa = vespa(apiKey, "paperino");
                 progressb.SetLabel("Scaricamento da " + walletAddress + " ("+Rete+") in corso...");
 
                 //Come prima cosa recupero tutte le risposte per riuscire poi ad avere il numero totale di transazioni da elaborare
@@ -5416,8 +5424,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 int numeroTrans = 0;
 
                 //PARTE 1 : Recupero la lista delle transazioni
-                progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 4");
-                Object Risposta[] = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlist", Blocco, vespa, ccc, progressb);
+                progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 5");
+                Object Risposta[] = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -5425,8 +5433,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 numeroTrans = numeroTrans + (int) Risposta[0];
 
                 //PARTE 2  : Recupero la lista delle transazioni dei token bsc20 
-                progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 4");
-                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokentx", Blocco, vespa, ccc, progressb);
+                progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 5");
+                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -5434,17 +5442,26 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 numeroTrans = numeroTrans + (int) Risposta[0];
 
                 //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT) 
-                progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 4");
-                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokennfttx", Blocco, vespa, ccc, progressb);
+                progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 5");
+                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
                 JSONArray transactionsTokenntfttx = (JSONArray) Risposta[1];
                 numeroTrans = numeroTrans + (int) Risposta[0];
+                
+                //PARTE 4: Recupero la lista delle transazioni dei token erc1155 
+                progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 5");
+                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
+                if (Risposta == null) {
+                    return null;//se in errore termino il ciclo
+                }
+                JSONArray transactionsTokenERC1155 = (JSONArray) Risposta[1];
+                numeroTrans = numeroTrans + (int) Risposta[0];
 
-                //PARTE 4: Recupero delle transazioni interne
-                progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 4");
-                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlistinternal", Blocco, vespa, ccc, progressb);
+                //PARTE 5: Recupero delle transazioni interne
+                progressb.SetMessaggioAvanzamento("Preparazione fase 5 di 5");
+                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -5513,6 +5530,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     progressb.SetAvanzamento(ava);
                 }
 
+                
                 //PARTE B2: Recupero la lista delle transazioni dei token bsc20   
                 for (int i = 0; i < transactionsTokentx.length(); i++) {
                     if (progressb.FineThread()) {
@@ -5550,8 +5568,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
                     trans.MonetaCommissioni = MonetaRete;
                     // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-                    BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
-                    BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
+    //                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
+    //                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
                     //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
                     //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
 
@@ -5571,6 +5589,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     ava++;
                     progressb.SetAvanzamento(ava);
                 }
+                
+                
 
                 //PARTE B3: Recupero la lista delle transazioni dei token erc721 (NFT)  
                 for (int i = 0; i < transactionsTokenntfttx.length(); i++) {
@@ -5610,8 +5630,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
 
                     trans.MonetaCommissioni = MonetaRete;
                     // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-                    BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
-                    BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
+    //                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
+    //                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
                     //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
                     //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
                     //trans.QtaCommissioni=null;
@@ -5629,8 +5649,80 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     ava++;
                     progressb.SetAvanzamento(ava);
                 }
+                
+                //PARTE B4: Recupero la lista delle transazioni dei token ERC1155   //DA SISTEMARE!!!!!!
+                for (int i = 0; i < transactionsTokenERC1155.length(); i++) {
+                    if (progressb.FineThread()) {
+                        return null;
+                    }
+                    //System.out.println("sono qui");
+                    String AddressNoWallet;
+                    String qta;
+                    JSONObject transaction = transactionsTokenERC1155.getJSONObject(i);
+                    //    System.out.println(transaction.toString());
+                    String tokenSymbol = transaction.getString("tokenSymbol");
+                    String tokenName = transaction.getString("tokenName");
+                    String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                    String tokenAddress = transaction.getString("contractAddress");
+                    String tokenDecimal;
+                    String value="0";
+                    if (transaction.has("tokenDecimal")) {
+                        tokenDecimal = transaction.getString("tokenDecimal");
+                        value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
+ 
+                    }
+                    String tokenValue;
+                    if (transaction.has("tokenValue")) {
+                        tokenValue = transaction.getString("tokenValue");
+                        value = tokenValue;
+                    }
+                    String hash = transaction.getString("hash");
+                    String from = transaction.getString("from");
+                    //System.out.println(from + " - "+hash+" B2");
+                    String to = transaction.getString("to");
+                    TransazioneDefi trans;
+                    if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                        trans = new TransazioneDefi();
+                        MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                    } else {
+                        trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                    }
+                    trans.Rete = Rete;
 
-                //PARTE B4: Recupero delle transazioni interne
+                    trans.Blocco = transaction.getString("blockNumber");
+                    trans.Wallet = walletAddress;
+                    trans.DataOra = Data;//Da modificare con data e ora reale
+                    trans.TimeStamp = transaction.getString("timeStamp");
+                    trans.HashTransazione = hash;
+
+                    trans.MonetaCommissioni = MonetaRete;
+                    // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+    //                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
+    //                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
+                    //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
+                    //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+
+                    if (from.equalsIgnoreCase(walletAddress)) {
+                        //trans.QtaCommissioni = "-" + qtaCommissione;
+                        AddressNoWallet = to;
+                        qta = "-" + value;
+                    } else {
+                        AddressNoWallet = from;
+                        qta = value;
+                    }
+                    progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
+                    trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
+
+                    // System.out.println(tokenSymbol+" - "+qta);
+                    //System.out.println(from + " - "+hash+" - B2 - "+trans.QtaCommissioni );
+                    ava++;
+                    progressb.SetAvanzamento(ava);
+                }
+                
+                
+                
+
+                //PARTE B5: Recupero delle transazioni interne
                 for (int i = 0; i < transactionsTxlistinternal.length(); i++) {
                     if (progressb.FineThread()) {
                         return null;
@@ -5691,6 +5783,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 }
 
                 //   TimeUnit.SECONDS.sleep(1);
+                //Fine
+                } else {
+                        System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
+                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    }
             }
         }
 //        Prezzi.ScriviFileConversioneXXXEUR();

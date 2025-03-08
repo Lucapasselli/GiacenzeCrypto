@@ -1,8 +1,8 @@
 Cosa fare quando si aggiunge rete ETH like
 
-- Aggiungere a Mappa_chain in Funzioni
+- Aggiungere a Mappa_chain in Funzioni.CompilaMappaChain()
+- Aggiungere alla Funzione Funzioni.isValidDefiWallet() la nuova rete supportata
 - Sistemare tasto dettaglio defi
 - sistemare tasto gestione wallet a oggi
 - Sistemare prezzi coingecko
 - Aggiungere a funzione "Aggiorna wallet" la nuova rete
-- Aggiungere alla Funzione Funzioni.isValidDefiWallet la nuova rete supportata

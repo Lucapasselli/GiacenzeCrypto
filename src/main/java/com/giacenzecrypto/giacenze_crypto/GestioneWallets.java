@@ -374,9 +374,9 @@ public class GestioneWallets extends javax.swing.JDialog {
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte
                     for (String Dati[]:Mappa_Wallet_Dati.values()){
-                        Importazioni.GiacenzeL1_Sistema(Dati[0], Dati[1], c, progress);
+                        Importazioni.DeFi_GiacenzeL1_Sistema(Dati[0], Dati[1], c, progress);
                     }
-                   // Importazioni.GiacenzeL1_Rimanze(Portafogli,"pippo");
+                   // Importazioni.DeFi_GiacenzeL1_Rimanze(Portafogli,"pippo");
                  //   Prezzi.ScriviFileConversioneXXXEUR();
                     Importazioni.TransazioniAggiunte = i;
                     if (Importazioni.TransazioniAggiunte != 0) {

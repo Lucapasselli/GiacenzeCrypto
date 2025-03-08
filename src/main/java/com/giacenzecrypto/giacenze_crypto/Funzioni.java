@@ -139,18 +139,18 @@ public class Funzioni {
             //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko
             //System.out.println("Compilo Mappe integrate nel codice");
             //String BSC[]=new String[]{"https://api.bscscan.com","6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6","BNB","binance-smart-chain"};
-            String BSC[]=new String[]{"https://api.etherscan.io/v2/api?chainid=56","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","BNB","binance-smart-chain"};
+            String BSC[]=new String[]{"https://api.etherscan.io/v2/api?chainid=56","","BNB","binance-smart-chain"};
 
             //String CRO[]=new String[]{"https://api.cronoscan.com/api?","nYb1EJijpYUyiLKatxoMYI6TWXp+BpOG6hSuriJHVOG7exj5lMlMbw4lKAtdSHYc","CRO","Cronos"};
-            String CRO[]=new String[]{"https://api.etherscan.io/v2/api?chainid=25","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","CRO","Cronos"};
+            String CRO[]=new String[]{"https://api.etherscan.io/v2/api?chainid=25","","CRO","Cronos"};
             
             //String ETH[]=new String[]{"https://api.etherscan.io","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","ETH","ethereum"};
-            String ETH[]=new String[]{"https://api.etherscan.io/v2/api?chainid=1","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","ETH","ethereum"};           
+            String ETH[]=new String[]{"https://api.etherscan.io/v2/api?chainid=1","","ETH","ethereum"};           
             
             //String BASE[]=new String[]{"https://api.basescan.org","33t9n2uL57c70zqqMVLHjAvSZQZhLZf3AXSpbZos2iLlHHHxc57q6pfGLlPOCRIb","ETH","base"};
-            String BASE[]=new String[]{"https://api.etherscan.io/v2/api?chainid=8453","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","ETH","base"};
+            String BASE[]=new String[]{"https://api.etherscan.io/v2/api?chainid=8453","","ETH","base"};
             //String ARB[]=new String[]{"https://api.arbiscan.io","SXjGvBDWRR+BL1vdXcwjcPXGvK+jBUu2Ku88bLYXrcpsL3Nd+rrWeU3pEWrsISV4","ETH","arbitrum-one"};
-            String ARB[]=new String[]{"https://api.etherscan.io/v2/api?chainid=42161","oSz9zCyIYFWnvgwqE0rpRRGkhXuyfqSmmBA3lR0X6+zuNIup3kgAQMytk5feH7Dc","ETH","arbitrum-one"};
+            String ARB[]=new String[]{"https://api.etherscan.io/v2/api?chainid=42161","","ETH","arbitrum-one"};
 
             String SOL[]=new String[]{"https://solscan.io/","","SOL","solana"};
     
@@ -1016,21 +1016,7 @@ return ListaSaldi;
         }
      
        
-    public static boolean Funzioni_isNumericOld(String str, boolean CampoVuotoContacomeNumero) {
-        
-        if (str==null)return false;
-        //ritorna vero se il campo è vuoto oppure è un numero
-        if (CampoVuotoContacomeNumero && str.isBlank()) {
-            return true;
-        }
-        try {
-            double d = Double.parseDouble(str);
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-        return !str.matches("^.*[a-zA-Z].*$");
-
-    }
+    
     public static boolean Funzioni_isNumeric(String str, boolean CampoVuotoContacomeNumero) {
         
         if (str==null)return false;

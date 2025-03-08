@@ -567,8 +567,8 @@ public class DatabaseH2 {
 
     public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
         String Risultato = null;
-       // String OAC[]=ora_address_chain.split("_");
-        ora_address_chain=ora_address_chain.toUpperCase();
+        String OAC[]=ora_address_chain.split("_");
+        if (!OAC[2].equals("SOL")) ora_address_chain=ora_address_chain.toUpperCase();
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
@@ -600,7 +600,12 @@ public class DatabaseH2 {
             else connessione=connection;
             // Connessione al database
             //String OAC[]=ora_address_chain.split("_");
-            ora_address_chain=ora_address_chain.toUpperCase();
+            //ora_address_chain=ora_address_chain.toUpperCase();
+            
+            //Se rete solana l'address è case sensitive per cui non posso gestirlo metterlo maiuscolo
+            String OAC[]=ora_address_chain.split("_");
+            if (!OAC[2].equals("SOL")) ora_address_chain=ora_address_chain.toUpperCase();
+            
             String checkIfExistsSQL = "SELECT COUNT(*) FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
             //System.out.println(checkIfExistsSQL);
             PreparedStatement checkStatement = connessione.prepareStatement(checkIfExistsSQL);

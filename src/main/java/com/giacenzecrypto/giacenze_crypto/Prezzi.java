@@ -695,10 +695,14 @@ public class Prezzi {
 
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
        // System.out.println(Rete);
-        if (!Rete.equalsIgnoreCase("SOL"))Address = Address.toUpperCase();
+        
         //System.out.println("cosacosa "+Address);
-        if(!Funzioni.isValidAddress(Address, Rete))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
-        //System.out.println("daie "+Address);
+        if(!Funzioni.isValidAddress(Address, Rete))
+        {
+            return ConvertiXXXEUR(Simbolo,Qta,Datalong);
+        }
+        //if (!Rete.equalsIgnoreCase("SOL"))Address = Address.toUpperCase();
+//System.out.println("daie "+Address);
        // if (!Address.contains("0X"))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
         //long DataRiferimento=Datalong/1000;       
         String risultato;// = null;
@@ -1643,7 +1647,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
 
-      /* System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
+     /*  System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
        System.out.println(Rete);
        System.out.println(Moneta1a.MonetaAddress);*/
         /*Questa funzione si divide in 4 punti fondamentali:

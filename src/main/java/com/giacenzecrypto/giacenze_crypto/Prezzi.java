@@ -697,7 +697,7 @@ public class Prezzi {
        // System.out.println(Rete);
         
         //System.out.println("cosacosa "+Address);
-        if(!Funzioni.isValidAddress(Address, Rete))
+        if(!Funzioni_WalletDeFi.isValidAddress(Address, Rete))
         {
             return ConvertiXXXEUR(Simbolo,Qta,Datalong);
         }

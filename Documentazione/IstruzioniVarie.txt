@@ -1,8 +1,75 @@
 Cosa fare quando si aggiunge rete ETH like
 
-- Aggiungere a Mappa_chain in Funzioni.CompilaMappaChain()
-- Aggiungere alla Funzione Funzioni.isValidDefiWallet() la nuova rete supportata
+- Aggiungere a Mappa_chain in Funzioni_WalletDeFi.CompilaMappaChain()
+- Aggiungere alla Funzione Funzioni_WalletDeFi.isValidDefiWallet() la nuova rete supportata
 - Sistemare tasto dettaglio defi
 - sistemare tasto gestione wallet a oggi
 - Sistemare prezzi coingecko
 - Aggiungere a funzione "Aggiorna wallet" la nuova rete
+
+
+Qua sotto gli ID delle reti compatibili e interrogabili da etherscan
+
+Ethereum Mainnet 1
+
+Abstract Mainnet 2741
+
+ApeChain Mainnet 33139
+
+Arbitrum Nova Mainnet 42170
+
+Arbitrum One Mainnet 42161
+
+Avalanche C-Chain 43114
+
+Base Mainnet 8453
+
+Berachain Mainnet 80094
+
+BitTorrent Chain Mainnet 199
+
+Blast Mainnet 81457
+
+BNB Smart Chain Mainnet 56
+
+Celo Mainnet 42220
+
+Cronos Mainnet 25
+
+Fraxtal Mainnet 252
+
+Gnosis 100
+
+Linea Mainnet 59144
+
+Mantle Mainnet 5000
+
+Moonbeam Mainnet 1284
+
+Moonriver Mainnet 1285
+
+OP Mainnet 10
+
+Polygon Mainnet 137
+
+Polygon zkEVM Mainnet 1101
+
+Scroll Mainnet 534352
+
+Sonic Mainnet 146
+
+Sophon Mainnet 50104
+
+Taiko Mainnet 167000
+
+Unichain Mainnet 130
+
+WEMIX3.0 Mainnet 1111
+
+World Mainnet 480
+
+Xai Mainnet 660279
+
+XDC Mainnet 50
+
+zkSync Mainnet 324

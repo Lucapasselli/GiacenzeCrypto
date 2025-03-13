@@ -4856,9 +4856,10 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             //String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
             String urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
 
-            if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
-        System.out.println(urls);
+            //if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
+            //System.out.println(urls);
             System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
+            System.out.println("da Blocco : "+BloccoTemp+" relativi a tipologia : "+Tipo);
             URL url = new URI(urls).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -4869,7 +4870,16 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 responseTxlist.append(inputLine);
             }
             in.close();
-            JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
+            String Risposta=responseTxlist.toString();
+            //System.out.println(Risposta);
+            //Se Risposta contiene "Query Timeout occurred." e la richiesta è per un erc1155
+            //significa che l'explorer non lo supporta quindi ritorno il campo vuoto
+            if (Tipo.equalsIgnoreCase("token1155tx") && Risposta.contains("Query Timeout occured.")){
+                ritorno[0]=0;
+                return ritorno;
+            }
+            //System.out.println(Risposta);
+            JSONObject jsonObjectTxlist = new JSONObject(Risposta);
             int status = Integer.parseInt(jsonObjectTxlist.getString("status"));
             //verifico che questa non sia andata in errore, in caso contratrio interrompo l'importazione
             if (status == 0) {
@@ -5650,75 +5660,80 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     progressb.SetAvanzamento(ava);
                 }
                 
-                //PARTE B4: Recupero la lista delle transazioni dei token ERC1155   //DA SISTEMARE!!!!!!
-                for (int i = 0; i < transactionsTokenERC1155.length(); i++) {
-                    if (progressb.FineThread()) {
-                        return null;
-                    }
-                    //System.out.println("sono qui");
-                    String AddressNoWallet;
-                    String qta;
-                    JSONObject transaction = transactionsTokenERC1155.getJSONObject(i);
-                    //    System.out.println(transaction.toString());
-                    String tokenSymbol = transaction.getString("tokenSymbol");
-                    String tokenName = transaction.getString("tokenName");
-                    String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
-                    String tokenAddress = transaction.getString("contractAddress");
-                    String tokenDecimal;
-                    String value="0";
-                    if (transaction.has("tokenDecimal")) {
-                        tokenDecimal = transaction.getString("tokenDecimal");
-                        value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
- 
-                    }
-                    String tokenValue;
-                    if (transaction.has("tokenValue")) {
-                        tokenValue = transaction.getString("tokenValue");
-                        value = tokenValue;
-                    }
-                    String hash = transaction.getString("hash");
-                    String from = transaction.getString("from");
-                    //System.out.println(from + " - "+hash+" B2");
-                    String to = transaction.getString("to");
-                    TransazioneDefi trans;
-                    if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
-                        trans = new TransazioneDefi();
-                        MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
-                    } else {
-                        trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
-                    }
-                    trans.Rete = Rete;
+                //PARTE B4: Recupero la lista delle transazioni dei token ERC1155
+                //transactionsTokenERC1155 potrebbe essere null in caso non sia supportato dall'explorer
+                //in quel caso mi faccio spedire un json null
+                    if (transactionsTokenERC1155 != null) {
+                        for (int i = 0; i < transactionsTokenERC1155.length(); i++) {
+                            if (progressb.FineThread()) {
+                                return null;
+                            }
+                            //System.out.println("sono qui");
+                            String AddressNoWallet;
+                            String qta;
+                            JSONObject transaction = transactionsTokenERC1155.getJSONObject(i);
+                            //    System.out.println(transaction.toString());
+                            String tokenSymbol = transaction.getString("tokenSymbol");
+                            String tokenName = transaction.getString("tokenName");
+                            String Data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(transaction.getString("timeStamp")) * 1000);
+                            String tokenAddress = transaction.getString("contractAddress");
+                            String tokenDecimal;
+                            String value = "0";
+                            String Tipo = "Crypto";
+                            if (transaction.has("tokenDecimal")) {
+                                tokenDecimal = transaction.getString("tokenDecimal");
+                                value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
 
-                    trans.Blocco = transaction.getString("blockNumber");
-                    trans.Wallet = walletAddress;
-                    trans.DataOra = Data;//Da modificare con data e ora reale
-                    trans.TimeStamp = transaction.getString("timeStamp");
-                    trans.HashTransazione = hash;
+                            }
+                            String tokenValue;
+                            if (transaction.has("tokenValue")) {
+                                tokenValue = transaction.getString("tokenValue");
+                                value = tokenValue;
+                                Tipo = "NFT";
+                            }
+                            String hash = transaction.getString("hash");
+                            String from = transaction.getString("from");
+                            //System.out.println(from + " - "+hash+" B2");
+                            String to = transaction.getString("to");
+                            TransazioneDefi trans;
+                            if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                                trans = new TransazioneDefi();
+                                MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                            } else {
+                                trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                            }
+                            trans.Rete = Rete;
 
-                    trans.MonetaCommissioni = MonetaRete;
-                    // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
-    //                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
-    //                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
-                    //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
-                    //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+                            trans.Blocco = transaction.getString("blockNumber");
+                            trans.Wallet = walletAddress;
+                            trans.DataOra = Data;//Da modificare con data e ora reale
+                            trans.TimeStamp = transaction.getString("timeStamp");
+                            trans.HashTransazione = hash;
 
-                    if (from.equalsIgnoreCase(walletAddress)) {
-                        //trans.QtaCommissioni = "-" + qtaCommissione;
-                        AddressNoWallet = to;
-                        qta = "-" + value;
-                    } else {
-                        AddressNoWallet = from;
-                        qta = value;
+                            trans.MonetaCommissioni = MonetaRete;
+                            // trans.TransazioneOK = transaction.getString("isError").equalsIgnoreCase("0");
+                            //                BigDecimal gasUsed = new BigDecimal(transaction.getString("gasUsed"));
+                            //                BigDecimal gasPrice = new BigDecimal(transaction.getString("gasPrice"));
+                            //in teoria le commissioni non serve prenderle da qua perchè le ho già prese al punto B1
+                            //String qtaCommissione = gasUsed.multiply(gasPrice).multiply(new BigDecimal("1e-18")).stripTrailingZeros().toPlainString();
+
+                            if (from.equalsIgnoreCase(walletAddress)) {
+                                //trans.QtaCommissioni = "-" + qtaCommissione;
+                                AddressNoWallet = to;
+                                qta = "-" + value;
+                            } else {
+                                AddressNoWallet = from;
+                                qta = value;
+                            }
+                            progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
+                            trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, Tipo);
+
+                            // System.out.println(tokenSymbol+" - "+qta);
+                            //System.out.println(from + " - "+hash+" - B2 - "+trans.QtaCommissioni );
+                            ava++;
+                            progressb.SetAvanzamento(ava);
+                        }
                     }
-                    progressb.SetMessaggioAvanzamento("Scaricamento Prezzi del " + Data.split(" ")[0] + " in corso");
-                    trans.InserisciMonete(tokenSymbol, tokenName, tokenAddress, AddressNoWallet, qta, "Crypto");
-
-                    // System.out.println(tokenSymbol+" - "+qta);
-                    //System.out.println(from + " - "+hash+" - B2 - "+trans.QtaCommissioni );
-                    ava++;
-                    progressb.SetAvanzamento(ava);
-                }
-                
                 
                 
 

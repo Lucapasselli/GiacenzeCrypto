@@ -247,7 +247,7 @@ public class GestioneWallets extends javax.swing.JDialog {
             JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare una rete valida",
                             "Rete non valida",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);            
         }
-        else if (!Funzioni.isValidAddress(Wallet,Rete)){
+        else if (!Funzioni_WalletDeFi.isValidAddress(Wallet,Rete)){
                 //non è un indirizzo di wallet valido
             JOptionPane.showConfirmDialog(this, "Attenzione! \nIl Wallet specificato non è valido",
                             "Wallet non Valido",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);

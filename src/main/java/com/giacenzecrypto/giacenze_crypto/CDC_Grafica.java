@@ -204,7 +204,7 @@ private static final long serialVersionUID = 3L;
             progress.setVisible(true);
         }
         
-        Funzioni.CompilaMappaChain();
+        Funzioni_WalletDeFi.CompilaMappaChain();
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
@@ -5142,7 +5142,7 @@ private static final long serialVersionUID = 3L;
                     //ABILITO BOTTONE DEFI SE CI SONO LE CONDIZIONI
         String Wallet=Giacenzeadata_Walleta_Label.getText().trim(); 
         String SottoWallet=Giacenzeadata_Walletb_Label.getText().trim();
-        if (Funzioni.isValidDefiWallet(Wallet)) {
+        if (Funzioni_WalletDeFi.isValidDefiWallet(Wallet)) {
                 this.GiacenzeaData_Bottone_MovimentiDefi.setEnabled(true);
             }
         else{
@@ -6081,7 +6081,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Address=GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();            
             String Wallet=Giacenzeadata_Walleta_Label.getText();
             
-            if (Address!=null&&Rete!=null&&Funzioni.isValidAddress(Address, Rete)) {
+            if (Address!=null&&Rete!=null&&Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
                 Wallet=Wallet.split("\\(")[0].trim();
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     try {
@@ -6121,7 +6121,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         //System.out.println("Cambiato Wallet");
         String Wallet=Giacenzeadata_Walleta_Label.getText();
-            if(Funzioni.isValidDefiWallet(Wallet)){
+            if(Funzioni_WalletDeFi.isValidDefiWallet(Wallet)){
                 this.GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(true);
             }else{
             this.GiacenzeaData_Bottone_GiacenzeExplorer.setEnabled(false);
@@ -6137,7 +6137,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String Wallet=Giacenzeadata_Walleta_Label.getText().trim();
             System.out.println(Wallet);
             
-            if (Funzioni.isValidDefiWallet(Wallet)) {
+            if (Funzioni_WalletDeFi.isValidDefiWallet(Wallet)) {
                 Rete=Wallet.split("\\(")[1].split("\\)")[0];
                 Wallet=Wallet.split("\\(")[0].trim();
                 
@@ -6598,7 +6598,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
         int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
         String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-        if (!Funzioni.ApriExplorer(ID)){
+        if (!Funzioni_WalletDeFi.ApriExplorer(ID)){
             JOptionPane.showConfirmDialog(this, "Non è possibile aprire l'explorer per questa transazione.",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
@@ -6698,7 +6698,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
             String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
 
-            Funzioni.ApriExplorer(ID);
+            Funzioni_WalletDeFi.ApriExplorer(ID);
         }
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_DettaglioDefiActionPerformed
@@ -10164,7 +10164,7 @@ try {
         // Quindi restituisco il nome della rete oltre le condizioni principali solo se hop la transaction hash
         if (appoggio.length==2&&appoggio[1].contains("(")&&appoggio[1].contains(")")&&ID.split("_")[1].startsWith("BC.")){
             ReteAppoggio=ID.split("_")[1].split("\\.")[1];
-            if (Funzioni.isValidAddress(appoggio[0],ReteAppoggio)){
+            if (Funzioni_WalletDeFi.isValidAddress(appoggio[0],ReteAppoggio)){
                 Rete=ReteAppoggio;
             }
         }

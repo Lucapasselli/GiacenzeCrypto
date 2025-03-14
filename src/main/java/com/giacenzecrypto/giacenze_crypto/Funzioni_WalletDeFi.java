@@ -4,7 +4,14 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 import org.bitcoinj.core.Base58;
 
 /**
@@ -20,12 +27,13 @@ public class Funzioni_WalletDeFi {
             //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko
             //System.out.println("Compilo Mappe integrate nel codice");
             String BSC[]=new String[]{"https://api.etherscan.io/v2/api?chainid=56","","BNB","binance-smart-chain"};
-            String CRO[]=new String[]{"https://api.etherscan.io/v2/api?chainid=25","","CRO","Cronos"};
+            String CRO[]=new String[]{"https://api.etherscan.io/v2/api?chainid=25","","CRO","cronos"};
             String ETH[]=new String[]{"https://api.etherscan.io/v2/api?chainid=1","","ETH","ethereum"};           
             String BASE[]=new String[]{"https://api.etherscan.io/v2/api?chainid=8453","","ETH","base"};
             String ARB[]=new String[]{"https://api.etherscan.io/v2/api?chainid=42161","","ETH","arbitrum-one"};
             String BERA[]=new String[]{"https://api.etherscan.io/v2/api?chainid=80094","","BERA","berachain"};
-
+            String AVAX[]=new String[]{"https://api.etherscan.io/v2/api?chainid=43114","","AVAX","avalanche"};
+            
             String SOL[]=new String[]{"https://solscan.io/","","SOL","solana"};
     
             CDC_Grafica.Mappa_ChainExplorer.put("CRO", CRO);
@@ -35,6 +43,7 @@ public class Funzioni_WalletDeFi {
             CDC_Grafica.Mappa_ChainExplorer.put("ARB", ARB);
             CDC_Grafica.Mappa_ChainExplorer.put("SOL", SOL);
             CDC_Grafica.Mappa_ChainExplorer.put("BERA", BERA);
+            CDC_Grafica.Mappa_ChainExplorer.put("AVAX", AVAX);
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
@@ -44,6 +53,8 @@ public class Funzioni_WalletDeFi {
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56_BSC", "BUSD");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xF2001B145b43032AAF5Ee2884e456CCd805F677D_CRO", "DAI");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x4200000000000000000000000000000000000006_BASE", "ETH");
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0x6969696969696969696969696969696969696969_BERA", "BERA");
+            //0x6969696969696969696969696969696969696969
             CDC_Grafica.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
             
         }
@@ -76,20 +87,85 @@ public class Funzioni_WalletDeFi {
                         Funzioni.ApriWeb("https://arbiscan.io/tx/" + IDTransazione);
                     }else if (Rete.equalsIgnoreCase("SOL")){
                         Funzioni.ApriWeb("https://solscan.io/tx/" + IDTransazione);
+                    }else if (Rete.equalsIgnoreCase("BERA")){
+                        Funzioni.ApriWeb("https://berascan.com/tx/" + IDTransazione);
+                    }else if (Rete.equalsIgnoreCase("AVAX")){
+                        Funzioni.ApriWeb("https://avascan.info/blockchain/c/tx/" + IDTransazione);
                     }
+                    
         }
         return true;
 
     }
      
+     public static void ApriMovimentiWallet(String Wallet,String Address,String Rete){
+           
+            
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        if (Rete.equalsIgnoreCase("BSC")){
+                            Desktop.getDesktop().browse(new URI("https://bscscan.com/token/"+Address +"?a="+ Wallet));
+                           }
+                        else if(Rete.equalsIgnoreCase("CRO")){
+                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("ETH")){
+                           Desktop.getDesktop().browse(new URI("https://etherscan.io/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("BASE")){
+                           Desktop.getDesktop().browse(new URI("https://basescan.org/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("ARB")){
+                           Desktop.getDesktop().browse(new URI("https://arbiscan.io/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("SOL")){
+                           Desktop.getDesktop().browse(new URI("https://solscan.io/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        else if(Rete.equalsIgnoreCase("BERA")){
+                           Desktop.getDesktop().browse(new URI("https://berascan.com/token/"+Address +"?a="+ Wallet)); 
+                        }
+                        
+                    } catch (URISyntaxException | IOException ex) {
+                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+        
+     }
      
-     
+          public static void ApriSituazioneWallet(String Wallet,String Rete){
+           
+            
+               if (Desktop.isDesktopSupported()) {
+                        if (Rete.equalsIgnoreCase("BSC")){
+                            Funzioni.ApriWeb("https://bscscan.com/tokenholdings?a="+ Wallet);
+                           }
+                        else if(Rete.equalsIgnoreCase("CRO")){
+                           Funzioni.ApriWeb("https://cronoscan.com/tokenholdings?a="+ Wallet); 
+                        }
+                        else if(Rete.equalsIgnoreCase("ETH")){
+                           Funzioni.ApriWeb("https://etherscan.io/tokenholdings?a="+ Wallet); 
+                        }
+                        else if(Rete.equalsIgnoreCase("BASE")){
+                           Funzioni.ApriWeb("https://basescan.org/tokenholdings?a="+ Wallet); 
+                        }
+                        else if(Rete.equalsIgnoreCase("ARB")){
+                           Funzioni.ApriWeb("https://arbiscan.io/tokenholdings?a="+ Wallet); 
+                        }
+                        else if(Rete.equalsIgnoreCase("BERA")){
+                           Funzioni.ApriWeb("https://berascan.com/tokenholdings?a="+ Wallet); 
+                        }
+                        else if(Rete.equalsIgnoreCase("SOL")){
+                           Funzioni.ApriWeb("https://solscan.io/account/"+ Wallet+"#portfolio"); 
+                        }
+                    }
+        
+     }
      
      
      public static boolean isValidDefiWallet(String wallet) {
         //Questa funzione serve per sapere se una stringa wallet presente nella colonna wallet es 0x3423432aff4545 (ETH)
         //può essere considerata un wallet valido, si controllerà quindi l'indirizzo e se la rete è supportata
-        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||";
+        String RetiSupportate="||BSC||CRO||BASE||ARB||ETH||SOL||BERA||AVAX||";
         String sWallet[]=wallet.split("\\(");
         String address;
         String Rete;

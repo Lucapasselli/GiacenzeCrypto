@@ -1534,8 +1534,8 @@ private static final long serialVersionUID = 3L;
 
         AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
 
-        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023" }));
-        RW_Anno_ComboBox.setSelectedIndex(6);
+        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024" }));
+        RW_Anno_ComboBox.setSelectedIndex(7);
         RW_Anno_ComboBox.setMinimumSize(new java.awt.Dimension(72, 31));
         RW_Anno_ComboBox.setPreferredSize(new java.awt.Dimension(72, 31));
         RW_Anno_ComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -1823,14 +1823,14 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(40, 40, 40)
                         .addComponent(RW_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane9)))
@@ -1851,14 +1851,14 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Bottone_Calcola)
                         .addComponent(jLabel4)))
                 .addGap(8, 8, 8)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_CheckBox_VediSoloErrori)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -1867,7 +1867,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -6071,48 +6071,32 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void GiacenzeaData_Bottone_MovimentiDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_MovimentiDefiActionPerformed
         // TODO add your handling code here:
-                if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
+        if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String Rete = null;
-            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
-                Rete=GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
+                Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
+            }
             String Address = null;
-            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2)!=null)
-                Address=GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();            
-            String Wallet=Giacenzeadata_Walleta_Label.getText();
-            
-            if (Address!=null&&Rete!=null&&Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
-                Wallet=Wallet.split("\\(")[0].trim();
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                    try {
-                        if (Rete.equalsIgnoreCase("BSC")){
-                            Desktop.getDesktop().browse(new URI("https://bscscan.com/token/"+Address +"?a="+ Wallet));
-                           }
-                        else if(Rete.equalsIgnoreCase("CRO")){
-                           Desktop.getDesktop().browse(new URI("https://cronoscan.com/token/"+Address +"?a="+ Wallet)); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ETH")){
-                           Desktop.getDesktop().browse(new URI("https://etherscan.io/token/"+Address +"?a="+ Wallet)); 
-                        }
-                        else if(Rete.equalsIgnoreCase("BASE")){
-                           Desktop.getDesktop().browse(new URI("https://basescan.org/token/"+Address +"?a="+ Wallet)); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ARB")){
-                           Desktop.getDesktop().browse(new URI("https://arbiscan.io/token/"+Address +"?a="+ Wallet)); 
-                        }
-                        else if(Rete.equalsIgnoreCase("SOL")){
-                           Desktop.getDesktop().browse(new URI("https://solscan.io/token/"+Address +"?a="+ Wallet)); 
-                        }
-                        
-                    } catch (URISyntaxException | IOException ex) {
-                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+            if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
+                Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+            }            
+            String Wallet = Giacenzeadata_Walleta_Label.getText();
+            //System.out.println(Address+" "+Rete+" "+Funzioni_WalletDeFi.isValidAddress(Address, Rete));
+            if (Address != null && Rete != null && Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
+                Wallet = Wallet.split("\\(")[0].trim();
+                Funzioni_WalletDeFi.ApriMovimentiWallet(Wallet, Address, Rete);
             }
             else
               {
-                JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
+                  if (Address != null && Rete != null && Address.equalsIgnoreCase(Rete)){
+                      JOptionPane.showConfirmDialog(this, "Non si possono visualizzare i movimenti del token Nativo \nselezionare un'altro token",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                  }
+                  else{
+                    JOptionPane.showConfirmDialog(this, "Per vedere i dettagli dei movimenti in explorer \nselezionare un singolo Wallet",
+                            "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
+                  }
               }  
         }
     }//GEN-LAST:event_GiacenzeaData_Bottone_MovimentiDefiActionPerformed
@@ -6141,26 +6125,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Rete=Wallet.split("\\(")[1].split("\\)")[0];
                 Wallet=Wallet.split("\\(")[0].trim();
                 
-                if (Desktop.isDesktopSupported()) {
-                        if (Rete.equalsIgnoreCase("BSC")){
-                            Funzioni.ApriWeb("https://bscscan.com/tokenholdings?a="+ Wallet);
-                           }
-                        else if(Rete.equalsIgnoreCase("CRO")){
-                           Funzioni.ApriWeb("https://cronoscan.com/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ETH")){
-                           Funzioni.ApriWeb("https://etherscan.io/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("BASE")){
-                           Funzioni.ApriWeb("https://basescan.org/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("ARB")){
-                           Funzioni.ApriWeb("https://arbiscan.io/tokenholdings?a="+ Wallet); 
-                        }
-                        else if(Rete.equalsIgnoreCase("SOL")){
-                           Funzioni.ApriWeb("https://solscan.io/account/"+ Wallet+"#portfolio"); 
-                        }
-                    }
+                Funzioni_WalletDeFi.ApriSituazioneWallet(Wallet, Rete);
                 }
             
             else

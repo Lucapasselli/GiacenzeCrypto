@@ -437,9 +437,13 @@ public class TransazioneDefi {
       String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
       String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+Wallet+"."+HashTransazione;
       if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
+     /*System.out.println(dataAlMinuto);
+      System.out.println(IdentificaTipoTransazione());
+      System.out.println(TipoTransazione);*/
       if(!TransazioneOK){
            //Transazione non andata a buon fine
            //Considero solo le commisioni
+           //System.out.println(QtaCommissioni);
            if (QtaCommissioni!=null &&!QtaCommissioni.equalsIgnoreCase("-0")){
            RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";

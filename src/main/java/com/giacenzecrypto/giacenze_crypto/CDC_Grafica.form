@@ -1777,14 +1777,14 @@
                                       <Component id="RW_Text_IC" min="-2" pref="149" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Documentazione" min="-2" pref="186" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Stampa" min="-2" pref="184" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jButton2" min="-2" pref="185" max="-2" attributes="0"/>
-                                      <EmptySpace pref="26" max="32767" attributes="0"/>
+                                      <EmptySpace pref="32" max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="37" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="RW_Anno_ComboBox" min="-2" pref="64" max="-2" attributes="0"/>
+                                      <Component id="RW_Anno_ComboBox" min="-2" pref="76" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Bottone_Calcola" min="-2" pref="112" max="-2" attributes="0"/>
                                   </Group>
@@ -1812,7 +1812,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="181" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="188" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
@@ -1820,7 +1820,7 @@
                                   <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="251" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="258" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1830,7 +1830,7 @@
                                   <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="161" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="168" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -1840,7 +1840,7 @@
                     <Component class="javax.swing.JComboBox" name="RW_Anno_ComboBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                          <StringArray count="7">
+                          <StringArray count="8">
                             <StringItem index="0" value="2017"/>
                             <StringItem index="1" value="2018"/>
                             <StringItem index="2" value="2019"/>
@@ -1848,9 +1848,10 @@
                             <StringItem index="4" value="2021"/>
                             <StringItem index="5" value="2022"/>
                             <StringItem index="6" value="2023"/>
+                            <StringItem index="7" value="2024"/>
                           </StringArray>
                         </Property>
-                        <Property name="selectedIndex" type="int" value="6"/>
+                        <Property name="selectedIndex" type="int" value="7"/>
                         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                           <Dimension value="[72, 31]"/>
                         </Property>

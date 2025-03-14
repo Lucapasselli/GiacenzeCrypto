@@ -2,10 +2,10 @@ Cosa fare quando si aggiunge rete ETH like
 
 - Aggiungere a Mappa_chain in Funzioni_WalletDeFi.CompilaMappaChain()
 - Aggiungere alla Funzione Funzioni_WalletDeFi.isValidDefiWallet() la nuova rete supportata
-- Sistemare tasto dettaglio defi
-- sistemare tasto gestione wallet a oggi
-- Sistemare prezzi coingecko
-- Aggiungere a funzione "Aggiorna wallet" la nuova rete
+- Aggiungere alla Funzione Funzioni_WalletDeFi.ApriSituazioneWallet() la nuova rete supportata
+- Aggiungere alla Funzione Funzioni_WalletDeFi.ApriMovimentiWallet() la nuova rete supportata
+- Aggiungere alla Funzione Funzioni_WalletDeFi.ApriExplorer() la nuova rete supportata
+- Aggiungere nuova rete a GestioneWallets
 
 
 Qua sotto gli ID delle reti compatibili e interrogabili da etherscan

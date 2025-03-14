@@ -2141,12 +2141,29 @@ for (int i=0;i<ArraydataIni.size();i++){
                         String Simbolo = jsonObject.get("symbol").getAsString();
                         String Nome = jsonObject.get("name").getAsString();
                         JsonObject platformsObject = jsonObject.getAsJsonObject("platforms");
-                        String BSCAddress = platformsObject.has("binance-smart-chain") ? platformsObject.get("binance-smart-chain").getAsString() : null;
+                        String IndirizziCoins[]=new String[CDC_Grafica.Mappa_ChainExplorer.size()];
+                        int i=0;
+                        for(String Rete : CDC_Grafica.Mappa_ChainExplorer.keySet())
+                        {
+                            String nomeReteCoingecko=CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3];
+                            IndirizziCoins[i]=platformsObject.has(nomeReteCoingecko) ? platformsObject.get(nomeReteCoingecko).getAsString() : null;
+                            if (IndirizziCoins[i]!=null&&!IndirizziCoins[i].isEmpty()){
+                                String Gestito[]=new String[3];
+                                Gestito[0]=(IndirizziCoins[i]+"_"+Rete).toUpperCase();
+                                Gestito[1]=Simbolo;
+                                Gestito[2]=Nome;
+                                gestiti.add(Gestito);
+                            }
+                            i++;
+                            
+                        }
+                       /* String BSCAddress = platformsObject.has("binance-smart-chain") ? platformsObject.get("binance-smart-chain").getAsString() : null;
                         String cronosAddress = platformsObject.has("cronos") ? platformsObject.get("cronos").getAsString() : null;
                         String ethereumAddress = platformsObject.has("ethereum") ? platformsObject.get("ethereum").getAsString() : null;
                         String baseAddress = platformsObject.has("base") ? platformsObject.get("base").getAsString() : null;
                         String arbitrumAddress = platformsObject.has("arbitrum-one") ? platformsObject.get("arbitrum-one").getAsString() : null;
                         String solanaAddress = platformsObject.has("solana") ? platformsObject.get("solana").getAsString() : null;
+                        String beraAddress = platformsObject.has("berachain") ? platformsObject.get("berachain").getAsString() : null;
                         
                         if (cronosAddress!=null&&!cronosAddress.isEmpty()){
                             String Gestito[]=new String[3];
@@ -2189,6 +2206,14 @@ for (int i=0;i<ArraydataIni.size();i++){
                             gestiti.add(Gestito);
                             //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
                         }
+                        if (beraAddress!=null&&!beraAddress.isEmpty()){
+                            String Gestito[]=new String[3];
+                            Gestito[0]=(beraAddress+"_BERA").toUpperCase();
+                            Gestito[1]=Simbolo;
+                            Gestito[2]=Nome;
+                            gestiti.add(Gestito);
+                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
+                        }
                         if (solanaAddress!=null&&!solanaAddress.isEmpty()){
                             String Gestito[]=new String[3];
                             Gestito[0]=(solanaAddress+"_SOL");
@@ -2196,7 +2221,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                             Gestito[2]=Nome;
                             gestiti.add(Gestito);
                             //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
-                        }
+                        }*/
 
                     }
                    // System.out.println("sono qui");

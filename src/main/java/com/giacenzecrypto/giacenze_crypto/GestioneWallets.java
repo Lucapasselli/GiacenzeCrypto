@@ -151,7 +151,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Rete.setText("Rete :");
 
-        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Base (BASE)", "Arbitrum (ARB)", "Solana (SOL)" }));
+        ComboBox_Rete.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Arbitrum (ARB)", "Avalanche (AVAX)", "Base (BASE)", "Berachain (BERA)", "Binance Smart Chain (BSC)", "Cronos Chain (CRO)", "Ethereum (ETH)", "Solana (SOL)", " " }));
 
         Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
         Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
@@ -333,20 +333,28 @@ public class GestioneWallets extends javax.swing.JDialog {
                     } else {
                         blocco = "0";
                     }
-
-                    if (splittata[1].equalsIgnoreCase("BSC")
+                    //boolean retecompatibile=false;
+                    for(String rete : CDC_Grafica.Mappa_ChainExplorer.keySet()){
+                        if (rete.equalsIgnoreCase(splittata[1]))
+                        {
+                            Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
+                        }
+                    }
+                 /*   if (splittata[1].equalsIgnoreCase("BSC")
                             ||splittata[1].equalsIgnoreCase("CRO")
                             ||splittata[1].equalsIgnoreCase("ETH")
                             ||splittata[1].equalsIgnoreCase("BASE")
                             ||splittata[1].equalsIgnoreCase("ARB")
                             ||splittata[1].equalsIgnoreCase("SOL")
+                            ||splittata[1].equalsIgnoreCase("BERA")
                             ) {
                         Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
-                    }
+                    }*/
                 }
                 //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
                 Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli, c, progress);
+               // System.out.println("DIM:"+MappaTransazioniDefi.size());
                 if (MappaTransazioniDefi != null) {
                     //Scrivo tutte le nuove transazioni nella mappa principale
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {

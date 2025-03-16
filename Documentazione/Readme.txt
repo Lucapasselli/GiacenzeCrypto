@@ -25,6 +25,16 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.32
+Nuove Implementazioni :
+  - Aggiunto supporto alla Blockchain Solana (Sono necessarie le ApiKey di Helius da inserire su "Opzioni" - "ApiKey")
+	(Si può creare tranquillamente la chiave api gratuita dal loro sito registrandosi)
+  - Aggiunto supporto a Berachain e Avalanche
+  - Da questa versione i movimenti di tutte le chain evm supportate vengo importati attraverso le api di etherscan.
+	Sarà quindi necessario registrarsi su etherscan e generare una ApiKey (gratuita) per poter scaricare i movimenti.
+	L'ApiKey poi andrà inserita in "Opzioni" - "ApiKey".
+  - Aggiunto anno 2024 nella sezione del Quadro RW, per il momento i moduli sono però ancora quelli dell'anno passato.
+
 ver. 1.0.31
 Nuove Implementazioni :
   - Aggiunto ulteriori causali di Binance per le importazioni

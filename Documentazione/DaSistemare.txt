@@ -1,9 +1,4 @@
 - Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
-- Verificare quando correggo un errore in RW che non raddoppi le righe 
-
-- verificare quando viene valorizzato a null il campo 34
-- Inserire Mining
-- Inserire Donazioni
 
 
 - Aggiungere gestione degli errori in RT (mancano le giacenze negative)
@@ -12,6 +7,6 @@
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
 - aggiungere gestione dei prezzi personalizzati
 
+- Problema con sistemazione prezzi da funzione giacenze a data
+- Problema con sistemazione prezzi NFT
 
-Verificare 202404092050 ee su rete base
-testeE731aE2cE32e086B3007a77F0E65c39cA2Af303test

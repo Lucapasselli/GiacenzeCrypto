@@ -96,7 +96,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -104,7 +103,6 @@ import java.util.logging.Logger;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_Date_ConvertiDatainLong;
 import static com.giacenzecrypto.giacenze_crypto.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
 import com.giacenzecrypto.giacenze_crypto.TransazioneDefi.ValoriToken;
-import java.util.Collections;
 import java.awt.Component;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -160,7 +158,7 @@ public class Importazioni {
     //29->Timestamp
     //
     
-        public static boolean Importa_Crypto_OKX(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
+        public static boolean Importa_Crypto_OKX(String fileOKX,boolean SovrascriEsistenti,Component c,Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
         //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
@@ -181,7 +179,7 @@ public class Importazioni {
             }
         }
         
-        String fileDaImportare = fileBinance;
+        String fileDaImportare = fileOKX;
        // System.out.println(fileBinance);
         Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         //fee,sell,buy,Transaction Fee,Transaction Spend,Transaction Buy,Transaction Revenue,Transaction Sold
@@ -509,7 +507,7 @@ public class Importazioni {
         
 
         
-public static void Importa_Solana_OKHTTP(){
+/*public static void Importa_Solana_OKHTTP(){
             String RPC_URL = "https://api.mainnet-beta.solana.com";
             String WALLET_ADDRESS = "E2ebWw5CLJGbgDLvnEK19ES6QceouQLMbxHJRzieM6FL";
             OkHttpClient client = new OkHttpClient();
@@ -546,8 +544,11 @@ System.out.println(response.body().string());
         }
     
         }
+*/
+
+
         
-       private static void getTransactionDetails(OkHttpClient client, String signature,String RPC_URL) throws IOException {
+ /*      private static void getTransactionDetails(OkHttpClient client, String signature,String RPC_URL) throws IOException {
         String jsonPayload = "{"
                 + "\"jsonrpc\": \"2.0\","
                 + "\"id\": 1,"
@@ -588,7 +589,7 @@ System.out.println(response.body().string());
         }
        }
     
-    
+    */
     
         public static boolean Importa_Crypto_Binance(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
@@ -1042,55 +1043,9 @@ System.out.println(response.body().string());
     }
     
     
-    
-        public static String Formatta_Data_CoinTracking(String Data) {
 
-        if (Data.split(":").length>2) return Data;
-            String DataFormattata="";
-            try {
-            SimpleDateFormat originale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-            
-            Date d = originale.parse(Data+":00");
-            originale.applyPattern("yyyy-MM-dd HH:mm:ss");
-            DataFormattata = originale.format(d);
-        } catch (ParseException ex) {
-          //  Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            return DataFormattata;
-        }
-           // System.out.println(newDateString);
-            return DataFormattata;
-    }
         
-        public static String Formatta_Data_UTC(String Data) {
-
-            //come prima cosa controllo che l'ora abbia effettivamente 2 caratteri per quanto riguarda le ore
-            //può capitare infatti che l'ra sia 9:36:11 al posto di 09:36:11
-            // Elenco di formati possibili
-            String[] FormatiPossibili = {
-            "yyyy-MM-dd HH:mm:ss",  // Formato con ora a una cifra
-            "yyyy-MM-dd H:mm:ss"  // Formato con ora a due cifre
-            };
-            LocalDateTime localDateTime = null;
-            DateTimeFormatter formatter =null;
-
-        // Prova ciascun formato fino a trovare quello giusto
-        for (String format : FormatiPossibili) {
-            try {
-                formatter = DateTimeFormatter.ofPattern(format);
-                localDateTime = LocalDateTime.parse(Data, formatter);
-                break; // Se il parsing riesce, esci dal ciclo
-            } catch (DateTimeParseException e) {
-                // Ignora e prova il prossimo formato
-            }
-        }
-        if (localDateTime != null) {
-            return localDateTime
-            .atOffset(ZoneOffset.UTC)
-            .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-            .format(formatter);
-        }else return null;
         
-    }    
         
     
     
@@ -1161,7 +1116,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
                     String splittata[] = riga.split(","); 
                     if (splittata.length==13){
-                        String data = Formatta_Data_CoinTracking(splittata[12]);
+                        String data = OperazioniSuDate.Formatta_Data_CoinTracking(splittata[12]);
                         if (!data.equalsIgnoreCase("")&&Mappa_EliminaDoppioni.get(riga)==null) {
                             Mappa_EliminaDoppioni.put(riga, "");
                             lista.add(riga);
@@ -1202,7 +1157,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             riga=rigas.toString();
             String splittata[] = riga.split(",");            
             //controllo se la data è uguiale a quella del movimento precedente, così fosse agiungo 1 secondo al movimento
-            String data = Formatta_Data_CoinTracking(splittata[12]);
+            String data = OperazioniSuDate.Formatta_Data_CoinTracking(splittata[12]);
             long DataAttuale=OperazioniSuDate.ConvertiDatainLongSecondo(data);
             if (DataAttuale==DataUltimaRiferimento){
                 DataAttuale=DataUltima+1000;
@@ -1374,7 +1329,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                         // Definisci il formato della data
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         String utcDateStr = splittata[2];
-                        String Data=Formatta_Data_UTC(utcDateStr);
+                        String Data=OperazioniSuDate.Formatta_Data_UTC(utcDateStr);
                         if (Data==null) {
                             //In questo caso verrà segnalato lo scarto a fine importazione
                             Data="2021-01-01 00:00:00";
@@ -1605,7 +1560,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
                             String data=movimentoSplittato[0];
-                            data=Formatta_Data_UTC(data);
+                            data=OperazioniSuDate.Formatta_Data_UTC(data);
                             String dataa="";
                             String movimentoConvertito=Mappa_Conversione_Causali.get(movimentoSplittato[9]);
                             if (data==null) {
@@ -2321,7 +2276,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
                             data=movimentoSplittato[1];
-                            data=Formatta_Data_UTC(data);
+                            data=OperazioniSuDate.Formatta_Data_UTC(data);
                             Moneta Mon=new Moneta();
                             Mon.Moneta=movimentoSplittato[4];
                             Mon.Qta=new BigDecimal(movimentoSplittato[5]).toPlainString();

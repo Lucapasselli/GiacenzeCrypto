@@ -7,6 +7,10 @@ Cosa fare quando si aggiunge rete ETH like
 - Aggiungere alla Funzione Funzioni_WalletDeFi.ApriExplorer() la nuova rete supportata
 - Aggiungere nuova rete a GestioneWallets
 
+Prossime chain da inserire:
+Sonic
+Polygon
+Mantle
 
 Qua sotto gli ID delle reti compatibili e interrogabili da etherscan
 

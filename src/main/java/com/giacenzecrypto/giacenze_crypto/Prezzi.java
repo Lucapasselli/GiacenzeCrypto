@@ -2149,7 +2149,8 @@ for (int i=0;i<ArraydataIni.size();i++){
                             IndirizziCoins[i]=platformsObject.has(nomeReteCoingecko) ? platformsObject.get(nomeReteCoingecko).getAsString() : null;
                             if (IndirizziCoins[i]!=null&&!IndirizziCoins[i].isEmpty()){
                                 String Gestito[]=new String[3];
-                                Gestito[0]=(IndirizziCoins[i]+"_"+Rete).toUpperCase();
+                                if (Rete.equals("SOL"))Gestito[0]=(IndirizziCoins[i]+"_"+Rete);
+                                else Gestito[0]=(IndirizziCoins[i]+"_"+Rete).toUpperCase();
                                 Gestito[1]=Simbolo;
                                 Gestito[2]=Nome;
                                 gestiti.add(Gestito);

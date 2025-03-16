@@ -46,8 +46,6 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -65,7 +63,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-//import org.apache.commons.codec.binary.Hex;
 
 
 /**
@@ -132,7 +129,7 @@ private static final long serialVersionUID = 3L;
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.0.32 CR1 Beta";          
+            String Titolo="Giacenze Crypto 1.0.32 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -219,8 +216,6 @@ private static final long serialVersionUID = 3L;
         CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
-        
-
         
 
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
@@ -5762,7 +5757,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
                 String Address = null;
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
-                    Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString().toUpperCase();
+                    if (Rete.equals("SOL"))Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString().toUpperCase();
+                    else Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
                 }
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
@@ -5774,7 +5770,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
                         if (Address != null && Rete != null) {
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
-                           // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
+                            System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                         }

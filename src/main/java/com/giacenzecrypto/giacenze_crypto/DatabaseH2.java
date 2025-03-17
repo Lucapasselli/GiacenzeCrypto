@@ -740,7 +740,7 @@ public class DatabaseH2 {
             if (moneta.MonetaAddress!=null && moneta.Rete!=null){
                 //se è un movimento in defi allora cerco il prezzo nella defi
                 String ora_address_chain=dataora+"_"+moneta.MonetaAddress+"_"+moneta.Rete;
-                ora_address_chain=ora_address_chain.toUpperCase();
+                if (!moneta.Rete.equalsIgnoreCase("SOL"))ora_address_chain=ora_address_chain.toUpperCase();
                 // Connessione al database
                 checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
                 checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);

@@ -6,6 +6,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaRetiSupportate;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -22,10 +24,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.TableModel;
-import org.bitcoinj.core.Base58;
 import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
 import org.json.JSONArray;
@@ -88,6 +89,135 @@ public class Funzioni {
             } 
          }
         
+         
+        public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
+            
+            //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
+            //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
+            //PARTE 3 -> Chiedo di inserire l'importo e poi controllo che questo sia un numero 
+            if (Prezzo==null)Prezzo="0";
+           // String PRZ="0";
+            
+            
+            
+            //PARTE 1
+            int scelta=0;
+            String MonRiferimento="EURO";
+            String Testo;
+            if (DataPrezzo!=0){
+                Testo = "<html>Indica se vuoi imputare il prezzo in Euro o Dollari.<br><br>"
+                            + "(Se scegli dollari il prezzo verrà poi convertito in Euro seguendo il tasso di cambio della giornata di bancha d'Italia)<br><br>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "EURO", "DOLLARI"};
+                    scelta = JOptionPane.showOptionDialog(c, Testo,
+                            "Moneta di riferimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                //EURO                           
+                            }
+                            case 2 -> {
+                                //DOLLARO 
+                                MonRiferimento="DOLLARI";
+                                //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
+                                if (Prezzo!=null){
+                                    String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                                    String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
+                                    Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
+                                }
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        return null;
+                    }
+            }
+            
+                    
+            //PARTE 2
+            boolean PrezzoUnitario=false;
+            if (NomeMon!=null&&Qta!=null&&!Qta.equals("1")){
+            Testo = "<html>Per il token "+NomeMon+" vuoi indicare il prezzo unitario o quello riferito al totale dei "+Qta+" pezzi?<br><br>"
+                            + "(Se scegli di indicare il prezzo unitario il prezzo totale verrà poi calcolato dal programma)<br><br>"
+                            + "</html>";
+                    Object[] Bottoni2 = {"Annulla", "TOTALE", "UNITARIO"};
+                    scelta = JOptionPane.showOptionDialog(c, Testo,
+                            "Prezzo unitario o Totale",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni2,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                //TOTALE                           
+                            }
+                            case 2 -> {
+                                //UNITARIO
+                                PrezzoUnitario=true;
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        return null;
+                    }
+            }
+            
+            //PARTE 3
+            if (NomeMon!=null&&Qta!=null){
+                if (PrezzoUnitario)
+                    Testo = "<html>indicare il prezzo <b>unitario</b> in "+MonRiferimento+" relativo al token "+NomeMon+"<br><br>"
+                            + "(Il prezzo totale verrà poi calcolato dal programma)<br><br>"
+                            + "</html>";
+                else 
+                    Testo = "<html>indicare il prezzo in "+MonRiferimento+" relativo a "+Qta+" "+NomeMon+"<br><br>"
+                            + "<br><br>"
+                            + "</html>";
+            }
+            else   
+                Testo = "<html>indicare il prezzo in "+MonRiferimento+"<br><br>"
+                            + "<br><br>"
+                            + "</html>";
+            
+            
+            String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
+                if (Prezz != null) {
+                    Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+                    if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+                        //Se dollari devo fare la conversione in euro
+                        if (!MonRiferimento.equals("EURO")){
+                            //devo fare la conversione da dollari a euro
+                            String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                            Prezz=Prezzi.ConvertiUSDEUR(Prezz, Giorno);
+                            //devo fare la conversione in dollari
+                        }
+                        //Se prezzo unitario poi devo moltiplicarlo per la quantità
+                        if (PrezzoUnitario){
+                            Prezz=new BigDecimal(Prezz).multiply(new BigDecimal(Qta)).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        }                       
+                        return Prezz;
+                    }
+                }
+                
+                return null;
+        }
+         
         
         public static boolean CambiataVersione(String Versione){
             boolean VersioneCambiata=false;

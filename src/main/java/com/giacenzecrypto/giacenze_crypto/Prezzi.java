@@ -709,6 +709,7 @@ public class Prezzi {
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
         risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
+        //System.out.println(DataOra + "_" + Address + "_" + Rete);
 
         if (risultato == null) {
             //se il token non è gestito da coingecko e non è già nel database ritorno null
@@ -1647,9 +1648,10 @@ for (int i=0;i<ArraydataIni.size();i++){
     
     public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete) {
 
-     /*  System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
+    /*   System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
        System.out.println(Rete);
        System.out.println(Moneta1a.MonetaAddress);*/
+     
         /*Questa funzione si divide in 4 punti fondamentali:
         1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
         2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
@@ -1848,7 +1850,8 @@ for (int i=0;i<ArraydataIni.size();i++){
 
             //PARTE 4 - Prendo il prezzo della prima moneta disponibile
             for (int k = 0; k < 2; k++) {
-            if (mon[k] != null && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
+            //if (mon[k] != null && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
+            if (mon[k] != null) {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
                 //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
                 PrezzoTransazione = DatabaseH2.LeggiPrezzoPersonalizzato(mon[k], Data);

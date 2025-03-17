@@ -217,7 +217,7 @@ private static final long serialVersionUID = 3L;
         CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
         
-
+        
         //boolean successo=DatabaseH2.CreaoCollegaDatabase();
         //Aggiorno lo stato del checkbox relativo al calcolo delle plusvalenze
         
@@ -5757,12 +5757,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
                 String Address = null;
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
-                    if (Rete.equals("SOL"))Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString().toUpperCase();
-                    else Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+                    if (Rete.equals("SOL"))Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
+                    else Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString().toUpperCase();
                 }
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
-                String m = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " : ", Prezzo);
+               // String m = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " : ", Prezzo);
+                long data=OperazioniSuDate.ConvertiDatainLong(Data);
+                String m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
                 if (m != null) {
                     m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
                     if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
@@ -5770,7 +5772,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
                         if (Address != null && Rete != null) {
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
-                            System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
+                            //System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                         }
@@ -5875,9 +5877,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             }
                         }
                         
-                        for (Moneta Mone : MappaAddressNomeMoneta.values()){
-                            Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
+                        for (Moneta Mone : MappaAddressNomeMoneta.values()){                           
                             Rete=Mone.Rete;
+                            if (Rete.equals("SOL"))Address=Mone.MonetaAddress;
+                            else Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
                             //System.out.println(Mone.MonetaAddress+" - "+Mone.Rete);
                            // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
                            // System.out.println(DataconOra);
@@ -5993,8 +5996,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         }
                         
                         for (Moneta Mone : MappaAddressNomeMoneta.values()){
-                            Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
+                            
                             Rete=Mone.Rete;
+                            if (Rete.equals("SOL"))Address=Mone.MonetaAddress;
+                            else Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
                            // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
                            // System.out.println(DataconOra);
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
@@ -9917,6 +9922,7 @@ try {
                 int i = 0;
                 BigDecimal TotEuro = new BigDecimal(0);
                 for (String moneta : QtaCrypto.keySet()) {
+                    
                     i++;
                     if (progress.FineThread()) {
                         //Questo succede nel caso in cui termino il ciclo forzatamente

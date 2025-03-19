@@ -2273,8 +2273,8 @@
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Segoe UI" size="15" style="1"/>
                         </Property>
-                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="33" green="0" red="ff" type="rgb"/>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Tabelle.rosso" type="code"/>
                         </Property>
                       </Properties>
                     </Component>
@@ -2532,7 +2532,7 @@
                                   <Properties>
                                     <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                      <Table columnCount="10" rowCount="0">
+                                      <Table columnCount="11" rowCount="0">
                                         <Column editable="false" title="Wallet" type="java.lang.Object"/>
                                         <Column editable="false" title="Moneta" type="java.lang.Object"/>
                                         <Column editable="false" title="Tipo" type="java.lang.Object"/>
@@ -2542,6 +2542,7 @@
                                         <Column editable="false" title="Plusvalenze Latenti" type="java.lang.Double"/>
                                         <Column editable="false" title="Giacenze Rimanenti" type="java.lang.Object"/>
                                         <Column editable="false" title="Valore Rimanenze" type="java.lang.Double"/>
+                                        <Column editable="false" title="PMC" type="java.lang.Object"/>
                                         <Column editable="false" title="Errori" type="java.lang.Object"/>
                                       </Table>
                                     </Property>
@@ -2558,6 +2559,11 @@
                                           <Renderer/>
                                         </Column>
                                         <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
+                                          <Title/>
+                                          <Editor/>
+                                          <Renderer/>
+                                        </Column>
+                                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                                           <Title/>
                                           <Editor/>
                                           <Renderer/>

@@ -1752,7 +1752,7 @@ private static final long serialVersionUID = 3L;
         });
 
         RW_Label_SegnalaErrori.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        RW_Label_SegnalaErrori.setForeground(new java.awt.Color(255, 0, 51));
+        RW_Label_SegnalaErrori.setForeground(Tabelle.rosso);
 
         jLabel13.setText("IC Dovuta Totale : ");
 
@@ -1918,14 +1918,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Fiscalmente Rilevanti</html>", "<html>Costo Carico Movimenti<br>Fiscalmente Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "Errori"
+                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Fiscalmente Rilevanti</html>", "<html>Costo Carico Movimenti<br>Fiscalmente Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "PMC", "Errori"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -5755,31 +5755,21 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
                     Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
                 }
-                String Address = null;
-                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2) != null) {
-                    if (Rete.equals("SOL"))Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
-                    else Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString().toUpperCase();
-                }
+                String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();                                 
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
                // String m = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " : ", Prezzo);
                 long data=OperazioniSuDate.ConvertiDatainLong(Data);
                 String m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
                 if (m != null) {
-                    m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
                         BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
                         if (Address != null && Rete != null) {
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
-                            //System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                         }
-                    } else {
-                        JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un numero valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
+                    
                 }
                 //Una volta cambiato il prezzo aggiorno la tabella
                 GiacenzeaData_CompilaTabellaToken(true);
@@ -5835,11 +5825,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 
                // BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
                 
-
-                String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
+                String Prezz = Funzioni.GUIDammiPrezzo(this, mon, OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
+                //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
                 if (Prezz != null) {
-                    Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
                         //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
                         //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
                         //Scansiono la tabella della movimentazioni e salvo in una mappa Monete tutte le monete che trovo con Address_Nome come key
@@ -5858,17 +5846,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             Moneta a[]=Funzioni.RitornaMoneteDaID(v[0]);
                             //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
                             //E se il wallet fa parte del gruppo wallet di riferimento
-                            //System.out.println(v[3]);
                             String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                           
                             long dataTransazione=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
-                            //System.out.println(GruppoWallet+" - "+GruppoWalletMovimento);
                             if (dataTransazione<=DataCalcoli&&GruppoWallet.equals(GruppoWalletMovimento)){
                             //A questo punto controllo se la moneta è quella che sto cercando
                             for (Moneta MonTransazione : a){
-                                //controllo sia la moneta in uscita che quella in ingresso, nel caso trovi una corrispondenza inserisco la moneta nella mappa
-                                
+                                //controllo sia la moneta in uscita che quella in ingresso, nel caso trovi una corrispondenza inserisco la moneta nella mappa                               
                                 if (MonTransazione.Moneta.equals(mon)){
-                                    //System.out.println(MonTransazione.MonetaAddress);
                                     MappaAddressNomeMoneta.put(MonTransazione.MonetaAddress+"_"+MonTransazione.Moneta, MonTransazione);
                                 }
                             }
@@ -5879,27 +5863,18 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         
                         for (Moneta Mone : MappaAddressNomeMoneta.values()){                           
                             Rete=Mone.Rete;
-                            if (Rete.equals("SOL"))Address=Mone.MonetaAddress;
-                            else Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
-                            //System.out.println(Mone.MonetaAddress+" - "+Mone.Rete);
-                           // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
-                           // System.out.println(DataconOra);
+                            Address=Mone.MonetaAddress;
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
                         BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
-                      //  System.out.println(DataconOra+"-"+mon+"-"+PrezzoUnitario);
                         if (Address != null && Rete != null) {
-                          //  System.out.println("Scrivo prezzo per Address");
                                 DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
-                            //System.out.println(DatabaseH2.PrezzoAddressChain_Leggi(DataconOra + "_" + Address + "_" + Rete));
-                            //System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
                                 DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                         }
                         } 
-                    } else {
-                        JOptionPane.showConfirmDialog(this, "Attenzione, " + Prezz + " non è un numero valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                    }
+                        
+                //Una volta cambiato il prezzo aggiorno la tabella
+                RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaselezionata);
                 }
 
          }else{
@@ -5912,19 +5887,32 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             a.setLocationRelativeTo(this);
             a.setVisible(true);
             
+                //Una volta cambiato il prezzo aggiorno la tabella
+                RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaselezionata);
+                //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima 
             }
             
-                         //Una volta cambiato il prezzo aggiorno la tabella
-                this.RW_CalcolaRW();
-                RW_Tabella.setRowSelectionInterval(rigaTabellaPrincipale, rigaTabellaPrincipale);
-                RW_CompilaTabellaDettagli();
-                if(RW_Tabella_Dettagli.getRowCount()>rigaselezionata)RW_Tabella_Dettagli.setRowSelectionInterval(rigaselezionata, rigaselezionata);
-                RW_CompilaTabellaDettagliXID();
-                RW_Tabella_Dettagli.requestFocus();
-                //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima   
+  
             
         }
     }
+        
+        private void RW_RicalcolaEriposizionaRW(int RigoTabPrincipale,int RigoTabDettagli){
+                RW_CalcolaRW();
+                //Seleziono la vecchia riga
+                RW_Tabella.setRowSelectionInterval(RigoTabPrincipale, RigoTabPrincipale);
+                //Mi posiziono sulla vecchia riga
+                RW_Tabella.scrollRectToVisible(new Rectangle(RW_Tabella.getCellRect(RigoTabPrincipale, 0, true)));
+                RW_CompilaTabellaDettagli();
+                if(RW_Tabella_Dettagli.getRowCount()>RigoTabDettagli){
+                    //Seleziono la vecchia riga
+                    RW_Tabella_Dettagli.setRowSelectionInterval(RigoTabDettagli, RigoTabDettagli);
+                    //Mi posiziono sulla vecchia riga
+                    RW_Tabella_Dettagli.scrollRectToVisible(new Rectangle(RW_Tabella_Dettagli.getCellRect(RigoTabDettagli, 0, true)));
+                }
+                RW_CompilaTabellaDettagliXID();
+                RW_Tabella_Dettagli.requestFocus();
+        }
         
         private void RT_Funzione_ModificaValore() {
             //InizioFine=0 -> Prezzo Iniziale
@@ -5957,10 +5945,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                // BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
                 
 
-                String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
-                if (Prezz != null) {
-                    Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+                //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
+                String Prezz = Funzioni.GUIDammiPrezzo(this, mon, OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
+                if (Prezz != null) {       
                         //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
                         //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
                         //Scansiono la tabella della movimentazioni e salvo in una mappa Monete tutte le monete che trovo con Address_Nome come key
@@ -5995,28 +5982,24 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             }
                         }
                         
-                        for (Moneta Mone : MappaAddressNomeMoneta.values()){
-                            
-                            Rete=Mone.Rete;
-                            if (Rete.equals("SOL"))Address=Mone.MonetaAddress;
-                            else Address=Mone.MonetaAddress.toUpperCase();//è importante sia maiuscolo per la corretta imputazione del prezzo
-                           // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
-                           // System.out.println(DataconOra);
+                        for (Moneta Mone : MappaAddressNomeMoneta.values()) {
+
+                        Rete = Mone.Rete;
+                        Address = Mone.MonetaAddress;
+                        // System.out.println("RW_Funzione_ModificaValore : "+Mone.Moneta+ " - "+Mone.MonetaAddress+" - "+Mone.Rete);
+                        // System.out.println(DataconOra);
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
-                        BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
-                      //  System.out.println(DataconOra+"-"+mon+"-"+PrezzoUnitario);
+                        BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP).stripTrailingZeros();
+                        //  System.out.println(DataconOra+"-"+mon+"-"+PrezzoUnitario);
                         if (Address != null && Rete != null) {
-                          //  System.out.println("Scrivo prezzo per Address");
-                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
-                           // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
+                            //  System.out.println("Scrivo prezzo per Address");
+                            DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(), true);
+                            // System.out.println(DataconOra + "_" + Address + "_" + Rete +" - "+ PrezzoUnitario.toPlainString());
                         } else {
-                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
+                            DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(), true);
                         }
-                        } 
-                    } else {
-                        JOptionPane.showConfirmDialog(this, "Attenzione, " + Prezz + " non è un numero valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                     }
+                    
                 
                 //Una volta cambiato il prezzo aggiorno la tabella
                 //FORSE NON SERVE FARE IL RICALCOLO COMPLETO BASTA AGGIORNARE IL PREZZO E RICARICARE LA TABELLA

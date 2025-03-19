@@ -25,6 +25,11 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.33
+Correzione di bug :
+  - Corretto Bug che impediva di inserire prezzi personalizzati su rete Solana
+  - Corretto Bug che impediva di recuperare i prezzi salvati su rete Solana
+
 ver. 1.0.32
 Nuove Implementazioni :
   - Aggiunto supporto alla Blockchain Solana (Sono necessarie le ApiKey di Helius da inserire su "Opzioni" - "ApiKey")

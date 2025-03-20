@@ -417,7 +417,7 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
             if (col==7 && value.toString().toLowerCase().contains("-")) {
                     setForeground(rosso);
                 }
-            else if (col==9)setForeground(rosso);
+            else if (col==10)setForeground(rosso);
             else{
                 setForeground(fore);
             }

@@ -2542,7 +2542,7 @@
                                         <Column editable="false" title="Plusvalenze Latenti" type="java.lang.Double"/>
                                         <Column editable="false" title="Giacenze Rimanenti" type="java.lang.Object"/>
                                         <Column editable="false" title="Valore Rimanenze" type="java.lang.Double"/>
-                                        <Column editable="false" title="PMC" type="java.lang.Object"/>
+                                        <Column editable="false" title="PMC" type="java.lang.Double"/>
                                         <Column editable="false" title="Errori" type="java.lang.Object"/>
                                       </Table>
                                     </Property>

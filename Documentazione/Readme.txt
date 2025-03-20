@@ -26,6 +26,8 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 Changelog
 
 ver. 1.0.33
+Nuove Implementazioni:
+  - Aggiunto PMC (Prezzo Medio di Carico) nel dettaglio della funzione "RT & Analisi P&L"
 Correzione di bug :
   - Corretto Bug che impediva di inserire prezzi personalizzati su rete Solana
   - Corretto Bug che impediva di recuperare i prezzi salvati su rete Solana

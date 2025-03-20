@@ -7,7 +7,6 @@ package com.giacenzecrypto.giacenze_crypto;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.DecimaliCalcoli;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_isNumeric;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
-import static com.giacenzecrypto.giacenze_crypto.Calcoli_Plusvalenze.RitornaTipoCrypto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Year;
@@ -819,8 +818,9 @@ public class Calcoli_RT {
                                 System.out.println(d);
                                 }*/
                             //per trovare la plusvalenza devo quindi prima trovare il prezzo a fine anno e fare la sottrazione
-                            BigDecimal PluvalenzaLatente = PrezzoV.subtract(CostoCarico);
+                            BigDecimal PluvalenzaLatente = PrezzoV.subtract(CostoCarico);                          
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Put_PlusLatente(PluvalenzaLatente.toPlainString());
+                            MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Put_PMC(CostoCarico.divide(qta,5,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString());
                             PlusAnno[4] = PlusAnno[4].add(PluvalenzaLatente);
                             /*if (Moneta.equalsIgnoreCase("CRO")){
                             System.out.println(Wallet+" - "+qta+" - "+Anno+" - "+PluvalenzaLatente);
@@ -1069,7 +1069,7 @@ public class Calcoli_RT {
                   //System.out.println(Moneta+" - "+plus.movimentatoAnno+" - "+plus.Mon.Qta);
                 if (plus.movimentatoAnno||!(new BigDecimal(plus.Mon.Qta).compareTo(BigDecimal.ZERO)==0)){ 
                     String Errori="<html>";
-                    rigaTabella=new Object[10];
+                    rigaTabella=new Object[11];
                     rigaTabella[0]=Wallet;
                     rigaTabella[1]=Moneta;
                     rigaTabella[2]=plus.Mon.Tipo;
@@ -1081,9 +1081,11 @@ public class Calcoli_RT {
                     rigaTabella[7]=new BigDecimal(plus.Mon.Qta).stripTrailingZeros().toPlainString();
                     rigaTabella[8]=new BigDecimal(plus.Mon.Prezzo); 
                     if (plus.Mon.Prezzo.equals("0"))Errori=Errori+"Token senza prezzo";
-                    rigaTabella[9]=Errori;
-                    Tabella.add(rigaTabella);
+                    
+                    rigaTabella[9]=Double.valueOf(plus.PMC);
                     Errori=Errori+"</html>";
+                    rigaTabella[10]=Errori;
+                    Tabella.add(rigaTabella);                   
                 }
               }
           }
@@ -1212,6 +1214,7 @@ public class Calcoli_RT {
           String CostoVendite="0.00";
           String PlusRealizzata="0.00";
           String PlusLatente="0.00";
+          String PMC="0.00";
           String Errori;
           Moneta Mon;
           ArrayDeque<String[]> Stack;
@@ -1268,6 +1271,10 @@ public class Calcoli_RT {
           public void Put_PlusLatente(String PMPlusLatente)
           {
             PlusLatente=PMPlusLatente;
+          } 
+          public void Put_PMC(String PMCx)
+          {
+            PMC=PMCx;
           } 
           public void Put_Giacenza(String PMGiacenza)
           {

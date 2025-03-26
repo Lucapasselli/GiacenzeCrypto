@@ -154,11 +154,34 @@ public class DatabaseH2 {
     }
     
 
-        public static void Pers_Emoney_Scrivi(String Moneta, String Data) {
+
+    
+    
+    /**
+ * Gestisce l'inserimento o l'aggiornamento di dati nella tabella EMONEY.
+ * Se una voce con la stessa moneta esiste già, viene aggiornata la data; altrimenti, viene creata una nuova voce.
+ * La funzione aggiorna anche una mappa di riferimento in memoria (CDC_Grafica.Mappa_EMoney).  
+ * L'utilizzo di questa mappa è finalizzato ad accelerare le ricerche successive, a scapito di una potenziale incoerenza tra mappa e database in caso di problemi.  È necessario garantire la coerenza tra la mappa e il database tramite meccanismi di sincronizzazione appropriati, se si desidera una maggiore robustezza del sistema.
+ *
+ * @param Moneta La valuta (es. "EUR", "USD").  Non deve essere nullo o vuoto.
+ * @param Data La data nel formato appropriato per il database. Non deve essere nullo.
+ * //@throws SQLException Se si verifica un errore durante l'interazione con il database.
+ * @throws IllegalArgumentException Se `Moneta` è nullo o vuoto, o se `Data` è nullo.
+ */
+       public static void Pers_Emoney_Scrivi(String Moneta, String Data) {
+        // Validazione degli input
+        if (Moneta == null || Moneta.isEmpty()) {
+            throw new IllegalArgumentException("Moneta non può essere nullo o vuoto.");
+        }
+        if (Data == null) {
+            throw new IllegalArgumentException("Data non può essere nullo.");
+        }
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM EMONEY WHERE Moneta = '" + Moneta + "'";
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM EMONEY WHERE Moneta = ?";
             PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Moneta);
+
             int rowCount = 0;
             // Esegui la query e controlla il risultato
             var resultSet = checkStatement.executeQuery();
@@ -167,15 +190,18 @@ public class DatabaseH2 {
             }
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE EMONEY SET Data = '" + Data + "' WHERE Moneta = '" + Moneta + "'";
+                String updateSQL = "UPDATE EMONEY SET Data = ? WHERE Moneta = ?";
                 PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
-                updateStatement.executeUpdate();               
+                updateStatement.setString(1, Data);
+                updateStatement.setString(2, Moneta);
+                updateStatement.executeUpdate();
 
             } else {
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = 
-                    "INSERT INTO EMONEY (Moneta, Data ) VALUES ('" + Moneta + "','" + Data + "')";
+                String insertSQL = "INSERT INTO EMONEY (Moneta, Data) VALUES (?, ?)";
                 PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.setString(1, Moneta);
+                insertStatement.setString(2, Data);
                 insertStatement.executeUpdate();
 
             }
@@ -183,8 +209,9 @@ public class DatabaseH2 {
             //Lavorare con le mappe risulta infatti + veloce del DB e uso quella come base per le ricerche
             CDC_Grafica.Mappa_EMoney.put(Moneta, Data);
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        throw new RuntimeException("Errore durante l'accesso al database: " + ex.getMessage(), ex);
+    }
     }
         
         public static void Pers_Emoney_Cancella(String Moneta) {

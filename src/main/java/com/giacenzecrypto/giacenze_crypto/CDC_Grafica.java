@@ -129,7 +129,7 @@ private static final long serialVersionUID = 3L;
         
     try {        
         
-            String Titolo="Giacenze Crypto 1.0.32 Beta";          
+            String Titolo="Giacenze Crypto 1.0.33 Beta";          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -7904,6 +7904,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     if(Valori[2].equals("S"))PagaBollo=true;
                     DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], m, PagaBollo);
                     Opzioni_GruppoWallet_CaricaGruppiWallet();
+                    GiacenzeaData_Funzione_AggiornaComboBoxWallet();
                     RW_RicalcolaRWseEsiste();                    
                     rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
                     Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(rigaselezionata, rigaselezionata);
@@ -10003,6 +10004,7 @@ try {
         }
         for (String v : MappaGruppiWalletUtilizzati.keySet()) {
             String Alias=DatabaseH2.Pers_GruppoAlias_Leggi(v)[1];
+                        
             v=v+" ( "+Alias+" )";
             String nome="Gruppo : "+v;
             this.GiacenzeaData_Wallet_ComboBox.addItem(nome);

@@ -3,13 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.giacenzecrypto</groupId>
     <artifactId>Giacenze_Crypto</artifactId>
-    <version>1.0.32</version>
+    <version>1.0.33</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
-        <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_CryptoCom</exec.mainClass>
+        <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
     </properties>
 	<dependencies>
 		<dependency>
@@ -104,7 +104,7 @@
             </filters>
             <transformers>
               <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                <mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_CryptoCom</mainClass>
+                <mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</mainClass>
               </transformer>
             </transformers>
           </configuration>

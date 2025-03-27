@@ -21,6 +21,9 @@ import java.util.logging.Logger;
  *
  * @author luca.passelli
  */
+/**
+ * This class manages the connection to an H2 database.  It provides methods for creating tables, inserting, updating, and retrieving data.  It uses two database connections, one for general data and another for personalized data.
+ */
 public class DatabaseH2 {
 
     static String jdbcUrl = "jdbc:h2:./database";
@@ -214,18 +217,29 @@ public class DatabaseH2 {
     }
     }
         
+        /**
+         * Cancella la moneta dall'elenco delle Emoney.
+        * @param Moneta
+         */
         public static void Pers_Emoney_Cancella(String Moneta) {
-               //completamente da gestire
-        try {
-            String checkIfExistsSQL = "DELETE FROM EMONEY WHERE Moneta='"+Moneta+"'";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            checkStatement.executeUpdate();
-            CDC_Grafica.Mappa_EMoney.remove(Moneta);
-
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        if (Moneta == null || Moneta.isEmpty()) {
+            throw new IllegalArgumentException("Moneta non può essere nullo o vuoto.");
         }
-        //Con questa query ritorno sia il vecchio che il nuovo nome
+        try {
+            String sql = "DELETE FROM EMONEY WHERE Moneta = ?";
+            PreparedStatement statement = connectionPersonale.prepareStatement(sql);
+            statement.setString(1, Moneta);
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected == 0) {
+                Logger.getLogger(DatabaseH2.class.getName()).log(Level.WARNING, "Nessuna riga eliminata per Moneta: " + Moneta);
+            } else {
+                CDC_Grafica.Mappa_EMoney.remove(Moneta);
+            }
+            statement.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, "Errore durante l'eliminazione di Moneta: " + Moneta, ex);
+            throw new RuntimeException("Errore durante l'accesso al database: " + ex.getMessage(), ex);
+        }
     }
         
         public static String Pers_Emoney_Leggi(String Moneta) {
@@ -805,12 +819,13 @@ public class DatabaseH2 {
        
     public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo,boolean personalizzato) {
         try {
+            String SQL;
             Connection connessione;
             if (personalizzato) connessione=connectionPersonale;
             else connessione=connection;
             // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
-            PreparedStatement checkStatement = connessione.prepareStatement(checkIfExistsSQL);
+            SQL = "SELECT COUNT(*) FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
+            PreparedStatement checkStatement = connessione.prepareStatement(SQL);
             int rowCount = 0;
             // Esegui la query e controlla il risultato
             var resultSet = checkStatement.executeQuery();
@@ -819,13 +834,13 @@ public class DatabaseH2 {
             }
             if (rowCount > 0) {
                 // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE XXXEUR SET prezzo = '" + prezzo + "' WHERE dataSimbolo = '" + dataSimbolo + "'";
-                PreparedStatement updateStatement = connessione.prepareStatement(updateSQL);
+                SQL = "UPDATE XXXEUR SET prezzo = '" + prezzo + "' WHERE dataSimbolo = '" + dataSimbolo + "'";
+                PreparedStatement updateStatement = connessione.prepareStatement(SQL);
                 updateStatement.executeUpdate();
             } else {
                 // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO XXXEUR (dataSimbolo, prezzo) VALUES ('" + dataSimbolo + "','" + prezzo + "')";
-                PreparedStatement insertStatement = connessione.prepareStatement(insertSQL);
+                SQL = "INSERT INTO XXXEUR (dataSimbolo, prezzo) VALUES ('" + dataSimbolo + "','" + prezzo + "')";
+                PreparedStatement insertStatement = connessione.prepareStatement(SQL);
                 insertStatement.executeUpdate();
             }
         } catch (SQLException ex) {
@@ -833,46 +848,59 @@ public class DatabaseH2 {
         }
     } 
     
-    
-        public static String CoppieBinance_Leggi(String Coppia) {
+    /**
+     *Questa funzione ritorna null se la coppia su binance non esiste altrimenti ritorna il nome della coppia
+     * 
+     * @param Coppia
+     * @return
+     */
+    public static String CoppieBinance_Leggi(String Coppia) {
         String Risultato = null;
         try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Coppia FROM GESTITIBINANCE WHERE Coppia = '" + Coppia + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            ResultSet resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("Coppia");
+            String checkIfExistsSQL = "SELECT Coppia FROM GESTITIBINANCE WHERE Coppia = ?";
+            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
+                checkStatement.setString(1, Coppia);
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        Risultato = resultSet.getString("Coppia");
+                    }
+                }
             }
-            resultSet.close();
-            checkStatement.close();
-
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Risultato;
     }
         
+    /**
+     *
+     * @param Gestito
+     * @return
+     */
     public static String GestitiCoingecko_Leggi(String Gestito) {
         String Risultato = null;
-        String Rete=Gestito.split("_")[1];
-        if (!Rete.equals("SOL"))Gestito=Gestito.toUpperCase();
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Address_Chain FROM GESTITICOINGECKO WHERE Address_Chain = '" + Gestito + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            ResultSet resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("Address_Chain");
+        String Rete = Gestito.split("_")[1];
+        if (!Rete.equals("SOL")) {
+            Gestito = Gestito.toUpperCase();
+        }
+        try (PreparedStatement checkStatement = connection.prepareStatement("SELECT Address_Chain FROM GESTITICOINGECKO WHERE Address_Chain = ?")) {
+            checkStatement.setString(1, Gestito);
+            try (ResultSet resultSet = checkStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    Risultato = resultSet.getString("Address_Chain");
+                }
             }
-            resultSet.close();
-            checkStatement.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Risultato;
     }
             
+        /**
+         * 
+           * @param Gestito
+           * @return 
+         */
         public static String[] GestitiCoingecko_LeggiInteraRiga(String Gestito) {
         String Risultato[]=new String[3];
         String Rete=Gestito.split("_")[1];

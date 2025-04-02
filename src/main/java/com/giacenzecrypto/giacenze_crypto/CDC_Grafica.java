@@ -8155,6 +8155,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Tabella Totali
             Stampe stampa=new Stampe("temp.pdf");
             String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
+            int anno=Integer.parseInt(AnnoDiCompetenza);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             String piede="REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
@@ -8242,6 +8243,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     
                                 //Stampa Quadro RW
+            String immagineRW="Immagini/QuadroRW_2023.jpg";
+            if (anno==2024)immagineRW="Immagini/QuadroRW_2024.jpg";
             stampa.NuovaPagina();
            // stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
@@ -8286,7 +8289,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         } else {
                             if ((righeQuadroStampate) % 5 == 0 && righeQuadroStampate != 0) {
                                 //Se arrivo qua stampo il foglio con i dati
-                                stampa.AggiungiQuadroRW("Immagini/QuadroRW_2023.jpg", String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                //System.out.println(anno+" - "+immagine);
+                                stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
                                 //Poi pulisco le variabili per un nuovo foglio
                                 ValoriIniziali = new String[5];
                                 ValoriFinali = new String[5];
@@ -8325,7 +8329,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     //Se non ho ancora stampato l'RW8 lo stampo ora
                     if (mancaStampa) {
-                        stampa.AggiungiQuadroRW("Immagini/QuadroRW_2023.jpg", String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+
+                        stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
                                 
                     }
                     

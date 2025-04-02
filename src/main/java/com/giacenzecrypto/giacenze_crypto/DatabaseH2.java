@@ -940,18 +940,18 @@ public class DatabaseH2 {
         }
         return Risultato;
     } 
+  
+        
         
         public static String GestitiCoinCap_Leggi(String Gestito) {
         String Risultato = null;
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT NOME FROM GESTITICOINCAP WHERE Symbol = '" + Gestito + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("NOME");
+        try (PreparedStatement checkStatement = connection.prepareStatement("SELECT NOME FROM GESTITICOINCAP WHERE Symbol = ?")) {
+            checkStatement.setString(1, Gestito);
+            try (ResultSet resultSet = checkStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    Risultato = resultSet.getString("NOME");
+                }
             }
-
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }

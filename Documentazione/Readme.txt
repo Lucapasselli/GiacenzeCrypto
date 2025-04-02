@@ -31,6 +31,7 @@ Nuove Implementazioni:
 Correzione di bug :
   - Corretto Bug che impediva di inserire prezzi personalizzati su rete Solana
   - Corretto Bug che impediva di recuperare i prezzi salvati su rete Solana
+  - Corretto qualche bug grafico
 
 ver. 1.0.32
 Nuove Implementazioni :

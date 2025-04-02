@@ -138,22 +138,23 @@ public class DatabaseH2 {
     }
     
     
-    //Devo predisporre la cancellazione dei record dei prezzi nulli all'apertura del gestionale
-    //DELETE FROM XXXEUR WHERE PREZZO='ND'
-    //DELETE FROM XXXEUR WHERE PREZZO='null'
+    /**
+     * Devo predisporre la cancellazione dei record dei prezzi nulli all'apertura del gestionale
+     * Cancella le righe senza prezzo o nulle dal database
+     */
     public static void CancellaPrezziVuoti() {
         try {
             String SQL = "DELETE FROM XXXEUR WHERE PREZZO='ND'";
-            PreparedStatement checkStatement = connection.prepareStatement(SQL);
-            checkStatement.executeUpdate();
+            try (PreparedStatement checkStatement = connection.prepareStatement(SQL)) {
+                checkStatement.executeUpdate();
+            }
             SQL = "DELETE FROM XXXEUR WHERE PREZZO='null'";
-            checkStatement = connection.prepareStatement(SQL);
-            checkStatement.executeUpdate();
-
+            try (PreparedStatement checkStatement = connection.prepareStatement(SQL)) {
+                checkStatement.executeUpdate();
+            }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //Con questa query ritorno sia il vecchio che il nuovo nome
     }
     
 
@@ -243,22 +244,24 @@ public class DatabaseH2 {
     }
         
         public static String Pers_Emoney_Leggi(String Moneta) {
+        if (Moneta == null || Moneta.isEmpty()) {
+            throw new IllegalArgumentException("Moneta non può essere nullo o vuoto.");
+        }
         String Risultato = null;
         try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Moneta,Data FROM EMONEY WHERE Moneta = '" + Moneta + "'";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("Data");
+            String checkIfExistsSQL = "SELECT Moneta, Data FROM EMONEY WHERE Moneta = ?";
+            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
+                checkStatement.setString(1, Moneta);
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        Risultato = resultSet.getString("Data");
+                    }
+                }
             }
-
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
-
         return Risultato;
-        //Con questa query ritorno sia il vecchio che il nuovo nome
     }
         
         public static void Pers_Emoney_PopolaMappaEmoney() {
@@ -289,139 +292,171 @@ public class DatabaseH2 {
             return campo.replace("'", "''");
         }
     
-        public static void Pers_GruppoWallet_Scrivi(String Wallet, String Gruppo) {
-        Mappa_Wallet_Gruppo.put(Wallet, Gruppo);
+    /**
+     * Posiziona il Wallet in uno specifico gruppo
+     *
+     * @param Wallet Il Wallet di riferimento
+     * @param Gruppo Il Gruppo Wallet dove deve finire
+     * 
+     * @throws IllegalArgumentException se il wallet o il Gruppo sono blank o null
+     */
+    public static void Pers_GruppoWallet_Scrivi(String Wallet, String Gruppo) {
+        if (Wallet == null || Wallet.isEmpty()) {
+            throw new IllegalArgumentException("Wallet non pu\u00f2 essere nullo o vuoto.");
+        }
+        if (Gruppo == null || Gruppo.isEmpty()) {
+            throw new IllegalArgumentException("Gruppo non pu\u00f2 essere nullo o vuoto.");
+        }       
         try {
-            // Connessione al database
-            Wallet=NormalizzaCampo(Wallet);
-            Gruppo=NormalizzaCampo(Gruppo);
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
+            //Wallet = NormalizzaCampo(Wallet);
+            //Gruppo = NormalizzaCampo(Gruppo);
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETGRUPPO WHERE Wallet = ?";
             PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Wallet);
             int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
+            ResultSet resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 rowCount = resultSet.getInt(1);
             }
             if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE WALLETGRUPPO SET Gruppo = '" + Gruppo + "' WHERE Wallet = '" + Wallet + "'";
+                String updateSQL = "UPDATE WALLETGRUPPO SET Gruppo = ? WHERE Wallet = ?";
                 PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.setString(1, Gruppo);
+                updateStatement.setString(2, Wallet);
                 updateStatement.executeUpdate();
-
             } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = 
-                    "INSERT INTO WALLETGRUPPO (Wallet, Gruppo ) VALUES ('" + Wallet + "','" + Gruppo + "')";
+                String insertSQL = "INSERT INTO WALLETGRUPPO (Wallet, Gruppo ) VALUES (?, ?)";
                 PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.setString(1, Wallet);
+                insertStatement.setString(2, Gruppo);
                 insertStatement.executeUpdate();
-
             }
+            Mappa_Wallet_Gruppo.put(Wallet, Gruppo);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
         
-        
-        
-        public static String Pers_GruppoWallet_Leggi(String Wallet) {
+    /**
+     *
+     * @param Wallet
+     * @return
+     */
+    public static String Pers_GruppoWallet_Leggi(String Wallet) {
+        if (Wallet == null || Wallet.isEmpty()) {
+            throw new IllegalArgumentException("Wallet non può essere nullo o vuoto.");
+        }
         String Risultato = Mappa_Wallet_Gruppo.get(Wallet);
-        if(Risultato==null){//se non lo trovo nella mappa lo cerco nel database
-        try {
-            // Connessione al database
-            //normalizzo il nome del wallet
-            Wallet=NormalizzaCampo(Wallet);
-            String checkIfExistsSQL = "SELECT Wallet,Gruppo FROM WALLETGRUPPO WHERE Wallet = '" + Wallet + "'";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("Gruppo");
+        if (Risultato == null) {
+            try {
+                Wallet = NormalizzaCampo(Wallet);
+                String checkIfExistsSQL = "SELECT Wallet,Gruppo FROM WALLETGRUPPO WHERE Wallet = ?";
+                try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
+                    checkStatement.setString(1, Wallet);
+                    try (ResultSet resultSet = checkStatement.executeQuery()) {
+                        if (resultSet.next()) {
+                            Risultato = resultSet.getString("Gruppo");
+                        }
+                    }
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
-        }
-        if (Risultato==null){
+        if (Risultato == null) {
             Pers_GruppoWallet_Scrivi(Wallet, "Wallet 01");
-            Risultato="Wallet 01";
-            }
+            Risultato = "Wallet 01";
+        }
         return Risultato;
-        //Con questa query ritorno sia il vecchio che il nuovo nome
     }
         
-        public static String[] Pers_GruppoAlias_Leggi(String Gruppo) {
-        String Risultato[]=new String[3]; 
+    /**
+     *
+     * @param Gruppo
+     * @return
+     */
+    public static String[] Pers_GruppoAlias_Leggi(String Gruppo) {
+        String[] Risultato = new String[3];
+        if (Gruppo == null || Gruppo.isEmpty()) {
+            throw new IllegalArgumentException("Gruppo non pu\u00f2 essere nullo o vuoto.");
+        }
         try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Gruppo,Alias,PagaBollo FROM GRUPPO_ALIAS WHERE Gruppo = '" + Gruppo + "'";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato[0] = resultSet.getString("Gruppo");
-                Risultato[1] = resultSet.getString("Alias");
-                Risultato[2] = resultSet.getString("PagaBollo");
+            String checkIfExistsSQL = "SELECT Gruppo,Alias,PagaBollo FROM GRUPPO_ALIAS WHERE Gruppo = ?";
+            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
+                checkStatement.setString(1, Gruppo);
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        Risultato[0] = resultSet.getString("Gruppo");
+                        Risultato[1] = resultSet.getString("Alias");
+                        Risultato[2] = resultSet.getString("PagaBollo");
+                    }
+                }
             }
-
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
-
         return Risultato;
-        //Con questa query ritorno sia il vecchio che il nuovo nome
     }
         
-        public static Map<String, String[]> Pers_GruppoAlias_LeggiTabella() {
-        Map<String, String[]> Mappa_GruppiAlias = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);    
-         
+    /**
+     *
+     * @return
+     */
+    public static Map<String, String[]> Pers_GruppoAlias_LeggiTabella() {
+        Map<String, String[]> Mappa_GruppiAlias = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Gruppo,Alias,PagaBollo FROM GRUPPO_ALIAS";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            while (resultSet.next()) {
-                String Risultato[]=new String[3];
-                Risultato[0] = resultSet.getString("Gruppo");
-                Risultato[1] = resultSet.getString("Alias");
-                Risultato[2] = resultSet.getString("PagaBollo");
-                Mappa_GruppiAlias.put(Risultato[0], Risultato);
+            String checkIfExistsSQL = "SELECT Gruppo, Alias, PagaBollo FROM GRUPPO_ALIAS";
+            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL); 
+                    ResultSet resultSet = checkStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String[] Risultato = new String[3];
+                    Risultato[0] = resultSet.getString("Gruppo");
+                    Risultato[1] = resultSet.getString("Alias");
+                    Risultato[2] = resultSet.getString("PagaBollo");
+                    Mappa_GruppiAlias.put(Risultato[0], Risultato);
+                }
             }
-
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
-
         return Mappa_GruppiAlias;
-        //Con questa query ritorno sia il vecchio che il nuovo nome
     }
-        
-        public static void Pers_GruppoAlias_Scrivi(String Gruppo, String Alias, boolean PagaBollo) {
-            String Pagabollo="N";
-            if (PagaBollo)Pagabollo="S";            
-            //Devo ricordarmi di non permettere virgole, punti e virgola, underscore o apici di vario tipo nel nome
+       
+    /**
+     *
+     * @param Gruppo
+     * @param Alias
+     * @param PagaBollo
+     */
+    public static void Pers_GruppoAlias_Scrivi(String Gruppo, String Alias, boolean PagaBollo) {
+        String Pagabollo = PagaBollo ? "S" : "N";
         try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM GRUPPO_ALIAS WHERE Gruppo = '" + Gruppo + "'";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE GRUPPO_ALIAS SET (Alias, Pagabollo) = ('" + Alias + "','" + Pagabollo+ "') WHERE Gruppo = '" + Gruppo + "'";
-                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
-                updateStatement.executeUpdate();
-
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = 
-                    "INSERT INTO GRUPPO_ALIAS (Gruppo, Alias, Pagabollo) VALUES ('" + Gruppo + "','" + Alias + "','" + Pagabollo+ "')";
-                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
-                insertStatement.executeUpdate();
-
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM GRUPPO_ALIAS WHERE Gruppo = ?";
+            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
+                checkStatement.setString(1, Gruppo);
+                int rowCount = 0;
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        rowCount = resultSet.getInt(1);
+                    }
+                }
+                if (rowCount > 0) {
+                    String updateSQL = "UPDATE GRUPPO_ALIAS SET Alias = ?, Pagabollo = ? WHERE Gruppo = ?";
+                    try (PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL)) {
+                        updateStatement.setString(1, Alias);
+                        updateStatement.setString(2, Pagabollo);
+                        updateStatement.setString(3, Gruppo);
+                        updateStatement.executeUpdate();
+                    }
+                } else {
+                    String insertSQL = "INSERT INTO GRUPPO_ALIAS (Gruppo, Alias, Pagabollo) VALUES (?, ?, ?)";
+                    try (PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL)) {
+                        insertStatement.setString(1, Gruppo);
+                        insertStatement.setString(2, Alias);
+                        insertStatement.setString(3, Pagabollo);
+                        insertStatement.executeUpdate();
+                    }
+                }
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
@@ -429,30 +464,44 @@ public class DatabaseH2 {
     }
         
     
-        public static void RinominaToken_Scrivi(String address_chain, String VecchioNome,String NuovoNome) {
+    /**
+     *
+     * @param address_chain
+     * @param VecchioNome
+     * @param NuovoNome
+     */
+    public static void RinominaToken_Scrivi(String address_chain, String VecchioNome, String NuovoNome) {
+        if (address_chain == null || address_chain.isEmpty()) {
+            throw new IllegalArgumentException("address_chain non pu\u00f2 essere nullo o vuoto.");
+        }
+        if (VecchioNome == null || VecchioNome.isEmpty()) {
+            throw new IllegalArgumentException("VecchioNome non pu\u00f2 essere nullo o vuoto.");
+        }
+        if (NuovoNome == null || NuovoNome.isEmpty()) {
+            throw new IllegalArgumentException("NuovoNome non pu\u00f2 essere nullo o vuoto.");
+        }
         try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM RINOMINATOKEN WHERE address_chain = '" + address_chain + "'";
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM RINOMINATOKEN WHERE address_chain = ?";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, address_chain);
             int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
+            ResultSet resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 rowCount = resultSet.getInt(1);
             }
             if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE RINOMINATOKEN SET NuovoNome = '" + NuovoNome + "' WHERE address_chain = '" + address_chain + "'";
+                String updateSQL = "UPDATE RINOMINATOKEN SET NuovoNome = ? WHERE address_chain = ?";
                 PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
+                updateStatement.setString(1, NuovoNome);
+                updateStatement.setString(2, address_chain);
                 updateStatement.executeUpdate();
-
             } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = 
-                    "INSERT INTO RINOMINATOKEN (address_chain, VecchioNome,NuovoNome ) VALUES ('" + address_chain + "','" + VecchioNome + "','" +NuovoNome+ "')";
+                String insertSQL = "INSERT INTO RINOMINATOKEN (address_chain, VecchioNome, NuovoNome) VALUES (?, ?, ?)";
                 PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
+                insertStatement.setString(1, address_chain);
+                insertStatement.setString(2, VecchioNome);
+                insertStatement.setString(3, NuovoNome);
                 insertStatement.executeUpdate();
-
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
@@ -729,16 +778,16 @@ public class DatabaseH2 {
         String Risultato = null;
         try {
             // Connessione al database
-            String checkIfExistsSQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            String SQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(SQL);
             var resultSet = checkStatement.executeQuery();
             if (resultSet.next()) {
                 Risultato = resultSet.getString("prezzo");
             }
             if (Risultato==null){
                 //Risultato è null se non ho trovato prezzi personalizzati, nel qual caso cerco tra i prezzi globali
-                checkIfExistsSQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
-                checkStatement = connection.prepareStatement(checkIfExistsSQL);
+                SQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
+                checkStatement = connection.prepareStatement(SQL);
                 resultSet = checkStatement.executeQuery();
                 if (resultSet.next()) {
                     Risultato = resultSet.getString("prezzo");

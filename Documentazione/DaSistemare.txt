@@ -6,7 +6,5 @@
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
 - aggiungere gestione dei prezzi personalizzati
-
-- Problema con sistemazione prezzi da funzione giacenze a data
-- Problema con sistemazione prezzi NFT
+- Aggiungere colonna errori negli anni quadro RT
 

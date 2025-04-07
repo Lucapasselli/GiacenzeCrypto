@@ -142,7 +142,13 @@ public class Stampe {
           }
     }
     
-        public void AggiungiQuadroRW(String Immagine,
+        
+    
+    
+    
+    
+    
+    public void AggiungiQuadroRW(String Immagine,
                 String NumeroQuadro,
                 String ValoriIniziali[],
                 String ValoriFinali[],
@@ -298,6 +304,38 @@ public class Stampe {
     public void setPara(PdfContentByte canvas, Phrase p, float x, float y) {
     ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, p, x, y, 0);
 }
+    
+    public void AggiungiT(String Immagine,String Vendite,String Costo,String Segnalazioni) {
+          try {
+              
+
+// String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
+              com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
+             // image01.s
+             float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
+             float LarghezzaImmagine=image01.getWidth();
+             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*90;
+             image01.scalePercent(PercentualeScala);
+             //doc.bottom()
+             doc.add(image01);
+             float psosizioneVeriticale=writer.getVerticalPosition(false); 
+             Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             //Valore delle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 210+doc.leftMargin(), psosizioneVeriticale+610);
+             //Valore dei Costi relativi alle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 390+doc.leftMargin(), psosizioneVeriticale+610);
+             
+
+          } catch (BadElementException | IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    }
+    
+    
+    
+    
+    
+    
     
     public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){
       Font font = new Font(Font.HELVETICA, 10, Font.BOLD);

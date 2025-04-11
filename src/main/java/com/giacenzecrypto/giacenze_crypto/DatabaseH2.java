@@ -66,6 +66,10 @@ public class DatabaseH2 {
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
             
+            createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINBASE  (Simbolo VARCHAR(255) PRIMARY KEY)";
+            preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute(); 
+            
             createTableSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINGECKO  (Address_Chain VARCHAR(255) PRIMARY KEY, Simbolo VARCHAR(255), Nome VARCHAR (255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
@@ -920,6 +924,30 @@ public class DatabaseH2 {
         }
         return Risultato;
     }
+    
+        /**
+     *Questa funzione ritorna null se il simbolo su coinbase non esiste altrimenti ritorna il simbolo
+     * 
+     * @param Simbolo
+     * @return
+     */
+    public static String GestitiCoinbase_Leggi(String Simbolo) {
+        String Risultato = null;
+        try {
+            String checkIfExistsSQL = "SELECT Coppia FROM GESTITICOINBASE WHERE Simbolo = ?";
+            try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
+                checkStatement.setString(1, Simbolo);
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        Risultato = resultSet.getString("Simbolo");
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+    }
         
     /**
      *
@@ -1063,6 +1091,29 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     } 
+        
+    public static void GestitiCoinbase_ScriviNuovaTabella(List<String> Simboli) {
+        try {
+            String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITICOINBASE";
+            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute();
+            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICOINBASE  (Simbolo VARCHAR(255) PRIMARY KEY)";
+            checkStatement = connection.prepareStatement(checkIfExistsSQL);
+            checkStatement.execute();
+            for (String Simbolo : Simboli) {
+                String insertSQL = "INSERT INTO GESTITICOINBASE (Simbolo) VALUES (?)";
+                try (PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
+                    insertStatement.setString(1, Simbolo);
+                    insertStatement.executeUpdate();
+                }
+            }
+            checkStatement.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
+        
+        
         public static void GestitiCoingecko_ScriviNuovaTabella(List<String[]> Gestiti) {
         try {
             // Connessione al database

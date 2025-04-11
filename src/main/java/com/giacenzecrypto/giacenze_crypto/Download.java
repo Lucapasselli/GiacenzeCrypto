@@ -94,7 +94,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         // System.out.println(FileLocale);
         
         
-//RipristinaStdout();
+RipristinaStdout();
 
      
 

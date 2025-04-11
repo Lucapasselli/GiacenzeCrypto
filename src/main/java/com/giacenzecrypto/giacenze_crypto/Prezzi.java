@@ -785,7 +785,11 @@ public class Prezzi {
                 risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
             }
         }
+        
+        
         //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CoinCap
+        //Metto in pausa coincap momentaneamente perchè richiede APIKEY da Aprile
+        /*
         if (risultato == null) {
             //se non trovo un prezzo recupero le coppie gestite da binance e coincap
             RecuperaCoinsCoinCap();
@@ -803,7 +807,9 @@ public class Prezzi {
             //in sostanza va messo sempre sull'ultimo provider
 
         }
-
+        */
+        
+        
         //Se il risultato è ancora null provo a recuperare il prezzo della giornata invece che quello orario
         if (risultato == null || risultato.equalsIgnoreCase("ND")) {
             //se non trovo un prezzo recupero le coppie gestite da binance e coincap
@@ -1944,6 +1950,71 @@ for (int i=0;i<ArraydataIni.size();i++){
         }
         return ok;
     }
+    
+    //Recupero le coppie con il dollaro gestite da coinbase
+    public static String RecuperaCoppieCoinbase() {
+        String ok = "ok";
+        //come prima cosa recupero l'ora atuale
+        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
+        //altrimenti tengo buona quella presente nel database
+        long adesso = System.currentTimeMillis();
+        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_Coinbase");
+        long dataUltimoScarico = 0;
+        if (dataUltimoScaricoString != null) {
+            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
+        }
+        if (adesso > (dataUltimoScarico + 86400000)) {
+            try {
+                String apiUrl = "https://api.exchange.coinbase.com/products";
+                URL url = new URI(apiUrl).toURL();
+                URLConnection connection = url.openConnection();
+                System.out.println("Recupero coppie gestite da Coinbase");
+                //System.out.println(url);
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+                    //System.out.println(line);
+                }
+
+                Gson gson = new Gson();
+                JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
+               // System.out.println(pricesArray.size());
+                //JsonArray pricesArray = jsonObject.getAsJsonArray();//.getAsJsonArray("symbols");
+                List<String> simboli = new ArrayList<>();
+                if (pricesArray != null) {
+                    for (JsonElement element : pricesArray) {
+                        
+                        JsonObject Coppie = element.getAsJsonObject();
+                        //String id = Coppie.get("id").getAsString();
+                        String base_currency = Coppie.get("base_currency").getAsString();
+                        String quote_currency = Coppie.get("quote_currency").getAsString();
+                        //System.out.println(quote_currency);
+                        if (quote_currency.equals("USD")) {
+                            simboli.add(base_currency);
+                        }
+                    }
+                    DatabaseH2.GestitiCoinbase_ScriviNuovaTabella(simboli);
+                    DatabaseH2.Opzioni_Scrivi("Data_Lista_Coinbase", String.valueOf(adesso));
+                } else {
+                    ok = null;
+                }
+
+                TimeUnit.SECONDS.sleep(1);
+            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
+                ok = null;
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return ok;
+    }
+    
+    
+    
+    
+    
     
     //questa funzione la chiamo sempre una sola volta per verificare quali sono le coppie di trading di cui binance mi fornisce i dati    
     public static String RecuperaTassiCambioEURUSD() {

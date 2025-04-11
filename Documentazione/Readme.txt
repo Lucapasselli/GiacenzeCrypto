@@ -1,3 +1,8 @@
+ATTENZIONE: Dal 10 Aprile circa Coincap, uno dei provider da cui il programma attingeva ai dati dei prezzi storici sulle cripto è diventato a pagamento.
+Questo potrebbe portare all'impossibilità di ricevere i prezzi relativi a talune crypto.
+Con la versione 1.0.34 aggiungerò un altro provider gratuito oltre che, molto probabilmente, dare la possibilità di continuare ad utilizzare coincap
+inserendo la chiave api personale relativa.
+
 DISCLAIMER
 Il software fornito è in versione beta ed è destinato esclusivamente a scopi di testing e valutazione. Questo programma è progettato per assistere nei calcoli legati alla dichiarazione delle Crypto-Attività, ma non garantisce l'accuratezza, la completezza o l'affidabilità dei risultati.
 L'utente utilizza questo software a proprio rischio e pericolo. Nonostante gli sforzi per identificare e correggere eventuali errori, il programma potrebbe contenere bug o fornire risultati errati.

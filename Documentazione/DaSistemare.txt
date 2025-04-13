@@ -8,7 +8,4 @@
 - aggiungere gestione dei prezzi personalizzati
 - Aggiungere colonna errori negli anni quadro RT
 
-- Aggiungere Coinbase per i prezzi storici
-https://api.exchange.coinbase.com/products/GLQ-USD/candles?granularity=3600&start=2023-03-01T00:00:00Z&end=2023-03-06T23:59:59Z
-
 - Aggiungere possibilità di inserire api Coincap per i prezzi storici

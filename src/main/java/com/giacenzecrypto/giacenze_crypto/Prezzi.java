@@ -1637,7 +1637,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                     for (int i = pricesArray.size() - 1; i >= 0; i--) {
                         inverso.add(pricesArray.get(i));
                     }
-                    if (inverso != null || !inverso.isEmpty()) {
+                    if (!inverso.isEmpty()) {
                         for (JsonElement element : inverso) {
                             JsonArray dettagliArray=element.getAsJsonArray();
                             long Unixtime = dettagliArray.get(0).getAsLong()*1000;

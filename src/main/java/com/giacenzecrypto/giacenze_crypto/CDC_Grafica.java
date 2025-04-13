@@ -9250,8 +9250,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
-        
-        Prezzi.RecuperaCoppieCoinbase();
+        //OperazioniSuDate.ConvertiUnixTimestampToIso(OperazioniSuDate.ConvertiDatainLongSecondo("2022-01-02 23:13:15"));
+        //Prezzi.RecuperaCoppieCoinbase();
+        Prezzi.RecuperaTassidiCambiodaSimbolo_Coinbase("BTC", "2021-10-01") ;
+        //Prezzi.RecuperaTassidiCambioXXXUSDT_Binance("BTC","2021-10-01", "2021-10-10");
     }//GEN-LAST:event_jButton3ActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){

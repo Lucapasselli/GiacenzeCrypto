@@ -934,7 +934,7 @@ public class DatabaseH2 {
     public static String GestitiCoinbase_Leggi(String Simbolo) {
         String Risultato = null;
         try {
-            String checkIfExistsSQL = "SELECT Coppia FROM GESTITICOINBASE WHERE Simbolo = ?";
+            String checkIfExistsSQL = "SELECT Simbolo FROM GESTITICOINBASE WHERE Simbolo = ?";
             try (PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL)) {
                 checkStatement.setString(1, Simbolo);
                 try (ResultSet resultSet = checkStatement.executeQuery()) {

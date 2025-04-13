@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -53,6 +54,14 @@ public class OperazioniSuDate {
 
         return m1;
     } 
+        
+        public static String ConvertiUnixTimestampToIso(long unixTimestamp) {
+            // Crea un oggetto Instant a partire dal timestamp fornito
+            Instant instant = Instant.ofEpochMilli(unixTimestamp);
+            // Format ISO 8601 utilizzando DateTimeFormatter.ISO_INSTANT
+            System.out.print(DateTimeFormatter.ISO_INSTANT.format(instant));
+            return DateTimeFormatter.ISO_INSTANT.format(instant);
+        }
     
             public static int DifferenzaDate(String DataInizio,String DataFine)   {
                 //Il Formato della data deve essere es. 2023-02-15

@@ -2214,7 +2214,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         return ok;
     }   
      
-          public static String RecuperaCoinsCoinCap() {
+        public static String RecuperaCoinsCoinCap() {
         String ok = "ok";
         //come prima cosa recupero l'ora atuale
         //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
@@ -2227,7 +2227,29 @@ for (int i=0;i<ArraydataIni.size();i++){
             dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
         }
         if (adesso > (dataUltimoScarico + 86400000)) {
-            int offset=0;
+        
+            //ORA che coincap è a pagamento non posso usare più la richiesta api diretta perchè da sola farebbe fuori il 10% delle richieste mensili
+            //al posto suo prenderò i dati da un file csv precedentemente preparato che vedrò come tenere aggiornato nel futuro
+            
+            String riga;
+        try (FileReader fire = new FileReader("Gestiticoincap.csv"); 
+                BufferedReader bure = new BufferedReader(fire);) 
+            {
+                List<String[]> gestiti = new ArrayList<>();
+                while((riga=bure.readLine())!=null)
+                {
+                    String rigaSplittata[]=riga.split(";");
+                    gestiti.add(rigaSplittata);
+                }
+                DatabaseH2.GestitiCoinCap_ScriviNuovaTabella(gestiti);
+                DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinCap", String.valueOf(adesso));
+            
+        }   catch (FileNotFoundException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            /*   int offset=0;
             try { 
             List<String[]> gestiti = new ArrayList<>();
             while (offset<3999){
@@ -2277,7 +2299,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             } catch (URISyntaxException ex) {
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+            */
         }
         return ok;
     }   

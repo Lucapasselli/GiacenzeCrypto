@@ -516,6 +516,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Etherscan_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Etherscan_LabelSito = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
+        Opzioni_ApiKey_Coincap_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Coincap_Label = new javax.swing.JLabel();
+        Opzioni_ApiKey_Coincap_LabelSito = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -3619,6 +3622,27 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ApiKey_Coincap_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ApiKey_Coincap_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Opzioni_ApiKey_Coincap_Label.setText("ApiKey Coincap :");
+
+        Opzioni_ApiKey_Coincap_LabelSito.setText("https://pro.coincap.io/dashboard");
+        Opzioni_ApiKey_Coincap_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coincap_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coincap_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coincap_LabelSitoMouseExited(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
         Opzioni_ApiKeyLayout.setHorizontalGroup(
@@ -3629,7 +3653,8 @@ private static final long serialVersionUID = 3L;
                         .addContainerGap()
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Opzioni_ApiKey_Coincap_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
@@ -3643,7 +3668,11 @@ private static final long serialVersionUID = 3L;
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addGap(212, 212, 212)
                         .addComponent(jButton3)))
@@ -3662,11 +3691,16 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Etherscan_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Etherscan_Label)
                     .addComponent(Opzioni_ApiKey_Etherscan_LabelSito))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_Coincap_Label)
+                    .addComponent(Opzioni_ApiKey_Coincap_LabelSito))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(116, 116, 116)
+                .addGap(88, 88, 88)
                 .addComponent(jButton3)
                 .addContainerGap(459, Short.MAX_VALUE))
         );
@@ -3929,6 +3963,7 @@ private static final long serialVersionUID = 3L;
         
         Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
         Opzioni_ApiKey_Etherscan_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
+        Opzioni_ApiKey_Coincap_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -9133,11 +9168,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         boolean HeliusDiversa=true;
         boolean EtherscanDiversa=true;
+        boolean CoincapDiversa=true;
         
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
         if (Opzioni_ApiKey_Etherscan_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherescan"))))EtherscanDiversa=false;
+        if (Opzioni_ApiKey_Coincap_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))))CoincapDiversa=false;
         
         //Controllo ed eventualmente salvo le api Helius
         if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||
@@ -9160,6 +9198,17 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
         
+        //Controllo ed eventualmente salvo le api Coincap
+        if (CoincapDiversa&&Trans_Solana.isApiKeyValidaCoincap(Opzioni_ApiKey_Coincap_TextField.getText().trim())||
+                Opzioni_ApiKey_Coincap_TextField.getText().isBlank()){
+            //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Coincap", Opzioni_ApiKey_Coincap_TextField.getText().trim());
+        }else if (CoincapDiversa){
+            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Coincap inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br></html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        
         Opzioni_ApiKey_ControllaPulsanti();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
@@ -9168,6 +9217,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Opzioni_ApiKey_Helius_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius")));
         Opzioni_ApiKey_Etherscan_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan")));
+        Opzioni_ApiKey_Coincap_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 
@@ -9252,9 +9302,29 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         //OperazioniSuDate.ConvertiUnixTimestampToIso(OperazioniSuDate.ConvertiDatainLongSecondo("2022-01-02 23:13:15"));
         //Prezzi.RecuperaCoppieCoinbase();
-        Prezzi.RecuperaTassidiCambiodaSimbolo_Coinbase("BTC", "2021-10-01") ;
+        //Prezzi.RecuperaTassidiCambiodaSimbolo_Coinbase("BTC", "2021-10-01") ;
         //Prezzi.RecuperaTassidiCambioXXXUSDT_Binance("BTC","2021-10-01", "2021-10-10");
+        Prezzi.RecuperaCoinsCoinCap();
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void Opzioni_ApiKey_Coincap_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_Coincap_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://pro.coincap.io/dashboard");
+    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_Coincap_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_Coincap_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseExited
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -9551,11 +9621,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void Opzioni_ApiKey_ControllaPulsanti(){
             // TODO add your handling code here:
-        String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText()+
-                Opzioni_ApiKey_Etherscan_TextField.getText();
+        String NuovoValore=
+                Opzioni_ApiKey_Helius_TextField.getText()+
+                Opzioni_ApiKey_Etherscan_TextField.getText()+
+                Opzioni_ApiKey_Coincap_TextField.getText();
         //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
-        String ValoreSalvato=Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
+        String ValoreSalvato=
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
        // System.out.println(ValoreSalvato);
         //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){
@@ -11391,6 +11465,9 @@ try {
     private javax.swing.JPanel Opzioni_ApiKey;
     private javax.swing.JButton Opzioni_ApiKey_Bottone_Annulla;
     private javax.swing.JButton Opzioni_ApiKey_Bottone_Salva;
+    private javax.swing.JLabel Opzioni_ApiKey_Coincap_Label;
+    private javax.swing.JLabel Opzioni_ApiKey_Coincap_LabelSito;
+    private javax.swing.JTextField Opzioni_ApiKey_Coincap_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_Etherscan_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Etherscan_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Etherscan_TextField;

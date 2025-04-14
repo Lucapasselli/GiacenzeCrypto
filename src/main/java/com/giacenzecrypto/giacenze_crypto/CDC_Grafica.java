@@ -9304,7 +9304,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Prezzi.RecuperaCoppieCoinbase();
         //Prezzi.RecuperaTassidiCambiodaSimbolo_Coinbase("BTC", "2021-10-01") ;
         //Prezzi.RecuperaTassidiCambioXXXUSDT_Binance("BTC","2021-10-01", "2021-10-10");
-        Prezzi.RecuperaCoinsCoinCap();
+       // Prezzi.RecuperaCoinsCoinCap();
+       Prezzi.RecuperaTassidiCambiodaSimbolo_CryptoCompare("GLQ", "2021-10-01") ;
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void Opzioni_ApiKey_Coincap_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased

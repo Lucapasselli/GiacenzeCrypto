@@ -799,10 +799,31 @@ public class Prezzi {
             //che sono i giorni minimi per cui recupero i prezzi (Quelli di coinbase)
             //Questo perchè questo è l'ultimo provider da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
             //sicuro che non potrò farci nulla
+            //mettereND = true;
+            //in sostanza va messo sempre sull'ultimo provider
+
+        }
+        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CryptoCompare
+        
+        if (risultato == null) {
+            //se non trovo un prezzo recupero le coppie gestite da binance e coincap
+            //Guardo le coins supportate da Coincap perchè Cryptocompare supporta troppe crypto e la maggior parte non hai dati storici
+            //Decido quindi di usare la base di Coincap che terrò aggiornata manualmente
+            RecuperaCoinsCoinCap();           
+            if (DatabaseH2.GestitiCoinCap_Leggi(Crypto) != null) {
+                //Se gestito da CoinCap scarico i prezzi da CoinCap
+                RecuperaTassidiCambiodaSimbolo_CryptoCompare(Crypto, DataGiorno);
+                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
+            }
+            //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
+            //che sono i giorni per cui di solito recupero i prezzi
+            //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
+            //sicuro che non potrò farci nulla
             mettereND = true;
             //in sostanza va messo sempre sull'ultimo provider
 
         }
+        
         //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CoinCap
         //Metto in pausa coincap momentaneamente perchè richiede APIKEY da Aprile
         /*
@@ -995,7 +1016,7 @@ public class Prezzi {
 
 for (int i=0;i<ArraydataIni.size();i++){
         try {
-            TimeUnit.SECONDS.sleep(11);//il timeout serve per evitare di fare troppe richieste all'API
+            TimeUnit.SECONDS.sleep(12);//il timeout serve per evitare di fare troppe richieste all'API
             URL url;
             //DA RIVEDERE!!!!!!!!!!!!!!
            // https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=1644879600&to=1648335600
@@ -1683,6 +1704,84 @@ for (int i=0;i<ArraydataIni.size();i++){
         return ok;
     }    
     
+        public static String RecuperaTassidiCambiodaSimbolo_CryptoCompare(String Crypto, String DataIniziale) {
+        String ok = null;
+        //Aggiungo 30 giorni alla data iniziale per trovare la data di fine
+        long dataFin = (OperazioniSuDate.ConvertiDatainLong(DataIniziale)/1000 + Long.parseLong("2592000"));
+
+            String apiUrl = "https://min-api.cryptocompare.com/data/v2/histohour?fsym=" + Crypto + "&tsym=USD&limit=720&toTs=" + dataFin;
+           // System.out.println(apiUrl);
+            
+            try {
+                URL url = new URI(apiUrl).toURL();
+                //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
+                if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
+                    return null;
+                }
+                CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+                URLConnection connection = url.openConnection();
+                // System.out.println(url);
+                System.out.println("Recupero prezzi " + Crypto + " da CryptoCompare da data " + DataIniziale);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+
+                    }
+                    //System.out.println(response);
+                    Gson gson = new Gson();
+                    JsonObject JsonObj = gson.fromJson(response.toString(), JsonObject.class);
+                    String Risposta=JsonObj.get("Response").getAsString();
+                    if (Risposta.equalsIgnoreCase("Success")) {
+                        //Se la richiesta ha successo vado a leggere i dati delle crypto
+                        JsonArray pricesArray = JsonObj.getAsJsonObject("Data").getAsJsonArray("Data");
+
+                        if (!pricesArray.isEmpty()) {
+                            for (JsonElement element : pricesArray) {
+                                String prezzoUSD=element.getAsJsonObject().get("open").getAsString();
+                                long UnixTime=element.getAsJsonObject().get("time").getAsLong() * 1000;
+                                String Data = OperazioniSuDate.ConvertiDatadaLong(UnixTime);
+                                String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(UnixTime);
+                                String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
+                                if (!PrezzoEuro.equalsIgnoreCase("0")) {
+                                    //System.out.println(Crypto+" - "+DataOra+" - "+PrezzoEuro);
+                                    //Controllo ora se non ha il prezzo e in quel caso lo scrivo
+                                    if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
+                                        DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
+                                    }
+                                    if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) {
+                                        DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
+                                    }
+                                }
+                            }
+
+                        } else {
+                            ok = null;
+                        }
+                    }
+                } catch (IOException ex) {
+                    ok = null;
+                }
+                TimeUnit.SECONDS.sleep(1);
+
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (IOException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (InterruptedException ex) {
+                ok = null;
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        
+        return ok;
+    }    
     
     
     public static String Obsoleto_RecuperaTassidiCambiodaSimbolo(String Crypto,String DataIniziale) {          
@@ -2219,6 +2318,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         //come prima cosa recupero l'ora atuale
         //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
         //altrimenti tengo buona quella presente nel database
+        
         long adesso = System.currentTimeMillis();
         //String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CryptoHistory");
         String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CoinCap");
@@ -2227,7 +2327,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
         }
         if (adesso > (dataUltimoScarico + 86400000)) {
-        
+            System.out.println("Recupero gestiti Coincap+CryptoCompare");
             //ORA che coincap è a pagamento non posso usare più la richiesta api diretta perchè da sola farebbe fuori il 10% delle richieste mensili
             //al posto suo prenderò i dati da un file csv precedentemente preparato che vedrò come tenere aggiornato nel futuro
             

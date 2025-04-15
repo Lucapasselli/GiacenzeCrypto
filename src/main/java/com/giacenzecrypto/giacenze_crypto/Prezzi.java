@@ -819,14 +819,14 @@ public class Prezzi {
             //che sono i giorni per cui di solito recupero i prezzi
             //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
             //sicuro che non potrò farci nulla
-            mettereND = true;
+            //mettereND = true;
             //in sostanza va messo sempre sull'ultimo provider
 
         }
         
         //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CoinCap
         //Metto in pausa coincap momentaneamente perchè richiede APIKEY da Aprile
-        /*
+        
         if (risultato == null) {
             //se non trovo un prezzo recupero le coppie gestite da binance e coincap
             RecuperaCoinsCoinCap();
@@ -844,7 +844,7 @@ public class Prezzi {
             //in sostanza va messo sempre sull'ultimo provider
 
         }
-        */
+        
         
         
         //Se il risultato è ancora null provo a recuperare il prezzo della giornata invece che quello orario
@@ -1536,16 +1536,19 @@ for (int i=0;i<ArraydataIni.size();i++){
     }   
     
     public static String RecuperaTassidiCambiodaSimbolo_CoinCap(String Crypto, String DataIniziale) {
-        String ok = null;
-        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("2592000000");
-        long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataIniziale);
-        String ID=DatabaseH2.GestitiCoinCap_Leggi(Crypto);
+        String ApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
+        if (!ApiKey.isBlank()) {
+            String ok = null;
+            long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
+            long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+            String ID = DatabaseH2.GestitiCoinCap_Leggi(Crypto);
 
-        String DataFinale = OperazioniSuDate.ConvertiDatadaLong(dataFin);
+            //String DataFinale = OperazioniSuDate.ConvertiDatadaLong(dataFin);
 
-            String apiUrl = "https://api.coincap.io/v2/assets/" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;
+            String apiUrl = "https://rest.coincap.io/v3/assets/" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;
+            apiUrl=apiUrl+"&apiKey="+ApiKey;
             //System.out.println(apiUrl);
-            
+
             try {
                 URL url = new URI(apiUrl).toURL();
                 //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
@@ -1569,10 +1572,10 @@ for (int i=0;i<ArraydataIni.size();i++){
                     Gson gson = new Gson();
                     JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
                     JsonArray pricesArray = jsonObject.getAsJsonArray("data");
-                    List<String> simboli = new ArrayList<>();
+                    //List<String> simboli = new ArrayList<>();
                     if (pricesArray != null || !pricesArray.isEmpty()) {
                         for (JsonElement element : pricesArray) {
-                            
+
                             JsonObject Coppie = element.getAsJsonObject();
                             String prezzoUSD = Coppie.get("priceUsd").getAsString();
                             long Unixtime = Coppie.get("time").getAsLong();
@@ -1581,13 +1584,11 @@ for (int i=0;i<ArraydataIni.size();i++){
                             String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Unixtime);
                             String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
                             //Controllo ora se non ha il prezzo e in quel caso lo scrivo
-                            if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) 
-                            {
-                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro,false);
+                            if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
+                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
                             }
-                            if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) 
-                            {
-                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
+                            if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) {
+                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
                             }
 
                         }
@@ -1613,8 +1614,11 @@ for (int i=0;i<ArraydataIni.size();i++){
             } catch (URISyntaxException ex) {
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             }
-        
-        return ok;
+
+            return ok;
+        } else {
+            return null;
+        }
     }
 
 

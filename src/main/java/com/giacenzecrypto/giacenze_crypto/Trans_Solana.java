@@ -166,7 +166,7 @@ public class Trans_Solana {
             }
 
             String responseBody = response.body().string();
-           // System.out.println(responseBody);
+            //System.out.println(responseBody);
            //Risposta se ok -> {"jsonrpc":"2.0","id":83,"result":"0x14f857d"}
            //Risposta se non ok -> {"status": "0","message": "NOTOK","result": "Invalid API Key"}
 
@@ -183,9 +183,12 @@ public class Trans_Solana {
     }  
   
     public static boolean isApiKeyValidaCoincap(String ApiKey) {
-        String ETHERSCAN_URL = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=";
+        
+        //String apiUrl = "rest.coincap.io/v3/assets?apiKey=YourApiKey (New Api)" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;
+        String COINCAP_URL = "https://rest.coincap.io/v3/assets/bitcoin?apiKey=";
         OkHttpClient client = new OkHttpClient();
-        String url = ETHERSCAN_URL + ApiKey;
+        String url = COINCAP_URL + ApiKey;
+        //System.out.println(url);
 
         Request request = new Request.Builder()
                 .url(url)
@@ -197,13 +200,12 @@ public class Trans_Solana {
             }
 
             String responseBody = response.body().string();
-           // System.out.println(responseBody);
-           //Risposta se ok -> {"jsonrpc":"2.0","id":83,"result":"0x14f857d"}
-           //Risposta se non ok -> {"status": "0","message": "NOTOK","result": "Invalid API Key"}
+            //System.out.println(responseBody);
 
             // Parsing JSON con Gson
             JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
-            return json.has("jsonrpc") && "2.0".equals(json.get("jsonrpc").getAsString());
+            
+            return !json.has("error");
 
         } catch (Exception e) {
             e.printStackTrace();

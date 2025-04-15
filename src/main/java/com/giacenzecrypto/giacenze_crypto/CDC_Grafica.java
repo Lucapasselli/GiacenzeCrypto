@@ -519,6 +519,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Coincap_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Coincap_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Coincap_LabelSito = new javax.swing.JLabel();
+        Opzioni_ApiKey_Coingecko_Label = new javax.swing.JLabel();
+        Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -3643,6 +3646,32 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ApiKey_Coingecko_Label.setText("ApiKey Coingecko :");
+
+        Opzioni_ApiKey_Coingecko_TextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_ApiKey_Coingecko_TextFieldActionPerformed(evt);
+            }
+        });
+        Opzioni_ApiKey_Coingecko_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ApiKey_Coingecko_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Opzioni_ApiKey_Coingecko_LabelSito.setText("https://www.coingecko.com/it/developers/dashboard");
+        Opzioni_ApiKey_Coingecko_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coingecko_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coingecko_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coingecko_LabelSitoMouseExited(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
         Opzioni_ApiKeyLayout.setHorizontalGroup(
@@ -3666,17 +3695,24 @@ private static final long serialVersionUID = 3L;
                                 .addGap(18, 18, 18)
                                 .addComponent(Opzioni_ApiKey_Helius_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                                .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addGap(212, 212, 212)
-                        .addComponent(jButton3)))
-                .addContainerGap(289, Short.MAX_VALUE))
+                        .addGap(203, 203, 203)
+                        .addComponent(jButton3))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(219, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3698,11 +3734,16 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Coincap_LabelSito))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_Coingecko_Label)
+                    .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_Coingecko_LabelSito))
+                .addGap(18, 18, 18)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(88, 88, 88)
+                .addGap(109, 109, 109)
                 .addComponent(jButton3)
-                .addContainerGap(459, Short.MAX_VALUE))
+                .addContainerGap(394, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
@@ -9305,11 +9346,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Prezzi.RecuperaTassidiCambiodaSimbolo_Coinbase("BTC", "2021-10-01") ;
         //Prezzi.RecuperaTassidiCambioXXXUSDT_Binance("BTC","2021-10-01", "2021-10-10");
        // Prezzi.RecuperaCoinsCoinCap();
-       Prezzi.RecuperaTassidiCambiodaSimbolo_CryptoCompare("GLQ", "2021-10-01") ;
+       //Prezzi.RecuperaTassidiCambiodaSimbolo_CryptoCompare("GLQ", "2021-10-01") ;
+       Prezzi.RecuperaTassidiCambiodaSimbolo_CoinCap("BTC","2023-01-01");
+       
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void Opzioni_ApiKey_Coincap_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased
         // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased
 
     private void Opzioni_ApiKey_Coincap_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseClicked
@@ -9326,6 +9370,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Coincap_LabelSitoMouseExited
+
+    private void Opzioni_ApiKey_Coingecko_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_Coingecko_TextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_TextFieldActionPerformed
+
+    private void Opzioni_ApiKey_Coingecko_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_Coingecko_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_Coingecko_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseExited
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseExited
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -11469,6 +11533,9 @@ try {
     private javax.swing.JLabel Opzioni_ApiKey_Coincap_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Coincap_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Coincap_TextField;
+    private javax.swing.JLabel Opzioni_ApiKey_Coingecko_Label;
+    private javax.swing.JLabel Opzioni_ApiKey_Coingecko_LabelSito;
+    private javax.swing.JTextField Opzioni_ApiKey_Coingecko_TextField;
     private javax.swing.JLabel Opzioni_ApiKey_Etherscan_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Etherscan_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Etherscan_TextField;

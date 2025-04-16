@@ -5170,7 +5170,6 @@
                     </Component>
                     <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Coingecko_TextField">
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_ApiKey_Coingecko_TextFieldActionPerformed"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Coingecko_TextFieldKeyReleased"/>
                       </Events>
                     </Component>

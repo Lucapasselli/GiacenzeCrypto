@@ -3648,11 +3648,6 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_ApiKey_Coingecko_Label.setText("ApiKey Coingecko :");
 
-        Opzioni_ApiKey_Coingecko_TextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Opzioni_ApiKey_Coingecko_TextFieldActionPerformed(evt);
-            }
-        });
         Opzioni_ApiKey_Coingecko_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 Opzioni_ApiKey_Coingecko_TextFieldKeyReleased(evt);
@@ -4005,6 +4000,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Helius_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"));
         Opzioni_ApiKey_Etherscan_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
         Opzioni_ApiKey_Coincap_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
+        Opzioni_ApiKey_Coingecko_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -9210,6 +9206,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         boolean HeliusDiversa=true;
         boolean EtherscanDiversa=true;
         boolean CoincapDiversa=true;
+        boolean CoingeckoDiversa=true;
         
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
@@ -9217,6 +9214,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherescan"))))EtherscanDiversa=false;
         if (Opzioni_ApiKey_Coincap_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))))CoincapDiversa=false;
+        if (Opzioni_ApiKey_Coingecko_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))))CoingeckoDiversa=false;
         
         //Controllo ed eventualmente salvo le api Helius
         if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||
@@ -9250,6 +9249,17 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
         
+        //Controllo ed eventualmente salvo le api Coingecko
+        if (CoingeckoDiversa&&Trans_Solana.isApiKeyValidaCoingecko(Opzioni_ApiKey_Coingecko_TextField.getText().trim())||
+                Opzioni_ApiKey_Coingecko_TextField.getText().isBlank()){
+            //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Coingecko", Opzioni_ApiKey_Coingecko_TextField.getText().trim());
+        }else if (CoingeckoDiversa){
+            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Coingecko inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br></html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        
         Opzioni_ApiKey_ControllaPulsanti();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_SalvaActionPerformed
@@ -9259,6 +9269,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Opzioni_ApiKey_Helius_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius")));
         Opzioni_ApiKey_Etherscan_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan")));
         Opzioni_ApiKey_Coincap_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap")));
+        Opzioni_ApiKey_Coingecko_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 
@@ -9347,7 +9358,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Prezzi.RecuperaTassidiCambioXXXUSDT_Binance("BTC","2021-10-01", "2021-10-10");
        // Prezzi.RecuperaCoinsCoinCap();
        //Prezzi.RecuperaTassidiCambiodaSimbolo_CryptoCompare("GLQ", "2021-10-01") ;
-       Prezzi.RecuperaTassidiCambiodaSimbolo_CoinCap("BTC","2023-01-01");
+       //Prezzi.RecuperaTassidiCambiodaSimbolo_CoinCap("BTC","2023-01-01");
+       Prezzi.RecuperaTassidiCambiodaAddress_Coingecko("2025-01-01", "2025-01-30","0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48","ETH","USDC");
        
     }//GEN-LAST:event_jButton3ActionPerformed
 
@@ -9373,22 +9385,22 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void Opzioni_ApiKey_Coingecko_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldKeyReleased
         // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_TextFieldKeyReleased
-
-    private void Opzioni_ApiKey_Coingecko_TextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_TextFieldActionPerformed
 
     private void Opzioni_ApiKey_Coingecko_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseClicked
         // TODO add your handling code here:
+        Funzioni.ApriWeb("https://www.coingecko.com/it/developers/dashboard");
     }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseClicked
 
     private void Opzioni_ApiKey_Coingecko_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseEntered
         // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseEntered
 
     private void Opzioni_ApiKey_Coingecko_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseExited
         // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseExited
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
@@ -9689,12 +9701,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         String NuovoValore=
                 Opzioni_ApiKey_Helius_TextField.getText()+
                 Opzioni_ApiKey_Etherscan_TextField.getText()+
-                Opzioni_ApiKey_Coincap_TextField.getText();
+                Opzioni_ApiKey_Coincap_TextField.getText()+
+                Opzioni_ApiKey_Coingecko_TextField.getText();
         //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
         String ValoreSalvato=
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
        // System.out.println(ValoreSalvato);
         //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){

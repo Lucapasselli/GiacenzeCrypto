@@ -36,6 +36,9 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  *
@@ -962,7 +965,6 @@ public class Prezzi {
 
        // System.out.println("Recupero Prezzi Coingecko");
 
-            
         
          if (CDC_Grafica.Mappa_ChainExplorer.get(Rete)==null)   {
              return null;
@@ -1013,25 +1015,95 @@ public class Prezzi {
       
   //    MappaConversioneAddressCoin.isEmpty()
             
-
+//System.out.println("Inizio sleep "+ArraydataIni.size());
 for (int i=0;i<ArraydataIni.size();i++){
         try {
+            //System.out.println("Attendo 12 ");
             TimeUnit.SECONDS.sleep(12);//il timeout serve per evitare di fare troppe richieste all'API
+           // System.out.println("Fine sleep");
             URL url;
             //DA RIVEDERE!!!!!!!!!!!!!!
            // https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=1644879600&to=1648335600
-            if (!Address.equalsIgnoreCase("CRO"))
+           // if (!Address.equalsIgnoreCase("CRO"))
                 url = new URI("https://api.coingecko.com/api/v3/coins/"+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]+"/contract/"+Address+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
-            else
+           /* else
                 url = new URI("https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();               
-                        //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
+             */           //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
             if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
                 return null;
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
            // System.out.println(url);
             System.out.println("Recupero prezzi token "+Simbolo+" con Address "+Address+" da coingecko su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                .url(url)
+                .build();
+            try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.out.println("Errore nel recupero dei prezzi del token "+Simbolo+" con Address "+Address+" su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
+                return null; // Errore di connessione o di altro genere
+            }
+            //come prima cosa se la richiesta ha avuto successo riempio tutte le ore in tutte le date con prezzo a zero
+                //poi verranno sostituiti dai valori reali nel momento in cui leggerò la risposta
+                //questo mi serve per avere sempre una risposta anche per le coin senza prezzi
+                
+                long DataProggressiva=ArraydataIni.get(i)*1000;
+                Date data;
+                String Data;
+                SimpleDateFormat sdfx = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+              //DA CAPIRE SE QUESTO CICLO SERVE CON IL NUOVO SISTEMA
+                 while (DataProggressiva < ArraydataFin.get(i)*1000) {                    
+                    data = new java.util.Date(DataProggressiva);                   
+                    sdfx.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                    Data = sdfx.format(data);
+                    DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, "ND",false);
+                 //   MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, "ND");
+                    DataProggressiva=DataProggressiva+3600000;
+                }
+            
+            
+            
+            String responseBody = response.body().string();
+            System.out.println(responseBody);
+            
+            // Parsing JSON con Gson
+            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
+            JsonArray pricesArray = json.getAsJsonArray("prices");
+                //  List<PrezzoData> prezzoDataList = new ArrayList<>();
+                if (pricesArray != null) {
+                    for (JsonElement element : pricesArray) {
+                        JsonArray priceArray = element.getAsJsonArray();
+                        if (priceArray.size()==2)
+                    {
+                    //   if (rigaSplittata[0].equalsIgnoreCase("Euro")) MappaConversioneUSDEUR.put(rigaSplittata[5], rigaSplittata[3]);
+                    
+                        long timestamp = priceArray.get(0).getAsLong();
+                        String price = priceArray.get(1).getAsString();
+                        Date date = new java.util.Date(timestamp);
+                        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                        SimpleDateFormat sdf2 = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                        sdf2.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                        String DataconOra = sdf.format(date);
+                        Data = sdf2.format(date);
+                        //QUESTO SECONDO ME E' SBAGLIATO E DA RIVEDERE
+                        if (DatabaseH2.PrezzoAddressChain_Leggi(Data+"_"+Address+"_"+Rete)==null) DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, price,false);
+                        DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra+"_"+Address+"_"+Rete, price,false);
+                        //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
+                        //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
+                        //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
+                        //ora devo gestire l'inserimento nella mappa
+                        }
+                    }
+                } else {
+                    return null;
+                }
+            
+            
+            }
+            
+         /*   HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int statusCode = connection.getResponseCode();
              StringBuilder response;
@@ -1136,19 +1208,24 @@ for (int i=0;i<ArraydataIni.size();i++){
                     return null;
                 }
          connection.disconnect();
-        } 
-
-        catch (MalformedURLException ex) {
+        } */
+        }    
+         catch (Exception ex) {
+             System.out.println("Errore Prezzi.RecuperaTassidiCambiodaAddress_Coingecko"+ex.getMessage());
+            return null;
+        }
+       /* catch (MalformedURLException ex) {
             return null;
         } catch (IOException | URISyntaxException | InterruptedException ex) {
             return null;
-        }
-        }
+        }*/
+        //}
 
-        return "ok";
+       // return "ok";
 
     }
-    
+return "ok";
+    }
     
     
     

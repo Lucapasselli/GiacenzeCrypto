@@ -215,7 +215,41 @@ public class Trans_Solana {
     
     }  
   
-  
+    
+    
+  public static boolean isApiKeyValidaCoingecko(String ApiKey) {
+        
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+        .url("https://api.coingecko.com/api/v3/ping")
+        .get()
+        .addHeader("accept", "application/json")
+        .addHeader("x-cg-demo-api-key", ApiKey)
+        .build();
+
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                
+                return false; // Errore di connessione o chiave non valida
+            }
+            
+            String responseBody = response.body().string();
+            //System.out.println(responseBody);
+
+            // Parsing JSON con Gson
+            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
+            
+            return json.has("gecko_says");
+
+        } catch (Exception e) {
+            System.out.println("Trans_Solana.isApiKeyValidaCoingecko "+e.getMessage());
+            return false;
+        }
+    
+    
+    }  
   
   
 // Funzione per ordinare le transazioni dal più vecchio al più recente

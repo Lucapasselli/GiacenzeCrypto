@@ -9359,7 +9359,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
        // Prezzi.RecuperaCoinsCoinCap();
        //Prezzi.RecuperaTassidiCambiodaSimbolo_CryptoCompare("GLQ", "2021-10-01") ;
        //Prezzi.RecuperaTassidiCambiodaSimbolo_CoinCap("BTC","2023-01-01");
-       Prezzi.RecuperaTassidiCambiodaAddress_Coingecko("2025-01-01", "2025-01-30","0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48","ETH","USDC");
+      // Prezzi.RecuperaTassidiCambiodaAddress_Coingecko("2025-01-01","0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48","ETH","USDC");
        
     }//GEN-LAST:event_jButton3ActionPerformed
 

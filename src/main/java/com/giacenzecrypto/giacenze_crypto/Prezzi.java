@@ -634,14 +634,26 @@ public class Prezzi {
             RecuperaTassidiCambioUSDTEUR_Binance(DataGiorno, DataGiorno);
             risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
         }
-        //Cerco su Coingecko
+        
+        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero Coinbase
         if (risultato == null) {
+                RecuperaTassidiCambiodaSimbolo_Coinbase("USDT", DataGiorno);
+                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+        }
+        
+        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CryptoCompare       
+        if (risultato == null) {
+                RecuperaTassidiCambiodaSimbolo_CryptoCompare("USDT", DataGiorno);
+                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+        }
+        //Cerco su Coingecko
+        //Escludo momentaneamente coingecko visto che ho tanti altri provider a cui chiedere in modo da diminuirne le richieste
+      /*  if (risultato == null) {
             RecuperaTassidiCambioUSDT_Coingecko(DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
             risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
-        }
+        }*/
         //Cerco su  CoinCap
         if (risultato == null) {
-            RecuperaCoinsCoinCap();
             RecuperaTassidiCambiodaSimbolo_CoinCap("USDT",DataGiorno);
             risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
             //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
@@ -726,7 +738,7 @@ public class Prezzi {
             }
             else
             {
-            RecuperaTassidiCambiodaAddress_Coingecko(DataGiorno, DataGiorno, Address, Rete ,Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+            RecuperaTassidiCambiodaAddress_Coingecko(DataGiorno, Address, Rete ,Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
             risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
             if (risultato == null) {
                 //solo in questo caso vado a prendere il valore del giorno e non quello orario
@@ -953,40 +965,39 @@ public class Prezzi {
  
     
  
-        public static String RecuperaTassidiCambiodaAddress_Coingecko(String DataIniziale, String DataFinale,String Address,String Rete,String Simbolo) {
-        
-
-        //Se la differenza tra la data dello scambio e oggi è maggiore di 365 gg forzo l'uso di binance perchè
-        //coingecko mi permette di avere i dati solo degli ultimi 365gg
-        
-        
-        //questo mette a null gli address vuoti, serve per semplificare gli if sui cicli successivi
-
-
-       // System.out.println("Recupero Prezzi Coingecko");
+        public static String RecuperaTassidiCambiodaAddress_Coingecko(String DataIniziale,String Address,String Rete,String Simbolo) {
 
         
          if (CDC_Grafica.Mappa_ChainExplorer.get(Rete)==null)   {
              return null;
          }
+         
+         //Verifico se ho le Api di coingecko
+         String ApiKey=Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
         
         long dataAdesso= System.currentTimeMillis() / 1000;  
         long dataIni = ( OperazioniSuDate.ConvertiDatainLong(DataIniziale) / 1000 ) - 86400;
-        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataFinale) / 1000 + 86400;
+        //Controllo la data di oggi e la confronto con la data iniziale, se la data iniziale è superiore a quella di oggi meno 90 gg allora la porto
+       //a data di oggi meno 90gg, così sfrutto meglio le chiamate api e riesco a prendere i prezzi vecchi con la chiamata di una data recente
+       //90gg sono 7776000 secondi
+       if ((dataAdesso-dataIni)<7776000){
+           dataIni=dataAdesso-7776000;
+       }       
+        long dataFin = dataIni + 7776000;
         //se la differenza tra la data iniziale e la data odierna è maggiore di 365 gg termino il ciclo in quanto non posso avere i prezzi
         if ((dataAdesso-dataIni)>Long.parseLong("31536000")){                    
                 return null;
                 }
-        if (dataFin>dataAdesso) dataFin=dataAdesso;
+        //if (dataFin>dataAdesso) dataFin=dataAdesso; 
       //  String ID=DammiIDCoingeckodaAddress(Address,Rete);
         
    //     if (ID!=null&&!ID.equalsIgnoreCase("nulladifatto")){//quando non trovo nulla potrei aver restituito null o nulladifatto
             //in questo caso ovviamente non vado avanti con la funzione che tanto non posso trovare i prezzi
         
         //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
-        long difData=dataFin-dataIni;
+      /*  long difData=dataFin-dataIni;
         ArrayList<Long> ArraydataIni = new ArrayList<>();
-        ArrayList<Long> ArraydataFin = new ArrayList<>();
+        ArrayList<Long> ArraydataFin = new ArrayList<>();*/
         //dataFin=dataIni+7776000 ;//questa fa si che mi dia i prezzi orari
         //coingeko ha la seguente peculiarità:
         //se richiedo piu' di 90gg mi da i prezzi giornalieri
@@ -1001,7 +1012,7 @@ public class Prezzi {
         //7776000 secondi equivalgono a 3 mesi (90giorni per la precisione).
         //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
       // System.out.println(dataIni+" - "+dataFin);
-        long temp;
+     /*   long temp;
         while (difData>0){
             ArraydataIni.add(dataIni);
             temp=dataIni+7776000;
@@ -1010,22 +1021,18 @@ public class Prezzi {
             dataIni=dataIni+7776000;
             difData=dataFin-dataIni;    
            // i++;
-        }
-//MappaConversioneSimboloReteCoingecko.put("BSC", "binance-smart-chain");
-      
-  //    MappaConversioneAddressCoin.isEmpty()
-            
-//System.out.println("Inizio sleep "+ArraydataIni.size());
-for (int i=0;i<ArraydataIni.size();i++){
+        }*/
+
         try {
             //System.out.println("Attendo 12 ");
-            TimeUnit.SECONDS.sleep(12);//il timeout serve per evitare di fare troppe richieste all'API
+            if (ApiKey.isBlank()) TimeUnit.SECONDS.sleep(12);//il timeout serve per evitare di fare troppe richieste all'API
+            else TimeUnit.SECONDS.sleep(3);//Se ho le apikey posso fare molte più richieste quindi metto a 3 secondi il timeout
            // System.out.println("Fine sleep");
             URL url;
             //DA RIVEDERE!!!!!!!!!!!!!!
            // https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=1644879600&to=1648335600
            // if (!Address.equalsIgnoreCase("CRO"))
-                url = new URI("https://api.coingecko.com/api/v3/coins/"+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]+"/contract/"+Address+"/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
+                url = new URI("https://api.coingecko.com/api/v3/coins/"+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]+"/contract/"+Address+"/market_chart/range?vs_currency=EUR&from=" + dataIni + "&to=" + dataFin).toURL();
            /* else
                 url = new URI("https://api.coingecko.com/api/v3/coins/crypto-com-chain/market_chart/range?vs_currency=eur&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();               
              */           //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
@@ -1034,11 +1041,23 @@ for (int i=0;i<ArraydataIni.size();i++){
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
            // System.out.println(url);
-            System.out.println("Recupero prezzi token "+Simbolo+" con Address "+Address+" da coingecko su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
+            System.out.println("Recupero prezzi token "+Simbolo+" con Address "+Address+" da coingecko su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]+
+                    " da data "+OperazioniSuDate.ConvertiDatadaLong(dataIni));
             OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                .url(url)
-                .build();
+            Request request;
+            if (ApiKey.isBlank()){ 
+                request= new Request.Builder()
+                            .url(url)
+                            .build();
+            }
+            else {
+                request= new Request.Builder()
+                            .url(url)
+                            .get()
+                            .addHeader("accept", "application/json")
+                            .addHeader("x-cg-demo-api-key", ApiKey)
+                            .build();
+            }
             try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 System.out.println("Errore nel recupero dei prezzi del token "+Simbolo+" con Address "+Address+" su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
@@ -1048,16 +1067,19 @@ for (int i=0;i<ArraydataIni.size();i++){
                 //poi verranno sostituiti dai valori reali nel momento in cui leggerò la risposta
                 //questo mi serve per avere sempre una risposta anche per le coin senza prezzi
                 
-                long DataProggressiva=ArraydataIni.get(i)*1000;
+                long DataProggressiva=dataIni*1000;
                 Date data;
                 String Data;
                 SimpleDateFormat sdfx = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
               //DA CAPIRE SE QUESTO CICLO SERVE CON IL NUOVO SISTEMA
-                 while (DataProggressiva < ArraydataFin.get(i)*1000) {                    
+                 while (DataProggressiva < dataFin*1000) {                    
                     data = new java.util.Date(DataProggressiva);                   
                     sdfx.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                     Data = sdfx.format(data);
-                    DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, "ND",false);
+                    if (DatabaseH2.PrezzoAddressChain_Leggi(Data+"_"+Address+"_"+Rete)==null){
+                        //Scrivo ND solo se i prezzi non li ho
+                        DatabaseH2.PrezzoAddressChain_Scrivi(Data+"_"+Address+"_"+Rete, "ND",false);
+                    }
                  //   MappaConversioneAddressEUR.put(Data+"_"+Address+"_"+Rete, "ND");
                     DataProggressiva=DataProggressiva+3600000;
                 }
@@ -1065,7 +1087,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             
             
             String responseBody = response.body().string();
-            System.out.println(responseBody);
+            //System.out.println(responseBody);
             
             // Parsing JSON con Gson
             JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
@@ -1223,7 +1245,7 @@ for (int i=0;i<ArraydataIni.size();i++){
 
        // return "ok";
 
-    }
+    
 return "ok";
     }
     

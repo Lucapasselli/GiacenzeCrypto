@@ -151,105 +151,10 @@ public class Trans_Solana {
         return false;
     }
 
-  public static boolean isApiKeyValidaEtherscan(String ApiKey) {
-        String ETHERSCAN_URL = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=";
-        OkHttpClient client = new OkHttpClient();
-        String url = ETHERSCAN_URL + ApiKey;
-
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                return false; // Errore di connessione o chiave non valida
-            }
-
-            String responseBody = response.body().string();
-            //System.out.println(responseBody);
-           //Risposta se ok -> {"jsonrpc":"2.0","id":83,"result":"0x14f857d"}
-           //Risposta se non ok -> {"status": "0","message": "NOTOK","result": "Invalid API Key"}
-
-            // Parsing JSON con Gson
-            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
-            return json.has("jsonrpc") && "2.0".equals(json.get("jsonrpc").getAsString());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    
-    
-    }  
   
-    public static boolean isApiKeyValidaCoincap(String ApiKey) {
-        
-        //String apiUrl = "rest.coincap.io/v3/assets?apiKey=YourApiKey (New Api)" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;
-        String COINCAP_URL = "https://rest.coincap.io/v3/assets/bitcoin?apiKey=";
-        OkHttpClient client = new OkHttpClient();
-        String url = COINCAP_URL + ApiKey;
-        //System.out.println(url);
-
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                return false; // Errore di connessione o chiave non valida
-            }
-
-            String responseBody = response.body().string();
-            //System.out.println(responseBody);
-
-            // Parsing JSON con Gson
-            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
-            
-            return !json.has("error");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    
-    
-    }  
   
     
     
-  public static boolean isApiKeyValidaCoingecko(String ApiKey) {
-        
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-        .url("https://api.coingecko.com/api/v3/ping")
-        .get()
-        .addHeader("accept", "application/json")
-        .addHeader("x-cg-demo-api-key", ApiKey)
-        .build();
-
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                
-                return false; // Errore di connessione o chiave non valida
-            }
-            
-            String responseBody = response.body().string();
-            //System.out.println(responseBody);
-
-            // Parsing JSON con Gson
-            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
-            
-            return json.has("gecko_says");
-
-        } catch (Exception e) {
-            System.out.println("Trans_Solana.isApiKeyValidaCoingecko "+e.getMessage());
-            return false;
-        }
-    
-    
-    }  
   
   
 // Funzione per ordinare le transazioni dal più vecchio al più recente

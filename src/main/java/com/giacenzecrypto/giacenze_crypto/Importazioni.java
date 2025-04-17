@@ -4913,7 +4913,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         //Questo ci permetterà di sistemare le giacenze dei CRO in maniera esatta anche se porterà via molto tempo.
         String Valore = null;
          try {
-             if (Trans_Solana.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
+             if (Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
             String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
             String Indirizzo = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[0];
             String MonetaRete = CDC_Grafica.Mappa_ChainExplorer.get(Rete)[2];
@@ -5373,7 +5373,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             } else {
                 
                 //Inizio
-                if (Trans_Solana.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
+                if (Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
                 
                 
                 String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");

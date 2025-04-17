@@ -28,6 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -318,12 +320,14 @@ public class Stampe {
              image01.scalePercent(PercentualeScala);
              //doc.bottom()
              doc.add(image01);
+             Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             Vendite=new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
              float psosizioneVeriticale=writer.getVerticalPosition(false); 
              Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
              //Valore delle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 210+doc.leftMargin(), psosizioneVeriticale+610);
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 267+doc.leftMargin(), psosizioneVeriticale+612);
              //Valore dei Costi relativi alle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Costo,font), 390+doc.leftMargin(), psosizioneVeriticale+610);
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 400+doc.leftMargin(), psosizioneVeriticale+612);
              
 
           } catch (BadElementException | IOException ex) {

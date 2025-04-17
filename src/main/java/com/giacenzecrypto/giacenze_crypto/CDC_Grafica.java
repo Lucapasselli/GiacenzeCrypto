@@ -229,6 +229,7 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         CDC_AggiornaGui();
         FineCaricamentoDati=true;
+        
         //RW_Bottone_StampaActionPerformed(null);
         
        // DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
@@ -9228,7 +9229,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         
         //Controllo ed eventualmente salvo le api Etherscan
-        if (EtherscanDiversa&&Trans_Solana.isApiKeyValidaEtherscan(Opzioni_ApiKey_Etherscan_TextField.getText().trim())||
+        if (EtherscanDiversa&&Funzioni.isApiKeyValidaEtherscan(Opzioni_ApiKey_Etherscan_TextField.getText().trim())||
                 Opzioni_ApiKey_Etherscan_TextField.getText().isBlank()){
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Etherscan", Opzioni_ApiKey_Etherscan_TextField.getText().trim());
@@ -9239,7 +9240,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         
         //Controllo ed eventualmente salvo le api Coincap
-        if (CoincapDiversa&&Trans_Solana.isApiKeyValidaCoincap(Opzioni_ApiKey_Coincap_TextField.getText().trim())||
+        if (CoincapDiversa&&Funzioni.isApiKeyValidaCoincap(Opzioni_ApiKey_Coincap_TextField.getText().trim())||
                 Opzioni_ApiKey_Coincap_TextField.getText().isBlank()){
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Coincap", Opzioni_ApiKey_Coincap_TextField.getText().trim());
@@ -9250,7 +9251,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         
         //Controllo ed eventualmente salvo le api Coingecko
-        if (CoingeckoDiversa&&Trans_Solana.isApiKeyValidaCoingecko(Opzioni_ApiKey_Coingecko_TextField.getText().trim())||
+        if (CoingeckoDiversa&&Funzioni.isApiKeyValidaCoingecko(Opzioni_ApiKey_Coingecko_TextField.getText().trim())||
                 Opzioni_ApiKey_Coingecko_TextField.getText().isBlank()){
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
             DatabaseH2.Opzioni_Scrivi("ApiKey_Coingecko", Opzioni_ApiKey_Coingecko_TextField.getText().trim());
@@ -9436,7 +9437,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         
                         
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO W\n\n", Font.BOLD, 12);
+                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO T\n\n", Font.BOLD, 12);
                     String testo;
                     testo = """
                             <html><font size="2" face="Courier New,Courier, mono" >
@@ -9446,33 +9447,21 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             Le impostazioni sottostanti sono quelle utilizzate nella maggioranza dei casi, si consiglia di
                             verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
                             
-                            <b>Colonna 1</b> → \u2013 <u>TITOLO DI POSSESSO</u> \u2013 <b>Propriet\u00e0 (1)</b><br>
-                            <b>Colonna 3</b> → \u2013 <u>CODICE INDIVIDUAZIONE BENE</u> \u2013 <b>Cripto-attivit\u00e0 (21)</b><br>
-                            <b>Colonna 4</b> → \u2013 <u>CODICE STATO ESTERO</u> \u2013 <b>Vuoto</b><br>
-                            <b>Colonna 5</b> → \u2013 <u>QUOTA DI POSSESSO</u> \u2013 <b>(100)</b> (se non cointestate)<br>
-                            <b>Colonna 6</b> → \u2013 <u>CRITERIO DETERMINAZIONE VALORE</u> \u2013 <b>Valore di mercato (1)</b><br>
-                            <b>Colonna 7</b> → \u2013 <u>VALORE INIZIALE</u> \u2013 Valore all'inizio del periodo d'imposta o al primo giorno di detenzione dell'investimento.<br>
-                            <b>Colonna 8</b> → \u2013 <u>VALORE FINALE</u> \u2013 Valore al termine del periodo d\u2019imposta ovvero al termine del periodo di detenzione dell'attivit\u00e0.<br>
-                            <b>Colonna 10</b> \u2013 <u>GIORNI IC</u> \u2013 Numero giorni di detenzione per l'imposta sul valore delle cripto-attivit\u00e0.<br>
-                            <b>Colonna 14</b> \u2013 <u>CODICE</u> \u2013 Deve essere indicato un codice per indicare la compilazione di uno o
-                            pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
-                            in particolare, indicare:<br>
-                            → → - (Codice 1) x Compilazione Quadro RL &emsp;<br>
-                            → → - (Codice 2) x Compilazione Quadro RM &emsp;<br>
-                            → → - (Codice 3) x Compilazione Quadro RT &emsp;<br>
-                            → → - (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
-                            → → - (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
-                            periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
-                            \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
-                            attestazioni da cui risulti tale circostanza<br>
-                            <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
+                            <b>T41 sez. 1</b> → \u2013 <u>Totale dei Corrispettivi</u> \u2013 Totale dei movimenti fiscalmente rilevanti.<br>
+                            <b>T41 sez. 2</b> → \u2013 <u>Totale dei Costi o dei valori di acquisto</u> \u2013 Totale dei costi di carico relativi ai movimenti fiscalmente rilevanti.<br>
+                            <b>T42 sez. 1</b> → \u2013 <u>Corrispettivo di acquisto</u> \u2013 (NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T42 sez. 2</b> → \u2013 <u>Costo o valore di acquisto rideterminato</u> \u2013 (NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> \u2013 (NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari anni precedenti</u> \u2013 (NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T44 sez. 2</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> \u2013 (NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> \u2013 (NON GESTITO DAL PROGRAMMA)<br>""";
                     stampa.AggiungiHtml(testo);
                     
                     
                     
             
                     
-                    
+                    /*
                     //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW
                     stampa.NuovaPagina();
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RW\n\n", Font.BOLD, 12);
@@ -9512,92 +9501,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             rigo RW8 del primo modulo indicando in esso il totale di tutti i righi compilati.<br>                            
                             </font></html>""";
                     stampa.AggiungiHtml(testo);       
-                    
+                    */
                     
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO W/RW\n\n", Font.BOLD, 12);
-
-                    if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
-                        //Con questa opzione non effettuo nessun calcolo inserisco semplicemente i valori iniziali e finali dei vari wallet e 365 come gg di detenzione
-                        testo = """
-                      <html><font size="2" face="Courier New, Courier, mono" >
-                      E' stato scelto di mostrato il Valore di ogni Wallet al 01/01 e al 31/12 dell'anno di riferimento<br>
-                      Non viene fatto nessun calcolo particolare e i GG di detenzioni sono settati a 365<br>
-                      NB : In caso di apertura del conto nell'anno di riferimento, il computo dei giorni e delle monete partirà dalla data del primo movimento.<br></html>
-                      """;
-                        stampa.AggiungiHtml(testo);
-                    } else {
-                        testo = """
-                      <html><font size="2" face="Courier New, Courier, mono" >
-                      E' stato scelto di utilizzarela <b>media ponderata</b> per il calcolo dei giorni di detenzione, viene poi usato <b>LiFo</b> come metodo per identificare quale Cripto-Attività si sta gestendo.<br>
-                      <br> In particolare per la <b>media ponderata</b> viene usata la segunte logica:<br>                               
-                      """;
-                        if (RW_Opzioni_RilenvanteScambiFIAT.isSelected()) {
-                            testo = testo + """
-                                    \u2022 Ogni volta che viene fatto un cashout o una conversione in FIAT viene chiuso il periodo di possesso per la Cripto-Attività e calcolato il periodo di detenzione. <br>
-                                    A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
-                                    """;
-                        }
-                        if (RW_Opzioni_RilevanteScambiRilevanti.isSelected()) {
-                            testo = testo + """
-                                        \u2022 Ogni volta che avviene uno scambio fiscalmente rilevante (scambio crypto-NFT, cashout,conversione in FIAT etc…) viene chiuso il periodo di possesso per la criptoattività e calcolato il periodo di detenzione<br>
-                                        A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>  
-                                        Gli scambi fiscalmente rilevanti sono i seguenti : <br>
-                                        → → - Scambio da <b>Crypto</b> a <b>FIAT</b> e viceverca<br>                                         
-                                        → → - Scambio da <b>Crypto</b> a <b>NFT</b> e viceverca<br>  
-                                        → → - Scambio da <b>Crypto</b> a <b>E-Money</b> e viceverca<br>  
-                                        → → - Scambio da <b>NFT</b> a <b>E-Money</b> e viceverca<br>  
-                                        → → - Scambio da <b>NFT</b> a <b>FIAT</b> e viceverca<br>  
-                                        → → - Scambio da <b>E-Money</b> a <b>FIAT</b> e viceverca<br> 
-                                        Di seguito la lista dei token che è stato scelto di considerare come <b>E-Money</b> :<br>                                     
-                                    """;
-                            int i=0;
-                            for (String a : Mappa_EMoney.keySet()) {
-                                    i++;
-                                    String Data = Mappa_EMoney.get(a);
-                                    testo = testo+"→ → - <b>"+a+"</b> dal "+Data+"<br>";
+                    stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO T/RT\n\n", Font.BOLD, 12);
+                    testo="<html><font size=\"2\" face=\"Courier New,Courier, mono\" >";
+                            if(Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected()){
+                                    testo = testo + """
+                                    \u2022 Le plusvalenze sono calcolate secondo il metodo LiFo diviso per Wallet<br>
+                                    (Ai fini dell'applicazione del LiFo il costo di carico dei BTC acquistati nel Wallet 1 non concorrerà al calcolo delle plusvalenze relativo alla vendita dei BTC sul Wallet 2)<br>                                  
+                                    <br>
+                                                    """;
+                            }else{
+                                    testo = testo + """
+                                    \u2022 Le plusvalenze sono calcolate secondo il metodo LiFo considerando la totalità dei wallet nel loro complesso.<br> 
+                                    (Ai fini dell'applicazione del LiFo il costo di carico dei BTC acquistato nel Wallet 1 potrebbe concorrere al calcolo delle plusvalenze relativo alla vendita dei BTC sul Wallet 2)<br>  
+                                    <br>
+                                                    """;
                             }
-                            if (i==0)testo = testo+"→ → - Nessun token è stato scelto come appartenente alla cateoria degli E-Money Token<br>";
-                        }
-                        if (RW_Opzioni_RilenvanteTuttigliScambi.isSelected()) {
-                            testo = testo + """
-                                    \u2022 Ogni operazione di scambio chiude il periodo di possesso per la criptoattività e viene calcolato il periodo di detenzione<br>
-                                    A fine anno poi viene usata la media ponderata per il calcolo dei giorni utili al calcolo dell’IC.<br>                                   
-                                    """;
-                        }
-                        if (RW_Opzioni_CheckBox_LiFoComplessivo.isSelected()) {
-                            testo = testo + """                                  
-                                    <br>Il <b>LiFo</b> viene invece applicato alle Cripto-Attività gestite sulla totalità dei Wallet<br>
-                                    (Ai fini dell'applicazione del LiFo, un BTC può essere acquistato da "Wallet 1" e venduto da "Wallet 2")<br>                                   
-                                    """;
-                        } else {
-                            testo = testo + """                                   
-                                    <br>Il <b>LiFo</b> viene invece applicato alle Cripto-Attività gestite su ogni singolo Gruppo di Wallet separatamente<br>
-                                    (Ai fini dell'applicazione del LiFo, un BTC venduto dal "Wallet 1" può essere stato acquistato o scambiato solo dal medesimo Portafoglio)<br>
-                                    """;
-                        }
-                        if (RW_Opzioni_CheckBox_LiFoSubMovimenti.isSelected()) {
-                            testo = testo + """                                  
-                                    Il <b>LiFo</b> viene inoltre applicato anche ai Sub-Movimenti (Vedi Documentazione per dettagli)<br></html>                                                                    
-                                    """;
-                        } else {
-                            testo = testo + """  
-                                            </html>                                
-                                    """;
-                        }
-
-                       
-                            testo = testo + """                                   
-                                    <br><b>ALTRE OPZIONI SELEZIONATE : </b><br>
-                                    """;
-                            if (RW_Opzioni_CheckBox_StakingZero.isSelected()) {
-                            testo = testo + """
-                                    \u2022 Airdrop,stacking,cashback,Earn e reward di ogni tipo incrementano il valore iniziale del quadro solo se fiscalmente rilevanti.<br>                                  
-                                    """;
-                            }else {
                                 testo = testo + """
-                                    \u2022 Airdrop,stacking,cashback,Earn e reward di ogni tipo incrementano il valore iniziale del quadro se fiscalmente rilevanti.<br>                                                                                                          
-                                    In particolare le tipologie di Reward scelte come fiscalmente rilevanti sono :<br>                                  
+                                    \u2022 Le tipologie di Reward scelte come fiscalmente rilevanti sono :<br>                                  
                                     """;
                                 if (OpzioniRewards_JCB_PDD_CashBack.isSelected()) {
                                 testo = testo + """
@@ -9624,29 +9547,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                     → → - Altre Rewards<br>                                  
                                     """;
                                 }
-                            }
-                            if (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()) {
-                            testo = testo + """
-                                    &emsp;\u2022 Per gli exchange che hanno già pagato il bollo non viene usato il metodo della media ponderata ma si riporta il valore della totalità delle Critpo Attività detenute ad inizio e fine anno.<br>                                 
-                                    """;
-                            }
-                            if (RW_Opzioni_Radio_Trasferimenti_ChiudiEApriNuovo.isSelected()) {
-                            testo = testo + """
-                                    &emsp;\u2022 Ogni trasferimento chiude il periodo di possesso della Cripto-Attività sul Wallet di origine e apre un nuovo periodo per la stessa Cripto-Attività sul Wallet di destinazione.<br>                                 
-                                    """;
-                            }
-                            else if (RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected()) {
-                             testo = testo + """
-                                    &emsp;\u2022 In caso di trasferimenti tra Wallet di prorprietà il Valore Iniziale resta sul Wallet di origine mentre sul wallet di destinazione viene incrementato il Valore Finale e calcolati i giorni di detenzione.<br>                                 
-                                    """;                               
-                            }else{
-                            testo = testo + """
-                                    &emsp;\u2022 I trasferimenti tra wallet di proprietà non vengono considerati (Valore Iniziale e Finale vengono incrementati sull’ultimo Wallet che ne detiene la proprietà a fine anno o fine periodo di detenzione).<br>                                 
-                                    """;                                
-                            }
+                            
                             
                 stampa.AggiungiHtml(testo);
-            }
+            
           /*  stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
             stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png","1","1000","2000","365");
             stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);

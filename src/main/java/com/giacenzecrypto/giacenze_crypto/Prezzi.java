@@ -971,11 +971,12 @@ public class Prezzi {
          if (CDC_Grafica.Mappa_ChainExplorer.get(Rete)==null)   {
              return null;
          }
-         
+         //System.out.println("dataaaaa    "+DataIniziale);
          //Verifico se ho le Api di coingecko
          String ApiKey=Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
         
         long dataAdesso= System.currentTimeMillis() / 1000;  
+        
         long dataIni = ( OperazioniSuDate.ConvertiDatainLong(DataIniziale) / 1000 ) - 86400;
         //Controllo la data di oggi e la confronto con la data iniziale, se la data iniziale è superiore a quella di oggi meno 90 gg allora la porto
        //a data di oggi meno 90gg, così sfrutto meglio le chiamate api e riesco a prendere i prezzi vecchi con la chiamata di una data recente
@@ -1042,7 +1043,9 @@ public class Prezzi {
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
            // System.out.println(url);
             System.out.println("Recupero prezzi token "+Simbolo+" con Address "+Address+" da coingecko su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]+
-                    " da data "+OperazioniSuDate.ConvertiDatadaLong(dataIni));
+                    " da data "+OperazioniSuDate.ConvertiDatadaLong(dataIni*1000));
+            //System.out.println(OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataIni*1000));
+            //System.out.println(OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataFin*1000));
             OkHttpClient client = new OkHttpClient();
             Request request;
             if (ApiKey.isBlank()){ 

@@ -1,17 +1,7 @@
-- Se faccio una correzione giacenze in giacenze a data poi non viene aggiornato il valore sulla riga corrispondente
-
-
-- Aggiungere gestione degli errori in RT (mancano le giacenze negative)
 - Inserire tasto per classificare i movimenti di deposito e prelievo anche in prima pagina
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
-- aggiungere gestione dei prezzi personalizzati
-- Aggiungere colonna errori negli anni quadro RT
-
-- Aggiungere possibilità di inserire api Coincap per i prezzi storici
-
--Aggiungere CryptoCompare
-https://min-api.cryptocompare.com/data/v2/histohour?fsym=XCH&tsym=USD&limit=239&toTs=1673391600
-https://min-api.cryptocompare.com/data/all/coinlist (sono 13MB meglio utilizzare una lista predefinita più piccola)
-(Utilizzerò quella di Coincap presente nel CSV)
--Verifica correttezza Api Coincap
+- aggiungere gestione dei prezzi personalizzati (tramite gui)
+- Aggiungere colonna errori negli anni quadro RT 
+  (In caso di stampa del quadro RT/T se nell'anno sono presenti movimenti non classificati segnalare il problema.)
+- Aggiungere gestione degli errori in RT (mancano le giacenze negative)

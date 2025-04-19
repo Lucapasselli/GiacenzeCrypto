@@ -1,8 +1,3 @@
-ATTENZIONE: Dal 10 Aprile circa Coincap, uno dei provider da cui il programma attingeva ai dati dei prezzi storici sulle cripto è diventato a pagamento.
-Questo potrebbe portare all'impossibilità di ricevere i prezzi relativi a talune crypto.
-Con la versione 1.0.34 aggiungerò un altro provider gratuito oltre che, molto probabilmente, dare la possibilità di continuare ad utilizzare coincap
-inserendo la chiave api personale relativa.
-
 DISCLAIMER
 Il software fornito è in versione beta ed è destinato esclusivamente a scopi di testing e valutazione. Questo programma è progettato per assistere nei calcoli legati alla dichiarazione delle Crypto-Attività, ma non garantisce l'accuratezza, la completezza o l'affidabilità dei risultati.
 L'utente utilizza questo software a proprio rischio e pericolo. Nonostante gli sforzi per identificare e correggere eventuali errori, il programma potrebbe contenere bug o fornire risultati errati.
@@ -29,6 +24,16 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 
 Changelog
+
+ver. 1.0.34
+Nuove Implementazioni
+  - Aggiunto Api di Coinbase e Cryptocompare per il recupero dei prezzi
+  - Aggiunto possibilità di inserire le ApiKey di Coincap (Opzioni - ApiKey)
+  - Aggiunto possibilità di inserire le ApiKey di Coingecko per incrementare la velocità di acquisizione sui prezzi della DeFi (Opzioni - ApiKey)
+  (Ad oggi quindi i prezzi delle Cripto vengono recuperati da Binance,Coinbase,Cryptocompare,Coincap(con Apikey dedicata) e Coingecko (Per la defi e solo ultimi 365gg)
+  - In "RT & Analisi P&L" Aggiunto possibilità di stampare il Quadro T per i redditi 2024 (con le prossime versioni verrà aggiunto anche il quadro RT)
+Correzione di bug :
+  - Coincap essendo diventato a pagamento non permetteva più lo scaricamento dei prezzi causando errori nel recupero, aggiunto la possibilità di integrare la loro ApiKey.
 
 ver. 1.0.33
 Nuove Implementazioni:

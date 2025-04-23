@@ -9353,6 +9353,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
+       System.out.println(OperazioniSuDate.ConvertiDataBinanceTaxReportinLong("sdsds")); //OperazioniSuDate.ConvertiDataBinanceTaxReportinLong("sdsds");
         //OperazioniSuDate.ConvertiUnixTimestampToIso(OperazioniSuDate.ConvertiDatainLongSecondo("2022-01-02 23:13:15"));
         //Prezzi.RecuperaCoppieCoinbase();
         //Prezzi.RecuperaTassidiCambiodaSimbolo_Coinbase("BTC", "2021-10-01") ;

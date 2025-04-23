@@ -79,7 +79,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Binance CSV", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)" }));
+        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Binance CSV", "Binance Tax Report", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -417,6 +417,51 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         }
         else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance CSV")) {
+            Component c = this;
+            Download progressb = new Download();
+            Bottone_SelezionaFile.setEnabled(false);
+            Bottone_Annulla.setEnabled(false);
+            String Directory = DatabaseH2.Pers_Opzioni_Leggi("Directory_ImportazioniGestione");
+            JFileChooser fc = new JFileChooser(Directory);
+            int returnVal = fc.showOpenDialog(c);
+            boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
+            Thread thread;
+            thread = new Thread() {
+                public void run() {
+
+                    // JFileChooser fc = new JFileChooser();
+                    // int returnVal = fc.showOpenDialog(this);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                      //  selezioneok[0] = true;
+                        String FileDaImportare = fc.getSelectedFile().getAbsolutePath();
+                        DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
+                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        Importazioni.AzzeraContatori();
+                        Importazioni.Importa_Crypto_Binance(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        Importazioni_Resoconto res = new Importazioni_Resoconto();
+                        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+                        res.setLocationRelativeTo(c);
+                        res.setVisible(true);
+                      //  if (selezioneok[0]) {
+                            dispose();
+                       // }
+
+                    }
+                    Bottone_SelezionaFile.setEnabled(true);
+                    Bottone_Annulla.setEnabled(true);
+                    progressb.dispose();
+
+                }
+
+            };
+            thread.start();
+            progressb.setDefaultCloseOperation(0);
+            progressb.setLocationRelativeTo(this);
+            progressb.setVisible(true);
+        } 
+        
+        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance Tax Report")) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);

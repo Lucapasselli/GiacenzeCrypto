@@ -10,9 +10,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -186,7 +188,24 @@ public class OperazioniSuDate {
         
     }    
         
-        
+    public static long ConvertiDataBinanceTaxReportinLong(String Data) {
+        //La data di Binance Tax Report è in questo formato 2023-01-01-01:00:00
+        //ed è in orario CET, devo convertirla nel formato standard ovvero 2023-01-01 01:00:00
+        //in più devo fare in modo che l'orario ia quello di Roma quindi deve comprendere anche il duso orario
+        try {
+        Data=Data + " CET";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm:ss z", Locale.ENGLISH);
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(Data, formatter);
+
+        // Ottieni il timestamp (UTC)
+        long unixTimestamp = zonedDateTime.toInstant().getEpochSecond();
+        return unixTimestamp;
+        }catch (Exception ex) {
+            //ritorna 0 se il formato della data è errato
+            return 0;
+        }
+    }    
             
         public static String Formatta_Data_CoinTracking(String Data) {
 

@@ -5865,7 +5865,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if (m != null) {
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
                         BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
-                        if (Address != null && Rete != null) {
+                        if (Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()) {
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
@@ -10412,6 +10412,7 @@ try {
                             riga[5] = "0.00";
                         } else {
                             riga[5] = Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, false, 2, Rete);
+                           // System.out.println(M1.Moneta+" - "+M1.Tipo+" - "+M1.Qta+" - "+M1.Rete+" - "+M1.MonetaAddress);
                             if (riga[5]==null){
                                 riga[5]="0.00";
                                 riga[6]="Token senza prezzo";

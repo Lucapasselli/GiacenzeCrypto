@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -2000,6 +1999,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         for (int k=0;k<2;k++){
        //String AddressMoneta1 = null;
         if (mon[k] != null) {
+            
             if ((mon[k].MonetaAddress==null||mon[k].MonetaAddress.isBlank())&&mon[k].Moneta.equalsIgnoreCase("CRO")){
             //Questo serve solo nel caso interroghi i prezzi di CRO
             //in questo caso l'unico modo per avere i prezzi di Cro è chiederli a coingecko
@@ -2008,11 +2008,11 @@ for (int i=0;i<ArraydataIni.size();i++){
             AddressMoneta[k]="CRO";
             Rete="CRO";
         }
-            if (mon[k].MonetaAddress!=null&&!mon[k].MonetaAddress.equals("")) {
+            if (mon[k].MonetaAddress!=null&&!mon[k].MonetaAddress.isBlank()) {
                 AddressMoneta[k] = mon[k].MonetaAddress;
 
                 if ((adesso-Data)>Long.parseLong("31536000000")){
-                   // System.out.println(AddressMoneta1);
+                    //System.out.println(mon[k].MonetaAddress+" aa");
                     //String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(AddressMoneta1 + "_" + Rete);
                     String RigaCoingecko[]=DatabaseH2.GestitiCoingecko_LeggiInteraRiga(AddressMoneta[k] + "_" + Rete);
                     if (RigaCoingecko[0]!=null){
@@ -2067,6 +2067,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             AddressMoneta[k]=null;
             //System.out.println(CDC_Grafica.Mappa_AddressRete_Nome.get(Moneta1.MonetaAddress+"_"+Rete));
             mon[k].Moneta=CDC_Grafica.Mappa_AddressRete_Nome.get(mon[k].MonetaAddress+"_"+Rete);
+            
         }
         }
         
@@ -2105,15 +2106,14 @@ for (int i=0;i<ArraydataIni.size();i++){
             //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
             //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
             //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-            PrezzoTransazione=DatabaseH2.LeggiPrezzoPersonalizzato(mon[k], Data);
-            if (PrezzoTransazione==null){
+            //PrezzoTransazione=null;
                 if (AddressMoneta[k] == null || ForzaUsoBinance[k]) {
             
                     PrezzoTransazione = ConvertiUSDTEUR(mon[k].Qta, Data);
                 } else {
                     PrezzoTransazione = ConvertiAddressEUR(mon[k].Qta, Data, AddressMoneta[k], Rete, mon[k].Moneta);
                 }
-            }
+
             if (PrezzoTransazione != null) {
                 PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                 return PrezzoTransazione;
@@ -2142,14 +2142,11 @@ for (int i=0;i<ArraydataIni.size();i++){
             for (String CoppiePrioritarie1 : CoppiePrioritarie) {
                 if (mon[k] != null && (mon[k].Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
                     //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-                    PrezzoTransazione = DatabaseH2.LeggiPrezzoPersonalizzato(mon[k], Data);
-                    if (PrezzoTransazione == null) {
-                        if (PrezzoTransazione == null && (AddressMoneta[k] == null || MonetaRete.equalsIgnoreCase(AddressMoneta[k]) || ForzaUsoBinance[k])) {
+                        if (AddressMoneta[k] == null || MonetaRete.equalsIgnoreCase(AddressMoneta[k]) || ForzaUsoBinance[k]) {
                             PrezzoTransazione = ConvertiXXXEUR(mon[k].Moneta, mon[k].Qta, Data);
                         } else {
                             PrezzoTransazione = ConvertiAddressEUR(mon[k].Qta, Data, AddressMoneta[k], Rete, mon[k].Moneta);
                         }
-                    }
                     if (PrezzoTransazione != null) {
                         PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                         return PrezzoTransazione;
@@ -2166,24 +2163,17 @@ for (int i=0;i<ArraydataIni.size();i++){
 
             //PARTE 4 - Prendo il prezzo della prima moneta disponibile
             for (int k = 0; k < 2; k++) {
+             //   System.out.println(mon[k].MonetaAddress+" aa");
+             //   System.out.println(AddressMoneta[k]+" aa");
             //if (mon[k] != null && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
             if (mon[k] != null) {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
-                //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-                PrezzoTransazione = DatabaseH2.LeggiPrezzoPersonalizzato(mon[k], Data);
-                if (PrezzoTransazione == null) {
                     if (AddressMoneta[k] == null || ForzaUsoBinance[k]) {
                         PrezzoTransazione = ConvertiXXXEUR(mon[k].Moneta, mon[k].Qta, Data);
                     } else {
-                        /*System.out.println(mon[k].Qta);
-                        System.out.println(AddressMoneta[k]);
-                        System.out.println(Data);
-                        System.out.println(Rete);
-                        System.out.println(mon[k].Moneta);
-                        System.out.println("---");*/
                         PrezzoTransazione = ConvertiAddressEUR(mon[k].Qta, Data, AddressMoneta[k], Rete, mon[k].Moneta);
                     }
-                }
+                
                 if (PrezzoTransazione != null) {
                     PrezzoTransazione = new BigDecimal(PrezzoTransazione).abs().setScale(Decimali, RoundingMode.HALF_UP).toPlainString();
                     return PrezzoTransazione;

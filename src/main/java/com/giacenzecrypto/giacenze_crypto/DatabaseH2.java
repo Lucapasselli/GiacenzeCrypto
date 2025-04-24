@@ -660,6 +660,7 @@ public class DatabaseH2 {
     }*/
 
     public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
+        //System.out.println(ora_address_chain);
         String Risultato = null;
         String OAC[]=ora_address_chain.split("_");
         if (!OAC[2].equals("SOL")) ora_address_chain=ora_address_chain.toUpperCase();
@@ -697,6 +698,7 @@ public class DatabaseH2 {
             //ora_address_chain=ora_address_chain.toUpperCase();
             
             //Se rete solana l'address è case sensitive per cui non posso gestirlo metterlo maiuscolo
+            //System.out.println(ora_address_chain);
             String OAC[]=ora_address_chain.split("_");
             if (!OAC[2].equals("SOL")) ora_address_chain=ora_address_chain.toUpperCase();
             
@@ -779,6 +781,7 @@ public class DatabaseH2 {
     }
     
        public static String XXXEUR_Leggi(String dataSimbolo) {
+       
         String Risultato = null;
         try {
             // Connessione al database
@@ -809,7 +812,7 @@ public class DatabaseH2 {
         return Risultato;
     }
 
-       /**
+     /*  /**
         * Questa funzione ritorna il prezzo personalizzato di un token se c'è altrimenti ritorna null<br>
         * Il Prezzo è rapportato al quantitativo non è unitario
         * @param moneta
@@ -822,7 +825,7 @@ public class DatabaseH2 {
         * ritorna null in caso non vi siano prezzi personalizzati<br>
         * ritorna il prezzo rapportato alle qta richieste in caso contrario
         */
-       public static String LeggiPrezzoPersonalizzato(Moneta moneta,long timestamp) {
+ /*      public static String LeggiPrezzoPersonalizzato(Moneta moneta,long timestamp) {
         String dataora=OperazioniSuDate.ConvertiDatadaLongallOra(timestamp);
         String dataSimbolo=dataora+"_"+moneta.Moneta;
         
@@ -867,8 +870,7 @@ public class DatabaseH2 {
         }
         else return null;
         return Risultato;
-    }
-       
+    }*/
        
     public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo,boolean personalizzato) {
         try {

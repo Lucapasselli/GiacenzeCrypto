@@ -429,6 +429,7 @@ public class Calcoli_Plusvalenze {
             
             
             //TIPOLOGIA = 0 (Vendita Crypto)
+            //System.out.println("aaa "+IDTransazione);
             if (IDTS[4].equals("VC")){
                 //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
                 VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);

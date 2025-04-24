@@ -199,7 +199,7 @@ public class OperazioniSuDate {
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(Data, formatter);
 
         // Ottieni il timestamp (UTC)
-        long unixTimestamp = zonedDateTime.toInstant().getEpochSecond();
+        long unixTimestamp = zonedDateTime.toInstant().getEpochSecond()*1000;
         return unixTimestamp;
         }catch (Exception ex) {
             //ritorna 0 se il formato della data è errato

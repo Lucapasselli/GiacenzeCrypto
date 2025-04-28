@@ -121,7 +121,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.34 Beta";
+    public static String Titolo="Giacenze Crypto 1.0.35 Beta RC1";
 
     
     
@@ -1882,7 +1882,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Anno", "Tot. Movimenti Rilevanti al Prezzo di Mercato", "Tot. Movimenti Rilevanti al Prezzo di Carico", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore di Fine Anno", "Errori"
+                "Anno", "Totale dei Costi o Valori di Acquisto", "Totale dei Corrispettivi", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore di Fine Anno", "Errori"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -9344,8 +9344,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         else {
             int Anno=Integer.parseInt(RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 0).toString());
-            String Vendite=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 1).toString();
-            String Costi=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 2).toString();
+            String Vendite=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 2).toString();
+            String Costi=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 1).toString();
             RT_StampaRapporto(Anno,Vendite,Costi,false);
             //System.out.println(Anno);
         }
@@ -9421,23 +9421,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
-            stampa.AggiungiTestoCentrato("QUADRO T PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
+            stampa.AggiungiTestoCentrato("QUADRO T PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
 
             
-            //Stampa Quadro T
-            String immagineT="Immagini/QuadroT_2024.jpg";
-            //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
-
-                        String Errore = "";
-                        if (Errori) {
-                            Errore = "Errori da correggere!";
-                        }
-                        stampa.AggiungiT(immagineT, Vendite, Costo, Errore);
+            
 
                         
                         
                         
-                    stampa.NuovaPagina();
+                    
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO T\n\n", Font.BOLD, 12);
                     String testo;
                     testo = """
@@ -9468,8 +9460,61 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     stampa.AggiungiHtml(testo);
                     
                     
-                    
+                    //Stampa Quadro T
+            stampa.NuovaPagina();
+            String immagineT="Immagini/QuadroT_2024.jpg";
+            //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
+
+                        String Errore = "";
+                        if (Errori) {
+                            Errore = "Errori da correggere!";
+                        }
+                        stampa.AggiungiT(immagineT, Vendite, Costo, Errore,AnnoDiCompetenza);
+                        
+                        
             
+            stampa.NuovaPagina();
+            stampa.AggiungiTestoCentrato("QUADRO RT PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
+            stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RT\n\n", Font.BOLD, 12);
+                    testo = """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
+                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
+                            
+                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
+                            
+                            <b>RT41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
+                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
+                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
+                            <b>RT42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
+                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
+                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
+                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
+                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
+                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
+                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
+                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br> 
+                            La somma degli importi di cui ai righi RT43 e RT44, colonna 2, non può essere superiore all’importo di cui al rigo RT88. <br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
+                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>""";
+                    stampa.AggiungiHtml(testo);            
+                        
+                    
+                    
+                    stampa.NuovaPagina();
+                    String immagineRT="Immagini/QuadroRT_2024.jpg";
+            //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
+
+                        Errore = "";
+                        if (Errori) {
+                            Errore = "Errori da correggere!";
+                        }
+                        stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     
                     /*
                     //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW
@@ -11043,9 +11088,9 @@ try {
         }
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-        TransazioniCrypto_Text_Plusvalenza.setText("€ " + Plusvalenza.toPlainString());
-        TransazioniCrypto_Text_CostiCarico.setText("€ " + CostiCarico.toPlainString());
-        TransazioniCrypto_Text_Vendite.setText("€ " + Vendite.toPlainString());
+        TransazioniCrypto_Text_Plusvalenza.setText("€ " + Funzioni.formattaBigDecimal(Plusvalenza, true));
+        TransazioniCrypto_Text_CostiCarico.setText("€ " + Funzioni.formattaBigDecimal(CostiCarico, true));
+        TransazioniCrypto_Text_Vendite.setText("€ " + Funzioni.formattaBigDecimal(Vendite, true));
         //Color verde = new Color(45, 155, 103);
       //  Color rosso = new Color(166, 16, 34);
         if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-")) {

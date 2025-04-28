@@ -25,6 +25,15 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.35
+Nuove Implementazioni : 
+ - Aggiunto importazioni di Binance dal Financial Report
+   NB : Importare o il Financial Report o il csv classico, mai entrambi per lo stesso periodo.
+	Il Financial Report dovrebbe essere un po' più preciso soprattutto per quanto riguarda i prezzi.
+ - Formatati alcuni camp numerici per rendere più leggibile la cifra.
+Correzione di bug :
+ - Corretto nome intestazione colonne nella sezione "RT & Analisi P&L", i nomi della colonna 2 e 3 erano invertiti.
+
 ver. 1.0.34
 Nuove Implementazioni
   - Aggiunto Api di Coinbase e Cryptocompare per il recupero dei prezzi

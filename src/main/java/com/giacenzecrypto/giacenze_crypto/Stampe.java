@@ -161,7 +161,7 @@ public class Stampe {
                 int foglio,
                 String ICTot) {
           try {
-              
+              ICTot=Funzioni.formattaBigDecimal(new BigDecimal(ICTot),false);
 
 // String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
               com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
@@ -189,7 +189,9 @@ public class Stampe {
              setPara(writer.getDirectContent(), new Phrase("QUADRO RW PER CRIPTO-ATTIVITA'",font), 200+doc.leftMargin(), psosizioneVeriticale+655);
              for (int i=0;i<5;i++){
                  if (ValoriIniziali[i]!=null){
-                    font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                   // font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                   ValoriIniziali[i]=Funzioni.formattaBigDecimal(new BigDecimal(ValoriIniziali[i]),false);
+                        ValoriFinali[i]=Funzioni.formattaBigDecimal(new BigDecimal(ValoriFinali[i]),false);
                     if (i==0){
                         //Wallet e Note
                         font = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -307,10 +309,17 @@ public class Stampe {
     ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, p, x, y, 0);
 }
     
-    public void AggiungiT(String Immagine,String Vendite,String Costo,String Segnalazioni) {
+    public void AggiungiT(String Immagine,String Vendite,String Costo,String Segnalazioni,String Anno) {
           try {
               
-
+             Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             Vendite=new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             String Plusvalenze=new BigDecimal(Vendite).subtract(new BigDecimal(Costo)).toPlainString();
+             Costo=Funzioni.formattaBigDecimal(new BigDecimal(Costo),false);
+             Vendite=Funzioni.formattaBigDecimal(new BigDecimal(Vendite),false);
+             Plusvalenze=Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze),false);
+             //Plusvalnze del periodo
+             this.AggiungiTestoCentrato("Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze+"\n",Font.BOLD,12);
 // String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
               com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
              // image01.s
@@ -320,14 +329,13 @@ public class Stampe {
              image01.scalePercent(PercentualeScala);
              //doc.bottom()
              doc.add(image01);
-             Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
-             Vendite=new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
              float psosizioneVeriticale=writer.getVerticalPosition(false); 
              Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
              //Valore delle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Costo,font), 267+doc.leftMargin(), psosizioneVeriticale+612);
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 258+doc.leftMargin(), psosizioneVeriticale+612);
              //Valore dei Costi relativi alle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 400+doc.leftMargin(), psosizioneVeriticale+612);
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 395+doc.leftMargin(), psosizioneVeriticale+612);
+             
              
 
           } catch (BadElementException | IOException ex) {
@@ -335,7 +343,39 @@ public class Stampe {
           }
     }
     
-    
+    public void AggiungiRT(String Immagine,String Vendite,String Costo,String Segnalazioni,String Anno) {
+          try {
+              
+             Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             Vendite=new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             String Plusvalenze=new BigDecimal(Vendite).subtract(new BigDecimal(Costo)).toPlainString();
+             Costo=Funzioni.formattaBigDecimal(new BigDecimal(Costo),false);
+             Vendite=Funzioni.formattaBigDecimal(new BigDecimal(Vendite),false);
+             Plusvalenze=Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze),false);
+             //Plusvalnze del periodo
+             this.AggiungiTestoCentrato("Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze+"\n",Font.BOLD,12);
+// String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
+              com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
+             // image01.s
+             float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
+             float LarghezzaImmagine=image01.getWidth();
+             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*90;
+             image01.scalePercent(PercentualeScala);
+             //doc.bottom()
+             doc.add(image01);
+             float psosizioneVeriticale=writer.getVerticalPosition(false); 
+             Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             //Valore delle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 258+doc.leftMargin(), psosizioneVeriticale+288);
+             //Valore dei Costi relativi alle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 395+doc.leftMargin(), psosizioneVeriticale+288);
+             
+             
+
+          } catch (BadElementException | IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    }
     
     
     

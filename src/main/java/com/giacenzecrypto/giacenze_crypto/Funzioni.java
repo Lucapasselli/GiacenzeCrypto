@@ -19,9 +19,12 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -94,6 +97,21 @@ public class Funzioni {
             } 
          }
         
+        
+        public static String formattaBigDecimal(BigDecimal numero,boolean decimali) {
+        // Crea un'istanza di DecimalFormatSymbols per il locale italiano
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ITALY);
+        symbols.setGroupingSeparator('.'); // Separatore delle migliaia
+        symbols.setDecimalSeparator(',');  // Separatore decimale
+
+        // Definisce il pattern di formattazione
+        DecimalFormat formatter;               
+        if (decimali) formatter = new DecimalFormat("#,##0.00", symbols);
+        else formatter = new DecimalFormat("#,##0", symbols);
+        return formatter.format(numero);
+    }
+         
+         
          
         public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
             

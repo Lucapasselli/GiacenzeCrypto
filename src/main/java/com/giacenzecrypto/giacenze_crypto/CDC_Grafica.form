@@ -2357,7 +2357,10 @@
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Component id="RT_Label_Avviso" min="-2" pref="683" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="RT_Bottone_Calcola" min="-2" pref="150" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="RT_Bottone_CorreggiErrori" max="32767" attributes="0"/>
+                                          <Component id="RT_Bottone_Calcola" pref="150" max="32767" attributes="0"/>
+                                      </Group>
                                   </Group>
                               </Group>
                           </Group>
@@ -2373,11 +2376,14 @@
                                   <Component id="RT_Bottone_Documentazione" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="RT_Bottone_Stampa" min="-2" pref="29" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="RT_Bottone_Stampa" min="-2" pref="29" max="-2" attributes="0"/>
+                                  <Component id="RT_Bottone_CorreggiErrori" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="jScrollPane11" min="-2" pref="140" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jTabbedPane1" pref="512" max="32767" attributes="0"/>
+                              <Component id="jTabbedPane1" pref="510" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -2436,7 +2442,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -2784,6 +2790,17 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_StampaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="RT_Bottone_CorreggiErrori">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Attenzione.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Correggi Errori"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_CorreggiErroriActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

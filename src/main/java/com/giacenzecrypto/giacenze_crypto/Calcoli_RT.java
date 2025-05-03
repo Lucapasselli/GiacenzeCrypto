@@ -362,6 +362,11 @@ public class Calcoli_RT {
     public static AnalisiPlus CalcoliPlusvalenzeXAnno(Download progress){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
+        String Errori="0";
+        //Errori=0 -> Nessun errore
+        //Errori=1 -> Errore Mancanza Classificazione
+        //Errori=2 -> Errore Mancanza Prezzi
+        //Errori=12 oppure 21 -> Tutti gli errori (In sostanza l'errore deve contenere tutti i codici di errore singoli trovati)
         AnalisiPlus ritorno=new AnalisiPlus();
         
         //ANNO,GRUPPOWALLET,MONETA,STACK della moneta
@@ -391,6 +396,32 @@ public class Calcoli_RT {
         BigDecimal Vendite = new BigDecimal("0");
      //   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         for (String[] v : MappaCryptoWallet.values()) {
+            
+            
+           //Verifico se il movimento contiene errori di mancata classificazione
+            String TipoMovimento=v[0].split("_")[4].trim();
+            if ((v[22]!=null&&!v[22].equalsIgnoreCase("AU"))//Escludo movimenti automatici
+                  &&
+                  v[18].trim().equalsIgnoreCase("")//Includo solo movimenti senza causale
+                  &&
+                  (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])//Includo movimenti di deposito non scam
+                      ||
+                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])))//Includo movimenti di prelievo
+          {
+                //Gestisco l'errore
+                if(Errori.equals("0"))Errori="1";
+                if (Errori.contains("2")&&!Errori.contains("1"))Errori=Errori+"1";
+          }
+           //Verifico se il movimento contiene errori di mancato prezzo.
+           //Controllo che il movimento non abbia prezzo e sia rilevante fiscalmente.
+            if (!Prezzi.IndicaMovimentoPrezzato(v)&&v[33].equals("S")) {           
+                //Gestisco l'errore
+                if(Errori.equals("0"))Errori="2";
+                if (Errori.contains("1")&&!Errori.contains("2"))Errori=Errori+"2";
+          } 
+            
+            
+            
            //System.out.println(progress.FineThread());
             if (progress.FineThread())
             {
@@ -572,7 +603,7 @@ public class Calcoli_RT {
                     PlusAnno[3]=new BigDecimal(0);//Plusvalenza
                     PlusAnno[4]=new BigDecimal(0);//Plusvalenza Latente
                     PlusAnno[5]=new BigDecimal(0);//Valore Rimanenze
-                    PlusAnno[6]=new BigDecimal(0);//Errori
+                    PlusAnno[6]=new BigDecimal(Errori);//Errori
                     PlusvalenzeXAnno.put(Anno, PlusAnno);
                     
                     
@@ -580,6 +611,7 @@ public class Calcoli_RT {
                 else
                 {
                     PlusAnno=PlusvalenzeXAnno.get(Anno);
+                    PlusAnno[6]=new BigDecimal(Errori);//Aggiorno il campo errori qualora ve ne fossero
                 }
                 if (Funzioni_isNumeric(v[19], false)) {
                     Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));

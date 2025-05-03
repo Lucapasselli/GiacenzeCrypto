@@ -121,7 +121,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.35 Beta RC1";
+    public static String Titolo="Giacenze Crypto 1.0.35 Beta";
 
     
     
@@ -373,6 +373,7 @@ private static final long serialVersionUID = 3L;
         RT_Label_Avviso = new javax.swing.JLabel();
         RT_Bottone_Documentazione = new javax.swing.JButton();
         RT_Bottone_Stampa = new javax.swing.JButton();
+        RT_Bottone_CorreggiErrori = new javax.swing.JButton();
         CDC_CardWallet_Pannello = new javax.swing.JPanel();
         CDC_CardWallet_Bottone_CaricaCSV = new javax.swing.JButton();
         CDC_CardWallet_Label_PrimaData = new javax.swing.JLabel();
@@ -1908,9 +1909,6 @@ private static final long serialVersionUID = 3L;
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMinWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setPreferredWidth(100);
             RT_Tabella_Principale.getColumnModel().getColumn(0).setMaxWidth(100);
-            RT_Tabella_Principale.getColumnModel().getColumn(6).setMinWidth(0);
-            RT_Tabella_Principale.getColumnModel().getColumn(6).setPreferredWidth(0);
-            RT_Tabella_Principale.getColumnModel().getColumn(6).setMaxWidth(0);
         }
 
         RT_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Calcolatrice.png"))); // NOI18N
@@ -2066,6 +2064,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        RT_Bottone_CorreggiErrori.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Attenzione.png"))); // NOI18N
+        RT_Bottone_CorreggiErrori.setText("Correggi Errori");
+        RT_Bottone_CorreggiErrori.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_CorreggiErroriActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RTLayout = new javax.swing.GroupLayout(RT);
         RT.setLayout(RTLayout);
         RTLayout.setHorizontalGroup(
@@ -2082,7 +2088,9 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 683, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(RT_Bottone_CorreggiErrori, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)))))
         );
         RTLayout.setVerticalGroup(
             RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2093,11 +2101,13 @@ private static final long serialVersionUID = 3L;
                     .addComponent(RT_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RT_Bottone_Documentazione))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_CorreggiErrori))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 512, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -8841,8 +8851,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         else{
         Map<String, BigDecimal[]> PlusvalenzeXAnno = APlus.Get_TabellaPlusXAnno();
         for (BigDecimal[] Valori : PlusvalenzeXAnno.values()) {
-            ModelloTabellaRT.addRow(Valori);
+            String Val[]=new String[7];
+            for (int va=0;va<Valori.length;va++){
+                switch (va) {
+                    case 6 -> {
+                        String errori=Valori[va].toPlainString();
+                        Val[va]="";
+                        if (errori.equals("0")){Val[va]="";}
+                        else{
+                            Val[va]="<html>";
+                            if (errori.contains("1")){Val[va]=Val[va]+"Movimenti non classificati<br>";}
+                            if (errori.contains("2")){Val[va]=Val[va]+"Movimenti senza prezzo";}
+                            Val[va]=Val[va]+"</html>";
+                        }
+                    }
+                    default -> Val[va]=Valori[va].toPlainString();
+                }
+            }
+            ModelloTabellaRT.addRow(Val);
         }
+        Tabelle.updateRowHeights(RT_Tabella_Principale);
                 }
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -8978,7 +9006,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
 
     private void Bottone_ErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ErroriActionPerformed
-        // TODO add your handling code here:
+        CorrezioneErroriPrincipali();
+    }//GEN-LAST:event_Bottone_ErroriActionPerformed
+
+    private void CorrezioneErroriPrincipali(){
+    // TODO add your handling code here:
         // TODO add your handling code here:
         //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
         //PCO -> Cashout o similare (prelievo)
@@ -9039,8 +9071,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     else{
                         completato=false;
                     }
-    }//GEN-LAST:event_Bottone_ErroriActionPerformed
-
+    }
+    
+    
+    
     private void RT_Bottone_ModificaGiacenzaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_ModificaGiacenzaActionPerformed
         // TODO add your handling code here:
         try {
@@ -9404,6 +9438,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_LabelSitoMouseExited
+
+    private void RT_Bottone_CorreggiErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_CorreggiErroriActionPerformed
+        // TODO add your handling code here:
+        CorrezioneErroriPrincipali();
+    }//GEN-LAST:event_RT_Bottone_CorreggiErroriActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -11580,6 +11619,7 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;
+    private javax.swing.JButton RT_Bottone_CorreggiErrori;
     private javax.swing.JButton RT_Bottone_Documentazione;
     private javax.swing.JButton RT_Bottone_Documentazione1;
     private javax.swing.JButton RT_Bottone_ModificaGiacenza;

@@ -473,6 +473,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
                     setForeground(rosso);
                 }
             else if (col==3)setForeground(verdeScuro);
+            else if (col==6)setForeground(rosso);
             else{
                 setForeground(fore);
             }

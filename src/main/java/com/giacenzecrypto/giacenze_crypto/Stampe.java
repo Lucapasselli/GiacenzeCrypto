@@ -319,22 +319,42 @@ public class Stampe {
              Vendite=Funzioni.formattaBigDecimal(new BigDecimal(Vendite),false);
              Plusvalenze=Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze),false);
              //Plusvalnze del periodo
-             this.AggiungiTestoCentrato("Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze+"\n",Font.BOLD,12);
+             //this.AggiungiTestoCentrato("Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze+"\n",Font.BOLD,12);
+            // this.AggiungiHtml(Segnalazioni);
 // String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
               com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
              // image01.s
              float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
              float LarghezzaImmagine=image01.getWidth();
-             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*90;
+             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*95;
              image01.scalePercent(PercentualeScala);
              //doc.bottom()
              doc.add(image01);
              float psosizioneVeriticale=writer.getVerticalPosition(false); 
              Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
              //Valore delle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 258+doc.leftMargin(), psosizioneVeriticale+612);
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 273+doc.leftMargin(), psosizioneVeriticale+645);
              //Valore dei Costi relativi alle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Costo,font), 395+doc.leftMargin(), psosizioneVeriticale+612);
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 415+doc.leftMargin(), psosizioneVeriticale+645);
+             
+             font = new Font(Font.HELVETICA, 10, Font.BOLD);
+             String MessPlus="Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze;
+             setPara(writer.getDirectContent(), new Phrase(MessPlus,font), doc.leftMargin(), psosizioneVeriticale+120);
+             
+             font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+             PdfContentByte canvas = writer.getDirectContent();
+            float x = doc.leftMargin();
+            float y = psosizioneVeriticale + 100;
+            // Imposta un'area di testo (rettangolo) dove disegnare il contenuto
+            ColumnText ct = new ColumnText(canvas);
+            ct.setText(new Phrase(Segnalazioni, font));
+            ct.setSimpleColumn(
+                x,           // left
+                y - 50,      // bottom
+                x + 500,     // right
+                y            // top
+                );
+            ct.go();
              
              
 
@@ -353,22 +373,44 @@ public class Stampe {
              Vendite=Funzioni.formattaBigDecimal(new BigDecimal(Vendite),false);
              Plusvalenze=Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze),false);
              //Plusvalnze del periodo
-             this.AggiungiTestoCentrato("Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze+"\n",Font.BOLD,12);
+             
+             //this.AggiungiTestoCentrato("Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze+"\n",Font.BOLD,10);
+             //this.AggiungiHtml(Segnalazioni);
 // String Errore="Attenzione per questo wallet ci sono degli errori da correggere!";
               com.lowagie.text.Image image01 = com.lowagie.text.Image.getInstance(Immagine);
              // image01.s
              float LarghezzaPagina=doc.getPageSize().getWidth()-doc.rightMargin()-doc.leftMargin();
              float LarghezzaImmagine=image01.getWidth();
-             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*90;
+             float PercentualeScala=LarghezzaPagina/LarghezzaImmagine*95;
              image01.scalePercent(PercentualeScala);
              //doc.bottom()
              doc.add(image01);
              float psosizioneVeriticale=writer.getVerticalPosition(false); 
              Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
              //Valore delle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 258+doc.leftMargin(), psosizioneVeriticale+288);
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 273+doc.leftMargin(), psosizioneVeriticale+303);
              //Valore dei Costi relativi alle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Costo,font), 395+doc.leftMargin(), psosizioneVeriticale+288);
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 415+doc.leftMargin(), psosizioneVeriticale+303);
+             
+             font = new Font(Font.HELVETICA, 10, Font.BOLD);
+             String MessPlus="Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze;
+             setPara(writer.getDirectContent(), new Phrase(MessPlus,font), doc.leftMargin(), psosizioneVeriticale+120);
+             
+             font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+             PdfContentByte canvas = writer.getDirectContent();
+            float x = doc.leftMargin();
+            float y = psosizioneVeriticale + 100;
+            // Imposta un'area di testo (rettangolo) dove disegnare il contenuto
+            ColumnText ct = new ColumnText(canvas);
+            ct.setText(new Phrase(Segnalazioni, font));
+            ct.setSimpleColumn(
+                x,           // left
+                y - 50,      // bottom
+                x + 500,     // right
+                y            // top
+                );
+            ct.go();
+             
              
              
 

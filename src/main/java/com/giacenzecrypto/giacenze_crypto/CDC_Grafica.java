@@ -9006,10 +9006,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
 
     private void Bottone_ErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ErroriActionPerformed
-        CorrezioneErroriPrincipali();
+        Funzioni_CorrezioneErroriPrincipali();
     }//GEN-LAST:event_Bottone_ErroriActionPerformed
 
-    private void CorrezioneErroriPrincipali(){
+    private void Funzioni_CorrezioneErroriPrincipali(){
     // TODO add your handling code here:
         // TODO add your handling code here:
         //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
@@ -9024,8 +9024,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
            
                 
                     //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
-                    boolean completato=true;
-                    String descrizione = "";
+                //    boolean completato=true;
                     String Testo = "<html>"
                             + "<b>SCEGLIRE QUALE TIPOLOGIA DI ERRORE CORREGGERE.<br><br><b>"
                             + "</html>";
@@ -9062,15 +9061,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             "Movimenti senza prezzo", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                                 TransazioniCrypto_CheckBox_VediSenzaPrezzo.setSelected(true);
                                 this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+                                CDC.setSelectedIndex(0);
                              
                             }
                             default -> {
                             }
                         }
                     }
-                    else{
+                 /*   else{
                         completato=false;
-                    }
+                    }*/
     }
     
     
@@ -9380,7 +9380,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             int Anno=Integer.parseInt(RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 0).toString());
             String Vendite=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 2).toString();
             String Costi=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 1).toString();
-            RT_StampaRapporto(Anno,Vendite,Costi,false);
+            String Errori=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 6).toString();
+            boolean err=true;
+            if (Errori.isBlank())err=false;
+            RT_StampaRapporto(Anno,Vendite,Costi,err);
             //System.out.println(Anno);
         }
     }//GEN-LAST:event_RT_Bottone_StampaActionPerformed
@@ -9441,7 +9444,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void RT_Bottone_CorreggiErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_CorreggiErroriActionPerformed
         // TODO add your handling code here:
-        CorrezioneErroriPrincipali();
+        Funzioni_CorrezioneErroriPrincipali();
     }//GEN-LAST:event_RT_Bottone_CorreggiErroriActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
@@ -9450,8 +9453,19 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
                 try {
             // TODO add your handling code here:
-           
-            
+                                   String Errore = "";
+                        if (Errori) {
+                          /*  Errore = """
+                            <html><font size="1" face="Courier New,Courier, mono" >
+                            <b>ATTENZIONE :</b> Sono presenti movimenti non classificati o senza prezzo nell'anno in corso o quelli precedenti.<br>
+                            Affinchè il dato sia affidabile è necessario correggere tutte le problematiche.
+                                     """;*/
+                            Errore = """
+                            ATTENZIONE : Sono presenti movimenti non classificati o senza prezzo nell'anno in corso o quelli precedenti.
+                            Affinchè il dato sia affidabile è necessario correggere tutte le problematiche.
+                                     """;
+                        }
+            //
             
             //Tabella Totali
             Stampe stampa=new Stampe("temp_T.pdf");
@@ -9504,10 +9518,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String immagineT="Immagini/QuadroT_2024.jpg";
             //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
 
-                        String Errore = "";
-                        if (Errori) {
-                            Errore = "Errori da correggere!";
-                        }
+
                         stampa.AggiungiT(immagineT, Vendite, Costo, Errore,AnnoDiCompetenza);
                         
                         
@@ -9547,13 +9558,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     stampa.NuovaPagina();
                     String immagineRT="Immagini/QuadroRT_2024.jpg";
-            //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
-
-                        Errore = "";
-                        if (Errori) {
-                            Errore = "Errori da correggere!";
-                        }
-                        stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
+                    stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     
                     /*
                     //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW

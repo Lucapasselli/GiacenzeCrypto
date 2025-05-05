@@ -33,6 +33,8 @@ Nuove Implementazioni :
  - Formatati alcuni camp numerici per rendere più leggibile la cifra.
 Correzione di bug :
  - Corretto nome intestazione colonne nella sezione "RT & Analisi P&L", i nomi della colonna 2 e 3 erano invertiti.
+ - Corretto bug che poteva portare al blocco del programma nel caso di doppia rettifica giacenza sulla stessa moneta.
+ - Corretto Bug che poteva portare a salvare prezzi errati nella sezione giacenze a data qualora vi fossero stati inseriti prezzi personalizzati.
 
 ver. 1.0.34
 Nuove Implementazioni

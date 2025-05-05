@@ -6338,7 +6338,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         //Non Classifico Movimento 
                                         //Ciclo per creare un movimento con il primo ID libero
                                         for(int ki=1;ki<30;ki++){
-                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            if (!IDOriSplittato[1].contains(".Rettifica"))
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            else
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
                                             if(MappaCryptoWallet.get(RT[0])==null){
                                                break;
                                             }
@@ -6349,7 +6352,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                     case 2 -> {
                                         //CashOut
                                         for(int ki=1;ki<30;ki++){
-                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            if (!IDOriSplittato[1].contains(".Rettifica"))
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            else
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
                                             if(MappaCryptoWallet.get(RT[0])==null){                                              
                                                break;
                                             }
@@ -6360,7 +6366,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                     case 3 -> {
                                         //Commissione                                        
                                         for(int ki=1;ki<30;ki++){
-                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
+                                            if (!IDOriSplittato[1].contains(".Rettifica"))
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
+                                            else
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_CM";
                                             if(MappaCryptoWallet.get(RT[0])==null){
                                                break;
                                             }
@@ -6371,7 +6380,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                     case 4 -> {
                                         //Rettifica Giacenza                                       
                                         for(int ki=1;ki<30;ki++){
-                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            if (!IDOriSplittato[1].contains(".Rettifica"))
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                            else
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
                                             if(MappaCryptoWallet.get(RT[0])==null){
                                                break;
                                             }
@@ -6425,7 +6437,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) - 1;
                                 String RT[] = new String[ColonneTabella];
                                 for(int ki=1;ki<30;ki++){
-                                            RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                            if (!IDOriSplittato[1].contains(".Rettifica"))
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                            else
+                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_DC";
                                             if(MappaCryptoWallet.get(RT[0])==null){
                                                break;
                                             }
@@ -9381,8 +9396,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String Vendite=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 2).toString();
             String Costi=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 1).toString();
             String Errori=RT_Tabella_Principale.getModel().getValueAt(rigoSelezionato, 6).toString();
-            boolean err=true;
-            if (Errori.isBlank())err=false;
+            boolean err=false;
+            if (!Errori.isBlank())
+            {
+                err=true;
+                String Testo = "<html>Attenzione!<br>"
+                        +"Ci sono dei movimenti rilevanti senza prezzo e/o movimenti non classificati.<br>"
+                        +"E' opportuno correggerli (Pulsante 'Correggi Errori') affinchè i valori risultino corretti.<br>"
+                        +"La stampa proseguirà ugualmente.<br>";
+                Object[] Bottoni = {"OK"};
+                JOptionPane.showOptionDialog(this, Testo,
+                        "Errori da correggere",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null,
+                        Bottoni,
+                        null);
+            }
             RT_StampaRapporto(Anno,Vendite,Costi,err);
             //System.out.println(Anno);
         }

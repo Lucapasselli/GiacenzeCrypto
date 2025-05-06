@@ -30,11 +30,14 @@ Nuove Implementazioni :
  - Aggiunto importazioni di Binance dal Financial Report
    NB : Importare o il Financial Report o il csv classico, mai entrambi per lo stesso periodo.
 	Il Financial Report dovrebbe essere un po' più preciso soprattutto per quanto riguarda i prezzi.
- - Formatati alcuni camp numerici per rendere più leggibile la cifra.
+ - Formattati alcuni campi numerici per rendere più leggibile la cifra.
 Correzione di bug :
  - Corretto nome intestazione colonne nella sezione "RT & Analisi P&L", i nomi della colonna 2 e 3 erano invertiti.
  - Corretto bug che poteva portare al blocco del programma nel caso di doppia rettifica giacenza sulla stessa moneta.
  - Corretto Bug che poteva portare a salvare prezzi errati nella sezione giacenze a data qualora vi fossero stati inseriti prezzi personalizzati.
+ - Nel pacchetto 1.0.34 avevo dimenticato di inserire le immagini del quadro T/RT e il file dei token gestiti da coincap.
+   Questo portava all'impossibilità di recuperare alcuni prezzi nonchè l'impossibilità di stampare il quadro T/RT correttamente.
+ - Sistemato Bug che mandava in blocco il programma nel caso in cui si lanciasse l'eleaborazione del quaro T/RT senza dati.
 
 ver. 1.0.34
 Nuove Implementazioni

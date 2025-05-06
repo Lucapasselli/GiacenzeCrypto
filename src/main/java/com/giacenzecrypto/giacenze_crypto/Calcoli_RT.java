@@ -789,6 +789,7 @@ public class Calcoli_RT {
             Download progress,
             String AnnoSuccessivo){//Questo serve se ci sono anni buchi tra quello che sto analizzando e il prossimo
         
+            if (Anno==null)return true;
             boolean ritorno=true;
             //1 - Prendo ogni wallet
             //2 - Per ogni wallet estraggo tutte le monete che lo compongono

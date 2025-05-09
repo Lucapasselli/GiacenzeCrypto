@@ -504,7 +504,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         List<String[]> ListaRW;
         String DataDaScrivere=Data;
-                        
+        
         //System.out.println(Monete.Qta);
         //tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
@@ -541,12 +541,14 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             }
             while (!StackRitorno.isEmpty()) {
 
+
                 ElementiStack el = StackRitorno.pop();
             //    if (Causale.contains("Fine Anno")) GruppoWallet=el.GruppoWalletOri; 
                 //Elementi è così composta Qta;Prezzo;Data  
                 //Se la data del movimento è uguale a quella di creazione (al minuto) metto GG di detenzione zero altrimenti anche se posseggo la moneta per un solo minuto metto 1
                 long DiffData = OperazioniSuDate.ConvertiDatainLongMinuto(Data)-OperazioniSuDate.ConvertiDatainLongMinuto(el.DataOri);
                 if (DiffData!=0){
+  
                    // DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
                 //    String RWgiorno1 = DatabaseH2.Pers_Opzioni_Leggi("RW_DiffDateMatematica");
                   //  if (RWgiorno1 != null && RWgiorno1.equalsIgnoreCase("SI")) {
@@ -592,7 +594,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 
                 //Verifico Ora se esistono i prezzi unitari del token con data iniziale e del token con data finale.
                 //Se esistono li scrivo nella lista come campo 13 e 14
-                
+                                            
                 //Qui gestisco gli errori
                 //Gli errori non li segnalo se il token in questione è stato identificato come Scam
                 if (el.IDOri.contains("Errore")) {
@@ -606,6 +608,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                         } 
                     ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                     ListaRW.add(xlista);
+                   /* if (GruppoWallet.equalsIgnoreCase("Wallet 05")){
+                    for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get("Wallet 05")) {
+                        System.out.println(lista[9]);
+                    }
+                    System.out.println("------");
+                    }*/
                 }
                 }
         }
@@ -743,10 +751,13 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
             //if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)!=null)
             for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)) {
-                Moneta mi[]=new Moneta[2];
+           /*     if(key.equalsIgnoreCase("Wallet 05")){
+                System.out.println(lista[9]);
+            }*/
+              /*  Moneta mi[]=new Moneta[2];
                 Moneta mf[]=new Moneta[2];
                 if (MappaCryptoWallet.get(lista[13])!=null) mi=Funzioni.RitornaMoneteDaID(lista[13]);
-                if (MappaCryptoWallet.get(lista[14])!=null) mf=Funzioni.RitornaMoneteDaID(lista[14]);
+                if (MappaCryptoWallet.get(lista[14])!=null) mf=Funzioni.RitornaMoneteDaID(lista[14]);*/
                 //Prima di aggiungere alla tabella la riga relativa al movimento controllo se il valore è a zero
                 //se il valore è zero e non esiste un prezzo per quel token a quella data allora metto errore
                 String PrezzoInizio = lista[5];
@@ -767,6 +778,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 //Allora Faccio uscire l'errore Valore Iniziale non valorizzato
                // System.out.println("ID Iniziale :"+MappaCryptoWallet.get(lista[13]));
              //   System.out.println("ID Finale :"+MappaCryptoWallet.get(lista[14]));
+           /*  System.out.println(lista[9]);
+             if (lista[9].equals("2024-11-13 23:24")){
+                System.out.println("trovato");
+             }*/
                 if( (MappaCryptoWallet.get(lista[13])==null                     //A
                         &&PrezzoInizio.equals("0.00")                           //B
                         &&!lista[2].contains(" **")                             //C
@@ -931,7 +946,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         for (String[] v : MappaCryptoWallet.values()) {
             String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
             String GW = GruppoWallet;
-            if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) GW = "Unico 01";
+            //if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) GW = "Unico 01";
+            if (LiFoComplessivo)GW = "Unico 01";
             if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
                 //se non esiste ancora lo stack lo creo e lo associo alla mappa
                 //stessa cosa faccio per la lista per l'rw
@@ -939,6 +955,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 QtaCryptoInizio = new TreeMap<>();
                 MappaGrWallet_QtaCryptoInizio.put(GruppoWallet, QtaCryptoInizio);
                 ListaRW=new ArrayList<>();
+                
                 CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
             }
              else {
@@ -1395,8 +1412,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                         //se non esiste ancora lo stack lo creo e lo associo alla mappa
                                         //stessa cosa faccio per la lista per l'rw
                                         //stessa cosa faccio per il gruppo delle qta
-                                        ListaRW = new ArrayList<>();
-                                        CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(gruppoControparte, ListaRW);
+                                       /* ListaRW = new ArrayList<>();
+                                        CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(gruppoControparte, ListaRW);*/
                                         CryptoStackControparte = new TreeMap<>();
                                       //  QtaCryptoControparte = new TreeMap<>();
 
@@ -1472,8 +1489,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                              //   Map<String, Moneta> QtaCryptoControparte;
                                 //Se non ho lifo complessivo e non esiste wallet controparte lo creao vuoto
                                 if (MappaGrWallet_CryptoStack.get(gruppoControparte) == null) {
-                                    ListaRW = new ArrayList<>();
-                                    CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(gruppoControparte, ListaRW);
+                                  //  ListaRW = new ArrayList<>();
+                                  //  CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(gruppoControparte, ListaRW);
+                                  //System.out.println(gruppoControparte);
                                     CryptoStackControparte = new TreeMap<>();
                                   //  QtaCryptoControparte = new TreeMap<>();
                                     MappaGrWallet_CryptoStack.put(gruppoControparte, CryptoStackControparte);
@@ -1484,7 +1502,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                  //   QtaCryptoControparte = MappaGrWallet_QtaCrypto.get(gruppoControparte);
                                 }
 
-                                if (//Rilevanza.equalsIgnoreCase("D")||
+                                if (
                                     ChiudiRWsuTrasferimento) 
                                 {
                                     

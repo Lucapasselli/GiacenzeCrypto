@@ -29,6 +29,7 @@ Changelog
 ver. 1.0.36
 Nuove Implementazioni : 
  - Aggiunto pulsante "Modifica Movimento" in funzione "Classifica Depositi/Prelievi"
+ - Aggiunto pulsante "Duplica Movimento" in funzione "Classifica Depositi/Prelievi"
 Correzione di bug :
  - Corretto bug che impediva di creare un movimento opposto su un wallet in Defi dalla funzione "Crea movimento opposto" in "Classifica Depositi/Prelievi"
 

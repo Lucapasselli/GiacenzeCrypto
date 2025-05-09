@@ -115,7 +115,7 @@
                                       <Component id="TransazioniCrypto_Bottone_Importa" min="-2" pref="150" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_InserisciWallet" min="-2" pref="150" max="-2" attributes="0"/>
-                                      <EmptySpace pref="339" max="32767" attributes="0"/>
+                                      <EmptySpace pref="349" max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" min="-2" pref="558" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_Salva" min="-2" pref="119" max="-2" attributes="0"/>
@@ -130,9 +130,9 @@
                                               <Component id="TransazioniCrypto_Bottone_MovimentoModifica" min="-2" pref="190" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="TransazioniCrypto_Bottone_MovimentoElimina" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <EmptySpace max="32767" attributes="0"/>
                                               <Component id="TransazioniCrypto_Bottone_DettaglioDefi" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace pref="209" max="32767" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
                                               <Component id="jButton1" min="-2" pref="190" max="-2" attributes="0"/>
                                           </Group>
                                           <Component id="TransazioniCrypto_TabbedPane" max="32767" attributes="0"/>
@@ -187,17 +187,15 @@
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="392" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="398" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="0" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                              <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                              <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                              <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -217,7 +215,7 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Bottone_Errori" min="-2" pref="36" max="-2" attributes="0"/>
-                              <EmptySpace pref="9" max="32767" attributes="0"/>
+                              <EmptySpace pref="16" max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_EscludiTI" min="-2" max="-2" attributes="0"/>
@@ -862,12 +860,16 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="1" attributes="0">
                                           <Group type="102" alignment="1" attributes="0">
-                                              <EmptySpace min="0" pref="660" max="32767" attributes="0"/>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_Duplica" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
                                               <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="1" attributes="0">
                                               <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
-                                              <EmptySpace max="32767" attributes="0"/>
+                                              <EmptySpace pref="212" max="32767" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_Modifica" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
                                               <Component id="DepositiPrelievi_Bottone_Scam" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
@@ -885,11 +887,14 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="629" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="666" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="DepositiPrelievi_Bottone_Scam" alignment="1" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                          <Component id="DepositiPrelievi_Bottone_Scam" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="DepositiPrelievi_Bottone_Modifica" alignment="3" max="32767" attributes="0"/>
+                                      </Group>
                                       <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="103" alignment="1" groupAlignment="3" attributes="0">
@@ -903,6 +908,7 @@
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" min="-2" max="-2" attributes="0"/>
                                       <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="1" min="-2" max="-2" attributes="0"/>
+                                      <Component id="DepositiPrelievi_Bottone_Duplica" alignment="1" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -1017,6 +1023,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_AssegnazioneManuale">
                       <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Segoe UI" size="12" style="1"/>
+                        </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Modifica.png"/>
                         </Property>
@@ -1121,6 +1130,46 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_ScamActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_Duplica">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/32_Copia.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Duplica movimento"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_DuplicaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="DepositiPrelievi_Bottone_Modifica">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Modifica.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Modifica movimento"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[200, 35]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_Bottone_ModificaActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

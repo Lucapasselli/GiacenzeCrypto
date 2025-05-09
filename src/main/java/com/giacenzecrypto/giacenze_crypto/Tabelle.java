@@ -6,6 +6,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Rectangle;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -278,7 +279,17 @@ public class Tabelle {
         return table;
     }
     
-    
+   
+        
+   public static void PosizionaTabellasuRiga(JTable tabella,int riga,boolean misposto){
+       tabella.setRowSelectionInterval(riga, riga);
+       //Se misposto è true oltre che ad evidenziare la riga indicata mi sposto anche in quella riga
+       if (misposto){
+            tabella.scrollRectToVisible(new Rectangle(tabella.getCellRect(riga, 0, true))); 
+       }
+   }     
+        
+        
    public static JTable ColoraTabelladiGrigio(final JTable table) {
       //  bg=grigioChiaro;
      //   Data="";

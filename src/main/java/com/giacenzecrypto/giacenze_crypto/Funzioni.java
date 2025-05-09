@@ -291,7 +291,31 @@ public class Funzioni {
             return NuovoNome;
          }
         
-       
+    public static boolean DuplicaMovimento(String ID){
+        String riga[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+        String nuovariga[]=riga.clone();
+        String IDori=nuovariga[0];
+        String idSplit[]=IDori.split("_");
+        if (idSplit.length>4){
+            for(int k=1;k<10;k++){
+                String split3;
+                if (Funzioni.Funzioni_isNumeric(idSplit[3], false)){
+                    split3=String.valueOf((int)Double.parseDouble(idSplit[3])+k);
+                    
+                }
+                else {split3=idSplit[3]+k;}
+                String newID=idSplit[0]+"_"+idSplit[1]+"_"+idSplit[2]+"_"+split3+"_"+idSplit[4];
+                if (CDC_Grafica.MappaCryptoWallet.get(newID)==null){
+                    //ho trovato un id libero, creo il nuovo movimento
+                    nuovariga[0]=newID;//imposto il nuovo ID
+                    nuovariga[22]="M";//Dico che il movimento è stato aggiunto manualmente
+                    CDC_Grafica.MappaCryptoWallet.put(newID, nuovariga);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }   
         
     public static BigInteger hexToDecimal(String hexNumber) {
         // Verifica se la stringa fornita è vuota o nulla

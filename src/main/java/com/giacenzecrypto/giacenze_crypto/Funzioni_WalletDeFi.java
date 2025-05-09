@@ -178,6 +178,7 @@ public class Funzioni_WalletDeFi {
     }
     
         public static boolean isValidAddress(String address,String Rete) {
+        if (Rete==null) return false;
         if (Rete.equalsIgnoreCase("SOL")){
            // String BASE58_REGEX = "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$";
            // return address != null && address.length() == 44 && Pattern.matches(BASE58_REGEX, address);

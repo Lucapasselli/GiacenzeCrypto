@@ -764,7 +764,10 @@ public class Prezzi {
     }
     
     
-    
+    public static void CompilaMoneteStessoPrezzo(){
+     CDC_Grafica.Mappa_MoneteStessoPrezzo.put("WCRO", "CRO");
+     CDC_Grafica.Mappa_MoneteStessoPrezzo.put("WETH", "ETH");
+    }
     
     
     
@@ -773,9 +776,9 @@ public class Prezzi {
         String risultato;// = null;
         boolean mettereND = false;
 
-        if (Crypto.equals("WCRO")) {
-            Crypto = "CRO";//Questo serve per recuperare il prezzo dei WCRO che cmq è uguale ai CRO
-        }
+        Crypto = CDC_Grafica.Mappa_MoneteStessoPrezzo.getOrDefault(Crypto, Crypto);
+        
+
         long adesso = System.currentTimeMillis();
         if (Datalong > adesso) {
             return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi

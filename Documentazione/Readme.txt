@@ -32,6 +32,8 @@ Nuove Implementazioni :
  - Aggiunto pulsante "Duplica Movimento" in funzione "Classifica Depositi/Prelievi"
 Correzione di bug :
  - Corretto bug che impediva di creare un movimento opposto su un wallet in Defi dalla funzione "Crea movimento opposto" in "Classifica Depositi/Prelievi"
+ - Coretto bug per cui il prezzo di WETH poteva risultare errato
+ - Corretto bug nella sezione RW che in caso risultasse selezionata l'opzione "il LiFo viene applicato alla totalità dei Wallet" nella sezione "Opzioni RW" poteva in taluni casi particolari portare ad un errore.
 
 ver. 1.0.35
 Nuove Implementazioni : 

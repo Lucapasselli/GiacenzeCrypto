@@ -1483,25 +1483,24 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                          //   if (!StessoGruppoWalletContropate(IDTransazione)) {
                                 //Se non esistono le mappe per il wallet controparte le genero
                                 String gruppoControparte;
-                                if(LiFoComplessivo)gruppoControparte=GruppoWallet;//il gruppoControparte nel caso di LiFo complessivo è uguale al gruppo originale
-                                else gruppoControparte=RitornaGruppoWalletControparte(IDTransazione);
-                                Map<String, ArrayDeque<ElementiStack>> CryptoStackControparte;  
-                             //   Map<String, Moneta> QtaCryptoControparte;
-                                //Se non ho lifo complessivo e non esiste wallet controparte lo creao vuoto
-                                if (MappaGrWallet_CryptoStack.get(gruppoControparte) == null) {
-                                  //  ListaRW = new ArrayList<>();
-                                  //  CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(gruppoControparte, ListaRW);
-                                  //System.out.println(gruppoControparte);
-                                    CryptoStackControparte = new TreeMap<>();
-                                  //  QtaCryptoControparte = new TreeMap<>();
-                                    MappaGrWallet_CryptoStack.put(gruppoControparte, CryptoStackControparte);
-                                    MappaGrWallet_QtaCrypto.put(gruppoControparte, QtaCrypto);
-                                } else {
-                                    //Altrimenti mi prendo la qta della controparte
-                                    CryptoStackControparte = MappaGrWallet_CryptoStack.get(gruppoControparte);
-                                 //   QtaCryptoControparte = MappaGrWallet_QtaCrypto.get(gruppoControparte);
-                                }
-
+                                //if(LiFoComplessivo)gruppoControparte=GruppoWallet;//il gruppoControparte nel caso di LiFo complessivo è uguale al gruppo originale
+                               // else 
+                                    gruppoControparte=RitornaGruppoWalletControparte(IDTransazione);
+                                    
+                                    //Questa parte mi serve solo se non uso il LiFo complessivo
+                                    Map<String, ArrayDeque<ElementiStack>> CryptoStackControparte;
+                                    //Se non ho lifo complessivo e non esiste wallet controparte lo creao vuoto
+                                    if (MappaGrWallet_CryptoStack.get(gruppoControparte) == null) {
+                                        CryptoStackControparte = new TreeMap<>();
+               
+                                        MappaGrWallet_CryptoStack.put(gruppoControparte, CryptoStackControparte);
+                                        MappaGrWallet_QtaCrypto.put(gruppoControparte, QtaCrypto);
+                                    } else {
+                                        //Altrimenti mi prendo la qta della controparte
+                                        CryptoStackControparte = MappaGrWallet_CryptoStack.get(gruppoControparte);
+                                    }
+                                
+                                //Se abilitata chiudisuTrasferimento chiudo il vecchio wallet e apro il nuovo
                                 if (
                                     ChiudiRWsuTrasferimento) 
                                 {
@@ -1522,16 +1521,22 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                     el.Tipo=Monete[1].Tipo;
                                     el.GruppoWallet=GruppoWallet;
                                     el.Data =Data;
-                                  //  if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) SpostaQta(GruppoWallet,el);
-                                  //if (el.QtaOri.isBlank())System.out.println("scambio differito : "+el.Data);
-                                    StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
-                                    
-                                    ChiudiRWFR(Monete[1], CryptoStackControparte, gruppoControparte, Data, Valore, "Trasferimento su altro Wallet", "Giorni Detenzione Zero");
+
+                                  //Chiudo la transazione sul vecchio wallet
+                                if (LiFoComplessivo)  ChiudiRWFR(Monete[1], CryptoStack, gruppoControparte, Data, Valore, "Trasferimento su altro Wallet", IDTransazione);
+                                else  ChiudiRWFR(Monete[1], CryptoStackControparte, gruppoControparte, Data, Valore, "Trasferimento su altro Wallet", IDTransazione);
+                                //La apro sul nuovo
+                                  StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
                                 }
                                 
-                                else if (!LiFoComplessivo) {//se arrivo qua significa che decido di non spezzare l'rw sui trasfeirmenti
+                                //altrimenti se il LifoComplessivo non è abilitato sposto lo stack da un wallet all'altro
+                                //ovviamente se lifo complessivo è attivo non devo fare nulla
+                                else if (!LiFoComplessivo) {
+                                    //se arrivo qua significa che decido di non spezzare l'rw sui trasfeirmenti
                                     //e solo se LiFo complessivo è false allora sposto lo stack da un wallet all'altro
                                     //Se Lifo complessivo è true non serve spostare nulla perchè lo stack è lo stesso
+                                    
+                                    
 
                                     //Tolgo dal wallet di origine
                                     ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStackControparte, Monete[1].Moneta, Monete[1].Qta, GruppoWallet, true);

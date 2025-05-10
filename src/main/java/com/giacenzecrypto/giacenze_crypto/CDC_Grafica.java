@@ -115,6 +115,8 @@ private static final long serialVersionUID = 3L;
     public boolean VersioneCambiata=false;
     public boolean FineCaricamentoDati=false;
     
+    static public Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    
     public transient Calcoli_RT.AnalisiPlus APlus;
     public static String tema;
     public int NumErroriMovSconosciuti=0;
@@ -150,6 +152,7 @@ private static final long serialVersionUID = 3L;
             
             
         initComponents();
+        Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(Titolo);
        // SwingUtilities.updateComponentTreeUI(this);
       /*  if (!DatabaseH2.CreaoCollegaDatabase()){
@@ -1150,11 +1153,10 @@ private static final long serialVersionUID = 3L;
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(DepositiPrelievi_Bottone_Modifica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(DepositiPrelievi_Bottone_Modifica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)))
@@ -1661,8 +1663,8 @@ private static final long serialVersionUID = 3L;
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(3).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMinWidth(110);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(4).setPreferredWidth(110);
             RW_Tabella_Dettagli.getColumnModel().getColumn(4).setMaxWidth(120);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(5).setPreferredWidth(100);
@@ -1676,8 +1678,8 @@ private static final long serialVersionUID = 3L;
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMinWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setPreferredWidth(100);
             RW_Tabella_Dettagli.getColumnModel().getColumn(8).setMaxWidth(150);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(100);
-            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(100);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMinWidth(110);
+            RW_Tabella_Dettagli.getColumnModel().getColumn(9).setPreferredWidth(110);
             RW_Tabella_Dettagli.getColumnModel().getColumn(9).setMaxWidth(120);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setMinWidth(50);
             RW_Tabella_Dettagli.getColumnModel().getColumn(10).setPreferredWidth(100);

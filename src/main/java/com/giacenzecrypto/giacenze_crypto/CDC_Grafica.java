@@ -265,6 +265,9 @@ private static final long serialVersionUID = 3L;
 
         RW_RadioGruppo = new javax.swing.ButtonGroup();
         RW_Trasferimenti = new javax.swing.ButtonGroup();
+        PopupMenu = new javax.swing.JPopupMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
         TransazioniCrypto = new javax.swing.JPanel();
         TransazioniCrypto_ScrollPane = new javax.swing.JScrollPane();
@@ -537,6 +540,12 @@ private static final long serialVersionUID = 3L;
         CDC_Label_Giorni = new javax.swing.JLabel();
         CDC_Text_Giorni = new javax.swing.JTextField();
         Bottone_Titolo = new javax.swing.JButton();
+
+        jMenuItem1.setText("jMenuItem1");
+        PopupMenu.add(jMenuItem1);
+
+        jMenuItem2.setText("jMenuItem2");
+        PopupMenu.add(jMenuItem2);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
@@ -6896,7 +6905,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void TransazioniCryptoTabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaMouseReleased
         // TODO add your handling code here:
+        
         TransazioniCrypto_CompilaTextPaneDatiMovimento();
+        if(evt.isPopupTrigger()){
+            PopupMenu.show(this, evt.getXOnScreen(), evt.getYOnScreen());
+        }
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -11734,6 +11747,7 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
+    private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JPanel RT;
     private javax.swing.JButton RT_Bottone_Calcola;
     private javax.swing.JButton RT_Bottone_CorreggiErrori;
@@ -11822,6 +11836,8 @@ try {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;

@@ -266,8 +266,7 @@ private static final long serialVersionUID = 3L;
         RW_RadioGruppo = new javax.swing.ButtonGroup();
         RW_Trasferimenti = new javax.swing.ButtonGroup();
         PopupMenu = new javax.swing.JPopupMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
+        MenuItem_Copia = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
         TransazioniCrypto = new javax.swing.JPanel();
         TransazioniCrypto_ScrollPane = new javax.swing.JScrollPane();
@@ -541,11 +540,10 @@ private static final long serialVersionUID = 3L;
         CDC_Text_Giorni = new javax.swing.JTextField();
         Bottone_Titolo = new javax.swing.JButton();
 
-        jMenuItem1.setText("jMenuItem1");
-        PopupMenu.add(jMenuItem1);
-
-        jMenuItem2.setText("jMenuItem2");
-        PopupMenu.add(jMenuItem2);
+        MenuItem_Copia.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        MenuItem_Copia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/32_Copia.png"))); // NOI18N
+        MenuItem_Copia.setText("Copia selezione");
+        PopupMenu.add(MenuItem_Copia);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
@@ -6908,7 +6906,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
         TransazioniCrypto_CompilaTextPaneDatiMovimento();
         if(evt.isPopupTrigger()){
-            PopupMenu.show(this, evt.getXOnScreen(), evt.getYOnScreen());
+            Point Coordinata = MouseInfo.getPointerInfo().getLocation();
+            SwingUtilities.convertPointFromScreen(Coordinata, this);
+            PopupMenu.show(this, Coordinata.x, Coordinata.y);
         }
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
@@ -11691,6 +11691,7 @@ try {
     private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
+    private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;
@@ -11836,8 +11837,6 @@ try {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;

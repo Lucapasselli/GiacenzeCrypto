@@ -267,6 +267,7 @@ private static final long serialVersionUID = 3L;
         RW_Trasferimenti = new javax.swing.ButtonGroup();
         PopupMenu = new javax.swing.JPopupMenu();
         MenuItem_Copia = new javax.swing.JMenuItem();
+        MenuItem_Incolla = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
         TransazioniCrypto = new javax.swing.JPanel();
         TransazioniCrypto_ScrollPane = new javax.swing.JScrollPane();
@@ -540,10 +541,18 @@ private static final long serialVersionUID = 3L;
         CDC_Text_Giorni = new javax.swing.JTextField();
         Bottone_Titolo = new javax.swing.JButton();
 
-        MenuItem_Copia.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         MenuItem_Copia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/32_Copia.png"))); // NOI18N
         MenuItem_Copia.setText("Copia selezione");
+        MenuItem_Copia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_CopiaActionPerformed(evt);
+            }
+        });
         PopupMenu.add(MenuItem_Copia);
+
+        MenuItem_Incolla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
+        MenuItem_Incolla.setText("Incolla");
+        PopupMenu.add(MenuItem_Incolla);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
@@ -808,6 +817,11 @@ private static final long serialVersionUID = 3L;
             }
         });
         TransazioniCrypto_Tabella_Dettagli.setColumnSelectionAllowed(true);
+        TransazioniCrypto_Tabella_Dettagli.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                TransazioniCrypto_Tabella_DettagliMouseReleased(evt);
+            }
+        });
         jScrollPane4.setViewportView(TransazioniCrypto_Tabella_Dettagli);
         if (TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumnCount() > 0) {
             TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(160);
@@ -998,6 +1012,11 @@ private static final long serialVersionUID = 3L;
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        DepositiPrelievi_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                DepositiPrelievi_TabellaMouseReleased(evt);
             }
         });
         jScrollPane2.setViewportView(DepositiPrelievi_Tabella);
@@ -1202,6 +1221,11 @@ private static final long serialVersionUID = 3L;
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        SituazioneImport_Tabella1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                SituazioneImport_Tabella1MouseReleased(evt);
             }
         });
         jScrollPane3.setViewportView(SituazioneImport_Tabella1);
@@ -1732,6 +1756,11 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        RW_Tabella_DettaglioMovimenti.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RW_Tabella_DettaglioMovimentiMouseReleased(evt);
+            }
+        });
         jScrollPane9.setViewportView(RW_Tabella_DettaglioMovimenti);
         if (RW_Tabella_DettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
             RW_Tabella_DettaglioMovimenti.getColumnModel().getColumn(5).setMinWidth(100);
@@ -2017,6 +2046,11 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        RT_Tabella_LiFo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RT_Tabella_LiFoMouseReleased(evt);
+            }
+        });
         jScrollPane13.setViewportView(RT_Tabella_LiFo);
 
         jLabel17.setText("Dettaglio del LiFo sulle rimanenze");
@@ -2256,6 +2290,11 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        CDC_CardWallet_Tabella1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                CDC_CardWallet_Tabella1MouseReleased(evt);
+            }
+        });
         CDC_CardWallet_Tabella1Scroll.setViewportView(CDC_CardWallet_Tabella1);
         if (CDC_CardWallet_Tabella1.getColumnModel().getColumnCount() > 0) {
             CDC_CardWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -2284,6 +2323,11 @@ private static final long serialVersionUID = 3L;
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        CDC_CardWallet_Tabella2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                CDC_CardWallet_Tabella2MouseReleased(evt);
             }
         });
         CDC_CardWallet_Tabella2Scroll.setViewportView(CDC_CardWallet_Tabella2);
@@ -2524,6 +2568,11 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        CDC_FiatWallet_Tabella1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                CDC_FiatWallet_Tabella1MouseReleased(evt);
+            }
+        });
         CDC_FiatWallet_Tabella1Scroll.setViewportView(CDC_FiatWallet_Tabella1);
         if (CDC_FiatWallet_Tabella1.getColumnModel().getColumnCount() > 0) {
             CDC_FiatWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -2552,6 +2601,11 @@ private static final long serialVersionUID = 3L;
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        CDC_FiatWallet_Tabella2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                CDC_FiatWallet_Tabella2MouseReleased(evt);
             }
         });
         CDC_FiatWallet_Tabella2Scroll.setViewportView(CDC_FiatWallet_Tabella2);
@@ -2616,6 +2670,11 @@ private static final long serialVersionUID = 3L;
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        CDC_FiatWallet_Tabella3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                CDC_FiatWallet_Tabella3MouseReleased(evt);
             }
         });
         CDC_FiatWallet_Tabella3Scroll.setViewportView(CDC_FiatWallet_Tabella3);
@@ -2804,6 +2863,9 @@ private static final long serialVersionUID = 3L;
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Opzioni_GruppoWallet_TabellaMouseClicked(evt);
             }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_GruppoWallet_TabellaMouseReleased(evt);
+            }
         });
         Opzioni_GruppoWallet_Tabella.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -2882,6 +2944,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_Emoney_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Opzioni_Emoney_TabellaMouseClicked(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_Emoney_TabellaMouseReleased(evt);
             }
         });
         Opzioni_Emoney_ScrollPane.setViewportView(Opzioni_Emoney_Tabella);
@@ -3611,6 +3676,11 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_ApiKey_Helius_Label.setText("ApiKey Helius x Solana :");
 
+        Opzioni_ApiKey_Helius_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Helius_TextFieldMouseReleased(evt);
+            }
+        });
         Opzioni_ApiKey_Helius_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 Opzioni_ApiKey_Helius_TextFieldKeyReleased(evt);
@@ -3648,6 +3718,11 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ApiKey_Etherscan_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Etherscan_TextFieldMouseReleased(evt);
+            }
+        });
         Opzioni_ApiKey_Etherscan_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 Opzioni_ApiKey_Etherscan_TextFieldKeyReleased(evt);
@@ -3676,6 +3751,11 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ApiKey_Coincap_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coincap_TextFieldMouseReleased(evt);
+            }
+        });
         Opzioni_ApiKey_Coincap_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 Opzioni_ApiKey_Coincap_TextFieldKeyReleased(evt);
@@ -3699,6 +3779,11 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_ApiKey_Coingecko_Label.setText("ApiKey Coingecko :");
 
+        Opzioni_ApiKey_Coingecko_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Coingecko_TextFieldMouseReleased(evt);
+            }
+        });
         Opzioni_ApiKey_Coingecko_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 Opzioni_ApiKey_Coingecko_TextFieldKeyReleased(evt);
@@ -6188,6 +6273,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void GiacenzeaData_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaMouseReleased
         // TODO add your handling code here:
         this.GiacenzeaData_CompilaTabellaMovimenti();
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
     }//GEN-LAST:event_GiacenzeaData_TabellaMouseReleased
 
     private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
@@ -6603,6 +6690,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void GiacenzeaData_TabellaDettaglioMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaDettaglioMovimentiMouseReleased
         // TODO add your handling code here:
         GiacenzeaData_Bottone_RettificaQta.setEnabled(true);
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
     }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimentiMouseReleased
 
     private void GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed
@@ -6905,11 +6994,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         
         TransazioniCrypto_CompilaTextPaneDatiMovimento();
-        if(evt.isPopupTrigger()){
-            Point Coordinata = MouseInfo.getPointerInfo().getLocation();
-            SwingUtilities.convertPointFromScreen(Coordinata, this);
-            PopupMenu.show(this, Coordinata.x, Coordinata.y);
-        }
+        
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -7753,6 +7840,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void RW_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_TabellaMouseReleased
         // TODO add your handling code here:
         RW_CompilaTabellaDettagli();
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
     }//GEN-LAST:event_RW_TabellaMouseReleased
 
     private void RW_Tabella_DettagliKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RW_Tabella_DettagliKeyReleased
@@ -7763,6 +7852,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void RW_Tabella_DettagliMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Tabella_DettagliMouseReleased
         // TODO add your handling code here:
         RW_CompilaTabellaDettagliXID();
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
     }//GEN-LAST:event_RW_Tabella_DettagliMouseReleased
 
     private void RW_Bottone_CorreggiErroreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_CorreggiErroreActionPerformed
@@ -9016,11 +9107,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void RT_Tabella_PrincipaleMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_PrincipaleMouseReleased
         // TODO add your handling code here:
         this.RT_CompilaTabellaDettagli();
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
     }//GEN-LAST:event_RT_Tabella_PrincipaleMouseReleased
 
     private void RT_Tabella_DettaglioMoneteMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_DettaglioMoneteMouseReleased
         // TODO add your handling code here:
         this.RT_CompilaTabellaLiFo();
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
     }//GEN-LAST:event_RT_Tabella_DettaglioMoneteMouseReleased
 
     private void RT_Tabella_DettaglioMoneteKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RT_Tabella_DettaglioMoneteKeyReleased
@@ -9569,6 +9664,108 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             
         }
     }//GEN-LAST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
+
+    private void MenuItem_CopiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaActionPerformed
+        // TODO add your handling code here:
+        Funzioni.simulaCtrlC();
+    }//GEN-LAST:event_MenuItem_CopiaActionPerformed
+
+    private void TransazioniCrypto_Tabella_DettagliMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
+        // TODO add your handling code here:
+         //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        
+    }//GEN-LAST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
+
+    private void DepositiPrelievi_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaMouseReleased
+        // TODO add your handling code here:
+   //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_DepositiPrelievi_TabellaMouseReleased
+
+    private void SituazioneImport_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SituazioneImport_Tabella1MouseReleased
+        // TODO add your handling code here:
+         //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_SituazioneImport_Tabella1MouseReleased
+
+    private void RW_Tabella_DettaglioMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Tabella_DettaglioMovimentiMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_RW_Tabella_DettaglioMovimentiMouseReleased
+
+    private void RT_Tabella_LiFoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_LiFoMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_RT_Tabella_LiFoMouseReleased
+
+    private void CDC_CardWallet_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Tabella1MouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_CDC_CardWallet_Tabella1MouseReleased
+
+    private void CDC_CardWallet_Tabella2MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Tabella2MouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_CDC_CardWallet_Tabella2MouseReleased
+
+    private void CDC_FiatWallet_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella1MouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_CDC_FiatWallet_Tabella1MouseReleased
+
+    private void CDC_FiatWallet_Tabella3MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella3MouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_CDC_FiatWallet_Tabella3MouseReleased
+
+    private void CDC_FiatWallet_Tabella2MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella2MouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_CDC_FiatWallet_Tabella2MouseReleased
+
+    private void Opzioni_GruppoWallet_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaMouseReleased
+
+    private void Opzioni_Emoney_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseReleased
+
+    private void Opzioni_ApiKey_Helius_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_TextFieldMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_Opzioni_ApiKey_Helius_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_Etherscan_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Etherscan_TextFieldMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_Coincap_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_Opzioni_ApiKey_Coincap_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_Coingecko_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldMouseReleased
+        // TODO add your handling code here:
+        //Funzione che apre il popupmenu se premuto il tasto destro
+        Funzioni.PopUpMenu(this, evt, PopupMenu);
+    }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_TextFieldMouseReleased
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -11692,6 +11889,7 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_Copia;
+    private javax.swing.JMenuItem MenuItem_Incolla;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;

@@ -8,8 +8,14 @@ import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaRetiSupportate;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.awt.AWTException;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Event;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -29,9 +35,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -111,8 +121,64 @@ public class Funzioni {
         return formatter.format(numero);
     }
          
-         
-         
+       public static void simulaCtrlC() {
+        try {
+            Robot robot = new Robot();
+
+            // Premere Ctrl
+            robot.keyPress(KeyEvent.VK_CONTROL);
+            // Premere C
+            robot.keyPress(KeyEvent.VK_C);
+
+            // Rilasciare C
+            robot.keyRelease(KeyEvent.VK_C);
+            // Rilasciare Ctrl
+            robot.keyRelease(KeyEvent.VK_CONTROL);
+
+            System.out.println("Simulato Ctrl+C");
+
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+    }  
+        
+       
+    public static void PopUpMenu(Component c, java.awt.event.MouseEvent e, JPopupMenu pop) {
+        if (e.isPopupTrigger()) {
+            Point Coordinata = MouseInfo.getPointerInfo().getLocation();
+            SwingUtilities.convertPointFromScreen(Coordinata, c);
+            pop.show(c, Coordinata.x, Coordinata.y);
+            if (!checkIfTextComponent(c))disableMenuItemByText(pop,"Incolla");
+        }
+    }
+    
+        public static List<JMenuItem> getAllMenuItems(JPopupMenu popupMenu) {
+        List<JMenuItem> items = new ArrayList<>();
+        for (Component comp : popupMenu.getComponents()) {
+            if (comp instanceof JMenuItem) {
+                items.add((JMenuItem) comp);
+            }
+        }
+        return items;
+    }
+    
+    
+    public static void disableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
+        for (JMenuItem item : getAllMenuItems(popupMenu)) {
+            if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
+                item.setEnabled(false);
+            }
+        }
+    }
+    
+    public static boolean checkIfTextComponent(Component c) {
+        if (c instanceof JTextComponent) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+       
         public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro

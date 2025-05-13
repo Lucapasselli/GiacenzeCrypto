@@ -14,13 +14,21 @@
       <SubComponents>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_Copia">
           <Properties>
-            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-              <Font name="Segoe UI" size="14" style="0"/>
-            </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Images/32_Copia.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Copia selezione"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_CopiaActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_Incolla">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Numeri.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Incolla"/>
           </Properties>
         </MenuItem>
       </SubComponents>
@@ -739,6 +747,9 @@
                           <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="TransazioniCrypto_Tabella_DettagliMouseReleased"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -1015,6 +1026,9 @@
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
                           </Properties>
+                          <Events>
+                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_TabellaMouseReleased"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -1267,6 +1281,9 @@
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
                           </Properties>
+                          <Events>
+                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="SituazioneImport_Tabella1MouseReleased"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -2217,6 +2234,9 @@
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
                           </Properties>
+                          <Events>
+                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="RW_Tabella_DettaglioMovimentiMouseReleased"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -2771,6 +2791,9 @@
                                       <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                                     </Property>
                                   </Properties>
+                                  <Events>
+                                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="RT_Tabella_LiFoMouseReleased"/>
+                                  </Events>
                                 </Component>
                               </SubComponents>
                             </Container>
@@ -3186,6 +3209,9 @@
                       <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_CardWallet_Tabella1MouseReleased"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -3235,6 +3261,9 @@
                       <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_CardWallet_Tabella2MouseReleased"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -3584,6 +3613,9 @@
                       <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_FiatWallet_Tabella1MouseReleased"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -3639,6 +3671,9 @@
                       <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_FiatWallet_Tabella2MouseReleased"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -3734,6 +3769,9 @@
                       <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CDC_FiatWallet_Tabella3MouseReleased"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -3889,6 +3927,7 @@
                           <Events>
                             <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="Opzioni_GruppoWallet_TabellaFocusGained"/>
                             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_GruppoWallet_TabellaMouseClicked"/>
+                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_GruppoWallet_TabellaMouseReleased"/>
                             <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="Opzioni_GruppoWallet_TabellaPropertyChange"/>
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_GruppoWallet_TabellaKeyReleased"/>
                           </Events>
@@ -4015,6 +4054,7 @@
                           </Properties>
                           <Events>
                             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_Emoney_TabellaMouseClicked"/>
+                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_Emoney_TabellaMouseReleased"/>
                           </Events>
                         </Component>
                       </SubComponents>
@@ -5161,6 +5201,7 @@
                     </Component>
                     <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Helius_TextField">
                       <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Helius_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Helius_TextFieldKeyReleased"/>
                       </Events>
                     </Component>
@@ -5200,6 +5241,7 @@
                     </Component>
                     <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Etherscan_TextField">
                       <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Etherscan_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Etherscan_TextFieldKeyReleased"/>
                       </Events>
                     </Component>
@@ -5228,6 +5270,7 @@
                     </Component>
                     <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Coincap_TextField">
                       <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coincap_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Coincap_TextFieldKeyReleased"/>
                       </Events>
                     </Component>
@@ -5253,6 +5296,7 @@
                     </Component>
                     <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Coingecko_TextField">
                       <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Coingecko_TextFieldMouseReleased"/>
                         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Coingecko_TextFieldKeyReleased"/>
                       </Events>
                     </Component>

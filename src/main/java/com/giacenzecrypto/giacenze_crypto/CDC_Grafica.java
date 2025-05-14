@@ -268,6 +268,8 @@ private static final long serialVersionUID = 3L;
         PopupMenu = new javax.swing.JPopupMenu();
         MenuItem_Copia = new javax.swing.JMenuItem();
         MenuItem_Incolla = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
         TransazioniCrypto = new javax.swing.JPanel();
         TransazioniCrypto_ScrollPane = new javax.swing.JScrollPane();
@@ -541,7 +543,7 @@ private static final long serialVersionUID = 3L;
         CDC_Text_Giorni = new javax.swing.JTextField();
         Bottone_Titolo = new javax.swing.JButton();
 
-        MenuItem_Copia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/32_Copia.png"))); // NOI18N
+        MenuItem_Copia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
         MenuItem_Copia.setText("Copia selezione");
         MenuItem_Copia.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -550,9 +552,19 @@ private static final long serialVersionUID = 3L;
         });
         PopupMenu.add(MenuItem_Copia);
 
-        MenuItem_Incolla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
+        MenuItem_Incolla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Incolla.png"))); // NOI18N
         MenuItem_Incolla.setText("Incolla");
+        MenuItem_Incolla.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_IncollaActionPerformed(evt);
+            }
+        });
         PopupMenu.add(MenuItem_Incolla);
+        PopupMenu.add(jSeparator4);
+
+        MenuItem_DettagliMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
+        MenuItem_DettagliMovimento.setText("Dettagli Movimento");
+        PopupMenu.add(MenuItem_DettagliMovimento);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
@@ -6274,7 +6286,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         this.GiacenzeaData_CompilaTabellaMovimenti();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_GiacenzeaData_TabellaMouseReleased
 
     private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
@@ -6691,7 +6703,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         GiacenzeaData_Bottone_RettificaQta.setEnabled(true);
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimentiMouseReleased
 
     private void GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed
@@ -6996,7 +7008,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_CompilaTextPaneDatiMovimento();
         
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -7841,7 +7853,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         RW_CompilaTabellaDettagli();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RW_TabellaMouseReleased
 
     private void RW_Tabella_DettagliKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RW_Tabella_DettagliKeyReleased
@@ -7853,7 +7865,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         RW_CompilaTabellaDettagliXID();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RW_Tabella_DettagliMouseReleased
 
     private void RW_Bottone_CorreggiErroreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_CorreggiErroreActionPerformed
@@ -9108,14 +9120,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         this.RT_CompilaTabellaDettagli();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RT_Tabella_PrincipaleMouseReleased
 
     private void RT_Tabella_DettaglioMoneteMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_DettaglioMoneteMouseReleased
         // TODO add your handling code here:
         this.RT_CompilaTabellaLiFo();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RT_Tabella_DettaglioMoneteMouseReleased
 
     private void RT_Tabella_DettaglioMoneteKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RT_Tabella_DettaglioMoneteKeyReleased
@@ -9673,99 +9685,104 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void TransazioniCrypto_Tabella_DettagliMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
         // TODO add your handling code here:
          //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
         
     }//GEN-LAST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
 
     private void DepositiPrelievi_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaMouseReleased
         // TODO add your handling code here:
    //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_DepositiPrelievi_TabellaMouseReleased
 
     private void SituazioneImport_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SituazioneImport_Tabella1MouseReleased
         // TODO add your handling code here:
          //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_SituazioneImport_Tabella1MouseReleased
 
     private void RW_Tabella_DettaglioMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Tabella_DettaglioMovimentiMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RW_Tabella_DettaglioMovimentiMouseReleased
 
     private void RT_Tabella_LiFoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_LiFoMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RT_Tabella_LiFoMouseReleased
 
     private void CDC_CardWallet_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Tabella1MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_CDC_CardWallet_Tabella1MouseReleased
 
     private void CDC_CardWallet_Tabella2MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Tabella2MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_CDC_CardWallet_Tabella2MouseReleased
 
     private void CDC_FiatWallet_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella1MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_CDC_FiatWallet_Tabella1MouseReleased
 
     private void CDC_FiatWallet_Tabella3MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella3MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_CDC_FiatWallet_Tabella3MouseReleased
 
     private void CDC_FiatWallet_Tabella2MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella2MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_CDC_FiatWallet_Tabella2MouseReleased
 
     private void Opzioni_GruppoWallet_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaMouseReleased
 
     private void Opzioni_Emoney_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseReleased
 
     private void Opzioni_ApiKey_Helius_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_TextFieldMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_Opzioni_ApiKey_Helius_TextFieldMouseReleased
 
     private void Opzioni_ApiKey_Etherscan_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Etherscan_TextFieldMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_TextFieldMouseReleased
 
     private void Opzioni_ApiKey_Coincap_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_Opzioni_ApiKey_Coincap_TextFieldMouseReleased
 
     private void Opzioni_ApiKey_Coingecko_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu);
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_TextFieldMouseReleased
+
+    private void MenuItem_IncollaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_IncollaActionPerformed
+        // TODO add your handling code here:
+        Funzioni.simulaCtrlV();
+    }//GEN-LAST:event_MenuItem_IncollaActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -10981,22 +10998,7 @@ try {
 
   
     
-    public String RitornaReteDefi(String ID) {
-        String Transazione[]=MappaCryptoWallet.get(ID);
-        String Wallet=Transazione[3].trim();
-        String appoggio[]=Wallet.split(" ");
-        String Rete="";
-        String ReteAppoggio;
-        // Se soddisfa le seguenti condizioni significa che ho trovato un wallet in defi e posso tornare il nome della Rete DEFI
-        // Quindi restituisco il nome della rete oltre le condizioni principali solo se hop la transaction hash
-        if (appoggio.length==2&&appoggio[1].contains("(")&&appoggio[1].contains(")")&&ID.split("_")[1].startsWith("BC.")){
-            ReteAppoggio=ID.split("_")[1].split("\\.")[1];
-            if (Funzioni_WalletDeFi.isValidAddress(appoggio[0],ReteAppoggio)){
-                Rete=ReteAppoggio;
-            }
-        }
-        return Rete;
-    }
+
     
     
         public void TransazioniCrypto_CompilaTextPaneDatiMovimento() {
@@ -11016,7 +11018,7 @@ try {
         //come prima cosa mi occupo del pulsante defi, deve essere attivo se abbiamo movimenti in defi e disattivo in caso contrario 
         //per controllare verifico di avere il transaction hash e il nome della rete quindi
         String Transazione[]=MappaCryptoWallet.get(IDTransazione);
-        String ReteDefi=RitornaReteDefi(IDTransazione);
+        String ReteDefi=Funzioni.RitornaReteDefi(IDTransazione);
         //System.out.println("retedefi:"+ReteDefi);
         String THash=Transazione[24];
         //System.out.println("hash:"+THash);
@@ -11889,6 +11891,7 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_Copia;
+    private javax.swing.JMenuItem MenuItem_DettagliMovimento;
     private javax.swing.JMenuItem MenuItem_Incolla;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
@@ -12052,6 +12055,7 @@ try {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;

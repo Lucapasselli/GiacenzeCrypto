@@ -15,7 +15,7 @@
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_Copia">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Images/32_Copia.png"/>
+              <Image iconType="3" name="/Images/24_Copia.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Copia selezione"/>
           </Properties>
@@ -26,9 +26,22 @@
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_Incolla">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Images/24_Numeri.png"/>
+              <Image iconType="3" name="/Images/24_Incolla.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Incolla"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_IncollaActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator4">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_DettagliMovimento">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Catena.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Dettagli Movimento"/>
           </Properties>
         </MenuItem>
       </SubComponents>

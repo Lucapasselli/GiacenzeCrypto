@@ -39,6 +39,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
@@ -125,30 +126,44 @@ public class Funzioni {
         try {
             Robot robot = new Robot();
 
-            // Premere Ctrl
+            // Preme Ctrl
             robot.keyPress(KeyEvent.VK_CONTROL);
-            // Premere C
+            // Preme C
             robot.keyPress(KeyEvent.VK_C);
 
-            // Rilasciare C
+            // Rilascia C
             robot.keyRelease(KeyEvent.VK_C);
-            // Rilasciare Ctrl
+            // Rilascia Ctrl
             robot.keyRelease(KeyEvent.VK_CONTROL);
 
-            System.out.println("Simulato Ctrl+C");
+           // System.out.println("Simulato Ctrl+C");
 
         } catch (AWTException e) {
             e.printStackTrace();
         }
     }  
         
+              public static void simulaCtrlV() {
+        try {
+            Robot robot = new Robot();
+            robot.keyPress(KeyEvent.VK_CONTROL);
+            robot.keyPress(KeyEvent.VK_V);
+            robot.keyRelease(KeyEvent.VK_V);
+            robot.keyRelease(KeyEvent.VK_CONTROL);
+
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+    }  
        
-    public static void PopUpMenu(Component c, java.awt.event.MouseEvent e, JPopupMenu pop) {
+    public static void PopUpMenu(Component c, java.awt.event.MouseEvent e, JPopupMenu pop,String ID) {
         if (e.isPopupTrigger()) {
+            Component C_chiamante=e.getComponent();
             Point Coordinata = MouseInfo.getPointerInfo().getLocation();
             SwingUtilities.convertPointFromScreen(Coordinata, c);
             pop.show(c, Coordinata.x, Coordinata.y);
-            if (!checkIfTextComponent(c))disableMenuItemByText(pop,"Incolla");
+            if (!checkIfTextComponent(C_chiamante))disableMenuItemByText(pop,"Incolla");
+            if (ID==null)disableMenuItemByText(pop,"Dettagli Movimento");
         }
     }
     
@@ -172,11 +187,7 @@ public class Funzioni {
     }
     
     public static boolean checkIfTextComponent(Component c) {
-        if (c instanceof JTextComponent) {
-            return true;
-        } else {
-            return false;
-        }
+            return c instanceof JTextField;
     }
        
         public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
@@ -764,7 +775,22 @@ return ListaSaldi;
     }
     
     
-    
+        public static String RitornaReteDefi(String ID) {
+        String Transazione[]=MappaCryptoWallet.get(ID);
+        String Wallet=Transazione[3].trim();
+        String appoggio[]=Wallet.split(" ");
+        String Rete="";
+        String ReteAppoggio;
+        // Se soddisfa le seguenti condizioni significa che ho trovato un wallet in defi e posso tornare il nome della Rete DEFI
+        // Quindi restituisco il nome della rete oltre le condizioni principali solo se hop la transaction hash
+        if (appoggio.length==2&&appoggio[1].contains("(")&&appoggio[1].contains(")")&&ID.split("_")[1].startsWith("BC.")){
+            ReteAppoggio=ID.split("_")[1].split("\\.")[1];
+            if (Funzioni_WalletDeFi.isValidAddress(appoggio[0],ReteAppoggio)){
+                Rete=ReteAppoggio;
+            }
+        }
+        return Rete;
+    }
     
     
         //Questa funzione è da lanciare al termine di un importazione dati DeFi e se imposto un token come scam

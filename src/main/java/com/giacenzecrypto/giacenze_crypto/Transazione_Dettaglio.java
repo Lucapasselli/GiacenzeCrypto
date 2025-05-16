@@ -4,28 +4,55 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.awt.Component;
+import java.util.Map;
+import java.util.TreeMap;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 /**
  *
  * @author luca.passelli
  */
 public class Transazione_Dettaglio extends javax.swing.JDialog {
-private static final long serialVersionUID = 8L;
+//private static final long serialVersionUID = 8L;
+
     /**
      * Creates new form Importazioni_Resoconto
+     * @param IDTransazione
      */
     
-        public void TransazioniCrypto_CompilaTextPaneDatiMovimento(String IDTransazione) {
+     private static Map<Integer,String> mappa_ID=new TreeMap<>(); 
+     private static int Riferimento=0;
 
+
+        public void TransazioniCrypto_CompilaTextPaneDatiMovimento(String IDTransazione) {
+            SerializzaIDMovimenti(IDTransazione);
+            this.setTitle("Dettaglio Movimento");
+            
+            
 
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) Tabella.getModel();
+            CDC_Grafica.Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
 
         
         //come prima cosa mi occupo del pulsante defi, deve essere attivo se abbiamo movimenti in defi e disattivo in caso contrario 
         //per controllare verifico di avere il transaction hash e il nome della rete quindi
         String Transazione[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+        //String Titolo="<html><p align=\"center\">"+"Pippo<br>"+"Pluto</html>";
+        String secondi=Transazione[0].split("_")[0].substring(12);
+        String Titolo="<html>"+Transazione[1]+":"+secondi+"<br>"+Transazione[5]+"</html>";
+        TextPane_Titolo.setText(Titolo);
+        //Accenstro il testo
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        StyledDocument doc = TextPane_Titolo.getStyledDocument();
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);
+       // TextArea_Titolo.setText(Transazione[1]+"\n"+Transazione[5]);
         String ReteDefi=Funzioni.RitornaReteDefi(IDTransazione);
         //System.out.println("retedefi:"+ReteDefi);
         String THash=Transazione[24];
@@ -43,7 +70,7 @@ private static final long serialVersionUID = 8L;
         
         Valore=Transazione[1];
         if (!Valore.isBlank()){
-            Valore="<html><b>"+Valore+"</html>";
+            Valore="<html><b>"+Valore+":"+secondi+"</html>";
             Val=new String[]{"Data e Ora ",Valore};
             ModelloTabellaCrypto.addRow(Val);
         }
@@ -54,6 +81,11 @@ private static final long serialVersionUID = 8L;
             ModelloTabellaCrypto.addRow(Val);
         }
         
+        Valore=Funzioni.RitornaReteDefi(Transazione[0]);
+        if (Valore!=null&&!Valore.isBlank()){
+            Val=new String[]{"Rete ",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        }
             Valore = Transazione[5];
             if (!Valore.isBlank()) {
                 if (Transazione[20].isBlank()) {
@@ -151,7 +183,7 @@ private static final long serialVersionUID = 8L;
             Val=new String[]{"Entrata: Tipologia",Valore};
             ModelloTabellaCrypto.addRow(Val);
         } 
-      /*  Valore=Transazione[27];
+       /* Valore=Transazione[27];
         if (!Valore.isBlank()){
             Val=new String[]{"Entrata: Nome Completo",Valore};
             ModelloTabellaCrypto.addRow(Val);
@@ -244,16 +276,15 @@ private static final long serialVersionUID = 8L;
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        Label_Titolo = new javax.swing.JLabel();
         ScrollTabella = new javax.swing.JScrollPane();
         Tabella = new javax.swing.JTable();
         Bottone_DeFi = new javax.swing.JButton();
+        Bottone_MovPrecedente = new javax.swing.JButton();
+        Bottone_MovSuccessivo = new javax.swing.JButton();
+        TextPane_Titolo = new javax.swing.JTextPane();
+        Bottone_Modifica = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
-        Label_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Label_Titolo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Label_Titolo.setText("DETTAGLIO MOVIMENTO");
 
         Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -278,7 +309,39 @@ private static final long serialVersionUID = 8L;
             Tabella.getColumnModel().getColumn(0).setMaxWidth(200);
         }
 
+        Bottone_DeFi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
         Bottone_DeFi.setText("Dettaglio DeFi");
+        Bottone_DeFi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_DeFiActionPerformed(evt);
+            }
+        });
+
+        Bottone_MovPrecedente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/40_FrecciaSinistra.png"))); // NOI18N
+        Bottone_MovPrecedente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_MovPrecedenteActionPerformed(evt);
+            }
+        });
+
+        Bottone_MovSuccessivo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/40_FrecciaDestra.png"))); // NOI18N
+        Bottone_MovSuccessivo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_MovSuccessivoActionPerformed(evt);
+            }
+        });
+
+        TextPane_Titolo.setEditable(false);
+        TextPane_Titolo.setContentType("text/html"); // NOI18N
+        TextPane_Titolo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+
+        Bottone_Modifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        Bottone_Modifica.setText("Modifica Movimento");
+        Bottone_Modifica.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ModificaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -287,10 +350,17 @@ private static final long serialVersionUID = 8L;
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Label_Titolo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 853, Short.MAX_VALUE)
                     .addComponent(ScrollTabella)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Bottone_DeFi, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Bottone_MovPrecedente)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 226, Short.MAX_VALUE)
+                        .addComponent(TextPane_Titolo, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(237, 237, 237)
+                        .addComponent(Bottone_MovSuccessivo))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_DeFi, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -298,17 +368,110 @@ private static final long serialVersionUID = 8L;
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Label_Titolo)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Bottone_MovPrecedente)
+                    .addComponent(Bottone_MovSuccessivo)
+                    .addComponent(TextPane_Titolo, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ScrollTabella, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27)
-                .addComponent(Bottone_DeFi)
+                .addComponent(ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                .addGap(8, 8, 8)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Bottone_DeFi)
+                    .addComponent(Bottone_Modifica))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public void AzzeraMap(){
+        mappa_ID.clear();
+    }
+    
+    private void SerializzaIDMovimenti(String IDTransazione){
+        int i=0;
+        //Metto in questa mappa tutti i movimenti ordinati per ID
+        //Poi salvo anche il numero del movimento visualizzato
+        if (mappa_ID.isEmpty())
+            for (String[] movimento: CDC_Grafica.MappaCryptoWallet.values()){
+                mappa_ID.put(i, movimento[0]);
+                if (movimento[0].equals(IDTransazione))Riferimento=i;
+                i++;
+            }
+    }
+    
+    private void Bottone_MovSuccessivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_MovSuccessivoActionPerformed
+        // TODO add your handling code here:
+        if (mappa_ID.get(Riferimento+1)!=null){
+            Riferimento=Riferimento+1;
+            String IDTransazione=mappa_ID.get(Riferimento);
+            TransazioniCrypto_CompilaTextPaneDatiMovimento(IDTransazione);
+        }
+    }//GEN-LAST:event_Bottone_MovSuccessivoActionPerformed
+
+    private void Bottone_MovPrecedenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_MovPrecedenteActionPerformed
+        // TODO add your handling code here:
+        if (mappa_ID.get(Riferimento-1)!=null){
+            Riferimento=Riferimento-1;
+            String IDTransazione=mappa_ID.get(Riferimento);
+            TransazioniCrypto_CompilaTextPaneDatiMovimento(IDTransazione);
+        }
+    }//GEN-LAST:event_Bottone_MovPrecedenteActionPerformed
+
+    private void Bottone_DeFiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_DeFiActionPerformed
+        // TODO add your handling code here:
+        Funzioni_WalletDeFi.ApriExplorer(mappa_ID.get(Riferimento));
+    }//GEN-LAST:event_Bottone_DeFiActionPerformed
+
+    private void Bottone_ModificaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ModificaActionPerformed
+        // TODO add your handling code here:
+        Funzione_ModificaMovimento(mappa_ID.get(Riferimento),this);
+    }//GEN-LAST:event_Bottone_ModificaActionPerformed
+
+      public void Funzione_ModificaMovimento(String ID,Component c){
+            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+            String riga[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+
+            String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
+            if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo
+                String Messaggio = "Attenzione, il movimento è associato ad un altro movimento.\n"
+                        + "se si prosegue l'associazione verrà rimossa, si vuole continuare?";
+                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Conferma modifica", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
+                    case 0 -> {
+                        ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte); 
+
+                            a.CompilaCampidaID(ID);
+                            a.setLocationRelativeTo(c);
+                            this.dispose();
+                            a.setVisible(true);
+                            CDC_Grafica.TabellaCryptodaAggiornare=true;
+                        
+                    }
+                    case 1 -> {
+                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        
+                    }
+                    case -1 -> {
+                        JOptionPane.showConfirmDialog(this, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        
+                    }
+
+                }
+            }else{ 
+                a.CompilaCampidaID(ID);
+                a.setLocationRelativeTo(c);
+                this.dispose();
+                a.setVisible(true);
+
+            }
+    }
+    
+    
     /**
      * @param args the command line arguments
      */
@@ -347,8 +510,11 @@ private static final long serialVersionUID = 8L;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_DeFi;
-    private javax.swing.JLabel Label_Titolo;
+    private javax.swing.JButton Bottone_Modifica;
+    private javax.swing.JButton Bottone_MovPrecedente;
+    private javax.swing.JButton Bottone_MovSuccessivo;
     private javax.swing.JScrollPane ScrollTabella;
     private javax.swing.JTable Tabella;
+    private javax.swing.JTextPane TextPane_Titolo;
     // End of variables declaration//GEN-END:variables
 }

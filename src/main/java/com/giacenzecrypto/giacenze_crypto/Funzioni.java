@@ -12,9 +12,11 @@ import java.awt.AWTException;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Event;
+import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -155,17 +157,60 @@ public class Funzioni {
             e.printStackTrace();
         }
     }  
-       
+              
     public static void PopUpMenu(Component c, java.awt.event.MouseEvent e, JPopupMenu pop,String ID) {
         if (e.isPopupTrigger()) {
+            //Component focusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+            //salvo l'ID passato dalla funzione, servirà nel caso in cui prema su alcune funzioni
+            CDC_Grafica.PopUp_IDTrans=ID;
+            CDC_Grafica.PopUp_Component=c;
             Component C_chiamante=e.getComponent();
+            //C_chiamante
             Point Coordinata = MouseInfo.getPointerInfo().getLocation();
             SwingUtilities.convertPointFromScreen(Coordinata, c);
-            pop.show(c, Coordinata.x, Coordinata.y);
-            if (!checkIfTextComponent(C_chiamante))disableMenuItemByText(pop,"Incolla");
-            if (ID==null)disableMenuItemByText(pop,"Dettagli Movimento");
+            //Se non passo l'id della transazione ingrigisco il tasto dettaglio movimento
+            if (ID==null)
+            {
+                disableMenuItemByText(pop,"Dettagli Movimento");
+            }
+            
+            //Se è una tabella mi comporto in questo modo
+            if (C_chiamante instanceof JTable table)
+            {
+                int row = table.getSelectedRow();
+                if (row == -1) return;
+                disableMenuItemByText(pop,"Incolla");
+                pop.show(c, Coordinata.x, Coordinata.y);
+            }
+            
+            else if (C_chiamante instanceof JTextField)
+            {
+                pop.show(c, Coordinata.x, Coordinata.y);
+            }
+            //Se è un campo di testo in quest'altro
+            
+            
+            
         }
     }
+    
+    public static boolean ClickInternoASelezione(JTable table,java.awt.event.MouseEvent e){
+        int clickedRow = table.rowAtPoint(e.getPoint());
+        if (clickedRow == -1) return false; // clic fuori da qualsiasi riga
+
+        // Ottieni tutte le righe attualmente selezionate
+        int[] selectedRows = table.getSelectedRows();
+
+        // Verifica se la riga cliccata è tra quelle selezionate
+        for (int row : selectedRows) {
+            if (row == clickedRow) {
+                //Trovato riga selezionata
+                return true;
+            }
+        }
+        return false;
+    }
+    
     
         public static List<JMenuItem> getAllMenuItems(JPopupMenu popupMenu) {
         List<JMenuItem> items = new ArrayList<>();
@@ -186,9 +231,6 @@ public class Funzioni {
         }
     }
     
-    public static boolean checkIfTextComponent(Component c) {
-            return c instanceof JTextField;
-    }
        
         public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
             

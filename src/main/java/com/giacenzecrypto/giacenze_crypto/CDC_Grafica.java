@@ -115,6 +115,9 @@ private static final long serialVersionUID = 3L;
     public boolean VersioneCambiata=false;
     public boolean FineCaricamentoDati=false;
     
+    public static String PopUp_IDTrans=null;
+    public static Component PopUp_Component=null;
+    
     static public Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     public transient Calcoli_RT.AnalisiPlus APlus;
@@ -562,8 +565,13 @@ private static final long serialVersionUID = 3L;
         PopupMenu.add(MenuItem_Incolla);
         PopupMenu.add(jSeparator4);
 
-        MenuItem_DettagliMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
+        MenuItem_DettagliMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Dettagli.png"))); // NOI18N
         MenuItem_DettagliMovimento.setText("Dettagli Movimento");
+        MenuItem_DettagliMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_DettagliMovimentoActionPerformed(evt);
+            }
+        });
         PopupMenu.add(MenuItem_DettagliMovimento);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -6831,12 +6839,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
             int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
             String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            Funzione_ModificaMovimento(IDTransazione);
+            Funzione_ModificaMovimento(IDTransazione,this);
             
         }
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
-    private void Funzione_ModificaMovimento(String ID){
+    public void Funzione_ModificaMovimento(String ID,Component c){
             MovimentoManuale_GUI a = new MovimentoManuale_GUI();
             String riga[]=CDC_Grafica.MappaCryptoWallet.get(ID);
 
@@ -6849,10 +6857,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //No=1
                 switch (risposta) {
                     case 0 -> {
-                        RiportaTransazioniASituazioneIniziale(PartiCoinvolte); 
+                        ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte); 
 
                             a.CompilaCampidaID(ID);
-                            a.setLocationRelativeTo(this);
+                            a.setLocationRelativeTo(c);
                             a.setVisible(true);
                             CDC_Grafica.TabellaCryptodaAggiornare=true;
                         
@@ -6871,7 +6879,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
             }else{ 
                 a.CompilaCampidaID(ID);
-                a.setLocationRelativeTo(this);
+                a.setLocationRelativeTo(c);
                 a.setVisible(true);
             }
     }
@@ -7004,11 +7012,27 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void TransazioniCryptoTabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaMouseReleased
         // TODO add your handling code here:
-        
-        TransazioniCrypto_CompilaTextPaneDatiMovimento();
+               // Funzioni.simulaTastoSinistro();
+       
+       // int righeSelezionate[]=TransazioniCryptoTabella.getSelectedRows();
+        int rigaSelezionata=TransazioniCryptoTabella.getSelectedRow();
+        if (!Funzioni.ClickInternoASelezione(TransazioniCryptoTabella, evt)){
+            TransazioniCryptoTabella.requestFocusInWindow();
+            rigaSelezionata=TransazioniCryptoTabella.rowAtPoint(evt.getPoint());
+            TransazioniCryptoTabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
+            
+        }
+         if (rigaSelezionata != -1) {
+            int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+            String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
+             TransazioniCrypto_CompilaTextPaneDatiMovimento();
+            
+        }
         
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        
+
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -9644,7 +9668,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
             String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             //Modifico la transazione
-            Funzione_ModificaMovimento(IDTransazione);
+            Funzione_ModificaMovimento(IDTransazione,this);
             //Aggiorno la tabella
             Funzioni_AggiornaTutto();
             DepositiPrelievi_Caricatabella();
@@ -9783,6 +9807,17 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Funzioni.simulaCtrlV();
     }//GEN-LAST:event_MenuItem_IncollaActionPerformed
+
+    private void MenuItem_DettagliMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DettagliMovimentoActionPerformed
+        // TODO add your handling code here:
+        if (PopUp_IDTrans!=null){
+            Transazione_Dettaglio t =new Transazione_Dettaglio();
+            t.AzzeraMap();
+            t.TransazioniCrypto_CompilaTextPaneDatiMovimento(PopUp_IDTrans);
+            t.setLocationRelativeTo(PopUp_Component);           
+            t.setVisible(true);
+        }
+    }//GEN-LAST:event_MenuItem_DettagliMovimentoActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

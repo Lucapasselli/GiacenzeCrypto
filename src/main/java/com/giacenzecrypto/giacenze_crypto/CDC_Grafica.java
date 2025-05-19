@@ -12,7 +12,6 @@ import com.lowagie.text.Font;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JDateChooserCellEditor;
 import com.toedter.calendar.JTextFieldDateEditor;
-import static com.giacenzecrypto.giacenze_crypto.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
 import static com.giacenzecrypto.giacenze_crypto.Importazioni.ColonneTabella;
 import static com.giacenzecrypto.giacenze_crypto.Importazioni.RiempiVuotiArray;
 import java.awt.Color;

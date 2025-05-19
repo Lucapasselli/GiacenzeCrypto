@@ -359,6 +359,12 @@ public class Calcoli_RT {
        return ritorno;
     }*/
     
+
+
+
+
+  
+    
     public static AnalisiPlus CalcoliPlusvalenzeXAnno(Download progress){
         // DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
       //  Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
@@ -724,10 +730,36 @@ public class Calcoli_RT {
         }
               //ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress);
           String year = String.valueOf(Year.now().getValue()+1);
+          //System.out.println(year);
           if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,year))return null;
       // return PlusvalenzeXAnno;
        ritorno.Put_PluvalenzeXAnno(PlusvalenzeXAnno);
        ritorno.Put_MappaCompleta(MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta);
+       
+   /*    //Stampo intera mappa per verifiche
+        for (String Annow:MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.keySet()){
+          Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMonetaw=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Annow);
+      for(String Walletw : MappaGrWallet_MappaMoneta_PlusXMonetaw.keySet()){
+          Map<String, PlusXMoneta> MappaMoneta_PlusXMonetaw=MappaGrWallet_MappaMoneta_PlusXMonetaw.get(Walletw);
+          for(String Moneta : MappaMoneta_PlusXMonetaw.keySet()){
+              //Non voglio vedere i token SCAM
+              
+              if (!Funzioni.isSCAM(Moneta)){ 
+                  //NON voglio vedere i token con giacenza zero e che non hanno avuto movimentazioni nell'anno
+                  PlusXMoneta plus=MappaMoneta_PlusXMonetaw.get(Moneta);
+                  System.out.println(Annow+" - "+Moneta+" - "+plus.Mon.Qta+ " - "+plus.Mon.Prezzo);
+                  //System.out.println(Moneta+" - "+plus.movimentatoAnno+" - "+plus.Mon.Qta);
+
+              }
+          }
+      }}*/
+       
+       
+       
+       
+       
+       
+       
        return ritorno;
     }
     
@@ -787,8 +819,10 @@ public class Calcoli_RT {
             String Anno,
             Map<String, Map<String, Map<String, PlusXMoneta>>> MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,
             Download progress,
-            String AnnoSuccessivo){//Questo serve se ci sono anni buchi tra quello che sto analizzando e il prossimo
-        
+            String AnnoSuccessivo){
+
+          // System.out.println(Anno);
+            //Questo serve se ci sono anni buchi tra quello che sto analizzando e il prossimo       
             if (Anno==null)return true;
             boolean ritorno=true;
             //1 - Prendo ogni wallet
@@ -843,6 +877,13 @@ public class Calcoli_RT {
                             //mon.MonetaAddress="";
                             BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete));
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo=PrezzoV.toPlainString();
+                          //  System.out.println(Anno+" - "+MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo);
+                            
+                          /*  if (MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(String.valueOf(Integer.parseInt(Anno)-1))!=null){
+                            System.out.println(Integer.parseInt(Anno)-1+" - "+MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(String.valueOf(Integer.parseInt(Anno)-1)).get(Wallet).get(Moneta).Mon.Prezzo);
+                            }
+                            System.out.println("-------");*/
+                            //System.out.println(MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo);
                             //BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, null, true, 15, null));
                             PlusAnno[5] = PlusAnno[5].add(PrezzoV);
                             /*if (Anno.equals("2023")&&Moneta.equalsIgnoreCase("ETH")) {
@@ -867,11 +908,50 @@ public class Calcoli_RT {
                 //Se anno successivo non è il successivo ma magari è 2 anni più in la significa che negli anni intermedi non ho avuto movimenti
            //In ogni caso dovrò creare la riga anche per gli anni senza movimenti per cui richiamo la stessa funzione in maniera ricorsiva aggiungendo 1 anno
            if (Integer.valueOf(AnnoSuccessivo)-Integer.valueOf(Anno)>1){
+               System.out.println(Anno+" - "+AnnoSuccessivo);
                 //Qua va scritto il tutto
                 //clono la mappa dell'anno e la metto sull'anno successivo
                 Map<String, Map<String, PlusXMoneta>> temp=new TreeMap<>(MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno));
                 Anno=String.valueOf(Integer.parseInt(Anno)+1);
+                System.out.println(Anno+"-------------");
+               // MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.put(Anno, temp);
+                
+                
+           /*    if (temp.isEmpty())
+                   { 
+                       temp= new TreeMap<>();
+                   }
+                else{*/
+                    //in questo caso devo clonare la mappa e tutti i suoi contenuti
+                    //Questo perchè devo partire da dove ero arrivato ma con dei nuovi oggetti per il nuovo anno
+                    temp=new TreeMap<>(temp);
+                    for(String Wallet:temp.keySet()){
+                        Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=new TreeMap<>(temp.get(Wallet));
+                        //inserisco il nuovo oggetto
+                        temp.put(Wallet, MappaMoneta_PlusXMoneta);
+                        for(String Monetaa:MappaMoneta_PlusXMoneta.keySet()){
+                            PlusXMoneta a = MappaMoneta_PlusXMoneta.get(Monetaa);
+                            PlusXMoneta b = new PlusXMoneta();
+                           // PlusXMoneta b = MappaMoneta_PlusXMoneta.get(Monetaa);
+                            b.movimentatoAnno=false;
+                            b.Mon=a.Mon.ClonaMoneta();
+                           //Adesso clono lo stack
+                            if (a.Stack!=null){
+                                b.Stack=a.Stack.clone();
+                                }
+                            MappaMoneta_PlusXMoneta.put(Monetaa, b);
+                        }
+                    }
+                
                 MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.put(Anno, temp);
+               // MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.put(Anno, MappaGrWallet_MappaMoneta_PlusXMoneta);
+          //      }
+                
+                
+                
+                
+                
+                
                 //richiamo la funzione
                 ritorno=ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,AnnoSuccessivo);
            }
@@ -1099,6 +1179,7 @@ public class Calcoli_RT {
               if (!Funzioni.isSCAM(Moneta)){ 
                   //NON voglio vedere i token con giacenza zero e che non hanno avuto movimentazioni nell'anno
                   PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
+                  //System.out.println(Moneta+" - "+plus.Mon.Qta+ " - "+plus.Mon.Prezzo);
                   //System.out.println(Moneta+" - "+plus.movimentatoAnno+" - "+plus.Mon.Qta);
                 if (plus.movimentatoAnno||!(new BigDecimal(plus.Mon.Qta).compareTo(BigDecimal.ZERO)==0)){ 
                     String Errori="<html>";
@@ -1248,7 +1329,7 @@ public class Calcoli_RT {
           String PlusRealizzata="0.00";
           String PlusLatente="0.00";
           String PMC="0.00";
-          String Errori;
+         // String Errori;
           Moneta Mon;
           ArrayDeque<String[]> Stack;
           
@@ -1317,10 +1398,10 @@ public class Calcoli_RT {
           {
             return new BigDecimal(Mon.Qta);
           } 
-          public void Put_Errori(String PMErrori)
+        /*  public void Put_Errori(String PMErrori)
           {
             Errori=PMErrori;
-          } 
+          } */
           public void CompilaCampiDaMoneta(Moneta monet){
               Mon=monet;
           }

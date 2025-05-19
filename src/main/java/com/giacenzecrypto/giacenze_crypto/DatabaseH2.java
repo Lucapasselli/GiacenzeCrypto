@@ -352,13 +352,14 @@ public class DatabaseH2 {
         String Risultato = Mappa_Wallet_Gruppo.get(Wallet);
         if (Risultato == null) {
             try {
-                Wallet = NormalizzaCampo(Wallet);
+                //Wallet = NormalizzaCampo(Wallet);
                 String checkIfExistsSQL = "SELECT Wallet,Gruppo FROM WALLETGRUPPO WHERE Wallet = ?";
                 try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
                     checkStatement.setString(1, Wallet);
                     try (ResultSet resultSet = checkStatement.executeQuery()) {
                         if (resultSet.next()) {
                             Risultato = resultSet.getString("Gruppo");
+                           // System.out.println(Wallet+" - "+Risultato);
                         }
                     }
                 }

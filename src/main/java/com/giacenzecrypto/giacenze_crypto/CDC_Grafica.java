@@ -125,7 +125,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.36 Beta";
+    public static String Titolo="Giacenze Crypto 1.0.37 RC1 Beta";
 
     
     
@@ -7194,6 +7194,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //3 - Aggiorno le plusvalenze
             //4 - Ricarico la tabella crypto
             if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equals(Gruppo)){
+               // System.out.println(Wallet);
                 String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
                 boolean PagaBollo=false;
                 if (Valori[2].equals("S"))PagaBollo=true;

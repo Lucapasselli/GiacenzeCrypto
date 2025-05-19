@@ -368,10 +368,11 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Bottone_MovPrecedente)
-                    .addComponent(Bottone_MovSuccessivo)
-                    .addComponent(TextPane_Titolo, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TextPane_Titolo, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(Bottone_MovPrecedente)
+                        .addComponent(Bottone_MovSuccessivo)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ScrollTabella, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
                 .addGap(8, 8, 8)
@@ -463,10 +464,21 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
 
                 }
             }else{ 
+                //String id=mappa_ID.get(Riferimento);
                 a.CompilaCampidaID(ID);
-                a.setLocationRelativeTo(c);
+                a.setLocationRelativeTo(this);
                 this.dispose();
                 a.setVisible(true);
+                Transazione_Dettaglio t =new Transazione_Dettaglio();
+            t.AzzeraMap();
+            t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
+            t.setLocationRelativeTo(this);  
+            this.dispose();
+            t.setVisible(true);
+                
+                
+                
+               // this.dispose();
 
             }
     }

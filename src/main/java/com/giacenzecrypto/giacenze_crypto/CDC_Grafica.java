@@ -5595,7 +5595,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // adesso devo caricarci i dettagli del movimento selezionato etc...
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
 
-    private void Funzioni_AggiornaTutto() {
+    public void Funzioni_AggiornaTutto() {
         //Se selezionato Situazione Import Crypto lo aggiorno
         if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1();       
         //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
@@ -6291,9 +6291,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void GiacenzeaData_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaMouseReleased
         // TODO add your handling code here:
-        this.GiacenzeaData_CompilaTabellaMovimenti();
+        
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(GiacenzeaData_Tabella,evt,-1);
+        this.GiacenzeaData_CompilaTabellaMovimenti();
     }//GEN-LAST:event_GiacenzeaData_TabellaMouseReleased
 
     private void GiacenzeaData_Wallet_ComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
@@ -6710,7 +6711,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         GiacenzeaData_Bottone_RettificaQta.setEnabled(true);
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(GiacenzeaData_TabellaDettaglioMovimenti,evt,8);
+       // Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimentiMouseReleased
 
     private void GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_MostraQtaZeroActionPerformed
@@ -7014,26 +7016,38 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                // Funzioni.simulaTastoSinistro();
        
        // int righeSelezionate[]=TransazioniCryptoTabella.getSelectedRows();
-        int rigaSelezionata=TransazioniCryptoTabella.getSelectedRow();
-        if (!Funzioni.ClickInternoASelezione(TransazioniCryptoTabella, evt)){
-            TransazioniCryptoTabella.requestFocusInWindow();
-            rigaSelezionata=TransazioniCryptoTabella.rowAtPoint(evt.getPoint());
-            TransazioniCryptoTabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
-            
-        }
-         if (rigaSelezionata != -1) {
-            int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
-            String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
-             TransazioniCrypto_CompilaTextPaneDatiMovimento();
-            
-        }
+       Funzioni_RichiamaPopUpdaTabella(TransazioniCryptoTabella,evt,0);
         
         //Funzione che apre il popupmenu se premuto il tasto destro
         
 
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
+    private void Funzioni_RichiamaPopUpdaTabella(JTable tabella,java.awt.event.MouseEvent evt,int posizioneID){
+
+            int rigaSelezionata=tabella.getSelectedRow();
+        if (!Funzioni.ClickInternoASelezione(tabella, evt)){
+            tabella.requestFocusInWindow();
+            rigaSelezionata=tabella.rowAtPoint(evt.getPoint());
+            tabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
+            
+        }
+         if (rigaSelezionata != -1) {
+            int rigaselezionata;
+            if (tabella.getRowSorter()!=null)rigaselezionata = tabella.getRowSorter().convertRowIndexToModel(tabella.getSelectedRow());
+            else rigaselezionata = tabella.convertRowIndexToModel(tabella.getSelectedRow());
+            String IDTransazione=null;
+            if (posizioneID!=-1)
+            {
+                IDTransazione = tabella.getModel().getValueAt(rigaselezionata, posizioneID).toString();
+            }
+            Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
+             TransazioniCrypto_CompilaTextPaneDatiMovimento();
+            
+        }
+    }
+    
+    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
         try {
@@ -9716,13 +9730,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void DepositiPrelievi_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaMouseReleased
         // TODO add your handling code here:
    //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_Tabella,evt,0);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_DepositiPrelievi_TabellaMouseReleased
 
     private void SituazioneImport_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SituazioneImport_Tabella1MouseReleased
         // TODO add your handling code here:
          //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(SituazioneImport_Tabella1,evt,-1);
     }//GEN-LAST:event_SituazioneImport_Tabella1MouseReleased
 
     private void RW_Tabella_DettaglioMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Tabella_DettaglioMovimentiMouseReleased

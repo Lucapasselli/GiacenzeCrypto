@@ -172,6 +172,8 @@ public class Funzioni {
             if (ID==null)
             {
                 disableMenuItemByText(pop,"Dettagli Movimento");
+            }else{
+                enableMenuItemByText(pop,"Dettagli Movimento");
             }
             
             //Se è una tabella mi comporto in questo modo
@@ -181,10 +183,10 @@ public class Funzioni {
                 if (row == -1) return;
                 disableMenuItemByText(pop,"Incolla");
                 pop.show(c, Coordinata.x, Coordinata.y);
-            }
-            
+            }            
             else if (C_chiamante instanceof JTextField)
             {
+                enableMenuItemByText(pop,"Incolla");
                 pop.show(c, Coordinata.x, Coordinata.y);
             }
             //Se è un campo di testo in quest'altro
@@ -230,7 +232,13 @@ public class Funzioni {
             }
         }
     }
-    
+        public static void enableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
+        for (JMenuItem item : getAllMenuItems(popupMenu)) {
+            if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
+                item.setEnabled(true);
+            }
+        }
+    }
        
         public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){
             

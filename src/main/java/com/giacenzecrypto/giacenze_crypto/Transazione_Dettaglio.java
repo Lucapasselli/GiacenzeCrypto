@@ -5,6 +5,7 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.JOptionPane;
@@ -42,7 +43,11 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
         
         //come prima cosa mi occupo del pulsante defi, deve essere attivo se abbiamo movimenti in defi e disattivo in caso contrario 
         //per controllare verifico di avere il transaction hash e il nome della rete quindi
+      //  System.out.println(IDTransazione);
+      //  System.out.println(CDC_Grafica.MappaCryptoWallet.size());
         String Transazione[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+        //System.out.println(IDTransazione);
+        //System.out.println(CDC_Grafica.MappaCryptoWallet.get(IDTransazione));
         //String Titolo="<html><p align=\"center\">"+"Pippo<br>"+"Pluto</html>";
         String secondi=Transazione[0].split("_")[0].substring(12);
         String Titolo="<html>"+Transazione[1]+":"+secondi+"<br>"+Transazione[5]+"</html>";
@@ -444,11 +449,22 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
                     case 0 -> {
                         ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte); 
 
-                            a.CompilaCampidaID(ID);
-                            a.setLocationRelativeTo(c);
-                            this.dispose();
-                            a.setVisible(true);
-                            CDC_Grafica.TabellaCryptodaAggiornare=true;
+                        //String id=mappa_ID.get(Riferimento);
+                Point p = this.getLocation();
+                this.dispose();
+                a.CompilaCampidaID(ID);
+                a.setLocation(p);               
+                a.setVisible(true);
+                if (!a.IDNuovo.isEmpty())ID=a.IDNuovo;
+                
+                //Quando finisco la modifica apro di nuovo la maschera con il movimento
+                
+               // CDC_Grafica.
+                Transazione_Dettaglio t =new Transazione_Dettaglio();
+                t.AzzeraMap();
+                t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
+                t.setLocation(p);
+                t.setVisible(true);
                         
                     }
                     case 1 -> {
@@ -465,16 +481,21 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
                 }
             }else{ 
                 //String id=mappa_ID.get(Riferimento);
-                a.CompilaCampidaID(ID);
-                a.setLocationRelativeTo(this);
+                Point p = this.getLocation();
                 this.dispose();
+                a.CompilaCampidaID(ID);
+                a.setLocation(p);               
                 a.setVisible(true);
+                if (!a.IDNuovo.isEmpty())ID=a.IDNuovo;
+                
+                //Quando finisco la modifica apro di nuovo la maschera con il movimento
+                
+               // CDC_Grafica.
                 Transazione_Dettaglio t =new Transazione_Dettaglio();
-            t.AzzeraMap();
-            t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
-            t.setLocationRelativeTo(this);  
-            this.dispose();
-            t.setVisible(true);
+                t.AzzeraMap();
+                t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
+                t.setLocation(p);
+                t.setVisible(true);
                 
                 
                 

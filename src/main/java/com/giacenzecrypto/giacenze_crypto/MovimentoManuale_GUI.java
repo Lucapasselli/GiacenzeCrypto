@@ -37,6 +37,7 @@ private static final long serialVersionUID = 9L;
      * Creates new form MovimentoManuale_GUI
      */
     //Map<String, List<String>> Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    String IDNuovo="";
     transient List<String> Lista_Cryptovalute = new ArrayList<>();
     transient List<String> Lista_NFT = new ArrayList<>();
     transient List<String> Lista_FIAT = new ArrayList<>();
@@ -55,6 +56,7 @@ private static final long serialVersionUID = 9L;
     String WalletDettaglio="";
     String TipoMovimentoAM="M";//M se è un movimento inserito a mano, A se deriva da importazioni
     String IDOriginale="";
+    
     long DataLong=0;
     
     public MovimentoManuale_GUI() {
@@ -634,6 +636,7 @@ private static final long serialVersionUID = 9L;
             //prima cosa genero l'id della transazione
             String ID=CalcolaID();
             System.out.println(ID);
+            
             //verifico che non esista già una transazione non lo stesso id in quel caso chiedo se sovrascriverla o aggiungerla
             //per trovare l'id ovviamente devo cercarla nella mappa delle transazioni
             if(MappaCryptoWallet.get(ID)!=null && !ModificaMovimento){
@@ -1102,6 +1105,7 @@ private static final long serialVersionUID = 9L;
                             }
                             Importazioni.RiempiVuotiArray(RT);
                             MappaCryptoWallet.put(RT[0], RT);
+                            IDNuovo=RT[0];
                             return true;
                             
                         }
@@ -1149,6 +1153,7 @@ private static final long serialVersionUID = 9L;
                             }
                             Importazioni.RiempiVuotiArray(RT);
                             MappaCryptoWallet.put(RT[0], RT); 
+                            IDNuovo=RT[0];
         }
 
         return true;

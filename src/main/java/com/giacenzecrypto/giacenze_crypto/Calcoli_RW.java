@@ -28,6 +28,7 @@ import java.util.TreeMap;
 public class Calcoli_RW {
     
        static String AnnoR;
+       static String GiorniAnno;
        static Map<String, String> MappaGruppo_IDPrimoMovimento = new TreeMap<>();//la mappa è così composta, (Gruppo,ID Primo Movimento)
        
        
@@ -98,7 +99,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 xlista[8]=el.Qta;                      //Qta Fine
                 xlista[9]="0000-00-00 00:00";       //Data Fine
                 xlista[10]="0.000";                 //Prezzo Fine
-                xlista[11]="365";                     //Giorni di Detenzione
+                xlista[11]=GiorniAnno;                     //Giorni di Detenzione
                 xlista[12]="Inizio Periodo";        //Causale
                 xlista[13]=el.IDOri;                //ID Movimento Apertura (o segnalazione inizio anno)
                 xlista[14]="";                     //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
@@ -530,7 +531,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 xlista[8]=Monete.Qta;                                           //Qta Fine
                 xlista[9]=DataDaScrivere;                                       //Data Fine
                 xlista[10]=Valore;                                              //Prezzo Fine
-                xlista[11]="365";                                            //Giorni di Detenzione
+                xlista[11]=GiorniAnno;                                            //Giorni di Detenzione
                 xlista[12]=Causale;                                             //Causale
                 xlista[13]="";                                                  //ID Movimento Apertura (o segnalazione inizio anno)
                 xlista[14]=IDt;                                                 //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
@@ -626,7 +627,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         List<String[]> ListaRW=new ArrayList<>();
         CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
         
-        String GGDetenzione="365";
+        String GGDetenzione=GiorniAnno;
         String MotivoInizio="Giacenza Inizio Anno";
         String DataFineAnno = AnnoR + "-12-31 23:59";
         String DataInizioAnno = AnnoR + "-01-01 00:00";
@@ -915,6 +916,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.clear();
         CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.clear();
         AnnoR=AnnoRif;
+        GiorniAnno=Integer.toString(OperazioniSuDate.DifferenzaDate(AnnoR+"-01-01", AnnoR+"-12-31")+1);
         String AnnoSuccessivo=String.valueOf(Integer.parseInt(AnnoRif)+1);
 
         //PARTE 1 : Calcolo delle Giacenze iniziali e inserimento nello stack

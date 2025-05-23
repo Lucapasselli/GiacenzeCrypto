@@ -116,6 +116,8 @@ private static final long serialVersionUID = 3L;
     
     public static String PopUp_IDTrans=null;
     public static Component PopUp_Component=null;
+    public static JTable PopUp_Tabella=null;
+    
     
     static public Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
@@ -125,7 +127,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.37 RC1 Beta";
+    public static String Titolo="Giacenze Crypto 1.0.37 Beta";
 
     
     
@@ -272,6 +274,8 @@ private static final long serialVersionUID = 3L;
         MenuItem_Incolla = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
         TransazioniCrypto = new javax.swing.JPanel();
         TransazioniCrypto_ScrollPane = new javax.swing.JScrollPane();
@@ -293,7 +297,6 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_TabbedPane = new javax.swing.JTabbedPane();
         jScrollPane4 = new javax.swing.JScrollPane();
         TransazioniCrypto_Tabella_Dettagli = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
@@ -572,6 +575,16 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_DettagliMovimento);
+        PopupMenu.add(jSeparator6);
+
+        MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        MenuItem_EsportaTabella.setText("Esporta Tabella in Excel");
+        MenuItem_EsportaTabella.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_EsportaTabellaActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_EsportaTabella);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
@@ -593,7 +606,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Non Utilizzata</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Non Utilizzata</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND", "ND"
+                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento Rilevante", "ND"
             }
         ) {
             Class[] types = new Class [] {
@@ -611,6 +624,7 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        TransazioniCryptoTabella.setName("TabellaMovimentiCrypto"); // NOI18N
         TransazioniCryptoTabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 TransazioniCryptoTabellaMouseReleased(evt);
@@ -850,14 +864,6 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_TabbedPane.addTab("Dettagli Riga", jScrollPane4);
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        jButton1.setText("Esporta Tabella");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel10.setText("Movimenti fiscalmente rilevanti su periodo");
@@ -907,7 +913,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 349, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 351, Short.MAX_VALUE)
                                 .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -922,9 +928,7 @@ private static final long serialVersionUID = 3L;
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(TransazioniCrypto_TabbedPane))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -962,14 +966,13 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza)
                     .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)
                     .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -987,7 +990,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
@@ -2054,11 +2057,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Data ultimo acquisto", "Moneta", "Wallet", "Qta", "Costo di Carico", "Prz Attuale / Fine Anno", "Plusvalenza Latente", "Qta Progressiva", "Plus Latente Progressiva"
+                "Data ultimo acquisto", "Moneta", "Wallet", "Qta", "Costo di Carico", "Prz Attuale / Fine Anno", "Plusvalenza Latente", "Qta Progressiva", "Plus Latente Progressiva", "ID"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, true
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2071,6 +2074,11 @@ private static final long serialVersionUID = 3L;
             }
         });
         jScrollPane13.setViewportView(RT_Tabella_LiFo);
+        if (RT_Tabella_LiFo.getColumnModel().getColumnCount() > 0) {
+            RT_Tabella_LiFo.getColumnModel().getColumn(9).setMinWidth(0);
+            RT_Tabella_LiFo.getColumnModel().getColumn(9).setPreferredWidth(0);
+            RT_Tabella_LiFo.getColumnModel().getColumn(9).setMaxWidth(0);
+        }
 
         jLabel17.setText("Dettaglio del LiFo sulle rimanenze");
 
@@ -7026,7 +7034,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Funzioni_RichiamaPopUpdaTabella(JTable tabella,java.awt.event.MouseEvent evt,int posizioneID){
 
             int rigaSelezionata=tabella.getSelectedRow();
-        if (!Funzioni.ClickInternoASelezione(tabella, evt)){
+        if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)){
             tabella.requestFocusInWindow();
             rigaSelezionata=tabella.rowAtPoint(evt.getPoint());
             tabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
@@ -7039,7 +7047,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String IDTransazione=null;
             if (posizioneID!=-1)
             {
+                
                 IDTransazione = tabella.getModel().getValueAt(rigaselezionata, posizioneID).toString();
+                if(CDC_Grafica.MappaCryptoWallet.get(IDTransazione)==null){
+                    IDTransazione=null;
+                }
             }
             Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
              TransazioniCrypto_CompilaTextPaneDatiMovimento();
@@ -7048,48 +7060,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
-        try {
-            // TODO add your handling code here:
-
-            //il modo più rapido per esportare la tabella è prendere tutta la mappa ed esportare solo quello che c'è tra le date e che ha
-            //nel suo contenuto il filtro in basso
-            
-            
-            File export = new File("temp.csv");
-            FileWriter w = new FileWriter(export);
-            BufferedWriter b = new BufferedWriter(w);
-            b.write("ID,Data,nMov,Exchange/Wallet,Dett.Wallet,TipoTransazione,Dettaglio Movimento,Causale Originale,Crypto Uscita,Tipo Crypto Uscita,Qta Uscita,"+
-                    "Crypto Entrata,Tipo Crypto Entrata,Qta Entrata,Valore Transazione (da CSV),Valore Transazione in Euro,Costo di Carico Uscente,Nuovo Costo di Carico,"+
-                    "Tipo Trasferimento,Plusvalenza generata in Euro,Rif. per Trasferimenti,Note,Auto,Blocco Transazione,Hash Transazione,Nome Token Uscita,"+
-                    "Address Token Uscita,Nome Token Entrata,Address Token Entrata,Timestamp,Address Controparte, \n");
-            for (String[] R : MappaCryptoWallet.values()) {
-                if (Funzioni_Date_ConvertiDatainLong(R[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
-                        && Funzioni_Date_ConvertiDatainLong(R[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
-                    String Stringa="";
-                    for (String prov : R) {
-                        Stringa=Stringa+prov+",";
-                        
-                    }
-                     Stringa=Stringa+"\n";
-                        b.write(Stringa);
-                        
-                }
-                   
-            }
-            b.close();
-            w.close();
-            Desktop desktop = Desktop.getDesktop();  
-            desktop.open(export); 
-        } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        
-
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void CDC_DataChooser_InizialeKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_DataChooser_InizialeKeyPressed
         // TODO add your handling code here:
     }//GEN-LAST:event_CDC_DataChooser_InizialeKeyPressed
@@ -7889,9 +7859,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void RW_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_TabellaMouseReleased
         // TODO add your handling code here:
+        Funzioni_RichiamaPopUpdaTabella(RW_Tabella,evt,-1);
         RW_CompilaTabellaDettagli();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RW_TabellaMouseReleased
 
     private void RW_Tabella_DettagliKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RW_Tabella_DettagliKeyReleased
@@ -7901,9 +7872,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void RW_Tabella_DettagliMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Tabella_DettagliMouseReleased
         // TODO add your handling code here:
+        Funzioni_RichiamaPopUpdaTabella(RW_Tabella_Dettagli,evt,14);
         RW_CompilaTabellaDettagliXID();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        
+       // Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RW_Tabella_DettagliMouseReleased
 
     private void RW_Bottone_CorreggiErroreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_CorreggiErroreActionPerformed
@@ -8923,9 +8896,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
              
           // System.out.println("poroppopero");
            // GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
-           if (!RW_Anno_ComboBox.getSelectedItem().toString().equals("2023"))
+           int riferimentoAnno=Integer.parseInt(RW_Anno_ComboBox.getSelectedItem().toString());
+           if (riferimentoAnno<2023)
            {
-               String Testo="<html><b>Attenzione!</b>, è stato selezionato un anno diverso dal 2023<br>"+
+               String Testo="<html><b>Attenzione!</b>, è stato selezionato un anno inferiore al 2023<br>"+
                        "Gli anni precedenti al 2023 seguivano regole diverse, potrebbe essere che i dati prodotti non siano corretti<br></html>";
                JOptionPane.showConfirmDialog(this,Testo,
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
@@ -9156,16 +9130,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void RT_Tabella_PrincipaleMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_PrincipaleMouseReleased
         // TODO add your handling code here:
+        Funzioni_RichiamaPopUpdaTabella(RT_Tabella_Principale,evt,-1);
         this.RT_CompilaTabellaDettagli();
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RT_Tabella_PrincipaleMouseReleased
 
     private void RT_Tabella_DettaglioMoneteMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_DettaglioMoneteMouseReleased
         // TODO add your handling code here:
+        Funzioni_RichiamaPopUpdaTabella(RT_Tabella_DettaglioMonete,evt,-1);
         this.RT_CompilaTabellaLiFo();
-        //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RT_Tabella_DettaglioMoneteMouseReleased
 
     private void RT_Tabella_DettaglioMoneteKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_RT_Tabella_DettaglioMoneteKeyReleased
@@ -9179,7 +9152,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_RT_Bottone_ModificaPrezzoActionPerformed
 
     private void Opzioni_Varie_Checkbox_TemaScuroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code here:        
         if (Opzioni_Varie_Checkbox_TemaScuro.isSelected()){ 
             try {
                 UIManager.setLookAndFeel( new FlatDarkLaf() );
@@ -9192,6 +9165,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 DatabaseH2.Opzioni_Scrivi("Tema","Scuro");
                 Tabelle.verdeScuro=new Color (145, 255, 143);
                 Tabelle.rosso=new Color(255, 133, 133);
+                Tabelle.Rosso="FFA07A";
+                Tabelle.Verde="9ACD32";
                 Bottone_Errori.setForeground(Tabelle.rosso);
                 
                 //Tabelle.rosso=new Color(255, 40, 40);
@@ -9211,12 +9186,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 tema="Chiaro";
                 Tabelle.verdeScuro=new Color (23, 114, 69);
                 Tabelle.rosso=Color.RED;
+                Tabelle.Rosso="red";
+                Tabelle.Verde="green";
                 Bottone_Errori.setForeground(Tabelle.rosso);
             } catch (UnsupportedLookAndFeelException ex) {
                 Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         SwingUtilities.updateComponentTreeUI(this);
+        JOptionPane.showConfirmDialog(this, "<html>Riavviare l'applicativo per la corretta applicazione del nuovo Tema.<br></html>",
+                            "Nuovo Tema Impostato", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
 
     private void Bottone_ErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ErroriActionPerformed
@@ -9724,6 +9703,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
          //Funzione che apre il popupmenu se premuto il tasto destro
         Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+       // Funzioni_RichiamaPopUpdaTabella(TransazioniCrypto_Tabella_Dettagli,evt,-1);
         
     }//GEN-LAST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
 
@@ -9744,55 +9724,62 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void RW_Tabella_DettaglioMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RW_Tabella_DettaglioMovimentiMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(RW_Tabella_DettaglioMovimenti,evt,6);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RW_Tabella_DettaglioMovimentiMouseReleased
 
     private void RT_Tabella_LiFoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RT_Tabella_LiFoMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(RT_Tabella_LiFo,evt,9);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_RT_Tabella_LiFoMouseReleased
 
     private void CDC_CardWallet_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Tabella1MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(CDC_CardWallet_Tabella1,evt,-1);
     }//GEN-LAST:event_CDC_CardWallet_Tabella1MouseReleased
 
     private void CDC_CardWallet_Tabella2MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_CardWallet_Tabella2MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+       // Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(CDC_CardWallet_Tabella2,evt,-1);
+
     }//GEN-LAST:event_CDC_CardWallet_Tabella2MouseReleased
 
     private void CDC_FiatWallet_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella1MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(CDC_FiatWallet_Tabella1,evt,-1);
     }//GEN-LAST:event_CDC_FiatWallet_Tabella1MouseReleased
 
     private void CDC_FiatWallet_Tabella3MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella3MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(CDC_FiatWallet_Tabella3,evt,-1);
     }//GEN-LAST:event_CDC_FiatWallet_Tabella3MouseReleased
 
     private void CDC_FiatWallet_Tabella2MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CDC_FiatWallet_Tabella2MouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(CDC_FiatWallet_Tabella2,evt,-1);
     }//GEN-LAST:event_CDC_FiatWallet_Tabella2MouseReleased
 
     private void Opzioni_GruppoWallet_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+
+        Funzioni_RichiamaPopUpdaTabella(Opzioni_GruppoWallet_Tabella,evt,-1);
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaMouseReleased
 
     private void Opzioni_Emoney_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_Emoney_TabellaMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(Opzioni_Emoney_Tabella,evt,-1);
     }//GEN-LAST:event_Opzioni_Emoney_TabellaMouseReleased
 
     private void Opzioni_ApiKey_Helius_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_TextFieldMouseReleased
@@ -9834,6 +9821,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             t.setVisible(true);
         }
     }//GEN-LAST:event_MenuItem_DettagliMovimentoActionPerformed
+
+    private void MenuItem_EsportaTabellaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EsportaTabellaActionPerformed
+        // TODO add your handling code here:
+            if (PopUp_Tabella!=null)
+            {
+              Funzioni.Export_CreaExcelDaTabella(PopUp_Tabella);  
+            }
+    }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -11155,6 +11150,13 @@ try {
             Val=new String[]{"Uscita: ",Testo};
             
             ModelloTabellaCrypto.addRow(Val);
+            
+                        if (!Transazione[15].isBlank()){
+                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
+                Val=new String[]{"Valore Unitario "+Transazione[8],Valore};
+                ModelloTabellaCrypto.addRow(Val);
+            }
         }
         Valore=Transazione[9];
         if (!Valore.isBlank()){
@@ -11188,6 +11190,13 @@ try {
             Testo=Testo+"</html>";
             Val=new String[]{"Entrata: ",Testo};
             ModelloTabellaCrypto.addRow(Val);
+            
+                        if (!Transazione[15].isBlank()){
+                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
+                Val=new String[]{"Valore Unitario "+Transazione[11],Valore};
+                ModelloTabellaCrypto.addRow(Val);
+            }
         }
         Valore=Transazione[12];
         if (!Valore.isBlank()){
@@ -11943,6 +11952,7 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;
+    private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_Incolla;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
@@ -12066,7 +12076,6 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_CostiCarico;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
@@ -12108,6 +12117,7 @@ try {
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTextArea jTextArea1;

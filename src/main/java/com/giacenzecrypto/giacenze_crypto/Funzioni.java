@@ -11,12 +11,9 @@ import com.google.gson.JsonParser;
 import java.awt.AWTException;
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.Event;
-import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -52,6 +49,7 @@ import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.jsoup.Jsoup;
 
 /**
  *
@@ -164,6 +162,7 @@ public class Funzioni {
             //salvo l'ID passato dalla funzione, servirà nel caso in cui prema su alcune funzioni
             CDC_Grafica.PopUp_IDTrans=ID;
             CDC_Grafica.PopUp_Component=c;
+            //System.out.println(CDC_Grafica.PopUp_Component);
             Component C_chiamante=e.getComponent();
             //C_chiamante
             Point Coordinata = MouseInfo.getPointerInfo().getLocation();
@@ -171,23 +170,27 @@ public class Funzioni {
             //Se non passo l'id della transazione ingrigisco il tasto dettaglio movimento
             if (ID==null)
             {
-                disableMenuItemByText(pop,"Dettagli Movimento");
+                PopUp_disableMenuItemByText(pop,"Dettagli Movimento");
             }else{
-                enableMenuItemByText(pop,"Dettagli Movimento");
+                PopUp_enableMenuItemByText(pop,"Dettagli Movimento");
             }
             
             //Se è una tabella mi comporto in questo modo
             if (C_chiamante instanceof JTable table)
-            {
+            {                
                 int row = table.getSelectedRow();
                 if (row == -1) return;
-                disableMenuItemByText(pop,"Incolla");
+                PopUp_disableMenuItemByText(pop,"Incolla");
+                PopUp_enableMenuItemByText(pop,"Esporta Tabella in Excel");
+                CDC_Grafica.PopUp_Tabella=table;
                 pop.show(c, Coordinata.x, Coordinata.y);
             }            
             else if (C_chiamante instanceof JTextField)
             {
-                enableMenuItemByText(pop,"Incolla");
+                PopUp_enableMenuItemByText(pop,"Incolla");
+                PopUp_disableMenuItemByText(pop,"Esporta Tabella in Excel");
                 pop.show(c, Coordinata.x, Coordinata.y);
+                CDC_Grafica.PopUp_Tabella=null;
             }
             //Se è un campo di testo in quest'altro
             
@@ -196,7 +199,7 @@ public class Funzioni {
         }
     }
     
-    public static boolean ClickInternoASelezione(JTable table,java.awt.event.MouseEvent e){
+    public static boolean PopUp_ClickInternoASelezione(JTable table,java.awt.event.MouseEvent e){
         int clickedRow = table.rowAtPoint(e.getPoint());
         if (clickedRow == -1) return false; // clic fuori da qualsiasi riga
 
@@ -214,7 +217,7 @@ public class Funzioni {
     }
     
     
-        public static List<JMenuItem> getAllMenuItems(JPopupMenu popupMenu) {
+        public static List<JMenuItem> PopUp_getAllMenuItems(JPopupMenu popupMenu) {
         List<JMenuItem> items = new ArrayList<>();
         for (Component comp : popupMenu.getComponents()) {
             if (comp instanceof JMenuItem) {
@@ -225,15 +228,15 @@ public class Funzioni {
     }
     
     
-    public static void disableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
-        for (JMenuItem item : getAllMenuItems(popupMenu)) {
+    public static void PopUp_disableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
+        for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
             if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
                 item.setEnabled(false);
             }
         }
     }
-        public static void enableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
-        for (JMenuItem item : getAllMenuItems(popupMenu)) {
+        public static void PopUp_enableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
+        for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
             if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
                 item.setEnabled(true);
             }
@@ -470,6 +473,72 @@ public class Funzioni {
             return false; // Se genera un'eccezione, non è un JSONArray valido
         }
     }
+ 
+        
+        public static void Export_CreaExcelDaTabella(JTable tabella){
+
+        try {
+            //System.out.println("orcapaletta");
+            File f=new File ("temp.xlsx");
+            FileOutputStream fos = new FileOutputStream(f);
+            Workbook wb = new Workbook(fos,"excel1","1.0");
+            Worksheet ws=wb.newWorksheet("Riepilogo Tabella ");
+           // ws.value(0, 0,"Riepilogo Tabella Sheet ");
+
+            TableModel model = tabella.getModel();
+            //Scrivo l'intestazione della tabella riepilogo
+            
+           // if (tabella.getName().equalsIgnoreCase("TabellaMovimentiCrypto")){}
+            int NumColonne=tabella.getColumnCount();
+            //System.out.println(model.getColumnCount());
+            String NomeTabella=tabella.getName();
+            if (NomeTabella!=null&&NomeTabella.equalsIgnoreCase("TabellaMovimentiCrypto")){
+               NumColonne=35;
+              /* int i=0;
+               for (String riga[] : CDC_Grafica.MappaCryptoWallet.values()){
+                    for (int k = 0; k < NumColonne; k++) {
+                        //if (riga[k]==null)riga[k]="";
+                        riga[k] = Jsoup.parse(riga[k]).text();
+                    }
+                    ScriviRigaExcel(riga, ws, i + 1);
+                    i++;
+               }*/
+            }
+           // else{
+                
+                String riga[]=new String[NumColonne];
+                for (int i = 0; i < NumColonne; i++) {
+                    String NomeColonna = model.getColumnName(i);
+                    NomeColonna = Jsoup.parse(NomeColonna).text();
+                    riga[i] = NomeColonna;
+                }
+                ScriviRigaExcel(riga, ws, 0);
+                for (int i = 0; i < tabella.getRowCount(); i++) {
+                    int modelRow = tabella.convertRowIndexToModel(i);
+                    riga = new String[NumColonne];
+                    for (int k = 0; k < NumColonne; k++) {
+                        riga[k] = model.getValueAt(modelRow, k).toString();
+                        riga[k] = Jsoup.parse(riga[k]).text();
+                    }
+                    ScriviRigaExcel(riga, ws, i + 1);
+
+                }
+           // }
+            ws.finish();
+            ws.close();
+            wb.finish();
+            wb.close();
+            fos.close();
+            Desktop desktop = Desktop.getDesktop();
+            desktop.open(f);
+            
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
+        
         
     public static void RW_CreaExcel(JTable RW_Tabella,String Anno){
 

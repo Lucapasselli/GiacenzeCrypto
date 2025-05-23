@@ -19,17 +19,14 @@ public class Tabelle {
     //static Color verdeScuro=new Color (43, 130, 81);
     static Color verdeScuro=new Color (145, 255, 143);
     static Color verde=new Color (145, 255, 143);
-    static Color verdeChiaro=new Color (172, 255, 171);
     static Color rosso=new Color(255, 80, 80);
     static Color rossoChiaro=new Color(255, 160, 160);
-    static Color giallo=new Color(255, 255, 156);
-    static Color gialloChiaro=new Color(255, 255, 176);
     static Color bianco=new Color(255, 255, 255);
     static Color grigioChiaro=new Color(245, 245, 245);
     static Color grigio=new Color(70, 70, 70);
     static Color arancione=new Color(255, 216, 166);
-    static Color arancioneChiaro=new Color(255, 226, 189);
-    static Color bluChiaro=new Color(3, 182, 252);
+    static String Rosso="red";
+    static String Verde="green";
 
 
 

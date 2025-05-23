@@ -47,6 +47,19 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_DettagliMovimentoActionPerformed"/>
           </Events>
         </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_EsportaTabella">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Tabella.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Esporta Tabella in Excel"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_EsportaTabellaActionPerformed"/>
+          </Events>
+        </MenuItem>
       </SubComponents>
     </Container>
   </NonVisualComponents>
@@ -158,7 +171,7 @@
                                       <Component id="TransazioniCrypto_Bottone_Importa" min="-2" pref="150" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_InserisciWallet" min="-2" pref="150" max="-2" attributes="0"/>
-                                      <EmptySpace pref="349" max="32767" attributes="0"/>
+                                      <EmptySpace pref="351" max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" min="-2" pref="558" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_Salva" min="-2" pref="119" max="-2" attributes="0"/>
@@ -175,8 +188,6 @@
                                               <Component id="TransazioniCrypto_Bottone_MovimentoElimina" min="-2" pref="190" max="-2" attributes="0"/>
                                               <EmptySpace max="32767" attributes="0"/>
                                               <Component id="TransazioniCrypto_Bottone_DettaglioDefi" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="jButton1" min="-2" pref="190" max="-2" attributes="0"/>
                                           </Group>
                                           <Component id="TransazioniCrypto_TabbedPane" max="32767" attributes="0"/>
                                       </Group>
@@ -230,14 +241,13 @@
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="TransazioniCrypto_ScrollPane" pref="398" max="32767" attributes="0"/>
+                      <Component id="TransazioniCrypto_ScrollPane" pref="408" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
@@ -258,7 +268,7 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Bottone_Errori" min="-2" pref="36" max="-2" attributes="0"/>
-                              <EmptySpace pref="16" max="32767" attributes="0"/>
+                              <EmptySpace pref="26" max="32767" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_CheckBox_EscludiTI" min="-2" max="-2" attributes="0"/>
@@ -307,24 +317,24 @@
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Acq./Ric.&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore &lt;br&gt;transazione&lt;br&gt;come da CSV&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Valore&lt;br&gt;transazione&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Double"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Non Utilizzata&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo di Carico C.A. Uscente&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Nuovo&lt;br&gt;Costo di Carico&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Object"/>
-                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;html&gt;&lt;center&gt;Non Utilizzata&lt;/html&gt;&lt;/html&gt;" type="java.lang.Object"/>
+                        <Column editable="false" title="&lt;html&gt;&lt;center&gt;&lt;html&gt;&lt;center&gt;Tipo Trasferimento&lt;/html&gt;&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Plusvalenza&lt;br&gt;in EURO&lt;/html&gt;" type="java.lang.Double"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Riferimento&lt;br&gt;Trasferimento&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="Note" type="java.lang.Object"/>
                         <Column editable="false" title="Auto" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
-                        <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="DeFi - Blocco Transazione" type="java.lang.Object"/>
+                        <Column editable="false" title="DeFi - Hash Transazione" type="java.lang.Object"/>
+                        <Column editable="false" title="DeFi - Nome Token Uscito" type="java.lang.Object"/>
+                        <Column editable="false" title="DeFi - Address Token Uscita" type="java.lang.Object"/>
+                        <Column editable="false" title="DeFi - Nome Token Entrato" type="java.lang.Object"/>
+                        <Column editable="false" title="DeFi - Address Token Entrato" type="java.lang.Object"/>
+                        <Column editable="false" title="Timestamp" type="java.lang.Object"/>
+                        <Column editable="false" title="DeFi - Address Controparte" type="java.lang.Object"/>
+                        <Column editable="false" title="Data Fine Trasferimento" type="java.lang.Object"/>
+                        <Column editable="false" title="Movimento Valorizzato" type="java.lang.Object"/>
+                        <Column editable="false" title="Movimento Rilevante" type="java.lang.Object"/>
                         <Column editable="false" title="ND" type="java.lang.Object"/>
                       </Table>
                     </Property>
@@ -507,6 +517,7 @@
                         </Column>
                       </TableColumnModel>
                     </Property>
+                    <Property name="name" type="java.lang.String" value="TabellaMovimentiCrypto" noResource="true"/>
                     <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                       <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                     </Property>
@@ -771,17 +782,6 @@
                 </Container>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JButton" name="jButton1">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/Images/24_Tabella.png"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Esporta Tabella"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
-              </Events>
-            </Component>
             <Component class="javax.swing.JLabel" name="jLabel10">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -2742,7 +2742,7 @@
                                 <Component class="javax.swing.JTable" name="RT_Tabella_LiFo">
                                   <Properties>
                                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                      <Table columnCount="9" rowCount="0">
+                                      <Table columnCount="10" rowCount="0">
                                         <Column editable="false" title="Data ultimo acquisto" type="java.lang.Object"/>
                                         <Column editable="false" title="Moneta" type="java.lang.Object"/>
                                         <Column editable="false" title="Wallet" type="java.lang.Object"/>
@@ -2751,7 +2751,8 @@
                                         <Column editable="false" title="Prz Attuale / Fine Anno" type="java.lang.Object"/>
                                         <Column editable="false" title="Plusvalenza Latente" type="java.lang.Object"/>
                                         <Column editable="false" title="Qta Progressiva" type="java.lang.Object"/>
-                                        <Column editable="true" title="Plus Latente Progressiva" type="java.lang.Object"/>
+                                        <Column editable="false" title="Plus Latente Progressiva" type="java.lang.Object"/>
+                                        <Column editable="false" title="ID" type="java.lang.Object"/>
                                       </Table>
                                     </Property>
                                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2797,6 +2798,11 @@
                                           <Renderer/>
                                         </Column>
                                         <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                          <Title/>
+                                          <Editor/>
+                                          <Renderer/>
+                                        </Column>
+                                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                                           <Title/>
                                           <Editor/>
                                           <Renderer/>

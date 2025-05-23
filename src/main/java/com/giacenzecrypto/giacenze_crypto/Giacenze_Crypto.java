@@ -30,6 +30,8 @@ public class Giacenze_Crypto {
             UIManager.setLookAndFeel( new FlatDarkLaf() );
             Tabelle.verdeScuro=new Color (145, 255, 143);
             Tabelle.rosso=new Color(255, 133, 133);
+            Tabelle.Rosso="FFA07A";
+            Tabelle.Verde="9ACD32";
         }else 
             {        
             UIManager.setLookAndFeel( new FlatLightLaf() );

@@ -563,7 +563,7 @@ public class Calcoli_RT {
                     if (i == Entrata && !Monete[Entrata].CostoCarico.isBlank()) {
                         if (!IDTS[4].equalsIgnoreCase("TI")) {
                             if (!v[18].contains("DTW")) {
-                                StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data);
+                                StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
                             } else {
                                 //Se è un DTW devo quindi anche scaricare il movimento PTW contrario
                                 //se è attiva la funzione delle divisione delle plusvalenze per gruppo
@@ -575,7 +575,7 @@ public class Calcoli_RT {
                                 //IDControparte è null se i wallet di origine e destinazione sono uguali o se
                                 //non è attiva la funzione per separare le plusvalenze per wallet
                                 if (IDControparte != null) {
-                                    StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data);
+                                    StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
                                     Map<String, PlusXMoneta> CryptoStack2 = MappaGrWallet_MappaMoneta_PlusXMoneta.get(WalletControparte);
                                     String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
                                     StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true);
@@ -958,15 +958,16 @@ public class Calcoli_RT {
                 return ritorno;
     } 
     
-     public static void StackLIFO_InserisciValore(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,String Valore,String Data) {
+     public static void StackLIFO_InserisciValore(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,String Valore,String Data,String ID) {
    // MappaMoneta_PlusXMoneta
            // Map<String, ArrayDeque> CryptoStack
     ArrayDeque<String[]> stack;
-    String valori[]=new String[4];
+    String valori[]=new String[5];
     valori[0]=Moneta;
     valori[1]=new BigDecimal(Qta).abs().toPlainString();
     valori[2]=Valore;
     valori[3]=Data;
+    valori[4]=ID;
 
         if(MappaMoneta_PlusXMoneta.get(Moneta).Get_CryptoStack()==null){
            stack = new ArrayDeque<>(); 
@@ -980,24 +981,6 @@ public class Calcoli_RT {
 
 }  
      
-   /*    public static void StackLIFO_InserisciValore_OLD(Map<String, ArrayDeque> CryptoStack, String Moneta,String Qta,String Valore) {
-    
-    ArrayDeque<String[]> stack;
-    String valori[]=new String[3];
-    valori[0]=Moneta;
-    valori[1]=new BigDecimal(Qta).abs().toPlainString();
-    valori[2]=Valore;
-    if (CryptoStack.get(Moneta)==null){
-        stack = new ArrayDeque<String[]>();
-        stack.push(valori);
-        CryptoStack.put(Moneta, stack);
-    }else{
-        stack=CryptoStack.get(Moneta);
-        stack.push(valori);
-        CryptoStack.put(Moneta, stack);
-    }
-   // System.out.println(Moneta +" - "+stack.size());
-}   */  
      
   
       public static String StackLIFO_TogliQta(Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta, String Moneta,String Qta,boolean toglidaStack) {
@@ -1030,6 +1013,7 @@ public class Calcoli_RT {
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();            
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
             String Data=ultimoRecupero[3];
+            String IDIniziale=ultimoRecupero[4];
             
             
          //  if (Moneta.equalsIgnoreCase("usdt")){ 
@@ -1053,7 +1037,7 @@ public class Calcoli_RT {
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
                 String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
-                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,Data};
+                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,Data,IDIniziale};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
                 qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
@@ -1241,6 +1225,7 @@ public class Calcoli_RT {
             BigDecimal qtaEstratta=new BigDecimal(ultimoRecupero[1]).abs();            
             BigDecimal costoEstratta=new BigDecimal(ultimoRecupero[2]).abs();
             String Data=ultimoRecupero[3];
+            String IDIniziale=ultimoRecupero[4];
             
          /*  if (Moneta.equalsIgnoreCase("usdt")){ 
                 System.out.println(ultimoRecupero[1]+" - "+ultimoRecupero[2]+" - "+stack.size());
@@ -1254,7 +1239,7 @@ public class Calcoli_RT {
                 //System.out.println(qtaRimanente);
                 //recupero il valore di quella transazione e la aggiungo al costoTransazione
                 costoTransazione=costoTransazione.add(costoEstratta);
-                rigaTabella=new Object[9];
+                rigaTabella=new Object[10];
                 rigaTabella[0]=Data;
                 rigaTabella[1]=PlusXMon.Mon.Moneta;
                 rigaTabella[2]=Wallet;
@@ -1270,7 +1255,9 @@ public class Calcoli_RT {
                 PlusLatenteProgressiva=PlusLatenteProgressiva.add(PlusLatenteEsatta);
                 rigaTabella[7]=QtaProgressiva.stripTrailingZeros().toPlainString();
                 rigaTabella[8]=PlusLatenteProgressiva.stripTrailingZeros().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                rigaTabella[9]=IDIniziale;
                 Tabella.add(rigaTabella);
+                
             }else{
                 //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
                 //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
@@ -1280,11 +1267,11 @@ public class Calcoli_RT {
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
                 String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
-                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
+                String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,IDIniziale};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
                 qtaRimanente=new BigDecimal("0");//non ho più qta rimanente
-                rigaTabella=new Object[9];
+                rigaTabella=new Object[10];
                 rigaTabella[0]=Data;
                 rigaTabella[1]=PlusXMon.Mon.Moneta;
                 rigaTabella[2]=Wallet;
@@ -1301,6 +1288,7 @@ public class Calcoli_RT {
                 PlusLatenteProgressiva=PlusLatenteProgressiva.add(PlusLatenteEsatta);
                 rigaTabella[7]=QtaProgressiva.stripTrailingZeros().toPlainString();
                 rigaTabella[8]=PlusLatenteProgressiva.stripTrailingZeros().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                rigaTabella[9]=IDIniziale;
                 Tabella.add(rigaTabella);
             }
             

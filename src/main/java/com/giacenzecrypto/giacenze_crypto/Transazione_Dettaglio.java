@@ -6,6 +6,8 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.JOptionPane;
@@ -26,7 +28,7 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
      * @param IDTransazione
      */
     
-     private static Map<Integer,String> mappa_ID=new TreeMap<>(); 
+     private static final Map<Integer,String> mappa_ID=new TreeMap<>(); 
      private static int Riferimento=0;
 
 
@@ -46,6 +48,7 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
       //  System.out.println(IDTransazione);
       //  System.out.println(CDC_Grafica.MappaCryptoWallet.size());
         String Transazione[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+        
         //System.out.println(IDTransazione);
         //System.out.println(CDC_Grafica.MappaCryptoWallet.get(IDTransazione));
         //String Titolo="<html><p align=\"center\">"+"Pippo<br>"+"Pluto</html>";
@@ -141,14 +144,21 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
         
         Valore=Transazione[8];
         if (!Valore.isBlank()){
-            String Testo="<html><b>"+Transazione[10]+ " " + Transazione[8].split("\\(")[0];
+            String Testo="<html><p style=\"color:"+Tabelle.Rosso+";\"><b>"+Transazione[10]+ " " + Transazione[8].split("\\(")[0];
             if (!Transazione[25].isBlank()&&!Transazione[8].equalsIgnoreCase(Transazione[25])){
-                Testo=Testo+" </b>("+Transazione[25]+")";
+                Testo=Testo+" </b></p>("+Transazione[25]+")";
             }
             Testo=Testo+"</html>";
             Val=new String[]{"Uscita: ",Testo};
             
             ModelloTabellaCrypto.addRow(Val);
+            //Adesso Aggiungo anche il Valore Unitario in euro della moneta in ingresso e quella in uscita
+            if (!Transazione[15].isBlank()){
+                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
+                Val=new String[]{"Valore Unitario "+Transazione[8],Valore};
+                ModelloTabellaCrypto.addRow(Val);
+            }
         }
         Valore=Transazione[9];
         if (!Valore.isBlank()){
@@ -175,13 +185,20 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
         
         Valore=Transazione[11];
         if (!Valore.isBlank()){            
-            String Testo="<html><b>"+Transazione[13]+ " " + Transazione[11].split("\\(")[0];
+            String Testo="<html><p style=\"color:"+Tabelle.Verde+";\"><b>"+Transazione[13]+ " " + Transazione[11].split("\\(")[0];
             if (!Transazione[27].isBlank()&&!Transazione[27].equalsIgnoreCase(Transazione[11])){
-                Testo=Testo+" </b>("+Transazione[27]+")";
+                Testo=Testo+" </b></p>("+Transazione[27]+")";
             }
             Testo=Testo+"</html>";
             Val=new String[]{"Entrata: ",Testo};
             ModelloTabellaCrypto.addRow(Val);
+            
+            if (!Transazione[15].isBlank()){
+                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
+                Val=new String[]{"Valore Unitario "+Transazione[11],Valore};
+                ModelloTabellaCrypto.addRow(Val);
+            }
         }
         Valore=Transazione[12];
         if (!Valore.isBlank()){
@@ -208,9 +225,13 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
         
         Valore=Transazione[15];
         if (!Valore.isBlank()){
-            Valore="<html><b>€ "+Valore+"</html>";
+            Valore="<html>€ "+Valore+"</html>";
             Val=new String[]{"Valore transazione ",Valore};
             ModelloTabellaCrypto.addRow(Val);
+            
+
+            
+            
         }
         
         Valore=Transazione[19];

@@ -31,7 +31,7 @@
 19 - Plusvalenza in EUR della Transazione -> es 3
 20 - Riferimento x Trasferimenti -> Se è un traferimento si mette il riferimento al wallet/ transazione che l'ha generato es. 202112031045_Crypto.com_TraferimentoCrypto
 21 - Note -> Eventuali note sulla transazione o sulla singola parte della transazione.
-22 - Auto -> Segno con M se i valori sono stati modificati manualmente o con A se sono stati presi in automatico
+22 - Auto -> Segno con M se i valori sono stati modificati manualmente o con A se sono stati presi in automatico o AU se movimenti generati in automatico dal programma per trasferimenti interni
 23 - [DEFI] Blocco Transazione
 24 - [DEFI] Hash Transazione o ID Transazione Exchange come da CSV
 25 - [DEFI] Nome Token Uscita
@@ -631,7 +631,9 @@ System.out.println(response.body().string());
 
         Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
-        
+        Mappa_Conversione_Causali.put("Fiat OCBS - Add Fiat and Fees",              "TRASFERIMENTO-CRYPTO");
+        //Fiat OCBS - Add Fiat and Fees
+        //Buy Crypto With Card
         // La causale di autoinvestimento la dovrò poi convertire in Scambio Crypto Differito
         // Possono passare infatti anche diversi minuti tra il movimento di uscita e quello di entrata
         Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "SCAMBIO DIFFERITO");
@@ -639,6 +641,7 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("Token Swap - Distribution",                  "SCAMBIO DIFFERITO");//08-01-2025
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
         Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
+        Mappa_Conversione_Causali.put("Buy Crypto With Card",                       "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Sold",                           "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("Transaction Spend",                          "SCAMBIO CRYPTO-CRYPTO");

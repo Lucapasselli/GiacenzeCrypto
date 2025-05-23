@@ -73,6 +73,12 @@
 	  <version>0.16.5</version>
 	  <type>jar</type>
 	 </dependency>
+	 <dependency>
+	  <groupId>org.jsoup</groupId>
+	  <artifactId>jsoup</artifactId>
+	  <version>1.13.1</version>
+	  <type>jar</type>
+	 </dependency>
 	</dependencies>
 <build>
   <plugins>

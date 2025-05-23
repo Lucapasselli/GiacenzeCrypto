@@ -24,8 +24,16 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +42,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -478,41 +487,33 @@ public class Funzioni {
         public static void Export_CreaExcelDaTabella(JTable tabella){
 
         try {
-            //System.out.println("orcapaletta");
-            File f=new File ("temp.xlsx");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime now = LocalDateTime.now();
+            String DataOra=now.format(formatter);
+        
+            File f=new File ("Temporanei/Tabella_"+DataOra+".xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
             Worksheet ws=wb.newWorksheet("Riepilogo Tabella ");
-           // ws.value(0, 0,"Riepilogo Tabella Sheet ");
 
             TableModel model = tabella.getModel();
             //Scrivo l'intestazione della tabella riepilogo
-            
-           // if (tabella.getName().equalsIgnoreCase("TabellaMovimentiCrypto")){}
             int NumColonne=tabella.getColumnCount();
             //System.out.println(model.getColumnCount());
             String NomeTabella=tabella.getName();
             if (NomeTabella!=null&&NomeTabella.equalsIgnoreCase("TabellaMovimentiCrypto")){
                NumColonne=35;
-              /* int i=0;
-               for (String riga[] : CDC_Grafica.MappaCryptoWallet.values()){
-                    for (int k = 0; k < NumColonne; k++) {
-                        //if (riga[k]==null)riga[k]="";
-                        riga[k] = Jsoup.parse(riga[k]).text();
-                    }
-                    ScriviRigaExcel(riga, ws, i + 1);
-                    i++;
-               }*/
             }
-           // else{
                 
                 String riga[]=new String[NumColonne];
+                //Scrivo i titoli
                 for (int i = 0; i < NumColonne; i++) {
                     String NomeColonna = model.getColumnName(i);
                     NomeColonna = Jsoup.parse(NomeColonna).text();
                     riga[i] = NomeColonna;
                 }
                 ScriviRigaExcel(riga, ws, 0);
+                //Scrivo le righe
                 for (int i = 0; i < tabella.getRowCount(); i++) {
                     int modelRow = tabella.convertRowIndexToModel(i);
                     riga = new String[NumColonne];
@@ -523,7 +524,6 @@ public class Funzioni {
                     ScriviRigaExcel(riga, ws, i + 1);
 
                 }
-           // }
             ws.finish();
             ws.close();
             wb.finish();
@@ -539,12 +539,43 @@ public class Funzioni {
         }
     }    
         
+    
+    public static void Files_CancellaOltreTOTh(String directory, int Ore) {
+        Path dir = Paths.get(directory);
+        Instant now = Instant.now();
+
+        try (Stream<Path> paths = Files.list(dir)) {
+            paths.filter(Files::isRegularFile)
+                .forEach(path -> {
+                    try {
+                        BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+                        Instant creationTime = attrs.creationTime().toInstant();
+
+                        Duration age = Duration.between(creationTime, now);
+                        if (age.toHours() > Ore) {
+                            Files.delete(path);
+                            //System.out.println("Cancellato: " + path);
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Errore nella gestione del file: " + path + " - " + e.getMessage());
+                    }
+                });
+        } catch (IOException e) {
+            System.err.println("Errore nell'accesso alla directory: " + directory + " - " + e.getMessage());
+        }
+    }    
+        
+        
+        
         
     public static void RW_CreaExcel(JTable RW_Tabella,String Anno){
 
         try {
-            //System.out.println("orcapaletta");
-            File f=new File ("RW.xlsx");
+            //Tabella Totali
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime now = LocalDateTime.now();
+            String DataOra=now.format(formatter);  
+            File f=new File ("Temporanei/RW_"+Anno+"_"+DataOra+".xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
             Worksheet wsrm=wb.newWorksheet("Riepilogo Anno "+Anno);

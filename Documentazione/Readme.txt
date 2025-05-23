@@ -25,6 +25,17 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.37
+Nuove Implementazioni : 
+ - Aggiunto popUpMenu su quasi tutte le tabelle del programma e su alcuni campi testo (si attiva con il tasto destro del mouse).
+   Dal PopUp menù si potrà :
+   - Copiare la selezione
+   - Incollare gli appunti
+   - Vedere i dettagli della transazione selezionata (comodo ad esempio sulle tabelle dove non vi sono tutti i dettagli).
+   - Esportare la tabella in Excel (per permettere ulteriori elaborazioni e calcoli in autonomia).
+Correzione di bug :
+ - Corretto Bug che, qualora vi fossero anni senza movimentazioni, non permetteva il cambio del prezzo sul dettaglio movimenti del quadro RT, inoltre faceva vedere a video il riferimento del prezzo errato.
+ - Corretto Bug che non permetteva di associare un Wallet che all'interno del nome aveva l'apostrofo ad un Gruppo.
 
 ver. 1.0.36
 Nuove Implementazioni : 

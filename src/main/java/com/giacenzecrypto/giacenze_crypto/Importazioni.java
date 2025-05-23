@@ -1617,9 +1617,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti,boolean SalvataggioPermanente) {
         File f = new File("movimenti.crypto.db");
         File f2 = new File("movimenti.crypto.backup");
-        File cartellaBackup=new File ("Backup");
-        if (!cartellaBackup.exists()) cartellaBackup.mkdir();
-        if (SalvataggioPermanente)f2 = new File(cartellaBackup+"/movimenti.crypto.backup."+System.currentTimeMillis());
+        if (SalvataggioPermanente)f2 = new File("Backup/movimenti.crypto.backup."+System.currentTimeMillis());
     if(f.exists()){
         if(f2.exists())f2.delete();
         f.renameTo(f2);

@@ -150,6 +150,17 @@ private static final long serialVersionUID = 3L;
                         
             File cryptowallet=new File (CryptoWallet_FileDB);
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
+            
+            File cartella=new File ("Backup");
+            if (!cartella.exists()) cartella.mkdir();
+            
+            cartella=new File ("Temporanei");
+            if (!cartella.exists()) cartella.mkdir();
+            
+            //Cancello i backup automatici più vecchi di 6 Mesi
+            Funzioni.Files_CancellaOltreTOTh("Backup", 4320);
+            //Cancello i file temporanei, tipicamente esportazioni o stampe più vecchi di 24h
+            Funzioni.Files_CancellaOltreTOTh("Temporanei", 24);
 
             Funzioni.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
  
@@ -8448,8 +8459,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             
             
             //Tabella Totali
-            Stampe stampa=new Stampe("temp.pdf");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime now = LocalDateTime.now();
+            String DataOra=now.format(formatter);
             String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
+            Stampe stampa=new Stampe("Temporanei/RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");           
             int anno=Integer.parseInt(AnnoDiCompetenza);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
@@ -9851,7 +9865,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //
             
             //Tabella Totali
-            Stampe stampa=new Stampe("temp_T.pdf");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime now = LocalDateTime.now();
+            String DataOra=now.format(formatter);  
+            Stampe stampa=new Stampe("Temporanei/RW_"+Anno+"_"+DataOra+".pdf");
             String AnnoDiCompetenza=String.valueOf(Anno);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;

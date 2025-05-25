@@ -1028,7 +1028,7 @@ public class Prezzi {
 
         try {
             //System.out.println("Attendo 12 ");
-            if (ApiKey.isBlank()) TimeUnit.SECONDS.sleep(12);//il timeout serve per evitare di fare troppe richieste all'API
+            if (ApiKey.isBlank()) TimeUnit.SECONDS.sleep(13);//il timeout serve per evitare di fare troppe richieste all'API
             else TimeUnit.SECONDS.sleep(3);//Se ho le apikey posso fare molte più richieste quindi metto a 3 secondi il timeout
            // System.out.println("Fine sleep");
             URL url;
@@ -1317,6 +1317,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         try {
             
             TimeUnit.SECONDS.sleep(3);//il timeout serve per evitare di fare troppe richieste all'API
+            //siccome questa richiesta non dovrebbe farla praticamente mai lascio il timeout basso
             URL url = new URI("https://api.coingecko.com/api/v3/coins/tether/market_chart/range?vs_currency=EUR&from=" + ArraydataIni.get(i) + "&to=" + ArraydataFin.get(i)).toURL();
             //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
             if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
@@ -2636,7 +2637,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                 }else {
                     ok=null;
                         }
-                TimeUnit.SECONDS.sleep(8);
+                TimeUnit.SECONDS.sleep(5);
             } catch (JsonSyntaxException | IOException | InterruptedException ex) {
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
                 ok = null;

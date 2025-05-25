@@ -71,28 +71,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
          this.setIconImage(icon.getImage());
          initComponents();
          Download.FineThread=false;
-     /*   PrintStream printStream = new PrintStream(new CustomOutputStream(textArea));
-        System.setOut(printStream);
-        PrintStream printStreamErr = new PrintStream(new CustomOutputStream(textAreaErrori));
-        System.setErr(printStreamErr);*/
-         
-       /*  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(baos));*/
-       
-       
-       //PARTE SOTTO OK PER GESTIONE ERRORI
-
-
-        
-        
-    
-    
-        // this.setVisible(true);
-
-              
-        // System.out.println(FileRemoto);
-        // System.out.println(FileLocale);
-        
+     
         
 //RipristinaStdout();
 

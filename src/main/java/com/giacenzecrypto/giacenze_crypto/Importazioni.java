@@ -5243,7 +5243,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 //scrivo il messaggio, e chiudo la progress bar
                 if (!jsonObjectTxlist.getString("message").trim().equalsIgnoreCase("No transactions found")) {
                     if (progressb!=null)progressb.ChiudiFinestra();
-                    JOptionPane.showConfirmDialog(ccc, "Errore durante l'importazione dei dati\n" + jsonObjectTxlist.getString("message"),
+                    JOptionPane.showConfirmDialog(ccc, "Errore durante l'importazione dei dati\n" + jsonObjectTxlist.getString("message")+
+                            "\n"+Risposta+"\n"+"Riprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.",
                             "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
                     return null;
                 }
@@ -5258,7 +5259,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                    numeroTransTemp++;
             }
             transactionsArray.putAll(transactionsArrayTemp);           
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(2);
             if (progressb!=null&&progressb.FineThread()) {
                 return null;
             }
@@ -5336,6 +5337,12 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             in.close();
             JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
             Valore = jsonObjectTxlist.getString("result");
+            if (!Funzioni.Funzioni_isNumeric(Valore, false))
+                {
+                    System.out.println("Controllo giacenze non riuscito per il token "+MonetaRete+" sul Wallet "+walletAddress+ ". Riprovare in un secondo momento");
+                    System.out.println("Errore : '"+Valore+"'");
+                    return null;
+                }
             //Valore = (Funzioni.hexToDecimal(Valore)).toString();
             //System.out.println(Valore);
             Valore = new BigDecimal(Valore).divide(new BigDecimal("1000000000000000000")).stripTrailingZeros().toPlainString();
@@ -5629,8 +5636,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             }
         }
         String GiacenzaReale=DeFi_GiacenzeL1_Rimanze(Wallet.split(" ")[0],Rete);
-        String QtaNuovoMovimento = new BigDecimal(GiacenzaReale).subtract(TotaleQta).stripTrailingZeros().toPlainString();       
-        if (IDUltimoMovimento!=null && !QtaNuovoMovimento.equals("0") && QtaNuovoMovimento.contains("-")) {
+        String QtaNuovoMovimento = null;
+        if (GiacenzaReale!=null) QtaNuovoMovimento = new BigDecimal(GiacenzaReale).subtract(TotaleQta).stripTrailingZeros().toPlainString();       
+        if (QtaNuovoMovimento!=null && IDUltimoMovimento!=null && !QtaNuovoMovimento.equals("0") && QtaNuovoMovimento.contains("-")) {
                         
                                 //adesso compilo la parte comune del movimento
                                 String RTOri[] = MappaCryptoWallet.get(IDUltimoMovimento);
@@ -5678,7 +5686,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 CDC_Grafica.TabellaCryptodaAggiornare = true;        
                             
                         
-                    } else if (IDUltimoMovimento!=null && !QtaNuovoMovimento.equals("0")){
+                    } else if (QtaNuovoMovimento!=null && IDUltimoMovimento!=null && !QtaNuovoMovimento.equals("0")){
                         //Gestisco i movimenti di Carico (Depositi)
                                 //adesso compilo la parte comune del movimento
                                //System.out.println(IDUltimoMovimento);

@@ -33,6 +33,8 @@ Nuove Implementazioni :
    - Incollare gli appunti
    - Vedere i dettagli della transazione selezionata (comodo ad esempio sulle tabelle dove non vi sono tutti i dettagli).
    - Esportare la tabella in Excel (per permettere ulteriori elaborazioni e calcoli in autonomia).
+ - Aggiunto 2 nuove causali utilizzate dal csv di Binance
+ - Aggiunto la possibilità di classificare come Scam più token alla volta dalla funzione Depositi/Prelievi.
 Correzione di bug :
  - Corretto Bug che, qualora vi fossero anni senza movimentazioni, non permetteva il cambio del prezzo sul dettaglio movimenti del quadro RT, inoltre faceva vedere a video il riferimento del prezzo errato.
  - Corretto Bug che non permetteva di associare un Wallet che all'interno del nome aveva l'apostrofo ad un Gruppo.

@@ -127,7 +127,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.37 Beta";
+    public static String Titolo="Giacenze Crypto 1.0.38 RC1 Beta";
 
     
     
@@ -164,7 +164,7 @@ private static final long serialVersionUID = 3L;
 
             Funzioni.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
  
-            
+
             
         initComponents();
         Prezzi.CompilaMoneteStessoPrezzo();
@@ -9366,35 +9366,48 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
         // TODO add your handling code here:
-        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
-        int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
-        String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-        String Rete = Funzioni.TrovaReteDaID(ID);
-        //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
-        String Movimento[]=MappaCryptoWallet.get(ID);
-        if (Movimento[18]==null||Movimento[18].isBlank()){
-            //Controllo se è un movimento di prelievo o deposito
-            String Tipo=ID.split("_")[4];
-            String NomeMoneta="";
-            String Address="";
-            if (Tipo.equalsIgnoreCase("PC")){
-                NomeMoneta=Movimento[8];
-                Address=Movimento[26];
+        int righeSelezionate[] = DepositiPrelievi_Tabella.getSelectedRows();
+        if (righeSelezionate.length >= 0) {
+            /*String ID[]=new String[righeSelezionate.length];
+            //Primo ciclo recupero tutti gli id dalla tabella
+            for (int i = 0; i < righeSelezionate.length; i++) {
+                ID[i] = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+            }*/
+            //Secondo ciclo faccio le modifiche
+            for (int i = 0; i < righeSelezionate.length; i++) {
+                String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+                String Rete = Funzioni.TrovaReteDaID(ID);
+                //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
+                String Movimento[] = MappaCryptoWallet.get(ID);
+                if (Movimento[18] == null || Movimento[18].isBlank()) {
+                    //Controllo se è un movimento di prelievo o deposito
+                    String Tipo = ID.split("_")[4];
+                    String NomeMoneta = "";
+                    String Address = "";
+                    if (Tipo.equalsIgnoreCase("PC")) {
+                        NomeMoneta = Movimento[8];
+                        Address = Movimento[26];
+                    }
+                    if (Tipo.equalsIgnoreCase("DC")) {
+                        NomeMoneta = Movimento[11];
+                        Address = Movimento[28];
+                    }
+                    GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete);
+
+
+                } else {
+                    //movimenticlassificati=true;
+                    JOptionPane.showConfirmDialog(this, "<html>Attenzione! Sonostati trovati uno o più movimenti già classificati<br>"
+                            + "Questi movimenti non possono essere classificati come scam e sono stati ignorati.<br>"
+                            + "</html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    
+
             }
-            if (Tipo.equalsIgnoreCase("DC")){
-                NomeMoneta=Movimento[11];
-                Address=Movimento[28];
+           
             }
-            GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete);
             Funzioni_AggiornaTutto();
             DepositiPrelievi_Caricatabella();
-        
-        }else{
-        //Non faccio nulla e avviso
-        JOptionPane.showConfirmDialog(this, "<html>Attenzione! Non è possibile classificare come SCAM un movimento già classificato<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-        }
         }
     }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
 
@@ -9838,10 +9851,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void MenuItem_EsportaTabellaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EsportaTabellaActionPerformed
         // TODO add your handling code here:
+       // this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (PopUp_Tabella!=null)
             {
               Funzioni.Export_CreaExcelDaTabella(PopUp_Tabella);  
             }
+        //this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){

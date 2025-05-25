@@ -276,6 +276,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaWallets);
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
+        Mappa_Wallet.clear();
         for (String[] v : MappaCryptoWallet.values()) {
             if (Funzioni.Funzioni_isNumeric(v[23], false)){
                 if (Mappa_Wallet.get(v[3])!=null && Mappa_Wallet.get(v[3]).split(";").length>1){
@@ -469,6 +470,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                  CDC_Grafica.TabellaCryptodaAggiornare=true;
                  Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";
                 JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
+                //Calcoli_Plusvalenze.AggiornaPlusvalenze();
                 }
            }
            

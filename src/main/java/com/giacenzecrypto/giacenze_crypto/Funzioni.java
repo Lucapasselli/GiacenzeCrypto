@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.awt.AWTException;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -485,7 +486,6 @@ public class Funzioni {
  
         
         public static void Export_CreaExcelDaTabella(JTable tabella){
-
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
@@ -1347,6 +1347,7 @@ return ListaSaldi;
         try {
             BigDecimal B = new BigDecimal(str);
         } catch (NumberFormatException nfe) {
+            //System.out.println(nfe);
             return false;
         }
         return true;

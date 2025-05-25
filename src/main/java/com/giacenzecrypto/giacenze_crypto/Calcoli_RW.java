@@ -505,7 +505,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         List<String[]> ListaRW;
         String DataDaScrivere=Data;
-        
+        //Se la qta che vado ad analizzare è zero (succede per i movimenti scam, non faccio nulla)
+        if (new BigDecimal(Monete.Qta).compareTo(BigDecimal.ZERO)==0)return;
         //System.out.println(Monete.Qta);
         //tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
@@ -822,6 +823,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 {
                    // System.out.println("Valore Finale non valorizzato");
                     lista[10]="0";
+                    //System.out.println(lista[7]);
                     lista[15] = lista[15]+"Errore (Valore Finale non Valorizzato) <br>";
                     lista[15] = lista[15]+"Bottone '<b>Modifica Valore Finale</b>' per correggere<br><br>";
                 }
@@ -843,12 +845,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 //Poi sarebbe anche da verificare le giacenze negative
                 //e fare la modifica dei prezzi sui token con id
 
-                if (Funzioni.isSCAM(lista[2])){
-                    lista[15] = lista[15]+"Avviso (Token iniziale SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
-                }
-                if (Funzioni.isSCAM(lista[7])){
-                    lista[15] = lista[15]+"Avviso (Token finale SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
-                }
+
                 
                 //Se ID di apertura corrisponde a movimento non classificato aggiungo anche quell'errore
                 if(MappaCryptoWallet.get(lista[13])!=null
@@ -858,14 +855,27 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 }
                 if(MappaCryptoWallet.get(lista[14])!=null
                         &&MappaCryptoWallet.get(lista[14])[18].isBlank()
-                        &&lista[14].split("_")[4].equals("PC")) {
+                        &&lista[14].split("_")[4].equals("PC")&&!Funzioni.isSCAM(lista[7])) {
                     lista[15] = lista[15]+"Errore (Movimento di chiusura non Classificato) <br>";
                 }
                 //Se il valore iniziale o finale è negativo e non ho ancora segnalato il fatto che la giacenza è negativa allora aggiungo la segnalazione
                 if ((lista[8].contains("-")|lista[3].contains("-"))&&!lista[15].contains("Giacenza Negativa")) 
                 {
-                    lista[15]=lista[15]+"Errore (Giacenza Negativa) <br>";
+                        lista[15]=lista[15]+"Errore (Giacenza Negativa) <br>";
+                        
                 }
+                
+                //Se i token sono scam segnalo solo quello e non gli altri errori
+                if (Funzioni.isSCAM(lista[2])){
+                    lista[15] = "Avviso (Token iniziale SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
+                }
+                if (Funzioni.isSCAM(lista[7])){
+                    if (lista[15].contains("SCAM"))
+                        lista[15] = lista[15]+"Avviso (Token finale SCAM)<br>";//Se Token SCAM non verrà considerato in nessun calcolo dell'RW, verrà solo mostrato
+                    else
+                        lista[15] = "Avviso (Token finale SCAM)<br>";
+                }
+                
                 lista[15]=lista[15]+"</html>";
                /* else if (Elementi[3].contains("Errore") && Valore.equals("0.00")) {
                     xlista[12] = "Errore ("+Elementi[3].split("\\(")[1].replace(")", "")+" e Token non Valorizzato)";

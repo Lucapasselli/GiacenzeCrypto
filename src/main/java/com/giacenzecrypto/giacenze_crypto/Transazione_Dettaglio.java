@@ -154,7 +154,11 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
             ModelloTabellaCrypto.addRow(Val);
             //Adesso Aggiungo anche il Valore Unitario in euro della moneta in ingresso e quella in uscita
             if (!Transazione[15].isBlank()){
-                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                BigDecimal ValUnitario=new BigDecimal(0);
+                if (new BigDecimal(Transazione[10]).compareTo(BigDecimal.ZERO)!=0)
+                {
+                    ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                }
                 Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
                 Val=new String[]{"Valore Unitario "+Transazione[8],Valore};
                 ModelloTabellaCrypto.addRow(Val);

@@ -410,9 +410,9 @@ public class Calcoli_RT {
                   &&
                   v[18].trim().equalsIgnoreCase("")//Includo solo movimenti senza causale
                   &&
-                  (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])//Includo movimenti di deposito non scam
+                  (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])&&new BigDecimal(v[13]).compareTo(BigDecimal.ZERO)!=0//Includo movimenti di deposito non scam
                       ||
-                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])))//Includo movimenti di prelievo
+                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])&&new BigDecimal(v[10]).compareTo(BigDecimal.ZERO)!=0))//Includo movimenti di prelievo
           {
                 //Gestisco l'errore
                 if(Errori.equals("0"))Errori="1";

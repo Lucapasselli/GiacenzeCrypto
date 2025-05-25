@@ -5650,7 +5650,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
               {
             //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
             if (v[18].trim().equalsIgnoreCase("")||this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
-              {            
+              {   
+            if (TipoMovimento.equalsIgnoreCase("PC")){}
             String riga[]=new String[10];
             riga[0]=v[0];
             riga[1]=v[1];
@@ -5660,11 +5661,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 {
                 riga[4]=v[8];
                 riga[5]=new BigDecimal(v[10]).stripTrailingZeros().toPlainString();
+                //Proseguo con il prossimo valore del ciclo for se la qta è zero, vuol dire che è un movimento scam
+                if (new BigDecimal(v[10]).compareTo(BigDecimal.ZERO)==0)continue;
                 }
             else
                 {
                 riga[4]=v[11];
                 riga[5]=new BigDecimal(v[13]).stripTrailingZeros().toPlainString();
+                //Proseguo con il prossimo valore del ciclo for se la qta è zero, vuol dire che è un movimento scam
+                if (new BigDecimal(v[13]).compareTo(BigDecimal.ZERO)==0)continue;
                 }
             riga[6]=v[18];
             riga[7]=v[15];
@@ -11509,11 +11514,10 @@ try {
                   &&
                   v[18].trim().equalsIgnoreCase("")//Includo solo movimenti senza causale
                   &&
-                  (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])//Includo movimenti di deposito non scam
+                  (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])&&new BigDecimal(v[13]).compareTo(BigDecimal.ZERO)!=0//Includo movimenti di deposito non scam
                       ||
-                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])))//Includo movimenti di prelievo
+                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])&&new BigDecimal(v[10]).compareTo(BigDecimal.ZERO)!=0))//Includo movimenti di prelievo
           {
-
                     NumErroriMovSconosciuti++;
               
           }

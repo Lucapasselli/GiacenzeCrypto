@@ -50,7 +50,7 @@ public class Prezzi {
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
-    static String CoppiePrioritarie[]=new String []{"USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","BTCUSDT",
+    static String CoppiePrioritarie[]=new String []{"USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","EURIUSDT","BTCUSDT",
         "ETHUSDT","BNBUSDT","SOLUSDT","LTCUSDT","ADAUSDT","XRPUSDT","NEOUSDT",
         "IOTAUSDT","EOSUSDT","XLMUSDT","SOLUSDT","PAXUSDT","TRXUSDT","ATOMUSDT","MATICUSDT"};
 
@@ -711,7 +711,7 @@ public class Prezzi {
        // System.out.println(Rete);
         
         //System.out.println("cosacosa "+Address);
-        if(!Funzioni_WalletDeFi.isValidAddress(Address, Rete))
+        if(!Funzioni_WalletDeFi.isValidAddress(Address, Rete)||Rete==null||Rete.isBlank())
         {
             return ConvertiXXXEUR(Simbolo,Qta,Datalong);
         }

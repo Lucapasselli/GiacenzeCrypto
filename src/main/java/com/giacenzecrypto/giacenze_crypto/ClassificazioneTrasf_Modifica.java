@@ -13,6 +13,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
+import java.awt.event.ItemEvent;
 import java.math.RoundingMode;
 
 /**
@@ -172,6 +173,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         TextArea_Note = new javax.swing.JTextArea();
+        jLabel_EscursioneMassima = new javax.swing.JLabel();
+        ComboBox_EscursioneMassima = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -290,6 +293,16 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         TextArea_Note.setRows(5);
         jScrollPane1.setViewportView(TextArea_Note);
 
+        jLabel_EscursioneMassima.setText("Escursione Massima per trasferimenti  (in percentule) :");
+
+        ComboBox_EscursioneMassima.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        ComboBox_EscursioneMassima.setSelectedIndex(3);
+        ComboBox_EscursioneMassima.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ComboBox_EscursioneMassimaItemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -299,7 +312,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ComboBox_TipoMovimento, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel_EscursioneMassima, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ComboBox_EscursioneMassima, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Annulla))
@@ -339,7 +355,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_Annulla)
-                    .addComponent(Bottone_OK))
+                    .addComponent(Bottone_OK)
+                    .addComponent(jLabel_EscursioneMassima)
+                    .addComponent(ComboBox_EscursioneMassima, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -1505,8 +1523,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         // TODO add your handling code here:
         
        
-        int scelta=this.ComboBox_TipoMovimento.getSelectedIndex();
-        if (evt.getItem().toString().equals(ComboBox_TipoMovimento.getSelectedItem().toString())){
+        int scelta=ComboBox_TipoMovimento.getSelectedIndex();
+        if (evt.getStateChange() == ItemEvent.SELECTED){
+       // if (evt.getItem().toString().equals(ComboBox_TipoMovimento.getSelectedItem().toString())){
          //    System.out.println("cambio "+scelta);
         String descrizione,dettaglio;
                 if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
@@ -1572,9 +1591,21 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
               default -> {descrizione="PRELIEVO CRYPTO";
               TransferNO();}
           }
-        }}
+        }
+        }
     }//GEN-LAST:event_ComboBox_TipoMovimentoItemStateChanged
 
+    private void ComboBox_EscursioneMassimaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_EscursioneMassimaItemStateChanged
+        // TODO add your handling code here:
+     if (evt.getStateChange() == ItemEvent.SELECTED) {
+       // Object selectedItem = evt.getItem();
+        ComboBox_TipoMovimentoItemStateChanged(evt);
+      //  System.out.println("Elemento selezionato: " + selectedItem);
+    }
+           
+
+    }//GEN-LAST:event_ComboBox_EscursioneMassimaItemStateChanged
+                                      
     private void TransferSI(){
                   Tabella_MovimentiAbbinati.setEnabled(true);
                   jLabel3.setEnabled(true);
@@ -1658,7 +1689,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 QtaAttuale = new BigDecimal(attuale[13]).stripTrailingZeros();
                 TipoMovimentoRichiesto = "PC";
             }
-            BigDecimal escursioneMassima = new BigDecimal(30);
+            
+            String Escursione=ComboBox_EscursioneMassima.getSelectedItem().toString();
+            //System.out.println(Escursione);
+            BigDecimal escursioneMassima = new BigDecimal(Escursione);
             BigDecimal QtaAttualeMax = QtaAttuale.add(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
             BigDecimal QtaAttualeMin = QtaAttuale.subtract(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
 
@@ -1836,6 +1870,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_OK;
+    private javax.swing.JComboBox<String> ComboBox_EscursioneMassima;
     private javax.swing.JComboBox<String> ComboBox_TipoMovimento;
     private javax.swing.JTable Tabella_MovimentiAbbinati;
     private javax.swing.JTextArea TextArea_Note;
@@ -1843,6 +1878,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel_EscursioneMassima;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

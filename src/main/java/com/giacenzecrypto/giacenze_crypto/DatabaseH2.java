@@ -663,6 +663,11 @@ public class DatabaseH2 {
         //System.out.println(ora_address_chain);
         String Risultato = null;
         String OAC[]=ora_address_chain.split("_");
+        if (OAC.length<3)
+        {
+            System.out.println("Errore nella funzione DatabaseH2.PrezzoAddressChain_Leggi, stringa con errore : "+ora_address_chain);
+            return null;
+        }
         if (!OAC[2].equals("SOL")) ora_address_chain=ora_address_chain.toUpperCase();
         try {
             // Connessione al database
@@ -958,6 +963,7 @@ public class DatabaseH2 {
      */
     public static String GestitiCoingecko_Leggi(String Gestito) {
         String Risultato = null;
+        if (Gestito.split("_").length<2)return null;
         String Rete = Gestito.split("_")[1];
         if (!Rete.equals("SOL")) {
             Gestito = Gestito.toUpperCase();

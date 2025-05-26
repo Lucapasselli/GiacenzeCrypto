@@ -50,9 +50,8 @@ public class Prezzi {
     static Map<String, String> MappaConversioneSwapTransIDCoins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
     //di seguito le coppie prioritarie ovvero quelle che hanno precedneza all'atto della ricerca dei prezzi rispetto alle altre
-    static String CoppiePrioritarie[]=new String []{"USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","EURIUSDT","BTCUSDT",
-        "ETHUSDT","BNBUSDT","SOLUSDT","LTCUSDT","ADAUSDT","XRPUSDT","NEOUSDT",
-        "IOTAUSDT","EOSUSDT","XLMUSDT","SOLUSDT","PAXUSDT","TRXUSDT","ATOMUSDT","MATICUSDT"};
+    static String CoppiePrioritarie[]=new String []{"EURIUSDT","USDCUSDT","BUSDUSDT","DAIUSDT","TUSDUSDT","BTCUSDT",
+        "ETHUSDT","BNBUSDT","SOLUSDT","LTCUSDT","ADAUSDT","XRPUSDT","XLMUSDT","PAXUSDT","TRXUSDT","ATOMUSDT","MATICUSDT"};
 
     
   //DA FARE : Recupero prezzi orari in base all'ora più vicina  
@@ -66,7 +65,7 @@ public class Prezzi {
         else if (Movimento[32] == null || Movimento[32].isBlank()) {//Questa cosa la faccio se il campo non è valorizzato o è valorizzato a NO
             if (!Movimento[15].equals("0.00")) {
                 Movimento[32] = "SI";
-            } else if (DammiPrezzoDaTransazione(Movimento).equals("0.00")) {               
+            } else if (DammiPrezzoDaTransazione(Movimento,15).equals("0.00")) {               
                 Movimento[32] = "NO";
             } else {
                 Movimento[32] = "SI";
@@ -76,7 +75,7 @@ public class Prezzi {
         return prezzato;
     }
     
-    public static String DammiPrezzoDaTransazione(String[] v){
+    public static String DammiPrezzoDaTransazione(String[] v,int decimali){
 
             long data=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
             String Rete = Funzioni.TrovaReteDaID(v[0]);
@@ -96,7 +95,7 @@ public class Prezzi {
             Monete[1].Tipo = v[12];
             Monete[1].Qta = v[13];
             Monete[1].Rete = Rete;
-            String Prezzo=DammiPrezzoTransazione(Monete[0],Monete[1],data,null, true, 15, Rete);
+            String Prezzo=DammiPrezzoTransazione(Monete[0],Monete[1],data,null, true, decimali, Rete);
             return Prezzo;
             
     }
@@ -2142,8 +2141,10 @@ for (int i=0;i<ArraydataIni.size();i++){
          
             //PARTE 3 - VERIFICO SE COPPIE PRIORITARIE
             //ora scorro le coppie principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
-        for (int k = 0; k < 2; k++) {
+        
             for (String CoppiePrioritarie1 : CoppiePrioritarie) {
+               // System.out.println(CoppiePrioritarie1);
+                for (int k = 0; k < 2; k++) {
                 if (mon[k] != null && (mon[k].Moneta + "USDT").toUpperCase().equals(CoppiePrioritarie1) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
                     //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
                         if (AddressMoneta[k] == null || MonetaRete.equalsIgnoreCase(AddressMoneta[k]) || ForzaUsoBinance[k]) {

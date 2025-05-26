@@ -25,6 +25,14 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.38
+Nuove Implementazioni :
+ - Dato che attualmente i prezzi, se non presi dal CSV, vengono presi con una precisione oraria, da questa versione per gli scambi fiscalmente rilevanti verrà preso come prioritario
+   il prezzo della stablecoin/FIAT presente nella transazione e mai quella della cripto che potrebbe essere piuttosto volatile.
+Correzione di Bug :
+ - Corretto diversi problemini di visualizzazione / errori bloccanti in casi molto particolari
+
+
 ver. 1.0.37
 Nuove Implementazioni : 
  - Aggiunto popUpMenu su quasi tutte le tabelle del programma e su alcuni campi testo (si attiva con il tasto destro del mouse).

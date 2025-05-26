@@ -127,7 +127,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.38 RC1 Beta";
+    public static String Titolo="Giacenze Crypto 1.0.38 Beta";
 
     
     
@@ -517,6 +517,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie = new javax.swing.JPanel();
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
+        Opzioni_Varie_RicalcolaPrezzi = new javax.swing.JButton();
         Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
@@ -3485,6 +3486,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_Varie_RicalcolaPrezzi.setText("Ricalcola i prezzi delle transazioni");
+        Opzioni_Varie_RicalcolaPrezzi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_RicalcolaPrezziActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
         Opzioni_Varie.setLayout(Opzioni_VarieLayout);
         Opzioni_VarieLayout.setHorizontalGroup(
@@ -3493,8 +3501,9 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(1098, Short.MAX_VALUE))
+                    .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(1103, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3503,7 +3512,9 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_Disclaimer)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(86, 86, 86)
+                .addComponent(Opzioni_Varie_RicalcolaPrezzi)
+                .addContainerGap(591, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
@@ -9863,6 +9874,21 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             }
         //this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
+
+    private void Opzioni_Varie_RicalcolaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        for (String[] trans:MappaCryptoWallet.values()){
+            String pr="0.00";
+            if (trans[14].isBlank())pr=Prezzi.DammiPrezzoDaTransazione(trans,2);
+            if (!trans[15].equals(pr)&&!pr.equals("0.00"))
+            {
+                trans[15]=pr;
+            }
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        this.Funzioni_AggiornaTutto();
+    }//GEN-LAST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
     
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -12043,6 +12069,7 @@ try {
     private javax.swing.JButton Opzioni_Varie_Bottone_Disclaimer;
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
+    private javax.swing.JButton Opzioni_Varie_RicalcolaPrezzi;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;

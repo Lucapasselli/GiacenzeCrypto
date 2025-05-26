@@ -1,0 +1,63 @@
+
+
+Ciao a tutti,
+
+
+
+Mi chiamo Luca ed è da un pò che nel tempo libero mi sto dedicando alla scrittura di un software che mi permetta di dichiarare le mie cripto in autonomia e senza spese aggiuntive.
+
+
+
+Il software non ha la pretesa di essere un competitor ai software commerciali anche perchè quelli hanno dietro molti programmatori e commercialisti al seguito, io invece al software posso dedicarci solo qualche ora a settimana, e tra l'altro non sono ne programmatore ne commercialista.
+
+
+
+Ad ogni modo visto che lo stavo scrivendo per me ho subito pensato di metterlo free per tutti.
+
+
+
+Il software è pensato per gente che sa quello che deve fare e come farlo anche perchè non posso ne voglio assumermi alcuna responsabilità sulla correttezza dei calcoli / interpretazioni normative.
+
+
+
+Detto questo attualmente il software permette di :
+
+- Scaricare direttamente dal alcune blockchain le movimentazioni.
+
+- Importare i dati da alcuni exchange/software fiscali.
+
+- Generare un report per il quadro RW.
+
+- Generare un report per il quadro RT.
+
+- Recuperare i prezzi delle crypto in maniera autonoma da più piattaforma con la precisione all'ora.
+
+E un pò di altre cose che non sto qui ad elencare.
+
+
+
+Invece non permette di :
+
+- Gestire un eventuale rivalutazione
+
+- Gestire i prestiti Crypto (Borrowing)
+
+- Gestire i derivati (futures, perpetual etc...)
+
+
+
+La precisione all'ora del recupero automatico dei prezzi delle crypto potrebbe essere un problema a primo acchito ma vista l'attuale normativa per cui ci si porta dietro il costo di carico per gli scambi crypto non rilevanti e tenendo conto che gli scambi rilevanti sono solo quelli verso Euro/stable coin legate al Dollaro (tralasciando gli NFT) di fatto è un non problema perchè in quel momento il valore della transazione sarà dettata dall'importo in Euro / dollari, quindi molto precisa.
+
+
+
+Il software è disponibile su : https://sourceforge.net/projects/giacenze-crypto-com/files/
+
+La documentazione invece su : https://sourceforge.net/projects/giacenze-crypto-com/files/Documentazione/
+
+e su : https://sourceforge.net/p/giacenze-crypto-com/wiki/ISTRUZIONI/
+
+
+
+Il software ha preso spunto dalle istruzioni in questa pagina del mitico rodrig11 : https://forum.finanzaonline.com/threads/faq-tassazione-cripto-attivita.2058741/
+
+anche se può essere che in alcuni punti non siano seguite alla lettera, ho infatti inserito diverse opzioni di personalizzazione

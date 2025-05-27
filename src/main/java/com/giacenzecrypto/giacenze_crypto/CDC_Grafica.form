@@ -4780,8 +4780,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_Bottone_ProblemiNoti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_RicalcolaPrezzi" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="591" max="32767" attributes="0"/>
+                              <Component id="Opzioni_Varie_RicalcolaPrezzi" min="-2" pref="95" max="-2" attributes="0"/>
+                              <EmptySpace pref="519" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

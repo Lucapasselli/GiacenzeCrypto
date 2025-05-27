@@ -29,9 +29,12 @@ ver. 1.0.38
 Nuove Implementazioni :
  - Dato che attualmente i prezzi, se non presi dal CSV, vengono presi con una precisione oraria, da questa versione per gli scambi fiscalmente rilevanti verrà preso come prioritario
    il prezzo della stablecoin/FIAT presente nella transazione e mai quella della cripto che potrebbe essere piuttosto volatile.
+ - Aggiunto Tasto "Ricalcola i prezzi delle transazioni" nella sezione "Opzioni - Varie" per permettere di ricalcolare i prezzi delle transazioni secondo le nuove regole.
+   Prima del ricalcolo verrà mostrata una finestra in cui si potrà scegliere da che anno effettuare il ricalco.
+   Per sicurezza verrà anche salvata una copia delle movimentazioni crypto nella cartella /Backup che rimarrà per 6 mesi.
+   Ad ogni modo se non si salva, la modifica dei prezzi non è permanente, basta premere annulla nella schermata principale per tornare alla situazione iniziale.
 Correzione di Bug :
  - Corretto diversi problemini di visualizzazione / errori bloccanti in casi molto particolari
-
 
 ver. 1.0.37
 Nuove Implementazioni : 

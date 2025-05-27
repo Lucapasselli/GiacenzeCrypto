@@ -105,6 +105,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
@@ -1617,7 +1618,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti,boolean SalvataggioPermanente) {
         File f = new File("movimenti.crypto.db");
         File f2 = new File("movimenti.crypto.backup");
-        if (SalvataggioPermanente)f2 = new File("Backup/movimenti.crypto.backup."+System.currentTimeMillis());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime now = LocalDateTime.now();
+            String DataOra=now.format(formatter);
+        if (SalvataggioPermanente)f2 = new File("Backup/movimenti.crypto.backup."+DataOra);
     if(f.exists()){
         if(f2.exists())f2.delete();
         f.renameTo(f2);

@@ -58,6 +58,7 @@ import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
@@ -3513,8 +3514,8 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
                 .addGap(86, 86, 86)
-                .addComponent(Opzioni_Varie_RicalcolaPrezzi)
-                .addContainerGap(591, Short.MAX_VALUE))
+                .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(519, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
@@ -9877,19 +9878,93 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void Opzioni_Varie_RicalcolaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
         // TODO add your handling code here:
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        for (String[] trans:MappaCryptoWallet.values()){
-            String pr="0.00";
-            if (trans[14].isBlank())pr=Prezzi.DammiPrezzoDaTransazione(trans,2);
-            if (!trans[15].equals(pr)&&!pr.equals("0.00"))
-            {
-                trans[15]=pr;
+        //this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        //Fase 2 Preparazione thead
+        String[] options = { "2015", "2016", "2017","2018", "2019", "2020","2021", "2022", "2023","2024", "2025","2026" };
+        JLabel label = new JLabel("<html>Scegli l'anno da cui partire per il ricalcolo dei prezzi.<br>"
+                + "Verranno ricalcolati i prezzi di tutte le movimentazioni crypto a partire dall'anno selezionato.<br>"
+                + "</html>");
+        JComboBox<String> comboBox = new JComboBox<>(options);
+
+        Object[] message = {
+            label,
+            comboBox
+        };
+        
+        int result = JOptionPane.showConfirmDialog(
+            this,                
+            message,            
+            "Scegli l'anno", 
+            JOptionPane.OK_CANCEL_OPTION
+        );
+        if (result == JOptionPane.OK_OPTION) {
+        int anno = Integer.parseInt((String) comboBox.getSelectedItem());
+   
+        //Creo una copia di backup nel caso in cui voglia recuperare i dati
+        Importazioni.Scrivi_Movimenti_Crypto(MappaCryptoWallet,true);
+        
+        
+        Download progress = new Download();
+        progress.setLocationRelativeTo(this);
+
+        Thread thread;
+        thread = new Thread() {
+            public void run() {               
+                //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+                //in futuro dovrò mettere anche un limite per data e un limite per wallet
+                progress.Titolo("Ricalcolo prezzi in corso....");
+                progress.SetLabel("Ricalcolo prezzi in corso....");
+                progress.SetMassimo(MappaCryptoWallet.size());
+                BigDecimal diffPrezzi = BigDecimal.ZERO;
+                BigDecimal diffPrezziRilevanti = BigDecimal.ZERO;
+                BigDecimal nuoviPrezziTrovati = BigDecimal.ZERO;
+                int righiModificati=0;
+                int righiRilevantiModificati=0;
+                int nuoviPrezzi=0;
+                int i=0;
+                for (String[] trans : MappaCryptoWallet.values()) {
+                    int Annorif=Integer.parseInt(trans[0].substring(0, 4));
+                    i++;
+                    progress.SetAvanzamento(i);
+                    if (Annorif>=anno){
+                    String pr = "0.00";
+                    if (trans[14].isBlank()) {
+                        pr = Prezzi.DammiPrezzoDaTransazione(trans, 2);
+                    }
+                    if (!trans[15].equals(pr) && !pr.equals("0.00")) {
+                        //System.out.println(trans[15]+" - "+pr);
+                        if (trans[33].equals("S")) {
+                            righiRilevantiModificati++;
+                            diffPrezziRilevanti = diffPrezziRilevanti.subtract(new BigDecimal(trans[15])).add(new BigDecimal(pr));
+                        }
+                        if (trans[15].equals("0.00")) {
+                            nuoviPrezzi++;
+                            nuoviPrezziTrovati = nuoviPrezziTrovati.subtract(new BigDecimal(trans[15])).add(new BigDecimal(pr));
+                        }
+                            righiModificati++;
+                            diffPrezzi = diffPrezzi.subtract(new BigDecimal(trans[15])).add(new BigDecimal(pr));
+                        trans[15] = pr;
+                    }
+                }
+                }
+                JOptionPane.showConfirmDialog(progress, 
+                        "<html>Sono stati modificati <b>"+righiModificati+"</b> prezzi, per una differenza totale di <b>€ "+diffPrezzi+"</b><br>"+
+                                "di cui :<br>"+
+                               " - <b>"+nuoviPrezzi+ "</b> sono relativi all'attribuzione di un prezzo a prodotti che prima non lo avevano per un totale di <b>€ "+nuoviPrezziTrovati+"</b><br>"+
+                               " - <b>"+righiRilevantiModificati+ "</b> sono relativi a movimenti fiscalmente rilevanti per un totale di <b>€ "+diffPrezziRilevanti+"</b><br>"+
+                                       "</html>",
+                            "Riepilogo modifiche"
+                        , JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                progress.ChiudiFinestra();
+
             }
-        }
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        };
+        thread.start();
+        progress.setVisible(true);
         this.Funzioni_AggiornaTutto();
+        }
     }//GEN-LAST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
-    
+
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // Anno=Anno-1;

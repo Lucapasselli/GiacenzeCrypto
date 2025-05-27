@@ -231,11 +231,13 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
         if (!Valore.isBlank()){
             Valore="<html>€ "+Valore+"</html>";
             Val=new String[]{"Valore transazione ",Valore};
-            ModelloTabellaCrypto.addRow(Val);
-            
-
-            
-            
+            ModelloTabellaCrypto.addRow(Val);      
+        }
+        Valore=Transazione[14];
+        if (!Valore.isBlank()){
+            Valore="<html>"+Valore+"</html>";
+            Val=new String[]{"Valore transazione da CSV",Valore};
+            ModelloTabellaCrypto.addRow(Val);      
         }
         
         Valore=Transazione[19];

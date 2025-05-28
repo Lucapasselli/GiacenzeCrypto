@@ -35,6 +35,7 @@ Nuove Implementazioni :
    Ad ogni modo se non si salva, la modifica dei prezzi non è permanente, basta premere annulla nella schermata principale per tornare alla situazione iniziale.
 Correzione di Bug :
  - Corretto diversi problemini di visualizzazione / errori bloccanti in casi molto particolari
+ - Corretto Bug che, in fase di importazione dal Binace Tax Report, impediva di valorizzare i prezzi dei prelievi.
 
 ver. 1.0.37
 Nuove Implementazioni : 

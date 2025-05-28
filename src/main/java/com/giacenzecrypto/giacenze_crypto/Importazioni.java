@@ -2383,11 +2383,11 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 if (RT[11].equals("EUR"))
                                 {
                                     TipoCrypto="FIAT";
-                                    valoreEuro=new BigDecimal(movimentoSplittato[10]).setScale(2, RoundingMode.HALF_UP).toString();
+                                    valoreEuro=new BigDecimal(movimentoSplittato[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 }
                                 else{                                     
                                     TipoCrypto="Crypto";
-                                    valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).toString();
+                                    valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 }
                                 RT[12] = TipoCrypto;
                                 RT[13] = movimentoSplittato[10];
@@ -2400,6 +2400,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[36] = movimentoSplittato[9];
                                 RT[37] = movimentoSplittato[13];
                                 RiempiVuotiArray(RT);
+                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);
                                 
                                 
@@ -2414,7 +2415,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
                                 RT[6] = "-> "+movimentoSplittato[11];                                
                                 RT[7] = TipoMovimento;
-                                String valoreEuro=new BigDecimal(movimentoSplittato[10]).setScale(2, RoundingMode.HALF_UP).toString();
+                                String valoreEuro=new BigDecimal(movimentoSplittato[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[11] = movimentoSplittato[11];
                                 RT[12] = "FIAT";
                                 RT[13] = movimentoSplittato[10];
@@ -2424,6 +2425,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22] = "A";
                                 RT[32] = "SI";
                                 RiempiVuotiArray(RT);
+                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);
                                 
                                 
@@ -2439,7 +2441,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
                                 RT[6] = movimentoSplittato[7]+" -> "+movimentoSplittato[11];                                
                                 RT[7] = TipoMovimento;
-                                String valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).toString();
+                                String valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[8] = movimentoSplittato[7];
                                 RT[9] = "Crypto";
                                 RT[10] = movimentoSplittato[6];
@@ -2457,6 +2459,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[37] = movimentoSplittato[13];
                                 
                                 RiempiVuotiArray(RT);
+                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);    
 
                             }
@@ -2479,7 +2482,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12] = "Crypto";
                                 RT[13] = movimentoSplittato[10];
                                 RT[14] = "€ "+movimentoSplittato[12];
-                                String valoreEuro=new BigDecimal(RT[10]).setScale(2, RoundingMode.HALF_UP).toString();
+                                String valoreEuro=new BigDecimal(RT[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15] = valoreEuro;
                                 RT[17] = valoreEuro;
                                 RT[19] = valoreEuro;
@@ -2489,6 +2492,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[37] = movimentoSplittato[13];
                                 
                                 RiempiVuotiArray(RT);
+                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);    
 
                             }
@@ -2511,7 +2515,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12] = "FIAT";
                                 RT[13] = movimentoSplittato[10];
                                 RT[14] = "€ "+movimentoSplittato[12];
-                                String valoreEuro=new BigDecimal(RT[13]).setScale(2, RoundingMode.HALF_UP).toString();
+                                String valoreEuro=new BigDecimal(RT[13]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15] = valoreEuro;
                                 RT[17] = valoreEuro;
                                 RT[19] = valoreEuro;
@@ -2521,6 +2525,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[37] = movimentoSplittato[13];
                                 
                                 RiempiVuotiArray(RT);
+                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);    
 
                             }
@@ -2531,6 +2536,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[3] = "Binance";
                                 RT[4] = "Principale";                                                          
                                 RT[7]=TipoMovimento;
+                                String valoreEuro;
                                 if (TipoMovimento.contains("SEND.")) {
                                     RT[0] = data.replaceAll(" |-|:", "") + "_Binance." + idBinance + "_1_1_PC";
                                     RT[5] = "PRELIEVO CRYPTO";
@@ -2540,6 +2546,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     RT[10] = movimentoSplittato[6];
                                     if (!RT[10].contains("-"))RT[10]="-"+RT[10];
                                     RT[14] = "€ " + movimentoSplittato[8];
+                                    valoreEuro=new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 } else {
                                     RT[0] = data.replaceAll(" |-|:", "") + "_Binance." + idBinance + "_1_1_DC";
                                     RT[5] = "DEPOSITO CRYPTO";
@@ -2548,14 +2555,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     RT[12] = "Crypto";
                                     RT[13] = movimentoSplittato[10];
                                     RT[14] = "€ " + movimentoSplittato[12];
+                                    valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 }                                                                                          
-                                String valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[15]=valoreEuro;
                                 RT[22]="A";
                                 RT[32] = "SI";
                                 RT[36] = movimentoSplittato[9];
                                 RT[37] = movimentoSplittato[13];
                                 RiempiVuotiArray(RT);
+                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT); 
                                 
                                                                 
@@ -2576,13 +2584,13 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                RT[7] = TipoMovimento;
                                RT[8] = movimentoSplittato[15];
                                if (movimentoSplittato[15].equals("EUR")){
-                                    String valoreEuro = new BigDecimal(movimentoSplittato[14]).setScale(2, RoundingMode.HALF_UP).toString();
+                                    String valoreEuro = new BigDecimal(movimentoSplittato[14]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                     RT[9] = "FIAT";
                                     RT[15] = valoreEuro;
                                }
                                else{
                                    RT[9] = "Crypto";
-                                   String valoreEuro = new BigDecimal(movimentoSplittato[16]).setScale(2, RoundingMode.HALF_UP).toString();
+                                   String valoreEuro = new BigDecimal(movimentoSplittato[16]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                    RT[15] = valoreEuro;
                                
                                }
@@ -2592,6 +2600,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                RT[22] = "A";
                                RT[32] = "SI";
                                RiempiVuotiArray(RT);
+                               //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                lista.add(RT);
 
                            }

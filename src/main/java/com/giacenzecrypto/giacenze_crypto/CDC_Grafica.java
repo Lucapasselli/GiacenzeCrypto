@@ -286,6 +286,8 @@ private static final long serialVersionUID = 3L;
         MenuItem_Incolla = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
+        MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
+        MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
@@ -588,6 +590,24 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_DettagliMovimento);
+
+        MenuItem_ModificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        MenuItem_ModificaMovimento.setText("Modifica Movimento");
+        MenuItem_ModificaMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaMovimentoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ModificaMovimento);
+
+        MenuItem_EliminaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
+        MenuItem_EliminaMovimento.setText("Elimina Movimento");
+        MenuItem_EliminaMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_EliminaMovimentoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_EliminaMovimento);
         PopupMenu.add(jSeparator6);
 
         MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
@@ -6881,6 +6901,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoModificaActionPerformed
 
+    public void Funzione_EliminaMovimento(String ID,Component c){
+    int risposta=JOptionPane.showOptionDialog(c,"Sicuro di voler cancellare la transazione con ID "+ID+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+            if (risposta==0){
+                //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
+                Funzioni.RimuoviMovimentazioneXID(ID);
+                TabellaCryptodaAggiornare=true;
+                // TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+                // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
+                // TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
+                JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
+                    "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            }
+    }
+    
     public void Funzione_ModificaMovimento(String ID,Component c){
             MovimentoManuale_GUI a = new MovimentoManuale_GUI();
             String riga[]=CDC_Grafica.MappaCryptoWallet.get(ID);
@@ -6941,6 +6975,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
 
+    
+    
     private void TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
         // TODO add your handling code here:
         
@@ -9965,6 +10001,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }//GEN-LAST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
 
+    private void MenuItem_ModificaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaMovimentoActionPerformed
+        // TODO add your handling code here:
+        if (PopUp_IDTrans!=null){
+           Funzione_ModificaMovimento(PopUp_IDTrans,PopUp_Component);
+        }
+    }//GEN-LAST:event_MenuItem_ModificaMovimentoActionPerformed
+
+    private void MenuItem_EliminaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EliminaMovimentoActionPerformed
+        // TODO add your handling code here:
+                if (PopUp_IDTrans!=null){
+           Funzione_EliminaMovimento(PopUp_IDTrans,PopUp_Component);
+        }
+    }//GEN-LAST:event_MenuItem_EliminaMovimentoActionPerformed
+
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // Anno=Anno-1;
@@ -12089,8 +12139,10 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;
+    private javax.swing.JMenuItem MenuItem_EliminaMovimento;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_Incolla;
+    private javax.swing.JMenuItem MenuItem_ModificaMovimento;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;

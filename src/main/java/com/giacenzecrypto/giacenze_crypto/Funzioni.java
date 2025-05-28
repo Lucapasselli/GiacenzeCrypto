@@ -180,8 +180,12 @@ public class Funzioni {
             if (ID==null)
             {
                 PopUp_disableMenuItemByText(pop,"Dettagli Movimento");
+                PopUp_disableMenuItemByText(pop,"Modifica Movimento");
+                PopUp_disableMenuItemByText(pop,"Elimina Movimento");
             }else{
                 PopUp_enableMenuItemByText(pop,"Dettagli Movimento");
+                PopUp_enableMenuItemByText(pop,"Modifica Movimento");
+                PopUp_enableMenuItemByText(pop,"Elimina Movimento");
             }
             
             //Se è una tabella mi comporto in questo modo

@@ -174,7 +174,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         TextArea_Note = new javax.swing.JTextArea();
         jLabel_EscursioneMassima = new javax.swing.JLabel();
-        ComboBox_EscursioneMassima = new javax.swing.JComboBox<>();
+        ComboBox_EscursioneMassimaPercentuale = new javax.swing.JComboBox<>();
+        ComboBox_EscursioneMassimaGiorni = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -293,15 +295,25 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         TextArea_Note.setRows(5);
         jScrollPane1.setViewportView(TextArea_Note);
 
-        jLabel_EscursioneMassima.setText("Escursione Massima per trasferimenti  (in percentule) :");
+        jLabel_EscursioneMassima.setText("Escursione Massima per trasferimenti  (in percentule sul valore) :");
 
-        ComboBox_EscursioneMassima.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
-        ComboBox_EscursioneMassima.setSelectedIndex(3);
-        ComboBox_EscursioneMassima.addItemListener(new java.awt.event.ItemListener() {
+        ComboBox_EscursioneMassimaPercentuale.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" }));
+        ComboBox_EscursioneMassimaPercentuale.setSelectedIndex(3);
+        ComboBox_EscursioneMassimaPercentuale.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                ComboBox_EscursioneMassimaItemStateChanged(evt);
+                ComboBox_EscursioneMassimaPercentualeItemStateChanged(evt);
             }
         });
+
+        ComboBox_EscursioneMassimaGiorni.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "15", "30", "45", "60", "90", "120", "240", "365" }));
+        ComboBox_EscursioneMassimaGiorni.setSelectedIndex(1);
+        ComboBox_EscursioneMassimaGiorni.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ComboBox_EscursioneMassimaGiorniItemStateChanged(evt);
+            }
+        });
+
+        jLabel5.setText("Escursione Massima per scambi differiti  (in giorni) :");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -312,9 +324,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ComboBox_TipoMovimento, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel_EscursioneMassima, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel_EscursioneMassima, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ComboBox_EscursioneMassima, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ComboBox_EscursioneMassimaPercentuale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ComboBox_EscursioneMassimaGiorni, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -351,13 +367,19 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Bottone_Annulla)
-                    .addComponent(Bottone_OK)
-                    .addComponent(jLabel_EscursioneMassima)
-                    .addComponent(ComboBox_EscursioneMassima, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(ComboBox_EscursioneMassimaGiorni, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel_EscursioneMassima)
+                            .addComponent(ComboBox_EscursioneMassimaPercentuale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(Bottone_OK, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Bottone_Annulla, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -751,8 +773,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                                 CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
                             } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
                                 CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
-                                JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                              /*  JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
                             }
                         } else {
                             IDDeposito = IDTransazioneControparte;
@@ -762,8 +784,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                                 CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
                             } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
                                 CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
-                                JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                               /* JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
                             }
 
                         }
@@ -1595,7 +1617,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_ComboBox_TipoMovimentoItemStateChanged
 
-    private void ComboBox_EscursioneMassimaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_EscursioneMassimaItemStateChanged
+    private void ComboBox_EscursioneMassimaPercentualeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_EscursioneMassimaPercentualeItemStateChanged
         // TODO add your handling code here:
      if (evt.getStateChange() == ItemEvent.SELECTED) {
        // Object selectedItem = evt.getItem();
@@ -1604,7 +1626,16 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     }
            
 
-    }//GEN-LAST:event_ComboBox_EscursioneMassimaItemStateChanged
+    }//GEN-LAST:event_ComboBox_EscursioneMassimaPercentualeItemStateChanged
+
+    private void ComboBox_EscursioneMassimaGiorniItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_EscursioneMassimaGiorniItemStateChanged
+        // TODO add your handling code here:
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+       // Object selectedItem = evt.getItem();
+        ComboBox_TipoMovimentoItemStateChanged(evt);
+      //  System.out.println("Elemento selezionato: " + selectedItem);
+    }
+    }//GEN-LAST:event_ComboBox_EscursioneMassimaGiorniItemStateChanged
                                       
     private void TransferSI(){
                   Tabella_MovimentiAbbinati.setEnabled(true);
@@ -1678,6 +1709,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String TipoMovimentoRichiesto;
         String MonetaAttuale;
         BigDecimal QtaAttuale;
+        long Giorni=Long.parseLong(ComboBox_EscursioneMassimaGiorni.getSelectedItem().toString())*86400000;
+        String Escursione=ComboBox_EscursioneMassimaPercentuale.getSelectedItem().toString();
+        BigDecimal escursioneMassima = new BigDecimal(Escursione);
        // System.out.println(ComboBox_TipoMovimento);
         if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().contains("TRASFERIMENTO TRA WALLET")) {
             if (TipoMovimentoAttuale.equalsIgnoreCase("PC")) {
@@ -1690,9 +1724,6 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 TipoMovimentoRichiesto = "PC";
             }
             
-            String Escursione=ComboBox_EscursioneMassima.getSelectedItem().toString();
-            //System.out.println(Escursione);
-            BigDecimal escursioneMassima = new BigDecimal(Escursione);
             BigDecimal QtaAttualeMax = QtaAttuale.add(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
             BigDecimal QtaAttualeMin = QtaAttuale.subtract(QtaAttuale.multiply(escursioneMassima).divide(new BigDecimal(100))).abs();
 
@@ -1703,45 +1734,42 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             //4 - il movimento deve essere fatto nel giro di max 24 ore dopo quello analizzata e massimo 24 ore prima
             //5 - La qta uscita non deve essere ami inferiore alla qta ricevuta
             //6 - Exchange+Wallet non deve essere lo stesso (DA FARE!!!!!!!!!!!!!!!!)
+            
             for (String[] v : MappaCryptoWallet.values()) {
                 String TipoMovimento = v[0].split("_")[4].trim();
                 if (v[22]!=null&&!v[22].equalsIgnoreCase("AU")&&TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
                     String WalletRiferimento=v[3]+v[4];
-                    BigDecimal Qta = null;
-                    BigDecimal QtanoABS = null;
-                    BigDecimal SommaQta = null;
-                    String Moneta = null;
-                    long DataOra = 0;
-                    if (TipoMovimento.equalsIgnoreCase("DC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
+                    BigDecimal Qta;
+                    BigDecimal QtanoABS;
+                    BigDecimal SommaQta;
+                    String Moneta;
+                    long DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                    long DataMinima=DataOraAttuale- 86400000;
+                    long DataMassima=DataOraAttuale+ 86400000;
+                    if (TipoMovimento.equalsIgnoreCase("DC"))
                     {
                         Qta = new BigDecimal(v[13]).abs();
                         QtanoABS = new BigDecimal(v[13]);
                         SommaQta = QtaAttuale.add(new BigDecimal(v[13]));
                         Moneta = v[11].trim();
-                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                        /*DataMinima=DataOraAttuale- 86400000;
+                        DataMassima=DataOraAttuale+Giorni;*/
 
-                    } else if (TipoMovimento.equalsIgnoreCase("PC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
+                    } else// if (TipoMovimento.equalsIgnoreCase("PC"))
                     {
                         Qta = new BigDecimal(v[10]).abs();
                         QtanoABS = new BigDecimal(v[10]);
                         SommaQta = QtaAttuale.add(new BigDecimal(v[10]));
-                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
                         Moneta = v[8].trim();
+                       /* DataMinima=DataOraAttuale-Giorni;
+                        DataMassima=DataOraAttuale+ 86400000;*/
                     }
-                 /*   if (QtanoABS != null && Qta != null && SommaQta != null && Moneta != null
+
+                    if (Qta != null && SommaQta != null && Moneta != null
                             && MonetaAttuale.equals(Moneta)
                             && Qta.compareTo(QtaAttualeMax) == -1 && Qta.compareTo(QtaAttualeMin) == 1
-                            && DataOra < (DataOraAttuale + 86400000)
-                            && DataOra > (DataOraAttuale - 86400000)
-                            && !WalletRiferimento.equals(WalletAttuale)
-                            && SommaQta.compareTo(new BigDecimal(0)) <= 0) {
-                        System.out.println(v[1]);
-                    }*/
-                    if (QtanoABS != null && Qta != null && SommaQta != null && Moneta != null
-                            && MonetaAttuale.equals(Moneta)
-                            && Qta.compareTo(QtaAttualeMax) == -1 && Qta.compareTo(QtaAttualeMin) == 1
-                            && DataOra < (DataOraAttuale + 86400000)
-                            && DataOra > (DataOraAttuale - 86400000)
+                            && DataOra < (DataMassima)
+                            && DataOra > (DataMinima)
                             && !WalletRiferimento.equals(WalletAttuale)
                             && SommaQta.compareTo(new BigDecimal(0)) <= 0) {
                         String riga[] = new String[8];
@@ -1767,21 +1795,21 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         }else if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().contains("SCAMBIO CRYPTO DIFFERITO")) {
            // System.out.println("Differito");
            
-           long DataMinima=0;
-           long DataMassima=0;
-           long Mese=Long.parseLong("2592000000");
+           long DataMinima;
+           long DataMassima;
+           //long Mese=Long.parseLong("2592000000");
             if (TipoMovimentoAttuale.equalsIgnoreCase("PC")) {
                 MonetaAttuale = attuale[8].trim();
               //  QtaAttuale = new BigDecimal(attuale[10]).stripTrailingZeros();
                 TipoMovimentoRichiesto = "DC";
-                    DataMinima=DataOraAttuale-Mese;
+                    DataMinima=DataOraAttuale-Giorni;
                     DataMassima=DataOraAttuale+ 86400000;
             } else {
                 MonetaAttuale = attuale[11].trim();
               //  QtaAttuale = new BigDecimal(attuale[13]).stripTrailingZeros();
                 TipoMovimentoRichiesto = "PC";
                 DataMinima=DataOraAttuale- 86400000;
-                DataMassima=DataOraAttuale+Mese;
+                DataMassima=DataOraAttuale+Giorni;
             }
             //In questo caso i movimenti per essere accettati bisogna che abbiano le seguenti carattaristiche
             //1 - Devono essere del tipo movimento opposto a quello del movimento evidenziato
@@ -1797,16 +1825,16 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     String Moneta = null;
                     long DataOra = 0;
                     
-                    if (TipoMovimento.equalsIgnoreCase("DC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
+                    if (TipoMovimento.equalsIgnoreCase("DC"))
                     {
                         QtanoABS = new BigDecimal(v[13]);
                         Moneta = v[11].trim();
-                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1])-Mese;
+                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1])-Giorni;
 
-                    } else if (TipoMovimento.equalsIgnoreCase("PC"))//manca la parte pc + questa neanche funziona//da rivedere completamente
+                    } else if (TipoMovimento.equalsIgnoreCase("PC"))
                     {
                         QtanoABS = new BigDecimal(v[10]);
-                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1])+Mese;
+                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1])+Giorni;
                         Moneta = v[8].trim();
                     }
                     if (Moneta != null && QtanoABS!=null
@@ -1870,7 +1898,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
     private javax.swing.JButton Bottone_OK;
-    private javax.swing.JComboBox<String> ComboBox_EscursioneMassima;
+    private javax.swing.JComboBox<String> ComboBox_EscursioneMassimaGiorni;
+    private javax.swing.JComboBox<String> ComboBox_EscursioneMassimaPercentuale;
     private javax.swing.JComboBox<String> ComboBox_TipoMovimento;
     private javax.swing.JTable Tabella_MovimentiAbbinati;
     private javax.swing.JTextArea TextArea_Note;
@@ -1878,6 +1907,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel_EscursioneMassima;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

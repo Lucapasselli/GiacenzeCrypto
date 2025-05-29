@@ -10454,7 +10454,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             if (m != null) {
                 m = m.trim();
                 m = Funzioni.NormalizzaNome(m);//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                //Se il nome toke è di almeno 3 caratteri allora proseguo
+                //Se il nome toke è di almeno 2 caratteri allora proseguo
                 if (m.length() > 2) {
                     if (nomi[0] == null) {
                         DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, m);

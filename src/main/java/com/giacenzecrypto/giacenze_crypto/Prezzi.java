@@ -1027,8 +1027,11 @@ public class Prezzi {
 
         try {
             //System.out.println("Attendo 12 ");
-            if (ApiKey.isBlank()) TimeUnit.SECONDS.sleep(13);//il timeout serve per evitare di fare troppe richieste all'API
-            else TimeUnit.SECONDS.sleep(3);//Se ho le apikey posso fare molte più richieste quindi metto a 3 secondi il timeout
+            if (ApiKey.isBlank()) {TimeUnit.SECONDS.sleep(13);}//il timeout serve per evitare di fare troppe richieste all'API
+            else {
+                TimeUnit.SECONDS.sleep(3);
+                //System.out.println("Timeout 3 secondi");
+            }//Se ho le apikey posso fare molte più richieste quindi metto a 3 secondi il timeout
            // System.out.println("Fine sleep");
             URL url;
             //DA RIVEDERE!!!!!!!!!!!!!!

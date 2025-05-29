@@ -2507,7 +2507,11 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12] = "Crypto";
                                 RT[13] = movimentoSplittato[10];
                                 RT[14] = "€ "+movimentoSplittato[12];
-                                String valoreEuro=new BigDecimal(RT[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                String valoreEuro;
+                                if (movimentoSplittato[11].equals("EUR"))
+                                    valoreEuro=new BigDecimal(RT[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                else
+                                    valoreEuro=new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15] = valoreEuro;
                                 RT[17] = valoreEuro;
                                 RT[19] = valoreEuro;
@@ -2540,7 +2544,11 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12] = "FIAT";
                                 RT[13] = movimentoSplittato[10];
                                 RT[14] = "€ "+movimentoSplittato[12];
-                                String valoreEuro=new BigDecimal(RT[13]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                String valoreEuro;
+                                if (movimentoSplittato[11].equals("EUR"))
+                                    valoreEuro=new BigDecimal(RT[13]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                else
+                                    valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15] = valoreEuro;
                                 RT[17] = valoreEuro;
                                 RT[19] = valoreEuro;

@@ -128,7 +128,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.38 Beta";
+    public static String Titolo="Giacenze Crypto 1.0.39 RC1 Beta";
 
     
     
@@ -5690,6 +5690,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     public void Funzioni_AggiornaTutto() {
         //Se selezionato Situazione Import Crypto lo aggiorno
+       // System.out.println("Aggiorna Tutto");
+       this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1();       
         //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
@@ -5698,6 +5700,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         RW_RicalcolaRWseEsiste();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //DepositiPrelievi_Caricatabella();
     }
     
@@ -6048,14 +6051,19 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
-        System.out.println("Focus");      
-        TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
+        System.out.println("Focus"); 
+        if (TabellaCryptodaAggiornare) {
+            //TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
+            TabellaCryptodaAggiornare = false;
+            Funzioni_AggiornaTutto();
+        }
     }//GEN-LAST:event_formWindowGainedFocus
 
     private void TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto(){
                 if (TabellaCryptodaAggiornare) {
           //  System.out.println("AggiornoTabella");
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
             TabellaCryptodaAggiornare = false;
             TransazioniCrypto_DaSalvare = true;
             Calcoli_Plusvalenze.AggiornaPlusvalenze();
@@ -10061,12 +10069,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
       
            if(evt.getStateChange() == ItemEvent.SELECTED && TransazioniCrypto_ComboBox_FiltroWallet.isShowing()) {
-             boolean VediSoloSenzaPrezzo=false;
-             boolean EscludiTI=false;
+
              //int selezione=TransazioniCrypto_ComboBox_FiltroWallet.getSelectedIndex();
             // TransazioniCryptoTabella.requestFocus();
-           System.out.println("poroppopero");
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(EscludiTI,VediSoloSenzaPrezzo);
+           //System.out.println("poroppopero");
+            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
            // TransazioniCrypto_ComboBox_FiltroWallet.setSelectedIndex(selezione);
            
            
@@ -11796,9 +11803,13 @@ try {
                 if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
                         && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
                     //Filtro Wallet
+                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                   
                     String WalletVoluto=TransazioniCrypto_ComboBox_FiltroWallet.getSelectedItem().toString();
+                    String GruppoWalletVoluto="";
+                    if (WalletVoluto.contains(":"))
+                        {GruppoWalletVoluto=WalletVoluto.split(" : ")[1].split("\\(")[0].trim();}
                     if(
-                            WalletVoluto.equalsIgnoreCase("Tutti")||v[3].equalsIgnoreCase(WalletVoluto)){
+                            WalletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(WalletVoluto) || gwallet.equalsIgnoreCase(GruppoWalletVoluto)){
                     //Filtro Movimenti senza prezzo
                     if (VediSoloSenzaPrezzo && v[32].trim().equalsIgnoreCase("NO")||!VediSoloSenzaPrezzo) {
                         Object z[]=Funzioni.Converti_String_Object(v);

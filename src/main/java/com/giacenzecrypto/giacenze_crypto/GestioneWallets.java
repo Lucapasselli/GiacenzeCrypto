@@ -382,9 +382,17 @@ public class GestioneWallets extends javax.swing.JDialog {
                     
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte
+                    int r= JOptionPane.showConfirmDialog(c, "Vuoi che venga controllata la giacenza del token di riferimento delle chain \n"
+                         + "e in caso di differenze creato un movimento di rettifica ?",
+                            "Rettifiche movimenti",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                 
+              //  System.out.println(r);
+                if(r==0){
+                    //System.out.println("Sistemo le giacenze");
                     for (String Dati[]:Mappa_Wallet_Dati.values()){
+                         //System.out.println(Dati[0]);
                         Importazioni.DeFi_GiacenzeL1_Sistema(Dati[0], Dati[1], c, progress);
-                    }
+                    }}
                    // Importazioni.DeFi_GiacenzeL1_Rimanze(Portafogli,"pippo");
                  //   Prezzi.ScriviFileConversioneXXXEUR();
                     Importazioni.TransazioniAggiunte = i;

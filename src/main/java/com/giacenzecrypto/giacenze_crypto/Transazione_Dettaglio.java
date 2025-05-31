@@ -281,6 +281,15 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
             ModelloTabellaCrypto.addRow(Val);
         }
         
+        String Valori[]=Transazione[20].split(",");
+        for (int i=0;i<Valori.length;i++){
+            Valore=Valori[i];
+            if (!Valore.isBlank()){
+                Valore=("<html>"+Valore+"</html>");
+                Val=new String[]{"Movimenti Correlati ",Valore};
+                ModelloTabellaCrypto.addRow(Val);
+            }
+        }
         Valore=Transazione[0];
         if (!Valore.isBlank()){
             Val=new String[]{"ID ",Valore};

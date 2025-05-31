@@ -2,6 +2,8 @@
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
 - aggiungere gestione dei prezzi personalizzati (tramite gui)
-- Aggiungere colonna errori negli anni quadro RT 
-  (In caso di stampa del quadro RT/T se nell'anno sono presenti movimenti non classificati segnalare il problema.)
-- Aggiungere gestione degli errori in RT (mancano le giacenze negative)
+- Aggiungere mappatura import csv su file e non da codice
+- Aggiungere gestione dei movimenti correlati (Per scambi etc...)
+- Fare integrazione a ccxt
+- Cambiare gestione dei prezzi e passare ad una precisione al minuto
+- Il numero movimenti che segnala di aver inserito a fine importazione wallet defi sembra sbagliata, vengono probabilmente mostrati solo i movimenti dell'ultimo wallet, da verificare.

@@ -334,6 +334,8 @@ private static final long serialVersionUID = 3L;
         DepositiPrelievi_Bottone_Scam = new javax.swing.JButton();
         DepositiPrelievi_Bottone_Duplica = new javax.swing.JButton();
         DepositiPrelievi_Bottone_Modifica = new javax.swing.JButton();
+        DepositiPrelievi_ComboBox_FiltroWallet = new javax.swing.JComboBox<>();
+        DepositiPrelievi_Label_FiltroWallet = new javax.swing.JLabel();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -1239,6 +1241,36 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        DepositiPrelievi_ComboBox_FiltroWallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
+        DepositiPrelievi_ComboBox_FiltroWallet.setToolTipText("");
+        DepositiPrelievi_ComboBox_FiltroWallet.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged(evt);
+            }
+        });
+        DepositiPrelievi_ComboBox_FiltroWallet.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                DepositiPrelievi_ComboBox_FiltroWalletMouseClicked(evt);
+            }
+        });
+        DepositiPrelievi_ComboBox_FiltroWallet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DepositiPrelievi_ComboBox_FiltroWalletActionPerformed(evt);
+            }
+        });
+        DepositiPrelievi_ComboBox_FiltroWallet.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                DepositiPrelievi_ComboBox_FiltroWalletPropertyChange(evt);
+            }
+        });
+        DepositiPrelievi_ComboBox_FiltroWallet.addVetoableChangeListener(new java.beans.VetoableChangeListener() {
+            public void vetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {
+                DepositiPrelievi_ComboBox_FiltroWalletVetoableChange(evt);
+            }
+        });
+
+        DepositiPrelievi_Label_FiltroWallet.setText("Filtra x Wallet :");
+
         javax.swing.GroupLayout DepositiPrelieviLayout = new javax.swing.GroupLayout(DepositiPrelievi);
         DepositiPrelievi.setLayout(DepositiPrelieviLayout);
         DepositiPrelieviLayout.setHorizontalGroup(
@@ -1260,20 +1292,28 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                                 .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 212, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 214, Short.MAX_VALUE)
                                 .addComponent(DepositiPrelievi_Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                            .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                        .addComponent(DepositiPrelievi_Label_FiltroWallet)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(DepositiPrelievi_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         DepositiPrelieviLayout.setVerticalGroup(
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
+                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(DepositiPrelievi_Label_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(DepositiPrelievi_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -5727,7 +5767,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
               {
             //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
             if (v[18].trim().equalsIgnoreCase("")||this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
-              {   
+              {  
+//Filtro Wallet
+                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                   
+                    String WalletVoluto=DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
+                    String GruppoWalletVoluto="";
+                    if (WalletVoluto.contains(":"))
+                        {GruppoWalletVoluto=WalletVoluto.split(" : ")[1].split("\\(")[0].trim();}
+                    if(
+                            WalletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(WalletVoluto) || gwallet.equalsIgnoreCase(GruppoWalletVoluto)){
+                    
             if (TipoMovimento.equalsIgnoreCase("PC")){}
             String riga[]=new String[10];
             riga[0]=v[0];
@@ -5757,7 +5806,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Se il movimento non è ancora categorizzato lo metto nella lista dei movimenti ancora non categorizzati
             if (v[18].trim().equalsIgnoreCase(""))DepositiPrelieviDaCategorizzare.add(v[0]);
            // System.out.println("a");
-            }
+            }}
           }
          }         
        }
@@ -10116,6 +10165,29 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
        // System.out.println(TransazioniCrypto_ComboBox_FiltroWallet.getSelectedItem().toString());
     }//GEN-LAST:event_TransazioniCrypto_ComboBox_FiltroWalletVetoableChange
 
+    private void DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged
+        // TODO add your handling code here:
+        if(evt.getStateChange() == ItemEvent.SELECTED && DepositiPrelievi_ComboBox_FiltroWallet.isShowing()) {
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletMouseClicked
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletPropertyChange
+
+    private void DepositiPrelievi_ComboBox_FiltroWalletVetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletVetoableChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletVetoableChange
+
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // Anno=Anno-1;
@@ -11209,7 +11281,7 @@ try {
     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet() {
        // int Selezionata=GiacenzeaData_Wallet_ComboBox.getSelectedIndex();
        String VecchioValore;
-       String VecchioValoreTC=TransazioniCrypto_ComboBox_FiltroWallet.getSelectedItem().toString();
+      // String VecchioValoreTC=TransazioniCrypto_ComboBox_FiltroWallet.getSelectedItem().toString();
        if(GiacenzeaData_Wallet_ComboBox.getSelectedItem()!=null)
             VecchioValore=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
        else VecchioValore="";
@@ -11218,8 +11290,8 @@ try {
        // int Selezionata2=GiacenzeaData_Wallet2_ComboBox.getSelectedIndex();
         GiacenzeaData_Wallet_ComboBox.removeAllItems();
         Opzioni_Export_Wallets_Combobox.removeAllItems();
-       //if(!TransazioniCrypto_ComboBox_FiltroWallet.hasFocus())TransazioniCrypto_ComboBox_FiltroWallet.removeAllItems();
         if(!Funzione_itemEsiste_ComboBox(TransazioniCrypto_ComboBox_FiltroWallet, "Tutti"))TransazioniCrypto_ComboBox_FiltroWallet.addItem("Tutti");
+        if(!Funzione_itemEsiste_ComboBox(DepositiPrelievi_ComboBox_FiltroWallet, "Tutti"))DepositiPrelievi_ComboBox_FiltroWallet.addItem("Tutti");
         GiacenzeaData_Wallet_ComboBox.addItem("Tutti");
         Opzioni_Export_Wallets_Combobox.addItem("Tutti");
        /* Mappa_Wallet.clear();
@@ -11230,6 +11302,7 @@ try {
             this.GiacenzeaData_Wallet_ComboBox.addItem(v);
             Opzioni_Export_Wallets_Combobox.addItem(v);
             if(!Funzione_itemEsiste_ComboBox(TransazioniCrypto_ComboBox_FiltroWallet, v))TransazioniCrypto_ComboBox_FiltroWallet.addItem(v);
+            if(!Funzione_itemEsiste_ComboBox(DepositiPrelievi_ComboBox_FiltroWallet, v))DepositiPrelievi_ComboBox_FiltroWallet.addItem(v);
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v);
             MappaGruppiWalletUtilizzati.put(GruppoWallet, GruppoWallet);
             if (v.equals(VecchioValore)) {
@@ -11244,13 +11317,14 @@ try {
             this.GiacenzeaData_Wallet_ComboBox.addItem(nome);
             Opzioni_Export_Wallets_Combobox.addItem(nome);
             if(!Funzione_itemEsiste_ComboBox(TransazioniCrypto_ComboBox_FiltroWallet, nome))TransazioniCrypto_ComboBox_FiltroWallet.addItem(nome);
+            if(!Funzione_itemEsiste_ComboBox(DepositiPrelievi_ComboBox_FiltroWallet, nome))DepositiPrelievi_ComboBox_FiltroWallet.addItem(nome);
             if (nome.equals(VecchioValore)) {
                 VecchioTrovato=true;
             }
         }
         if (VecchioTrovato)
             GiacenzeaData_Wallet_ComboBox.setSelectedItem(VecchioValore);
-        TransazioniCrypto_ComboBox_FiltroWallet.setSelectedItem(VecchioValoreTC);
+        //TransazioniCrypto_ComboBox_FiltroWallet.setSelectedItem(VecchioValoreTC);
         GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
     }
        
@@ -12245,6 +12319,8 @@ try {
     private javax.swing.JButton DepositiPrelievi_Bottone_Modifica;
     private javax.swing.JButton DepositiPrelievi_Bottone_Scam;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
+    private javax.swing.JComboBox<String> DepositiPrelievi_ComboBox_FiltroWallet;
+    private javax.swing.JLabel DepositiPrelievi_Label_FiltroWallet;
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;

@@ -164,6 +164,28 @@ public class Funzioni {
             e.printStackTrace();
         }
     }  
+    
+    public static boolean isDepositoPrelievoClassificabile(String ID,String v[]){
+        //posso passare alla funzione sia l'ID della transazione sia la transazione per intero o entrambe
+        //I depositi classificabili sono quelli di tipo DC e PC che non sono movimenti artificiali
+        //il movimento inoltre non deve contemplare token scam
+        if (ID==null)ID=v[0];
+        String TipoMovimento=ID.split("_")[4].trim();
+        if(v==null) v=CDC_Grafica.MappaCryptoWallet.get(ID);
+          //AU sono equiparati a dei trasferimenti interni, da verifixcare accuratamente perchè così rischio di fare casino nelle esportazioni
+          if ((TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))&&v[22]!=null&&!v[22].equalsIgnoreCase("AU"))
+          {
+            //Adesso controllo se il token è scam e in quel caso non lo faccio vedere che creo solo confusione
+              if (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])
+                      ||
+                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8]))
+              {
+                  return true;
+              }
+          }
+        return false;
+    }         
+              
               
     public static void PopUpMenu(Component c, java.awt.event.MouseEvent e, JPopupMenu pop,String ID) {
         if (e.isPopupTrigger()) {
@@ -182,10 +204,14 @@ public class Funzioni {
                 PopUp_disableMenuItemByText(pop,"Dettagli Movimento");
                 PopUp_disableMenuItemByText(pop,"Modifica Movimento");
                 PopUp_disableMenuItemByText(pop,"Elimina Movimento");
+                PopUp_disableMenuItemByText(pop,"Classifica Movimento");
             }else{
                 PopUp_enableMenuItemByText(pop,"Dettagli Movimento");
                 PopUp_enableMenuItemByText(pop,"Modifica Movimento");
                 PopUp_enableMenuItemByText(pop,"Elimina Movimento");
+                if (isDepositoPrelievoClassificabile(ID, null)){
+                   PopUp_enableMenuItemByText(pop,"Classifica Movimento"); 
+                }else PopUp_disableMenuItemByText(pop,"Classifica Movimento");
             }
             
             //Se è una tabella mi comporto in questo modo

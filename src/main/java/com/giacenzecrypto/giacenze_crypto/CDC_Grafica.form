@@ -257,7 +257,7 @@
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Component id="TransazioniCrypto_Label_FiltroToken" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="TransazioniCrypto_ComboBox_FiltroWallet1" min="-2" pref="142" max="-2" attributes="0"/>
+                                              <Component id="TransazioniCrypto_ComboBox_FiltroToken" min="-2" pref="142" max="-2" attributes="0"/>
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Component id="TransazioniCrypto_Label_Filtro" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
@@ -297,7 +297,7 @@
                           <Component id="TransazioniCrypto_Label_FiltroWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_ComboBox_FiltroWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_ComboBox_FiltroWallet1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_ComboBox_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Label_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Label_Filtro" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCryptoFiltro_Text" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -912,6 +912,7 @@
                 <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="TransazioniCrypto_ComboBox_FiltroWalletMouseClicked"/>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_ComboBox_FiltroWalletActionPerformed"/>
                 <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="TransazioniCrypto_ComboBox_FiltroWalletPropertyChange"/>
+                <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="TransazioniCrypto_ComboBox_FiltroWalletKeyPressed"/>
                 <EventHandler event="vetoableChange" listener="java.beans.VetoableChangeListener" parameters="java.beans.PropertyChangeEvent" handler="TransazioniCrypto_ComboBox_FiltroWalletVetoableChange"/>
               </Events>
               <AuxValues>
@@ -922,8 +923,11 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Azzera Filtri"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed"/>
+              </Events>
             </Component>
-            <Component class="javax.swing.JComboBox" name="TransazioniCrypto_ComboBox_FiltroWallet1">
+            <Component class="javax.swing.JComboBox" name="TransazioniCrypto_ComboBox_FiltroToken">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                   <StringArray count="1">
@@ -933,11 +937,9 @@
                 <Property name="toolTipText" type="java.lang.String" value=""/>
               </Properties>
               <Events>
-                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="TransazioniCrypto_ComboBox_FiltroWallet1ItemStateChanged"/>
-                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="TransazioniCrypto_ComboBox_FiltroWallet1MouseClicked"/>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_ComboBox_FiltroWallet1ActionPerformed"/>
-                <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="TransazioniCrypto_ComboBox_FiltroWallet1PropertyChange"/>
-                <EventHandler event="vetoableChange" listener="java.beans.VetoableChangeListener" parameters="java.beans.PropertyChangeEvent" handler="TransazioniCrypto_ComboBox_FiltroWallet1VetoableChange"/>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="TransazioniCrypto_ComboBox_FiltroTokenItemStateChanged"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_ComboBox_FiltroTokenActionPerformed"/>
+                <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="TransazioniCrypto_ComboBox_FiltroTokenKeyPressed"/>
               </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
@@ -1039,6 +1041,10 @@
                                       <Component id="DepositiPrelievi_Label_FiltroWallet" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="DepositiPrelievi_ComboBox_FiltroWallet" min="-2" pref="346" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="DepositiPrelievi_Label_FiltroToken" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="DepositiPrelievi_ComboBox_FiltroToken" min="-2" pref="142" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
@@ -1051,6 +1057,8 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="DepositiPrelievi_Label_FiltroWallet" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
                                   <Component id="DepositiPrelievi_ComboBox_FiltroWallet" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="DepositiPrelievi_Label_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="DepositiPrelievi_ComboBox_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="jScrollPane2" pref="656" max="32767" attributes="0"/>
@@ -1353,6 +1361,7 @@
                         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_ComboBox_FiltroWalletMouseClicked"/>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_ComboBox_FiltroWalletActionPerformed"/>
                         <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="DepositiPrelievi_ComboBox_FiltroWalletPropertyChange"/>
+                        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="DepositiPrelievi_ComboBox_FiltroWalletKeyPressed"/>
                         <EventHandler event="vetoableChange" listener="java.beans.VetoableChangeListener" parameters="java.beans.PropertyChangeEvent" handler="DepositiPrelievi_ComboBox_FiltroWalletVetoableChange"/>
                       </Events>
                       <AuxValues>
@@ -1363,6 +1372,29 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Filtra x Wallet :"/>
                       </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="DepositiPrelievi_Label_FiltroToken">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Filtra x Token :"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JComboBox" name="DepositiPrelievi_ComboBox_FiltroToken">
+                      <Properties>
+                        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                          <StringArray count="1">
+                            <StringItem index="0" value="Tutti"/>
+                          </StringArray>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value=""/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="DepositiPrelievi_ComboBox_FiltroTokenItemStateChanged"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DepositiPrelievi_ComboBox_FiltroTokenActionPerformed"/>
+                        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="DepositiPrelievi_ComboBox_FiltroTokenKeyPressed"/>
+                      </Events>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                      </AuxValues>
                     </Component>
                   </SubComponents>
                 </Container>

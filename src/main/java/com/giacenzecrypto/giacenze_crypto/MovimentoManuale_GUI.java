@@ -55,7 +55,7 @@ private static final long serialVersionUID = 9L;
     String Wallet="";
     String WalletDettaglio="";
     String TipoMovimentoAM="M";//M se è un movimento inserito a mano, A se deriva da importazioni
-    String IDOriginale="";
+   // String IDOriginale="";
     
     long DataLong=0;
     

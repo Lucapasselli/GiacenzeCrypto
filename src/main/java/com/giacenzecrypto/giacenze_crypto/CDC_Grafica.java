@@ -44,6 +44,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
@@ -288,6 +290,7 @@ private static final long serialVersionUID = 3L;
         RW_RadioGruppo = new javax.swing.ButtonGroup();
         RW_Trasferimenti = new javax.swing.ButtonGroup();
         PopupMenu = new javax.swing.JPopupMenu();
+        MenuItem_CopiaID = new javax.swing.JMenuItem();
         MenuItem_Copia = new javax.swing.JMenuItem();
         MenuItem_Incolla = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
@@ -580,6 +583,15 @@ private static final long serialVersionUID = 3L;
         CDC_Text_Giorni = new javax.swing.JTextField();
         Bottone_Titolo = new javax.swing.JButton();
 
+        MenuItem_CopiaID.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
+        MenuItem_CopiaID.setText("Copia ID Transazione");
+        MenuItem_CopiaID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_CopiaIDActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_CopiaID);
+
         MenuItem_Copia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
         MenuItem_Copia.setText("Copia selezione");
         MenuItem_Copia.addActionListener(new java.awt.event.ActionListener() {
@@ -788,6 +800,11 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_Label_Filtro.setText("Filtro Tabella : ");
 
+        TransazioniCryptoFiltro_Text.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                TransazioniCryptoFiltro_TextMouseReleased(evt);
+            }
+        });
         TransazioniCryptoFiltro_Text.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 TransazioniCryptoFiltro_TextKeyReleased(evt);
@@ -967,29 +984,14 @@ private static final long serialVersionUID = 3L;
                 TransazioniCrypto_ComboBox_FiltroWalletItemStateChanged(evt);
             }
         });
-        TransazioniCrypto_ComboBox_FiltroWallet.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                TransazioniCrypto_ComboBox_FiltroWalletMouseClicked(evt);
-            }
-        });
         TransazioniCrypto_ComboBox_FiltroWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 TransazioniCrypto_ComboBox_FiltroWalletActionPerformed(evt);
             }
         });
-        TransazioniCrypto_ComboBox_FiltroWallet.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                TransazioniCrypto_ComboBox_FiltroWalletPropertyChange(evt);
-            }
-        });
         TransazioniCrypto_ComboBox_FiltroWallet.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 TransazioniCrypto_ComboBox_FiltroWalletKeyPressed(evt);
-            }
-        });
-        TransazioniCrypto_ComboBox_FiltroWallet.addVetoableChangeListener(new java.beans.VetoableChangeListener() {
-            public void vetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {
-                TransazioniCrypto_ComboBox_FiltroWalletVetoableChange(evt);
             }
         });
 
@@ -5844,15 +5846,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Se selezionato Situazione Import Crypto lo aggiorno
        // System.out.println("Aggiorna Tutto");
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+       
         if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1();       
         //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         TransazioniCrypto_DaSalvare = true;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+        long tempoOperazione=System.currentTimeMillis();
         Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+        System.out.println("Tempo calcolo plusvalenza : "+tempoOperazione+" millisec.");
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         RW_RicalcolaRWseEsiste();
+        
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //DepositiPrelievi_Caricatabella();
     }
@@ -10240,23 +10247,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void TransazioniCrypto_ComboBox_FiltroWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_ComboBox_FiltroWalletActionPerformed
         // TODO add your handling code here:
-        if(evt.getModifiers()==16||evt.getModifiers()==4){
+        if(evt.getModifiers()!=0&&TransazioniCrypto_ComboBox_FiltroWallet.hasFocus()){
              TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         }
     }//GEN-LAST:event_TransazioniCrypto_ComboBox_FiltroWalletActionPerformed
-
-    private void TransazioniCrypto_ComboBox_FiltroWalletMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCrypto_ComboBox_FiltroWalletMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_TransazioniCrypto_ComboBox_FiltroWalletMouseClicked
-
-    private void TransazioniCrypto_ComboBox_FiltroWalletPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_TransazioniCrypto_ComboBox_FiltroWalletPropertyChange
-        // TODO add your handling code here:
-        //System.out.println(TransazioniCrypto_ComboBox_FiltroWallet.getSelectedItem().toString());
-    }//GEN-LAST:event_TransazioniCrypto_ComboBox_FiltroWalletPropertyChange
-
-    private void TransazioniCrypto_ComboBox_FiltroWalletVetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {//GEN-FIRST:event_TransazioniCrypto_ComboBox_FiltroWalletVetoableChange
-        // TODO add your handling code here:
-    }//GEN-LAST:event_TransazioniCrypto_ComboBox_FiltroWalletVetoableChange
 
     private void DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletItemStateChanged
         // TODO add your handling code here:
@@ -10271,7 +10265,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void DepositiPrelievi_ComboBox_FiltroWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
         // TODO add your handling code here:
-                if(evt.getModifiers()==16||evt.getModifiers()==4){
+                if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroWallet.hasFocus()){
             DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
@@ -10319,7 +10313,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void TransazioniCrypto_ComboBox_FiltroTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_ComboBox_FiltroTokenActionPerformed
         // TODO add your handling code here:
         //Si aziona se premo tasto destro o sinistro del mouse
-        if(evt.getModifiers()==16||evt.getModifiers()==4){
+        if(evt.getModifiers()!=0&&TransazioniCrypto_ComboBox_FiltroToken.hasFocus()){
              TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         }
     }//GEN-LAST:event_TransazioniCrypto_ComboBox_FiltroTokenActionPerformed
@@ -10345,7 +10339,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void DepositiPrelievi_ComboBox_FiltroTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroTokenActionPerformed
         // TODO add your handling code here:
-                        if(evt.getModifiers()==16||evt.getModifiers()==4){
+            if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroToken.hasFocus()){
             DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroTokenActionPerformed
@@ -10359,8 +10353,28 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed
         // TODO add your handling code here:
+        TransazioniCrypto_CheckBox_VediSenzaPrezzo.setSelected(false);
+        TransazioniCrypto_CheckBox_EscludiTI.setSelected(false);
+        TransazioniCrypto_ComboBox_FiltroWallet.getModel().setSelectedItem("Tutti");
+        TransazioniCrypto_ComboBox_FiltroToken.getModel().setSelectedItem("Tutti");
+        TransazioniCryptoFiltro_Text.setText("");
+        Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+   
         
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed
+
+    private void MenuItem_CopiaIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaIDActionPerformed
+        // TODO add your handling code here:
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection(PopUp_IDTrans);
+        clipboard.setContents(stringSelection, null);
+    }//GEN-LAST:event_MenuItem_CopiaIDActionPerformed
+
+    private void TransazioniCryptoFiltro_TextMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoFiltro_TextMouseReleased
+        // TODO add your handling code here:
+        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+    }//GEN-LAST:event_TransazioniCryptoFiltro_TextMouseReleased
 
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -12555,6 +12569,7 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
     private javax.swing.JMenuItem MenuItem_Copia;
+    private javax.swing.JMenuItem MenuItem_CopiaID;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;
     private javax.swing.JMenuItem MenuItem_EliminaMovimento;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;

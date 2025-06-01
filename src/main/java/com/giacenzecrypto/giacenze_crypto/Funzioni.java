@@ -205,10 +205,12 @@ public class Funzioni {
                 PopUp_disableMenuItemByText(pop,"Modifica Movimento");
                 PopUp_disableMenuItemByText(pop,"Elimina Movimento");
                 PopUp_disableMenuItemByText(pop,"Classifica Movimento");
+                PopUp_disableMenuItemByText(pop,"Copia ID Transazione");
             }else{
                 PopUp_enableMenuItemByText(pop,"Dettagli Movimento");
                 PopUp_enableMenuItemByText(pop,"Modifica Movimento");
                 PopUp_enableMenuItemByText(pop,"Elimina Movimento");
+                PopUp_enableMenuItemByText(pop,"Copia ID Transazione");
                 if (isDepositoPrelievoClassificabile(ID, null)){
                    PopUp_enableMenuItemByText(pop,"Classifica Movimento"); 
                 }else PopUp_disableMenuItemByText(pop,"Classifica Movimento");

@@ -25,6 +25,15 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.39
+Nuove Implementazioni :
+ - Inserito filtro x Wallet e x Token nella tabella delle transazioni e nella tabella deli depositi/prelievi
+ - Aggiunto avviso in caso di disponibilità di una nuova versione software.
+ - In fase di import dalla blockchain inserito richiesta per effettuare o meno la rettifica automatica delle giacenze del token di riferimento della chain a fine importazione. (Prima veniva fatto automaticamente).
+ - Nella gestione della classificazione dei depositi prelievi inserito possibilità di modificare i filtri automatici sui trasferimenti.
+Correzione di Bug :
+ - Corretto gestione delle FIAT diverse dall'euro in fase di importazione dal Binance Tax Report
+
 ver. 1.0.38
 Nuove Implementazioni :
  - Dato che attualmente i prezzi, se non presi dal CSV, vengono presi con una precisione oraria, da questa versione per gli scambi fiscalmente rilevanti verrà preso come prioritario

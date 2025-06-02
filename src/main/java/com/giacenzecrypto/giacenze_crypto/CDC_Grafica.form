@@ -219,34 +219,37 @@
                                               <Component id="TransazioniCrypto_Bottone_MovimentoModifica" min="-2" pref="190" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="TransazioniCrypto_Bottone_MovimentoElimina" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
+                                              <EmptySpace max="32767" attributes="0"/>
                                               <Component id="TransazioniCrypto_Bottone_DettaglioDefi" min="-2" pref="190" max="-2" attributes="0"/>
-                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>
                                           <Component id="TransazioniCrypto_TabbedPane" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Component id="TransazioniCrypto_Text_Plusvalenza" max="32767" attributes="0"/>
-                                                  <Component id="TransazioniCrypto_Label_Plusvalenza" pref="277" max="32767" attributes="0"/>
-                                              </Group>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Component id="jLabel11" pref="112" max="32767" attributes="0"/>
-                                                  <Component id="TransazioniCrypto_Text_CostiCarico" max="32767" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="TransazioniCrypto_Text_Vendite" max="32767" attributes="0"/>
-                                                  <Component id="jLabel12" max="32767" attributes="0"/>
+                                                  <Group type="103" groupAlignment="0" attributes="0">
+                                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                          <Group type="102" alignment="0" attributes="0">
+                                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                                  <Component id="jLabel11" pref="112" max="32767" attributes="0"/>
+                                                                  <Component id="TransazioniCrypto_Text_CostiCarico" max="32767" attributes="0"/>
+                                                              </Group>
+                                                              <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
+                                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                                  <Component id="jLabel12" max="32767" attributes="0"/>
+                                                                  <Component id="TransazioniCrypto_Text_Vendite" min="-2" pref="115" max="-2" attributes="0"/>
+                                                              </Group>
+                                                          </Group>
+                                                          <Component id="TransazioniCrypto_Bottone_AggiorbaVersione" alignment="0" pref="278" max="32767" attributes="0"/>
+                                                      </Group>
+                                                      <Component id="TransazioniCrypto_Text_Plusvalenza" alignment="1" min="-2" pref="277" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="1" min="-2" pref="277" max="-2" attributes="0"/>
                                               </Group>
+                                              <Component id="jLabel10" alignment="1" min="-2" pref="277" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="jLabel10" alignment="1" min="-2" pref="277" max="-2" attributes="0"/>
-                                          <Component id="Bottone_Errori" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="Bottone_Errori" alignment="1" min="-2" pref="278" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
@@ -318,18 +321,20 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="TransazioniCrypto_ScrollPane" pref="374" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
-                          <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="TransazioniCrypto_Label_Plusvalenza" min="-2" pref="31" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="TransazioniCrypto_Bottone_MovimentoElimina" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_MovimentoModifica" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_MovimentoNuovo" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_DettaglioDefi" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="TransazioniCrypto_Text_Plusvalenza" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -341,15 +346,14 @@
                                   <Component id="TransazioniCrypto_Text_CostiCarico" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="TransazioniCrypto_Text_Vendite" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Bottone_Errori" min="-2" pref="36" max="-2" attributes="0"/>
-                              <EmptySpace min="38" pref="105" max="32767" attributes="0"/>
+                              <EmptySpace pref="33" max="32767" attributes="0"/>
+                              <Component id="TransazioniCrypto_Bottone_AggiorbaVersione" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="TransazioniCrypto_TabbedPane" pref="0" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="TransazioniCrypto_TabbedPane" pref="0" max="32767" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -958,6 +962,17 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Filtra x Token :"/>
               </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_AggiorbaVersione">
+              <Properties>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Tabelle.rosso" type="code"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;center&gt;&lt;b&gt;E&apos; DISPONIBILE UNA NUOVA VERSIONE DI&lt;br&gt;&#xa;GIACENZE CRYPTO.&lt;br&gt;&#xa;PREMERE QUI PER SCARICARE.&lt;/b&gt;&lt;/html&gt;"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

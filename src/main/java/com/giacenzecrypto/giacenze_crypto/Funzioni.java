@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -571,6 +573,30 @@ public class Funzioni {
     }    
         
     
+        public static boolean isAggiornamentoDisponibile(String versione) {
+        try {
+            String split[]=versione.split("\\.");
+            versione=split[0]+"."+split[1]+"."+String.valueOf(Integer.parseInt(split[2])+1);
+            URL url = new URL("https://sourceforge.net/projects/giacenze-crypto-com/files/Giacenze_Crypto_"+versione+"/");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Imposta il metodo e il timeout
+            connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(5000); // 5 secondi
+            connection.setReadTimeout(5000);
+
+            int responseCode = connection.getResponseCode();
+
+            // Restituisce true solo se la risposta è 200 OK
+            return responseCode == HttpURLConnection.HTTP_OK;
+
+        } catch (IOException e) {
+            // Qualsiasi eccezione indica che la pagina non è disponibile
+            return false;
+        }
+    }    
+        
+        
     public static void Files_CancellaOltreTOTh(String directory, int Ore) {
         Path dir = Paths.get(directory);
         Instant now = Instant.now();

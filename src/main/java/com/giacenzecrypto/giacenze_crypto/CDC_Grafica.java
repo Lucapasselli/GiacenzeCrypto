@@ -135,15 +135,16 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
-    public static String Titolo="Giacenze Crypto 1.0.39 RC1 Beta";
+    
+    public String Versione="1.0.39";
+    public String Titolo="Giacenze Crypto "+Versione+" Beta";
 
     
     
     
     public CDC_Grafica() {     
         
-    try {        
-               
+    try {          
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -175,6 +176,9 @@ private static final long serialVersionUID = 3L;
 
             
         initComponents();
+        //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
+        Funzioni_NuovaVersioneDisponibile();
+        //TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Prezzi.CompilaMoneteStessoPrezzo();
         Bottone_Titolo.setText(Titolo);
        // SwingUtilities.updateComponentTreeUI(this);
@@ -333,6 +337,7 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Bottone_AzzeraFiltri = new javax.swing.JButton();
         TransazioniCrypto_ComboBox_FiltroToken = new javax.swing.JComboBox<>();
         TransazioniCrypto_Label_FiltroToken = new javax.swing.JLabel();
+        TransazioniCrypto_Bottone_AggiorbaVersione = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -1022,6 +1027,14 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_Label_FiltroToken.setText("Filtra x Token :");
 
+        TransazioniCrypto_Bottone_AggiorbaVersione.setForeground(Tabelle.rosso);
+        TransazioniCrypto_Bottone_AggiorbaVersione.setText("<html><center><b>E' DISPONIBILE UNA NUOVA VERSIONE DI<br>\nGIACENZE CRYPTO.<br>\nPREMERE QUI PER SCARICARE.</b></html>");
+        TransazioniCrypto_Bottone_AggiorbaVersione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -1040,27 +1053,28 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 0, Short.MAX_VALUE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(TransazioniCrypto_TabbedPane))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addGap(1, 1, 1)
-                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(TransazioniCrypto_Text_Plusvalenza)
-                                            .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)))
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                                            .addComponent(TransazioniCrypto_Text_CostiCarico))
-                                        .addGap(51, 51, 51)
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(TransazioniCrypto_Text_Vendite)
-                                            .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                    .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Bottone_Errori, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                            .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                            .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                                            .addComponent(TransazioniCrypto_Text_CostiCarico))
+                                                        .addGap(51, 51, 51)
+                                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                            .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                            .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                    .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                                                .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(Bottone_Errori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -1118,17 +1132,18 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(TransazioniCrypto_Label_Plusvalenza)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(7, 7, 7)
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1138,12 +1153,12 @@ private static final long serialVersionUID = 3L;
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(TransazioniCrypto_Text_CostiCarico, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(38, 105, Short.MAX_VALUE))
-                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                        .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addGap(13, 13, 13))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                        .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGap(13, 13, 13))
         );
 
         CDC.addTab("Transazioni Crypto", TransazioniCrypto);
@@ -9488,7 +9503,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void Bottone_ErroriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ErroriActionPerformed
         Funzioni_CorrezioneErroriPrincipali();
     }//GEN-LAST:event_Bottone_ErroriActionPerformed
-
+    private void Funzioni_NuovaVersioneDisponibile(){
+        //Questa funzione la faccio partire in un thread separato
+        Thread thread;
+        thread = new Thread() {
+            public void run() {    
+                if(Funzioni.isAggiornamentoDisponibile(Versione)){
+                    TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(true);
+                    System.out.println("Nuova versione disponibile");
+                }else{
+                    TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
+                    System.out.println("Nessuna nuova versione disponibile");
+                }
+            }
+        };
+        thread.start();
+        
+    }
     private void Funzioni_CorrezioneErroriPrincipali(){
     // TODO add your handling code here:
         // TODO add your handling code here:
@@ -10375,6 +10406,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_TransazioniCryptoFiltro_TextMouseReleased
+
+    private void TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed
+        // TODO add your handling code here:
+        String split[]=Versione.split("\\.");
+        String LinkNuovaVersione=split[0]+"."+split[1]+"."+String.valueOf(Integer.parseInt(split[2])+1);
+        LinkNuovaVersione="https://sourceforge.net/projects/giacenze-crypto-com/files/Giacenze_Crypto_"+LinkNuovaVersione+"/";
+        Funzioni.ApriWeb(LinkNuovaVersione);
+    }//GEN-LAST:event_TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed
 
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -12679,6 +12718,7 @@ try {
     private javax.swing.JPanel TransazioniCrypto;
     private javax.swing.JTextField TransazioniCryptoFiltro_Text;
     private javax.swing.JTable TransazioniCryptoTabella;
+    private javax.swing.JButton TransazioniCrypto_Bottone_AggiorbaVersione;
     private javax.swing.JButton TransazioniCrypto_Bottone_Annulla;
     private javax.swing.JButton TransazioniCrypto_Bottone_AzzeraFiltri;
     private javax.swing.JButton TransazioniCrypto_Bottone_DettaglioDefi;

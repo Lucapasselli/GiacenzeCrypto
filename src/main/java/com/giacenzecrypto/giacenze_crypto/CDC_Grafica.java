@@ -53,6 +53,7 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -351,11 +352,13 @@ private static final long serialVersionUID = 3L;
         DepositiPrelievi_Bottone_Documentazione = new javax.swing.JButton();
         DepositiPrelievi_Bottone_Scam = new javax.swing.JButton();
         DepositiPrelievi_Bottone_Duplica = new javax.swing.JButton();
-        DepositiPrelievi_Bottone_Modifica = new javax.swing.JButton();
         DepositiPrelievi_ComboBox_FiltroWallet = new javax.swing.JComboBox<>();
         DepositiPrelievi_Label_FiltroWallet = new javax.swing.JLabel();
         DepositiPrelievi_Label_FiltroToken = new javax.swing.JLabel();
         DepositiPrelievi_ComboBox_FiltroToken = new javax.swing.JComboBox<>();
+        jScrollPane14 = new javax.swing.JScrollPane();
+        DepositiPrelievi_TabellaCorrelati = new javax.swing.JTable();
+        jLabel21 = new javax.swing.JLabel();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -1198,6 +1201,11 @@ private static final long serialVersionUID = 3L;
                 DepositiPrelievi_TabellaMouseReleased(evt);
             }
         });
+        DepositiPrelievi_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                DepositiPrelievi_TabellaKeyReleased(evt);
+            }
+        });
         jScrollPane2.setViewportView(DepositiPrelievi_Tabella);
         if (DepositiPrelievi_Tabella.getColumnModel().getColumnCount() > 0) {
             DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setMinWidth(1);
@@ -1310,17 +1318,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        DepositiPrelievi_Bottone_Modifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        DepositiPrelievi_Bottone_Modifica.setText("Modifica movimento");
-        DepositiPrelievi_Bottone_Modifica.setMaximumSize(new java.awt.Dimension(200, 35));
-        DepositiPrelievi_Bottone_Modifica.setMinimumSize(new java.awt.Dimension(200, 35));
-        DepositiPrelievi_Bottone_Modifica.setPreferredSize(new java.awt.Dimension(200, 35));
-        DepositiPrelievi_Bottone_Modifica.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DepositiPrelievi_Bottone_ModificaActionPerformed(evt);
-            }
-        });
-
         DepositiPrelievi_ComboBox_FiltroWallet.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
         DepositiPrelievi_ComboBox_FiltroWallet.setToolTipText("");
         DepositiPrelievi_ComboBox_FiltroWallet.addItemListener(new java.awt.event.ItemListener() {
@@ -1376,6 +1373,132 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        DepositiPrelievi_TabellaCorrelati.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Title 1", "Data", "Title 3", "Wallet", "Wallet Dett.", "Tipo Trans.", "null", "null", "Uscita Token", "Uscita Tipo", "Uscita Qta", "Entrata Token", "Entrata Tipo", "Entrata Qta", "null", "Valore Trans.", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null", "null"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        DepositiPrelievi_TabellaCorrelati.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                DepositiPrelievi_TabellaCorrelatiMouseReleased(evt);
+            }
+        });
+        jScrollPane14.setViewportView(DepositiPrelievi_TabellaCorrelati);
+        if (DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumnCount() > 0) {
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(0).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(0).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(0).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(2).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(2).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(2).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(6).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(6).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(6).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(7).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(7).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(7).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(8).setMinWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(8).setPreferredWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(8).setMaxWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(9).setMinWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(9).setPreferredWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(9).setMaxWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(11).setMinWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(11).setPreferredWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(11).setMaxWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(12).setMinWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(12).setPreferredWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(12).setMaxWidth(80);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(14).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(14).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(14).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(16).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(16).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(16).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(17).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(17).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(17).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(18).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(18).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(18).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(19).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(19).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(19).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(20).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(20).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(20).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(21).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(21).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(21).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(22).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(22).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(22).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(23).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(23).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(23).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(24).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(24).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(24).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(25).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(25).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(25).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(26).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(26).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(26).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(27).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(27).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(27).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(28).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(28).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(28).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(29).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(29).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(29).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(30).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(30).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(30).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(31).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(31).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(31).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(32).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(32).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(32).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(33).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(33).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(33).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(34).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(34).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(34).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(35).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(35).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(35).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(36).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(36).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(36).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(37).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(37).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(37).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(38).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(38).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(38).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(39).setMinWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(39).setPreferredWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(39).setMaxWidth(0);
+        }
+
+        jLabel21.setText("Movimenti Correlati :");
+
         javax.swing.GroupLayout DepositiPrelieviLayout = new javax.swing.GroupLayout(DepositiPrelievi);
         DepositiPrelievi.setLayout(DepositiPrelieviLayout);
         DepositiPrelieviLayout.setHorizontalGroup(
@@ -1385,35 +1508,40 @@ private static final long serialVersionUID = 3L;
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                                .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 214, Short.MAX_VALUE)
-                                .addComponent(DepositiPrelievi_Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
-                        .addComponent(DepositiPrelievi_Label_FiltroWallet)
+                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                        .addComponent(DepositiPrelievi_Label_FiltroWallet)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(DepositiPrelievi_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(DepositiPrelievi_Label_FiltroToken)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(DepositiPrelievi_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
+                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                        .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 214, Short.MAX_VALUE)
+                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                        .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                        .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(DepositiPrelievi_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(DepositiPrelievi_Label_FiltroToken)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(DepositiPrelievi_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addComponent(jScrollPane14)))
         );
         DepositiPrelieviLayout.setVerticalGroup(
             DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1424,23 +1552,31 @@ private static final long serialVersionUID = 3L;
                     .addComponent(DepositiPrelievi_Label_FiltroToken)
                     .addComponent(DepositiPrelievi_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(DepositiPrelievi_Bottone_Modifica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati)
+                            .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                                .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(DepositiPrelievi_Bottone_AssegnazioneAutomatica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, DepositiPrelieviLayout.createSequentialGroup()
+                                .addComponent(DepositiPrelievi_Bottone_CreaMovOpposto, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(7, 7, 7))))
+                    .addGroup(DepositiPrelieviLayout.createSequentialGroup()
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(7, 7, 7)))
+                .addComponent(jLabel21)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -1497,7 +1633,7 @@ private static final long serialVersionUID = 3L;
         SituazioneImportLayout.setVerticalGroup(
             SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SituazioneImportLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 770, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1830,7 +1966,7 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1846,7 +1982,7 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Giacenzeadata_Dettaglio_Label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2180,14 +2316,14 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Bottone_Calcola)
                         .addComponent(jLabel4)))
                 .addGap(8, 8, 8)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_CheckBox_VediSoloErrori)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -2196,7 +2332,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2361,13 +2497,13 @@ private static final long serialVersionUID = 3L;
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2441,7 +2577,7 @@ private static final long serialVersionUID = 3L;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
 
@@ -5888,6 +6024,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         DepositiPrelieviDaCategorizzare = new ArrayList<>();
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
         String WalletVoluto = DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
         String GruppoWalletVoluto = "";
@@ -9986,21 +10124,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Funzioni_CorrezioneErroriPrincipali();
     }//GEN-LAST:event_RT_Bottone_CorreggiErroriActionPerformed
 
-    private void DepositiPrelievi_Bottone_ModificaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ModificaActionPerformed
-        // TODO add your handling code here:
-        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
-            String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-            //Modifico la transazione
-            Funzione_ModificaMovimento(IDTransazione,this);
-            //Aggiorno la tabella
-            Funzioni_AggiornaTutto();
-            DepositiPrelievi_Caricatabella();
-            //Mi riposiziono sulla riga
-            Tabelle.PosizionaTabellasuRiga(DepositiPrelievi_Tabella, rigaselezionata,false);
-        }
-    }//GEN-LAST:event_DepositiPrelievi_Bottone_ModificaActionPerformed
-
     private void DepositiPrelievi_Bottone_DuplicaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
         // TODO add your handling code here:
         if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
@@ -10042,6 +10165,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
    //Funzione che apre il popupmenu se premuto il tasto destro
         Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_Tabella,evt,0);
+        DepositiPrelievi_CompilaTabellaCorrelati();
         //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
     }//GEN-LAST:event_DepositiPrelievi_TabellaMouseReleased
 
@@ -10415,6 +10539,44 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Funzioni.ApriWeb(LinkNuovaVersione);
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed
 
+    private void DepositiPrelievi_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaKeyReleased
+        // TODO add your handling code here:
+        DepositiPrelievi_CompilaTabellaCorrelati();
+    }//GEN-LAST:event_DepositiPrelievi_TabellaKeyReleased
+
+    private void DepositiPrelievi_TabellaCorrelatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
+        // TODO add your handling code here:
+        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_TabellaCorrelati,evt,0);
+    }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
+
+    private void DepositiPrelievi_CompilaTabellaCorrelati(){
+        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
+            //Cancello Contenuto Tabella Dettagli
+           // String ID=DepositiPrelievi_Tabella.get
+            DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
+            Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+            int Verde[]=new int[]{11,13};
+            int Rosso[]=new int[]{8,10};
+            Tabelle.ColoraTabellaSempliceVerdeRosso(DepositiPrelievi_TabellaCorrelati,Verde,Rosso);
+            String ID=DepositiPrelievi_Tabella.getModel().getValueAt(DepositiPrelievi_Tabella.getSelectedRow(), 0).toString();
+            //System.out.println(ID);
+            String IDCorrelati[]=CDC_Grafica.MappaCryptoWallet.get(ID)[20].split(",");
+            List<String> lista;
+            boolean hasValidContent = Arrays.stream(IDCorrelati)
+                                        .anyMatch(s -> s != null && !s.isBlank());
+            if (IDCorrelati.length == 0 || !hasValidContent) {
+                lista = new ArrayList<>();
+            } else {
+                lista = new ArrayList<>(Arrays.asList(IDCorrelati));
+            }
+            lista.add(ID);
+            Collections.sort(lista);
+            for(String id:lista){
+                ModelloTabella.addRow(MappaCryptoWallet.get(id));
+            }
+        }
+    }
+    
     private void RT_StampaRapporto(int Anno,String Vendite,String Costo,boolean Errori){
          this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // Anno=Anno-1;
@@ -12571,7 +12733,6 @@ try {
     private javax.swing.JButton DepositiPrelievi_Bottone_DettaglioDefi;
     private javax.swing.JButton DepositiPrelievi_Bottone_Documentazione;
     private javax.swing.JButton DepositiPrelievi_Bottone_Duplica;
-    private javax.swing.JButton DepositiPrelievi_Bottone_Modifica;
     private javax.swing.JButton DepositiPrelievi_Bottone_Scam;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
     private javax.swing.JComboBox<String> DepositiPrelievi_ComboBox_FiltroToken;
@@ -12579,6 +12740,7 @@ try {
     private javax.swing.JLabel DepositiPrelievi_Label_FiltroToken;
     private javax.swing.JLabel DepositiPrelievi_Label_FiltroWallet;
     private javax.swing.JTable DepositiPrelievi_Tabella;
+    private javax.swing.JTable DepositiPrelievi_TabellaCorrelati;
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
     private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;
@@ -12758,6 +12920,7 @@ try {
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -12771,6 +12934,7 @@ try {
     private javax.swing.JScrollPane jScrollPane11;
     private javax.swing.JScrollPane jScrollPane12;
     private javax.swing.JScrollPane jScrollPane13;
+    private javax.swing.JScrollPane jScrollPane14;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;

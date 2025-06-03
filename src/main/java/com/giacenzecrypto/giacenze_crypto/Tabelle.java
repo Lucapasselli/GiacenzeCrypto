@@ -387,6 +387,73 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
     return table;
 }
 
+public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] ColVerde,int[] ColRosso) {
+    // Definizione dei colori
+  //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
+  //  final Color bianco = Color.WHITE;                   // Colore bianco
+
+    // Renderer generico per alternare i colori delle righe
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int col) {
+            // Ottieni il componente standard per la cella
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                    Color bg; 
+        Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+            fore=Color.BLACK;
+        }
+
+            // Imposta il colore di sfondo alternato
+            if (isSelected) {
+                c.setBackground(table.getSelectionBackground());
+            } else if (contiene(ColRosso, col) &&
+                value != null) {
+
+                    c.setBackground(bg);
+                    c.setForeground(Tabelle.rosso);
+                }else if (contiene(ColVerde, col) &&
+                value != null) {
+
+                    c.setBackground(bg);
+                    c.setForeground(Tabelle.verdeScuro);
+                }else{
+                c.setBackground(bg);
+                c.setForeground(Color.BLACK);
+            }
+
+            return c;
+        }
+    };
+
+    // Configura il renderer per i tipi più comuni
+    table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
+    
+
+    // Restituisci la tabella
+    return table;
+}
+
+public static boolean contiene(int[] array, int target) {
+    if (array==null)return false;
+    for (int n : array) {
+        if (n == target) return true;
+    }
+    return false;
+}
+
 public static JTable ColoraTabellaRTDettaglio(final JTable table) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro

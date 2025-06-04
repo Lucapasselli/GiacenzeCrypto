@@ -1466,7 +1466,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     String splittata[] = riga.split(",",-1);                     
                     if (splittata.length==11&&Funzioni.Funzioni_isNumeric(splittata[4], false)){
                         // Definisci il formato della data
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                       // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         String utcDateStr = splittata[2];
                         String Data=OperazioniSuDate.Formatta_Data_UTC(utcDateStr);
                         if (Data==null) {
@@ -1482,10 +1482,16 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             Movimento[3]=splittata[3];//Tipologia di Movimento
                             Movimento[4]=splittata[3];//Causale Originale
                             Movimento[5]=splittata[0];//Moneta
+                            //Dalla moneta tolgo la tipologia di tatax, voglio vedere solo il nome
+                            if (Movimento[5].contains(".STAKING@"))Movimento[5]=Movimento[5].split(".STAKING@")[0];
+                            if (Movimento[5].contains(".LENDING@"))Movimento[5]=Movimento[5].split(".LENDING@")[0];
                             Movimento[6]=splittata[4];//Qta
                             Movimento[7]=splittata[1];//Address Moneta
-                            if (Funzioni.Funzioni_isNumeric(splittata[5], false)) Movimento[8]=new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
+                            if (Funzioni.Funzioni_isNumeric(splittata[5], false)&&!splittata[5].equals("0")) {
+                                Movimento[8]=new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
+                            }
                             else Movimento[8]="";
+                        
                             Movimento[9]="";//ID Originale
                             Movimento[10]="";//Rete 
                             
@@ -3911,7 +3917,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     )
                             {
                                 
-                               // System.out.println(Mon.Moneta);
+                              //  System.out.println(Mon.Moneta);
                                 // serve solo per il calcolo della percentuale di cro da attivare
                                     Scambio.InserisciMoneteCEX(Mon,WalletSecondario,CausaleOriginale,IDOriginale);
                                    // System.out.println(CausaleOriginale+" - "+dataa+ " - "+Mon.Moneta+" _ "+Mon.Qta);
@@ -4057,6 +4063,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             // Li inserisco alla fine perchè non so quando teminino
                         //  if (k == numMovimenti - 1) {
                         if (!Scambio.isEmpty()){
+                            //System.out.println("scambioooooooo");
                                     String TipoScambio=Scambio.IdentificaTipoTransazioneCEX();
                                     Scambio.AssegnaPesiaPartiTransazione();
                                     Map<String, ValoriToken> MappaTokenUscita=Scambio.RitornaMappaTokenUscita();
@@ -4077,7 +4084,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[3] = WalletPrincipale;
                                             RT[4] = tokenE.WalletSecondario;
                                             RT[5] = TipoTransazione;
-                                            RT[6] = " -> " + tokenE.RitornaNomeToken();
+                                            RT[6] = "-> " + tokenE.RitornaNomeToken();
                                             RT[7] = tokenE.CausaleOriginale;
                                             RT[11] = tokenE.Moneta;
                                             RT[12] = tokenE.Tipo;
@@ -4092,7 +4099,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[28] = tokenE.MonetaAddress;
                                             Importazioni.RiempiVuotiArray(RT);
                                             Prezzi.IndicaMovimentoPrezzato(RT);
-                                            lista.add(RT);
+                                            if (!(RT[13].equals("0")))
+                                            {
+                                                lista.add(RT);
+                                            }
                                             i++;    
                                         }
                                     }
@@ -4110,7 +4120,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[3] = WalletPrincipale;
                                             RT[4] = tokenU.WalletSecondario;
                                             RT[5] = TipoTransazione;
-                                            RT[6] = tokenU.RitornaNomeToken() + " -> ";
+                                            RT[6] = tokenU.RitornaNomeToken() + " ->";
                                             RT[7] = tokenU.CausaleOriginale;
                                             RT[8] = tokenU.Moneta;
                                             RT[9] = tokenU.Tipo;
@@ -4125,7 +4135,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[28] = "";
                                             Importazioni.RiempiVuotiArray(RT);
                                             Prezzi.IndicaMovimentoPrezzato(RT);
-                                            lista.add(RT);
+                                            if (!(RT[10].equals("0")))
+                                            {
+                                                lista.add(RT);
+                                            }
                                             i++; 
                                             
                                         }
@@ -4192,7 +4205,12 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                            // System.out.println(tokenU.MonetaAddress+" - "+tokenE.MonetaAddress);
                                             Importazioni.RiempiVuotiArray(RT);
                                             Prezzi.IndicaMovimentoPrezzato(RT);
-                                            lista.add(RT);
+                                            
+                                            //se scambio la stessa moneta e stessa qta non genero il movimento
+                                            if (!(RT[8].equals(RT[11])&&RT[10].equals(RT[13])))
+                                            {
+                                                lista.add(RT);
+                                            }
                                             i++;
                                        // }
                                    }    }

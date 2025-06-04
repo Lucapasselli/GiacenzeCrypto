@@ -147,6 +147,7 @@ public class TransazioneDefi {
             //altrimenti faccio la somma
             monete=MappaToken.get(Moneta.Moneta);
             monete.Qta=new BigDecimal(Moneta.Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
+            if (Moneta.Qta.contains("-")&&!Moneta.Prezzo.contains("-"))Moneta.Prezzo="-"+Moneta.Prezzo;
             monete.Prezzo=new BigDecimal(Moneta.Prezzo).add(new BigDecimal(monete.Prezzo)).stripTrailingZeros().toPlainString();
             }
     }

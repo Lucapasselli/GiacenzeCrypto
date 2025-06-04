@@ -1060,7 +1060,7 @@
                                                       <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
                                                   </Group>
                                               </Group>
-                                              <EmptySpace pref="214" max="32767" attributes="0"/>
+                                              <EmptySpace pref="220" max="32767" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Group type="102" attributes="0">
                                                       <Component id="DepositiPrelievi_Bottone_Duplica" min="-2" max="-2" attributes="0"/>
@@ -1075,7 +1075,6 @@
                                               </Group>
                                           </Group>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="194" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
@@ -1701,8 +1700,8 @@
                   </Events>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                      <JTabbedPaneConstraints tabName="Sitazione Import Crypto">
-                        <Property name="tabTitle" type="java.lang.String" value="Sitazione Import Crypto"/>
+                      <JTabbedPaneConstraints tabName="Situazione Import Crypto">
+                        <Property name="tabTitle" type="java.lang.String" value="Situazione Import Crypto"/>
                       </JTabbedPaneConstraints>
                     </Constraint>
                   </Constraints>

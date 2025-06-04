@@ -138,7 +138,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     public String Versione="1.0.39";
-    public String Titolo="Giacenze Crypto "+Versione+" Beta";
+    public String Titolo="Giacenze Crypto "+Versione+" v2 Beta";
 
     
     
@@ -1528,7 +1528,7 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(DepositiPrelievi_Bottone_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(DepositiPrelievi_CheckBox_movimentiClassificati, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 214, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 220, Short.MAX_VALUE)
                                 .addGroup(DepositiPrelieviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(DepositiPrelieviLayout.createSequentialGroup()
                                         .addComponent(DepositiPrelievi_Bottone_Duplica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1538,7 +1538,6 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addComponent(jScrollPane14)))
@@ -1637,7 +1636,7 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap())
         );
 
-        AnalisiCrypto.addTab("Sitazione Import Crypto", SituazioneImport);
+        AnalisiCrypto.addTab("Situazione Import Crypto", SituazioneImport);
 
         GiacenzeaData.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -11982,7 +11981,7 @@ try {
             Val=new String[]{"Entrata: ",Testo};
             ModelloTabellaCrypto.addRow(Val);
             
-                        if (!Transazione[15].isBlank()){
+            if (!Transazione[15].isBlank()&&!Transazione[13].equals("0")){
                 BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
                 Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
                 Val=new String[]{"Valore Unitario "+Transazione[11],Valore};

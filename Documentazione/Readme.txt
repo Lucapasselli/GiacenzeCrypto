@@ -25,6 +25,13 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.40
+Nuove Implementazioni : 
+ - In depositi/prelievi aggiunta nuova tabella che fa vedere i movimenti correlati (utile per vedere ad esempio i trasferimenti dove vanno o gli scambi differiti)
+Correzione di Bug :
+ - Importando i dati da Tatax i token messi in Staking vengono gestiti con un estensione es. ETH.STAKING@BINANCE, con questa nuova versione gli viene ripristinato il nome originale (es. ETH) per evitare problemi poi con i prezzi e con il LiFo.
+ - Sempre negli import da Tatax i vari EARN, CASHBACK etc.. arrivano con prezzo Zero, ora il programma se vede che arrivano in questo modo gli assegna un valore.
+
 ver. 1.0.39
 Nuove Implementazioni :
  - Inserito filtro x Wallet e x Token nella tabella delle transazioni e nella tabella deli depositi/prelievi

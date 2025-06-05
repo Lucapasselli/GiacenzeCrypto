@@ -80,6 +80,8 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_EliminaMovimentoActionPerformed"/>
           </Events>
         </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator8">
+        </Component>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ClassificaMovimento">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -92,6 +94,28 @@
           </Events>
         </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ModificaPrezzo">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Prezzo.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Modifica Prezzo"/>
+          </Properties>
+          <Events>
+            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="MenuItem_ModificaPrezzoMouseReleased"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ModificaPrezzoActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ModificaNote">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Nuovo.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Modifica Note"/>
+          </Properties>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
         </Component>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_EsportaTabella">
           <Properties>
@@ -1075,7 +1099,8 @@
                                               </Group>
                                           </Group>
                                       </Group>
-                                      <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="194" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="188" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="jScrollPane14" alignment="0" max="32767" attributes="0"/>

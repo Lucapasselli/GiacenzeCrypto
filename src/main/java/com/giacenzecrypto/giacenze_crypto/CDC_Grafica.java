@@ -302,8 +302,12 @@ private static final long serialVersionUID = 3L;
         MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
         MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
         MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ClassificaMovimento = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
+        MenuItem_ModificaNote = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
         TransazioniCrypto = new javax.swing.JPanel();
@@ -645,6 +649,7 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_EliminaMovimento);
+        PopupMenu.add(jSeparator8);
 
         MenuItem_ClassificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         MenuItem_ClassificaMovimento.setText("Classifica Movimento");
@@ -655,6 +660,25 @@ private static final long serialVersionUID = 3L;
         });
         PopupMenu.add(MenuItem_ClassificaMovimento);
         PopupMenu.add(jSeparator6);
+
+        MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        MenuItem_ModificaPrezzo.setText("Modifica Prezzo");
+        MenuItem_ModificaPrezzo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                MenuItem_ModificaPrezzoMouseReleased(evt);
+            }
+        });
+        MenuItem_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaPrezzoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ModificaPrezzo);
+
+        MenuItem_ModificaNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
+        MenuItem_ModificaNote.setText("Modifica Note");
+        PopupMenu.add(MenuItem_ModificaNote);
+        PopupMenu.add(jSeparator7);
 
         MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
         MenuItem_EsportaTabella.setText("Esporta Tabella in Excel");
@@ -1538,7 +1562,8 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addComponent(jScrollPane14)))
         );
@@ -10548,6 +10573,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_TabellaCorrelati,evt,0);
     }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
 
+    private void MenuItem_ModificaPrezzoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_MenuItem_ModificaPrezzoMouseReleased
+
+    private void MenuItem_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoActionPerformed
+        // TODO add your handling code here:
+        String m = Funzioni.GUIDammiPrezzoDaID(PopUp_Component,PopUp_IDTrans);
+    }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -12775,6 +12809,8 @@ try {
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_Incolla;
     private javax.swing.JMenuItem MenuItem_ModificaMovimento;
+    private javax.swing.JMenuItem MenuItem_ModificaNote;
+    private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;
@@ -12948,6 +12984,8 @@ try {
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTextArea jTextArea1;

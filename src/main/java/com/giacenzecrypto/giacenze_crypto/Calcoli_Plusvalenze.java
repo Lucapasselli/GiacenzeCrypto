@@ -342,7 +342,7 @@ public class Calcoli_Plusvalenze {
     }
     ritorno=costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }else return "";
-   // System.out.println(ritorno);
+   //if (ritorno.equals("0.00"))System.out.println(ritorno);
     return ritorno;
    // System.out.println(Moneta +" - "+stack.size());
 }      
@@ -415,7 +415,7 @@ public class Calcoli_Plusvalenze {
             long long2023=OperazioniSuDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
             long dataLong=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
             boolean DataSuperiore2023=true;
-            if (dataLong<long2023)DataSuperiore2023=false;
+            if (dataLong<long2023){DataSuperiore2023=false;}
             boolean Pre2023EarnCostoZero = false;
             boolean Pre2023ScambiRilevanti = false;
             String Plusvalenze_Pre2023EarnCostoZero = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");

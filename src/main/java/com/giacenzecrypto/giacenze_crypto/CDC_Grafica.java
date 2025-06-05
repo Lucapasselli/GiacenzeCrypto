@@ -677,6 +677,11 @@ private static final long serialVersionUID = 3L;
 
         MenuItem_ModificaNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
         MenuItem_ModificaNote.setText("Modifica Note");
+        MenuItem_ModificaNote.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaNoteActionPerformed(evt);
+            }
+        });
         PopupMenu.add(MenuItem_ModificaNote);
         PopupMenu.add(jSeparator7);
 
@@ -1562,7 +1567,6 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(DepositiPrelievi_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(DepositiPrelievi_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(DepositiPrelievi_Bottone_AssegnazioneManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addComponent(jScrollPane14)))
@@ -10579,8 +10583,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void MenuItem_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoActionPerformed
         // TODO add your handling code here:
-        String m = Funzioni.GUIDammiPrezzoDaID(PopUp_Component,PopUp_IDTrans);
+        if(Funzioni.GUIModificaPrezzo(PopUp_Component,PopUp_IDTrans))Funzioni_AggiornaTutto();
     }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
+
+    private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
+        // TODO add your handling code here:
+        Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans);
+    }//GEN-LAST:event_MenuItem_ModificaNoteActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){

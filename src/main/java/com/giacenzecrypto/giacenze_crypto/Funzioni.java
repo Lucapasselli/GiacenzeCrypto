@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.awt.AWTException;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -48,7 +49,9 @@ import java.util.stream.Stream;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
@@ -208,11 +211,16 @@ public class Funzioni {
                 PopUp_disableMenuItemByText(pop,"Elimina Movimento");
                 PopUp_disableMenuItemByText(pop,"Classifica Movimento");
                 PopUp_disableMenuItemByText(pop,"Copia ID Transazione");
+                PopUp_disableMenuItemByText(pop,"Modifica Prezzo");
+                PopUp_disableMenuItemByText(pop,"Modifica Note");
             }else{
                 PopUp_enableMenuItemByText(pop,"Dettagli Movimento");
                 PopUp_enableMenuItemByText(pop,"Modifica Movimento");
                 PopUp_enableMenuItemByText(pop,"Elimina Movimento");
                 PopUp_enableMenuItemByText(pop,"Copia ID Transazione");
+                PopUp_enableMenuItemByText(pop,"Modifica Prezzo");
+                PopUp_enableMenuItemByText(pop,"Modifica Note");
+                
                 if (isDepositoPrelievoClassificabile(ID, null)){
                    PopUp_enableMenuItemByText(pop,"Classifica Movimento"); 
                 }else PopUp_disableMenuItemByText(pop,"Classifica Movimento");
@@ -287,7 +295,7 @@ public class Funzioni {
     }
    
         
-        public static String GUIDammiPrezzoDaID (Component c,String ID){
+        public static boolean GUIModificaPrezzo (Component c,String ID){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
             //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
@@ -337,15 +345,19 @@ public class Funzioni {
                         }
                     }
                     else{
-                        return null;
+                        return false;
                     }
             }
             
                     
-            //PARTE 2      
-              
-                Testo = "<html>indicare il prezzo in "+MonRiferimento+" relativo alla transazione del <br>"
-                        + trans[1]+" relativo a questa movimentazione : ("+trans[6]+")<br>"
+            //PARTE 2    
+            c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+              String PrezzoAuto=Prezzi.DammiPrezzoDaTransazione(trans, 2);
+              c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                Testo = "<html>Indicare il prezzo in <b>"+MonRiferimento+"</b> relativo alla transazione del <br><b>"
+                        + trans[1]+"</b> relativo a questa movimentazione : (<b>"+trans[6]+"</b>)<br><br>"+
+                        "Il prezzo recuperato in automatico dal programma è pari a <b>€"+PrezzoAuto+"</b><br>"+
+                        "NB. Il prezzo recuperato in automatico potrebbe non essere uguale a quello del CSV memorizzato sul programma"
                             + "<br><br>"
                             + "</html>";
             
@@ -358,19 +370,83 @@ public class Funzioni {
                         if (!MonRiferimento.equals("EURO")){
                             //devo fare la conversione da dollari a euro
                             String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
-                            Prezz=Prezzi.ConvertiUSDEUR(Prezz, Giorno);
+                            Prezz=Prezzi.ConvertiUSDEUR(Prezz, Giorno);                           
                             //devo fare la conversione in dollari
                         }
-                 
-                        return Prezz;
+                        Prezz=new BigDecimal(Prezz).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        if (Prezz.equals("0.00")) {
+                String Messaggio = "<html>Attenzione, il prezzo del movimento è valorizzato a '0.00'.<br>"
+                        + "Si conferma questo valore? Il movimento verrà considerato come valorizzato a zero</html>";
+                int risposta = JOptionPane.showOptionDialog(c, Messaggio, "Conferma Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
+                    case 0 -> {
+                        trans[15]=Prezz;
+                        trans[32]="Si";
+                        return true;
+                    }
+                    case 1 -> {
+                        JOptionPane.showConfirmDialog(c, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+                    case -1 -> {
+                        JOptionPane.showConfirmDialog(c, "Operazione Annullata",
+                                "Operazione Annullata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
+
+                }
+            } else {
+                trans[15]=Prezz;
+                trans[32]="Si";
+                return true;
+            }
+
                     }else {
                         JOptionPane.showConfirmDialog(c, "Attenzione, " + Prezz + " non è un numero valido!",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                     }
                 }
-                
-                return null;
+                return false;
         }
+        
+        
+       public static boolean GUIModificaNote(Component c,String ID) {
+        // Crea una JTextArea
+        String trans[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+        String TestoArea=trans[21].replace("<br>", "\n");
+        JTextArea textArea = new JTextArea(10, 30);  // 10 righe, 30 colonne
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setText(TestoArea);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        String[] options = {"Salva", "Annulla"};
+
+        // Mostra un JOptionPane con la JTextArea
+        int result = JOptionPane.showOptionDialog(
+            null,
+            scrollPane,
+            "Note : ",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            options,
+            options[0]
+        );
+
+        // Gestione risultato
+        if (result == 0) {
+            String inputText = textArea.getText();
+            inputText = inputText.replace(";", " ").replace("\n", "<br>");//Tolgo i caratteri che potrebbero dar fastidio alle note
+            trans[21]=inputText;
+            return true;
+            //System.out.println("Hai scritto:\n" + inputText);
+        } else {
+           // System.out.println("Operazione annullata.");
+        }
+        return false;
+    }
+        
         
         
         public static String GUIDammiPrezzo (Component c,String NomeMon,long DataPrezzo,String Qta,String Prezzo){

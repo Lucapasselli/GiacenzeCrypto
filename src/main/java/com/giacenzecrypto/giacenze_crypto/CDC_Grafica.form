@@ -114,6 +114,9 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Modifica Note"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ModificaNoteActionPerformed"/>
+          </Events>
         </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
         </Component>
@@ -1099,7 +1102,6 @@
                                               </Group>
                                           </Group>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="188" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>

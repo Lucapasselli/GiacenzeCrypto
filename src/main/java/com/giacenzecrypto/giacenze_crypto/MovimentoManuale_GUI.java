@@ -927,7 +927,7 @@ private static final long serialVersionUID = 9L;
     private boolean ScriviMovimento(String ID) {
 
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
-        String Note = this.Note_TextArea.getText().replace(";", "").replace("\n", "<br>");
+        String Note = this.Note_TextArea.getText().replace(";", " ").replace("\n", "<br>");
         ValoreTransazione = new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
         MonetaUQta = MonetaUQta.replace("-", "");
         if (CDC_Grafica.Funzioni_isNumeric(MonetaUQta, false) && !MonetaUQta.equalsIgnoreCase("0")) {

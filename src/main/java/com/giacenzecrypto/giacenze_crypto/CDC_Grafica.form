@@ -1061,11 +1061,34 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane2" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane14" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="DepositiPrelievi_Bottone_Documentazione" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace max="32767" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Group type="102" alignment="1" attributes="0">
+                                                      <Component id="DepositiPrelievi_Bottone_Duplica" min="-2" max="-2" attributes="0"/>
+                                                      <EmptySpace max="-2" attributes="0"/>
+                                                      <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" max="-2" attributes="0"/>
+                                                  </Group>
+                                                  <Group type="102" alignment="1" attributes="0">
+                                                      <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" pref="200" max="-2" attributes="0"/>
+                                                      <EmptySpace max="-2" attributes="0"/>
+                                                      <Component id="DepositiPrelievi_Bottone_Scam" min="-2" max="-2" attributes="0"/>
+                                                  </Group>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="185" max="-2" attributes="0"/>
+                                          </Group>
                                           <Group type="102" attributes="0">
                                               <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="102" attributes="0">
+                                                  <Component id="jLabel21" min="-2" pref="167" max="-2" attributes="0"/>
+                                                  <Group type="102" alignment="0" attributes="0">
                                                       <Component id="DepositiPrelievi_Label_FiltroWallet" min="-2" max="-2" attributes="0"/>
                                                       <EmptySpace max="-2" attributes="0"/>
                                                       <Component id="DepositiPrelievi_ComboBox_FiltroWallet" min="-2" pref="346" max="-2" attributes="0"/>
@@ -1073,39 +1096,15 @@
                                                       <Component id="DepositiPrelievi_Label_FiltroToken" min="-2" max="-2" attributes="0"/>
                                                       <EmptySpace max="-2" attributes="0"/>
                                                       <Component id="DepositiPrelievi_ComboBox_FiltroToken" min="-2" pref="142" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Component id="jLabel21" alignment="0" min="-2" pref="167" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="DepositiPrelievi_Bottone_Documentazione" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
+                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
                                                       <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
                                                   </Group>
                                               </Group>
-                                              <EmptySpace pref="220" max="32767" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="102" attributes="0">
-                                                      <Component id="DepositiPrelievi_Bottone_Duplica" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="DepositiPrelievi_Bottone_DettaglioDefi" min="-2" pref="200" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="DepositiPrelievi_Bottone_Scam" min="-2" max="-2" attributes="0"/>
-                                                  </Group>
-                                              </Group>
+                                              <EmptySpace min="0" pref="339" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="188" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="jScrollPane14" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -1118,38 +1117,35 @@
                                   <Component id="DepositiPrelievi_ComboBox_FiltroWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="DepositiPrelievi_Label_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="DepositiPrelievi_ComboBox_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="465" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="472" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="3" attributes="0">
                                           <Component id="DepositiPrelievi_Bottone_Documentazione" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_DettaglioDefi" alignment="3" min="-2" max="-2" attributes="0"/>
                                           <Component id="DepositiPrelievi_Bottone_Scam" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" attributes="0">
+                                              <EmptySpace max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="3" attributes="0">
                                                   <Component id="DepositiPrelievi_Bottone_AssegnazioneAutomatica" alignment="3" min="-2" max="-2" attributes="0"/>
                                                   <Component id="DepositiPrelievi_Bottone_Duplica" alignment="3" min="-2" max="-2" attributes="0"/>
                                               </Group>
-                                              <EmptySpace max="-2" attributes="0"/>
                                           </Group>
-                                          <Group type="102" alignment="1" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                                               <Component id="DepositiPrelievi_Bottone_CreaMovOpposto" min="-2" pref="35" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                   </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="76" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" alignment="1" min="-2" pref="76" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="7" pref="7" max="-2" attributes="0"/>
                               <Component id="jLabel21" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jScrollPane14" min="-2" pref="162" max="-2" attributes="0"/>

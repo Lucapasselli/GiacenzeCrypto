@@ -913,6 +913,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     MovimentoReward[13] = QtaReward;
                     MovimentoReward[15] = ValoreReward;
                     MovimentoReward[20] = IDPrelievo + "," + IDDeposito;
+                    MovimentoReward[22] = "Rettifica su Trasferimento";
                     MovimentoReward[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
                     //quindi se decadono le condizioni che lo hanno generato va eliminato
                     //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento

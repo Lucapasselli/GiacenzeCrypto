@@ -430,7 +430,7 @@ public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] Co
                     c.setForeground(Tabelle.verdeScuro);
                 }else{
                 c.setBackground(bg);
-                c.setForeground(Color.BLACK);
+                c.setForeground(fore);
             }
 
             return c;

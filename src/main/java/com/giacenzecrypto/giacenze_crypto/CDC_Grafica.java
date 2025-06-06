@@ -6197,10 +6197,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //6- un movimento deve essere in negativo e l'altro in positivo                
                 //7 - La qta uscita deve essere sempre maggiore o uguale di quella ricevuta
                 BigDecimal Sommaqta2=new BigDecimal(qta).add(new BigDecimal (qta2)).stripTrailingZeros();
+                
                 //Se sommaQta è maggiore di zero significa che sono entrati più soldi di quelli usciti e questo è impossibile
                 //per cui non posso eseguire il movimento
                 //vado avanti solo se sommaqta è minore o uguale a zero
                 BigDecimal Sommaqta=Sommaqta2.abs();
+                //La minimo inverso serve per indicare che anche se la differenza tra l'ingresso e le uscite è positiva (ho ricevuto più del depositato)
+                //Posso comunque classificare il movimento se la differenza è inferiore di 100000 volte al valore della transazione ovvero 0,001%
+                BigDecimal MinimoInverso=new BigDecimal(qta).abs().divide(new BigDecimal(10000));
                 BigDecimal PercentualeDifferenza=new BigDecimal(100);                
                 if (Double.parseDouble(qta)!=0){
                     PercentualeDifferenza=Sommaqta.divide(new BigDecimal(qta),4,RoundingMode.HALF_UP).multiply(new BigDecimal(100)).abs(); 
@@ -6210,7 +6214,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         moneta.equals(moneta2)&&//3
                         !wallet.equalsIgnoreCase(wallet2)&&//4
                         PercentualeDifferenza.compareTo(new BigDecimal(2))==-1 &&//5
-                        Sommaqta2.compareTo(new BigDecimal(0))<=0//7
+                        Sommaqta2.compareTo(MinimoInverso)<=0//7
                         )     //6  
                 
                 {

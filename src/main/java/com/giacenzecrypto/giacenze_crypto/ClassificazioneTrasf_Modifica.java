@@ -13,6 +13,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
+import java.awt.Cursor;
 import java.awt.event.ItemEvent;
 import java.math.RoundingMode;
 
@@ -399,6 +400,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //DTW -> Trasferimento tra Wallet (deposito)
         //DAI -> Airdrop o similare (deposito)
         //DCZ -> Costo di carico 0 (deposito)
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int scelta = this.ComboBox_TipoMovimento.getSelectedIndex();
         boolean completato = true;
         String descrizione;
@@ -809,7 +811,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
             }
         }
-
+this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     }//GEN-LAST:event_Bottone_OKActionPerformed
 
@@ -1529,7 +1531,44 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         MS[13]=MovimentoDeposito[13];
 
         MT1[15]=MovimentoPrelievo[15];
-        MS[15]=MovimentoDeposito[15];
+       // MS[15]=MovimentoDeposito[15];
+
+            //Il prezzo del movimento di scambio deve essere uguale al valore della moneta ceduta nel caso sia passato tanto tempo
+            //dal prelievo al deposito, mettiamo ad esempio il caso in cui metto degli USDT in una piattaforma in attesa che mi airdroppino
+            //un nuovo token, nel momento in cui il token viene airdroppato viene calcolata l'eventuale plusvalenza sugli USDT ceduti
+            //e il loro prezzo viene poi usato come costo di carico per il nuovo token acquistato.
+            
+            //Se è passato poco tempo invece significa che è semplicemente uno scambio che magari ci ha messo qualche minuto per arrivare,
+            //in quel caso posso prendere il prezzo della transazione
+            long DatalongDeposito=OperazioniSuDate.ConvertiDatainLongMinuto(MovimentoDeposito[1]);
+            long DatalongPrelievo=OperazioniSuDate.ConvertiDatainLongMinuto(MovimentoPrelievo[1]);
+            long DiffDate=DatalongDeposito-DatalongPrelievo;
+            //System.out.println(DiffDate);
+            //Moneta Uscita
+            Moneta M1 = new Moneta();
+            M1.InserisciValori(MovimentoPrelievo[8], MovimentoPrelievo[10], MovimentoPrelievo[26], MovimentoPrelievo[9]);
+            //Moneta Entrata
+            /*Moneta M2 = new Moneta();
+            M2.InserisciValori(MovimentoDeposito[11], MovimentoDeposito[13], MovimentoPrelievo[28], MovimentoPrelievo[12]);*/
+            String Prezzo;
+            String Rete=Funzioni.TrovaReteDaID(MovimentoPrelievo[0]);
+            Prezzo=Prezzi.DammiPrezzoTransazione(M1, null, DatalongDeposito, "0", true, 3, Rete);
+            //Se la differenza è inferiore ai 5 minuti allora posso prendere sia il prezzo del token uscito che di quello entrato
+            if (DiffDate<300000){
+                // Se il prezzo è uguale a zero allora prendo il prezzo di deposito se esiste                
+                if(Prezzo.equals("0.00")){
+                    Prezzo=MovimentoDeposito[15];
+                }
+                /*else if(!MovimentoDeposito[32].equalsIgnoreCase("Si")){
+                    MovimentoDeposito[15]=Prezzo;
+                }*/
+            }
+            if(Prezzo.equals("0.00")){
+                //Se il prezzo è 0.00 vuol dire che la crypto è senza prezzo
+                MS[32]="No";
+            }
+            MS[15]=new BigDecimal(Prezzo).setScale(2,RoundingMode.HALF_UP).toPlainString();
+        
         MT2[15]=MovimentoDeposito[15];
         
         MovimentoPrelievo[18]="PTW - Scambio Differito";

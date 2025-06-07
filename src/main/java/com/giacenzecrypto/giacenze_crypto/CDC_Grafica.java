@@ -1418,6 +1418,11 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        DepositiPrelievi_TabellaCorrelati.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                DepositiPrelievi_TabellaCorrelatiFocusGained(evt);
+            }
+        });
         DepositiPrelievi_TabellaCorrelati.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 DepositiPrelievi_TabellaCorrelatiMouseReleased(evt);
@@ -10592,6 +10597,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans);
     }//GEN-LAST:event_MenuItem_ModificaNoteActionPerformed
+
+    private void DepositiPrelievi_TabellaCorrelatiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
+        // TODO add your handling code here:
+        if (evt.getOppositeComponent()==null){
+                DepositiPrelievi_CompilaTabellaCorrelati();
+        }
+    }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){

@@ -8037,9 +8037,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         RW1[4] = Errore;
                         //RW[6]=gg*prezzo+i precedenti gg* prezzo -> Serve per poi trovare i gg ponderati
                         RW1[6] = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(new BigDecimal(RW1[6])).toPlainString();
-                        //se il valore finale è dicerso da zero allora proseguo con il calcolo dei gg ponderati
+                        //se il valore finale è diverso da zero allora proseguo con il calcolo dei gg ponderati
                         if (new BigDecimal(RW1[2]).compareTo(new BigDecimal(0))!=0) {
                             RW1[3] = new BigDecimal(RW1[6]).divide(new BigDecimal(RW1[2]), 2, RoundingMode.HALF_UP).toPlainString();
+                        }else if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected())
+                        {
+                            RW1[3]=new BigDecimal(lista[11]).setScale(2,RoundingMode.HALF_UP).toPlainString();
                         }
                         //IC
                         RW1[5]=new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli+10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();

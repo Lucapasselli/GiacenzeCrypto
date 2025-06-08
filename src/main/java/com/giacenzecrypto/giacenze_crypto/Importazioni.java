@@ -4376,7 +4376,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     }
                             }
                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Income")
-                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Altri redditi"))
+                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Altri redditi")||
+                                   movimentoSplittato[0].trim().equalsIgnoreCase("Reddito da interessi"))
                             {
                                 //Rewards di vario tipo
                                 

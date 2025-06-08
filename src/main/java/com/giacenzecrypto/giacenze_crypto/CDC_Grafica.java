@@ -137,8 +137,8 @@ private static final long serialVersionUID = 3L;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
-    public String Versione="1.0.39";
-    public String Titolo="Giacenze Crypto "+Versione+" v2 Beta";
+    public String Versione="1.0.40";
+    public String Titolo="Giacenze Crypto "+Versione+" Beta";
 
     
     
@@ -10662,7 +10662,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);  
-            Stampe stampa=new Stampe("Temporanei/RW_"+Anno+"_"+DataOra+".pdf");
+            Stampe stampa=new Stampe("Temporanei/RT_"+Anno+"_"+DataOra+".pdf");
             String AnnoDiCompetenza=String.valueOf(Anno);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;

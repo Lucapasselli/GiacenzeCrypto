@@ -29,9 +29,13 @@ ver. 1.0.40
 Nuove Implementazioni : 
  - In depositi/prelievi aggiunta nuova tabella che fa vedere i movimenti correlati (utile per vedere ad esempio i trasferimenti dove vanno o gli scambi differiti)
  - Al PopUpMenu aggiunto la funzione "Modifica Note" e "Modifica Prezzo"
+ - Adesso pe piccolissime differenze è possibile classificare un movimento come trasferimento anche se la qta di prelievo sul wallet i parenza è minore di quella di deposito sul wallet i destinazione.
 Correzione di Bug :
  - Importando i dati da Tatax i token messi in Staking vengono gestiti con un estensione es. ETH.STAKING@BINANCE, con questa nuova versione gli viene ripristinato il nome originale (es. ETH) per evitare problemi poi con i prezzi e con il LiFo.
  - Sempre negli import da Tatax i vari EARN, CASHBACK etc.. arrivano con prezzo Zero, ora il programma se vede che arrivano in questo modo gli assegna un valore.
+ - Nella classificazione "Scambio Crypto differito" se il movimento di deposito non aveva prezzo anche lo scambio generato veniva valorizzato a zero ma senza segnalare la mancanza del prezzo.
+Adesso questa cosa non succede più.
+ - Nelle stampe dell'RW anche per gli anni bisestili ora i giorni di detenzione vengono messi al massimo a 365 anche per gli anni bisestili, questo per uniformarsi al software dell'AdE che non consente di inserire giorni di detenzione maggiori di 365.
 
 ver. 1.0.39
 Nuove Implementazioni :

@@ -8015,7 +8015,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
                 //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio 
                 
-                RW1=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,lista[6]);
+                RW1=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,lista[6]);               
                 //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
                 //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
                         if ((!lista[1].equals(lista[6])) && RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected()&&!lista[1].isBlank())//Se il 
@@ -8076,7 +8076,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 PagaBollo="SI";
                 }
             else  ICtot=new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
-            RWx[7]=PagaBollo;
+            RWx[7]=PagaBollo;           
             ModelloTabella.addRow(RWx);
         }
         RW_Text_IC.setText(ICtot);
@@ -8949,6 +8949,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 String ValFinale=RW_Tabella.getModel().getValueAt(i, 2).toString();
                 ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
                 String GG=RW_Tabella.getModel().getValueAt(i, 3).toString();
+                //Questo serve per trasformare un 366 di anno bisestile in 365
+                if(new BigDecimal(GG).compareTo(new BigDecimal("365"))>=0)GG="365.00";
                 GG=new BigDecimal(GG).setScale(0, RoundingMode.HALF_UP).toPlainString();
                 String PagaBollo=RW_Tabella.getModel().getValueAt(i, 7).toString();
                 boolean errori=false;
@@ -9044,6 +9046,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         ValFinale = new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
                         String ICs = new BigDecimal(RW_Tabella.getModel().getValueAt(i, 5).toString()).setScale(0, RoundingMode.HALF_UP).toPlainString();
                         String GG = RW_Tabella.getModel().getValueAt(i, 3).toString();
+                        //Questo serve per trasformare un 366 di anno bisestile in 365
+                        //il software dell'agenzia delle entrate non consente infatti di mettere 366 come giorni
+                        if(new BigDecimal(GG).compareTo(new BigDecimal("365"))>=0)GG="365.00";
                         GG = new BigDecimal(GG).setScale(0, RoundingMode.HALF_UP).toPlainString();
                         String PagaBollo = RW_Tabella.getModel().getValueAt(i, 7).toString();
                         boolean errori = false;

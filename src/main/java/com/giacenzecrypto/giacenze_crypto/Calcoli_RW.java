@@ -748,14 +748,15 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
     }
     
     
-    public static void SistemaErroriInListe(){
+    public static void SistemaErroriInListe(Map<String, List<String[]>> MappaLista){
         
         //Se prezzo = 0.00 significa che non esiste il prezzo della moneta
         //Lo segnalo nelgi errori
         //Poi scalo tutti i prezzi ai 2 centesimi
-        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
-            //if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)!=null)
-            for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(key)) {
+      //  System.out.println("------");
+        for (String key : MappaLista.keySet()) {
+
+            for (String[] lista : MappaLista.get(key)) {
            /*     if(key.equalsIgnoreCase("Wallet 05")){
                 System.out.println(lista[9]);
             }*/
@@ -765,8 +766,18 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 if (MappaCryptoWallet.get(lista[14])!=null) mf=Funzioni.RitornaMoneteDaID(lista[14]);*/
                 //Prima di aggiungere alla tabella la riga relativa al movimento controllo se il valore è a zero
                 //se il valore è zero e non esiste un prezzo per quel token a quella data allora metto errore
+                
+                //if (lista[1].equals("Wallet 04"))System.out.println(lista[1]+" aaa - "+lista[2]+" - "+MappaCryptoWallet.get(lista[13])+ " - "+lista[5] );
                 String PrezzoInizio = lista[5];
+                if (lista[5]==null)                     
+                {                       
+                    PrezzoInizio="0";
+                }
                 String PrezzoFine = lista[10];
+                if (lista[10]==null) 
+                {
+                    PrezzoFine="0";
+                }
                 if (lista[15].isBlank()) lista[15]="<html>";
                 else lista[15]="<html>"+lista[15].trim()+"<br>";
                 //Se
@@ -801,8 +812,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                         &&MappaCryptoWallet.get(lista[13])[14].isBlank()        //5
                         &&!lista[2].isBlank()
                      )
+                        || PrezzoInizio.equals("0")
                     )
                 {
+                //    if (lista[1].equals("Wallet 04"))System.out.println(lista[1]+" - "+lista[2]+" - "+MappaCryptoWallet.get(lista[13])+ " - "+PrezzoInizio.equals("0.00") );
+                    //System.out.println("Sono qui "+lista[1]+" - "+lista[2]);
                     lista[5] = "0";
                     lista[15] = lista[15]+"Errore (Valore Iniziale non Valorizzato) <br>";
                     lista[15] = lista[15]+"Bottone '<b>Modifica Valore Iniziale</b>' per correggere<br><br>";
@@ -822,6 +836,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                        // &&!TokenConPrezzo(mf[0],"0.00",lista[9])                //4
                         &&MappaCryptoWallet.get(lista[14])[14].isBlank()        //5
                      )
+                       || PrezzoFine.equals("0")
                     )
                 {
                    // System.out.println("Valore Finale non valorizzato");
@@ -1676,7 +1691,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                             } else {
                                 //Solo se rilvenza è di diverso da A proseguo con i calcoli
                                 //nel caso sia uguale ad A viene gestito a fine ciclo
-                                if (!(Rilevanza.equalsIgnoreCase("A") || MostraGiacenzeSePagaBollo)) {
+                                if (!(Rilevanza.equalsIgnoreCase("A") /*|| MostraGiacenzeSePagaBollo*/)) {
                                     //Lancio la funzione solo se la rimanenza è positiva, se è negativa non devo chiudere nulla
                                     //anzi se lo facessi creerei solo problemi in caso di giacenze negative
                                     if (!m.Qta.contains("-")){
@@ -1700,12 +1715,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     }
                     
                     //se la rilevanza è uguale ad A significa che voglio vedere solo le giacenze iniziali e finali e quelle andrò a calcolare
-                    if (Rilevanza.equalsIgnoreCase("A")|| MostraGiacenzeSePagaBollo){ 
+                    if (Rilevanza.equalsIgnoreCase("A")/*|| MostraGiacenzeSePagaBollo*/){ 
                         ChiudiRWGiacenzeFinali (key);
                     }
                 }
         
-        SistemaErroriInListe();
+        SistemaErroriInListe(CDC_Grafica.Mappa_RW_ListeXGruppoWallet);
         
     }
     

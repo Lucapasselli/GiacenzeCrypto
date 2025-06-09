@@ -7886,93 +7886,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
        
     }//GEN-LAST:event_RW_Bottone_CalcolaActionPerformed
 
-     private void RW_CalcolaRWold(){
-                // TODO add your handling code here:
-        //Come prima cosa faccio un pò di pulizia
-        System.out.println("RW_CalcoloRW");
-        DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
-        DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
-        DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
-        RW_Bottone_CorreggiErrore.setEnabled(false);
-        RW_Bottone_IdentificaScam.setEnabled(false);
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        //Array Lista RW così composta
-        // 0 - Anno
-        // 1 - Gruppo Wallet
-        // 2 - Moneta
-        // 3 - Qta
-        // 4 - Data Inizio
-        // 5 - Prezzo Inizio
-        // 6 - Data Fine
-        // 7 - Prezzo Fine
-        // 8 - Giorni di detenzione
-        // 9 - Causale
-        Download progress = new Download();
-        progress.setLocationRelativeTo(this);
-                Thread thread;
-        thread = new Thread() {
-            public void run() {
-
-        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
-        //in futuro dovrò mettere anche un limite per data e un limite per wallet
-        progress.Titolo("Calcolo RW in corso.... Attendere");
-        progress.SetLabel("Calcolo RW in corso.... Attendere");
-        progress.NascondiBarra();
-        progress.NascondiInterrompi();
-        Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
-        //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
-        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
-            String Errore="";
-            BigDecimal ValIniziale = new BigDecimal(0);
-            BigDecimal ValFinale = new BigDecimal(0);
-            BigDecimal ValFinalexggTOT = new BigDecimal(0);
-            String RW1[] = new String[5];
-            for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
-              //  System.out.println(lista[1]);
-                if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
-                if (lista[15].toLowerCase().contains("error"))Errore="ERRORI";
-                ValIniziale = new BigDecimal(lista[5]).add(ValIniziale);
-                ValFinale = new BigDecimal(lista[10]).add(ValFinale);
-                ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
-            }
-            BigDecimal GGPonderati;//=new BigDecimal(999999);
-            if (ValFinale.compareTo(new BigDecimal(0))!=0) {
-                GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
-            }else{ 
-                GGPonderati=new BigDecimal("365.00").setScale(2, RoundingMode.HALF_UP);
-                    Errore="Wallet vuoto o senza valore";
-                }
-            if (Errore.equalsIgnoreCase("ERRORI"))GGPonderati=new BigDecimal(999999);
-            RW1[0] = key.split(" ")[1] + " (" + key + ")";
-            RW1[1] = ValIniziale.toPlainString();
-            RW1[2] = ValFinale.toPlainString();
-            RW1[3] = GGPonderati.toPlainString();
-            RW1[4] = Errore;
-            ModelloTabella.addRow(RW1);
-            
-        }
-        Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
-        progress.ChiudiFinestra();
-        }
-            };
-        thread.start();
-        progress.setVisible(true);
-       // Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
-        RW_Tabella.requestFocus();
-        
-        
-        
-        
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        
-        //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
-    }
     
     
-    private void RW_CalcolaRW() {
+    
+    private void RW_CalcolaRWOld() {
         // TODO add your handling code here:
         //Come prima cosa faccio un pò di pulizia
         System.out.println("RW_CalcoloRW");
@@ -8062,6 +7979,171 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //IC
                         RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
 
+                    }
+
+                }
+                String ICtot = "0";
+                for (String[] RWx : MappaWallerQuadro.values()) {
+                    //Rinomino i Wallet seguendo l'Alias
+                    //System.out.println(RWx[0]);
+                    String Gruppo = "Wallet " + RWx[0].split(" ")[0].trim();
+                    String Valori[] = DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+                    //System.out.println(Gruppo+" - "+Valori[1]+" - "+Valori[2]);
+                    RWx[0] = RWx[0].split(" ")[0].trim() + " ( " + Valori[1] + " )";
+                    String PagaBollo = "NO";
+                    if (Valori[2].equalsIgnoreCase("S")) {
+                        RWx[5] = "0.00";
+                        PagaBollo = "SI";
+                    } else {
+                        ICtot = new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
+                    }
+                    RWx[7] = PagaBollo;
+                    ModelloTabella.addRow(RWx);
+                }
+                RW_Text_IC.setText(ICtot);
+
+                progress.ChiudiFinestra();
+            }
+        };
+        thread.start();
+        progress.setVisible(true);
+
+        RW_Tabella.requestFocus();
+
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+        //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
+    }
+    
+    private void RW_CalcolaRW() {
+        // TODO add your handling code here:
+        //Come prima cosa faccio un pò di pulizia
+        System.out.println("RW_CalcoloRW");
+        DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
+        DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
+        DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        RW_Bottone_CorreggiErrore.setEnabled(false);
+        RW_Bottone_IdentificaScam.setEnabled(false);
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        //Array Lista RW così composta
+        // 0 - Anno
+        // 1 - Gruppo Wallet
+        // 2 - Moneta
+        // 3 - Qta
+        // 4 - Data Inizio
+        // 5 - Prezzo Inizio
+        // 6 - Data Fine
+        // 7 - Prezzo Fine
+        // 8 - Giorni di detenzione
+        // 9 - Causale
+        Download progress = new Download();
+        progress.setLocationRelativeTo(this);
+        Thread thread;
+        thread = new Thread() {
+            public void run() {
+
+                //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+                //in futuro dovrò mettere anche un limite per data e un limite per wallet
+                progress.Titolo("Calcolo RW in corso.... Attendere");
+                progress.SetLabel("Calcolo RW in corso.... Attendere");
+                progress.NascondiBarra();
+                progress.NascondiInterrompi();
+                //Trovo le giacenze di inizio e fine anno
+                Map<String, List<String[]>> MappaListaGiacenzeInizioFine=Funzioni.RW_GiacenzeInizioFineAnno(RW_Anno_ComboBox.getSelectedItem().toString());
+                Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+                //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
+                Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
+
+                for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+                    String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(key);
+                    String RW_MostraGiacenzeSePagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
+                    boolean MostraGiacenzeSePagaBollo=false;
+                    if (Valori[2].equals("S")&&RW_MostraGiacenzeSePagaBollo.equals("SI"))MostraGiacenzeSePagaBollo=true;
+                    // System.out.println(key);
+                    String Errore = "";
+                    String RW1[];
+                    RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze 
+                    //RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);
+                    for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
+                        //System.out.println(lista[1]);
+                        //System.out.println(key);
+                        if (lista[4].equals("0000-00-00 00:00")) {
+                            Errore = "ERRORI";
+                        }
+                        if (lista[15].toLowerCase().contains("error")) {
+                            Errore = "ERRORI";
+                        }
+                        //  ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
+
+                        //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio 
+                        RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[6]);
+                        //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
+                        //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
+                        //lista[1]-> Gruppo Wallet Iniziale ----- lista[6]-> Gruppo Wallet Finale
+                        if ((!lista[1].equals(lista[6])) 
+                                && RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected() 
+                                && !lista[1].isBlank())//Se il 
+                        //Se lista[1] ovvero il wallet di origine potrebbe essere blanc nel caso di giacenza negative
+                        //in quel caso non posso trovare da dove arriva
+                        {
+                            String Val[]=DatabaseH2.Pers_GruppoAlias_Leggi(lista[1]);
+                            String RW_MostraGiacPagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
+                            boolean MostraGiacSePagaBollo=false;
+                            if (Val[2].equals("S")&&RW_MostraGiacPagaBollo.equals("SI"))MostraGiacSePagaBollo=true;
+                            //Se il wallet di destinazione è un wallet che paga bollo non faccio nulla
+                            if(!MostraGiacSePagaBollo){
+                                String RW2[];
+                                RW2 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[1]);
+                                RW2[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW2[1])).toPlainString();//RW1[1] è il valore iniziale
+                            }
+
+                        } else {
+                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//RW1[1] è il valore iniziale
+                            //Qua dovrò gestire l'rw dell'altro wallet
+                        }
+                        
+                        RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();
+                        RW1[4] = Errore;
+                        //RW[6]=gg*prezzo+i precedenti gg* prezzo -> Serve per poi trovare i gg ponderati
+                        RW1[6] = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(new BigDecimal(RW1[6])).toPlainString();
+                        //se il valore finale è diverso da zero allora proseguo con il calcolo dei gg ponderati
+                        if (new BigDecimal(RW1[2]).compareTo(new BigDecimal(0)) != 0) {
+                            RW1[3] = new BigDecimal(RW1[6]).divide(new BigDecimal(RW1[2]), 2, RoundingMode.HALF_UP).toPlainString();
+                        } else if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
+                            RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        }
+                        //IC
+                        RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
+
+                    }
+                    //Adesso se il wallet paga bollo mostro solo le giacenze di inizio e fine anno quindi sostituisco la lista per quel wallet
+                    //con quella con le giacenze di inizio e fine anno
+                    //poi sistemo i dati dell'RW
+                    //Lo faccio alla fine perchè nella parte prima il programma deve essere in grado di fare dei calcoli che se avessi solo la 
+                    //lista con le giacenze iniziali e finali non riuscirei a fare
+                    if (MostraGiacenzeSePagaBollo){
+                        //Azzero l'RW per quel Wallet
+                        Mappa_RW_ListeXGruppoWallet.put(key,MappaListaGiacenzeInizioFine.get(key));
+                        RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);
+                        RW1[1] = "0.00";//Valore iniziale
+                        RW1[2] = "0.00";//Valore Finale
+                        RW1[3] = "0.00";//gg di Detenzione
+                        RW1[4] = "";    //Errori
+                        RW1[5] = "0.00";//IC Calcolata
+                        RW1[6] = "0.00";//gg*valore+gg2*valore2+.....
+                        RW1[7] = "NO";
+                        //Comincio a compilare i nuovi valori
+                        for (String[] lista : MappaListaGiacenzeInizioFine.get(key)) { 
+                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//Val iniziale
+                            RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();//Val Finale
+                            RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                            RW1[4] = Errore;
+                            RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        }
                     }
 
                 }
@@ -12508,7 +12590,9 @@ try {
             }
             if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
                 //diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
+                
                 diffdate = OperazioniSuDate.DifferenzaDate(DataIniziale, splittata[0]);
+                //System.out.println(diffdate);
                 contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
                 SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
                 if (!TrovatoSaldoIniziale) {

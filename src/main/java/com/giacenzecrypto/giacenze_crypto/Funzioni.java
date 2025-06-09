@@ -1114,7 +1114,7 @@ public class Funzioni {
 return ListaSaldi;
 }
     
-      public static List<String[]> RW_GiacenzeInizioFineAnno(String Anno){
+      public static Map<String, List<String[]>> RW_GiacenzeInizioFineAnno(String Anno){
             //Nel wallet si può mettere il nome del gruppo Wallet
             /*
             0 -> Anno
@@ -1123,23 +1123,29 @@ return ListaSaldi;
             */
         String DataInizio=Anno+"-01-01";
         String DataFine=Anno+"-12-31";
+        
+        Map<String, String[]> MappaDataPartenza= new TreeMap<>();
         long lDataFine=OperazioniSuDate.ConvertiDatainLong(DataFine)+86400000;
         long lDataInizio=OperazioniSuDate.ConvertiDatainLong(DataInizio);
-        
-         List<String[]> ListaSaldi=new ArrayList<>();  
+          
         //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
         //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
         Map<String,Map<String, Moneta[]>> MappaCoinsWallet = new TreeMap<>();//Map<GruppoWallet,Map<NomeMoneta,Monete(Inizio e Fine anno)>>
         Map<String, Moneta[]> QtaCrypto;//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
         //Moneta[0]->Qta Inizio Anno ----- Moneta[1]->Qta Fine Anno
+            boolean PrimoMovimento;
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]);
                     if (MappaCoinsWallet.get(GruppoWallet)==null)
                     {
                         QtaCrypto = new TreeMap<>();
                         MappaCoinsWallet.put(GruppoWallet, QtaCrypto);
+                        String DataPartenza_Prezzo[]=new String[]{movimento[1],movimento[15]};
+                        MappaDataPartenza.put(GruppoWallet, DataPartenza_Prezzo);
+                        PrimoMovimento=true;
                     }else{
                         QtaCrypto = MappaCoinsWallet.get(GruppoWallet);
+                        PrimoMovimento=false;
                     }
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
@@ -1149,21 +1155,7 @@ return ListaSaldi;
 
                             // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
                             //Faccio la somma dei movimenti in usicta
-                            Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
-                            //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
-                            Monete[0] = new Moneta();
-                            Monete[1] = new Moneta();
-                            Monete[0].MonetaAddress = movimento[26];
-                            Monete[1].MonetaAddress = movimento[28];
-                            //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
-                            Monete[0].Moneta = movimento[8];
-                            Monete[0].Tipo = movimento[9];
-                            Monete[0].Qta = movimento[10];
-                            Monete[0].Rete=Rete;
-                            Monete[1].Moneta = movimento[11];
-                            Monete[1].Tipo = movimento[12];
-                            Monete[1].Qta = movimento[13];
-                            Monete[1].Rete=Rete;
+                           Moneta Monete[]=RitornaMoneteDaID(movimento[0]);
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
                             for (int a = 0; a < 2; a++) {
                                 //ANALIZZO MOVIMENTI
@@ -1179,7 +1171,7 @@ return ListaSaldi;
                                             .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();                                   
                                     }
                                     
-                                    ///Tutto da VEDERE
+                                    //Qui se nnon ho anora la moneta in pancia
                                 } else if (!Monete[a].Moneta.isBlank() && Monete[a].Tipo.equalsIgnoreCase("Crypto")) {
                                     //if (Monete[a].Moneta.equals("ACE"))System.out.println("Inserimento"+Monete[a].Qta);
                                     //Movimento Nuovo da inserire
@@ -1193,8 +1185,16 @@ return ListaSaldi;
                                         M[1].Rete= Rete;
                                     }
                                     if (DataMovimento < lDataFine && DataMovimento >= lDataInizio) {
-                                        M[0].InserisciValori(Monete[a].Moneta, "0", Monete[a].MonetaAddress, Monete[a].Tipo);
-                                        M[0].Rete= Rete;
+                                        //Se è il primo movimento in assoluto il valore di inizio anno lo valorizzo
+                                        //A questo movimento e non a zero
+                                        if (PrimoMovimento){
+                                            M[0].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                                            M[0].Rete= Rete;
+                                        }
+                                        else{
+                                           M[0].InserisciValori(Monete[a].Moneta, "0", Monete[a].MonetaAddress, Monete[a].Tipo);
+                                           M[0].Rete= Rete; 
+                                        }
                                         M[1].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
                                         M[1].Rete= Rete;
                                     }
@@ -1210,43 +1210,61 @@ return ListaSaldi;
                 }
         
         //Adesso elenco tutte le monete e le metto il tutto in una lista   
+        Map<String, List<String[]>> MappaLista= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        List<String[]> lista;
+        int DiffDate=OperazioniSuDate.DifferenzaDate(DataInizio, DataFine)+1;
         
         for(String GWallet:MappaCoinsWallet.keySet()){
             Map<String, Moneta[]> QtaCrypt=MappaCoinsWallet.get(GWallet);
+            if(MappaLista.get(GWallet)==null){
+                lista=new ArrayList<>();
+                MappaLista.put(GWallet, lista);
+            }else lista=MappaLista.get(GWallet);
+            String DataInizioWallet=MappaDataPartenza.get(GWallet)[0];
+            //String ValoreIniziale=MappaDataPartenza.get(GWallet)[1];
+            long lDataInizioWallet=OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioWallet);
+            long lDataInizio1=lDataInizio;
+            String DataInizio1=DataInizio+" 00:00";
+            String DicituraInizio="Giacenza Inizio Anno";
+            if (lDataInizioWallet>lDataInizio){
+                DiffDate=OperazioniSuDate.DifferenzaDate(OperazioniSuDate.ConvertiDatadaLong(lDataInizioWallet), DataFine)+1;
+                DataInizio1=DataInizioWallet;
+                lDataInizio1=OperazioniSuDate.ConvertiDatainLongMinuto(DataInizio1);
+                DicituraInizio="Giacenza Apertura Wallet";
+            }
             for(Moneta m[]:QtaCrypt.values()){
                 if(!(m[0].Qta.equals("0")&&m[1].Qta.equals("0")))
                 {
-                    if(m[0].Qta.equals("0"))m[0].Prezzo="0.00";
-                    else m[0].Prezzo=Prezzi.DammiPrezzoTransazione(m[0], null, lDataInizio, null, false, 2, m[0].Rete);
-                    if(m[1].Qta.equals("0"))m[1].Prezzo="0.00";
-                    m[1].Prezzo=Prezzi.DammiPrezzoTransazione(m[1], null, lDataFine, null, false, 2, m[0].Rete);
-                    System.out.println(GWallet+";"+m[0].Moneta+";"+m[0].Qta+";"+m[0].Prezzo+";"+m[1].Qta+";"+m[1].Prezzo); 
+                    if(m[0].Qta.equals("0"))m[0].Prezzo="0.0000";
+                    else m[0].Prezzo=Prezzi.DammiPrezzoTransazione(m[0], null, lDataInizio1, null, false, 15, m[0].Rete);
+                    if(m[1].Qta.equals("0"))m[1].Prezzo="0.0000";
+                    else m[1].Prezzo=Prezzi.DammiPrezzoTransazione(m[1], null, lDataFine, null, false, 15, m[1].Rete);
+                    String xlista[]=new String[17];
+                    xlista[0]=Anno;                                             //Anno RW
+                    xlista[1]=GWallet;                                          //Gruppo Wallet Inizio
+                    xlista[2]=m[0].Moneta;                                      //Moneta Inizio
+                    xlista[3]=m[0].Qta;                                         //Qta Inizio
+                    xlista[4]=DataInizio1;                              //Data Inizio
+                    xlista[5]=m[0].Prezzo;                                      //Prezzo Inizio
+                    xlista[6]=GWallet;                                          //GruppoWallet Fine
+                    xlista[7]=m[1].Moneta;                                      //Moneta Fine
+                    xlista[8]=m[1].Qta;                                         //Qta Fine
+                    xlista[9]=DataFine+" 23:59";                                //Data Fine
+                    xlista[10]=m[1].Prezzo;                                     //Prezzo Fine
+                    xlista[11]=String.valueOf(DiffDate);                        //Giorni di Detenzione
+                    xlista[12]="Fine Anno";                                     //Causale
+                    xlista[13]=DicituraInizio;                                    //ID Movimento Apertura (o segnalazione inizio anno)
+                    xlista[14]="Giacenza Fine Anno";                            //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
+                    xlista[15]="";                                              //Tipo Errore
+                    xlista[16]="";                                              //Lista ID coinvolti separati da virgola
+                    lista.add(xlista);
+                    //System.out.println(GWallet+";"+m[0].Moneta+";"+m[0].Qta+";"+m[0].Prezzo+";"+m[1].Qta+";"+m[1].Prezzo); 
                 }
             }
-        }
-      /*  int i=0;
-        BigDecimal TotEuro=new BigDecimal(0);
-        for (String moneta :QtaCrypto.keySet()){
-            i++;
-            Moneta M1=QtaCrypto.get(moneta);
-            String Rete=M1.Rete;
-            String Address=M1.MonetaAddress;
-            String riga[]=new String[6];
-            riga[0]=M1.Moneta;
-            riga[2]=Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
-            riga[3]=M1.Tipo;
-            riga[4]=M1.Qta;
-            riga[1]=M1.Rete;
-            if (!M1.Qta.equals("0"))
-            {
-                if (M1.Qta.equals("0"))riga[5]="0.00";
-                else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
-                if (riga[4].contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
-                ListaSaldi.add(riga);                
-            }
             
-        }       */
-return ListaSaldi;
+        }
+        Calcoli_RW.SistemaErroriInListe(MappaLista);
+return MappaLista;
 }
     
     

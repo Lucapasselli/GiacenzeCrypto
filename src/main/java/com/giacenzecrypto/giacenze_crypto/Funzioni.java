@@ -1114,7 +1114,140 @@ public class Funzioni {
 return ListaSaldi;
 }
     
-    
+      public static List<String[]> RW_GiacenzeInizioFineAnno(String Anno){
+            //Nel wallet si può mettere il nome del gruppo Wallet
+            /*
+            0 -> Anno
+            1 -> Gruppo Wallet Inizio Anno (Sarà sempre
+            2 -> Nome Moneta
+            */
+        String DataInizio=Anno+"-01-01";
+        String DataFine=Anno+"-12-31";
+        long lDataFine=OperazioniSuDate.ConvertiDatainLong(DataFine)+86400000;
+        long lDataInizio=OperazioniSuDate.ConvertiDatainLong(DataInizio);
+        
+         List<String[]> ListaSaldi=new ArrayList<>();  
+        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+        //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
+        Map<String,Map<String, Moneta[]>> MappaCoinsWallet = new TreeMap<>();//Map<GruppoWallet,Map<NomeMoneta,Monete(Inizio e Fine anno)>>
+        Map<String, Moneta[]> QtaCrypto;//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
+        //Moneta[0]->Qta Inizio Anno ----- Moneta[1]->Qta Fine Anno
+                for (String[] movimento : MappaCryptoWallet.values()) {
+                    String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]);
+                    if (MappaCoinsWallet.get(GruppoWallet)==null)
+                    {
+                        QtaCrypto = new TreeMap<>();
+                        MappaCoinsWallet.put(GruppoWallet, QtaCrypto);
+                    }else{
+                        QtaCrypto = MappaCoinsWallet.get(GruppoWallet);
+                    }
+                    //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
+                    //altrimenti non vado avanti
+                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+
+
+                            // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
+                            //Faccio la somma dei movimenti in usicta
+                            Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
+                            //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
+                            Monete[0] = new Moneta();
+                            Monete[1] = new Moneta();
+                            Monete[0].MonetaAddress = movimento[26];
+                            Monete[1].MonetaAddress = movimento[28];
+                            //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
+                            Monete[0].Moneta = movimento[8];
+                            Monete[0].Tipo = movimento[9];
+                            Monete[0].Qta = movimento[10];
+                            Monete[0].Rete=Rete;
+                            Monete[1].Moneta = movimento[11];
+                            Monete[1].Tipo = movimento[12];
+                            Monete[1].Qta = movimento[13];
+                            Monete[1].Rete=Rete;
+                            //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
+                            for (int a = 0; a < 2; a++) {
+                                //ANALIZZO MOVIMENTI
+                                if (!Monete[a].Moneta.isBlank() && Monete[a].Tipo.equalsIgnoreCase("Crypto") && QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo)!=null) {
+                                    //Movimento già presente da implementare
+                                    Moneta M[] = QtaCrypto.get(Monete[a].Moneta+";"+Monete[a].Tipo);
+                                    //if (Monete[a].Moneta.equals("ACE"))System.out.println("Aggiunta"+Monete[a].Qta);
+                                    if (DataMovimento < lDataInizio) {
+                                    M[0].Qta = new BigDecimal(M[0].Qta)
+                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
+                                    }if (DataMovimento < lDataFine) {
+                                    M[1].Qta = new BigDecimal(M[1].Qta)
+                                            .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();                                   
+                                    }
+                                    
+                                    ///Tutto da VEDERE
+                                } else if (!Monete[a].Moneta.isBlank() && Monete[a].Tipo.equalsIgnoreCase("Crypto")) {
+                                    //if (Monete[a].Moneta.equals("ACE"))System.out.println("Inserimento"+Monete[a].Qta);
+                                    //Movimento Nuovo da inserire
+                                    Moneta M[]=new Moneta[2];
+                                    M[0]=new Moneta();
+                                    M[1]=new Moneta();
+                                    if (DataMovimento < lDataInizio) {
+                                        M[0].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                                        M[0].Rete= Rete;
+                                        M[1].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                                        M[1].Rete= Rete;
+                                    }
+                                    if (DataMovimento < lDataFine && DataMovimento >= lDataInizio) {
+                                        M[0].InserisciValori(Monete[a].Moneta, "0", Monete[a].MonetaAddress, Monete[a].Tipo);
+                                        M[0].Rete= Rete;
+                                        M[1].InserisciValori(Monete[a].Moneta, Monete[a].Qta, Monete[a].MonetaAddress, Monete[a].Tipo);
+                                        M[1].Rete= Rete;
+                                    }
+                                    if (DataMovimento < lDataFine){
+                                        QtaCrypto.put(Monete[a].Moneta+";"+Monete[a].Tipo, M);
+                                    }
+
+                                }
+                            }
+                         //  MappaCoinsWallet.put(Rete, QtaCrypto);
+                        
+                    
+                }
+        
+        //Adesso elenco tutte le monete e le metto il tutto in una lista   
+        
+        for(String GWallet:MappaCoinsWallet.keySet()){
+            Map<String, Moneta[]> QtaCrypt=MappaCoinsWallet.get(GWallet);
+            for(Moneta m[]:QtaCrypt.values()){
+                if(!(m[0].Qta.equals("0")&&m[1].Qta.equals("0")))
+                {
+                    if(m[0].Qta.equals("0"))m[0].Prezzo="0.00";
+                    else m[0].Prezzo=Prezzi.DammiPrezzoTransazione(m[0], null, lDataInizio, null, false, 2, m[0].Rete);
+                    if(m[1].Qta.equals("0"))m[1].Prezzo="0.00";
+                    m[1].Prezzo=Prezzi.DammiPrezzoTransazione(m[1], null, lDataFine, null, false, 2, m[0].Rete);
+                    System.out.println(GWallet+";"+m[0].Moneta+";"+m[0].Qta+";"+m[0].Prezzo+";"+m[1].Qta+";"+m[1].Prezzo); 
+                }
+            }
+        }
+      /*  int i=0;
+        BigDecimal TotEuro=new BigDecimal(0);
+        for (String moneta :QtaCrypto.keySet()){
+            i++;
+            Moneta M1=QtaCrypto.get(moneta);
+            String Rete=M1.Rete;
+            String Address=M1.MonetaAddress;
+            String riga[]=new String[6];
+            riga[0]=M1.Moneta;
+            riga[2]=Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
+            riga[3]=M1.Tipo;
+            riga[4]=M1.Qta;
+            riga[1]=M1.Rete;
+            if (!M1.Qta.equals("0"))
+            {
+                if (M1.Qta.equals("0"))riga[5]="0.00";
+                else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
+                if (riga[4].contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
+                ListaSaldi.add(riga);                
+            }
+            
+        }       */
+return ListaSaldi;
+}
     
     
     public static boolean ApriWeb(String Url) {

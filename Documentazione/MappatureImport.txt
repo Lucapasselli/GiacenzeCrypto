@@ -1,0 +1,98 @@
+Binance Tax Report
+
+		Mappa_Conversione_Causali.put("RECEIVE.REWARD.EARN",                    "EARN");//
+		Mappa_Conversione_Causali.put("RECEIVE.AIRDROP.EARN",                   "EARN");//
+        Mappa_Conversione_Causali.put("RECEIVE.REBATE.SPOT",                    "CASHBACK");//
+        Mappa_Conversione_Causali.put("BUY..CONVERT",                           "ACQUISTO CRYPTO");//
+        Mappa_Conversione_Causali.put("BUY..SPOT",                              "ACQUISTO CRYPTO");//
+        Mappa_Conversione_Causali.put("BUY..OCBS",                              "ACQUISTO CRYPTO");//
+        Mappa_Conversione_Causali.put("SELL..SPOT",                             "VENDITA CRYPTO");//
+        Mappa_Conversione_Causali.put("SELL..CONVERT",                          "VENDITA CRYPTO");//
+        Mappa_Conversione_Causali.put("DEPOSIT..FIAT",                          "DEPOSITO FIAT");//
+        Mappa_Conversione_Causali.put("DEPOSIT..OCBS",                          "DEPOSITO FIAT");//
+        Mappa_Conversione_Causali.put("TRADE..SPOT",                            "SCAMBIO CRYPTO");//
+        Mappa_Conversione_Causali.put("TRADE..CONVERT",                         "SCAMBIO CRYPTO");//
+        Mappa_Conversione_Causali.put("TRADE..EARN",                            "SCAMBIO CRYPTO");//
+        Mappa_Conversione_Causali.put("RECEIVE.PAYMENT.PAY",                    "TRASFERIMENTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("RECEIVE..CRYPTO_DEPOSIT",                "TRASFERIMENTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("SEND..CRYPTO_WITHDRAWAL",                "TRASFERIMENTO-CRYPTO");//
+		
+		
+		
+Binance CSV
+
+		Mappa_Conversione_Causali.put("Binance Card Cashback",                      "CASHBACK");           
+        Mappa_Conversione_Causali.put("Card Cashback",                              "CASHBACK");            
+        Mappa_Conversione_Causali.put("Simple Earn Flexible Interest",              "EARN");  
+        Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
+        Mappa_Conversione_Causali.put("Launchpool Earnings Withdrawal",             "EARN");//
+        Mappa_Conversione_Causali.put("Cash Voucher Distribution",                  "REWARD");//
+        Mappa_Conversione_Causali.put("Airdrop Assets",                             "REWARD");//
+        Mappa_Conversione_Causali.put("Launchpool Airdrop",                         "REWARD");//non li metto in airdrop perchè sono comunque rewards date per detenzione
+        Mappa_Conversione_Causali.put("Cashback Voucher",                           "CASHBACK");
+        Mappa_Conversione_Causali.put("Megadrop Rewards",                           "REWARD");
+        Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING REWARDS");//
+        Mappa_Conversione_Causali.put("Distribution",                               "REWARD");//
+        Mappa_Conversione_Causali.put("BNB Vault Rewards",                          "REWARD");//
+        Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING REWARDS");//
+        Mappa_Conversione_Causali.put("Simple Earn Flexible Subscription",          "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Simple Earn Flexible Redemption",            "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Simple Earn Locked Subscription",            "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Simple Earn Locked Redemption",              "TRASFERIMENTO-CRYPTO-INTERNO");//
+        Mappa_Conversione_Causali.put("Transfer Between Main and Funding Wallet",   "TRASFERIMENTO-CRYPTO-INTERNO");      
+        Mappa_Conversione_Causali.put("Staking Purchase",                           "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Staking Redemption",                         "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Main and Funding Account Transfer",          "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("transfer_in",                                "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("transfer_out",                               "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy Account", "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Launchpool Subscription/Redemption",         "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Fiat OCBS - Add Fiat and Fees",              "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Auto-Invest Transaction",                    "SCAMBIO DIFFERITO");
+        Mappa_Conversione_Causali.put("Asset Recovery",                             "SCAMBIO DIFFERITO");
+        Mappa_Conversione_Causali.put("Token Swap - Distribution",                  "SCAMBIO DIFFERITO");
+        Mappa_Conversione_Causali.put("Small Assets Exchange BNB (Spot)",           "DUST-CONVERSION");
+        Mappa_Conversione_Causali.put("Small Assets Exchange BNB",                  "DUST-CONVERSION");
+        Mappa_Conversione_Causali.put("Buy Crypto With Card",                       "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Transaction Buy",                            "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Transaction Sold",                           "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Transaction Spend",                          "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Transaction Revenue",                        "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Binance Convert",                            "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Sell Crypto To Fiat",                        "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Buy",                                        "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Sell",                                       "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("Transaction Related",                        "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("ETH 2.0 Staking",                            "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("ETH 2.0 Staking Withdrawals",                "SCAMBIO CRYPTO-CRYPTO");//       
+        Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");
+        Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
+        Mappa_Conversione_Causali.put("Strategy Trading Fee Rebate",                "COMMISSIONI");  
+        Mappa_Conversione_Causali.put("Fiat Deposit",                               "DEPOSITO FIAT");
+        Mappa_Conversione_Causali.put("Binance Card Spending",                      "PRELIEVO FIAT");
+        Mappa_Conversione_Causali.put("Fund Recovery",                              "PRELIEVO FIAT");
+        Mappa_Conversione_Causali.put("Fiat Withdraw",                              "PRELIEVO FIAT");        
+        Mappa_Conversione_Causali.put("Buy Crypto",                                 "ACQUISTO CRYPTO");
+        Mappa_Conversione_Causali.put("Buy Crypto With Fiat",                       "ACQUISTO CRYPTO");
+        Mappa_Conversione_Causali.put("Convert Fiat to Stablecoin Paysafe",         "ACQUISTO CRYPTO");
+        Mappa_Conversione_Causali.put("Tax Liquidation",                            "VENDITA CRYPTO");     
+        Mappa_Conversione_Causali.put("Referral Commission",                        "REWARD");
+        Mappa_Conversione_Causali.put("Crypto Box",                                 "REWARD");
+		
+Cointracking
+
+		Trade				(SCAMBIO CRYPTO - ACQUISTO CRYPTO - VENDITA CRYPTO) Scelta automatica in base a se ci sono o meno FIAT coinvolte
+		Operazione			(SCAMBIO CRYPTO - ACQUISTO CRYPTO - VENDITA CRYPTO) Scelta automatica in base a se ci sono o meno FIAT coinvolte
+		Other Income				ALTRE-REWARD
+		Altri redditi				ALTRE-REWARD
+		Reddito da interessi		ALTRE-REWARD
+		Staking						STAKING
+		Other Fee					COMMISSIONI
+		Altra Commissione			COMMISSIONI
+		Spesa						PRELIEVO FIAT
+		Prelievo					(TRASFERIMENTO CRYPTO-TRASFERIMENTO INTERNO-TRASFERIMENTO FIAT-DEPOSITO CRYPTO-DEPOSITO FIAT-PRELIEVO CRYPTO-PRELIEVO FIAT)Scelta automatica in base alle condizioni
+		Deposito					(TRASFERIMENTO CRYPTO-TRASFERIMENTO INTERNO-TRASFERIMENTO FIAT-DEPOSITO CRYPTO-DEPOSITO FIAT-PRELIEVO CRYPTO-PRELIEVO FIAT)Scelta automatica in base alle condizioni
+		Reddito (non imponibile)	Movimento non gestito, sono spostamenti non rilevanti all'interno dello stesso exchange, es. spostamento in EARN
+		Spese (non imponibili)		Movimento non gestito, sono spostamenti non rilevanti all'interno dello stesso exchange, es. spostamento in EARN

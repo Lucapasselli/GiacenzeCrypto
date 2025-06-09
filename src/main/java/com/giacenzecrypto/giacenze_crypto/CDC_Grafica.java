@@ -553,6 +553,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
         Opzioni_Varie_RicalcolaPrezzi = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
@@ -3881,17 +3882,29 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
         Opzioni_Varie.setLayout(Opzioni_VarieLayout);
         Opzioni_VarieLayout.setHorizontalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_VarieLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(1103, Short.MAX_VALUE))
+                .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Opzioni_VarieLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                            .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(Opzioni_VarieLayout.createSequentialGroup()
+                        .addGap(382, 382, 382)
+                        .addComponent(jButton1)))
+                .addContainerGap(885, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3900,7 +3913,9 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_Disclaimer)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
-                .addGap(86, 86, 86)
+                .addGap(59, 59, 59)
+                .addComponent(jButton1)
+                .addGap(4, 4, 4)
                 .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(519, Short.MAX_VALUE))
         );
@@ -7957,8 +7972,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     
-    private void RW_CalcolaRW(){
-                // TODO add your handling code here:
+    private void RW_CalcolaRW() {
+        // TODO add your handling code here:
         //Come prima cosa faccio un pò di pulizia
         System.out.println("RW_CalcoloRW");
         DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
@@ -7984,120 +7999,102 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // 9 - Causale
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
-                Thread thread;
+        Thread thread;
         thread = new Thread() {
             public void run() {
 
-        //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
-        //in futuro dovrò mettere anche un limite per data e un limite per wallet
-        progress.Titolo("Calcolo RW in corso.... Attendere");
-        progress.SetLabel("Calcolo RW in corso.... Attendere");
-        progress.NascondiBarra();
-        progress.NascondiInterrompi(); 
-//progress.RipristinaStdout();
-        Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
-        //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
-        Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
-        
-        for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {  
-           // System.out.println(key);
-            String Errore="";
-           // BigDecimal ValIniziale = new BigDecimal(0);
-           // BigDecimal ValFinale = new BigDecimal(0);
-            //BigDecimal ValFinalexggTOT = new BigDecimal(0);
-            String RW1[];
-            RW1=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze 
-            for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
-               //System.out.println(lista[1]);
-                if (lista[4].equals("0000-00-00 00:00"))Errore="ERRORI";
-                if (lista[15].toLowerCase().contains("error"))Errore="ERRORI";
-              //  ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
+                //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
+                //in futuro dovrò mettere anche un limite per data e un limite per wallet
+                progress.Titolo("Calcolo RW in corso.... Attendere");
+                progress.SetLabel("Calcolo RW in corso.... Attendere");
+                progress.NascondiBarra();
+                progress.NascondiInterrompi();
+                Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
+                //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
+                Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
 
-                //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio 
-                
-                RW1=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,lista[6]);               
-                //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
-                //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
-                        if ((!lista[1].equals(lista[6])) && RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected()&&!lista[1].isBlank())//Se il 
-                            //lista[1] ovvero il wallet di origine potrebbe essere blanc nel caso di giacenza negative
-                            //in quel caso non posso trovare da dove arriva
+                for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+                    // System.out.println(key);
+                    String Errore = "";
+                    String RW1[];
+                    RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze 
+                    //RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);
+                    for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
+                        //System.out.println(lista[1]);
+                        //System.out.println(key);
+                        if (lista[4].equals("0000-00-00 00:00")) {
+                            Errore = "ERRORI";
+                        }
+                        if (lista[15].toLowerCase().contains("error")) {
+                            Errore = "ERRORI";
+                        }
+                        //  ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
+
+                        //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio 
+                        RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[6]);
+                        //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
+                        //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
+                        //lista[1]-> Gruppo Wallet Iniziale ----- lista[6]-> Gruppo Wallet Finale
+                        if ((!lista[1].equals(lista[6])) && RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected() && !lista[1].isBlank())//Se il 
+                        //Se lista[1] ovvero il wallet di origine potrebbe essere blanc nel caso di giacenza negative
+                        //in quel caso non posso trovare da dove arriva
                         {
                             String RW2[];
                             //if (lista[1].isBlank())System.out.println("--"+lista[1]);
-                            RW2=RW_Funzione_RitornaRWQuadro(MappaWallerQuadro,lista[1]);
+                            RW2 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[1]);
                             RW2[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW2[1])).toPlainString();//RW1[1] è il valore iniziale
-                            
-                            }
-                        else
-                        {
+
+                        } else {
                             RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//RW1[1] è il valore iniziale
                             //Qua dovrò gestire l'rw dell'altro wallet
                         }
+                        
                         RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();
                         RW1[4] = Errore;
                         //RW[6]=gg*prezzo+i precedenti gg* prezzo -> Serve per poi trovare i gg ponderati
                         RW1[6] = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(new BigDecimal(RW1[6])).toPlainString();
                         //se il valore finale è diverso da zero allora proseguo con il calcolo dei gg ponderati
-                        if (new BigDecimal(RW1[2]).compareTo(new BigDecimal(0))!=0) {
+                        if (new BigDecimal(RW1[2]).compareTo(new BigDecimal(0)) != 0) {
                             RW1[3] = new BigDecimal(RW1[6]).divide(new BigDecimal(RW1[2]), 2, RoundingMode.HALF_UP).toPlainString();
-                        }else if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected())
-                        {
-                            RW1[3]=new BigDecimal(lista[11]).setScale(2,RoundingMode.HALF_UP).toPlainString();
+                        } else if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
+                            RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
                         }
                         //IC
-                        RW1[5]=new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli+10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                    
-            }
-         //   BigDecimal GGPonderati;//=new BigDecimal(999999);
-         //   RW1=RitornaRWQuadro(MappaWallerQuadro,key);
-       //     BigDecimal ValFinale=new BigDecimal(RW1[2]);
-          /*  if (ValFinale.compareTo(new BigDecimal(0))!=0) {
-                GGPonderati = ValFinalexggTOT.divide(ValFinale, 2, RoundingMode.HALF_UP);
-            }else{ 
-                GGPonderati=new BigDecimal("0.00").setScale(2, RoundingMode.HALF_UP);
-                    Errore="Wallet vuoto o senza valore";
-                }*/
-            //if (Errore.equalsIgnoreCase("ERRORI"))GGPonderati=new BigDecimal(999999);
-           // RW1[3] = GGPonderati.toPlainString();
-            //RW1[4] = Errore;
-           //MappaWallerQuadro.put(key, RW1);
-           // ModelloTabella.addRow(RW1);
-            
-        }
-        String ICtot="0";
-        for (String[] RWx : MappaWallerQuadro.values()) {
-            //Rinomino i Wallet seguendo l'Alias
-            //System.out.println(RWx[0]);
-            String Gruppo="Wallet "+RWx[0].split(" ")[0].trim();
-            String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
-            //System.out.println(Gruppo+" - "+Valori[1]+" - "+Valori[2]);
-            RWx[0]=RWx[0].split(" ")[0].trim()+" ( "+Valori[1]+" )";
-            String PagaBollo="NO";
-            if (Valori[2].equalsIgnoreCase("S"))
-                {
-                RWx[5]="0.00";
-                PagaBollo="SI";
+                        RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
+
+                    }
+
                 }
-            else  ICtot=new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
-            RWx[7]=PagaBollo;           
-            ModelloTabella.addRow(RWx);
-        }
-        RW_Text_IC.setText(ICtot);
-       // Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
-        //progress.RipristinaStdout();
-        progress.ChiudiFinestra();
-        }
-            };
+                String ICtot = "0";
+                for (String[] RWx : MappaWallerQuadro.values()) {
+                    //Rinomino i Wallet seguendo l'Alias
+                    //System.out.println(RWx[0]);
+                    String Gruppo = "Wallet " + RWx[0].split(" ")[0].trim();
+                    String Valori[] = DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
+                    //System.out.println(Gruppo+" - "+Valori[1]+" - "+Valori[2]);
+                    RWx[0] = RWx[0].split(" ")[0].trim() + " ( " + Valori[1] + " )";
+                    String PagaBollo = "NO";
+                    if (Valori[2].equalsIgnoreCase("S")) {
+                        RWx[5] = "0.00";
+                        PagaBollo = "SI";
+                    } else {
+                        ICtot = new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
+                    }
+                    RWx[7] = PagaBollo;
+                    ModelloTabella.addRow(RWx);
+                }
+                RW_Text_IC.setText(ICtot);
+
+                progress.ChiudiFinestra();
+            }
+        };
         thread.start();
         progress.setVisible(true);
-       // Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
+
         RW_Tabella.requestFocus();
-        
-        
-        
-        
+
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        
+
         //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
     }
     
@@ -10613,6 +10610,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        Funzioni.RW_GiacenzeInizioFineAnno("2023");
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -12971,6 +12973,7 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_CostiCarico;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;

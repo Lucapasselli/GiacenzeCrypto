@@ -1683,11 +1683,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                     ChiudiRWFR(m, CryptoStackTemp, key, DataFineAnno, m.Prezzo, "Fine Anno", "Giacenza Fine Anno");
                                     }
                                 }
-                               /* if (m.Qta.contains("-")){
-                                    System.out.println(m.Moneta+" - "+m.Qta);
-                                }*/
+
+                                
                             //Questo qua sotto popola una lista per ogni gruppo wallet contenente la giacenza di ciascuna moneta ad inizio anno
-                            
+                          // System.out.println(key);
                             if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key)==null){
                                     List<Moneta> li=new ArrayList<>();
                                     li.add(m);

@@ -126,7 +126,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
     
     //in ritorno devo avere la lista delle qta estratte  e valore con relative date
     //es. ListaRitorno[0]=1,025;15550;2023-01-01 00:00   (qta iniziale;valore iniziale;data iniziale)
-
+     //if (Moneta.equals("BNB"))System.out.println("Porco boia "+Moneta+ " - "+Qta+" - "+GruppoWallet);
     ArrayDeque<ElementiStack> stackRitorno = new ArrayDeque<>();//è lo stack con le nuove movimentazioni da inserire
    // String ritorno="0.00";
     if (!Qta.isBlank()&&!Moneta.isBlank()){//non faccio nulla se la momenta o la qta non è valorizzata
@@ -292,6 +292,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
              //Se resta ancora della qta rimanente da scaricare significa che sto vendendo crypto che non posseggo, ergo mancano dei movimenti
              //in questo caso lo segnalo mettendo la data e prezzo a zero
              //Rettifico la data non la metto a zero ma al primo dell'anno
+            // System.out.println("Porco boia giacenza negativa "+Moneta+ " - "+qtaRimanente+" - "+GruppoWallet);
                     ElementiStack el = new ElementiStack();
                     el.IDOri = "Errore (Giacenza Negativa)";//ID del movimento da cui tutto ha avuto origine
                     el.CostoOri = "0.00";//Costo di partenza della moneta originale
@@ -510,6 +511,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         //System.out.println(Monete.Qta);
         //tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
         if (!Monete.Moneta.isBlank() && !Monete.Tipo.equalsIgnoreCase("FIAT")) {//tolgo dal lifo solo se non è fiat, sulle fiat non mi interessa fare nulla attualmente
+            
+            //if (Monete.Moneta.equalsIgnoreCase("BNB"))System.out.println("Sto chiudendo "+Data+" "+Monete.Moneta+ " "+Monete.Qta);
             ArrayDeque<ElementiStack> StackRitorno = StackLIFO_TogliQtaFR(CryptoStack, Monete.Moneta, Monete.Qta,GruppoWallet, true);
            // System.out.println(Monete.Moneta+" p "+Monete.Prezzo+" q "+Monete.Qta+" v "+Valore);
             //creo la riga per i quadri RW

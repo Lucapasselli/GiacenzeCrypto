@@ -25,6 +25,15 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.41
+Nuove Implementazioni : 
+ - Aggiunto nel PopUpMenu la possibilità di cambiare la tipologia di Reward ricevuta.
+Correzione di Bug :
+ - Corretto importazione EUR su Crypto.com APP CVS (Il nuovo CSV non mette più il segno meno sugli EUR in uscita)
+ - Sistemato problema che portava ad avere delle giacenze iniziale errate sull'RW nel caso in cui ci fosse stata abilitata un opzione qualsiasi dalla B alla D + Opzione mostra solo giacenze fine anno se paga bollo + terza opzione sui trasferimenti.
+ - Aggiunto casistiche su importazioni da cointracking
+ - Sistemato casistica particolare su importazione del CASH CSV di Crypto.com
+
 ver. 1.0.40
 Nuove Implementazioni : 
  - In depositi/prelievi aggiunta nuova tabella che fa vedere i movimenti correlati (utile per vedere ad esempio i trasferimenti dove vanno o gli scambi differiti)

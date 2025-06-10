@@ -178,6 +178,7 @@ private static final long serialVersionUID = 3L;
             
         initComponents();
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
+        TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
         //TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Prezzi.CompilaMoneteStessoPrezzo();
@@ -307,6 +308,7 @@ private static final long serialVersionUID = 3L;
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
+        MenuItem_ModificaReward = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
@@ -682,6 +684,15 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_ModificaNote);
+
+        MenuItem_ModificaReward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        MenuItem_ModificaReward.setText("Cambia Tipologia Reward");
+        MenuItem_ModificaReward.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaRewardActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ModificaReward);
         PopupMenu.add(jSeparator7);
 
         MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
@@ -1224,6 +1235,7 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        DepositiPrelievi_Tabella.setName("DepositiPrelievi"); // NOI18N
         DepositiPrelievi_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 DepositiPrelievi_TabellaMouseReleased(evt);
@@ -1417,6 +1429,7 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        DepositiPrelievi_TabellaCorrelati.setName("DepositiPrelievi"); // NOI18N
         DepositiPrelievi_TabellaCorrelati.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 DepositiPrelievi_TabellaCorrelatiFocusGained(evt);
@@ -3143,12 +3156,16 @@ private static final long serialVersionUID = 3L;
                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(CDC_FiatWallet_Label_Errore1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(CDC_FiatWallet_Label_Errore2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_FiatWallet_PannelloLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(CDC_FiatWallet_Bottone_StampaRapporto, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                                         .addComponent(CDC_FiatWallet_Label_SaldoIniziale)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(CDC_FiatWallet_Text_SaldoIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(CDC_FiatWallet_Bottone_Errore, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(CDC_FiatWallet_Label_SaldoFinale)
@@ -3156,12 +3173,8 @@ private static final long serialVersionUID = 3L;
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addComponent(CDC_FiatWallet_Text_GiacenzaMedia, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
-                                            .addComponent(CDC_FiatWallet_Text_SaldoFinale)))
-                                    .addComponent(CDC_FiatWallet_Bottone_Errore, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 723, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CDC_FiatWallet_PannelloLayout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(CDC_FiatWallet_Bottone_StampaRapporto, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                            .addComponent(CDC_FiatWallet_Text_SaldoFinale))))
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(CDC_FiatWallet_PannelloLayout.createSequentialGroup()
                         .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
@@ -3188,7 +3201,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(CDC_FiatWallet_Label_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(CDC_FiatWallet_Text_UltimaData, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 567, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         CDC_FiatWallet_PannelloLayout.setVerticalGroup(
@@ -3237,7 +3250,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(CDC_FiatWallet_Label_Tabella3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .addComponent(CDC_FiatWallet_Tabella2Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
                     .addComponent(CDC_FiatWallet_Tabella3Scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(CDC_FiatWallet_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -4237,9 +4250,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKeyLayout.setHorizontalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(Opzioni_ApiKey_Helius_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(Opzioni_ApiKey_Etherscan_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4263,7 +4276,6 @@ private static final long serialVersionUID = 3L;
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4769,7 +4781,7 @@ private static final long serialVersionUID = 3L;
         //Questa funzione importa i dati del wallet, presi dal file csv o dal database interno e li mette nelle mappe
         //questo per rendere le operazioni molto più veloci visto che il tutto viene gestito in ram
         //non vengono utilizzati database visto che i dati sono relativamente pochi
-        // CDC_FiatWallet_Mappa.clear();
+        CDC_FiatWallet_Mappa.clear();
         String riga;
         try ( FileReader fire = new FileReader(fiatwallet);  BufferedReader bure = new BufferedReader(fire);) {
             while ((riga = bure.readLine()) != null) {
@@ -4814,10 +4826,10 @@ private static final long serialVersionUID = 3L;
         CDC_FiatWallet_MappaTipiMovimenti.put("viban_card_top_up", "viban_card_top_up;-;default;TopUp Carta");
         CDC_FiatWallet_MappaTipiMovimenti.put("viban_deposit", "viban_deposit;+;default;Bonifico in Ingresso");
         CDC_FiatWallet_MappaTipiMovimenti.put("viban_purchase", "viban_purchase;-;default;Acquisto Crypto");
-        CDC_FiatWallet_MappaTipiMovimenti.put("viban_withdrawal", "viban_withdrawal;+;default;Bonifico su Conto Corrente");
+        CDC_FiatWallet_MappaTipiMovimenti.put("recurring_buy_order", "recurring_buy_order;-;default;Acquisto Crypto");
+        CDC_FiatWallet_MappaTipiMovimenti.put("viban_withdrawal", "viban_withdrawal;-;default;Bonifico su Conto Corrente");
         CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.purchase_commit", "trading.limit_order.fiat_wallet.purchase_commit;-;default;Acquisto Crypto");
         CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.sell_commit", "trading.limit_order.fiat_wallet.sell_commit;+;default;Vendita Crypto");
-
         try {
             File movPers = new File(CDC_FiatWallet_FileTipiMovimentiDBPers);
             if (!movPers.exists()) {
@@ -5056,14 +5068,14 @@ private static final long serialVersionUID = 3L;
                             TrovataCorrispondenzaTipo=true;
                             if (tempo.split(";")[1].equalsIgnoreCase("+")){
                                 
-                                totale=totale.add(new BigDecimal(splittata[Colonna]));
+                                totale=totale.add(new BigDecimal(splittata[Colonna]).abs());
                                 
                                 //System.out.println(totale+" , "+piccoGiornata+" , "+ totale.compareTo(piccoGiornata));
                                 if (totale.compareTo(piccoGiornata)>0) piccoGiornata=totale;
                             }
                             else
                              {
-                                 totale=totale.subtract(new BigDecimal(splittata[Colonna]));
+                                 totale=totale.subtract(new BigDecimal(splittata[Colonna]).abs());
                              }   
                         }
             }
@@ -10472,6 +10484,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
                 if (PopUp_IDTrans!=null){
            Funzione_EliminaMovimento(PopUp_IDTrans,PopUp_Component);
+          if (PopUp_Tabella.getName()!=null&&PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_MenuItem_EliminaMovimentoActionPerformed
 
@@ -10654,6 +10667,47 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 DepositiPrelievi_CompilaTabellaCorrelati();
         }
     }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
+
+    private void MenuItem_ModificaRewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaRewardActionPerformed
+        // TODO add your handling code here:
+        String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
+                            + "<b>Come classifichiamo il movimento?<br><br><b>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "REWARD", "STAKING REWARD", "EARN", "CASHBACK", "AIRDROP"};
+                    int scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Classificazione del movimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "REWARD";
+                            }
+                            case 2 -> {
+                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "STAKING REWARD";
+                            }
+                            case 3 -> {
+                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "EARN";
+                            }
+                            case 4 -> {
+                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "CASHBACK";
+                            }
+                            case 5 -> {
+                                MappaCryptoWallet.get(PopUp_IDTrans)[5]= "AIRDROP";
+                            }
+                            default -> {
+                            }
+                        }
+                        Funzioni_AggiornaTutto();
+                        if (PopUp_Tabella.getName()!=null&&PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
+                    }
+    }//GEN-LAST:event_MenuItem_ModificaRewardActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -12886,6 +12940,7 @@ try {
     private javax.swing.JMenuItem MenuItem_ModificaMovimento;
     private javax.swing.JMenuItem MenuItem_ModificaNote;
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
+    private javax.swing.JMenuItem MenuItem_ModificaReward;
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;

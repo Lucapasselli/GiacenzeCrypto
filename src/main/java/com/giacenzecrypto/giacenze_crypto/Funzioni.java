@@ -213,6 +213,8 @@ public class Funzioni {
                 PopUp_disableMenuItemByText(pop,"Copia ID Transazione");
                 PopUp_disableMenuItemByText(pop,"Modifica Prezzo");
                 PopUp_disableMenuItemByText(pop,"Modifica Note");
+                PopUp_disableMenuItemByText(pop,"Cambia Tipologia Reward");
+                
             }else{
                 PopUp_enableMenuItemByText(pop,"Dettagli Movimento");
                 PopUp_enableMenuItemByText(pop,"Modifica Movimento");
@@ -224,6 +226,10 @@ public class Funzioni {
                 if (isDepositoPrelievoClassificabile(ID, null)){
                    PopUp_enableMenuItemByText(pop,"Classifica Movimento"); 
                 }else PopUp_disableMenuItemByText(pop,"Classifica Movimento");
+                
+                if(ID.split("_")[4].equals("RW")||CDC_Grafica.MappaCryptoWallet.get(ID)[18].contains("DAI -"))                    
+                    PopUp_enableMenuItemByText(pop,"Cambia Tipologia Reward");
+                else PopUp_disableMenuItemByText(pop,"Cambia Tipologia Reward");
             }
             
             //Se è una tabella mi comporto in questo modo

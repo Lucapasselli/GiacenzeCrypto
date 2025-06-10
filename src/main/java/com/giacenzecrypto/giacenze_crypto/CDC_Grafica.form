@@ -118,6 +118,17 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ModificaNoteActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ModificaReward">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Prezzo.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Cambia Tipologia Reward"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ModificaRewardActionPerformed"/>
+          </Events>
+        </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
         </Component>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_EsportaTabella">
@@ -1232,6 +1243,7 @@
                                 </Column>
                               </TableColumnModel>
                             </Property>
+                            <Property name="name" type="java.lang.String" value="DepositiPrelievi" noResource="true"/>
                             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
@@ -1700,6 +1712,7 @@
                                 </Column>
                               </TableColumnModel>
                             </Property>
+                            <Property name="name" type="java.lang.String" value="DepositiPrelievi" noResource="true"/>
                             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
@@ -3884,6 +3897,10 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="CDC_FiatWallet_Label_Errore1" max="32767" attributes="0"/>
                                   <Component id="CDC_FiatWallet_Label_Errore2" alignment="0" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="CDC_FiatWallet_Bottone_StampaRapporto" min="-2" pref="205" max="-2" attributes="0"/>
+                                  </Group>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
@@ -3891,6 +3908,7 @@
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="CDC_FiatWallet_Text_SaldoIniziale" min="-2" pref="155" max="-2" attributes="0"/>
                                           </Group>
+                                          <Component id="CDC_FiatWallet_Bottone_Errore" min="-2" pref="333" max="-2" attributes="0"/>
                                           <Group type="102" alignment="0" attributes="0">
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Component id="CDC_FiatWallet_Label_SaldoFinale" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -3902,13 +3920,8 @@
                                                   <Component id="CDC_FiatWallet_Text_SaldoFinale" max="32767" attributes="0"/>
                                               </Group>
                                           </Group>
-                                          <Component id="CDC_FiatWallet_Bottone_Errore" min="-2" pref="333" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="0" pref="723" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="1" attributes="0">
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                      <Component id="CDC_FiatWallet_Bottone_StampaRapporto" min="-2" pref="205" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -3944,7 +3957,7 @@
                                       <Component id="CDC_FiatWallet_Text_UltimaData" min="-2" pref="149" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="567" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -4005,7 +4018,7 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="380" max="32767" attributes="0"/>
+                          <Component id="CDC_FiatWallet_Tabella2Scroll" pref="439" max="32767" attributes="0"/>
                           <Component id="CDC_FiatWallet_Tabella3Scroll" pref="380" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -5649,9 +5662,9 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="Opzioni_ApiKey_Helius_Label" min="-2" pref="129" max="-2" attributes="0"/>
                                           <Component id="Opzioni_ApiKey_Etherscan_Label" alignment="0" min="-2" pref="129" max="-2" attributes="0"/>
@@ -5682,7 +5695,6 @@
                                       </Group>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="Opzioni_ApiKey_Coingecko_Label" min="-2" pref="129" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="Opzioni_ApiKey_Coingecko_TextField" min="-2" pref="658" max="-2" attributes="0"/>

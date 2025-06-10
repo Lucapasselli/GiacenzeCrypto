@@ -1877,7 +1877,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 {
                                     RT[6]=movimentoSplittato[2]+" -> "+movimentoSplittato[4];
                                     RT[8]=movimentoSplittato[2];
-                                    RT[10]=new BigDecimal(movimentoSplittato[3]).toString();
+                                    RT[10]="-"+(new BigDecimal(movimentoSplittato[3]).abs().toString());
                                     RT[11]=movimentoSplittato[4];
                                     RT[13]=new BigDecimal(movimentoSplittato[5]).abs().toString();
                                     

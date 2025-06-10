@@ -1136,17 +1136,19 @@ return ListaSaldi;
             boolean PrimoMovimento;
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]);
+                    //1 - Inizializzo le Mappe
                     if (MappaCoinsWallet.get(GruppoWallet)==null)
                     {
                         QtaCrypto = new TreeMap<>();
                         MappaCoinsWallet.put(GruppoWallet, QtaCrypto);
-                        String DataPartenza_Prezzo[]=new String[]{movimento[1],movimento[15]};
-                        MappaDataPartenza.put(GruppoWallet, DataPartenza_Prezzo);
+                        String DataPartenza_Prezzo_ID[]=new String[]{movimento[1],movimento[15],movimento[0],movimento[11]};
+                        MappaDataPartenza.put(GruppoWallet, DataPartenza_Prezzo_ID);
                         PrimoMovimento=true;
                     }else{
                         QtaCrypto = MappaCoinsWallet.get(GruppoWallet);
                         PrimoMovimento=false;
                     }
+                    //2 - 
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
                     String Rete = Funzioni.TrovaReteDaID(movimento[0]);
@@ -1216,25 +1218,30 @@ return ListaSaldi;
         
         for(String GWallet:MappaCoinsWallet.keySet()){
             Map<String, Moneta[]> QtaCrypt=MappaCoinsWallet.get(GWallet);
-            if(MappaLista.get(GWallet)==null){
+            lista=RW_RitornaListaDaMappa(MappaLista,GWallet);
+          /*  if(MappaLista.get(GWallet)==null){
                 lista=new ArrayList<>();
                 MappaLista.put(GWallet, lista);
-            }else lista=MappaLista.get(GWallet);
+            }else lista=MappaLista.get(GWallet);*/
+            
             String DataInizioWallet=MappaDataPartenza.get(GWallet)[0];
-            //String ValoreIniziale=MappaDataPartenza.get(GWallet)[1];
             long lDataInizioWallet=OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioWallet);
             long lDataInizio1=lDataInizio;
             String DataInizio1=DataInizio+" 00:00";
-            String DicituraInizio="Giacenza Inizio Anno";
-            if (lDataInizioWallet>lDataInizio){
-                DiffDate=OperazioniSuDate.DifferenzaDate(OperazioniSuDate.ConvertiDatadaLong(lDataInizioWallet), DataFine)+1;
-                DataInizio1=DataInizioWallet;
-                lDataInizio1=OperazioniSuDate.ConvertiDatainLongMinuto(DataInizio1);
-                DicituraInizio="Giacenza Apertura Wallet";
+            if (lDataInizioWallet > lDataInizio) {
+                DiffDate = OperazioniSuDate.DifferenzaDate(OperazioniSuDate.ConvertiDatadaLong(lDataInizioWallet), DataFine) + 1;
+                DataInizio1 = DataInizioWallet;
+                lDataInizio1 = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizio1);
             }
             for(Moneta m[]:QtaCrypt.values()){
                 if(!(m[0].Qta.equals("0")&&m[1].Qta.equals("0")))
                 {
+                    String DicituraInizio="Giacenza Inizio Anno";
+                    String Causale="Fine Anno";
+                    if (m[0].Moneta.equals(MappaDataPartenza.get(GWallet)[3])) {                        
+                        Causale = "Apertura Wallet/Fine Anno";
+                        DicituraInizio = MappaDataPartenza.get(GWallet)[2];
+                    }                   
                     if(m[0].Qta.equals("0"))m[0].Prezzo="0.0000";
                     else m[0].Prezzo=Prezzi.DammiPrezzoTransazione(m[0], null, lDataInizio1, null, false, 15, m[0].Rete);
                     if(m[1].Qta.equals("0"))m[1].Prezzo="0.0000";
@@ -1244,7 +1251,7 @@ return ListaSaldi;
                     xlista[1]=GWallet;                                          //Gruppo Wallet Inizio
                     xlista[2]=m[0].Moneta;                                      //Moneta Inizio
                     xlista[3]=m[0].Qta;                                         //Qta Inizio
-                    xlista[4]=DataInizio1;                              //Data Inizio
+                    xlista[4]=DataInizio1;                                      //Data Inizio
                     xlista[5]=m[0].Prezzo;                                      //Prezzo Inizio
                     xlista[6]=GWallet;                                          //GruppoWallet Fine
                     xlista[7]=m[1].Moneta;                                      //Moneta Fine
@@ -1252,8 +1259,8 @@ return ListaSaldi;
                     xlista[9]=DataFine+" 23:59";                                //Data Fine
                     xlista[10]=m[1].Prezzo;                                     //Prezzo Fine
                     xlista[11]=String.valueOf(DiffDate);                        //Giorni di Detenzione
-                    xlista[12]="Fine Anno";                                     //Causale
-                    xlista[13]=DicituraInizio;                                    //ID Movimento Apertura (o segnalazione inizio anno)
+                    xlista[12]=Causale;                                         //Causale
+                    xlista[13]=DicituraInizio;                                  //ID Movimento Apertura (o segnalazione inizio anno)
                     xlista[14]="Giacenza Fine Anno";                            //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
                     xlista[15]="";                                              //Tipo Errore
                     xlista[16]="";                                              //Lista ID coinvolti separati da virgola
@@ -1266,7 +1273,14 @@ return ListaSaldi;
         Calcoli_RW.SistemaErroriInListe(MappaLista);
 return MappaLista;
 }
-    
+    private static List<String[]> RW_RitornaListaDaMappa(Map<String, List<String[]>> MappaLista,String Key){
+        List<String[]> lista;
+            if(MappaLista.get(Key)==null){
+                lista=new ArrayList<>();
+                MappaLista.put(Key, lista);
+            }else lista=MappaLista.get(Key);
+        return lista;
+    }
     
     public static boolean ApriWeb(String Url) {
 

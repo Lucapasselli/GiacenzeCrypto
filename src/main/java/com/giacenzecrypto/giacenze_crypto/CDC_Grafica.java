@@ -138,7 +138,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     public String Versione="1.0.40";
-    public String Titolo="Giacenze Crypto "+Versione+" Beta";
+    public String Titolo="Giacenze Crypto "+Versione+" v2 Beta";
 
     
     
@@ -553,7 +553,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
         Opzioni_Varie_RicalcolaPrezzi = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
@@ -580,7 +579,6 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Etherscan_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Etherscan_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Etherscan_LabelSito = new javax.swing.JLabel();
-        jButton3 = new javax.swing.JButton();
         Opzioni_ApiKey_Coincap_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Coincap_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Coincap_LabelSito = new javax.swing.JLabel();
@@ -3882,29 +3880,17 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
         Opzioni_Varie.setLayout(Opzioni_VarieLayout);
         Opzioni_VarieLayout.setHorizontalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_VarieLayout.createSequentialGroup()
-                .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(Opzioni_VarieLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                            .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(Opzioni_VarieLayout.createSequentialGroup()
-                        .addGap(382, 382, 382)
-                        .addComponent(jButton1)))
-                .addContainerGap(885, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(1107, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3913,11 +3899,9 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_Disclaimer)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
-                .addGap(59, 59, 59)
-                .addComponent(jButton1)
-                .addGap(4, 4, 4)
+                .addGap(86, 86, 86)
                 .addComponent(Opzioni_Varie_RicalcolaPrezzi, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(519, Short.MAX_VALUE))
+                .addContainerGap(538, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Varie", Opzioni_Varie);
@@ -4196,13 +4180,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jButton3.setText("jButton3");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
         Opzioni_ApiKey_Coincap_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 Opzioni_ApiKey_Coincap_TextFieldMouseReleased(evt);
@@ -4286,16 +4263,13 @@ private static final long serialVersionUID = 3L;
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addGap(203, 203, 203)
-                        .addComponent(jButton3))
-                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(221, Short.MAX_VALUE))
+                .addContainerGap(225, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4324,9 +4298,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(109, 109, 109)
-                .addComponent(jButton3)
-                .addContainerGap(394, Short.MAX_VALUE))
+                .addContainerGap(569, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
@@ -8255,11 +8227,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             String MonetaTabIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
-            //String MonetaIniQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString().trim();
-            //String MonetaIniVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString().trim();
             String MonetaTabFin = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString().trim();
-            //String MonetaFinQta = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString().trim();
-            //String MonetaFinVal = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString().trim();
+
             
             if (Errore.toLowerCase().contains("scam")){
                 RW_Bottone_IdentificaScam.setText("Rimuovi da SCAM");
@@ -8327,7 +8296,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Mov[1]=GruppoWalletIni;
                 Mov[2]=IDIniziale;
                 Mov[3]="";
-                Mov[4]=MonQta+" "+MonNome+" ("+MonTipo+")";
+                if (!MonQta.isBlank())
+                    Mov[4]=MonQta+" "+MonNome+" ("+MonTipo+")";
+                else
+                {
+                    MonQta=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString();
+                    MonNome=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                    Mov[4]=MonQta+" "+MonNome+" ("+MonTipo+")";
+                    MonPrz=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString();
+                }
                 Mov[5]=MonPrz;
                 Mov[6]=""; 
                 ModelloTabella3.addRow(Mov);
@@ -10187,20 +10164,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }//GEN-LAST:event_RT_Bottone_StampaActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-       System.out.println(OperazioniSuDate.ConvertiDataBinanceTaxReportinLong("sdsds")); //OperazioniSuDate.ConvertiDataBinanceTaxReportinLong("sdsds");
-        //OperazioniSuDate.ConvertiUnixTimestampToIso(OperazioniSuDate.ConvertiDatainLongSecondo("2022-01-02 23:13:15"));
-        //Prezzi.RecuperaCoppieCoinbase();
-        //Prezzi.RecuperaTassidiCambiodaSimbolo_Coinbase("BTC", "2021-10-01") ;
-        //Prezzi.RecuperaTassidiCambioXXXUSDT_Binance("BTC","2021-10-01", "2021-10-10");
-       // Prezzi.RecuperaCoinsCoinCap();
-       //Prezzi.RecuperaTassidiCambiodaSimbolo_CryptoCompare("GLQ", "2021-10-01") ;
-       //Prezzi.RecuperaTassidiCambiodaSimbolo_CoinCap("BTC","2023-01-01");
-      // Prezzi.RecuperaTassidiCambiodaAddress_Coingecko("2025-01-01","0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48","ETH","USDC");
-       
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void Opzioni_ApiKey_Coincap_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coincap_TextFieldKeyReleased
         // TODO add your handling code here:
         Opzioni_ApiKey_ControllaPulsanti();
@@ -10691,11 +10654,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 DepositiPrelievi_CompilaTabellaCorrelati();
         }
     }//GEN-LAST:event_DepositiPrelievi_TabellaCorrelatiFocusGained
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        Funzioni.RW_GiacenzeInizioFineAnno("2023");
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -13057,9 +13015,7 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_CostiCarico;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

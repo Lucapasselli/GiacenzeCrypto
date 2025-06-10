@@ -707,50 +707,53 @@ public class Prezzi {
     public static String ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
 
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
-       // System.out.println(Rete);
-        
-        //System.out.println("cosacosa "+Address);
-        if(!Funzioni_WalletDeFi.isValidAddress(Address, Rete)||Rete==null||Rete.isBlank())
-        {
-            return ConvertiXXXEUR(Simbolo,Qta,Datalong);
+        //Se l'address non è valido allora recupero il prezzo dagli exchange
+        if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete) || Rete == null || Rete.isBlank()) {
+            return ConvertiXXXEUR(Simbolo, Qta, Datalong);
         }
-        //if (!Rete.equalsIgnoreCase("SOL"))Address = Address.toUpperCase();
-//System.out.println("daie "+Address);
-       // if (!Address.contains("0X"))return ConvertiXXXEUR(Simbolo,Qta,Datalong);
-        //long DataRiferimento=Datalong/1000;       
+        //Se non l'ho ancora fatto recupero la lista dei token gestiti
+        
+
         String risultato;// = null;
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
         risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
-        //System.out.println(DataOra + "_" + Address + "_" + Rete);
+
 
         if (risultato == null) {
             //se il token non è gestito da coingecko e non è già nel database ritorno null
             RecuperaCoinsCoingecko();
+            String AddressNoPrezzo = DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
             //String AddressNoPrezzo=DatabaseH2.AddressSenzaPrezzo_Leggi(Address + "_" + Rete);
-            String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
             //System.out.println(Address + "_" + Rete);
             if (AddressNoPrezzo == null) {
-               // System.out.println("noprezzo "+Address);
+                // System.out.println("noprezzo "+Address);
                 return null;
+            } else {
+                //Se la moneta è codificata da coingecko (Quindi so che non è scam) e corrisponde ad una delle monete principali
+                //Prendo il suo prezzo dagli exchange per risparmiare tempo e richieste.
+                for (String CoppiePrioritaria : CoppiePrioritarie) {
+                    if ((Simbolo + "USDT").toUpperCase().equals(CoppiePrioritaria)) {
+                        return ConvertiXXXEUR(Simbolo, Qta, Datalong);
+                    }
+                }
+
+                //Se arrivo qua vuol dire che non è tra le coppie prioritarie e quindi vado a prendere il prezzo da coingecko
+                RecuperaTassidiCambiodaAddress_Coingecko(DataGiorno, Address, Rete, Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+                risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
+                if (risultato == null) {
+                    //solo in questo caso vado a prendere il valore del giorno e non quello orario
+                    risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataGiorno + "_" + Address + "_" + Rete);
+                }
             }
-            else
-            {
-            RecuperaTassidiCambiodaAddress_Coingecko(DataGiorno, Address, Rete ,Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-            risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);
-            if (risultato == null) {
-                //solo in questo caso vado a prendere il valore del giorno e non quello orario
-                risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataGiorno + "_" + Address + "_" + Rete);
-            }
-            }
-        } 
+        }
 
         //quindi se il risultato non è nullo faccio i calcoli
         //DA CAPIRE SE MANTENERE LA DICITURA "nullo" per i prezzi non gestiti o mettere direttamente "0" oppure ancora "ND" che sta per non disponibile
         if (risultato != null && risultato.equalsIgnoreCase("ND"))
         {
             //Se il risultato è ND vuol dire che per quell'ora non ho da coingecko il dato ma significa che il token è gestito
-            // quindi non è scam e quindi posso andare a carcae il prezzo altrove (CoinCap o Binance)
+            // quindi non è scam e quindi posso andare a carcare il prezzo altrove (CoinCap o Binance)
             return ConvertiXXXEUR(Simbolo,Qta,Datalong);
             //risultato=null;
             }

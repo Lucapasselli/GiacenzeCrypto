@@ -73,7 +73,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
          Download.FineThread=false;
      
         
-//RipristinaStdout();
+RipristinaStdout();
 
      
 

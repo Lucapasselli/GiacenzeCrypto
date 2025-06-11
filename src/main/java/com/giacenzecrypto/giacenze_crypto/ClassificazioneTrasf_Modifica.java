@@ -97,7 +97,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         }else
         {
             papele=new String[]{"- nessuna selezione -",
-                "CASHOUT O SIMILARE (verrà calcolata la plusvalenza)",
+                "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
                 "DONAZIONE o FURTO Crypto-Attività",
                 "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)",
                 "SCAMBIO CRYPTO DIFFERITO",

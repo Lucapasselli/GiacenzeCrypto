@@ -2619,7 +2619,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                RT[2] = 1 + " di " + 1;
                                RT[3] = "Binance";
                                RT[4] = "Principale";
-                               RT[5] = "COMMISSIONE";
+                               RT[5] = "COMMISSIONI";
                                RT[6] = movimentoSplittato[15] + " ->";
                                RT[7] = TipoMovimento;
                                RT[8] = movimentoSplittato[15];
@@ -4460,7 +4460,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
                                 RT[4] = movimentoSplittato[10];
-                                RT[5]="COMMISSIONE";
+                                RT[5]="COMMISSIONI";
                                 RT[6]="Commissione in "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
                                 RT[7] = movimentoSplittato[0];                                
                                 RT[8] = movimentoSplittato[6];
@@ -5485,7 +5485,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             if (differenzaQta.abs().compareTo(new BigDecimal(2))==-1){
             //se la differenza è inferiore a 2 CRO considero il movimento come una commissione
                 RT[18]="PCO - Commissione";
-                RT[5]="COMMISSIONE";
+                RT[5]="COMMISSIONI";
                 }
              Funzioni.RiempiVuotiArray(RT);
  //            MappaCryptoWallet.put(ID, RT);
@@ -5725,7 +5725,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[2] = "1 di 1";
                                 RT[3] = RTOri[3];
                                 RT[4] = RTOri[4];
-                                RT[5] = "COMMISSIONE";
+                                RT[5] = "COMMISSIONI";
                                 RT[18] = "PCO - COMMISSIONE";
                                 RT[6] = MonetaRete + " ->";
                                 RT[8] = MonetaRete;

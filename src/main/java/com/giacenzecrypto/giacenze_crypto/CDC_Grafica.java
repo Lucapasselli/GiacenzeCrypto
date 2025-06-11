@@ -138,7 +138,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     public String Versione="1.0.40";
-    public String Titolo="Giacenze Crypto "+Versione+" v2 Beta";
+    public String Titolo="Giacenze Crypto "+Versione+" v4 Beta";
 
     
     
@@ -587,6 +587,14 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Coingecko_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel22 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        Donazioni_Bottone1 = new javax.swing.JButton();
+        Donazioni_Bottone2 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         CDC_DataChooser_Iniziale = new com.toedter.calendar.JDateChooser();
@@ -652,7 +660,7 @@ private static final long serialVersionUID = 3L;
         PopupMenu.add(MenuItem_EliminaMovimento);
         PopupMenu.add(jSeparator8);
 
-        MenuItem_ClassificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        MenuItem_ClassificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
         MenuItem_ClassificaMovimento.setText("Classifica Movimento");
         MenuItem_ClassificaMovimento.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -685,7 +693,7 @@ private static final long serialVersionUID = 3L;
         });
         PopupMenu.add(MenuItem_ModificaNote);
 
-        MenuItem_ModificaReward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        MenuItem_ModificaReward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Reward.png"))); // NOI18N
         MenuItem_ModificaReward.setText("Cambia Tipologia Reward");
         MenuItem_ModificaReward.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1285,7 +1293,7 @@ private static final long serialVersionUID = 3L;
         });
 
         DepositiPrelievi_Bottone_AssegnazioneManuale.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        DepositiPrelievi_Bottone_AssegnazioneManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneManuale.setText("Classifica Movimento");
         DepositiPrelievi_Bottone_AssegnazioneManuale.setMaximumSize(new java.awt.Dimension(200, 35));
         DepositiPrelievi_Bottone_AssegnazioneManuale.setMinimumSize(new java.awt.Dimension(200, 35));
@@ -4314,6 +4322,86 @@ private static final long serialVersionUID = 3L;
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
+
+        jLabel22.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_ethereum.png"))); // NOI18N
+        jLabel22.setToolTipText("");
+        jLabel22.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+
+        jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/qrcode_solana.png"))); // NOI18N
+
+        jLabel24.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel24.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel24.setText("<html><center>Ti piace questo software? <br>\nConsidera una piccola crypto donazione.<br>\nAiuti a mantenerlo libero, utile e migliorabile.</html>");
+
+        jLabel25.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
+        jLabel25.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel25.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • BSC<br>\n    • CRONOS<br>\n    • ETHEREUM<br>\n    • BASE<br>\n    • ARBITRUM\n  </body>\n</html>");
+
+        jLabel26.setFont(new java.awt.Font("Segoe UI Symbol", 1, 20)); // NOI18N
+        jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel26.setText("<html>\n  <body style='font-family:sans-serif; font-size:18px;'>\n    <b>Indirizzo per Reti:</b><br><br>\n    • SOLANA<br>\n  </body>\n</html>");
+
+        Donazioni_Bottone1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
+        Donazioni_Bottone1.setText("Copia Indirizzo");
+        Donazioni_Bottone1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Donazioni_Bottone1ActionPerformed(evt);
+            }
+        });
+
+        Donazioni_Bottone2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
+        Donazioni_Bottone2.setText("Copia Indirizzo");
+        Donazioni_Bottone2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Donazioni_Bottone2ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 1276, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 66, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(382, 382, 382)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(Donazioni_Bottone1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel23)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel22, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(Donazioni_Bottone2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel22))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Donazioni_Bottone1)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(106, 106, 106)
+                        .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(57, 57, 57)
+                        .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Donazioni_Bottone2)
+                .addContainerGap(87, Short.MAX_VALUE))
+        );
+
+        Opzioni_TabbedPane.addTab("Donazioni", jPanel2);
 
         javax.swing.GroupLayout OpzioniLayout = new javax.swing.GroupLayout(Opzioni);
         Opzioni.setLayout(OpzioniLayout);
@@ -10709,6 +10797,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     }
     }//GEN-LAST:event_MenuItem_ModificaRewardActionPerformed
 
+    private void Donazioni_Bottone1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Donazioni_Bottone1ActionPerformed
+        // TODO add your handling code here:
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection("0x71455FFf799e529b770c3C8A8F2F6691dc4FAadb");
+        clipboard.setContents(stringSelection, null);
+        JOptionPane.showConfirmDialog(this, "<html>Indirizzo copiato negli appunti.<br>"
+                                        + "</html>",
+                            "Copia", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+    }//GEN-LAST:event_Donazioni_Bottone1ActionPerformed
+
+    private void Donazioni_Bottone2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Donazioni_Bottone2ActionPerformed
+        // TODO add your handling code here:
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection("D8sSnGNSZTkEMGba4yRLR4oZ8zTjdR9JdC9DGF3SkqLd");
+        clipboard.setContents(stringSelection, null);
+        JOptionPane.showConfirmDialog(this, "<html>Indirizzo copiato negli appunti.<br>"
+                                        + "</html>",
+                            "Copia", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+    }//GEN-LAST:event_Donazioni_Bottone2ActionPerformed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -12305,16 +12413,18 @@ try {
                             }
                             //questo serve solo per eliminare i null che erano finiti per sbaglio
                             //dopo un errore di programmazione
+                         // System.out.println(new BigDecimal(splittata[0].hashCode()).abs());
                             
                             
                                 //Queste cose le faccio solo se mi accorcgo che la versione del software è cambiata
                             //Direi che si può tranquillamente togliere tra qualche versione, mettiamo ad esempio dalla 1.15
-                            for (int kj = 0; kj < splittata.length; kj++) {
+                            //Tolgo questa funzione che non è più necessaria con le versioni nuove
+                       /*     for (int kj = 0; kj < splittata.length; kj++) {
                                 //questo invece inizializza tutti i campi nulli a campo vuoto per non avere problemi con gli if futuri
                                 if (splittata[kj] == null || splittata[kj].equals("null")) {
                                     splittata[kj] = "";
                                 }
-                            }
+                            }*/
 
                             //Adesso verifico se ho prezzi a zero non perchè valgano zero ma perchè non è presente un prezzo sul movimento e li segnalo
                             //col 32 a SI se il movimento è senza prezzo invece a NO se ha prezzo
@@ -12903,6 +13013,8 @@ try {
     private javax.swing.JLabel DepositiPrelievi_Label_FiltroWallet;
     private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JTable DepositiPrelievi_TabellaCorrelati;
+    private javax.swing.JButton Donazioni_Bottone1;
+    private javax.swing.JButton Donazioni_Bottone2;
     private javax.swing.JPanel GiacenzeaData;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
     private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;
@@ -13085,6 +13197,11 @@ try {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -13093,6 +13210,7 @@ try {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane11;

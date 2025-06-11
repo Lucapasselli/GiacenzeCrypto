@@ -1,9 +1,9 @@
-- Inserire tasto per classificare i movimenti di deposito e prelievo anche in prima pagina
 - Sistemare posizione del cursore quando si scrive un numero in modifica transazione
 - Escludere i token Scam da quelli visualizzabili in "Scambio Differito"
 - aggiungere gestione dei prezzi personalizzati (tramite gui)
 - Aggiungere mappatura import csv su file e non da codice
-- Aggiungere gestione dei movimenti correlati (Per scambi etc...)
 - Fare integrazione a ccxt
 - Cambiare gestione dei prezzi e passare ad una precisione al minuto
-- Il numero movimenti che segnala di aver inserito a fine importazione wallet defi sembra sbagliata, vengono probabilmente mostrati solo i movimenti dell'ultimo wallet, da verificare.
+- Al cambio di versione sostituire "COMMISSIONE" nel campo 5 con "COMMISSIONI"
+- Togliere gli zeri non significativi sulle QTA
+- Se non ci sono movimenti abbinati cambiare l'ID della transazione e accorciarlo per rendere il file pù piccolo

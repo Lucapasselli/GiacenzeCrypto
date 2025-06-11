@@ -137,8 +137,8 @@ private static final long serialVersionUID = 3L;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
-    public String Versione="1.0.40";
-    public String Titolo="Giacenze Crypto "+Versione+" v4 Beta";
+    public String Versione="1.0.41";
+    public String Titolo="Giacenze Crypto "+Versione+" Beta";
 
     
     
@@ -9104,9 +9104,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             for (int i=0;i<numeroRighe;i++){
                 String NomeGruppo=RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
                 String ValIniziale=RW_Tabella.getModel().getValueAt(i, 1).toString();
-                ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                if(ValIniziale.contains("0.")) ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.UP).toPlainString();           
+                else ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
                 String ValFinale=RW_Tabella.getModel().getValueAt(i, 2).toString();
-                ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                if(ValFinale.contains("0."))ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.UP).toPlainString();
+                else ValFinale=new BigDecimal(ValFinale).setScale(0, RoundingMode.HALF_UP).toPlainString();
+                if (ValFinale.equals("0")&&!ValIniziale.equals("0")) ValFinale="1";
                 String GG=RW_Tabella.getModel().getValueAt(i, 3).toString();
                 //Questo serve per trasformare un 366 di anno bisestile in 365
                 if(new BigDecimal(GG).compareTo(new BigDecimal("365"))>=0)GG="365.00";

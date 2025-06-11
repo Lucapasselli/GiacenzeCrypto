@@ -7,3 +7,5 @@
 - Al cambio di versione sostituire "COMMISSIONE" nel campo 5 con "COMMISSIONI"
 - Togliere gli zeri non significativi sulle QTA
 - Se non ci sono movimenti abbinati cambiare l'ID della transazione e accorciarlo per rendere il file pù piccolo
+- Nella lista dei wallet aggiungere il nome del gruppo
+- Nella lista dei Wallet dare la possibilità di scaricarne solo uno

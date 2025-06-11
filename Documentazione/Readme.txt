@@ -28,11 +28,13 @@ Changelog
 ver. 1.0.41
 Nuove Implementazioni : 
  - Aggiunto nel PopUpMenu la possibilità di cambiare la tipologia di Reward ricevuta.
+ - Aggiunto sezione per le Donazioni qualora voleste contribuire al progetto.
 Correzione di Bug :
  - Corretto importazione EUR su Crypto.com APP CVS (Il nuovo CSV non mette più il segno meno sugli EUR in uscita)
  - Sistemato problema che portava ad avere delle giacenze iniziale errate sull'RW nel caso in cui ci fosse stata abilitata un opzione qualsiasi dalla B alla D + Opzione mostra solo giacenze fine anno se paga bollo + terza opzione sui trasferimenti.
- - Aggiunto casistiche su importazioni da cointracking
+ - Aggiunto casistiche su importazioni da cointracking.
  - Sistemato casistica particolare su importazione del CASH CSV di Crypto.com
+ - Nelle stampe per il Quado W/RW ora se il valore finale o quello iniziale è molto prossimo allo zero ma non zero questo viene arrotondato per eccesso e valorizzato a 1.
 
 ver. 1.0.40
 Nuove Implementazioni : 

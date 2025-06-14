@@ -47,6 +47,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
+import java.awt.image.BufferedImage;
+import static java.lang.Thread.sleep;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -59,12 +61,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -146,6 +155,7 @@ private static final long serialVersionUID = 3L;
     public CDC_Grafica() {     
         
     try {          
+            AvviaSplashScreen();
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
             this.setIconImage(icon.getImage());
@@ -241,6 +251,10 @@ private static final long serialVersionUID = 3L;
         this.RT_Label_Avviso.setVisible(false);
         this.GiacenzeaData_Label_Aggiornare.setVisible(false);
         //Optioni_Export_Wallets_Combobox=GiacenzeaData_Wallet_ComboBox;
+    
+        
+       
+        
         DatabaseH2.CancellaPrezziVuoti();//pulisce il database dai prezzi vuoti delle precedenti sessioni
                                         //in modo tale che se i prezzi tornano ad essere disponibili questi vengono riscaricati
         
@@ -262,6 +276,12 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         CDC_AggiornaGui();
         FineCaricamentoDati=true;
+        
+       /* // Chiudi splash screen
+        SplashScreen splash = SplashScreen.getSplashScreen();
+        if (splash != null) {
+            splash.close();
+        }*/
         
         //RW_Bottone_StampaActionPerformed(null);
         
@@ -4518,6 +4538,75 @@ private static final long serialVersionUID = 3L;
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    private void AvviaSplashScreen(){
+     //PARTE SPLASH SCREEN
+        // Crea splash screen con immagine e barra di progresso
+        JWindow splash = new JWindow();
+        splash.setBackground(new Color(0,0,0,0));
+        splash.setSize(300, 300); 
+        splash.setLocationRelativeTo(null);
+
+                JPanel panel = new JPanel(new BorderLayout()) {
+            BufferedImage img;
+            float alpha = 1.0f; // trasparenza immagine
+            boolean fadingOut = true;
+
+            {
+                try {
+                    img = ImageIO.read(new File("logo.png"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                // Timer per animazione pulsante
+                new Timer(50, e -> {
+                    if (fadingOut) {
+                        alpha -= 0.02f;
+                        if (alpha <= 0.7f) {
+                            alpha = 0.7f;
+                            fadingOut = false;
+                        }
+                    } else {
+                        alpha += 0.02f;
+                        if (alpha >= 1.0f) {
+                            alpha = 1.0f;
+                            fadingOut = true;
+                        }
+                    }
+                    repaint();
+                }).start();
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (img != null) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                    g2.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+                    g2.dispose();
+                }
+            }
+        };
+        panel.setOpaque(false);
+        splash.setContentPane(panel);    
+        splash.setVisible(true);
+        new Thread(() -> {
+            
+           while (!FineCaricamentoDati) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+            
+        splash.setVisible(false);
+        splash.dispose();
+
+        }).start();
+    }
     
     public void CDC_AggiornaGui() {
         CDC_FiatWallet_AggiornaDatisuGUI();
@@ -11032,7 +11121,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 }
                                 if (OpzioniRewards_JCB_PDD_Staking.isSelected()) {
                                 testo = testo + """
-                                    → → - Stacking<br>                                  
+                                    → → - Staking<br>                                  
                                     """;
                                 }
                                 if (OpzioniRewards_JCB_PDD_Airdrop.isSelected()) {
@@ -11060,7 +11149,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 }
                                 if (!OpzioniRewards_JCB_PDD_Staking.isSelected()) {
                                 testo = testo + """
-                                    → → - Stacking<br>                                  
+                                    → → - Staking<br>                                  
                                     """;
                                 }
                                 if (!OpzioniRewards_JCB_PDD_Airdrop.isSelected()) {

@@ -61,13 +61,13 @@ public class Tabelle {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
             fore=Color.BLACK;
         }
- 
             if (isSelected) {
 
                     setBackground(table.getSelectionBackground());
-                    setForeground(Color.BLACK);
+                   // setForeground(Color.BLACK);
                    // c.revalidate();//NON CREDO SERVA PIU'
                 }
+            
            /*  else if (table.isRowSelected(row)&&table.hasFocus()){
                   setBackground(bluChiaro); 
                   setForeground(Color.DARK_GRAY);

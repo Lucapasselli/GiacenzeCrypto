@@ -84,7 +84,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
         Label_TipoFile.setText("Selezionare il tipo di file da importare");
 
-        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Binance CSV", "Binance Tax Report", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)" }));
+        ComboBox_TipoFile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Crypto.com App CSV", "Binance CSV", "Binance Financial Report", "CoinTracking.info CSV", "Tatax CSV", "OKX CSV (Alpha)" }));
         ComboBox_TipoFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 ComboBox_TipoFileItemStateChanged(evt);
@@ -527,7 +527,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             progressb.setVisible(true);
         } 
         
-        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance Tax Report")) {
+        else if (ComboBox_TipoFile.getItemAt(ComboBox_TipoFile.getSelectedIndex()).trim().equalsIgnoreCase("Binance Financial Report")) {
             Component c = this;
             Download progressb = new Download();
             Bottone_SelezionaFile.setEnabled(false);

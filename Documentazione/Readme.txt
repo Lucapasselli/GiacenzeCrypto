@@ -25,6 +25,16 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.42
+Nuove Implementazioni : 
+ - Aggiunto lo splashscreen in avvio del programma perché in alcuni casi poteva metterci anche molti secondi prima di far vedere la maschera principale dando quindi l'impressione di non aver avviato il programma.
+ - Cambiato colore della selezione della tabella con tema scuro perché quello precedente quasi non si riusciva a leggere.
+Correzione di Bug :
+ - Corretto importazione dei dust conversion di crypto.com app che potevano portare ad errori di giacenza sui CRO.
+Se non vi tornano le giacenze dei CRO di fine anno consiglio di rifare l'importazione dei file con questa versione.
+L'errore in questione poteva portare o ad errori minimi (di pochi CRO) o ad errori macroscopici (in talune circostanze spostava la virgola e portava al caricamento ad esempio di 1 milione di CRO anziché 1)
+ - Sistemato importazioni del FIAT Wallet di Crypto.com, prima faceva fede sempre l'ultima importazione (ogni nuova importazione cancellava quelle vecchie), adesso, come succede nelle altre importazioni, si possono accodare le importazioni.
+
 ver. 1.0.41
 Nuove Implementazioni : 
  - Aggiunto nel PopUpMenu la possibilità di cambiare la tipologia di Reward ricevuta.

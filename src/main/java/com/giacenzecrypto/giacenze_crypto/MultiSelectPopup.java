@@ -30,7 +30,7 @@ public class MultiSelectPopup {
         window = new JWindow(owner);
         mainPanel = new JPanel(new BorderLayout(5, 5));
         mainPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        mainPanel.setBackground(Color.WHITE);
+        //mainPanel.setBackground(Color.WHITE);
 
         // Top panel con filtro e seleziona/deseleziona
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
@@ -215,6 +215,12 @@ public void updateOptions(List<String> options, List<String> preSelected) {
     public void hide() {
         window.setVisible(false);
     }
+    
+    
+    public Dimension getPreferredSize() {
+    window.pack();  // Assicura che le dimensioni siano aggiornate
+    return window.getSize();
+}
 }
 
 

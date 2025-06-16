@@ -73,13 +73,13 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.JWindow;
 import javax.swing.RowSorter;
-import javax.swing.SwingConstants;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -157,12 +157,12 @@ private static final long serialVersionUID = 3L;
     
     
     
-    
-    //TEST su bottone filtro
-  //  List<String> opzioni = List.of("Opzione 1", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", 
-  //              "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3");
+    //queste 2 variabili servono per gestire il popoup e i filtri su tabella
         public  MultiSelectPopup popup = new MultiSelectPopup(this);
-        private final Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = new HashMap<>();
+        public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
+        
+
+
 
     
     
@@ -293,7 +293,7 @@ private static final long serialVersionUID = 3L;
         FineCaricamentoDati=true;
          
 
-        FiltroColonne(TransazioniCryptoTabella);
+       // Tabelle_InizializzaHeader(TransazioniCryptoTabella);
         
         
         
@@ -374,7 +374,6 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_ComboBox_FiltroToken = new javax.swing.JComboBox<>();
         TransazioniCrypto_Label_FiltroToken = new javax.swing.JLabel();
         TransazioniCrypto_Bottone_AggiorbaVersione = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -1115,13 +1114,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -1168,8 +1160,6 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(83, 83, 83)
-                                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1206,8 +1196,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati)
                     .addComponent(TransazioniCrypto_Bottone_Salva)
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
-                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet)
-                    .addComponent(jButton1))
+                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(TransazioniCrypto_Label_FiltroWallet)
@@ -4559,9 +4548,28 @@ private static final long serialVersionUID = 3L;
     }// </editor-fold>//GEN-END:initComponents
 
     
+ private void Tabelle_InizializzaHeader(JTable table) {  
+    ImageIcon originalIco = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
+    Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
+    Icon filterIco = new ImageIcon(scaledImag);
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = CDC_Grafica.tableFilters.get(table);
+    table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));   
+}
 
+
+
+
+
+
+private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
     
-private void FiltroColonne(JTable table) {
+    
+    //Inizializza tableFilters se non esiste
+    tableFilters.putIfAbsent(table, new HashMap<>());
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
+    Tabelle_InizializzaHeader(table);
+    JTableHeader header = table.getTableHeader();
+
 
     DefaultTableModel model = (DefaultTableModel) table.getModel();
     TableRowSorter<DefaultTableModel> sorter;
@@ -4573,48 +4581,7 @@ private void FiltroColonne(JTable table) {
         table.setRowSorter(sorter);
     }
 
-    Set<Integer> filteredColumns = new HashSet<>(); // Traccia colonne filtrate
-    JTableHeader header = table.getTableHeader();
-
-// Prima salva il renderer originale
-TableCellRenderer originalHeaderRenderer = header.getDefaultRenderer();
-
-// Poi imposta il nuovo renderer che lo usa
-header.setDefaultRenderer((table1, value, isSelected, hasFocus, row, column) -> {
-    Component c = originalHeaderRenderer.getTableCellRendererComponent(table1, value, isSelected, hasFocus, row, column);
-
-    if (c instanceof JLabel) {
-        JLabel label = (JLabel) c;
-        int modelIndex = table.convertColumnIndexToModel(column);
-
-        Icon sortIcon = label.getIcon(); // Freccina di ordinamento
-        Icon filterIcon = null;
-
-        if (filteredColumns.contains(modelIndex)) {
-            // Puoi usare un'icona a tua scelta, qui un semplice pallino
-            filterIcon = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
-           // filterIcon=filterIcona;
-            // oppure crea tu una piccola icona custom se vuoi (posso scriverla io!)
-        }
-
-        if (filterIcon != null && sortIcon != null) {
-            label.setIcon(new CombinedIcon(sortIcon, filterIcon));
-        } else if (filterIcon != null) {
-            label.setIcon(filterIcon);
-        } else {
-            label.setIcon(sortIcon);
-        }
-
-        // Colore o altri stili opzionali
-    /*    if (filteredColumns.contains(modelIndex)) {
-            label.setForeground(Color.BLUE);
-        } else {
-            label.setForeground(Color.BLACK);
-        }*/
-    }
-
-    return c;
-});
+   // Set<Integer> filteredColumns = new HashSet<>(); // Traccia colonne filtrate
 
 
 
@@ -4626,8 +4593,8 @@ header.setDefaultRenderer((table1, value, isSelected, hasFocus, row, column) -> 
                 int col = table.columnAtPoint(e.getPoint());
                 if (col >= 0) {
                     int modelCol = table.convertColumnIndexToModel(col);
-                    List<String> valoriUnici = getUniqueValuesForColumn(table, modelCol);
-                    List<String> visibili = getVisibleValuesForColumn(table, col);
+                    List<String> valoriUnici = Tabelle.Tabelle_getUniqueValuesForColumn(table, modelCol);
+                    List<String> visibili = Tabelle.Tabelle_getVisibleValuesForColumn(table, col);
 
                     //MultiSelectPopup popup = new MultiSelectPopup(SwingUtilities.getWindowAncestor(table), valoriUnici);
                     popup.updateOptions(valoriUnici, visibili);
@@ -4636,17 +4603,20 @@ header.setDefaultRenderer((table1, value, isSelected, hasFocus, row, column) -> 
                         cb.setSelected(visibili.contains(cb.getText()));
                     }
 
-                    Rectangle headerRect = header.getHeaderRect(col);
+                  /*  Rectangle headerRect = header.getHeaderRect(col);
                     Point headerLoc = header.getLocationOnScreen();
                     int popupX = headerLoc.x + headerRect.x;
-                    int popupY = headerLoc.y + headerRect.height;
+                    int popupY = headerLoc.y + headerRect.height;*/
 
                     popup.setApplyAction(() -> {
+                        
                         List<String> selected = popup.getSelectedOptions();
-                        if (selected.isEmpty()) {
+                        if (selected.isEmpty() || selected.size() == valoriUnici.size()) {
+                            // Nessun filtro: rimuovi filtro e icona
                             activeFilters.remove(modelCol);
-                            filteredColumns.remove(modelCol);
-                        } else {
+                         //   filteredColumns.remove(modelCol);
+                        } 
+                         else {
                             RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
                                 @Override
                                 public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
@@ -4655,10 +4625,10 @@ header.setDefaultRenderer((table1, value, isSelected, hasFocus, row, column) -> 
                                 }
                             };
                             activeFilters.put(modelCol, filter);
-                            filteredColumns.add(modelCol);
                         }
-
-                        applyCombinedFilter(sorter, "");
+                        String filtrot = (filtro != null) ? filtro.getText() : "";
+                        Tabelle.Tabelle_applyCombinedFilter(table,sorter, filtrot);
+                        
                         header.repaint();
                         popup.hide();
                     });
@@ -4666,7 +4636,19 @@ header.setDefaultRenderer((table1, value, isSelected, hasFocus, row, column) -> 
                     popup.setCancelAction(() -> {
                         popup.hide();
                     });
+                    
+                    Rectangle headerRect = header.getHeaderRect(col);
+                    Point headerLoc = header.getLocationOnScreen();
 
+                    int popupX = headerLoc.x + headerRect.x;
+                    int popupY = headerLoc.y + headerRect.height;
+
+                    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                    Dimension popupSize = popup.getPreferredSize();
+
+                    if (popupX + popupSize.width > screenSize.width) {
+                        popupX = Math.max(screenSize.width - popupSize.width, 0);
+                    }
                     popup.showAt(popupX, popupY);
                 }
                 header.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -4675,60 +4657,13 @@ header.setDefaultRenderer((table1, value, isSelected, hasFocus, row, column) -> 
     });
 }
 
-    
-private void applyCombinedFilter(TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
-    List<RowFilter<DefaultTableModel, Integer>> filters = new ArrayList<>(activeFilters.values());
 
-    if (globalFilterText != null && !globalFilterText.isEmpty()) {
-        RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
-            @Override
-            public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                for (int i = 0; i < entry.getValueCount(); i++) {
-                    Object value = entry.getValue(i);
-                    if (value != null && value.toString().toLowerCase().contains(globalFilterText.toLowerCase())) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        };
-        filters.add(globalFilter);
-    }
 
-    if (filters.isEmpty()) {
-        sorter.setRowFilter(null);
-    } else {
-        sorter.setRowFilter(RowFilter.andFilter(filters));
-    }
-}
-    
-private List<String> getUniqueValuesForColumn(JTable table, int col) {
-    List<String> values = new ArrayList<>();
-    TableModel model = table.getModel();
-    int rowCount = model.getRowCount();
 
-    for (int row = 0; row < rowCount; row++) {
-        Object value = model.getValueAt(row, col);
-        String text = value != null ? value.toString() : "";
-        if (!values.contains(text)) {
-            values.add(text);
-        }
-    }
-    return values;
-}
-private List<String> getVisibleValuesForColumn(JTable table, int col) {
-    List<String> values = new ArrayList<>();
-    int rowCount = table.getRowCount();
 
-    for (int row = 0; row < rowCount; row++) {
-        Object value = table.getValueAt(row, col);
-        String text = value != null ? value.toString() : "";
-        if (!values.contains(text)) {
-            values.add(text);
-        }
-    }
-    return values;
-}
+
+
+
     
     private void AvviaSplashScreen(){
      //PARTE SPLASH SCREEN
@@ -5595,6 +5530,9 @@ private List<String> getVisibleValuesForColumn(JTable table, int col) {
         Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella1);
         Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella2);
         Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella3);
+        Tabelle_FiltroColonne(CDC_FiatWallet_Tabella1,null);
+        Tabelle_FiltroColonne(CDC_FiatWallet_Tabella2,null);
+        Tabelle_FiltroColonne(CDC_FiatWallet_Tabella3,null);
 
         Map<String, String> CDC_FiatWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, String> CDC_FiatWallet_Descrizioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -5731,7 +5669,7 @@ private List<String> getVisibleValuesForColumn(JTable table, int col) {
     if (colonna != 999) {
             sorter.toggleSortOrder(colonna);
         }
-    applyCombinedFilter(sorter,filtro);
+    Tabelle.Tabelle_applyCombinedFilter(Tabella, sorter, filtro);
    /* if (colonna != 999) {
             sorter.toggleSortOrder(3);
         }*/
@@ -5760,6 +5698,9 @@ private List<String> getVisibleValuesForColumn(JTable table, int col) {
         
         Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella2);
         Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella1);
+        
+        Tabelle_FiltroColonne(CDC_CardWallet_Tabella1,null);
+        Tabelle_FiltroColonne(CDC_CardWallet_Tabella2,null);
           
        //calcola i totali sui bonifici, topupcarta e acquisti crypto passati per il fiat wallet
         BigDecimal TotaleSpese= new BigDecimal("0");
@@ -6159,6 +6100,7 @@ private List<String> getVisibleValuesForColumn(JTable table, int col) {
         //PULIZIA TABELLA
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
         Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+       // Tabelle_FiltroColonne(GiacenzeaData_TabellaDettaglioMovimenti,null);
         
         //ANALISI E PROPOSTA
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
@@ -6442,6 +6384,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
+        Tabelle_FiltroColonne(DepositiPrelievi_Tabella,null);
         String WalletVoluto = DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
         String GruppoWalletVoluto = "";
         if (WalletVoluto.contains(":")) {
@@ -7893,7 +7836,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)){
             tabella.requestFocusInWindow();
             rigaSelezionata=tabella.rowAtPoint(evt.getPoint());
-            tabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
+            if (rigaSelezionata != -1) {
+                tabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
+            }
             
         }
          if (rigaSelezionata != -1) {
@@ -8579,6 +8524,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             DefaultTableModel ModelloTabella = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella);
             Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella_Dettagli);
+            Tabelle_FiltroColonne(RW_Tabella_Dettagli,null);
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             
@@ -10013,6 +9959,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
+        Tabelle_FiltroColonne(RT_Tabella_LiFo,null);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (RT_Tabella_Principale.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -10029,6 +9976,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
           */
            } 
         Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_DettaglioMonete);
+        Tabelle_FiltroColonne(RT_Tabella_DettaglioMonete,null);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
@@ -10999,12 +10947,37 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_ComboBox_FiltroWallet.getModel().setSelectedItem("Tutti");
         TransazioniCrypto_ComboBox_FiltroToken.getModel().setSelectedItem("Tutti");
         TransazioniCryptoFiltro_Text.setText("");
+        Tabella_RimuoviFiltri(TransazioniCryptoTabella);
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
    
         
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed
 
+    public void Tabella_RimuoviFiltri(JTable table) {
+    // Rimuovi tutti i filtri dalla mappa relativa a questa tabella
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = tableFilters.get(table);
+    if (filters != null) {
+        filters.clear();
+    }
+
+    // Rimuovi colonne filtrate
+    Set<Integer> filteredCols = filters.keySet();
+    if (filteredCols != null) {
+        filteredCols.clear();
+    }
+
+    // Rimuovi il filtro dal TableRowSorter della tabella
+    RowSorter<?> rowSorter = table.getRowSorter();
+    if (rowSorter instanceof TableRowSorter<?>) {
+        ((TableRowSorter<?>) rowSorter).setRowFilter(null);
+    }
+
+    // Forza repaint dell'header per togliere icone o evidenziazioni
+    table.getTableHeader().repaint();
+}
+    
+    
     private void MenuItem_CopiaIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaIDActionPerformed
         // TODO add your handling code here:
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -11116,15 +11089,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         + "</html>",
                             "Copia", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
     }//GEN-LAST:event_Donazioni_Bottone2ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        
-        if (!popup.isVisible()) {
-    popup.show(jButton1);
-}
-
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -12059,12 +12023,12 @@ try {
         DefaultTableModel GiacenzeaData_ModelloTabellaDettagli = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
         if (CompiloTabella) {
             Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
-        }
-
+        }       
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_Tabella.getModel();
         if (CompiloTabella) {
             TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
             GiacenzeaData_Tabella.setRowSorter(sorter);
+            Tabelle_FiltroColonne(GiacenzeaData_Tabella,null);
             Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
         }
         //Fase 2 Preparazione thead
@@ -12930,8 +12894,12 @@ try {
         Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
         //Adesso aggiorno i componenti delle funzioni secondarie
         Funzione_AggiornaComboBox();
-       
+        
+        //Aggiungo i filtri sulla colonna
+        Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text);
+        
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+        
         System.out.println("Tempo caricamento tabelle : "+tempoOperazione+" millisec.");
         
         
@@ -13493,7 +13461,6 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_CostiCarico;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;

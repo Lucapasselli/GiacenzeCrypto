@@ -7,10 +7,27 @@ package com.giacenzecrypto.giacenze_crypto;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
@@ -653,5 +670,102 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
     }
 }
        
+       
+public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int col) {
+    List<String> values = new ArrayList<>();
+    TableModel model = table.getModel();
+    int rowCount = model.getRowCount();
+
+    for (int row = 0; row < rowCount; row++) {
+        Object value = model.getValueAt(row, col);
+        String text = value != null ? value.toString() : "";
+        if (!values.contains(text)) {
+            values.add(text);
+        }
+    }
+    return values;
+}
+       
+       
+     public static List<String> Tabelle_getVisibleValuesForColumn(JTable table, int col) {
+    List<String> values = new ArrayList<>();
+    int rowCount = table.getRowCount();
+
+    for (int row = 0; row < rowCount; row++) {
+        Object value = table.getValueAt(row, col);
+        String text = value != null ? value.toString() : "";
+        if (!values.contains(text)) {
+            values.add(text);
+        }
+    }
+    return values;
+}  
+       
+ public static void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
+
+    List<RowFilter<DefaultTableModel, Integer>> combinedFilters = new ArrayList<>(filters.values());
+
+    if (globalFilterText != null && !globalFilterText.isEmpty()) {
+        RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
+            @Override
+            public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                for (int i = 0; i < entry.getValueCount(); i++) {
+                    Object value = entry.getValue(i);
+                    if (value != null && value.toString().toLowerCase().contains(globalFilterText.toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        combinedFilters.add(globalFilter);
+    }
+
+    if (combinedFilters.isEmpty()) {
+        sorter.setRowFilter(null);
+    } else {
+        sorter.setRowFilter(RowFilter.andFilter(combinedFilters));
+    }
+}      
+       
   
+ 
+ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(JTable table, Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters, Icon filterIcon) {
+    TableCellRenderer defaultRenderer = table.getTableHeader().getDefaultRenderer();
+
+    return (tbl, value, isSelected, hasFocus, row, col) -> {
+        JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, col);
+        int modelCol = tbl.convertColumnIndexToModel(col);
+
+        Icon sortIcon = null;
+        RowSorter.SortKey sortKey = null;
+        List<? extends RowSorter.SortKey> sortKeys = tbl.getRowSorter().getSortKeys();
+        if (!sortKeys.isEmpty()) {
+            RowSorter.SortKey primarySortKey = sortKeys.get(0); // solo la colonna principale
+            if (primarySortKey.getColumn() == modelCol) {
+                sortIcon = UIManager.getIcon(primarySortKey.getSortOrder() == SortOrder.ASCENDING
+                        ? "Table.ascendingSortIcon"
+                        : "Table.descendingSortIcon");
+            }
+        }
+
+        if (sortKey != null) {
+            sortIcon = UIManager.getIcon(sortKey.getSortOrder() == SortOrder.ASCENDING ? "Table.ascendingSortIcon" : "Table.descendingSortIcon");
+        }
+
+        if (activeFilters.containsKey(modelCol)) {
+            label.setIcon(new CombinedIcon(sortIcon, filterIcon));
+        } else {
+            label.setIcon(sortIcon);
+        }
+
+        return label;
+    };
+}
+ 
+ 
+
+ 
+ 
 }

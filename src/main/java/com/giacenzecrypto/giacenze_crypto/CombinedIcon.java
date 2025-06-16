@@ -8,35 +8,49 @@ import java.awt.Component;
 import java.awt.Graphics;
 import javax.swing.Icon;
 
+
 /**
  *
  * @author lucap
  */
- public class CombinedIcon implements Icon {
-    private final Icon icon1;
-    private final Icon icon2;
+public class CombinedIcon implements Icon {
+    private final Icon sortIcon;
+    private final Icon filterIcon;
 
-    public CombinedIcon(Icon icon1, Icon icon2) {
-        this.icon1 = icon1;
-        this.icon2 = icon2;
-    }
-
-    @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        int yOffset1 = (getIconHeight() - icon1.getIconHeight()) / 2;
-        int yOffset2 = (getIconHeight() - icon2.getIconHeight()) / 2;
-
-        icon1.paintIcon(c, g, x, y + yOffset1);
-        icon2.paintIcon(c, g, x + icon1.getIconWidth(), y + yOffset2);
+    public CombinedIcon(Icon sortIcon, Icon filterIcon) {
+        // Se sortIcon è già un CombinedIcon, estrai l'originale
+        if (sortIcon instanceof CombinedIcon) {
+            CombinedIcon ci = (CombinedIcon) sortIcon;
+            this.sortIcon = ci.sortIcon;
+        } else {
+            this.sortIcon = sortIcon;
+        }
+        this.filterIcon = filterIcon;
     }
 
     @Override
     public int getIconWidth() {
-        return icon1.getIconWidth() + icon2.getIconWidth();
+        int w1 = sortIcon != null ? sortIcon.getIconWidth() : 0;
+        int w2 = filterIcon != null ? filterIcon.getIconWidth() : 0;
+        return w1 + w2;
     }
 
     @Override
     public int getIconHeight() {
-        return Math.max(icon1.getIconHeight(), icon2.getIconHeight());
+        int h1 = sortIcon != null ? sortIcon.getIconHeight() : 0;
+        int h2 = filterIcon != null ? filterIcon.getIconHeight() : 0;
+        return Math.max(h1, h2);
     }
-}    
+
+    @Override
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+        int xPos = x;
+        if (sortIcon != null) {
+            sortIcon.paintIcon(c, g, xPos, y);
+            xPos += sortIcon.getIconWidth();
+        }
+        if (filterIcon != null) {
+            filterIcon.paintIcon(c, g, xPos, y);
+        }
+    }
+}

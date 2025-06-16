@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -67,14 +68,18 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
+import javax.swing.RowSorter;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -154,9 +159,10 @@ private static final long serialVersionUID = 3L;
     
     
     //TEST su bottone filtro
-    List<String> opzioni = List.of("Opzione 1", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", 
-                "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3");
-        public  MultiSelectPopup popup = new MultiSelectPopup(this, opzioni);
+  //  List<String> opzioni = List.of("Opzione 1", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", 
+  //              "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3", "Opzione 2", "Opzione 3");
+        public  MultiSelectPopup popup = new MultiSelectPopup(this);
+        private final Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = new HashMap<>();
 
     
     
@@ -287,7 +293,7 @@ private static final long serialVersionUID = 3L;
         FineCaricamentoDati=true;
          
 
-        
+        FiltroColonne(TransazioniCryptoTabella);
         
         
         
@@ -4553,15 +4559,175 @@ private static final long serialVersionUID = 3L;
     }// </editor-fold>//GEN-END:initComponents
 
     
-    private List<String> getUniqueValuesForColumn(JTable table, int col) {
-    Set<String> set = new LinkedHashSet<>();
-    for (int i = 0; i < table.getRowCount(); i++) {
-        Object value = table.getValueAt(i, col);
-        if (value != null) {
-            set.add(value.toString());
+
+    
+private void FiltroColonne(JTable table) {
+
+    DefaultTableModel model = (DefaultTableModel) table.getModel();
+    TableRowSorter<DefaultTableModel> sorter;
+
+    if (table.getRowSorter() instanceof TableRowSorter) {
+        sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+    } else {
+        sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+    }
+
+    Set<Integer> filteredColumns = new HashSet<>(); // Traccia colonne filtrate
+    JTableHeader header = table.getTableHeader();
+
+// Prima salva il renderer originale
+TableCellRenderer originalHeaderRenderer = header.getDefaultRenderer();
+
+// Poi imposta il nuovo renderer che lo usa
+header.setDefaultRenderer((table1, value, isSelected, hasFocus, row, column) -> {
+    Component c = originalHeaderRenderer.getTableCellRendererComponent(table1, value, isSelected, hasFocus, row, column);
+
+    if (c instanceof JLabel) {
+        JLabel label = (JLabel) c;
+        int modelIndex = table.convertColumnIndexToModel(column);
+
+        Icon sortIcon = label.getIcon(); // Freccina di ordinamento
+        Icon filterIcon = null;
+
+        if (filteredColumns.contains(modelIndex)) {
+            // Puoi usare un'icona a tua scelta, qui un semplice pallino
+            filterIcon = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
+           // filterIcon=filterIcona;
+            // oppure crea tu una piccola icona custom se vuoi (posso scriverla io!)
+        }
+
+        if (filterIcon != null && sortIcon != null) {
+            label.setIcon(new CombinedIcon(sortIcon, filterIcon));
+        } else if (filterIcon != null) {
+            label.setIcon(filterIcon);
+        } else {
+            label.setIcon(sortIcon);
+        }
+
+        // Colore o altri stili opzionali
+    /*    if (filteredColumns.contains(modelIndex)) {
+            label.setForeground(Color.BLUE);
+        } else {
+            label.setForeground(Color.BLACK);
+        }*/
+    }
+
+    return c;
+});
+
+
+
+    header.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getButton() == MouseEvent.BUTTON3) { // Tasto destro
+                header.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                int col = table.columnAtPoint(e.getPoint());
+                if (col >= 0) {
+                    int modelCol = table.convertColumnIndexToModel(col);
+                    List<String> valoriUnici = getUniqueValuesForColumn(table, modelCol);
+                    List<String> visibili = getVisibleValuesForColumn(table, col);
+
+                    //MultiSelectPopup popup = new MultiSelectPopup(SwingUtilities.getWindowAncestor(table), valoriUnici);
+                    popup.updateOptions(valoriUnici, visibili);
+
+                    for (JCheckBox cb : popup.getCheckBoxes()) {
+                        cb.setSelected(visibili.contains(cb.getText()));
+                    }
+
+                    Rectangle headerRect = header.getHeaderRect(col);
+                    Point headerLoc = header.getLocationOnScreen();
+                    int popupX = headerLoc.x + headerRect.x;
+                    int popupY = headerLoc.y + headerRect.height;
+
+                    popup.setApplyAction(() -> {
+                        List<String> selected = popup.getSelectedOptions();
+                        if (selected.isEmpty()) {
+                            activeFilters.remove(modelCol);
+                            filteredColumns.remove(modelCol);
+                        } else {
+                            RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
+                                @Override
+                                public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                                    Object cellValue = entry.getValue(modelCol);
+                                    return selected.contains(cellValue != null ? cellValue.toString() : "");
+                                }
+                            };
+                            activeFilters.put(modelCol, filter);
+                            filteredColumns.add(modelCol);
+                        }
+
+                        applyCombinedFilter(sorter, "");
+                        header.repaint();
+                        popup.hide();
+                    });
+
+                    popup.setCancelAction(() -> {
+                        popup.hide();
+                    });
+
+                    popup.showAt(popupX, popupY);
+                }
+                header.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        }
+    });
+}
+
+    
+private void applyCombinedFilter(TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
+    List<RowFilter<DefaultTableModel, Integer>> filters = new ArrayList<>(activeFilters.values());
+
+    if (globalFilterText != null && !globalFilterText.isEmpty()) {
+        RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
+            @Override
+            public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                for (int i = 0; i < entry.getValueCount(); i++) {
+                    Object value = entry.getValue(i);
+                    if (value != null && value.toString().toLowerCase().contains(globalFilterText.toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        filters.add(globalFilter);
+    }
+
+    if (filters.isEmpty()) {
+        sorter.setRowFilter(null);
+    } else {
+        sorter.setRowFilter(RowFilter.andFilter(filters));
+    }
+}
+    
+private List<String> getUniqueValuesForColumn(JTable table, int col) {
+    List<String> values = new ArrayList<>();
+    TableModel model = table.getModel();
+    int rowCount = model.getRowCount();
+
+    for (int row = 0; row < rowCount; row++) {
+        Object value = model.getValueAt(row, col);
+        String text = value != null ? value.toString() : "";
+        if (!values.contains(text)) {
+            values.add(text);
         }
     }
-    return new ArrayList<>(set);
+    return values;
+}
+private List<String> getVisibleValuesForColumn(JTable table, int col) {
+    List<String> values = new ArrayList<>();
+    int rowCount = table.getRowCount();
+
+    for (int row = 0; row < rowCount; row++) {
+        Object value = table.getValueAt(row, col);
+        String text = value != null ? value.toString() : "";
+        if (!values.contains(text)) {
+            values.add(text);
+        }
+    }
+    return values;
 }
     
     private void AvviaSplashScreen(){
@@ -5553,14 +5719,31 @@ private static final long serialVersionUID = 3L;
      
      
         public void Funzioni_Tabelle_FiltraTabella(JTable Tabella, String filtro, int colonna) {
+            
+                 DefaultTableModel model = (DefaultTableModel) Tabella.getModel();
+    TableRowSorter<DefaultTableModel> sorter;
+    if (Tabella.getRowSorter() instanceof TableRowSorter) {
+        sorter = (TableRowSorter<DefaultTableModel>) Tabella.getRowSorter();
+    } else {
+        sorter = new TableRowSorter<>(model);
+        Tabella.setRowSorter(sorter);
+    }  
+    if (colonna != 999) {
+            sorter.toggleSortOrder(colonna);
+        }
+    applyCombinedFilter(sorter,filtro);
+   /* if (colonna != 999) {
+            sorter.toggleSortOrder(3);
+        }*/
+            
 
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>((DefaultTableModel) Tabella.getModel());
+     /*   TableRowSorter<TableModel> sorter = new TableRowSorter<>((DefaultTableModel) Tabella.getModel());
         sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filtro));
         //se metto 999 significa che non voglio venga riordinato niente
         if (colonna != 999) {
             sorter.toggleSortOrder(colonna);
         }
-        Tabella.setRowSorter(sorter);
+        Tabella.setRowSorter(sorter);*/
 
     }
      

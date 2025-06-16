@@ -6,7 +6,9 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Rectangle;
+import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -651,5 +653,5 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
     }
 }
        
-       
+  
 }

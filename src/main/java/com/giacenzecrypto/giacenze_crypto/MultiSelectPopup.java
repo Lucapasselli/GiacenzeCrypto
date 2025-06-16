@@ -21,6 +21,11 @@ public class MultiSelectPopup {
     private Runnable applyAction = () -> {};
     private Runnable cancelAction = () -> {};
 
+    public MultiSelectPopup(Window owner) {
+    this(owner, new ArrayList<>());
+}
+    
+    
     public MultiSelectPopup(Window owner, List<String> options) {
         window = new JWindow(owner);
         mainPanel = new JPanel(new BorderLayout(5, 5));
@@ -109,7 +114,51 @@ public class MultiSelectPopup {
 
         window.setFocusableWindowState(true);
     }
+    
+  /*  public void updateOptions(List<String> options) {
+    checkBoxPanel.removeAll();
+    checkBoxes.clear();
 
+    for (String option : options) {
+        JCheckBox checkBox = new JCheckBox(option);
+        checkBoxPanel.add(checkBox);
+        checkBoxes.add(checkBox);
+    }
+
+    checkBoxPanel.revalidate();
+    checkBoxPanel.repaint();
+}*/
+public void updateOptions(List<String> options, List<String> preSelected) {
+    checkBoxes.clear();
+    checkBoxPanel.removeAll();
+
+    List<String> selected = new ArrayList<>();
+    List<String> unselected = new ArrayList<>();
+
+    for (String opt : options) {
+        if (preSelected.contains(opt)) {
+            selected.add(opt);
+        } else {
+            unselected.add(opt);
+        }
+    }
+
+    selected.sort(String::compareToIgnoreCase);
+    unselected.sort(String::compareToIgnoreCase);
+
+    List<String> ordered = new ArrayList<>();
+    ordered.addAll(selected);
+    ordered.addAll(unselected);
+
+    for (String opt : ordered) {
+        JCheckBox cb = new JCheckBox(opt, preSelected.contains(opt));
+        checkBoxes.add(cb);
+        checkBoxPanel.add(cb);
+    }
+
+    checkBoxPanel.revalidate();
+    checkBoxPanel.repaint();
+}
     private void filter() {
         String text = filterField.getText().toLowerCase();
         for (JCheckBox cb : checkBoxes) {
@@ -123,6 +172,10 @@ public class MultiSelectPopup {
     return window.isVisible();
 }
 
+    
+    public List<JCheckBox> getCheckBoxes() {
+    return checkBoxes;
+}
 
     public List<String> getSelectedOptions() {
         List<String> selected = new ArrayList<>();
@@ -153,6 +206,12 @@ public class MultiSelectPopup {
     filterField.requestFocusInWindow();
 }
 
+    public void showAt(int x, int y) {
+    window.setLocation(x, y);
+    window.setVisible(true);
+    filterField.requestFocusInWindow();
+}
+    
     public void hide() {
         window.setVisible(false);
     }

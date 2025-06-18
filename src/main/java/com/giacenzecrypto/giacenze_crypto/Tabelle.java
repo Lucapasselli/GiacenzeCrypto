@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +22,7 @@ import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -28,6 +30,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.jsoup.Jsoup;
 
 /**
  *
@@ -701,33 +704,7 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
     return values;
 }  
        
- public static void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
-
-    List<RowFilter<DefaultTableModel, Integer>> combinedFilters = new ArrayList<>(filters.values());
-
-    if (globalFilterText != null && !globalFilterText.isEmpty()) {
-        RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
-            @Override
-            public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                for (int i = 0; i < entry.getValueCount(); i++) {
-                    Object value = entry.getValue(i);
-                    if (value != null && value.toString().toLowerCase().contains(globalFilterText.toLowerCase())) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        };
-        combinedFilters.add(globalFilter);
-    }
-
-    if (combinedFilters.isEmpty()) {
-        sorter.setRowFilter(null);
-    } else {
-        sorter.setRowFilter(RowFilter.andFilter(combinedFilters));
-    }
-}      
+  
        
   
  
@@ -760,10 +737,10 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
             label.setIcon(sortIcon);
         }
 
+        label.setToolTipText("Tasto destro x filtrare " + Jsoup.parse(tbl.getColumnName(col)).text()); 
         return label;
     };
 }
- 
  
 
  

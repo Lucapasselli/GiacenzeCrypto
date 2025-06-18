@@ -60,9 +60,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.imageio.ImageIO;
@@ -76,9 +74,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JWindow;
 import javax.swing.RowSorter;
-import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -153,14 +151,14 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     public String Versione="1.0.42";
-    public String Titolo="Giacenze Crypto "+Versione+" Beta";
+    public String Titolo="Giacenze Crypto "+Versione+" v3 Beta";
     
     
     
     //queste 2 variabili servono per gestire il popoup e i filtri su tabella
         public  MultiSelectPopup popup = new MultiSelectPopup(this);
-       
         public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
+         
         
 
 
@@ -170,7 +168,9 @@ private static final long serialVersionUID = 3L;
     
     public CDC_Grafica() {     
         
-    try {          
+    try {    
+        //imposto la velocità di comparsa dei tooltip a 100ms invece che 750
+        ToolTipManager.sharedInstance().setInitialDelay(100); 
             AvviaSplashScreen();
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
@@ -375,6 +375,12 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_ComboBox_FiltroToken = new javax.swing.JComboBox<>();
         TransazioniCrypto_Label_FiltroToken = new javax.swing.JLabel();
         TransazioniCrypto_Bottone_AggiorbaVersione = new javax.swing.JButton();
+        TransazioniCrypto_text_PlusFiltri = new javax.swing.JLabel();
+        jSeparator9 = new javax.swing.JSeparator();
+        TransazioniCrypto_CheckBox_EscludiTokenScam = new javax.swing.JCheckBox();
+        jLabel27 = new javax.swing.JLabel();
+        jSeparator10 = new javax.swing.JSeparator();
+        jLabel28 = new javax.swing.JLabel();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -1115,6 +1121,21 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        TransazioniCrypto_text_PlusFiltri.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        TransazioniCrypto_text_PlusFiltri.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+
+        TransazioniCrypto_CheckBox_EscludiTokenScam.setText("Nascondi movimenti token Scam");
+        TransazioniCrypto_CheckBox_EscludiTokenScam.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_CheckBox_EscludiTokenScamActionPerformed(evt);
+            }
+        });
+
+        jLabel27.setForeground(new java.awt.Color(153, 153, 153));
+        jLabel27.setText("Filtri ");
+
+        jLabel28.setText("Nota : Tasto destro su intestazione colonna per ulteriori filtri.");
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -1156,36 +1177,54 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(Bottone_Errori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                                    .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
+                                .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel27)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator9))
+                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
+                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTI))
                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                         .addComponent(TransazioniCrypto_Label_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                         .addGap(18, 18, 18)
                                         .addComponent(TransazioniCrypto_Label_FiltroToken)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(TransazioniCrypto_Label_Filtro)
+                                        .addComponent(TransazioniCrypto_Label_Filtro))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
+                                        .addGap(31, 31, 31)
+                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
-                                        .addGap(0, 12, Short.MAX_VALUE)))
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
-                                    .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                        .addGap(129, 129, 129)
+                                        .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                                        .addComponent(TransazioniCrypto_text_PlusFiltri, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                         .addContainerGap())))
         );
         TransazioniCryptoLayout.setVerticalGroup(
@@ -1198,19 +1237,33 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_Bottone_Salva)
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(TransazioniCrypto_Label_FiltroWallet)
-                    .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)
-                    .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_Label_FiltroToken)
-                    .addComponent(TransazioniCrypto_Label_Filtro)
-                    .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
-                    .addComponent(TransazioniCrypto_CheckBox_EscludiTI))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jSeparator9, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel27)
+                    .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(TransazioniCrypto_Label_FiltroWallet)
+                            .addComponent(TransazioniCrypto_Label_FiltroToken)
+                            .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(TransazioniCrypto_Label_Filtro)
+                            .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
+                            .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
+                            .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam)
+                            .addComponent(jLabel28)))
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(TransazioniCrypto_text_PlusFiltri, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1235,7 +1288,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(13, 13, 13))
@@ -4554,7 +4607,8 @@ private static final long serialVersionUID = 3L;
     Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
     Icon filterIco = new ImageIcon(scaledImag);
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = CDC_Grafica.tableFilters.get(table);
-    table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));   
+    table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));  
+
 }
 
 
@@ -4570,6 +4624,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
     Tabelle_InizializzaHeader(table);
     JTableHeader header = table.getTableHeader();
+
 
 
     DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -4628,7 +4683,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
                             activeFilters.put(modelCol, filter);
                         }
                         String filtrot = (filtro != null) ? filtro.getText() : "";
-                        Tabelle.Tabelle_applyCombinedFilter(table,sorter, filtrot);
+                        Tabelle_applyCombinedFilter(table,sorter, filtrot);
                         
                         header.repaint();
                         popup.hide();
@@ -5657,7 +5712,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
  
      
      
-        public void Funzioni_Tabelle_FiltraTabella(JTable Tabella, String filtro, int colonna) {
+        private void Funzioni_Tabelle_FiltraTabella(JTable Tabella, String filtro, int colonna) {
             
                  DefaultTableModel model = (DefaultTableModel) Tabella.getModel();
     TableRowSorter<DefaultTableModel> sorter;
@@ -5670,23 +5725,93 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
     if (colonna != 999) {
             sorter.toggleSortOrder(colonna);
         }
-    Tabelle.Tabelle_applyCombinedFilter(Tabella, sorter, filtro);
-   /* if (colonna != 999) {
-            sorter.toggleSortOrder(3);
-        }*/
-            
+    Tabelle_applyCombinedFilter(Tabella, sorter, filtro);
 
-     /*   TableRowSorter<TableModel> sorter = new TableRowSorter<>((DefaultTableModel) Tabella.getModel());
-        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + filtro));
-        //se metto 999 significa che non voglio venga riordinato niente
-        if (colonna != 999) {
-            sorter.toggleSortOrder(colonna);
-        }
-        Tabella.setRowSorter(sorter);*/
+
 
     }
      
-     
+    private void TransazioniCrypto_CalcolaPlusvalenzeFiltrate() {
+    new Thread(() -> {
+        try {
+            //do tempo alla tabella di finire di caricarsi
+            System.out.println("Calcolo plus filtrate");
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        BigDecimal somma = BigDecimal.ZERO;
+
+        // Ottieni il modello di riga ordinato (se presente)
+        TableRowSorter<?> sorter = null;
+        if (TransazioniCryptoTabella.getRowSorter() instanceof TableRowSorter) {
+            sorter = (TableRowSorter<?>) TransazioniCryptoTabella.getRowSorter();
+        }
+
+        int rowCount = TransazioniCryptoTabella.getRowCount(); // righe visibili dopo filtro/ordinamento
+
+        for (int viewRow = 0; viewRow < rowCount; viewRow++) {
+            // Ottieni l'indice della riga nel modello originale
+            int modelRow = (sorter != null) ? sorter.convertRowIndexToModel(viewRow) : viewRow;
+
+            Object val = TransazioniCryptoTabella.getModel().getValueAt(modelRow, 19);
+
+            if (val != null) {
+                try {
+                    // Converti in BigDecimal in modo sicuro
+                    BigDecimal valore;
+                    if (val instanceof BigDecimal) {
+                        valore = (BigDecimal) val;
+                    } else if (val instanceof Number) {
+                        valore = new BigDecimal(((Number) val).toString());
+                    } else {
+                        valore = new BigDecimal(val.toString());
+                    }
+                    somma = somma.add(valore);
+                } catch (NumberFormatException ex) {
+                    // Ignora valori non numerici
+                }
+            }
+        }
+
+        final BigDecimal risultato = somma;
+
+        // Aggiorna la JLabel nel thread della GUI
+        SwingUtilities.invokeLater(() -> TransazioniCrypto_text_PlusFiltri.setText("Plusvalenze Filtrate : € " + risultato.toPlainString()));
+
+    }).start();
+}    
+        
+        
+    private void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
+
+    List<RowFilter<DefaultTableModel, Integer>> combinedFilters = new ArrayList<>(filters.values());
+
+    if (globalFilterText != null && !globalFilterText.isEmpty()) {
+        RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
+            @Override
+            public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                for (int i = 0; i < entry.getValueCount(); i++) {
+                    Object value = entry.getValue(i);
+                    if (value != null && value.toString().toLowerCase().contains(globalFilterText.toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        combinedFilters.add(globalFilter);
+    }
+
+    if (combinedFilters.isEmpty()) {
+        sorter.setRowFilter(null);
+    } else {
+        sorter.setRowFilter(RowFilter.andFilter(combinedFilters));
+    }
+    //nel caso sia la tabella principale filtro le plusvalenze
+    if (table.equals(TransazioniCryptoTabella))TransazioniCrypto_CalcolaPlusvalenzeFiltrate();
+}    
    
       private void CDC_CardWallet_Funzione_Totali_per_tipo_movimento() {
           
@@ -6101,7 +6226,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
         //PULIZIA TABELLA
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
         Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
-       // Tabelle_FiltroColonne(GiacenzeaData_TabellaDettaglioMovimenti,null);
+        Tabelle_FiltroColonne(GiacenzeaData_TabellaDettaglioMovimenti,null);
         
         //ANALISI E PROPOSTA
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
@@ -8045,13 +8170,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         String Messaggio = "Sicuro di voler cancellare tutti i dati delle Transazioni Crypto dal "+DataIniziale+" al "+DataFinale+" compreso?";
         int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta == 0) {
-            Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+         //   Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
                 int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(null,timeStampIniziale,timeStampFinale);
                 if (movimentiCancellati>0){
                     Opzioni_RicreaListaWalletDisponibili();
                     Funzioni_AggiornaTutto();
                 }
-                Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+           //     Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
                 Messaggio="Numero movimenti cancellati : "+movimentiCancellati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte.";
                 JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
         }
@@ -10945,11 +11070,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         TransazioniCrypto_CheckBox_VediSenzaPrezzo.setSelected(false);
         TransazioniCrypto_CheckBox_EscludiTI.setSelected(false);
+        TransazioniCrypto_CheckBox_EscludiTokenScam.setSelected(false);
         TransazioniCrypto_ComboBox_FiltroWallet.getModel().setSelectedItem("Tutti");
         TransazioniCrypto_ComboBox_FiltroToken.getModel().setSelectedItem("Tutti");
         TransazioniCryptoFiltro_Text.setText("");
         Tabella_RimuoviFiltri(TransazioniCryptoTabella);
-        Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
    
         
@@ -11090,6 +11215,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         + "</html>",
                             "Copia", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
     }//GEN-LAST:event_Donazioni_Bottone2ActionPerformed
+
+    private void TransazioniCrypto_CheckBox_EscludiTokenScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_EscludiTokenScamActionPerformed
+        // TODO add your handling code here:
+         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+    }//GEN-LAST:event_TransazioniCrypto_CheckBox_EscludiTokenScamActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -12742,7 +12872,7 @@ try {
         long tempoOperazione=System.currentTimeMillis();
         NumErroriMovSconosciuti=0;
         NumErroriMovNoPrezzo=0;
-        Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+        //Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
         PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         //Disabilito i bottoni che devono essere attivi solo in caso vi sia qualcheria selezionata sulla tabella
         TransazioniCrypto_Bottone_MovimentoModifica.setEnabled(false);
@@ -12833,22 +12963,8 @@ try {
                 //Filtro Date
                 if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
                         && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
-                    
-                    //Filtro Wallet
-                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                   
-                    if(
-                       WalletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(WalletVoluto) || gwallet.equalsIgnoreCase(GruppoWalletVoluto)){
-                    
-                    //Filtro Token                   
-                    if (TokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(TokenVoluto) || v[11].equals(TokenVoluto))
-                        {
-                    
-                    //Filtro Movimenti senza prezzo
-                    if (VediSoloSenzaPrezzo && v[32].trim().equalsIgnoreCase("NO")||!VediSoloSenzaPrezzo) {
-                        Object z[]=Funzioni.Converti_String_Object(v);
-                        ModelloTabellaCrypto.addRow(z);
-                       // ModelloTabellaCrypto.addRow(v);
-                        if (Funzioni_isNumeric(v[19], false)) {
+                    // dopo il filtro date inseriso il dato sulla plusvalenza, non voglio che cambi cambiando il filtro
+                    if (Funzioni_isNumeric(v[19], false)) {
                             Plusvalenza = Plusvalenza.add(new BigDecimal(v[19]));
                         }
                         if (v[33].equals("S")) {
@@ -12859,6 +12975,26 @@ try {
                                 CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
                             }
                         }
+                    
+                    //Filtro Wallet
+                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                   
+                    if(
+                       WalletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(WalletVoluto) || gwallet.equalsIgnoreCase(GruppoWalletVoluto)){
+                    
+                    //Filtro Token                   
+                    if ((TokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(TokenVoluto) || v[11].equals(TokenVoluto))&&
+                       ( !TransazioniCrypto_CheckBox_EscludiTokenScam.isSelected()||
+                            !((Funzioni.isSCAM(v[8])&&v[11].isBlank())
+                            ||(Funzioni.isSCAM(v[11])&&v[8].isBlank())))
+                    )
+                        {
+                    
+                    //Filtro Movimenti senza prezzo
+                    if (VediSoloSenzaPrezzo && v[32].trim().equalsIgnoreCase("NO")||!VediSoloSenzaPrezzo) {
+                        Object z[]=Funzioni.Converti_String_Object(v);
+                        ModelloTabellaCrypto.addRow(z);
+                       // ModelloTabellaCrypto.addRow(v);
+                        
                     }}
                     
                     }  
@@ -12898,6 +13034,8 @@ try {
         
         //Aggiungo i filtri sulla colonna
         Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text);
+        
+     
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         
@@ -13448,6 +13586,7 @@ try {
     private javax.swing.JButton TransazioniCrypto_Bottone_MovimentoNuovo;
     private javax.swing.JButton TransazioniCrypto_Bottone_Salva;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_EscludiTI;
+    private javax.swing.JCheckBox TransazioniCrypto_CheckBox_EscludiTokenScam;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_VediSenzaPrezzo;
     private javax.swing.JComboBox<String> TransazioniCrypto_ComboBox_FiltroToken;
     private javax.swing.JComboBox<String> TransazioniCrypto_ComboBox_FiltroWallet;
@@ -13462,6 +13601,7 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_CostiCarico;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
+    private javax.swing.JLabel TransazioniCrypto_text_PlusFiltri;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -13482,6 +13622,8 @@ try {
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -13506,6 +13648,7 @@ try {
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -13513,6 +13656,7 @@ try {
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JPopupMenu.Separator jSeparator8;
+    private javax.swing.JSeparator jSeparator9;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTextArea jTextArea1;

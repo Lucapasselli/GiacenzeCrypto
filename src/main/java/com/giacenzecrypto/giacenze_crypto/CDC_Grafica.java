@@ -159,6 +159,7 @@ private static final long serialVersionUID = 3L;
     
     //queste 2 variabili servono per gestire il popoup e i filtri su tabella
         public  MultiSelectPopup popup = new MultiSelectPopup(this);
+       
         public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
         
 

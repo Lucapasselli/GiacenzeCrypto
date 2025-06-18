@@ -79,11 +79,6 @@
 	  <version>1.13.1</version>
 	  <type>jar</type>
 	 </dependency>
-	    <dependency>
-	        <groupId>unknown.binary</groupId>
-	        <artifactId>MultiSelectButton</artifactId>
-	        <version>SNAPSHOT</version>
-	    </dependency>
 	</dependencies>
 <build>
   <plugins>

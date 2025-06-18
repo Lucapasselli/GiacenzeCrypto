@@ -1084,22 +1084,6 @@ System.out.println(response.body().string());
 public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolean SovrascriEsistenti,String Exchange,Component c,boolean PrezzoZero,Download progressb ) {
         
 
-         //   Download progressb=new Download();
-  /*                 SwingUtilities.invokeLater(() -> {
-           // ProgressBarExample example = new ProgressBarExample();
-  Download progressb=new Download();
-  progressb.SetMassimo(100);
-            // Esempio di aggiornamento della progress bar dalla funzione main
-            for (int i = 0; i <= 100; i++) {
-                final int progress = i;
-                SwingUtilities.invokeLater(() -> progressb.updateProgress(progress));
-                try {
-                    Thread.sleep(100); // Aggiorna la progress bar ogni 100 millisecondi
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });*/
     
   
  AzzeraContatori();        
@@ -1116,7 +1100,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         // 1- come prima cosa metto in una lista il file
         // e creo una mappa che mi permetterà di analizzare il file ed eliminare le righe doppie
         List<String> lista=new ArrayList<>();
-        Map<String, String> Mappa_EliminaDoppioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        //Map<String, String> Mappa_EliminaDoppioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
                 while ((riga = bure.readLine()) != null) {
                     //System.out.println(riga);
@@ -1124,8 +1108,8 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     String splittata[] = riga.split(","); 
                     if (splittata.length==13){
                         String data = OperazioniSuDate.Formatta_Data_CoinTracking(splittata[12]);
-                        if (!data.equalsIgnoreCase("")&&Mappa_EliminaDoppioni.get(riga)==null) {
-                            Mappa_EliminaDoppioni.put(riga, "");
+                        if (!data.equalsIgnoreCase("")/*&&Mappa_EliminaDoppioni.get(riga)==null*/) {
+                            //Mappa_EliminaDoppioni.put(riga, "");
                             lista.add(riga);
                             if (primaData==0){
                                 primaData=OperazioniSuDate.ConvertiDatainLongSecondo(data);

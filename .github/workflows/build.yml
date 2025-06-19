@@ -69,7 +69,7 @@ jobs:
       - name: Copy extra resources
         run: |
             mkdir -p target/extra/immagini
-            cp -r immagini/* target/extra/immagini/
+            cp -r Immagini/* target/extra/immagini/
             cp logo.png target/extra/
             cp GestitiCoincap.csv target/extra/
         

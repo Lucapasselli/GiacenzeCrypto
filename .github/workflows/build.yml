@@ -87,6 +87,11 @@ jobs:
             --app-version $VERSIONE \
             --vendor Luca
             
+      - name: Debug Linux output
+        run: |
+            echo "Contenuto della cartella generata:"
+            ls -R out/linux/$PROJECT_NAME
+            
       - name: Move resources to root (Linux/macOS)
         run: |
             mv out/linux/$PROJECT_NAME/app/Immagini out/linux/$PROJECT_NAME/Immagini
@@ -112,8 +117,8 @@ jobs:
 
       - name: Prepare input directory for jpackage
         run: |
-          mkdir -p build/immagini
-          cp -r immagini/* build/immagini/
+          mkdir -p build/Immagini
+          cp -r immagini/* build/Immagini/
           cp logo.png build/
           cp GestitiCoincap.csv build/
 

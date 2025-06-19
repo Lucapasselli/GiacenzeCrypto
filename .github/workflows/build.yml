@@ -23,8 +23,6 @@ jobs:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
-      - name: Build JAR with Maven
-        run: mvn clean package
         
       - name: Prepara cartella build con risorse
         run: |
@@ -57,4 +55,93 @@ jobs:
         with:
           name: windows-app-image
           path: out/windows/${{ env.PROJECT_NAME }}
+          
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup GraalVM on Linux
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'graalvm'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+        
+      - name: Copy extra resources
+        run: |
+            mkdir -p build/immagini
+            cp -r immagini/* build/immagini/
+            cp logo.png build/
+            cp GestitiCoincap.csv build/
+        
+      - name: Build Linux app-image
+        run: |
+          jpackage \
+            --type app-image \
+            --input build \
+            --dest out/linux \
+            --name $PROJECT_NAME \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --icon logo.ico \
+            --app-version $VERSIONE \
+            --vendor Luca \
+            --resource-dir target/extra
+            
+      - name: Move resources to root (Linux/macOS)
+        run: |
+            mv out/linux/$PROJECT_NAME/app/Immagini out/linux/$PROJECT_NAME/Immagini
+            mv out/linux/$PROJECT_NAME/app/logo.png out/linux/$PROJECT_NAME/logo.png
+            mv out/linux/$PROJECT_NAME/app/GestitiCoincap.csv out/linux/$PROJECT_NAME/GestitiCoincap.csv      
+            
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-app-image
+          path: out/linux/${{ env.PROJECT_NAME }}
+          
+          
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup GraalVM on macOS
+        uses: actions/setup-java@v4
+        with:
+          distribution: graalvm
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
+      - name: Prepare input directory for jpackage
+        run: |
+          mkdir -p build/immagini
+          cp -r immagini/* build/immagini/
+          cp logo.png build/
+          cp GestitiCoincap.csv build/
+
+      - name: Build macOS app-image
+        run: |
+          jpackage \
+            --type app-image \
+            --input build \
+            --dest out/macos \
+            --name ${{ env.PROJECT_NAME }} \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --icon logo.ico \
+            --app-version ${{ env.VERSIONE }} \
+            --vendor Luca
+
+      - name: Debug macOS output
+        run: ls -R out/macos
+        
+      - name: Move resources to root (Linux/macOS)
+        run: |
+            mv out/linux/$PROJECT_NAME/app/Immagini out/linux/$PROJECT_NAME/Immagini
+            mv out/linux/$PROJECT_NAME/app/logo.png out/linux/$PROJECT_NAME/logo.png
+            mv out/linux/$PROJECT_NAME/app/GestitiCoincap.csv out/linux/$PROJECT_NAME/GestitiCoincap.csv  
+            
+      - name: Upload macOS app-image
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-app-image
+          path: out/macos/${{ env.PROJECT_NAME }}.app

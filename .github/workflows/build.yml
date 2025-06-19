@@ -45,8 +45,7 @@ jobs:
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
             --icon logo.ico `
             --app-version $env:VERSIONE `
-            --vendor Luca `
-            --resource-dir target/extra
+            --vendor Luca
       - uses: actions/upload-artifact@v4
         with:
           name: windows-app-image

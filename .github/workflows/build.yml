@@ -53,7 +53,7 @@ jobs:
             
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.JAVA_VERSION }}_Beta_Portable_Windows
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
           path: out/windows/${{ env.PROJECT_NAME }}
           
   build-linux:
@@ -94,7 +94,7 @@ jobs:
             
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.JAVA_VERSION }}_Beta_Portable_Linux
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Linux
           path: out/linux/${{ env.PROJECT_NAME }}
           
           
@@ -135,5 +135,5 @@ jobs:
       - name: Upload macOS app-image
         uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.JAVA_VERSION }}_Beta_Portable_MacOS
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_MacOS
           path: out/macos/${{ env.PROJECT_NAME }}.app

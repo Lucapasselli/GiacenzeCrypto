@@ -85,8 +85,7 @@ jobs:
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
             --icon logo.ico \
             --app-version $VERSIONE \
-            --vendor Luca \
-            --resource-dir target/extra
+            --vendor Luca
             
       - name: Move resources to root (Linux/macOS)
         run: |
@@ -136,9 +135,9 @@ jobs:
         
       - name: Move resources to root (Linux/macOS)
         run: |
-            mv out/macos/$PROJECT_NAME/app/Immagini out/linux/$PROJECT_NAME/Immagini
-            mv out/macos/$PROJECT_NAME/app/logo.png out/linux/$PROJECT_NAME/logo.png
-            mv out/macos/$PROJECT_NAME/app/GestitiCoincap.csv out/linux/$PROJECT_NAME/GestitiCoincap.csv  
+            mv out/macos/$PROJECT_NAME/app/Immagini out/macos/$PROJECT_NAME/Immagini
+            mv out/macos/$PROJECT_NAME/app/logo.png out/macos/$PROJECT_NAME/logo.png
+            mv out/macos/$PROJECT_NAME/app/GestitiCoincap.csv out/macos/$PROJECT_NAME/GestitiCoincap.csv  
             
       - name: Upload macOS app-image
         uses: actions/upload-artifact@v4

@@ -183,7 +183,9 @@ SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
 }
 
 
-
+public void AzzeraTestoRicerca(){
+    filterField.setText("");
+}
 
 
 

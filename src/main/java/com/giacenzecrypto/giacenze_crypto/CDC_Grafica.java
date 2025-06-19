@@ -159,7 +159,7 @@ private static final long serialVersionUID = 3L;
         public  MultiSelectPopup popup = new MultiSelectPopup(this);
         public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
          
-        
+    public String SplashScreenText= "Caricamento in corso...";    
 
 
 
@@ -4659,11 +4659,6 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
                         cb.setSelected(visibili.contains(cb.getText()));
                     }
 
-                  /*  Rectangle headerRect = header.getHeaderRect(col);
-                    Point headerLoc = header.getLocationOnScreen();
-                    int popupX = headerLoc.x + headerRect.x;
-                    int popupY = headerLoc.y + headerRect.height;*/
-
                     popup.setApplyAction(() -> {
                         
                         List<String> selected = popup.getSelectedOptions();
@@ -4684,12 +4679,15 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
                         }
                         String filtrot = (filtro != null) ? filtro.getText() : "";
                         Tabelle_applyCombinedFilter(table,sorter, filtrot);
+                        popup.AzzeraTestoRicerca();
+                        
                         
                         header.repaint();
                         popup.hide();
                     });
 
                     popup.setCancelAction(() -> {
+                        popup.AzzeraTestoRicerca();
                         popup.hide();
                     });
                     
@@ -4728,9 +4726,14 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
         splash.setBackground(new Color(0,0,0,0));
         splash.setSize(300, 300); 
         splash.setLocationRelativeTo(null);
+        // Barra di progresso
+          
+        //splash.add(progressBar, BorderLayout.SOUTH);
 
-                JPanel panel = new JPanel(new BorderLayout()) {
+        JPanel imagePanel = new JPanel(new BorderLayout()) {
+                    
             BufferedImage img;
+            
             float alpha = 1.0f; // trasparenza immagine
             boolean fadingOut = true;
 
@@ -4771,7 +4774,58 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
                 }
             }
         };
+        imagePanel.setOpaque(false);
+        
+        // Pannello per la barra "Caricamento in corso..."
+JPanel loadingBar = new JPanel() {
+    @Override
+    protected void paintComponent(Graphics g) {
+        //super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        // g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f)); // Trasparenza
+        g2.setColor(Color.WHITE);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+
+        // Testo
+        g2.setComposite(AlphaComposite.SrcOver); 
+        g2.setColor(Color.BLACK);
+        //g2.setFont(new Font("SansSerif", Font.BOLD, 14));
+        g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 14));
+        String text = SplashScreenText;
+        FontMetrics fm = g2.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        int textX = (getWidth() - textWidth) / 2;
+        int textY = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+        g2.drawString(text, textX, textY);
+
+        // Angoli arrotondati (20 pixel di raggio)
+       // g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+        
+        g2.dispose();
+    }
+};
+        
+        
+        loadingBar.setOpaque(false);
+        loadingBar.setPreferredSize(new Dimension(200, 20));
+        // Composizione pannello
+        JPanel barraWrapper = new JPanel();
+        barraWrapper.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 10));
+        barraWrapper.setOpaque(false);
+        barraWrapper.add(loadingBar);
+
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setLayout(new BorderLayout());
+        
         panel.setOpaque(false);
+        panel.add(imagePanel, BorderLayout.CENTER);
+        panel.add(barraWrapper, BorderLayout.SOUTH);
+       // panel.add(loadingBar, BorderLayout.SOUTH);
+        
+        
         splash.setContentPane(panel);    
         splash.setVisible(true);
         new Thread(() -> {
@@ -4782,8 +4836,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
                         } catch (InterruptedException ex) {
                             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    }
-            
+                    }  
         splash.setVisible(false);
         splash.dispose();
 
@@ -5735,7 +5788,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
     new Thread(() -> {
         try {
             //do tempo alla tabella di finire di caricarsi
-            System.out.println("Calcolo plus filtrate");
+            //System.out.println("Calcolo plus filtrate");
             Thread.sleep(100);
         } catch (InterruptedException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);

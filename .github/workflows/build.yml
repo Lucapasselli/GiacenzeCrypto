@@ -23,14 +23,16 @@ jobs:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
+      - name: Build JAR with Maven
+        run: mvn clean package
         
-      - name: Copy extra resources (immagini/, logo.png, GestitiCoincap.csv)
-        shell: cmd
+      - name: Prepara cartella build con risorse
         run: |
-          mkdir target\extra\immagini
-          xcopy immagini\* build\immagini\ /E /I /Y
-          copy logo.png build\extra\
-          copy GestitiCoincap.csv build\extra\
+            mkdir -p build/immagini
+            cp target/Giacenze_Crypto.jar build/
+            cp -r immagini/* build/immagini/
+            cp logo.png build/
+            cp GestitiCoincap.csv build/
         
       - name: Build Windows app-image
         shell: pwsh
@@ -50,3 +52,4 @@ jobs:
         with:
           name: windows-app-image
           path: out/windows/${{ env.PROJECT_NAME }}
+

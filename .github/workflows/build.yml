@@ -29,7 +29,6 @@ jobs:
       - name: Prepara cartella build con risorse
         run: |
             mkdir -p build/immagini
-            cp target/Giacenze_Crypto.jar build/
             cp -r immagini/* build/immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/

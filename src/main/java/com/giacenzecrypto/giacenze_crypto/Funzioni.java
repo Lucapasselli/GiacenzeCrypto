@@ -55,7 +55,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
-import javax.swing.text.JTextComponent;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

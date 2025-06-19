@@ -90,13 +90,7 @@ jobs:
       - name: Debug Linux output
         run: |
             echo "Contenuto della cartella generata:"
-            ls -R out/linux/$PROJECT_NAME
-            
-      - name: Move resources to root (Linux/macOS)
-        run: |
-            mv out/linux/$PROJECT_NAME/app/Immagini out/linux/$PROJECT_NAME/Immagini
-            mv out/linux/$PROJECT_NAME/app/logo.png out/linux/$PROJECT_NAME/logo.png
-            mv out/linux/$PROJECT_NAME/app/GestitiCoincap.csv out/linux/$PROJECT_NAME/GestitiCoincap.csv      
+            ls -R out/linux/$PROJECT_NAME   
             
       - uses: actions/upload-artifact@v4
         with:
@@ -137,12 +131,6 @@ jobs:
 
       - name: Debug macOS output
         run: ls -R out/macos
-        
-      - name: Move resources to root (Linux/macOS)
-        run: |
-            mv out/macos/$PROJECT_NAME/app/Immagini out/macos/$PROJECT_NAME/Immagini
-            mv out/macos/$PROJECT_NAME/app/logo.png out/macos/$PROJECT_NAME/logo.png
-            mv out/macos/$PROJECT_NAME/app/GestitiCoincap.csv out/macos/$PROJECT_NAME/GestitiCoincap.csv  
             
       - name: Upload macOS app-image
         uses: actions/upload-artifact@v4

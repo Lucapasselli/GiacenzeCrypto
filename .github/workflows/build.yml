@@ -47,7 +47,6 @@ jobs:
             --icon logo.ico `
             --app-version $env:VERSIONE `
             --vendor Luca `
-            --win-console=false `
             --resource-dir target/extra
       - uses: actions/upload-artifact@v4
         with:

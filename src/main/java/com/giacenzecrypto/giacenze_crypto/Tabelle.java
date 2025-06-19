@@ -6,30 +6,21 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Rectangle;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import org.jsoup.Jsoup;
 
 /**
@@ -90,17 +81,6 @@ public class Tabelle {
                    // c.revalidate();//NON CREDO SERVA PIU'
                 }
             
-           /*  else if (table.isRowSelected(row)&&table.hasFocus()){
-                  setBackground(bluChiaro); 
-                  setForeground(Color.DARK_GRAY);
-                } else if (isSelected&&!table.hasFocus()){
-                 setBackground(Color.GRAY);  
-             }else if (table.isRowSelected(row)&&!table.hasFocus()){
-                 setBackground(Color.GRAY);  
-             }
-            
-            
-            */
                 else if (col==3 && value.toString().toLowerCase().contains("deposito")) {
                        // if (value.toString().equalsIgnoreCase("da calcolare"))
                          //   {
@@ -732,7 +712,7 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
         }
 
         if (activeFilters.containsKey(modelCol)) {
-            label.setIcon(new MultiSelectPopup_CombinedIcon(sortIcon, filterIcon));
+            label.setIcon(new MultiSelectPopUp_CombinedIcon(sortIcon, filterIcon));
         } else {
             label.setIcon(sortIcon);
         }

@@ -13,14 +13,14 @@ import javax.swing.Icon;
  *
  * @author lucap
  */
-public class CombinedIcon implements Icon {
+public class MultiSelectPopUp_CombinedIcon implements Icon {
     private final Icon sortIcon;
     private final Icon filterIcon;
 
-    public CombinedIcon(Icon sortIcon, Icon filterIcon) {
-        // Se sortIcon è già un CombinedIcon, estrai l'originale
-        if (sortIcon instanceof CombinedIcon) {
-            CombinedIcon ci = (CombinedIcon) sortIcon;
+    public MultiSelectPopUp_CombinedIcon(Icon sortIcon, Icon filterIcon) {
+        // Se sortIcon è già un MultiSelectPopUp_CombinedIcon, estrai l'originale
+        if (sortIcon instanceof MultiSelectPopUp_CombinedIcon) {
+            MultiSelectPopUp_CombinedIcon ci = (MultiSelectPopUp_CombinedIcon) sortIcon;
             this.sortIcon = ci.sortIcon;
         } else {
             this.sortIcon = sortIcon;

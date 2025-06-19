@@ -50,4 +50,10 @@ jobs:
         with:
           name: windows-app-image
           path: out/windows/${{ env.PROJECT_NAME }}
+          
+      - name: Move resources to root (Windows)
+        run: |
+            Move-Item -Path "out/windows/$env:PROJECT_NAME/app/immagini" -Destination "out/windows/$env:PROJECT_NAME/immagini"
+            Move-Item -Path "out/windows/$env:PROJECT_NAME/app/logo.png" -Destination "out/windows/$env:PROJECT_NAME/logo.png"
+            Move-Item -Path "out/windows/$env:PROJECT_NAME/app/GestitiCoincap.csv" -Destination "out/windows/$env:PROJECT_NAME/GestitiCoincap.csv"
 

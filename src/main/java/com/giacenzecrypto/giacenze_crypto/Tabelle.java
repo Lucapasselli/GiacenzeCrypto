@@ -732,7 +732,7 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
         }
 
         if (activeFilters.containsKey(modelCol)) {
-            label.setIcon(new CombinedIcon(sortIcon, filterIcon));
+            label.setIcon(new MultiSelectPopup_CombinedIcon(sortIcon, filterIcon));
         } else {
             label.setIcon(sortIcon);
         }

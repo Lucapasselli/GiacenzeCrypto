@@ -150,8 +150,8 @@ private static final long serialVersionUID = 3L;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
-    public String Versione="1.0.42";
-    public String Titolo="Giacenze Crypto "+Versione+" v3 Beta";
+    public String Versione="1.0.43";
+    public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
     
     

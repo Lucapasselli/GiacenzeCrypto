@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -77,6 +78,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         TextField_IndirizzoWallet = new javax.swing.JTextField();
         ComboBox_Rete = new javax.swing.JComboBox<>();
         Bottone_Aggiorna = new javax.swing.JButton();
+        Bottone_AggiornaSelezionati = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -160,6 +162,14 @@ public class GestioneWallets extends javax.swing.JDialog {
             }
         });
 
+        Bottone_AggiornaSelezionati.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
+        Bottone_AggiornaSelezionati.setText("Aggiorna Selezionati");
+        Bottone_AggiornaSelezionati.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_AggiornaSelezionatiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -181,7 +191,9 @@ public class GestioneWallets extends javax.swing.JDialog {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Bottone_RimuoviWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Bottone_RimuoviWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
@@ -199,10 +211,12 @@ public class GestioneWallets extends javax.swing.JDialog {
                             .addComponent(TextField_IndirizzoWallet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(Bottone_RimuoviWallet))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Label_Rete)
-                            .addComponent(ComboBox_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Bottone_InserisciWallet)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(Label_Rete)
+                                .addComponent(ComboBox_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(Bottone_InserisciWallet))
+                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -316,7 +330,7 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     
     
-    public void AggiornaWallets() {
+    public void AggiornaWallets(List<String> selezionati) {
         Component c = com.giacenzecrypto.giacenze_crypto.GestioneWallets.this;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
@@ -328,6 +342,7 @@ public class GestioneWallets extends javax.swing.JDialog {
             public void run() {
                 int i = 0;
                 List<String> Portafogli = new ArrayList<>();
+                if (selezionati==null){
                 for (String riga : MappaWallets.values()) {
                     String splittata[] = riga.split(";");
                     String blocco = Mappa_Wallet.get(splittata[0] + " (" + splittata[1] + ")");
@@ -340,7 +355,15 @@ public class GestioneWallets extends javax.swing.JDialog {
                     for(String rete : CDC_Grafica.Mappa_ChainExplorer.keySet()){
                         if (rete.equalsIgnoreCase(splittata[1]))
                         {
-                            Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
+                           if (selezionati==null)  {
+                                Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
+                           }else{
+                               for(String p:selezionati){
+                                   if (p.equals(splittata[0])){
+                                       Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
+                                   }
+                               }
+                           }
                         }
                     }
                  /*   if (splittata[1].equalsIgnoreCase("BSC")
@@ -354,6 +377,10 @@ public class GestioneWallets extends javax.swing.JDialog {
                         Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
                     }*/
                 }
+                }else{
+                    Portafogli=selezionati;
+                    }
+
                 //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
                 Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
                 Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli, c, progress);
@@ -495,7 +522,7 @@ public class GestioneWallets extends javax.swing.JDialog {
 
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed
         // TODO add your handling code here:
-        AggiornaWallets();
+        AggiornaWallets(null);
         
     }//GEN-LAST:event_Bottone_AggiornaActionPerformed
 
@@ -508,6 +535,27 @@ public class GestioneWallets extends javax.swing.JDialog {
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
     }//GEN-LAST:event_formWindowGainedFocus
+
+    private void Bottone_AggiornaSelezionatiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaSelezionatiActionPerformed
+        // TODO add your handling code here:
+        int[] selectedRows = TabellaWallets.getSelectedRows();
+        if (selectedRows.length == 0) {
+            //System.out.println("Nessuna riga selezionata.");
+            return;
+            }
+        TableModel model = TabellaWallets.getModel();
+        
+        List<String> selezionati = new ArrayList<>();
+        for (int viewRow : selectedRows) {
+            int modelRow = TabellaWallets.convertRowIndexToModel(viewRow);
+
+            String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
+            String blocco = model.getValueAt(modelRow, 4).toString(); // 1 = seconda colonna
+            String rete = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
+            selezionati.add(wallet+";"+blocco+";"+rete);
+        }
+        AggiornaWallets(selezionati);
+    }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 
     /**
      * @param args the command line arguments
@@ -595,6 +643,7 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Aggiorna;
+    private javax.swing.JButton Bottone_AggiornaSelezionati;
     private javax.swing.JButton Bottone_InserisciWallet;
     private javax.swing.JButton Bottone_RimuoviWallet;
     private javax.swing.JComboBox<String> ComboBox_Rete;

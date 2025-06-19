@@ -51,7 +51,10 @@
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="Bottone_RimuoviWallet" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="Bottone_RimuoviWallet" max="32767" attributes="0"/>
+                          <Component id="Bottone_AggiornaSelezionati" max="32767" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Aggiorna" min="-2" pref="182" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -74,10 +77,13 @@
                           <Component id="Bottone_RimuoviWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="Label_Rete" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="ComboBox_Rete" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="Label_Rete" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="ComboBox_Rete" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="Bottone_AggiornaSelezionati" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="Bottone_Aggiorna" pref="0" max="32767" attributes="0"/>
@@ -215,6 +221,17 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="Bottone_Aggiorna.setText(&quot;&lt;html&gt;Scarica nuovi movimenti&lt;br&gt;da tutti i Wallet della lista&lt;/html&gt;&quot;);"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_AggiornaSelezionati">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Aggiorna.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Aggiorna Selezionati"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_AggiornaSelezionatiActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

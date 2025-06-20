@@ -2024,7 +2024,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                     //System.out.println(mon[k].MonetaAddress+" aa");
                     //String AddressNoPrezzo=DatabaseH2.GestitiCoingecko_Leggi(AddressMoneta1 + "_" + Rete);
                     String RigaCoingecko[]=DatabaseH2.GestitiCoingecko_LeggiInteraRiga(AddressMoneta[k] + "_" + Rete);
-                    if (RigaCoingecko[0]!=null){
+                    if (RigaCoingecko!=null&&RigaCoingecko[0]!=null){
                         //Se arrivo qua vuol dire che il token è gestito da coingecko
                         //adesso devo veriicare se è gestito anche da CryptoHistory e qualora lo fosse che abbia oltre allo stesso simbolo anche lo stesso nome
                         //se queste situazioni sono soddisfatte allora per quel token utilizzarò i prezzi di cryptohistory anzichè coingecko

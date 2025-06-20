@@ -7,10 +7,7 @@ env:
   VERSIONE: 1.0.43
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -22,7 +19,6 @@ jobs:
         with:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
-          cache: 'maven'
         
       - name: Prepara cartella build con risorse
         run: |
@@ -65,7 +61,6 @@ jobs:
         with:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
-          cache: 'maven'
         
       - name: Copy extra resources
         run: |
@@ -107,7 +102,6 @@ jobs:
         with:
           distribution: graalvm
           java-version: ${{ env.JAVA_VERSION }}
-          cache: maven
 
       - name: Prepare input directory for jpackage
         run: |

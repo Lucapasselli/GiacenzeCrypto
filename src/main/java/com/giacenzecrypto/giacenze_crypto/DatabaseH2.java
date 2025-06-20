@@ -987,7 +987,10 @@ public class DatabaseH2 {
            * @return 
          */
         public static String[] GestitiCoingecko_LeggiInteraRiga(String Gestito) {
+        
         String Risultato[]=new String[3];
+        String base[]=Gestito.split("_");
+        if (base.length<2)return null;
         //System.out.println(Gestito);
         String Rete=Gestito.split("_")[1];
         if (!Rete.equals("SOL"))Gestito=Gestito.toUpperCase();

@@ -68,8 +68,8 @@ jobs:
 
       - name: Prepara build
         run: |
-          mkdir -p build/immagini
-          cp -r immagini/* build/immagini/
+          mkdir -p build/Immagini
+          cp -r Immagini/* build/Immagini/
           cp logo.png GestitiCoincap.csv build/
 
       - name: Build DEB

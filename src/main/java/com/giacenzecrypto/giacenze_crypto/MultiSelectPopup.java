@@ -18,7 +18,7 @@ public class MultiSelectPopup {
     private final List<JCheckBox> checkBoxes = new ArrayList<>();
     private final JButton applyButton;
     private final JButton cancelButton;
-
+    
     private Runnable applyAction = () -> {};
     private Runnable cancelAction = () -> {};
     
@@ -74,7 +74,7 @@ private final List<JCheckBox> currentlyHighlighted = new ArrayList<>();
         cancelButton = new JButton("Annulla");
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);       
 
         window.add(mainPanel);
         window.pack();
@@ -128,7 +128,7 @@ private final List<JCheckBox> currentlyHighlighted = new ArrayList<>();
 public void updateOptions(List<String> allOptions, List<String> selectedOptions) {
     checkBoxes.clear();
     checkBoxPanel.removeAll();
-
+    
     List<String> selected = new ArrayList<>();
     List<String> unselected = new ArrayList<>();
 
@@ -147,7 +147,7 @@ public void updateOptions(List<String> allOptions, List<String> selectedOptions)
             return Double.compare(n1, n2);
         } catch (NumberFormatException e1) {
             try {
-                Double.valueOf(s1);
+                Double.valueOf(s1);                
                 return -1; // s1 è numero, s2 no → s1 prima
             } catch (NumberFormatException e2) {
                 try {
@@ -165,15 +165,15 @@ public void updateOptions(List<String> allOptions, List<String> selectedOptions)
 
     List<String> combined = new ArrayList<>();
     combined.addAll(selected);
-    combined.addAll(unselected);
+    combined.addAll(unselected);   
 
-
+    
    for (String opt : combined) {
     JCheckBox cb = new JCheckBox(opt, selected.contains(opt));
     checkBoxes.add(cb);
     checkBoxPanel.add(cb);
 }
-
+   
 checkBoxPanel.revalidate();
 checkBoxPanel.repaint();
 

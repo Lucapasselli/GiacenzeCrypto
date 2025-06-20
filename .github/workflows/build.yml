@@ -52,45 +52,43 @@ jobs:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
           path: out/windows/${{ env.PROJECT_NAME }}
           
-  build-linux:
+  build-linux-deb:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup GraalVM on Linux
+
+      - name: Installa fakeroot
+        run: sudo apt-get update && sudo apt-get install -y fakeroot
+
+      - name: Setup GraalVM
         uses: actions/setup-java@v4
         with:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
-        
-      - name: Copy extra resources
+
+      - name: Prepara build
         run: |
-            mkdir -p build/Immagini
-            cp -r Immagini/* build/Immagini/
-            cp logo.png build/
-            cp GestitiCoincap.csv build/
-        
-      - name: Build Linux app-image
+          mkdir -p build/immagini
+          cp -r immagini/* build/immagini/
+          cp logo.png GestitiCoincap.csv build/
+
+      - name: Build DEB
         run: |
           jpackage \
-            --type app-image \
+            --type deb \
             --input build \
-            --dest out/linux \
+            --dest out/linux-deb \
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
             --icon logo.ico \
             --app-version $VERSIONE \
             --vendor Luca
-            
-      - name: Debug Linux output
-        run: |
-            echo "Contenuto della cartella generata:"
-            ls -R out/linux/$PROJECT_NAME   
-            
+
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Linux
-          path: out/linux/${{ env.PROJECT_NAME }}
+          name: GiacenzeCrypto_${{ env.VERSIONE }}.deb
+          path: out/linux-deb/*.deb
           
           
   build-macos:

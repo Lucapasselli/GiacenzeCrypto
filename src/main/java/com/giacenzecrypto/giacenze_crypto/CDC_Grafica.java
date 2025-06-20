@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -75,6 +76,7 @@ import javax.swing.JTextField;
 import javax.swing.JWindow;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -158,9 +160,8 @@ private static final long serialVersionUID = 3L;
     //queste 2 variabili servono per gestire il popoup e i filtri su tabella
         public  MultiSelectPopup popup = new MultiSelectPopup(this);
         public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
-         
+        public static Map<JTable, Map<Integer, String>> SommaColonne = new HashMap<>(); 
     public String SplashScreenText= "Caricamento in corso...";    
-
 
 
     
@@ -170,7 +171,8 @@ private static final long serialVersionUID = 3L;
         
     try {    
         //imposto la velocità di comparsa dei tooltip a 100ms invece che 750
-        ToolTipManager.sharedInstance().setInitialDelay(100); 
+        ToolTipManager.sharedInstance().setInitialDelay(100);
+        ToolTipManager.sharedInstance().setDismissDelay(10000); // 10 secondi
             AvviaSplashScreen();
             this.setTitle(Titolo);
             ImageIcon icon = new ImageIcon("logo.png");
@@ -4607,7 +4609,43 @@ private static final long serialVersionUID = 3L;
     Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
     Icon filterIco = new ImageIcon(scaledImag);
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = CDC_Grafica.tableFilters.get(table);
-    table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));  
+    
+  /*  Map<Integer, Double> colSums = new ConcurrentHashMap<>();
+
+// Calcolo asincrono delle somme
+new SwingWorker<Void, Void>() {
+    @Override
+    protected Void doInBackground() {
+        TableModel model = table.getModel();
+        for (int col = 0; col < model.getColumnCount(); col++) {
+            double sum = 0;
+            int numericCount = 0;
+            for (int row = 0; row < model.getRowCount(); row++) {
+                Object val = model.getValueAt(row, col);
+                if (val == null) continue;
+                try {
+                    String s = val.toString().trim();
+                    if (s.isEmpty()) continue;
+                    sum += Double.parseDouble(s);
+                    numericCount++;
+                } catch (NumberFormatException ignored) {}
+            }
+            if (numericCount > 0) {
+                colSums.put(col, sum);
+            }
+        }
+        return null;
+    }
+    @Override
+    protected void done() {
+        // forzo il repaint dell'header per vedere le somme aggiornate
+        table.getTableHeader().repaint();
+    }
+}.execute();*/
+    
+   // table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
+   table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
+
 
 }
 
@@ -4624,8 +4662,6 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
     Tabelle_InizializzaHeader(table);
     JTableHeader header = table.getTableHeader();
-
-
 
     DefaultTableModel model = (DefaultTableModel) table.getModel();
     TableRowSorter<DefaultTableModel> sorter;
@@ -4709,6 +4745,16 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
             }
         }
     });
+    
+    
+    /*    Thread thread;
+            thread = new Thread() {
+                public void run() {
+
+                    Tabelle.Tabelle_getSommeColonne(table);
+                }
+            };
+            thread.start();*/
 }
 
 
@@ -5830,7 +5876,7 @@ JPanel loadingBar = new JPanel() {
         final BigDecimal risultato = somma;
 
         // Aggiorna la JLabel nel thread della GUI
-        SwingUtilities.invokeLater(() -> TransazioniCrypto_text_PlusFiltri.setText("Plusvalenze Filtrate : € " + risultato.toPlainString()));
+        SwingUtilities.invokeLater(() -> TransazioniCrypto_text_PlusFiltri.setText("Plusvalenze Filtrate : € " + Funzioni.formattaBigDecimal(risultato, true)));
 
     }).start();
 }    
@@ -5863,7 +5909,9 @@ JPanel loadingBar = new JPanel() {
         sorter.setRowFilter(RowFilter.andFilter(combinedFilters));
     }
     //nel caso sia la tabella principale filtro le plusvalenze
-    if (table.equals(TransazioniCryptoTabella))TransazioniCrypto_CalcolaPlusvalenzeFiltrate();
+    //if (table.equals(TransazioniCryptoTabella))TransazioniCrypto_CalcolaPlusvalenzeFiltrate();
+    Tabelle.Tabelle_getSommeColonne(table);
+    //System.out.println(table);
 }    
    
       private void CDC_CardWallet_Funzione_Totali_per_tipo_movimento() {

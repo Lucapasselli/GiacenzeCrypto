@@ -6,22 +6,40 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 
 /**
  *
@@ -668,6 +686,61 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
     }
     return values;
 }
+
+    
+    public static void Tabelle_getSommeColonne(JTable table) {
+    // Cattura snapshot sicuro dei dati visibili su EDT
+    SwingUtilities.invokeLater(() -> {
+        int rowCount = table.getRowCount();
+        TableModel model = table.getModel();
+        int colCount = model.getColumnCount();
+        TableRowSorter<?> sorter = null;
+
+        if (table.getRowSorter() instanceof TableRowSorter) {
+            sorter = (TableRowSorter<?>) table.getRowSorter();
+        }
+
+        // Prepara snapshot di indici visibili
+        int[] visibleRows = new int[rowCount];
+        for (int i = 0; i < rowCount; i++) {
+            visibleRows[i] = (sorter != null) ? sorter.convertRowIndexToModel(i) : i;
+        }
+
+        // Avvia calcolo in thread separato
+        new Thread(() -> {
+            Map<Integer, String> valori = new HashMap<>();
+
+            for (int col = 0; col < colCount; col++) {
+                BigDecimal somma = BigDecimal.ZERO;
+
+                for (int modelRow : visibleRows) {
+                    try {
+                        Object val = model.getValueAt(modelRow, col);
+                        if (val != null) {
+                            String strVal = val.toString();
+                            if (Funzioni.Funzioni_isNumeric(strVal, false)) {
+                                somma = somma.add(new BigDecimal(strVal));
+                            }
+                        }
+                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
+                        // Skip invalid/missing rows
+                    }
+                }
+
+                somma = somma.setScale(2, RoundingMode.HALF_UP);
+                String text = somma.compareTo(BigDecimal.ZERO) != 0 ? somma.toPlainString() : "";
+                if (!text.isBlank())text=Funzioni.formattaBigDecimal(somma, true);
+                valori.put(col, text);
+            }
+
+            // Aggiorna mappa e repaint header su EDT
+            SwingUtilities.invokeLater(() -> {
+                CDC_Grafica.SommaColonne.put(table, valori);
+                table.getTableHeader().repaint();
+            });
+        }).start();
+    });
+}
        
        
      public static List<String> Tabelle_getVisibleValuesForColumn(JTable table, int col) {
@@ -685,30 +758,28 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
 }  
        
   
-       
-  
- 
- public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(JTable table, Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters, Icon filterIcon) {
+
+public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
+        JTable table,
+        Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters,
+        Icon filterIcon) {
+
     TableCellRenderer defaultRenderer = table.getTableHeader().getDefaultRenderer();
 
     return (tbl, value, isSelected, hasFocus, row, col) -> {
         JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, col);
         int modelCol = tbl.convertColumnIndexToModel(col);
 
+        // ICONE
         Icon sortIcon = null;
-        RowSorter.SortKey sortKey = null;
         List<? extends RowSorter.SortKey> sortKeys = tbl.getRowSorter().getSortKeys();
         if (!sortKeys.isEmpty()) {
-            RowSorter.SortKey primarySortKey = sortKeys.get(0); // solo la colonna principale
+            RowSorter.SortKey primarySortKey = sortKeys.get(0);
             if (primarySortKey.getColumn() == modelCol) {
                 sortIcon = UIManager.getIcon(primarySortKey.getSortOrder() == SortOrder.ASCENDING
                         ? "Table.ascendingSortIcon"
                         : "Table.descendingSortIcon");
             }
-        }
-
-        if (sortKey != null) {
-            sortIcon = UIManager.getIcon(sortKey.getSortOrder() == SortOrder.ASCENDING ? "Table.ascendingSortIcon" : "Table.descendingSortIcon");
         }
 
         if (activeFilters.containsKey(modelCol)) {
@@ -717,12 +788,56 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
             label.setIcon(sortIcon);
         }
 
-        label.setToolTipText("Tasto destro x filtrare " + Jsoup.parse(tbl.getColumnName(col)).text()); 
+        // Recupera la somma dalla mappa globale
+        Map<Integer, String> colSums = CDC_Grafica.SommaColonne.get(table);
+        String somma = (colSums != null) ? colSums.get(modelCol) : null;
+
+        // Testo header
+        String titolo = table.getColumnName(col);
+
+        if (somma != null&&!somma.isBlank()) {
+            if (!titolo.toLowerCase().startsWith("<html>")) {
+                titolo = "<html>" + titolo + "<br><small style='color:gray'>Somma: " + somma + "</small></html>";
+            } else {
+                        
+                int fine = titolo.toLowerCase().lastIndexOf("</html>");
+                if (fine > 0) {
+                    titolo = titolo.substring(0, fine) + "<br><small style='color:gray'>Somma: " + somma + "</small>" + titolo.substring(fine);
+                } else {
+                    titolo += "<br><small style='color:gray'>Somma: " + somma + "</small>";
+                }
+            }
+        }
+
+        label.setText(titolo);
+        //label.setToolTipText("Tasto destro x filtrare " + Jsoup.parse(tbl.getColumnName(col)).text());
+        label.setToolTipText("Tasto destro x filtrare \n\n" + htmlToTextWithLineBreaks(label.getText().replace("Somma:", "<br>Somma:")));
+
         return label;
     };
 }
- 
 
- 
+
+public static String htmlToTextWithLineBreaks(String html) {
+    Document doc = Jsoup.parse(html);
+    StringBuilder sb = new StringBuilder();
+    for (Node node : doc.body().childNodes()) {
+        processNode(node, sb);
+    }
+    return sb.toString().trim();
+}
+
+private static void processNode(Node node, StringBuilder sb) {
+    if (node instanceof TextNode) {
+        sb.append(((TextNode) node).text());
+    } else if (node.nodeName().equals("br")) {
+        sb.append("\n");
+    } else {
+        for (Node child : node.childNodes()) {
+            processNode(child, sb);
+        }
+    }
+}
+
  
 }

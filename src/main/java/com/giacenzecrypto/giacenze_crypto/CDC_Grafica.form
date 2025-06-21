@@ -294,15 +294,12 @@
                                       <Component id="TransazioniCrypto_Bottone_Importa" min="-2" pref="150" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_InserisciWallet" min="-2" pref="150" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="351" max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" min="-2" pref="558" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_Salva" min="-2" pref="119" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="TransazioniCrypto_Bottone_Annulla" pref="118" max="32767" attributes="0"/>
-                                          <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" max="32767" attributes="0"/>
-                                      </Group>
+                                      <Component id="TransazioniCrypto_Bottone_Annulla" min="-2" pref="122" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Component id="jSeparator10" min="-2" pref="20" max="-2" attributes="0"/>
@@ -338,17 +335,16 @@
                                               <Component id="TransazioniCrypto_CheckBox_EscludiTokenScam" min="-2" pref="304" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <EmptySpace max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
                                               <Component id="TransazioniCryptoFiltro_Text" min="-2" pref="175" max="-2" attributes="0"/>
-                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                              <EmptySpace max="32767" attributes="0"/>
+                                              <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="1" attributes="0">
-                                              <EmptySpace min="-2" pref="129" max="-2" attributes="0"/>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                               <Component id="jLabel28" min="-2" pref="321" max="-2" attributes="0"/>
-                                              <EmptySpace pref="26" max="32767" attributes="0"/>
-                                              <Component id="TransazioniCrypto_text_PlusFiltri" min="-2" pref="238" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                   </Group>
@@ -370,15 +366,15 @@
                           <Component id="TransazioniCrypto_Bottone_Annulla" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jSeparator9" min="-2" pref="10" max="-2" attributes="0"/>
-                          <Component id="jLabel27" min="-2" max="-2" attributes="0"/>
-                          <Component id="jSeparator10" min="-2" pref="10" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="jSeparator9" min="-2" pref="10" max="-2" attributes="0"/>
+                                  <Component id="jLabel27" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jSeparator10" min="-2" pref="10" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="TransazioniCrypto_ComboBox_FiltroWallet" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="TransazioniCrypto_Label_FiltroWallet" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -387,21 +383,17 @@
                                   <Component id="TransazioniCrypto_Label_Filtro" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="TransazioniCryptoFiltro_Text" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="TransazioniCrypto_CheckBox_EscludiTI" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="TransazioniCrypto_CheckBox_EscludiTokenScam" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel28" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="TransazioniCrypto_text_PlusFiltri" min="-2" pref="23" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="TransazioniCrypto_Bottone_AzzeraFiltri" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="TransazioniCrypto_CheckBox_VediSenzaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_CheckBox_EscludiTI" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TransazioniCrypto_CheckBox_EscludiTokenScam" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel28" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Component id="TransazioniCrypto_ScrollPane" pref="369" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -1017,6 +1009,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="TransazioniCrypto_Bottone_AzzeraFiltri">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/Images/24_ImbutoX.png"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Azzera Filtri"/>
               </Properties>
               <Events>
@@ -1056,14 +1051,6 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed"/>
               </Events>
-            </Component>
-            <Component class="javax.swing.JLabel" name="TransazioniCrypto_text_PlusFiltri">
-              <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Segoe UI" size="14" style="1"/>
-                </Property>
-                <Property name="horizontalAlignment" type="int" value="4"/>
-              </Properties>
             </Component>
             <Component class="javax.swing.JSeparator" name="jSeparator9">
             </Component>

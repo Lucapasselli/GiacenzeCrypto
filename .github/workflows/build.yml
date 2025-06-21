@@ -22,9 +22,10 @@ jobs:
           
       - name: Estrai versione dal pom.xml
         id: get-version
+        shell: pwsh
         run: |
-            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+          $version = & mvn help:evaluate -Dexpression=project.version -q -DforceStdout
+          echo "VERSIONE=$version" >> $env:GITHUB_ENV
           
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests

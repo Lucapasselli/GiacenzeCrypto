@@ -4,7 +4,6 @@ env:
   PROJECT_NAME: Giacenze_Crypto
   JAVA_VERSION: 21
   BUILD_DIR: build
-  VERSIONE: 1.0.43
 
 on:
   workflow_dispatch:
@@ -21,16 +20,23 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
           
+      - name: Estrai versione dal pom.xml
+        id: get-version
+        run: |
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+          
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests
         
       - name: Prepara cartella build con risorse
+        shell: pwsh
         run: |
             mkdir -p build/immagini
             cp -r immagini/* build/immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/
-            cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
+            cp target/Giacenze_Crypto-$env:VERSIONE-jar-with-dependencies.jar build/Giacenze_Crypto.jar
         
       - name: Build Windows app-image
         shell: pwsh
@@ -67,6 +73,12 @@ jobs:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
+          
+      - name: Estrai versione dal pom.xml
+        id: get-version
+        run: |
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
       
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests  
@@ -122,6 +134,12 @@ jobs:
           distribution: graalvm
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
+          
+      - name: Estrai versione dal pom.xml
+        id: get-version
+        run: |
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
           
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests

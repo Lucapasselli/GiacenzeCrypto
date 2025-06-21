@@ -52,7 +52,7 @@ jobs:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
           path: out/windows/${{ env.PROJECT_NAME }}
           
-    build-linux:
+  build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

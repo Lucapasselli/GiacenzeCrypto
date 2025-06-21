@@ -30,7 +30,7 @@ jobs:
             cp -r immagini/* build/immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/
-            cp target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
+            cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
         
       - name: Build Windows app-image
         shell: pwsh
@@ -80,7 +80,7 @@ jobs:
             cp -r Immagini/* build/Immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/
-            cp target/*-jar-with-dependencies.jar build/
+            cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
         
       - name: Build Linux app-image
         run: |
@@ -132,7 +132,7 @@ jobs:
           cp -r immagini/* build/Immagini/
           cp logo.png build/
           cp GestitiCoincap.csv build/
-          cp target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
+          cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
 
       - name: Build macOS app-image
         run: |

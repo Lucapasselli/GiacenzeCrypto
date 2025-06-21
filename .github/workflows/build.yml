@@ -20,6 +20,9 @@ jobs:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
+          
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
         
       - name: Prepara cartella build con risorse
         run: |
@@ -64,6 +67,9 @@ jobs:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
+      
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests  
         
       - name: Copy extra resources
         run: |
@@ -71,7 +77,7 @@ jobs:
             cp -r Immagini/* build/Immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/
-            p target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
+            cp target/*-jar-with-dependencies.jar build/
         
       - name: Build Linux app-image
         run: |
@@ -113,6 +119,9 @@ jobs:
           distribution: graalvm
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
+          
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
 
       - name: Prepare input directory for jpackage
         run: |
@@ -120,7 +129,7 @@ jobs:
           cp -r immagini/* build/Immagini/
           cp logo.png build/
           cp GestitiCoincap.csv build/
-          p target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
+          cp target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
 
       - name: Build macOS app-image
         run: |

@@ -19,6 +19,7 @@ jobs:
         with:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
         
       - name: Prepara cartella build con risorse
         run: |
@@ -26,6 +27,7 @@ jobs:
             cp -r immagini/* build/immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/
+            cp target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
         
       - name: Build Windows app-image
         shell: pwsh
@@ -69,6 +71,7 @@ jobs:
             cp -r Immagini/* build/Immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/
+            p target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
         
       - name: Build Linux app-image
         run: |
@@ -88,21 +91,6 @@ jobs:
             mv "out/linux/$PROJECT_NAME/lib/app/Immagini" "out/linux/$PROJECT_NAME/bin/Immagini"
             mv "out/linux/$PROJECT_NAME/lib/app/logo.png" "out/linux/$PROJECT_NAME/bin/logo.png"
             mv "out/linux/$PROJECT_NAME/lib/app/GestitiCoincap.csv" "out/linux/$PROJECT_NAME/bin/GestitiCoincap.csv"
-            
-      - name: Create Linux launcher (.desktop)
-        run: |
-            LAUNCHER_DIR="out/linux/$PROJECT_NAME"
-            cat <<EOF > "$LAUNCHER_DIR/$PROJECT_NAME.desktop"
-            [Desktop Entry]
-            Name=$PROJECT_NAME
-            Exec=\$PWD/$PROJECT_NAME
-            Icon=\$PWD/logo.png
-            Type=Application
-            Categories=Utility;
-            Terminal=false
-            EOF
-
-            chmod +x "$LAUNCHER_DIR/$PROJECT_NAME.desktop"
             
       - name: Debug Linux output
         run: |
@@ -124,6 +112,7 @@ jobs:
         with:
           distribution: graalvm
           java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
 
       - name: Prepare input directory for jpackage
         run: |
@@ -131,6 +120,7 @@ jobs:
           cp -r immagini/* build/Immagini/
           cp logo.png build/
           cp GestitiCoincap.csv build/
+          p target/Giacenze_Crypto-$VERSIONE-jar-with-dependencies.jar build/
 
       - name: Build macOS app-image
         run: |

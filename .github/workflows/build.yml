@@ -52,44 +52,67 @@ jobs:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
           path: out/windows/${{ env.PROJECT_NAME }}
           
-  build-linux-deb:
+    build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Installa fakeroot
-        run: sudo apt-get update && sudo apt-get install -y fakeroot
-
-      - name: Setup GraalVM
+      - name: Setup GraalVM on Linux
         uses: actions/setup-java@v4
         with:
           distribution: 'graalvm'
           java-version: ${{ env.JAVA_VERSION }}
-
-      - name: Prepara build
+          cache: 'maven'
+        
+      - name: Copy extra resources
         run: |
-          mkdir -p build/Immagini
-          cp -r Immagini/* build/Immagini/
-          cp logo.png GestitiCoincap.csv build/
-
-      - name: Build DEB
+            mkdir -p build/Immagini
+            cp -r Immagini/* build/Immagini/
+            cp logo.png build/
+            cp GestitiCoincap.csv build/
+        
+      - name: Build Linux app-image
         run: |
           jpackage \
-            --type deb \
+            --type app-image \
             --input build \
-            --dest out/linux-deb \
+            --dest out/linux \
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
             --icon logo.ico \
             --app-version $VERSIONE \
-            --vendor Luca \
-            --linux-shortcut
+            --vendor Luca
+            
+      - name: Move resources to root (Linux)
+        run: |
+            mv "out/linux/$PROJECT_NAME/app/Immagini" "out/linux/$PROJECT_NAME/Immagini"
+            mv "out/linux/$PROJECT_NAME/app/logo.png" "out/linux/$PROJECT_NAME/logo.png"
+            mv "out/linux/$PROJECT_NAME/app/GestitiCoincap.csv" "out/linux/$PROJECT_NAME/GestitiCoincap.csv"
+            
+      - name: Create Linux launcher (.desktop)
+        run: |
+            LAUNCHER_DIR="out/linux/$PROJECT_NAME"
+            cat <<EOF > "$LAUNCHER_DIR/$PROJECT_NAME.desktop"
+            [Desktop Entry]
+            Name=$PROJECT_NAME
+            Exec=\$PWD/$PROJECT_NAME
+            Icon=\$PWD/logo.png
+            Type=Application
+            Categories=Utility;
+            Terminal=false
+            EOF
 
+            chmod +x "$LAUNCHER_DIR/$PROJECT_NAME.desktop"
+            
+      - name: Debug Linux output
+        run: |
+            echo "Contenuto della cartella generata:"
+            ls -R out/linux/$PROJECT_NAME   
+            
       - uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta.deb
-          path: out/linux-deb/*.deb
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Linux
+          path: out/linux/${{ env.PROJECT_NAME }}
           
           
   build-macos:

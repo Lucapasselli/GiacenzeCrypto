@@ -6,20 +6,15 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -27,12 +22,9 @@ import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -59,7 +51,8 @@ public class Tabelle {
     static String Rosso="red";
     static String Verde="green";
 
-
+    //Questo serve per la funzione get SommeColonne e per fare in modo che il risultato dato sia l'ultimo eseguito
+    private static final Map<JTable, AtomicInteger> versioniSomma = new ConcurrentHashMap<>();
 
 
     
@@ -688,7 +681,7 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
 }
 
     
-    public static void Tabelle_getSommeColonne(JTable table) {
+    public static void Tabelle_getSommeColonne2(JTable table) {
     // Cattura snapshot sicuro dei dati visibili su EDT
     SwingUtilities.invokeLater(() -> {
         int rowCount = table.getRowCount();
@@ -741,6 +734,63 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
         }).start();
     });
 }
+    
+    public static void Tabelle_getSommeColonne(JTable table) {
+    SwingUtilities.invokeLater(() -> {
+        int rowCount = table.getRowCount();
+        TableModel model = table.getModel();
+        int colCount = model.getColumnCount();
+        TableRowSorter<?> sorter = (table.getRowSorter() instanceof TableRowSorter)
+            ? (TableRowSorter<?>) table.getRowSorter()
+            : null;
+
+        int[] visibleRows = new int[rowCount];
+        for (int i = 0; i < rowCount; i++) {
+            visibleRows[i] = (sorter != null) ? sorter.convertRowIndexToModel(i) : i;
+        }
+
+        // ✅ Prendi o crea il contatore versione per la tabella
+        AtomicInteger versione = versioniSomma.computeIfAbsent(table, t -> new AtomicInteger());
+        int versioneCorrente = versione.incrementAndGet();
+
+        new Thread(() -> {
+            Map<Integer, String> valori = new HashMap<>();
+
+            for (int col = 0; col < colCount; col++) {
+                BigDecimal somma = BigDecimal.ZERO;
+
+                for (int modelRow : visibleRows) {
+                    try {
+                        Object val = model.getValueAt(modelRow, col);
+                        if (val != null) {
+                            String strVal = val.toString();
+                            if (Funzioni.Funzioni_isNumeric(strVal, false)) {
+                                somma = somma.add(new BigDecimal(strVal));
+                            }
+                        }
+                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
+                    }
+                }
+
+                somma = somma.setScale(2, RoundingMode.HALF_UP);
+                String text = somma.compareTo(BigDecimal.ZERO) != 0 ? somma.toPlainString() : "";
+                if (!text.isBlank()) text = Funzioni.formattaBigDecimal(somma, true);
+                valori.put(col, text);
+            }
+
+            // ✅ Solo il thread più recente per quella tabella aggiorna
+            SwingUtilities.invokeLater(() -> {
+                AtomicInteger attuale = versioniSomma.get(table);
+                if (attuale != null && attuale.get() == versioneCorrente) {
+                    CDC_Grafica.SommaColonne.put(table, valori);
+                    table.getTableHeader().repaint();
+                }
+            });
+        }).start();
+    });
+}
+
+
        
        
      public static List<String> Tabelle_getVisibleValuesForColumn(JTable table, int col) {

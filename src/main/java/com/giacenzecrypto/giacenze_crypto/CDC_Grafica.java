@@ -63,7 +63,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -76,7 +75,6 @@ import javax.swing.JTextField;
 import javax.swing.JWindow;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -1841,7 +1839,7 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
         }
-        GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 32));
+        GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));
 
         GiacenzeaData_Totali_Label.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         GiacenzeaData_Totali_Label.setText("TOTALE in EURO : ");
@@ -4647,17 +4645,6 @@ new SwingWorker<Void, Void>() {
 
 private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
     
-     /*   DefaultTableModel model = (DefaultTableModel) DepositiPrelievi_Tabella.getModel();
-    TableRowSorter<DefaultTableModel> sorter;
-    if (DepositiPrelievi_Tabella.getRowSorter() instanceof TableRowSorter) {
-        sorter = (TableRowSorter<DefaultTableModel>) DepositiPrelievi_Tabella.getRowSorter();
-    } else {
-        sorter = new TableRowSorter<>(model);
-        DepositiPrelievi_Tabella.setRowSorter(sorter);
-    }  
-    Tabelle_applyCombinedFilter(DepositiPrelievi_Tabella, sorter, "");*/
-    
-    
     //Inizializza tableFilters se non esiste
     tableFilters.putIfAbsent(table, new HashMap<>());
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
@@ -4673,9 +4660,8 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
         sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
     }
-
-   // Set<Integer> filteredColumns = new HashSet<>(); // Traccia colonne filtrate
-
+    String filtrot = (filtro != null) ? filtro.getText() : "";
+    Tabelle_applyCombinedFilter(table, sorter, filtrot);
 
 
     header.addMouseListener(new MouseAdapter() {
@@ -5912,7 +5898,7 @@ JPanel loadingBar = new JPanel() {
     //nel caso sia la tabella principale filtro le plusvalenze
     //if (table.equals(TransazioniCryptoTabella))TransazioniCrypto_CalcolaPlusvalenzeFiltrate();
     Tabelle.Tabelle_getSommeColonne(table);
-    //System.out.println(table);
+   // System.out.println("Apply filter "+table);
 }    
    
       private void CDC_CardWallet_Funzione_Totali_per_tipo_movimento() {
@@ -12273,11 +12259,10 @@ try {
         if (CompiloTabella) {
             Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
         }       
-        DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_Tabella.getModel();
+        DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_Tabella.getModel();  
         if (CompiloTabella) {
             TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
-            GiacenzeaData_Tabella.setRowSorter(sorter);
-            Tabelle_FiltroColonne(GiacenzeaData_Tabella,null);
+            GiacenzeaData_Tabella.setRowSorter(sorter);            
             Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
         }
         //Fase 2 Preparazione thead
@@ -12454,6 +12439,7 @@ try {
 
         thread.start();
         progress.setVisible(true);
+        Tabelle_FiltroColonne(GiacenzeaData_Tabella,null);
         return TabellaToken;
     }
   
@@ -13000,8 +12986,8 @@ try {
         Mappa_Wallet.clear();
 
         //da verificare se va bene, serve per evitare problemi di sorting nel caso in cui la richiesta arrivi da un thread
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(TransazioniCryptoTabella.getModel());
-        TransazioniCryptoTabella.setRowSorter(sorter);
+        /*TableRowSorter<TableModel> sorter = new TableRowSorter<>(TransazioniCryptoTabella.getModel());
+        TransazioniCryptoTabella.setRowSorter(sorter);*/
 
         Map<String, String> Mappa_NomiTokenPersonalizzati = DatabaseH2.RinominaToken_LeggiTabella();
         
@@ -13146,13 +13132,13 @@ try {
             Bottone_Errori.setText("Errori ("+err+")");
 
         }
-        Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
+      //  Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);
         //Adesso aggiorno i componenti delle funzioni secondarie
         Funzione_AggiornaComboBox();
         
         //Aggiungo i filtri sulla colonna
+       // 
         Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text);
-        
      
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);

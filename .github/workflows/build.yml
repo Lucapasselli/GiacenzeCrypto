@@ -71,6 +71,9 @@ jobs:
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests  
         
+      - name: Elenca file generati in target/
+        run: ls -lh target/
+        
       - name: Copy extra resources
         run: |
             mkdir -p build/Immagini

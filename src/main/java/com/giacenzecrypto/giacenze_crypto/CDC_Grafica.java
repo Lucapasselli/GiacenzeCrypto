@@ -8065,7 +8065,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void TransazioniCryptoTabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoTabellaMouseReleased
         // TODO add your handling code here:
                // Funzioni.simulaTastoSinistro();
-       
+       //System.out.println("Mouse Rilasciato su tabella principale");
        // int righeSelezionate[]=TransazioniCryptoTabella.getSelectedRows();
        Funzioni_RichiamaPopUpdaTabella(TransazioniCryptoTabella,evt,0);
         
@@ -8085,7 +8085,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             }
             
         }
-         if (rigaSelezionata != -1) {
+         if (rigaSelezionata != -1) {            
             int rigaselezionata;
             if (tabella.getRowSorter()!=null)rigaselezionata = tabella.getRowSorter().convertRowIndexToModel(tabella.getSelectedRow());
             else rigaselezionata = tabella.convertRowIndexToModel(tabella.getSelectedRow());

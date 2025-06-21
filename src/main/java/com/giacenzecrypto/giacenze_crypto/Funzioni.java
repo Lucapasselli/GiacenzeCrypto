@@ -16,6 +16,7 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -192,7 +193,8 @@ public class Funzioni {
               
               
     public static void PopUpMenu(Component c, java.awt.event.MouseEvent e, JPopupMenu pop,String ID) {
-        if (e.isPopupTrigger()) {
+        //if (e.isPopupTrigger()) {
+            if (e.getButton() == MouseEvent.BUTTON3) {
             //Component focusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
             //salvo l'ID passato dalla funzione, servirà nel caso in cui prema su alcune funzioni
             CDC_Grafica.PopUp_IDTrans=ID;

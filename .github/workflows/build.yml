@@ -21,11 +21,12 @@ jobs:
           cache: 'maven'
           
       - name: Estrai versione dal pom.xml
-        id: get-version
         shell: pwsh
         run: |
-          $version = & mvn help:evaluate -Dexpression=project.version -q -DforceStdout
-          echo "VERSIONE=$version" >> $env:GITHUB_ENV
+            $ErrorActionPreference = "Continue"
+            $version = & mvn -B help:evaluate -Dexpression=project.version -q -DforceStdout
+            echo "Versione estratta: $version"
+            echo "VERSIONE=$version" >> $env:GITHUB_ENV
           
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests

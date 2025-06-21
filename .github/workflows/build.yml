@@ -85,9 +85,9 @@ jobs:
             
       - name: Move resources to root (Linux)
         run: |
-            mv "out/linux/$PROJECT_NAME/app/Immagini" "out/linux/$PROJECT_NAME/Immagini"
-            mv "out/linux/$PROJECT_NAME/app/logo.png" "out/linux/$PROJECT_NAME/logo.png"
-            mv "out/linux/$PROJECT_NAME/app/GestitiCoincap.csv" "out/linux/$PROJECT_NAME/GestitiCoincap.csv"
+            mv "out/linux/$PROJECT_NAME/lib/app/Immagini" "out/linux/$PROJECT_NAME/bin/Immagini"
+            mv "out/linux/$PROJECT_NAME/lib/app/logo.png" "out/linux/$PROJECT_NAME/bin/logo.png"
+            mv "out/linux/$PROJECT_NAME/lib/app/GestitiCoincap.csv" "out/linux/$PROJECT_NAME/bin/GestitiCoincap.csv"
             
       - name: Create Linux launcher (.desktop)
         run: |

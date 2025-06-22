@@ -23,8 +23,7 @@ jobs:
       - name: Estrai versione dal pom.xml
         shell: pwsh
         run: |
-            $ErrorActionPreference = "Continue"
-            $version = & mvn -B help:evaluate -Dexpression=project.version -q -DforceStdout
+            $version = & mvn -B help:evaluate -Dexpression=project.version -q -DforceStdout | Select-String '^[0-9]+\.[0-9]+(\.[0-9]+)?$'
             echo "Versione estratta: $version"
             echo "VERSIONE=$version" >> $env:GITHUB_ENV
           

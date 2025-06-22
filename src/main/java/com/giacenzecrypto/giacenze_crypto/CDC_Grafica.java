@@ -7061,8 +7061,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
             //Altrimenti cambio il prezzo sulla transazione
             String ID;
-        if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
-            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            int rigaselezionata=Tabelle.getSelectedModelRow(RW_Tabella_Dettagli);
+        if (rigaselezionata >= 0) {
+
             //String GruppoWalletInizio=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
             //String GruppoWalletFine=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
             String GruppoWallet;
@@ -7198,10 +7199,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
             //Altrimenti cambio il prezzo sulla transazione
             //String ID;
-        if (RT_Tabella_Principale.getSelectedRow()>=0 && RT_Tabella_DettaglioMonete.getSelectedRow() >= 0) {
+            int rigaselezionata=Tabelle.getSelectedModelRow(RT_Tabella_DettaglioMonete);
+            int rigaTabellaPrincipale=Tabelle.getSelectedModelRow(RT_Tabella_Principale);
+        if (rigaselezionata>=0 && rigaTabellaPrincipale >= 0) {
             //int rigaselezionata = RT_Tabella_DettaglioMonete.getSelectedRow();
-            int rigaselezionata = RT_Tabella_DettaglioMonete.getRowSorter().convertRowIndexToModel(RT_Tabella_DettaglioMonete.getSelectedRow());
-            int rigaTabellaPrincipale=RT_Tabella_Principale.getSelectedRow();
             String Anno=RT_Tabella_Principale.getModel().getValueAt(rigaTabellaPrincipale, 0).toString();
             //String GruppoWalletInizio=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
             //String GruppoWalletFine=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
@@ -7409,11 +7410,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
 
     private void GiacenzeaData_Funzione_SistemaQta() {
-        if (GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow() >= 0) {
-            int scelta=0;
+        int rigaselezionata=Tabelle.getSelectedModelRow(GiacenzeaData_TabellaDettaglioMovimenti);
+        if (rigaselezionata >= 0) {
+            int scelta;
             int rigaselezionataTabPrincipale = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String TipoMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionataTabPrincipale, 3).toString();
-            int rigaselezionata = GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow();
             String IDTrans = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 8).toString();
             String GiacenzaAttualeS = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
             String Moneta = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 2).toString();
@@ -7421,7 +7422,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             if (GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 3) != null) {
                 AddressMoneta = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 3).toString();
             }
-            long DataRiferimento = 0;
+            long DataRiferimento;
             BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
             BigDecimal GiacenzaVoluta = new BigDecimal(0);
             BigDecimal QtaNuovoMovimento;
@@ -8997,9 +8998,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //3a-Dare la possibilità di correggerlo o eventualmente identificarlo come token scam, in quel caso varrà sempre zero ma non verrà segnalato come errore
         
          //Punto 1   
-           if (RW_Tabella_Dettagli.getSelectedRow() >= 0) {
+           int rigaselezionata=Tabelle.getSelectedModelRow(RW_Tabella_Dettagli);
+           if (rigaselezionata >= 0) {
 
-            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
             //int rigaselezionata2 = RW_Tabella.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             //Punto 2
@@ -9108,7 +9109,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void RW_Bottone_IdentificaScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Bottone_IdentificaScamActionPerformed
         try {
             // TODO add your handling code here:
-            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            int rigaselezionata=Tabelle.getSelectedModelRow(RW_Tabella_Dettagli);
             //   String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString();
             JOptionPane.showConfirmDialog(this, "Si verrà ora reindirizzati alla funzione GiacenzeaData\nIdentificare i token SCAM per correggere l'RW!",
                     "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
@@ -9604,7 +9605,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     }
                     righeQuadroStampate++;
                     stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>"); 
-                    if (PagaBollo.equalsIgnoreCase("SI")&&(GG.equals("365")||GG.equals("366")))GG="";
+                    if (PagaBollo.equalsIgnoreCase("SI")&&
+                            (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()||
+                            RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()))GG="";
                     else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
                     if (righeQuadroStampate==1)stampa.AggiungiQuadroW(Statiche.pathImmagini+"QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
                     else stampa.AggiungiQuadroW(Statiche.pathImmagini+"QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
@@ -10369,8 +10372,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     //Punto 2a
                     AnalisiCrypto.setSelectedComponent(GiacenzeaData);
                     //Punto 2b
-                    int rigaselezionataPrincipale=RT_Tabella_Principale.getSelectedRow();
-                    int rigaselezionataDettaglio=RT_Tabella_DettaglioMonete.getRowSorter().convertRowIndexToModel(RT_Tabella_DettaglioMonete.getSelectedRow());
+                    int rigaselezionataDettaglio=Tabelle.getSelectedModelRow(RT_Tabella_DettaglioMonete);
+                    int rigaselezionataPrincipale=Tabelle.getSelectedModelRow(RT_Tabella_Principale);
                     //Questo se non è l'anno attuale
                     String Anno=RT_Tabella_Principale.getModel().getValueAt(rigaselezionataPrincipale, 0).toString();
                     String DataFineRW=Anno+"-12-31";

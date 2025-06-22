@@ -577,7 +577,16 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
     // Restituisci la tabella
     return table;
 }    
-       
+      
+
+
+public static int getSelectedModelRow(JTable table) {
+    int viewRow = table.getSelectedRow();
+    if (viewRow == -1) {
+        return -1; // Nessuna riga selezionata
+    }
+    return table.convertRowIndexToModel(viewRow);
+}
        
        
            public static JTable ColoraTabellaEvidenzaRigheErrore(final JTable table) {

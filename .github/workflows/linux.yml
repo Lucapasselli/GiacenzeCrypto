@@ -116,8 +116,7 @@ jobs:
             --linux-shortcut \
             --linux-menu-group "Utility" \
             --linux-package-name giacenzecrypto \
-            --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>" \
-            --linux-deb-priority optional
+            --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
 
       - name: Debug Debian package output
         run: |

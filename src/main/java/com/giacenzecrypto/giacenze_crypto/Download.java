@@ -67,7 +67,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
      //   finestra=c;
       //  finestra.setEnabled(false);
-         ImageIcon icon = new ImageIcon(Giacenze_Crypto.PathRisorse+"logo.png");
+         ImageIcon icon = new ImageIcon(Statiche.pathRisorse+"logo.png");
          this.setIconImage(icon.getImage());
          initComponents();
          Download.FineThread=false;

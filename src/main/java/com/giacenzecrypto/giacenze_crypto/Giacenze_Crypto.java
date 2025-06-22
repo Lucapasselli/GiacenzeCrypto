@@ -17,16 +17,17 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author luca.passelli
  */
 public class Giacenze_Crypto {
-    public static String PathRisorse="";
+    
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException {
+        //String PathRisorse="";
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--risorse") && i + 1 < args.length) {
-                PathRisorse = args[i + 1];
+                Statiche.setPathRisorse(args[i + 1]);
             }
         }
-        System.out.println("Path risorse : " + PathRisorse);
+        System.out.println("Path risorse : " + Statiche.pathRisorse);
                 
         
         if (!DatabaseH2.CreaoCollegaDatabase()){

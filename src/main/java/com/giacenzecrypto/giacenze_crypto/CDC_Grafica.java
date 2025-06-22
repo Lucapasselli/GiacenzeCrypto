@@ -173,7 +173,7 @@ private static final long serialVersionUID = 3L;
         ToolTipManager.sharedInstance().setDismissDelay(10000); // 10 secondi
             AvviaSplashScreen();
             this.setTitle(Titolo);
-            ImageIcon icon = new ImageIcon(Giacenze_Crypto.PathRisorse+"logo.png");
+            ImageIcon icon = new ImageIcon(Statiche.pathRisorse+"logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
@@ -4772,7 +4772,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
 
             {
                 try {
-                    img = ImageIO.read(new File(Giacenze_Crypto.PathRisorse+"logo.png"));
+                    img = ImageIO.read(new File(Statiche.pathRisorse+"logo.png"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -9606,8 +9606,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>"); 
                     if (PagaBollo.equalsIgnoreCase("SI")&&(GG.equals("365")||GG.equals("366")))GG="";
                     else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
-                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW(Giacenze_Crypto.PathRisorse+"Immagini/QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
-                    else stampa.AggiungiQuadroW(Giacenze_Crypto.PathRisorse+"Immagini/QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW(Statiche.pathImmagini+"QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    else stampa.AggiungiQuadroW(Statiche.pathImmagini+"QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
 
                 }
             }
@@ -9650,8 +9650,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     
                                 //Stampa Quadro RW
-            String immagineRW=Giacenze_Crypto.PathRisorse+"Immagini/QuadroRW_2023.jpg";
-            if (anno==2024)immagineRW=Giacenze_Crypto.PathRisorse+"Immagini/QuadroRW_2024.jpg";
+            String immagineRW=Statiche.pathImmagini+"QuadroRW_2023.jpg";
+            if (anno==2024)immagineRW=Statiche.pathImmagini+"QuadroRW_2024.jpg";
             stampa.NuovaPagina();
            // stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
@@ -11384,7 +11384,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     //Stampa Quadro T
             stampa.NuovaPagina();
-            String immagineT=Giacenze_Crypto.PathRisorse+"Immagini/QuadroT_2024.jpg";
+            String immagineT=Statiche.pathImmagini+"QuadroT_2024.jpg";
             //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
 
 
@@ -11426,7 +11426,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     
                     stampa.NuovaPagina();
-                    String immagineRT=Giacenze_Crypto.PathRisorse+"Immagini/QuadroRT_2024.jpg";
+                    String immagineRT=Statiche.pathImmagini+"QuadroRT_2024.jpg";
                     stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     
                     /*

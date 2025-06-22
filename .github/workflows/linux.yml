@@ -89,6 +89,9 @@ jobs:
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "VERSIONE=$VERSION" >> $GITHUB_ENV
 
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests  
+
       - name: Copy build artifacts and resources
         run: |
           mkdir -p build/Immagini

@@ -115,7 +115,7 @@ jobs:
             --vendor Luca \
             --linux-shortcut \
             --linux-menu-group "Utility" \
-            --linux-package-name giacenzecrypto \
+            --linux-package-name giacenze-crypto \
             --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
 
       - name: Debug Debian package output

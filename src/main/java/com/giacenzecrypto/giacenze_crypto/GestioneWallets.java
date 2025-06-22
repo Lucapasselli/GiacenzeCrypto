@@ -53,7 +53,7 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     public boolean TabellaDaAggiornare=false;
     public GestioneWallets() {
-        ImageIcon icon = new ImageIcon("logo.png");
+        ImageIcon icon = new ImageIcon(Giacenze_Crypto.PathRisorse+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
 

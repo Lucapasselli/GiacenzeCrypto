@@ -1,0 +1,72 @@
+name: Build multi-platform app-image
+
+env:
+  PROJECT_NAME: Giacenze_Crypto
+  JAVA_VERSION: 21
+  BUILD_DIR: build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup GraalVM on Windows
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'graalvm'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+          
+      - name: Estrai versione dal pom.xml
+        shell: pwsh
+        run: |
+            [xml]$pom = Get-Content pom.xml
+            $version = $pom.project.version
+            if (-not $version) {
+            Write-Error "Versione non trovata nel pom.xml"
+            exit 1
+            }
+            Write-Host "Versione estratta: $version"
+            echo "VERSIONE=$version" >> $env:GITHUB_ENV
+          
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
+        
+      - name: Prepara cartella build con risorse
+        shell: pwsh
+        run: |
+            mkdir -p build/immagini
+            cp -r immagini/* build/immagini/
+            cp logo.png build/
+            cp GestitiCoincap.csv build/
+            cp target/Giacenze_Crypto-$env:VERSIONE-jar-with-dependencies.jar build/Giacenze_Crypto.jar
+        
+      - name: Build Windows app-image
+        shell: pwsh
+        run: |
+          jpackage `
+            --type app-image `
+            --input build `
+            --dest out/windows `
+            --name $env:PROJECT_NAME `
+            --main-jar Giacenze_Crypto.jar `
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --arguments "--risorse app/" `
+            --icon logo.ico `
+            --app-version $env:VERSIONE `
+            --vendor Luca
+          
+    #  - name: Move resources to root (Windows)
+    #    run: |
+    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/immagini" -Destination "out/windows/$env:PROJECT_NAME/immagini"
+    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/logo.png" -Destination "out/windows/$env:PROJECT_NAME/logo.png"
+    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/GestitiCoincap.csv" -Destination "out/windows/$env:PROJECT_NAME/GestitiCoincap.csv"
+            
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
+          path: out/windows/${{ env.PROJECT_NAME }}
+          

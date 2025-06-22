@@ -1,0 +1,72 @@
+name: Build multi-platform app-image
+
+env:
+  PROJECT_NAME: Giacenze_Crypto
+  JAVA_VERSION: 21
+  BUILD_DIR: build
+
+on:
+  workflow_dispatch:
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup GraalVM on Linux
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'graalvm'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+          
+      - name: Estrai versione dal pom.xml
+        id: get-version
+        run: |
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+      
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests  
+        
+      - name: Elenca file generati in target/
+        run: ls -lh target/
+        
+      - name: Copy extra resources
+        run: |
+            mkdir -p build/Immagini
+            cp -r Immagini/* build/Immagini/
+            cp logo.png build/
+            cp GestitiCoincap.csv build/
+            cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
+        
+      - name: Build Linux app-image
+        run: |
+          jpackage \
+            --type app-image \
+            --input build \
+            --dest out/linux \
+            --name $PROJECT_NAME \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --arguments "--risorse ../lib/app/" `
+            --icon logo.png \
+            --app-version $VERSIONE \
+            --vendor Luca
+            
+      - name: Move resources to root (Linux)
+        run: |
+            mv "out/linux/$PROJECT_NAME/lib/app/Immagini" "out/linux/$PROJECT_NAME/bin/Immagini"
+            mv "out/linux/$PROJECT_NAME/lib/app/logo.png" "out/linux/$PROJECT_NAME/bin/logo.png"
+            mv "out/linux/$PROJECT_NAME/lib/app/GestitiCoincap.csv" "out/linux/$PROJECT_NAME/bin/GestitiCoincap.csv"
+            
+      - name: Debug Linux output
+        run: |
+            echo "Contenuto della cartella generata:"
+            ls -R out/linux/$PROJECT_NAME   
+            
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Linux
+          path: out/linux/${{ env.PROJECT_NAME }}
+          
+          

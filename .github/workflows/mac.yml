@@ -1,0 +1,60 @@
+name: Build multi-platform app-image
+
+env:
+  PROJECT_NAME: Giacenze_Crypto
+  JAVA_VERSION: 21
+  BUILD_DIR: build
+
+on:
+  workflow_dispatch:
+
+          
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup GraalVM on macOS
+        uses: actions/setup-java@v4
+        with:
+          distribution: graalvm
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+          
+      - name: Estrai versione dal pom.xml
+        id: get-version
+        run: |
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+          
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Prepare input directory for jpackage
+        run: |
+          mkdir -p build/Immagini
+          cp -r immagini/* build/Immagini/
+          cp logo.png build/
+          cp GestitiCoincap.csv build/
+          cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
+
+      - name: Build macOS app-image
+        run: |
+          jpackage \
+            --type app-image \
+            --input build \
+            --dest out/macos \
+            --name ${{ env.PROJECT_NAME }} \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --icon logo.ico \
+            --app-version ${{ env.VERSIONE }} \
+            --vendor Luca
+
+      - name: Debug macOS output
+        run: ls -R out/macos
+            
+      - name: Upload macOS app-image
+        uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_MacOS
+          path: out/macos/${{ env.PROJECT_NAME }}.app

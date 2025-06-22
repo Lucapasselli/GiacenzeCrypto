@@ -25,6 +25,14 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.43
+Nuove Implementazioni : 
+ - Implementato i filtri stile Excel su alcune tabelle, tasto destro sull'intestazione della colonna per modificarli.
+ - Se sulla colonna ci sono numeri sotto il titolo della colonna compare anche la somma di tutti i righi visibili.
+Correzione di Bug :
+ - Corretto errore sulle importazioni da cointracking, se nel file c'erano più righi identici veniva preso solo il primo.
+ - Corretto particolarità che impediva agli utenti Linux e Mac di aprire il popupMenu' sulle tabelle.
+
 ver. 1.0.42
 Nuove Implementazioni : 
  - Aggiunto lo splashscreen in avvio del programma perché in alcuni casi poteva metterci anche molti secondi prima di far vedere la maschera principale dando quindi l'impressione di non aver avviato il programma.

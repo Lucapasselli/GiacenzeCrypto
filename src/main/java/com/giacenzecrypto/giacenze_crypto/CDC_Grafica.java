@@ -173,7 +173,7 @@ private static final long serialVersionUID = 3L;
         ToolTipManager.sharedInstance().setDismissDelay(10000); // 10 secondi
             AvviaSplashScreen();
             this.setTitle(Titolo);
-            ImageIcon icon = new ImageIcon("logo.png");
+            ImageIcon icon = new ImageIcon(Giacenze_Crypto.PathRisorse+"logo.png");
             this.setIconImage(icon.getImage());
             File fiatwallet=new File (CDC_FiatWallet_FileDB);
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
@@ -4772,7 +4772,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
 
             {
                 try {
-                    img = ImageIO.read(new File("logo.png"));
+                    img = ImageIO.read(new File(Giacenze_Crypto.PathRisorse+"logo.png"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -9606,8 +9606,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     stampa.AggiungiHtml("<html><font size=\"2\" face=\"Courier New,Courier, mono\" ><b>"+NomeGruppo+"</b>" + Errore+"</html>"); 
                     if (PagaBollo.equalsIgnoreCase("SI")&&(GG.equals("365")||GG.equals("366")))GG="";
                     else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
-                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW("Immagini/QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
-                    else stampa.AggiungiQuadroW("Immagini/QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW(Giacenze_Crypto.PathRisorse+"Immagini/QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    else stampa.AggiungiQuadroW(Giacenze_Crypto.PathRisorse+"Immagini/QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
 
                 }
             }
@@ -9650,8 +9650,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     
                                 //Stampa Quadro RW
-            String immagineRW="Immagini/QuadroRW_2023.jpg";
-            if (anno==2024)immagineRW="Immagini/QuadroRW_2024.jpg";
+            String immagineRW=Giacenze_Crypto.PathRisorse+"Immagini/QuadroRW_2023.jpg";
+            if (anno==2024)immagineRW=Giacenze_Crypto.PathRisorse+"Immagini/QuadroRW_2024.jpg";
             stampa.NuovaPagina();
            // stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
@@ -9919,47 +9919,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             
                 stampa.AggiungiHtml(testo);
             }
-          /*  stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.NuovaPagina();*/
-            
-            
-            
-          /*  stampa.AggiungiTesto("Periodo di riferimento        : "+DataIniziale+" - "+DataFinale+"\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Numero di giorni del periodo  : "+this.CDC_Text_Giorni.getText()+"\n\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Saldo Iniziale al "+DataIniziale.trim()+"        :  "+this.CDC_FiatWallet_Text_SaldoIniziale.getText()+"\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Saldo Finale al "+DataFinale.trim()+"          :  "+this.CDC_FiatWallet_Text_SaldoFinale.getText()+"\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Giacenza media del periodo          :  "+this.CDC_FiatWallet_Text_GiacenzaMedia.getText()+"\n\n\n",Font.BOLD,12);
-            stampa.NuovaPagina();
-            stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella1);
-            String Titoli1[]=new String[]{"Tipologia","Valore in Euro"};
-            stampa.AggiungiTabella(Titoli1,tabella1);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.NuovaPagina();
-            stampa.AggiungiTesto("TABELLA TOTALI PER DETTAGLIO\n",Font.UNDERLINE,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella3);
-            Titoli1=new String[]{"Tipologia","Valore in Euro"};
-            stampa.AggiungiTabella(Titoli1,tabella1);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.NuovaPagina();
-            stampa.AggiungiTesto("TABELLA MOVIMENTI\n",Font.UNDERLINE,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella2);
-            Titoli1=new String[]{"Data","Causale","Dettaglio","Valore in Euro","Rimanenze"};
-            stampa.AggiungiTabella(Titoli1,tabella1);*/
+
             stampa.ScriviPDF();
             
         } catch (FileNotFoundException ex) {
@@ -11424,7 +11384,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     //Stampa Quadro T
             stampa.NuovaPagina();
-            String immagineT="Immagini/QuadroT_2024.jpg";
+            String immagineT=Giacenze_Crypto.PathRisorse+"Immagini/QuadroT_2024.jpg";
             //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
 
 
@@ -11466,7 +11426,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     
                     stampa.NuovaPagina();
-                    String immagineRT="Immagini/QuadroRT_2024.jpg";
+                    String immagineRT=Giacenze_Crypto.PathRisorse+"Immagini/QuadroRT_2024.jpg";
                     stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     
                     /*
@@ -11586,47 +11546,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             
                 stampa.AggiungiHtml(testo);
             
-          /*  stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroWTitolo.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.AggiungiTesto("Wallet 1",Font.NORMAL,8);
-            stampa.AggiungiQuadroW("Immagini/QuadroW.png","1","1000","2000","365");
-            stampa.NuovaPagina();*/
-            
-            
-            
-          /*  stampa.AggiungiTesto("Periodo di riferimento        : "+DataIniziale+" - "+DataFinale+"\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Numero di giorni del periodo  : "+this.CDC_Text_Giorni.getText()+"\n\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Saldo Iniziale al "+DataIniziale.trim()+"        :  "+this.CDC_FiatWallet_Text_SaldoIniziale.getText()+"\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Saldo Finale al "+DataFinale.trim()+"          :  "+this.CDC_FiatWallet_Text_SaldoFinale.getText()+"\n",Font.BOLD,12);
-            stampa.AggiungiTesto("Giacenza media del periodo          :  "+this.CDC_FiatWallet_Text_GiacenzaMedia.getText()+"\n\n\n",Font.BOLD,12);
-            stampa.NuovaPagina();
-            stampa.AggiungiTesto("TABELLA TOTALI\n",Font.UNDERLINE,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            List<String[]> tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella1);
-            String Titoli1[]=new String[]{"Tipologia","Valore in Euro"};
-            stampa.AggiungiTabella(Titoli1,tabella1);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.NuovaPagina();
-            stampa.AggiungiTesto("TABELLA TOTALI PER DETTAGLIO\n",Font.UNDERLINE,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella3);
-            Titoli1=new String[]{"Tipologia","Valore in Euro"};
-            stampa.AggiungiTabella(Titoli1,tabella1);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            stampa.NuovaPagina();
-            stampa.AggiungiTesto("TABELLA MOVIMENTI\n",Font.UNDERLINE,12);
-            stampa.AggiungiTesto("\n",Font.NORMAL,12);
-            tabella1=Funzioni_Tabelle_ListaTabella(CDC_FiatWallet_Tabella2);
-            Titoli1=new String[]{"Data","Causale","Dettaglio","Valore in Euro","Rimanenze"};
-            stampa.AggiungiTabella(Titoli1,tabella1);*/
             stampa.ScriviPDF();
             
         } catch (FileNotFoundException ex) {

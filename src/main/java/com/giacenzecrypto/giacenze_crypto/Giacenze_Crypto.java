@@ -17,9 +17,19 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author luca.passelli
  */
 public class Giacenze_Crypto {
+    public static String PathRisorse="";
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException {
-                if (!DatabaseH2.CreaoCollegaDatabase()){
+
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("--risorse") && i + 1 < args.length) {
+                PathRisorse = args[i + 1];
+            }
+        }
+        System.out.println("Path risorse : " + PathRisorse);
+                
+        
+        if (!DatabaseH2.CreaoCollegaDatabase()){
             JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             System.exit(0);
         }

@@ -2439,7 +2439,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             //al posto suo prenderò i dati da un file csv precedentemente preparato che vedrò come tenere aggiornato nel futuro
             
             String riga;
-        try (FileReader fire = new FileReader("Gestiticoincap.csv"); 
+        try (FileReader fire = new FileReader(Giacenze_Crypto.PathRisorse+"Gestiticoincap.csv"); 
                 BufferedReader bure = new BufferedReader(fire);) 
             {
                 List<String[]> gestiti = new ArrayList<>();

@@ -23,18 +23,12 @@ jobs:
       - name: Estrai versione dal pom.xml
         shell: pwsh
         run: |
-            $rawOutput = & mvn help:evaluate -Dexpression=project.version -q -DforceStdout
-            Write-Host "Output grezzo:"
-            Write-Host $rawOutput
-
-            # Prende solo la prima riga che corrisponde al pattern versione
-            $version = ($rawOutput | Where-Object { $_ -match '^\d+\.\d+(\.\d+)?$' })[0]
-    
+            [xml]$pom = Get-Content pom.xml
+            $version = $pom.project.version
             if (-not $version) {
-            Write-Error "Versione non trovata nell'output Maven"
+            Write-Error "Versione non trovata nel pom.xml"
             exit 1
             }
-
             Write-Host "Versione estratta: $version"
             echo "VERSIONE=$version" >> $env:GITHUB_ENV
           

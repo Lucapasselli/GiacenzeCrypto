@@ -54,15 +54,16 @@ jobs:
             --name $env:PROJECT_NAME `
             --main-jar Giacenze_Crypto.jar `
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --arguments "--risorse /app/"
             --icon logo.ico `
             --app-version $env:VERSIONE `
             --vendor Luca
           
-      - name: Move resources to root (Windows)
-        run: |
-            Move-Item -Path "out/windows/$env:PROJECT_NAME/app/immagini" -Destination "out/windows/$env:PROJECT_NAME/immagini"
-            Move-Item -Path "out/windows/$env:PROJECT_NAME/app/logo.png" -Destination "out/windows/$env:PROJECT_NAME/logo.png"
-            Move-Item -Path "out/windows/$env:PROJECT_NAME/app/GestitiCoincap.csv" -Destination "out/windows/$env:PROJECT_NAME/GestitiCoincap.csv"
+    #  - name: Move resources to root (Windows)
+    #    run: |
+    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/immagini" -Destination "out/windows/$env:PROJECT_NAME/immagini"
+    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/logo.png" -Destination "out/windows/$env:PROJECT_NAME/logo.png"
+    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/GestitiCoincap.csv" -Destination "out/windows/$env:PROJECT_NAME/GestitiCoincap.csv"
             
       - uses: actions/upload-artifact@v4
         with:

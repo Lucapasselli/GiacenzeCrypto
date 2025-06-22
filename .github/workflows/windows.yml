@@ -1,4 +1,4 @@
-name: Build multi-platform app-image
+name: Windows
 
 env:
   PROJECT_NAME: Giacenze_Crypto

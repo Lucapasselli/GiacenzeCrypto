@@ -4,6 +4,7 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+
 /**
  *
  * @author luca
@@ -11,7 +12,19 @@ package com.giacenzecrypto.giacenze_crypto;
 public class Statiche {
     public static String pathImmagini="Immagini/";
     public static String pathRisorse="";
-    public static String pathDati="";
+    private static String workingDirectory = System.getProperty("user.dir");
+
+    public static void setWorkingDirectory(String dir) {
+        workingDirectory = dir;
+    }
+
+    public static String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public static String getPathImmagini() {
+        return pathImmagini;
+    }
     
     public static void setPathRisorse(String risorse){
         pathRisorse=risorse;
@@ -21,9 +34,6 @@ public class Statiche {
     public static void setPathImmagini(String Immagini){
         pathImmagini=pathRisorse+Immagini;
     }
-    
-    public static void setPathDati(String pDati){
-        pathDati=pDati;
-    }
+
     
 }

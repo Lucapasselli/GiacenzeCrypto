@@ -109,7 +109,7 @@ jobs:
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--risorse /opt/giacenze-crypto/lib/app/  --workdir ./GiacenzeCrypto \
+            --arguments "--risorse /opt/giacenze-crypto/lib/app/  --workdir ./GiacenzeCrypto/ \
             --icon logo.png \
             --app-version $VERSIONE \
             --vendor Luca \

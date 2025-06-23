@@ -11,7 +11,7 @@ package com.giacenzecrypto.giacenze_crypto;
  */
 public class Statiche {
     private static String pathRisorse="";
-    private static String workingDirectory = System.getProperty("user.dir");
+    private static String workingDirectory = System.getProperty("user.dir")+"/";
 
     public static void setWorkingDirectory(String dir) {
         workingDirectory = dir;
@@ -33,36 +33,36 @@ public class Statiche {
     }
 
     public static String getDBPrincipale(){
-        return "jdbc:h2:"+getWorkingDirectory()+"/database";
+        return "jdbc:h2:"+getWorkingDirectory()+"database";
     }
     
     public static String getDBPersonale(){
-        return "jdbc:h2:"+getWorkingDirectory()+"/personale";
+        return "jdbc:h2:"+getWorkingDirectory()+"personale";
     }
     
     public static String getFileUSDEUR() {
-        return getWorkingDirectory() + "/cambioUSDEUR.db";
+        return getWorkingDirectory() + "cambioUSDEUR.db";
     }
 
     public static String getFile_CDCFiatWallet() {
-        return getWorkingDirectory() + "/crypto.com.fiatwallet.db";
+        return getWorkingDirectory() + "crypto.com.fiatwallet.db";
     }
 
     public static String getFile_CDCCardWallet() {
-        return getWorkingDirectory() + "/crypto.com.cardwallet.db";
+        return getWorkingDirectory() + "crypto.com.cardwallet.db";
     }
 
     public static String getFile_CDCDatiDB() {
-        return getWorkingDirectory() + "/crypto.com.dati.db";
+        return getWorkingDirectory() + "crypto.com.dati.db";
     }
 
     public static String getFile_CryptoWallet() {
-        return getWorkingDirectory() + "/movimenti.crypto.db";
+        return getWorkingDirectory() + "movimenti.crypto.db";
     }
     
 
     public static String getFile_CDCFiatWallet_FileTipiMovimentiPers() {
-        return getWorkingDirectory() + "/crypto.com.fiatwallet.tipimovimentiPers.db";
+        return getWorkingDirectory() + "crypto.com.fiatwallet.tipimovimentiPers.db";
     }
     
 }

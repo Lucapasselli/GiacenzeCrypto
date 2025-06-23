@@ -21,32 +21,25 @@ public class Giacenze_Crypto {
     
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException {
-        //String PathRisorse="";
         File workingDir = null;
-        //System.out.println(System.getProperty("user.dir"));
 
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("--risorse") && i + 1 < args.length) {
+            if (args[i].equals("--risorse") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
                 Statiche.setPathRisorse(args[i + 1]);
             }
-            if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length) {
+            if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
                 workingDir = new File(args[i + 1]);
                 if (!workingDir.exists()) {
                     workingDir.mkdirs(); // crea la directory se non esiste
                 }
-                Statiche.setWorkingDirectory(workingDir.toString());
-            }
-        }
-        
-        if (workingDir != null) {
-            if (!workingDir.exists()) {
-                boolean created = workingDir.mkdirs();
-                if (!created) {
+                if (!workingDir.exists()) {
                     System.err.println("Errore: impossibile creare la directory " + workingDir.getAbsolutePath());
                     System.exit(1);
                 }
+                Statiche.setWorkingDirectory(args[i + 1]);
             }
-        }        
+        }
+              
         
         if (!DatabaseH2.CreaoCollegaDatabase()){
             JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);

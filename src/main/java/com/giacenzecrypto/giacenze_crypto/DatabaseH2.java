@@ -25,8 +25,8 @@ import java.util.logging.Logger;
  */
 public class DatabaseH2 {
 
-    static String jdbcUrl = "jdbc:h2:./database";
-    static String jdbcUrl2 = "jdbc:h2:./personale";
+    static String jdbcUrl = Statiche.getDBPrincipale();
+    static String jdbcUrl2 = Statiche.getDBPersonale();
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;

@@ -123,7 +123,7 @@ private static final long serialVersionUID = 5L;
             if (risposta==0){
                 try 
                 { 
-                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
+                    FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
                     BufferedWriter b=new BufferedWriter (w);
                     for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
                     {
@@ -147,7 +147,7 @@ private static final long serialVersionUID = 5L;
                 //è un movimento in uscita lo tratto come tale
                 try 
                 { 
-                    FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
+                    FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
                     BufferedWriter b=new BufferedWriter (w);
                     for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
                     {

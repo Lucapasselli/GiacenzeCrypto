@@ -106,12 +106,11 @@ private static final long serialVersionUID = 3L;
     
     static public Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
     static public Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
-    static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
-    static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
-    static String CDC_FileDatiDB="crypto.com.dati.db";
-//    static String CDC_FiatWallet_FileTipiMovimentiDB="crypto.com.fiatwallet.tipimovimenti.db";
-    static String CryptoWallet_FileDB="movimenti.crypto.db";
-    static public String CDC_FiatWallet_FileTipiMovimentiDBPers="crypto.com.fiatwallet.tipimovimentiPers.db";
+   // static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
+    //static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
+    //static String CDC_FileDatiDB="crypto.com.dati.db";
+    //static String CryptoWallet_FileDB="movimenti.crypto.db";
+    //static public String CDC_FiatWallet_FileTipiMovimentiDBPers="crypto.com.fiatwallet.tipimovimentiPers.db";
     static String CDC_DataIniziale="";
     static String CDC_DataFinale="";
     static String CDC_FiatWallet_SaldoIniziale="0";
@@ -173,18 +172,18 @@ private static final long serialVersionUID = 3L;
         ToolTipManager.sharedInstance().setDismissDelay(10000); // 10 secondi
             AvviaSplashScreen();
             this.setTitle(Titolo);
-            ImageIcon icon = new ImageIcon(Statiche.pathRisorse+"logo.png");
+            ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
             this.setIconImage(icon.getImage());
-            File fiatwallet=new File (CDC_FiatWallet_FileDB);
+            File fiatwallet=new File (Statiche.getFile_CDCFiatWallet());
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
 
-            File cardwallet=new File (CDC_CardWallet_FileDB);
+            File cardwallet=new File (Statiche.getFile_CDCCardWallet());
             if (!cardwallet.exists()) cardwallet.createNewFile();
             
-            File filedati=new File (CDC_FileDatiDB);
+            File filedati=new File (Statiche.getFile_CDCDatiDB());
             if (!filedati.exists()) filedati.createNewFile();
                         
-            File cryptowallet=new File (CryptoWallet_FileDB);
+            File cryptowallet=new File (Statiche.getFile_CryptoWallet());
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
             
             File cartella=new File ("Backup");
@@ -276,8 +275,8 @@ private static final long serialVersionUID = 3L;
         
         CDC_LeggiFileDatiDB();
         TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto();
-        CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB); 
-        CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
+        CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet()); 
+        CDC_CardWallet_Funzione_ImportaWallet(Statiche.getFile_CDCCardWallet());
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
         
         
@@ -4791,7 +4790,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
         // Crea splash screen con immagine e barra di progresso
         JWindow splash = new JWindow();
         splash.setBackground(new Color(0,0,0,0));
-        splash.setSize(300, 300); 
+        splash.setSize(300, 330); 
         splash.setLocationRelativeTo(null);
         // Barra di progresso
           
@@ -4806,7 +4805,7 @@ private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
 
             {
                 try {
-                    img = ImageIO.read(new File(Statiche.pathRisorse+"logo.png"));
+                    img = ImageIO.read(new File(Statiche.getPathRisorse()+"logo.png"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -5059,7 +5058,7 @@ JPanel loadingBar = new JPanel() {
     private void CDC_LeggiFileDatiDB() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    String riga;
-        try (FileReader fire = new FileReader(CDC_FileDatiDB); 
+        try (FileReader fire = new FileReader(Statiche.getFile_CDCDatiDB()); 
                 BufferedReader bure = new BufferedReader(fire);) 
         {
                 while((riga=bure.readLine())!=null)
@@ -5202,7 +5201,7 @@ JPanel loadingBar = new JPanel() {
    private void CDC_ScriviFileDatiDB() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    try { 
-       FileWriter w=new FileWriter(CDC_FileDatiDB);
+       FileWriter w=new FileWriter(Statiche.getFile_CDCDatiDB());
        BufferedWriter b=new BufferedWriter (w);
        b.write("DataIniziale="+CDC_DataIniziale+"\n");
        b.write("DataFinale="+CDC_DataFinale+"\n");
@@ -5310,11 +5309,11 @@ JPanel loadingBar = new JPanel() {
         CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.purchase_commit", "trading.limit_order.fiat_wallet.purchase_commit;-;default;Acquisto Crypto");
         CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.sell_commit", "trading.limit_order.fiat_wallet.sell_commit;+;default;Vendita Crypto");
         try {
-            File movPers = new File(CDC_FiatWallet_FileTipiMovimentiDBPers);
+            File movPers = new File(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
             if (!movPers.exists()) {
                 movPers.createNewFile();
             }
-            FileReader fires = new FileReader(CDC_FiatWallet_FileTipiMovimentiDBPers);
+            FileReader fires = new FileReader(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
             BufferedReader bures = new BufferedReader(fires);
 
             while ((riga = bures.readLine()) != null) {
@@ -6023,7 +6022,7 @@ JPanel loadingBar = new JPanel() {
    
     private void CDC_FiatWallet_Funzione_Scrivi() {
          try { 
-       FileWriter w=new FileWriter(CDC_FiatWallet_FileDB);
+       FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet());
        BufferedWriter b=new BufferedWriter (w);
 
        for (String value : CDC_FiatWallet_Mappa.values()) {
@@ -6039,7 +6038,7 @@ JPanel loadingBar = new JPanel() {
     
         private void CDC_CardWallet_Funzione_Scrivi() {
          try { 
-       FileWriter w=new FileWriter(CDC_CardWallet_FileDB);
+       FileWriter w=new FileWriter(Statiche.getFile_CDCCardWallet());
        BufferedWriter b=new BufferedWriter (w);
 
        for (String value : CDC_CardWallet_Mappa.values()) {
@@ -6226,7 +6225,7 @@ JPanel loadingBar = new JPanel() {
                 mod.CompilaTabellaErrori(CDC_FiatWallet_MappaErrori);
                 mod.setLocationRelativeTo(this);
                 mod.setVisible(true);
-                CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
+                CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet());
                 CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_FiatWallet_Bottone_ErroreActionPerformed
 
@@ -8328,7 +8327,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (risposta==0){
             try
             {
-                FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileTipiMovimentiDBPers);
+                FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
                 BufferedWriter b=new BufferedWriter (w);
                 for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values())
                 {
@@ -8343,7 +8342,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             {
 
             }    }
-            CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
+            CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
 
@@ -8360,7 +8359,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             try
             {
                 //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(CDC_Grafica.CDC_FiatWallet_FileDB); 
+               FileReader fire = new FileReader(Statiche.getFile_CDCFiatWallet()); 
                BufferedReader bure = new BufferedReader(fire);
                         String rigas;
                         
@@ -8377,7 +8376,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         fire.close();
                 
                 //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(CDC_Grafica.CDC_FiatWallet_FileDB);
+                FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet());
                 BufferedWriter b=new BufferedWriter (w);
                 Iterator<String> It=DaMantenere.iterator();
                 while(It.hasNext()){
@@ -8390,7 +8389,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
             }    }
             CDC_FiatWallet_Mappa.clear();
-            CDC_FiatWallet_Funzione_ImportaWallet(CDC_FiatWallet_FileDB);
+            CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
 
@@ -8408,7 +8407,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             {
                 
                //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(CDC_Grafica.CDC_CardWallet_FileDB); 
+               FileReader fire = new FileReader(Statiche.getFile_CDCCardWallet()); 
                BufferedReader bure = new BufferedReader(fire);
                         String rigas;
                         
@@ -8424,7 +8423,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         fire.close();
                 
                 //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(CDC_Grafica.CDC_CardWallet_FileDB);
+                FileWriter w=new FileWriter(Statiche.getFile_CDCCardWallet());
                 BufferedWriter b=new BufferedWriter (w);
                 Iterator<String> It=DaMantenere.iterator();
                 while(It.hasNext()){
@@ -8437,7 +8436,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
             }    }
             CDC_CardWallet_Mappa.clear();
-            CDC_CardWallet_Funzione_ImportaWallet(CDC_CardWallet_FileDB);
+            CDC_CardWallet_Funzione_ImportaWallet(Statiche.getFile_CDCCardWallet());
             CDC_CardWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
 
@@ -9643,8 +9642,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()||
                             RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()))GG="";
                     else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
-                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW(Statiche.pathImmagini+"QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
-                    else stampa.AggiungiQuadroW(Statiche.pathImmagini+"QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW(Statiche.getPathImmagini()+"QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    else stampa.AggiungiQuadroW(Statiche.getPathImmagini()+"QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
 
                 }
             }
@@ -9687,8 +9686,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     
                                 //Stampa Quadro RW
-            String immagineRW=Statiche.pathImmagini+"QuadroRW_2023.jpg";
-            if (anno==2024)immagineRW=Statiche.pathImmagini+"QuadroRW_2024.jpg";
+            String immagineRW=Statiche.getPathImmagini()+"QuadroRW_2023.jpg";
+            if (anno==2024)immagineRW=Statiche.getPathImmagini()+"QuadroRW_2024.jpg";
             stampa.NuovaPagina();
            // stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
@@ -11426,7 +11425,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     //Stampa Quadro T
             stampa.NuovaPagina();
-            String immagineT=Statiche.pathImmagini+"QuadroT_2024.jpg";
+            String immagineT=Statiche.getPathImmagini()+"QuadroT_2024.jpg";
             //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
 
 
@@ -11468,7 +11467,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     
                     
                     stampa.NuovaPagina();
-                    String immagineRT=Statiche.pathImmagini+"QuadroRT_2024.jpg";
+                    String immagineRT=Statiche.getPathImmagini()+"QuadroRT_2024.jpg";
                     stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     
                     /*
@@ -12820,14 +12819,9 @@ try {
     private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(boolean EscludiTI,boolean VediSoloSenzaPrezzo) throws IOException {
 
                 try {                    
-             /*       File file = new File(CryptoWallet_FileDB);
-                    LineNumberReader lineNumberReader = new LineNumberReader(new FileReader(file));
-                    lineNumberReader.skip(Long.MAX_VALUE);
-                    int lines = lineNumberReader.getLineNumber();
-                    lineNumberReader.close();*/
-                  
 
-                    String fileDaImportare = CryptoWallet_FileDB;
+
+                    String fileDaImportare = Statiche.getFile_CryptoWallet();
                     MappaCryptoWallet.clear();
                     Mappa_Wallet.clear();
 

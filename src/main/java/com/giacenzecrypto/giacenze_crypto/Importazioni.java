@@ -1621,18 +1621,18 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
     
     
         public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti,boolean SalvataggioPermanente) {
-        File f = new File("movimenti.crypto.db");
-        File f2 = new File("movimenti.crypto.backup");
+        File f = new File(Statiche.getFile_CryptoWallet());
+        File f2 = new File(Statiche.getWorkingDirectory()+"/movimenti.crypto.backup");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);
-        if (SalvataggioPermanente)f2 = new File("Backup/movimenti.crypto.backup."+DataOra);
+        if (SalvataggioPermanente)f2 = new File(Statiche.getWorkingDirectory()+"/Backup/movimenti.crypto.backup."+DataOra);
     if(f.exists()){
         if(f2.exists())f2.delete();
         f.renameTo(f2);
     }
          try { 
-            FileWriter w=new FileWriter("movimenti.crypto.db");
+            FileWriter w=new FileWriter(Statiche.getFile_CryptoWallet());
             BufferedWriter b=new BufferedWriter (w);
        for (String[] v : Mappa_Movimenti.values()) {
            String riga="";
@@ -1653,21 +1653,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                }
     }
         
-        
-  /*  private static void Leggi_Movimenti_Crypto() {///da finireeeeeeeeeeeeeeeee
-        try {
-            FileReader w = new FileReader("movimenti.crypto.csv");
-            BufferedReader bure = new BufferedReader(w);
-            String riga;
-            while ((riga = bure.readLine()) != null) {
-                String splittata[] = riga.split(";");
-            }
-            bure.close();
-            w.close();
-        } catch (IOException ex) {
-            //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }*/
     
         
         

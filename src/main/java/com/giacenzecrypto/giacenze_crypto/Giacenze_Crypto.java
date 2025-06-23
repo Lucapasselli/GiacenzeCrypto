@@ -23,6 +23,7 @@ public class Giacenze_Crypto {
     public static void main(String[] args) throws UnsupportedLookAndFeelException {
         //String PathRisorse="";
         File workingDir = null;
+        //System.out.println(System.getProperty("user.dir"));
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--risorse") && i + 1 < args.length) {

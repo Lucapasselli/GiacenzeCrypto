@@ -2439,7 +2439,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             //al posto suo prenderò i dati da un file csv precedentemente preparato che vedrò come tenere aggiornato nel futuro
             
             String riga;
-        try (FileReader fire = new FileReader(Statiche.pathRisorse+"Gestiticoincap.csv"); 
+        try (FileReader fire = new FileReader(Statiche.getPathRisorse()+"Gestiticoincap.csv"); 
                 BufferedReader bure = new BufferedReader(fire);) 
             {
                 List<String[]> gestiti = new ArrayList<>();
@@ -2456,57 +2456,7 @@ for (int i=0;i<ArraydataIni.size();i++){
             } catch (IOException ex) {
                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
             }
-            /*   int offset=0;
-            try { 
-            List<String[]> gestiti = new ArrayList<>();
-            while (offset<3999){
-                          
-                String apiUrl = "https://api.coincap.io/v2/assets?limit=2000&offset="+String.valueOf(offset);
-                offset=offset+2000;
-                URL url = new URI(apiUrl).toURL();
-                URLConnection connection = url.openConnection();
-                System.out.println("Recupero token gestiti da CoinCap");
-               // System.out.println(url);
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
-                    //System.out.println(line);
-                }
-
-                 Gson gson = new Gson();
-                JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
-                JsonArray pricesArray = jsonObject.getAsJsonArray("data");
-                List<String> simboli = new ArrayList<>();
-                if (pricesArray != null) {
-                    for (JsonElement element : pricesArray) {
-
-                        JsonObject Coppie = element.getAsJsonObject();
-                        String Gestito[]=new String[2];
-                        Gestito[0]= Coppie.get("symbol").getAsString();
-                        Gestito[1]= Coppie.get("id").getAsString();
-                        //System.out.println(Gestito[0]+" - "+Gestito[1]);
-                        gestiti.add(Gestito);
-
-                    }                                                           
-
-                } 
-                else {
-                    ok = null;
-                }
-                TimeUnit.SECONDS.sleep(1);
-            }
-                    DatabaseH2.GestitiCoinCap_ScriviNuovaTabella(gestiti);
-                    DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinCap", String.valueOf(adesso));
-                
-            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
-                ok = null;
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            */
+           
         }
         return ok;
     }   
@@ -2566,72 +2516,7 @@ for (int i=0;i<ArraydataIni.size();i++){
                             i++;
                             
                         }
-                       /* String BSCAddress = platformsObject.has("binance-smart-chain") ? platformsObject.get("binance-smart-chain").getAsString() : null;
-                        String cronosAddress = platformsObject.has("cronos") ? platformsObject.get("cronos").getAsString() : null;
-                        String ethereumAddress = platformsObject.has("ethereum") ? platformsObject.get("ethereum").getAsString() : null;
-                        String baseAddress = platformsObject.has("base") ? platformsObject.get("base").getAsString() : null;
-                        String arbitrumAddress = platformsObject.has("arbitrum-one") ? platformsObject.get("arbitrum-one").getAsString() : null;
-                        String solanaAddress = platformsObject.has("solana") ? platformsObject.get("solana").getAsString() : null;
-                        String beraAddress = platformsObject.has("berachain") ? platformsObject.get("berachain").getAsString() : null;
-                        
-                        if (cronosAddress!=null&&!cronosAddress.isEmpty()){
-                            String Gestito[]=new String[3];
-                            Gestito[0]=(cronosAddress+"_CRO").toUpperCase();
-                            Gestito[1]=Simbolo;
-                            Gestito[2]=Nome;
-                            gestiti.add(Gestito);
-                           // gestiti.add((cronosAddress+"_CRO").toUpperCase());
-                           // System.out.println(cronosAddress);0x97749c9b61f878a880dfe312d2594ae07aed7656
-                        }
-                        if (ethereumAddress!=null&&!ethereumAddress.isEmpty()){
-                            String Gestito[]=new String[3];
-                            Gestito[0]=(ethereumAddress+"_ETH").toUpperCase();
-                            Gestito[1]=Simbolo;
-                            Gestito[2]=Nome;
-                            gestiti.add(Gestito);
-                            //gestiti.add((ethereumAddress+"_ETH").toUpperCase());                           
-                        }
-                        if (BSCAddress!=null&&!BSCAddress.isEmpty()){
-                            String Gestito[]=new String[3];
-                            Gestito[0]=(BSCAddress+"_BSC").toUpperCase();
-                            Gestito[1]=Simbolo;
-                            Gestito[2]=Nome;
-                            gestiti.add(Gestito);
-                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
-                        }
-                        if (baseAddress!=null&&!baseAddress.isEmpty()){
-                            String Gestito[]=new String[3];
-                            Gestito[0]=(baseAddress+"_BASE").toUpperCase();
-                            Gestito[1]=Simbolo;
-                            Gestito[2]=Nome;
-                            gestiti.add(Gestito);
-                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
-                        }
-                        if (arbitrumAddress!=null&&!arbitrumAddress.isEmpty()){
-                            String Gestito[]=new String[3];
-                            Gestito[0]=(arbitrumAddress+"_ARB").toUpperCase();
-                            Gestito[1]=Simbolo;
-                            Gestito[2]=Nome;
-                            gestiti.add(Gestito);
-                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
-                        }
-                        if (beraAddress!=null&&!beraAddress.isEmpty()){
-                            String Gestito[]=new String[3];
-                            Gestito[0]=(beraAddress+"_BERA").toUpperCase();
-                            Gestito[1]=Simbolo;
-                            Gestito[2]=Nome;
-                            gestiti.add(Gestito);
-                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
-                        }
-                        if (solanaAddress!=null&&!solanaAddress.isEmpty()){
-                            String Gestito[]=new String[3];
-                            Gestito[0]=(solanaAddress+"_SOL");
-                            Gestito[1]=Simbolo;
-                            Gestito[2]=Nome;
-                            gestiti.add(Gestito);
-                            //gestiti.add((BSCAddress+"_BSC").toUpperCase());                           
-                        }*/
-
+                      
                     }
                    // System.out.println("sono qui");
                    String Gestito[]=new String[3];
@@ -2656,68 +2541,10 @@ for (int i=0;i<ArraydataIni.size();i++){
     }
     
     
-    
-    
-    //questa funzione la chiamo sempre una sola volta per verificare quali sono le coin gestite da coingecko    
- /*   public static String RecuperaCoinsCoingecko() {
-
-        try {
-            TimeUnit.SECONDS.sleep(7);
-            URL url = new URI("https://api.coingecko.com/api/v3/coins/list").toURL();
-            System.out.println(url);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int statusCode = connection.getResponseCode();
-            StringBuilder response;
-            
-            if (statusCode >= 200 && statusCode <= 299) {
-                response = new StringBuilder();
-                // La chiamata API ha avuto successo, leggi la risposta
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
-                }
-                in.close();
-                JSONArray pricesArray = new JSONArray(response.toString());
-
-                for (int i = 0; i < pricesArray.length(); i++) {
-                    JSONObject coinObject = pricesArray.getJSONObject(i);
-                    String coinSymbol = coinObject.getString("symbol").toUpperCase().trim();
-                    //System.out.println(coinSymbol);
-                    MappaSimboliCoingecko.put(coinSymbol, coinSymbol);
-                }
-                connection.disconnect();
-
-            } else {
-                
-                // Si è verificato un errore nella chiamata API
-                response = new StringBuilder();
-                BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-                String errorLine;
-                while ((errorLine = errorReader.readLine()) != null) {
-                    response.append(errorLine);
-                }
-                errorReader.close();
-                connection.disconnect();
-                return null;
-
-            }
-
-        } catch (JsonSyntaxException | IOException | InterruptedException | URISyntaxException ex) {
-            return null;
-        }
-
-        return "ok";
-        //solo se il comando va a buon fine ritorno ok altrimenti ritorno null
-    }*/
-    
-    
-    
      static void ScriviFileConversioneUSDEUR() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    try { 
-       FileWriter w=new FileWriter("cambioUSDEUR.db");
+       FileWriter w=new FileWriter(Statiche.getFileUSDEUR());
        BufferedWriter b=new BufferedWriter (w);
        
        Object DateCambi[]=MappaConversioneUSDEUR.keySet().toArray();
@@ -2737,169 +2564,7 @@ for (int i=0;i<ArraydataIni.size();i++){
    
    }
      
-     
-    /*    static void ScriviFileConversioneAddressCoin() { //CDC_FileDatiDB
-           
-            
-               try { 
-       FileWriter w=new FileWriter("conversioneAddressCoin.db");
-       BufferedWriter b=new BufferedWriter (w);
-       
-       Object DateCambi[]=MappaConversioneAddressCoin.keySet().toArray();
-       
-       for (String keyset:MappaConversioneAddressCoin.keySet()){
-           
-           b.write(keyset+","+MappaConversioneAddressCoin.get(keyset)+"\n");
-       }
-       
-      // b.write("DataIniziale="+CDC_DataIniziale+"\n");
-       //System.out.println(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
-       b.close();
-       w.close();
-
-    }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-               }
-            
-            
-            
-            
-  /*          
-   // CDC_FileDatiDB
-   try { 
-       FileWriter w=new FileWriter("conversioneAddressCoin.db",true);
-       BufferedWriter b=new BufferedWriter (w);
-       b.append(Riga+"\n");
-       b.close();
-       w.close();
-       
-      //il file è cosi composto
-      //Address_rete,Simbolo,ID Coingecko
-      //Es. 0x1456345343737364_BSC,BUSD,Binance USD
-      //Simboli rete usati per ora
-      //CRO=Cronos chain
-      //BSC=Binance Smart Chain
-      //ETH=Ethereum
-
-    }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-               }
-   }*/
-   
         
-   
-        
-  /*  static void ScriviFileConversioneAddressEUR(String Riga) { 
-
-   try { 
-       FileWriter w=new FileWriter("cambioAddressEUR.db",true);
-       BufferedWriter b=new BufferedWriter (w);
-       b.append(Riga+"\n");
-       b.close();
-       w.close();
-       
-      //il file è cosi composto
-      //Data_Address_rete,Prezzo
-      //Es. 2023-01-01 01_0x1456345343737364_BSC,BUSD,Binance USD
-      //Simboli rete usati per ora
-      //CRO=Cronos chain
-      //BSC=Binance Smart Chain
-      //ETH=Ethereum
-
-    }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-               }
-   
-   }      */
-        
-        
-        
-        
-   static void ScriviFileConversioneSwapTransIDCoins(String riga) { //CDC_FileDatiDB
-   // CDC_FileDatiDB
-   try { 
-       FileWriter w=new FileWriter("conversioneTransIDCoins.db",true);
-       BufferedWriter b=new BufferedWriter (w);
-       b.append(riga+"\n");
-       b.close();
-       w.close();
-             
-      //il file è cosi composto
-      //TransID_rete,coin uscita,qta uscita,coin entrata,qta entrata
-      //Es. 0x1456345343737364_BSC,BUSD,10,eth,0.005
-      //Simboli rete usati per ora
-      //CRO=Cronos chain
-      //BSC=Binance Smart Chain
-      //ETH=Ethereum
-
-    }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-               }
-   
-   }
     
- /*  static void ScriviFileConversioneXXXEUR() { //CDC_FileDatiDB
-   // Devo lanciare questa funzione alla fine di ogni conversione per aggiornare i dati sul database dei prezzi
-   //questo serve per recuperare prima sempre tutti i dati della mappa
-   GeneraMappaCambioXXXEUR();
-   try { 
-       FileWriter w=new FileWriter("cambioXXXEUR.db");
-       BufferedWriter b=new BufferedWriter (w);
-       Object DateCambi[]=MappaConversioneXXXEUR.keySet().toArray();
-       
-       for (Object DateCambi1 : DateCambi) {
-           b.write(DateCambi1.toString() + "," + MappaConversioneXXXEUR.get(DateCambi1.toString()) + "\n");
-       }
-       
-      // b.write("DataIniziale="+CDC_DataIniziale+"\n");
-       //System.out.println(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
-       b.close();
-       w.close();
-
-    }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-               }
-   
-   } */
-     
-     
-     
-  /*      static void ScriviFileConversioneUSDTEUR() { //CDC_FileDatiDB
-   // CDC_FileDatiDB
-   try { 
-//devo fare in modo di non scrivere mai i dati della data odierna sul file dei cambi perchè potrebbero essere incompleti
-       FileWriter w=new FileWriter("cambioUSDTEUR.db");
-       BufferedWriter b=new BufferedWriter (w);
-       
-       Object DateCambi[]=MappaConversioneUSDTEUR.keySet().toArray();
-        long adesso=System.currentTimeMillis();
-        SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
-        sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-        String DataAttuale = sdf.format(adesso).trim();
-        
-       for (int i=0;i<DateCambi.length;i++){
-           //devo fare in modo di non scrivere mai i dati della data odierna sul file dei cambi perchè potrebbero essere incompleti
-           String Giorno=DateCambi[i].toString().split(" ")[0].trim();
-           if (!Giorno.equalsIgnoreCase(DataAttuale)){
-                b.write(DateCambi[i].toString()+","+MappaConversioneUSDTEUR.get(DateCambi[i].toString())+"\n");
-           }
-       }
-       
-      // b.write("DataIniziale="+CDC_DataIniziale+"\n");
-       //System.out.println(CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
-       b.close();
-       w.close();
-
-    }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
-               }
-   
-   }*/
-     
-    
-    
-
-    
-
 }
 

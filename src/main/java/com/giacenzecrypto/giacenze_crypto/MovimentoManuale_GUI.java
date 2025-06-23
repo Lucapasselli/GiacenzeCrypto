@@ -79,7 +79,7 @@ private static final long serialVersionUID = 9L;
         });
                  
         this.setTitle("Inserimento Manuale Movimenti");
-        ImageIcon icon = new ImageIcon(Statiche.pathRisorse+"logo.png");
+        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         //adesso recupero i vari wallet dalla lista e li metto nella combobox
         CreaMappeXComboBox();

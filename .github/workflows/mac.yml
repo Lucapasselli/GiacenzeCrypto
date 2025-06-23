@@ -20,39 +20,41 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
           
-      - name: Install Python and Pillow
+      - name: Setup Python virtualenv and install Pillow
         run: |
-          python3 -m pip install --upgrade pip
-          pip install pillow
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install pillow
 
       - name: Convert logo.png to .icns
         run: |
-          mkdir icon.iconset
-          python3 <<EOF
-          from PIL import Image
-          import os
+            python3 -m venv venv
+            source venv/bin/activate
+            python <<EOF
+            from PIL import Image
+            import os
 
-          img = Image.open("logo.png").convert("RGBA")
-          sizes = [
-              (16, False), (16, True),
-              (32, False), (32, True),
-              (128, False), (128, True),
-              (256, False), (256, True),
-              (512, False), (512, True),
-              (1024, False)
-          ]
+            img = Image.open("logo.png").convert("RGBA")
+                sizes = [
+                (16, False), (16, True),
+                (32, False), (32, True),
+                (128, False), (128, True),
+                (256, False), (256, True),
+                (512, False), (512, True),
+                (1024, False)
+            ]
 
-          os.makedirs("icon.iconset", exist_ok=True)
+            os.makedirs("icon.iconset", exist_ok=True)
 
-          for size, retina in sizes:
-              scale = 2 if retina else 1
-              final_size = size * scale
-              resized = img.resize((final_size, final_size), Image.LANCZOS)
-              suffix = f"{size}x{size}{'@2x' if retina else ''}"
-              resized.save(f"icon.iconset/icon_{suffix}.png")
-          EOF
+            for size, retina in sizes:
+                scale = 2 if retina else 1
+                final_size = size * scale
+                resized = img.resize((final_size, final_size), Image.LANCZOS)
+                suffix = f"{size}x{size}{'@2x' if retina else ''}"
+                resized.save(f"icon.iconset/icon_{suffix}.png")
+            EOF
 
-          iconutil -c icns icon.iconset -o logo.icns
+                iconutil -c icns icon.iconset -o logo.icns
           
       - name: Estrai versione dal pom.xml
         id: get-version
@@ -84,6 +86,20 @@ jobs:
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca
+            
+      - name: Build macOS .dmg
+        run: |
+          jpackage \
+            --type dmg \
+            --input build \
+            --dest out/dmg \
+            --name ${{ env.PROJECT_NAME }} \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --arguments "--risorse ../app/" \
+            --icon logo.icns \
+            --app-version ${{ env.VERSIONE }} \
+            --vendor Luca
 
       - name: Debug macOS output
         run: ls -R out/macos
@@ -93,3 +109,9 @@ jobs:
         with:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_MacOS
           path: out/macos/${{ env.PROJECT_NAME }}.app
+          
+      - name: Upload .dmg
+        uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Installer_MacOS
+          path: out/dmg/*.dmg

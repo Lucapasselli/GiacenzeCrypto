@@ -8,60 +8,37 @@ env:
 on:
   workflow_dispatch:
 
-jobs:         
+jobs:
   build-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup GraalVM on macOS
         uses: actions/setup-java@v4
         with:
           distribution: graalvm
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
-          
+
       - name: Setup Python virtualenv and install Pillow
         run: |
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install pillow
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install pillow
 
       - name: Convert logo.png to .icns
         run: |
-            python3 -m venv venv
-            source venv/bin/activate
-            python <<EOF
-            from PIL import Image
-            import os
+          source venv/bin/activate
+          python3 Python/generate_icns.py
+          iconutil -c icns icon.iconset -o logo.icns    
 
-            img = Image.open("logo.png").convert("RGBA")
-                sizes = [
-                (16, False), (16, True),
-                (32, False), (32, True),
-                (128, False), (128, True),
-                (256, False), (256, True),
-                (512, False), (512, True),
-                (1024, False)
-            ]
-
-            os.makedirs("icon.iconset", exist_ok=True)
-
-            for size, retina in sizes:
-                scale = 2 if retina else 1
-                final_size = size * scale
-                resized = img.resize((final_size, final_size), Image.LANCZOS)
-                suffix = f"{size}x{size}{'@2x' if retina else ''}"
-                resized.save(f"icon.iconset/icon_{suffix}.png")
-            EOF
-
-                iconutil -c icns icon.iconset -o logo.icns
-          
       - name: Estrai versione dal pom.xml
         id: get-version
         run: |
-            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
-          
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+
       - name: Build JAR with Maven
         run: mvn clean package -DskipTests
 
@@ -86,7 +63,7 @@ jobs:
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca
-            
+
       - name: Build macOS .dmg
         run: |
           jpackage \
@@ -102,16 +79,19 @@ jobs:
             --vendor Luca
 
       - name: Debug macOS output
-        run: ls -R out/macos
-            
+        run: |
+          ls -R out/macos
+          ls -R out/dmg
+
       - name: Upload macOS app-image
         uses: actions/upload-artifact@v4
         with:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_MacOS
           path: out/macos/${{ env.PROJECT_NAME }}.app
-          
+
       - name: Upload .dmg
         uses: actions/upload-artifact@v4
         with:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Installer_MacOS
           path: out/dmg/*.dmg
+

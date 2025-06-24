@@ -78,7 +78,7 @@ public class Giacenze_Crypto {
 
                 // Esegui espansione variabili tipo $HOME o ~
                 workingDir = workingDir.replaceFirst("^~", System.getProperty("user.home"));
-                workingDir = workingDir.replace("$HOME", System.getProperty("user.home"));
+                workingDir = workingDir.replace("HOME", System.getProperty("user.home"));
                 
                 File dir = new File(workingDir);
 

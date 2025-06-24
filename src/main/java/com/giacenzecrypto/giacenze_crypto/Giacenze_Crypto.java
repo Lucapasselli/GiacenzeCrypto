@@ -69,7 +69,7 @@ public class Giacenze_Crypto {
                 Statiche.setPathRisorse(args[i + 1]);
             }
             if (args[i].equals("--JarPath")) {
-                Statiche.setPathRisorse(Funzioni.getJarPath().toString());
+                Statiche.setPathRisorse(Funzioni.getJarPath().toString()+"/");
             }
             if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
                 workingDir = new File(args[i + 1]);

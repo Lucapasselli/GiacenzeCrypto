@@ -56,7 +56,7 @@ jobs:
             
       - name: Build Debian package (.deb) with jpackage
         run: |
-          WORKDIR="$HOME/Giacenze Crypto/"
+          WORKDIR="./Giacenze Crypto/"
           jpackage \
             --type deb \
             --input build \
@@ -64,7 +64,7 @@ jobs:
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--JarPath  --workdir $HOME/GiacenzeCrypto/" \
+            --arguments "--JarPath  --workdir \"$WORKDIR\"" \
             --icon logo.png \
             --app-version $VERSIONE \
             --vendor Luca \

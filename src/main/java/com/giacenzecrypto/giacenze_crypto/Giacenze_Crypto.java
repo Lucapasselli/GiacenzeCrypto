@@ -9,6 +9,8 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -21,6 +23,45 @@ public class Giacenze_Crypto {
     
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException {
+        
+        
+          Download progress = new Download();
+            progress.Titolo("Finestra dei Log");
+            progress.SetLabel("Finestra dei Log");
+            progress.NascondiInterrompi();
+            progress.NascondiBarra();
+            progress.NoModale();
+            Thread thread;
+            thread = new Thread() {
+                public void run() {
+                
+                   int k=0;
+                   while (k<20){
+                           try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Giacenze_Crypto.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                   }
+                    
+                    
+                }
+            };
+            thread.start();
+            progress.setVisible(true);
+        
+        
+
+        
+        
+        
+        
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Giacenze_Crypto.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Directory di partenza : "+System.getProperty("user.dir"));
         File workingDir = null;
 
         for (int i = 0; i < args.length; i++) {
@@ -39,11 +80,11 @@ public class Giacenze_Crypto {
                 Statiche.setWorkingDirectory(args[i + 1]);
             }
         }
-              
+         System.out.println("Path Finale : "+Statiche.getWorkingDirectory());      
         
         if (!DatabaseH2.CreaoCollegaDatabase()){
-            JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-            System.exit(0);
+         //   JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+         //   System.exit(0);
         }
         CDC_Grafica.tema=DatabaseH2.Opzioni_Leggi("Tema");
         if (CDC_Grafica.tema==null)CDC_Grafica.tema="Chiaro";

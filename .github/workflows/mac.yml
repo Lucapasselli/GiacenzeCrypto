@@ -59,7 +59,7 @@ jobs:
             --name ${{ env.PROJECT_NAME }} \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--risorse ../app/" \
+            --arguments "--workdir $HOME/Library/Application Support/GiacenzeCrypto" \
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca
@@ -73,7 +73,7 @@ jobs:
             --name ${{ env.PROJECT_NAME }} \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--risorse ../app/" \
+            --arguments "--workdir $HOME/Library/Application Support/GiacenzeCrypto" \
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca

@@ -81,15 +81,18 @@ public class Giacenze_Crypto {
                 workingDir = workingDir.replace("HOME", System.getProperty("user.home"));
                 
                 File dir = new File(workingDir);
+                boolean tuttook=true;
 
                 // Controlli di sicurezza
                 if (dir.getPath().contains("..") || dir.getPath().contains(";") || dir.getPath().contains("|")) {
                     System.err.println("Percorso non valido: contiene caratteri non ammessi.");
+                    tuttook=false;
                    // System.exit(1);
                 }
 
                 if (dir.isFile()) {
                     System.err.println("Errore: il percorso specificato è un file, non una directory.");
+                    tuttook=false;
                  //   System.exit(1);
                 }
 
@@ -98,6 +101,7 @@ public class Giacenze_Crypto {
                     boolean created = dir.mkdirs();
                     if (!created) {
                         System.err.println("Impossibile creare la directory di lavoro: " + dir.getAbsolutePath());
+                        tuttook=false;
                     //    System.exit(1);
                     }
                 }
@@ -105,11 +109,12 @@ public class Giacenze_Crypto {
                 // Verifica che sia scrivibile
                 if (!dir.canWrite()) {
                     System.err.println("La directory specificata non è scrivibile: " + dir.getAbsolutePath());
+                    tuttook=false;
                    // System.exit(1);
                 }
 
                 // Se tutto è ok, assegna
-                Statiche.setWorkingDirectory(dir.toString());
+                if (tuttook) Statiche.setWorkingDirectory(workingDir);
             }
         }
         

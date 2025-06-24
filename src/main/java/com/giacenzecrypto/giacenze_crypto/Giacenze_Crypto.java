@@ -62,7 +62,7 @@ public class Giacenze_Crypto {
             Logger.getLogger(Giacenze_Crypto.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Directory di partenza : "+System.getProperty("user.dir"));
-        File workingDir = null;
+       //File workingDir = null;
 
         for (int i = 0; i < args.length; i++) {
             System.out.println(args[i]);
@@ -72,16 +72,44 @@ public class Giacenze_Crypto {
             if (args[i].equals("--JarPath")) {
                 Statiche.setPathRisorse(Funzioni.getJarPath().toString()+"/");
             }
-            if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
-                workingDir = new File(args[i + 1]);
-                if (!workingDir.exists()) {
-                    workingDir.mkdirs(); // crea la directory se non esiste
-                }
-                if (!workingDir.exists()) {
-                    System.err.println("Errore: impossibile creare la directory " + workingDir.getAbsolutePath());
+            if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length && args[i + 1].charAt(args[i + 1].length() - 1) == '/') {
+                String workingDir = args[i + 1];
+                
+
+                // Esegui espansione variabili tipo $HOME o ~
+                workingDir = workingDir.replaceFirst("^~", System.getProperty("user.home"));
+                workingDir = workingDir.replace("$HOME", System.getProperty("user.home"));
+                
+                File dir = new File(workingDir);
+
+                // Controlli di sicurezza
+                if (dir.getPath().contains("..") || dir.getPath().contains(";") || dir.getPath().contains("|")) {
+                    System.err.println("Percorso non valido: contiene caratteri non ammessi.");
                     System.exit(1);
                 }
-                Statiche.setWorkingDirectory(args[i + 1]);
+
+                if (dir.isFile()) {
+                    System.err.println("Errore: il percorso specificato è un file, non una directory.");
+                    System.exit(1);
+                }
+
+                // Se la directory non esiste, tenta di crearla
+                if (!dir.exists()) {
+                    boolean created = dir.mkdirs();
+                    if (!created) {
+                        System.err.println("Impossibile creare la directory di lavoro: " + dir.getAbsolutePath());
+                        System.exit(1);
+                    }
+                }
+
+                // Verifica che sia scrivibile
+                if (!dir.canWrite()) {
+                    System.err.println("La directory specificata non è scrivibile: " + dir.getAbsolutePath());
+                    System.exit(1);
+                }
+
+                // Se tutto è ok, assegna
+                Statiche.setWorkingDirectory(dir.toString());
             }
         }
         

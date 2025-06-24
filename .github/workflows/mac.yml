@@ -52,6 +52,7 @@ jobs:
 
       - name: Build macOS app-image
         run: |
+          WORKDIR="$HOME/Library/Application Support/GiacenzeCrypto/"
           jpackage \
             --type app-image \
             --input build \
@@ -59,13 +60,14 @@ jobs:
             --name ${{ env.PROJECT_NAME }} \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--workdir $HOME/Library/Application Support/GiacenzeCrypto" \
+            --arguments "--JarPath --workdir \"$WORKDIR\"" \
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca
 
       - name: Build macOS .dmg
         run: |
+          WORKDIR="$HOME/Library/Application Support/GiacenzeCrypto"
           jpackage \
             --type dmg \
             --input build \
@@ -73,7 +75,7 @@ jobs:
             --name ${{ env.PROJECT_NAME }} \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--workdir $HOME/Library/Application Support/GiacenzeCrypto" \
+            --arguments "--JarPath --workdir \"$WORKDIR\"" \
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca

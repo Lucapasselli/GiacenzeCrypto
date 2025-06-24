@@ -123,6 +123,21 @@ public class Funzioni {
          }
         
         
+         
+        public static Path getJarPath() {
+        try {
+            return new File(
+                Funzioni.class.getProtectionDomain()
+                           .getCodeSource()
+                           .getLocation()
+                           .toURI()
+            ).getParentFile().toPath();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Impossibile ottenere il path del JAR", e);
+        }
+    } 
+         
+         
         public static String formattaBigDecimal(BigDecimal numero,boolean decimali) {
         // Crea un'istanza di DecimalFormatSymbols per il locale italiano
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ITALY);

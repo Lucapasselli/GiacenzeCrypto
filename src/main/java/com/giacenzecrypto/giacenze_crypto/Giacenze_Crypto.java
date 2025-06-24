@@ -68,6 +68,9 @@ public class Giacenze_Crypto {
             if (args[i].equals("--risorse") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
                 Statiche.setPathRisorse(args[i + 1]);
             }
+            if (args[i].equals("--JarPath")) {
+                Statiche.setPathRisorse(Funzioni.getJarPath().toString());
+            }
             if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
                 workingDir = new File(args[i + 1]);
                 if (!workingDir.exists()) {
@@ -80,7 +83,9 @@ public class Giacenze_Crypto {
                 Statiche.setWorkingDirectory(args[i + 1]);
             }
         }
-         System.out.println("Path Finale : "+Statiche.getWorkingDirectory());      
+        
+        System.out.println("Path Risorse : "+Statiche.getPathRisorse()); 
+        System.out.println("Path Finale : "+Statiche.getWorkingDirectory());      
         
         if (!DatabaseH2.CreaoCollegaDatabase()){
          //   JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);

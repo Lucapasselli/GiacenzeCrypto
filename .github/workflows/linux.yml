@@ -49,10 +49,29 @@ jobs:
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--risorse ../lib/app/" \
+            --arguments "--JarPath" \
             --icon logo.png \
             --app-version $VERSIONE \
             --vendor Luca
+            
+      - name: Build Debian package (.deb) with jpackage
+        run: |
+          WORKDIR="$HOME/Giacenze Crypto/"
+          jpackage \
+            --type deb \
+            --input build \
+            --dest out/deb \
+            --name $PROJECT_NAME \
+            --main-jar Giacenze_Crypto.jar \
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
+            --arguments "--JarPath  --workdir \"$WORKDIR\"" \
+            --icon logo.png \
+            --app-version $VERSIONE \
+            --vendor Luca \
+            --linux-shortcut \
+            --linux-menu-group "Utility" \
+            --linux-package-name giacenze-crypto \
+            --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
             
     #  - name: Move resources to root (Linux)
     #    run: |
@@ -70,61 +89,8 @@ jobs:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Linux
           path: out/linux/${{ env.PROJECT_NAME }}
           
-  build-deb:
-    runs-on: ubuntu-latest
-    needs: build-linux
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup GraalVM on Linux
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'graalvm'
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: 'maven'
-
-      - name: Estrai versione dal pom.xml
-        id: get-version
-        run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "VERSIONE=$VERSION" >> $GITHUB_ENV
-
-      - name: Build JAR with Maven
-        run: mvn clean package -DskipTests  
-
-      - name: Copy build artifacts and resources
-        run: |
-          mkdir -p build/Immagini
-          cp -r Immagini/* build/Immagini/
-          cp logo.png build/
-          cp GestitiCoincap.csv build/
-          cp target/Giacenze_Crypto-${{ env.VERSIONE }}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
-
-      - name: Build Debian package (.deb) with jpackage
-        run: |
-          jpackage \
-            --type deb \
-            --input build \
-            --dest out/deb \
-            --name $PROJECT_NAME \
-            --main-jar Giacenze_Crypto.jar \
-            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--risorse /opt/giacenze-crypto/lib/app/  --workdir ./GiacenzeCrypto/" \
-            --icon logo.png \
-            --app-version $VERSIONE \
-            --vendor Luca \
-            --linux-shortcut \
-            --linux-menu-group "Utility" \
-            --linux-package-name giacenze-crypto \
-            --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
-
-      - name: Debug Debian package output
-        run: |
-          echo "Contenuto della cartella out/deb:"
-          ls -lh out/deb
-
       - uses: actions/upload-artifact@v4
         with:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Debian_Package
           path: out/deb
-         
+          

@@ -57,7 +57,7 @@ jobs:
             
       - name: Build Debian package (.deb) with jpackage
         run: |
-          WORKDIR="HOME/Giacenze Crypto/"
+          WORKDIR="HOME/GiacenzeCrypto/"
           jpackage \
             --type deb \
             --input build \

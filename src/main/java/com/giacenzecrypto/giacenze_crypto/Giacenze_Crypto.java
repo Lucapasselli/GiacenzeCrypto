@@ -85,12 +85,12 @@ public class Giacenze_Crypto {
                 // Controlli di sicurezza
                 if (dir.getPath().contains("..") || dir.getPath().contains(";") || dir.getPath().contains("|")) {
                     System.err.println("Percorso non valido: contiene caratteri non ammessi.");
-                    System.exit(1);
+                   // System.exit(1);
                 }
 
                 if (dir.isFile()) {
                     System.err.println("Errore: il percorso specificato è un file, non una directory.");
-                    System.exit(1);
+                 //   System.exit(1);
                 }
 
                 // Se la directory non esiste, tenta di crearla
@@ -98,14 +98,14 @@ public class Giacenze_Crypto {
                     boolean created = dir.mkdirs();
                     if (!created) {
                         System.err.println("Impossibile creare la directory di lavoro: " + dir.getAbsolutePath());
-                        System.exit(1);
+                    //    System.exit(1);
                     }
                 }
 
                 // Verifica che sia scrivibile
                 if (!dir.canWrite()) {
                     System.err.println("La directory specificata non è scrivibile: " + dir.getAbsolutePath());
-                    System.exit(1);
+                   // System.exit(1);
                 }
 
                 // Se tutto è ok, assegna
@@ -117,8 +117,8 @@ public class Giacenze_Crypto {
         System.out.println("Path Finale : "+Statiche.getWorkingDirectory());      
         
         if (!DatabaseH2.CreaoCollegaDatabase()){
-         //   JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-         //   System.exit(0);
+            JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            System.exit(0);
         }
         CDC_Grafica.tema=DatabaseH2.Opzioni_Leggi("Tema");
         if (CDC_Grafica.tema==null)CDC_Grafica.tema="Chiaro";

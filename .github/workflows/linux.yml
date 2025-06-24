@@ -65,7 +65,7 @@ jobs:
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--JarPath  --workdir \"${{ env.WORKDIR }}\"" \
+            --arguments "--JarPath  --workdir \"$WORKDIR\"" \
             --icon logo.png \
             --app-version $VERSIONE \
             --vendor Luca \

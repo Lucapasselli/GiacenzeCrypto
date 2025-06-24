@@ -4,7 +4,7 @@ env:
   PROJECT_NAME: Giacenze_Crypto
   JAVA_VERSION: 21
   BUILD_DIR: build
-  #WORKDIR: $HOME/Giacenze Crypto/
+  WORKDIR: $HOME/Giacenze Crypto/
 
 on:
   workflow_dispatch:
@@ -65,7 +65,7 @@ jobs:
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--JarPath  --workdir \"WORKDIR\"" \
+            --arguments "--JarPath  --workdir \"${{ env.WORKDIR }}\"" \
             --icon logo.png \
             --app-version $VERSIONE \
             --vendor Luca \

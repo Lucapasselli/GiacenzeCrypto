@@ -65,6 +65,7 @@ public class Giacenze_Crypto {
         File workingDir = null;
 
         for (int i = 0; i < args.length; i++) {
+            System.out.println(args[i]);
             if (args[i].equals("--risorse") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
                 Statiche.setPathRisorse(args[i + 1]);
             }

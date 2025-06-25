@@ -67,7 +67,6 @@ jobs:
 
       - name: Debug macOS output
         run: |
-          ls -R out/macos
           ls -R out/dmg
 
       - name: Upload .dmg

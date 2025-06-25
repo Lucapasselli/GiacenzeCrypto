@@ -63,6 +63,18 @@ public class Giacenze_Crypto {
         }
         System.out.println("Directory di partenza : "+System.getProperty("user.dir"));
        //File workingDir = null;
+       String home = System.getProperty("user.home");
+       System.out.println("home1: "+home);
+        if (home == null || home.isBlank()) {
+            // Prova a usare la variabile d’ambiente HOME
+            home = System.getenv("HOME");
+            System.out.println("home2: "+home);
+        }
+        if (home == null || home.isBlank()) {
+            // Ultimo fallback: directory corrente
+            home = new File(".").getAbsolutePath();
+            System.out.println("home3: "+home);
+        }
 
         for (int i = 0; i < args.length; i++) {
             System.out.println(args[i]);
@@ -77,8 +89,8 @@ public class Giacenze_Crypto {
                 
 
                 // Esegui espansione variabili tipo $HOME o ~
-                workingDir = workingDir.replaceFirst("^~", System.getProperty("user.home"));
-                workingDir = workingDir.replace("HOME", System.getProperty("user.home"));
+                workingDir = workingDir.replaceFirst("^~", home);
+                workingDir = workingDir.replace("HOME", home);
                 
                 File dir = new File(workingDir);
                 boolean tuttook=true;

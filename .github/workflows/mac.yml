@@ -67,7 +67,7 @@ jobs:
 
       - name: Build macOS .dmg
         run: |
-          WORKDIR="HOME/Library/Application Support/GiacenzeCrypto"
+          WORKDIR="HOME/Library/Application Support/GiacenzeCrypto/"
           jpackage \
             --type dmg \
             --input build \

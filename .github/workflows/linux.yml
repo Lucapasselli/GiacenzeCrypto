@@ -50,7 +50,6 @@ jobs:
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--JarPath" \
             --icon logo.png \
             --app-version $VERSIONE \
             --vendor Luca
@@ -65,7 +64,7 @@ jobs:
             --name $PROJECT_NAME \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--JarPath  --workdir \"$WORKDIR\"" \
+            --arguments "--workdir \"$WORKDIR\"" \
             --icon logo.png \
             --app-version $VERSIONE \
             --vendor Luca \
@@ -73,13 +72,7 @@ jobs:
             --linux-menu-group "Utility" \
             --linux-package-name giacenze-crypto \
             --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
-            
-    #  - name: Move resources to root (Linux)
-    #    run: |
-    #        mv "out/linux/$PROJECT_NAME/lib/app/Immagini" "out/linux/$PROJECT_NAME/bin/Immagini"
-    #        mv "out/linux/$PROJECT_NAME/lib/app/logo.png" "out/linux/$PROJECT_NAME/bin/logo.png"
-    #        mv "out/linux/$PROJECT_NAME/lib/app/GestitiCoincap.csv" "out/linux/$PROJECT_NAME/bin/GestitiCoincap.csv"
-            
+                       
       - name: Debug Linux output
         run: |
             echo "Contenuto della cartella generata:"

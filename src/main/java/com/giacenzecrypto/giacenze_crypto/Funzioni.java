@@ -709,7 +709,7 @@ public class Funzioni {
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);
         
-            File f=new File ("Temporanei/Tabella_"+DataOra+".xlsx");
+            File f=new File (Statiche.getCartella_Temporanei()+"Tabella_"+DataOra+".xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
             Worksheet ws=wb.newWorksheet("Riepilogo Tabella ");
@@ -785,6 +785,7 @@ public class Funzioni {
     public static void Files_CancellaOltreTOTh(String directory, int Ore) {
         Path dir = Paths.get(directory);
         Instant now = Instant.now();
+        System.out.println("Inizio procedura di pulizia file obsoleti in : "+directory);
 
         try (Stream<Path> paths = Files.list(dir)) {
             paths.filter(Files::isRegularFile)
@@ -796,7 +797,7 @@ public class Funzioni {
                         Duration age = Duration.between(creationTime, now);
                         if (age.toHours() > Ore) {
                             Files.delete(path);
-                            //System.out.println("Cancellato: " + path);
+                            System.out.println("Cancellato file: " + path);
                         }
                     } catch (IOException e) {
                         System.err.println("Errore nella gestione del file: " + path + " - " + e.getMessage());
@@ -817,7 +818,7 @@ public class Funzioni {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);  
-            File f=new File ("Temporanei/RW_"+Anno+"_"+DataOra+".xlsx");
+            File f=new File (Statiche.getCartella_Temporanei()+"RW_"+Anno+"_"+DataOra+".xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
             Worksheet wsrm=wb.newWorksheet("Riepilogo Anno "+Anno);

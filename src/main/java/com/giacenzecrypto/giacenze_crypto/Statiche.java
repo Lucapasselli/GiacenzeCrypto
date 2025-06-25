@@ -65,4 +65,11 @@ public class Statiche {
         return getWorkingDirectory() + "crypto.com.fiatwallet.tipimovimentiPers.db";
     }
     
+    public static String getCartella_Temporanei() {
+        return getWorkingDirectory() + "Temporanei/";
+    }
+    
+    public static String getCartella_Backup() {
+        return getWorkingDirectory() + "Backup/";
+    }
 }

@@ -138,10 +138,10 @@ public class Prezzi {
     
     public static void GeneraMappaCambioUSDEUR(){
          try {
-             File file=new File ("cambioUSDEUR.db");
+             File file=new File (Statiche.getFileUSDEUR());
              if (!file.exists()) file.createNewFile();
              String riga;
-             try (FileReader fire = new FileReader("cambioUSDEUR.db");
+             try (FileReader fire = new FileReader(Statiche.getFileUSDEUR());
                      BufferedReader bure = new BufferedReader(fire);)
              {
                  while((riga=bure.readLine())!=null)
@@ -528,6 +528,7 @@ public class Prezzi {
         
     public static String ConvertiUSDEUR(String Valore, String Data) {
         RecuperaTassiCambioEURUSD();
+        //System.out.println(Valore+" - "+Data);
         
         
         String risultato = null;
@@ -2544,6 +2545,7 @@ for (int i=0;i<ArraydataIni.size();i++){
      static void ScriviFileConversioneUSDEUR() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    try { 
+      // System.out.println("ScriviFileConversioneUSDEUR : "+Statiche.getFileUSDEUR());
        FileWriter w=new FileWriter(Statiche.getFileUSDEUR());
        BufferedWriter b=new BufferedWriter (w);
        

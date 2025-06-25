@@ -50,21 +50,6 @@ jobs:
           cp GestitiCoincap.csv build/
           cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
 
-      - name: Build macOS app-image
-        run: |
-          WORKDIR="HOME/Library/Application Support/GiacenzeCrypto/"
-          jpackage \
-            --type app-image \
-            --input build \
-            --dest out/macos \
-            --name ${{ env.PROJECT_NAME }} \
-            --main-jar Giacenze_Crypto.jar \
-            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--JarPath --workdir \"$WORKDIR\"" \
-            --icon logo.icns \
-            --app-version ${{ env.VERSIONE }} \
-            --vendor Luca
-
       - name: Build macOS .dmg
         run: |
           WORKDIR="HOME/Library/Application Support/GiacenzeCrypto/"
@@ -75,7 +60,7 @@ jobs:
             --name ${{ env.PROJECT_NAME }} \
             --main-jar Giacenze_Crypto.jar \
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--JarPath --workdir \"$WORKDIR\"" \
+            --arguments "--workdir \"$WORKDIR\"" \
             --icon logo.icns \
             --app-version ${{ env.VERSIONE }} \
             --vendor Luca
@@ -85,15 +70,9 @@ jobs:
           ls -R out/macos
           ls -R out/dmg
 
-      - name: Upload macOS app-image
-        uses: actions/upload-artifact@v4
-        with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_MacOS
-          path: out/macos/${{ env.PROJECT_NAME }}.app
-
       - name: Upload .dmg
         uses: actions/upload-artifact@v4
         with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Installer_MacOS
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_DMG_MacOS
           path: out/dmg/*.dmg
 

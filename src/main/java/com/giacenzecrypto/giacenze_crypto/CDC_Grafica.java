@@ -186,16 +186,16 @@ private static final long serialVersionUID = 3L;
             File cryptowallet=new File (Statiche.getFile_CryptoWallet());
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
             
-            File cartella=new File ("Backup");
+            File cartella=new File (Statiche.getCartella_Backup());
             if (!cartella.exists()) cartella.mkdir();
             
-            cartella=new File ("Temporanei");
+            cartella=new File (Statiche.getCartella_Temporanei());
             if (!cartella.exists()) cartella.mkdir();
             
             //Cancello i backup automatici più vecchi di 6 Mesi
-            Funzioni.Files_CancellaOltreTOTh("Backup", 4320);
+            Funzioni.Files_CancellaOltreTOTh(Statiche.getCartella_Backup(), 4320);
             //Cancello i file temporanei, tipicamente esportazioni o stampe più vecchi di 24h
-            Funzioni.Files_CancellaOltreTOTh("Temporanei", 24);
+            Funzioni.Files_CancellaOltreTOTh(Statiche.getCartella_Temporanei(), 24);
 
             Funzioni.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
  
@@ -9590,7 +9590,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);
             String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
-            Stampe stampa=new Stampe("Temporanei/RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");           
+            Stampe stampa=new Stampe(Statiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");           
             int anno=Integer.parseInt(AnnoDiCompetenza);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
@@ -11378,7 +11378,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);  
-            Stampe stampa=new Stampe("Temporanei/RT_"+Anno+"_"+DataOra+".pdf");
+            Stampe stampa=new Stampe(Statiche.getCartella_Temporanei()+"RT_"+Anno+"_"+DataOra+".pdf");
             String AnnoDiCompetenza=String.valueOf(Anno);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
             String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;

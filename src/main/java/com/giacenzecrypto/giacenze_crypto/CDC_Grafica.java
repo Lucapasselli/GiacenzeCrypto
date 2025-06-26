@@ -6609,7 +6609,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_DaSalvare = true;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         long tempoOperazione=System.currentTimeMillis();
-        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         System.out.println("Tempo calcolo plusvalenza : "+tempoOperazione+" millisec.");
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
@@ -6969,7 +6969,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
         }
         
-        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
         DepositiPrelievi_Caricatabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -7013,7 +7013,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
             TabellaCryptodaAggiornare = false;
             TransazioniCrypto_DaSalvare = true;
-            Calcoli_Plusvalenze.AggiornaPlusvalenze();
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
             TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
             RW_RicalcolaRWseEsiste();
@@ -8070,7 +8070,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         gest.setVisible(true);
 
         //   TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti();
-        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
 
         //questo sotto serve per aumentare la diomensione dell'header della tabella
@@ -8165,7 +8165,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     {
                         //TabellaCryptodaAggiornare=true;
                         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
@@ -8193,7 +8193,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 DatabaseH2.Pers_Emoney_Cancella(Moneta);
                 Opzioni_Emoney_CaricaTabellaEmoney();
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 //TabellaCryptodaAggiornare=true;
@@ -8216,7 +8216,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 DatabaseH2.Pers_Emoney_Scrivi(m, "2000-01-01");
                 Opzioni_Emoney_CaricaTabellaEmoney();
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 // TabellaCryptodaAggiornare=true;
@@ -8255,7 +8255,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //2 - Ricalcolo i dati dell'RW se presenti
                 RW_RicalcolaRWseEsiste();
                 //3 - Aggiorno le plusvalenze
-                Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                 //4 - Ricarico la tabella crypt
                 TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -9105,7 +9105,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                        TransazioniCrypto_DaSalvare = true;
                        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
 
-                       Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                       Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                        DepositiPrelievi_Caricatabella();
                        RW_CalcolaRW();
@@ -9126,7 +9126,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                        TransazioniCrypto_DaSalvare = true;
                        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
 
-                       Calcoli_Plusvalenze.AggiornaPlusvalenze();
+                       Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                        DepositiPrelievi_Caricatabella();
                        RW_CalcolaRW();
@@ -12906,7 +12906,7 @@ try {
                 }
 
 
-        Calcoli_Plusvalenze.AggiornaPlusvalenze();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
         
         if (VersioneCambiata){
             //Se c'è un cambio versione può essere che vi sia anche una modifica del file

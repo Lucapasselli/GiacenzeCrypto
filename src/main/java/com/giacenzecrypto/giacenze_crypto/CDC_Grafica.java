@@ -8672,6 +8672,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             String RW_MostraGiacPagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
                             boolean MostraGiacSePagaBollo=false;
                             if (Val[2].equals("S")&&RW_MostraGiacPagaBollo.equals("SI"))MostraGiacSePagaBollo=true;
+                           // LoggerGC.logInfo("MostraGiacSePagaBollo="+MostraGiacSePagaBollo,"CDC_Grafica.RW_CalcolaRW");
                             //Se il wallet di destinazione è un wallet che paga bollo non faccio nulla
                             if(!MostraGiacSePagaBollo){
                                 String RW2[];
@@ -8703,7 +8704,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     //poi sistemo i dati dell'RW
                     //Lo faccio alla fine perchè nella parte prima il programma deve essere in grado di fare dei calcoli che se avessi solo la 
                     //lista con le giacenze iniziali e finali non riuscirei a fare
+                    
                     if (MostraGiacenzeSePagaBollo){
+                        
                         //Azzero l'RW per quel Wallet
                         Mappa_RW_ListeXGruppoWallet.put(key,MappaListaGiacenzeInizioFine.get(key));
                         RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);
@@ -8721,7 +8724,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
                             RW1[4] = Errore;
                             RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                            
                         }
+                        LoggerGC.logInfo("Anno : "+RW_Anno_ComboBox.getSelectedItem().toString()+" - Wallet : "+key+" - gg detenzione :"+RW1[3],"CDCGrafica.RW_CalcolaRW");
+                        
                     }
 
                 }
@@ -9273,6 +9279,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
                 } 
         }
+        LoggerGC.close();
   
     }//GEN-LAST:event_formWindowClosing
 

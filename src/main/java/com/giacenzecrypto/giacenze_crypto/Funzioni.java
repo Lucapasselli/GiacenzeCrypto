@@ -1158,10 +1158,16 @@ return ListaSaldi;
         //Moneta[0]->Qta Inizio Anno ----- Moneta[1]->Qta Fine Anno
             boolean PrimoMovimento;
                 for (String[] movimento : MappaCryptoWallet.values()) {
+                    //Prima cosa controllo che le date corrispondano all'ID
+                    if(!movimento[0].substring(0, 4).equals(movimento[1].substring(0, 4))){
+                         LoggerGC.logInfo("ID diverso da data --- "+movimento[0]+ " --- "+movimento[1],"Funzioni.RW_GiacenzeInizioFineAnno");
+                    }
+                    
                     String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]);
                     //1 - Inizializzo le Mappe
                     if (MappaCoinsWallet.get(GruppoWallet)==null)
                     {
+                        LoggerGC.logInfo("Wallet - "+GruppoWallet+" - ID Iniziale --- "+movimento[0],"Funzioni.RW_GiacenzeInizioFineAnno");
                         QtaCrypto = new TreeMap<>();
                         MappaCoinsWallet.put(GruppoWallet, QtaCrypto);
                         String DataPartenza_Prezzo_ID[]=new String[]{movimento[1],movimento[15],movimento[0],movimento[11]};
@@ -1171,6 +1177,8 @@ return ListaSaldi;
                         QtaCrypto = MappaCoinsWallet.get(GruppoWallet);
                         PrimoMovimento=false;
                     }
+                    
+                    
                     //2 - 
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
@@ -1233,7 +1241,7 @@ return ListaSaldi;
                         
                     
                 }
-        
+        //LoggerGC.logInfo("-------------------------------------------------------------------","Funzioni.RW_GiacenzeInizioFineAnno");
         //Adesso elenco tutte le monete e le metto il tutto in una lista   
         Map<String, List<String[]>> MappaLista= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<String[]> lista;
@@ -1256,6 +1264,7 @@ return ListaSaldi;
                 DataInizio1 = DataInizioWallet;
                 lDataInizio1 = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizio1);
             }
+            LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
             for(Moneta m[]:QtaCrypt.values()){
                 if(!(m[0].Qta.equals("0")&&m[1].Qta.equals("0")))
                 {
@@ -1288,6 +1297,7 @@ return ListaSaldi;
                     xlista[15]="";                                              //Tipo Errore
                     xlista[16]="";                                              //Lista ID coinvolti separati da virgola
                     lista.add(xlista);
+                    
                     //System.out.println(GWallet+";"+m[0].Moneta+";"+m[0].Qta+";"+m[0].Prezzo+";"+m[1].Qta+";"+m[1].Prezzo); 
                 }
             }

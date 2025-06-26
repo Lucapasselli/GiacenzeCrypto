@@ -10,7 +10,6 @@ import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
 import java.io.File;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -56,7 +55,7 @@ public class Giacenze_Crypto {
             JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             System.exit(0);
         }
-        
+        LoggerGC.init(); 
         
         
         CDC_Grafica.tema=DatabaseH2.Opzioni_Leggi("Tema");
@@ -101,61 +100,61 @@ private static String getHomeUtente(){
 
 private static void setWorkDir(String workingDir){
                
-                //workingDir = workingDir.replaceFirst("^~", getHomeUtente());
-                workingDir = workingDir.replace("HOME", getHomeUtente());
-                
-                File dir = new File(workingDir);
+        //workingDir = workingDir.replaceFirst("^~", getHomeUtente());
+        workingDir = workingDir.replace("HOME", getHomeUtente());
 
-                // Controlli di sicurezza
-                if (dir.getPath().contains("..") || dir.getPath().contains(";") || dir.getPath().contains("|")) {
-                    JOptionPane.showConfirmDialog(null, "Attenzione! il parametro passato a --workdir '"+workingDir+"' non è valido!\n "
-                            + " Il Programma verrà terminato.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                    System.exit(1);
-                }
+        File dir = new File(workingDir);
 
-                if (dir.isFile()) {
-                    JOptionPane.showConfirmDialog(null, "Attenzione! il parametro passato a --workdir '"+workingDir+"' non è un file e non una directory!\n "
-                            + " Il Programma verrà terminato.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                    System.exit(1);
-                }
+        // Controlli di sicurezza
+        if (dir.getPath().contains("..") || dir.getPath().contains(";") || dir.getPath().contains("|")) {
+            JOptionPane.showConfirmDialog(null, "Attenzione! il parametro passato a --workdir '" + workingDir + "' non è valido!\n "
+                    + " Il Programma verrà terminato.", "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            System.exit(1);
+        }
 
-                // Se la directory non esiste, tenta di crearla
-                if (!dir.exists()) {
-                    boolean created = dir.mkdirs();
-                    if (!created) {
-                        JOptionPane.showConfirmDialog(null, "Attenzione! non è possibile creare la directory specificata : '"+workingDir+"'\n "
-                            + " Il Programma verrà terminato.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                        System.exit(1);
-                    }
-                }
+        if (dir.isFile()) {
+            JOptionPane.showConfirmDialog(null, "Attenzione! il parametro passato a --workdir '" + workingDir + "' non è un file e non una directory!\n "
+                    + " Il Programma verrà terminato.", "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            System.exit(1);
+        }
 
-                // Verifica che sia scrivibile
-                if (!dir.canWrite()) {
-                    System.err.println("La directory specificata non è scrivibile: " + dir.getAbsolutePath());
-                    JOptionPane.showConfirmDialog(null, "Attenzione! La directory specificata : '"+workingDir+"' non è scrivibile\n "
-                            + " Il Programma verrà terminato.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                    System.exit(1);
-                }
+        // Se la directory non esiste, tenta di crearla
+        if (!dir.exists()) {
+            boolean created = dir.mkdirs();
+            if (!created) {
+                JOptionPane.showConfirmDialog(null, "Attenzione! non è possibile creare la directory specificata : '" + workingDir + "'\n "
+                        + " Il Programma verrà terminato.", "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                System.exit(1);
+            }
+        }
 
-                // Se tutto è ok, assegna
-                Statiche.setWorkingDirectory(workingDir);
-}
+        // Verifica che sia scrivibile
+        if (!dir.canWrite()) {
+            System.err.println("La directory specificata non è scrivibile: " + dir.getAbsolutePath());
+            JOptionPane.showConfirmDialog(null, "Attenzione! La directory specificata : '" + workingDir + "' non è scrivibile\n "
+                    + " Il Programma verrà terminato.", "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            System.exit(1);
+        }
 
-        private static String getJarPath() {
+        // Se tutto è ok, assegna
+        Statiche.setWorkingDirectory(workingDir);
+    }
+
+    private static String getJarPath() {
         try {
             return new File(
-                Funzioni.class.getProtectionDomain()
-                           .getCodeSource()
-                           .getLocation()
-                           .toURI()
+                    Funzioni.class.getProtectionDomain()
+                            .getCodeSource()
+                            .getLocation()
+                            .toURI()
             ).getParentFile().toPath().toString();
         } catch (URISyntaxException e) {
             JOptionPane.showConfirmDialog(null, "Attenzione! non è possibile recuperare la path del file Jar principale!\n "
-                            + " Il Programma verrà terminato.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                    System.exit(1);
-                    return null;
+                    + " Il Programma verrà terminato.", "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            System.exit(1);
+            return null;
         }
-    } 
+    }
 
 
     private static void apriFinestraLog() {

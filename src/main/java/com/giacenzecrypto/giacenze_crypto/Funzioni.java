@@ -1245,9 +1245,11 @@ return ListaSaldi;
         //Adesso elenco tutte le monete e le metto il tutto in una lista   
         Map<String, List<String[]>> MappaLista= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<String[]> lista;
-        int DiffDate=OperazioniSuDate.DifferenzaDate(DataInizio, DataFine)+1;
+        
         
         for(String GWallet:MappaCoinsWallet.keySet()){
+            int DiffDate=OperazioniSuDate.DifferenzaDate(DataInizio, DataFine)+1;
+            LoggerGC.logInfo("DiffDate1 - "+DataInizio+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
             Map<String, Moneta[]> QtaCrypt=MappaCoinsWallet.get(GWallet);
             lista=RW_RitornaListaDaMappa(MappaLista,GWallet);
           /*  if(MappaLista.get(GWallet)==null){
@@ -1261,9 +1263,11 @@ return ListaSaldi;
             String DataInizio1=DataInizio+" 00:00";
             if (lDataInizioWallet > lDataInizio) {
                 DiffDate = OperazioniSuDate.DifferenzaDate(OperazioniSuDate.ConvertiDatadaLong(lDataInizioWallet), DataFine) + 1;
+                LoggerGC.logInfo("DiffDate2 - "+GWallet+" - "+lDataInizioWallet+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
+                LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
                 DataInizio1 = DataInizioWallet;
                 lDataInizio1 = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizio1);
-            }
+            }           
             LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
             for(Moneta m[]:QtaCrypt.values()){
                 if(!(m[0].Qta.equals("0")&&m[1].Qta.equals("0")))

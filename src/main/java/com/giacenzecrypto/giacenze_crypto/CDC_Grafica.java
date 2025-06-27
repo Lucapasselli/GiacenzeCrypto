@@ -2249,6 +2249,7 @@ private static final long serialVersionUID = 3L;
             RW_Tabella_Dettagli.getColumnModel().getColumn(16).setPreferredWidth(0);
             RW_Tabella_Dettagli.getColumnModel().getColumn(16).setMaxWidth(0);
         }
+        RW_Tabella_Dettagli.getTableHeader().setPreferredSize(new Dimension(RW_Tabella_Dettagli.getColumnModel().getTotalColumnWidth(), 64));
 
         RW_Bottone_Calcola.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Calcolatrice.png"))); // NOI18N
         RW_Bottone_Calcola.setText("Calcola");
@@ -2512,7 +2513,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Fiscalmente Rilevanti</html>", "<html>Costo Carico Movimenti<br>Fiscalmente Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "PMC", "Errori"
+                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Rilevanti</html>", "<html>Costo Carico<br>Movimenti Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "PMC", "Errori"
             }
         ) {
             Class[] types = new Class [] {
@@ -2546,7 +2547,7 @@ private static final long serialVersionUID = 3L;
             RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setPreferredWidth(100);
             RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMaxWidth(100);
         }
-        RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 32));
+        RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 64));
 
         RT_Tabella_LiFo.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {

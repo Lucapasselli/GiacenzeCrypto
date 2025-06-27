@@ -2762,6 +2762,9 @@
                             <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="RW_Tabella_DettagliMouseReleased"/>
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="RW_Tabella_DettagliKeyReleased"/>
                           </Events>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="RW_Tabella_Dettagli.getTableHeader().setPreferredSize(new Dimension(RW_Tabella_Dettagli.getColumnModel().getTotalColumnWidth(), 64));"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -3238,8 +3241,8 @@
                                         <Column editable="false" title="Wallet" type="java.lang.Object"/>
                                         <Column editable="false" title="Moneta" type="java.lang.Object"/>
                                         <Column editable="false" title="Tipo" type="java.lang.Object"/>
-                                        <Column editable="false" title="&lt;html&gt;Valore Movimenti&lt;br&gt;Fiscalmente Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
-                                        <Column editable="false" title="&lt;html&gt;Costo Carico Movimenti&lt;br&gt;Fiscalmente Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
+                                        <Column editable="false" title="&lt;html&gt;Valore Movimenti&lt;br&gt;Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
+                                        <Column editable="false" title="&lt;html&gt;Costo Carico&lt;br&gt;Movimenti Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
                                         <Column editable="false" title="Plusvalenze Realizzate" type="java.lang.Double"/>
                                         <Column editable="false" title="Plusvalenze Latenti" type="java.lang.Double"/>
                                         <Column editable="false" title="Giacenze Rimanenti" type="java.lang.Object"/>
@@ -3316,7 +3319,7 @@
                                     <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="RT_Tabella_DettaglioMoneteKeyReleased"/>
                                   </Events>
                                   <AuxValues>
-                                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 32));"/>
+                                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 64));"/>
                                   </AuxValues>
                                 </Component>
                               </SubComponents>

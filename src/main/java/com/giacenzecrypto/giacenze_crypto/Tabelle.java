@@ -369,20 +369,22 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
             // Ottieni il componente standard per la cella
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
                     Color bg; 
-        Color fore;
+       // Color fore;
         if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
-            fore=Color.lightGray;
+            //fore=Color.lightGray;
         }
             else 
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
-            fore=Color.BLACK;
+         //   fore=table.getForeground();
+            //fore=Color.BLACK;
         }
 
             // Imposta il colore di sfondo alternato
             if (isSelected) {
                 c.setBackground(table.getSelectionBackground());
+               // c.setForeground(table.getSelectionForeground());
             } else {
                 c.setBackground(bg);
             }
@@ -492,12 +494,14 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
             else 
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
-            fore=Color.BLACK;
+            fore=table.getForeground();
+          //  fore=Color.BLACK;
         }
 
             // Imposta il colore di sfondo alternato
             if (isSelected) {
                 c.setBackground(table.getSelectionBackground());
+               // c.setForeground(table.getSelectionForeground());
             } 
             else {
                 c.setBackground(bg);
@@ -547,24 +551,32 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
             else 
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
-            fore=Color.BLACK;
+            fore=table.getForeground();
+            //fore=Color.BLACK;
         }
 
             // Imposta il colore di sfondo alternato
             if (isSelected) {
                 c.setBackground(table.getSelectionBackground());
+               // c.setForeground(table.getSelectionForeground());
             } 
-            else {
-                c.setBackground(bg);
-            }
-            if (col==3 && value.toString().toLowerCase().contains("-")) {
+            else if (col==3 && value.toString().toLowerCase().contains("-")) {
                     setForeground(rosso);
                 }
             else if (col==3)setForeground(verdeScuro);
             else if (col==6)setForeground(rosso);
-            else{
+            
+           else {
+                c.setBackground(bg);
+            }/*
+            if (col==3 && value.toString().toLowerCase().contains("-")) {
+                    setForeground(rosso);
+                }
+            else if (col==3)setForeground(verdeScuro);
+            else if (col==6)setForeground(rosso);*/
+          /*  else{
                 setForeground(fore);
-            }
+            }*/
             return c;
         }
     };

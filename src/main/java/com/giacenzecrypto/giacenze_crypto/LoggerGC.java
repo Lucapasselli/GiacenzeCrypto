@@ -49,7 +49,7 @@ public class LoggerGC {
 
     // Metodo per loggare ovunque nel programma
     public static void logInfo(String message,String funzione) {
-        logger.log(Level.INFO, "[{0}] {1}", new Object[]{funzione, message});
+        logger.info("["+funzione+"] "+message);
     }
     
     public static void close() {

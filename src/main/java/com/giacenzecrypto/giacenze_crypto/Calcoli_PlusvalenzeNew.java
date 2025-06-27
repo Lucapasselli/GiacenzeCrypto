@@ -224,6 +224,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 }
     
      public static void AggiornaPlusvalenze(){
+         
+      //   System.out.println("Aggiornamento Plusvalenze");
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
 

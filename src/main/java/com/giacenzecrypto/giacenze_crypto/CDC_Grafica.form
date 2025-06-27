@@ -1317,6 +1317,9 @@
                             <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_TabellaMouseReleased"/>
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="DepositiPrelievi_TabellaKeyReleased"/>
                           </Events>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>

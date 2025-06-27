@@ -503,15 +503,13 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
                 c.setBackground(table.getSelectionBackground());
                // c.setForeground(table.getSelectionForeground());
             } 
-            else {
-                c.setBackground(bg);
-            }
-            if (col==7 && value.toString().toLowerCase().contains("-")) {
+            else if (col==7 && value.toString().toLowerCase().contains("-")) {
                     setForeground(rosso);
                 }
             else if (col==10)setForeground(rosso);
             else{
                 setForeground(fore);
+                c.setBackground(bg);
             }
             return c;
         }
@@ -558,25 +556,16 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
             // Imposta il colore di sfondo alternato
             if (isSelected) {
                 c.setBackground(table.getSelectionBackground());
-               // c.setForeground(table.getSelectionForeground());
             } 
             else if (col==3 && value.toString().toLowerCase().contains("-")) {
                     setForeground(rosso);
                 }
             else if (col==3)setForeground(verdeScuro);
             else if (col==6)setForeground(rosso);
-            
-           else {
-                c.setBackground(bg);
-            }/*
-            if (col==3 && value.toString().toLowerCase().contains("-")) {
-                    setForeground(rosso);
-                }
-            else if (col==3)setForeground(verdeScuro);
-            else if (col==6)setForeground(rosso);*/
-          /*  else{
+            else{
                 setForeground(fore);
-            }*/
+                c.setBackground(bg);
+            }
             return c;
         }
     };

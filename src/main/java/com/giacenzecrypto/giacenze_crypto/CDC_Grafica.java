@@ -1356,6 +1356,7 @@ private static final long serialVersionUID = 3L;
             DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMinWidth(50);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMaxWidth(400);
         }
+        DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));
 
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Auto.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("Assegnazione Automatica");
@@ -10129,7 +10130,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
           //  Tabelle.ColoraTabellaSempliceDouble(RT_Tabella_DettaglioMonete);
-          Download progress = new Download();
+        Download progress = new Download();
         progress.setLocationRelativeTo(this);
 
         Thread thread;

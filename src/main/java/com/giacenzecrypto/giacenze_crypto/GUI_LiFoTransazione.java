@@ -4,7 +4,13 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
+import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.PopUp_IDTrans;
+import java.math.BigDecimal;
+import java.util.ArrayDeque;
 import javax.swing.ImageIcon;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -16,14 +22,47 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
      * Creates new form Gui_LiFo_Transazione
      */
     private static String ID="";
+    public MultiSelectPopup popup = new MultiSelectPopup(this);
+    
     public GUI_LiFoTransazione(String IDtr) {
         ID=IDtr;
         initComponents();
         ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
         setIconImage(icon.getImage());
         setTitle("LiFo Transazione : "+ID);
+        Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(ID);
+        ArrayDeque<String[]> StackEntrato=lifoID.Get_CryptoStackEntrato();
+        ArrayDeque<String[]> StackUscito=lifoID.Get_CryptoStackUscito();
+        PopolaTabella(Tabella_Lifo_Entrata,StackEntrato);
+        PopolaTabella(Tabella_Lifo_Uscita,StackUscito);
+        
     }
 
+    private void PopolaTabella(JTable table,ArrayDeque<String[]> Stack){
+        DefaultTableModel ModelloTabella = inizializzaTabella(table);
+        ArrayDeque<String[]> stack=Stack.clone();
+        while (!stack.isEmpty()) {
+            String[] ultimoRecupero = stack.pop();
+            String[] riga = new String[6];
+            riga[0]=ultimoRecupero[3];
+            riga[1]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3])[1];
+            riga[2]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3])[6];
+            riga[3]=ultimoRecupero[0];
+            riga[4]=ultimoRecupero[1];
+            riga[5]=ultimoRecupero[2];
+            ModelloTabella.addRow(riga);
+        }
+    
+    }
+    
+    private DefaultTableModel inizializzaTabella(JTable table){
+        DefaultTableModel ModelloTabella = (DefaultTableModel) table.getModel();
+        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        Tabelle.ColoraTabellaSemplice(table);
+        Tabelle.Tabelle_FiltroColonne(table,null,popup);
+        return ModelloTabella;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -119,13 +158,13 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

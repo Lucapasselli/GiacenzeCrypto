@@ -617,6 +617,11 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("Staking Rewards",                            "STAKING REWARDS");//
         Mappa_Conversione_Causali.put("Distribution",                               "REWARD");//
         Mappa_Conversione_Causali.put("BNB Vault Rewards",                          "REWARD");//
+        Mappa_Conversione_Causali.put("Launchpad Token Distribution",               "REWARD");//
+        Mappa_Conversione_Causali.put("Mission Reward Distribution",                "REWARD");//
+        Mappa_Conversione_Causali.put("Swap Farming Rewards",                       "REWARD");//
+        Mappa_Conversione_Causali.put("Commission History",                         "ALTRE-REWARD");//
+
         Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING REWARDS");//
         Mappa_Conversione_Causali.put("Simple Earn Flexible Subscription",          "TRASFERIMENTO-CRYPTO-INTERNO");//
         Mappa_Conversione_Causali.put("Simple Earn Flexible Redemption",            "TRASFERIMENTO-CRYPTO-INTERNO");//
@@ -630,6 +635,8 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("transfer_out",                               "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Transfer Between Spot and Strategy Account", "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("Launchpool Subscription/Redemption",         "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("Launchpad Subscribe",                        "TRASFERIMENTO-CRYPTO-INTERNO");
+        
 
         Mappa_Conversione_Causali.put("withdraw",                                   "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("deposit",                                    "TRASFERIMENTO-CRYPTO");
@@ -655,6 +662,7 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("Transaction Related",                        "SCAMBIO CRYPTO-CRYPTO");
         Mappa_Conversione_Causali.put("ETH 2.0 Staking",                            "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("ETH 2.0 Staking Withdrawals",                "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("Stablecoins Auto-Conversion",                "SCAMBIO CRYPTO-CRYPTO");//
         
         Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
@@ -665,6 +673,7 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("Binance Card Spending",                      "PRELIEVO FIAT");
         Mappa_Conversione_Causali.put("Fund Recovery",                              "PRELIEVO FIAT");
         Mappa_Conversione_Causali.put("Fiat Withdraw",                              "PRELIEVO FIAT");
+        Mappa_Conversione_Causali.put("Fiat Withdrawal",                            "PRELIEVO FIAT");
         
         Mappa_Conversione_Causali.put("Buy Crypto",                                 "ACQUISTO CRYPTO");
         Mappa_Conversione_Causali.put("Buy Crypto With Fiat",                       "ACQUISTO CRYPTO");//Inserito il 11/12/2024
@@ -3001,8 +3010,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[5]=Descrizione;
                                 RT[7]=CausaleOriginale; 
                                 if (Mon.Qta.contains("-")) {
-                                if (CausaleOriginale.trim().equalsIgnoreCase("Fiat Withdraw"))RT[5]="PRELIEVO FIAT";
-                                else RT[5]="SPESA CON CARTA";
+                                if (CausaleOriginale.trim().equalsIgnoreCase("Binance Card Spending"))RT[5]="SPESA CON CARTA";
+                                else RT[5]="PRELIEVO FIAT";
                                 RT[6]=Mon.Moneta+"-> ";
                                 RT[8]=Mon.Moneta;
                                 RT[9]=Mon.Tipo;

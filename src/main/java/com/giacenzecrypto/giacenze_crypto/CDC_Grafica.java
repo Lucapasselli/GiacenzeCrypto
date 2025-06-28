@@ -155,7 +155,7 @@ private static final long serialVersionUID = 3L;
     
     
     //queste 2 variabili servono per gestire il popoup e i filtri su tabella
-        public  MultiSelectPopup popup = new MultiSelectPopup(this);
+        public MultiSelectPopup popup = new MultiSelectPopup(this);
         public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
         public static Map<JTable, Map<Integer, String>> SommaColonne = new HashMap<>(); 
     public String SplashScreenText= "Caricamento in corso...";    
@@ -4637,156 +4637,13 @@ private static final long serialVersionUID = 3L;
     }// </editor-fold>//GEN-END:initComponents
 
     
- private void Tabelle_InizializzaHeader(JTable table) {  
-    ImageIcon originalIco = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
-    Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
-    Icon filterIco = new ImageIcon(scaledImag);
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = CDC_Grafica.tableFilters.get(table);
-    
-  /*  Map<Integer, Double> colSums = new ConcurrentHashMap<>();
-
-// Calcolo asincrono delle somme
-new SwingWorker<Void, Void>() {
-    @Override
-    protected Void doInBackground() {
-        TableModel model = table.getModel();
-        for (int col = 0; col < model.getColumnCount(); col++) {
-            double sum = 0;
-            int numericCount = 0;
-            for (int row = 0; row < model.getRowCount(); row++) {
-                Object val = model.getValueAt(row, col);
-                if (val == null) continue;
-                try {
-                    String s = val.toString().trim();
-                    if (s.isEmpty()) continue;
-                    sum += Double.parseDouble(s);
-                    numericCount++;
-                } catch (NumberFormatException ignored) {}
-            }
-            if (numericCount > 0) {
-                colSums.put(col, sum);
-            }
-        }
-        return null;
-    }
-    @Override
-    protected void done() {
-        // forzo il repaint dell'header per vedere le somme aggiornate
-        table.getTableHeader().repaint();
-    }
-}.execute();*/
-    
-   // table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
-   table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
-
-
-}
 
 
 
 
 
 
-private void Tabelle_FiltroColonne(JTable table,JTextField filtro) {
-    
-    //Inizializza tableFilters se non esiste
-    tableFilters.putIfAbsent(table, new HashMap<>());
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
-    Tabelle_InizializzaHeader(table);
-    JTableHeader header = table.getTableHeader();
 
-    DefaultTableModel model = (DefaultTableModel) table.getModel();
-    TableRowSorter<DefaultTableModel> sorter;
-
-    if (table.getRowSorter() instanceof TableRowSorter) {
-        sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
-    } else {
-        sorter = new TableRowSorter<>(model);
-        table.setRowSorter(sorter);
-    }
-    String filtrot = (filtro != null) ? filtro.getText() : "";
-    Tabelle_applyCombinedFilter(table, sorter, filtrot);
-
-
-    header.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON3) { // Tasto destro
-                header.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                int col = table.columnAtPoint(e.getPoint());
-                if (col >= 0) {
-                    int modelCol = table.convertColumnIndexToModel(col);
-                    List<String> valoriUnici = Tabelle.Tabelle_getUniqueValuesForColumn(table, modelCol);
-                    List<String> visibili = Tabelle.Tabelle_getVisibleValuesForColumn(table, col);
-
-                    //MultiSelectPopup popup = new MultiSelectPopup(SwingUtilities.getWindowAncestor(table), valoriUnici);
-                    popup.updateOptions(valoriUnici, visibili);
-
-                    for (JCheckBox cb : popup.getCheckBoxes()) {
-                        cb.setSelected(visibili.contains(cb.getText()));
-                    }
-
-                    popup.setApplyAction(() -> {
-                        
-                        List<String> selected = popup.getSelectedOptions();
-                        if (selected.isEmpty() || selected.size() == valoriUnici.size()) {
-                            // Nessun filtro: rimuovi filtro e icona
-                            activeFilters.remove(modelCol);
-                         //   filteredColumns.remove(modelCol);
-                        } 
-                         else {
-                            RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
-                                @Override
-                                public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                                    Object cellValue = entry.getValue(modelCol);
-                                    return selected.contains(cellValue != null ? cellValue.toString() : "");
-                                }
-                            };
-                            activeFilters.put(modelCol, filter);
-                        }
-                        String filtrot = (filtro != null) ? filtro.getText() : "";
-                        Tabelle_applyCombinedFilter(table,sorter, filtrot);
-                        popup.AzzeraTestoRicerca();
-                        
-                        
-                        header.repaint();
-                        popup.hide();
-                    });
-
-                    popup.setCancelAction(() -> {
-                        popup.AzzeraTestoRicerca();
-                        popup.hide();
-                    });
-                    
-                    Rectangle headerRect = header.getHeaderRect(col);
-                    Point headerLoc = header.getLocationOnScreen();
-
-                    int popupX = headerLoc.x + headerRect.x;
-                    int popupY = headerLoc.y + headerRect.height;
-
-                    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                    Dimension popupSize = popup.getPreferredSize();
-
-                    if (popupX + popupSize.width > screenSize.width) {
-                        popupX = Math.max(screenSize.width - popupSize.width, 0);
-                    }
-                    popup.showAt(popupX, popupY);
-                }
-                header.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        }
-    });
-    
-    
-    /*    Thread thread;
-            thread = new Thread() {
-                public void run() {
-
-                    Tabelle.Tabelle_getSommeColonne(table);
-                }
-            };
-            thread.start();*/
-}
 
 
 
@@ -5716,9 +5573,9 @@ JPanel loadingBar = new JPanel() {
         Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella1);
         Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella2);
         Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella3);
-        Tabelle_FiltroColonne(CDC_FiatWallet_Tabella1,null);
-        Tabelle_FiltroColonne(CDC_FiatWallet_Tabella2,null);
-        Tabelle_FiltroColonne(CDC_FiatWallet_Tabella3,null);
+        Tabelle.Tabelle_FiltroColonne(CDC_FiatWallet_Tabella1,null,popup);
+        Tabelle.Tabelle_FiltroColonne(CDC_FiatWallet_Tabella2,null,popup);
+        Tabelle.Tabelle_FiltroColonne(CDC_FiatWallet_Tabella3,null,popup);
 
         Map<String, String> CDC_FiatWallet_MappaCausali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, String> CDC_FiatWallet_Descrizioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -5855,7 +5712,7 @@ JPanel loadingBar = new JPanel() {
     if (colonna != 999) {
             sorter.toggleSortOrder(colonna);
         }
-    Tabelle_applyCombinedFilter(Tabella, sorter, filtro);
+    Tabelle.Tabelle_applyCombinedFilter(Tabella, sorter, filtro);
 
 
 
@@ -5913,37 +5770,7 @@ JPanel loadingBar = new JPanel() {
 }    
         
         
-    private void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
 
-    List<RowFilter<DefaultTableModel, Integer>> combinedFilters = new ArrayList<>(filters.values());
-
-    if (globalFilterText != null && !globalFilterText.isEmpty()) {
-        RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
-            @Override
-            public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
-                for (int i = 0; i < entry.getValueCount(); i++) {
-                    Object value = entry.getValue(i);
-                    if (value != null && value.toString().toLowerCase().contains(globalFilterText.toLowerCase())) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        };
-        combinedFilters.add(globalFilter);
-    }
-
-    if (combinedFilters.isEmpty()) {
-        sorter.setRowFilter(null);
-    } else {
-        sorter.setRowFilter(RowFilter.andFilter(combinedFilters));
-    }
-    //nel caso sia la tabella principale filtro le plusvalenze
-    //if (table.equals(TransazioniCryptoTabella))TransazioniCrypto_CalcolaPlusvalenzeFiltrate();
-    Tabelle.Tabelle_getSommeColonne(table);
-   // System.out.println("Apply filter "+table);
-}    
    
       private void CDC_CardWallet_Funzione_Totali_per_tipo_movimento() {
           
@@ -5957,8 +5784,8 @@ JPanel loadingBar = new JPanel() {
         Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella2);
         Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella1);
         
-        Tabelle_FiltroColonne(CDC_CardWallet_Tabella1,null);
-        Tabelle_FiltroColonne(CDC_CardWallet_Tabella2,null);
+        Tabelle.Tabelle_FiltroColonne(CDC_CardWallet_Tabella1,null,popup);
+        Tabelle.Tabelle_FiltroColonne(CDC_CardWallet_Tabella2,null,popup);
           
        //calcola i totali sui bonifici, topupcarta e acquisti crypto passati per il fiat wallet
         BigDecimal TotaleSpese= new BigDecimal("0");
@@ -6358,7 +6185,7 @@ JPanel loadingBar = new JPanel() {
         //PULIZIA TABELLA
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
         Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
-        Tabelle_FiltroColonne(GiacenzeaData_TabellaDettaglioMovimenti,null);
+        Tabelle.Tabelle_FiltroColonne(GiacenzeaData_TabellaDettaglioMovimenti,null,popup);
         
         //ANALISI E PROPOSTA
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
@@ -6642,7 +6469,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
-        Tabelle_FiltroColonne(DepositiPrelievi_Tabella,null);
+        Tabelle.Tabelle_FiltroColonne(DepositiPrelievi_Tabella,null,popup);
         String WalletVoluto = DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
         String GruppoWalletVoluto = "";
         if (WalletVoluto.contains(":")) {
@@ -8805,7 +8632,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             DefaultTableModel ModelloTabella = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella);
             Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella_Dettagli);
-            Tabelle_FiltroColonne(RW_Tabella_Dettagli,null);
+            Tabelle.Tabelle_FiltroColonne(RW_Tabella_Dettagli,null,popup);
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             
@@ -10203,7 +10030,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
-        Tabelle_FiltroColonne(RT_Tabella_LiFo,null);
+        Tabelle.Tabelle_FiltroColonne(RT_Tabella_LiFo,null,popup);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (RT_Tabella_Principale.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -10220,7 +10047,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
           */
            } 
         Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_DettaglioMonete);
-        Tabelle_FiltroColonne(RT_Tabella_DettaglioMonete,null);
+        Tabelle.Tabelle_FiltroColonne(RT_Tabella_DettaglioMonete,null,popup);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
@@ -11192,34 +11019,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_ComboBox_FiltroWallet.getModel().setSelectedItem("Tutti");
         TransazioniCrypto_ComboBox_FiltroToken.getModel().setSelectedItem("Tutti");
         TransazioniCryptoFiltro_Text.setText("");
-        Tabella_RimuoviFiltri(TransazioniCryptoTabella);
+        Tabelle.Tabella_RimuoviFiltri(TransazioniCryptoTabella);
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
    
         
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AzzeraFiltriActionPerformed
 
-    public void Tabella_RimuoviFiltri(JTable table) {
-    // Rimuovi tutti i filtri dalla mappa relativa a questa tabella
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = tableFilters.get(table);
-    if (filters != null) {
-        filters.clear();
-    }
 
-    // Rimuovi colonne filtrate
-    Set<Integer> filteredCols = filters.keySet();
-    if (filteredCols != null) {
-        filteredCols.clear();
-    }
-
-    // Rimuovi il filtro dal TableRowSorter della tabella
-    RowSorter<?> rowSorter = table.getRowSorter();
-    if (rowSorter instanceof TableRowSorter<?>) {
-        ((TableRowSorter<?>) rowSorter).setRowFilter(null);
-    }
-
-    // Forza repaint dell'header per togliere icone o evidenziazioni
-    table.getTableHeader().repaint();
-}
     
     
     private void MenuItem_CopiaIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaIDActionPerformed
@@ -11347,7 +11153,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void MenuItem_LiFoTransazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_LiFoTransazioneActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans!=null){
-            Calcoli_PlusvalenzeNew.getMappaIDLiFo();
+            //Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(PopUp_IDTrans);
             GUI_LiFoTransazione t =new GUI_LiFoTransazione(PopUp_IDTrans);
             t.setLocationRelativeTo(PopUp_Component);           
             t.setVisible(true);
@@ -12427,7 +12233,7 @@ try {
 
         thread.start();
         progress.setVisible(true);
-        Tabelle_FiltroColonne(GiacenzeaData_Tabella,null);
+        Tabelle.Tabelle_FiltroColonne(GiacenzeaData_Tabella,null,popup);
         return TabellaToken;
     }
   
@@ -13121,7 +12927,7 @@ try {
         
         //Aggiungo i filtri sulla colonna
        // 
-        Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text);
+        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
      
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);

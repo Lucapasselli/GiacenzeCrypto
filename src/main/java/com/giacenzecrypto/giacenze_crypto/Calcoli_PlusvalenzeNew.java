@@ -98,8 +98,8 @@ public class Calcoli_PlusvalenzeNew {
     
 private static Map<String, LifoXID> MappaIDTrans_LifoxID = new TreeMap<>();
     
-public static Map<String, LifoXID> getMappaIDLiFo(){
-    return MappaIDTrans_LifoxID;
+public static LifoXID getIDLiFo(String id){
+    return MappaIDTrans_LifoxID.get(id);
 }
     
  public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
@@ -142,8 +142,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             valoriDaTogliere[0]=Moneta;
             valoriDaTogliere[1]=qtaEstratta.abs().toPlainString();
             valoriDaTogliere[2]=costoEstratto.toPlainString();
-            valoriDaTogliere[3]=IDTransazione;
-            lifoID.StackEntrato.push(valoriDaTogliere);
+            valoriDaTogliere[3]=ultimoRecupero[3];
+            lifoID.StackUscito.push(valoriDaTogliere);
         } else {
             // Caso in cui la quantità richiesta è inferiore a quella in stack
             //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
@@ -173,7 +173,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             BigDecimal valoreUsato = costoEstratto.subtract(valoreRimanenteStack);
             costoTransazione = costoTransazione.add(valoreUsato);
 
-            qtaRimanente = BigDecimal.ZERO;
+           
             
             
             //Inserisco nello stack lifo della transazione i dati relativi alla moneta uscente
@@ -182,9 +182,11 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             valoriDaTogliere[0]=Moneta;                                         //Moneta di riferimento
             valoriDaTogliere[1]=qtaRimanente.abs().toPlainString();             //qta tolta dallo stack
             valoriDaTogliere[2]=valoreUsato.toPlainString();                    //costo della qta tolra
-            valoriDaTogliere[3]=IDTransazione;                                  //ID della Transazione
-            lifoID.StackEntrato.push(valoriDaTogliere);
+            valoriDaTogliere[3]=ultimoRecupero[3];                              //ID della Transazione
+            lifoID.StackUscito.push(valoriDaTogliere);
             
+            
+             qtaRimanente = BigDecimal.ZERO;
            // 
         }
     }
@@ -230,6 +232,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
       //   System.out.println("Aggiornamento Plusvalenze");
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
 
+
+        MappaIDTrans_LifoxID.clear();
 
        //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
        boolean ConsideraMovimentiNC=true;
@@ -801,6 +805,11 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
           public ArrayDeque<String[]> Get_CryptoStackEntrato()
           {
             return StackEntrato;
+          }  
+          
+          public ArrayDeque<String[]> Get_CryptoStackUscito()
+          {
+            return StackUscito;
           }  
       
       }     

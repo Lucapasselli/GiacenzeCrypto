@@ -4,20 +4,32 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.tableFilters;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
@@ -25,6 +37,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -691,7 +704,7 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
 }
 
     
-    public static void Tabelle_getSommeColonne2(JTable table) {
+ /*   public static void Tabelle_getSommeColonne2(JTable table) {
     // Cattura snapshot sicuro dei dati visibili su EDT
     SwingUtilities.invokeLater(() -> {
         int rowCount = table.getRowCount();
@@ -743,7 +756,7 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
             });
         }).start();
     });
-}
+}*/
     
     public static void Tabelle_getSommeColonne(JTable table) {
     SwingUtilities.invokeLater(() -> {
@@ -900,4 +913,175 @@ private static void processNode(Node node, StringBuilder sb) {
 }
 
  
+ public static void Tabelle_InizializzaHeader(JTable table) { 
+     ImageIcon originalIco = new javax.swing.ImageIcon(CDC_Grafica.class.getResource("/Images/24_Imbuto.png"));
+    //ImageIcon originalIco = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
+    Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
+    Icon filterIco = new ImageIcon(scaledImag);
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = CDC_Grafica.tableFilters.get(table);
+   table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
+}
+
+     public static void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
+
+    List<RowFilter<DefaultTableModel, Integer>> combinedFilters = new ArrayList<>(filters.values());
+
+    if (globalFilterText != null && !globalFilterText.isEmpty()) {
+        RowFilter<DefaultTableModel, Integer> globalFilter = new RowFilter<>() {
+            @Override
+            public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                for (int i = 0; i < entry.getValueCount(); i++) {
+                    Object value = entry.getValue(i);
+                    if (value != null && value.toString().toLowerCase().contains(globalFilterText.toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        combinedFilters.add(globalFilter);
+    }
+
+    if (combinedFilters.isEmpty()) {
+        sorter.setRowFilter(null);
+    } else {
+        sorter.setRowFilter(RowFilter.andFilter(combinedFilters));
+    }
+    //nel caso sia la tabella principale filtro le plusvalenze
+    //if (table.equals(TransazioniCryptoTabella))TransazioniCrypto_CalcolaPlusvalenzeFiltrate();
+    Tabelle.Tabelle_getSommeColonne(table);
+   // System.out.println("Apply filter "+table);
+}    
+
+     
+     
+    public static void Tabelle_FiltroColonne(JTable table,JTextField filtro,MultiSelectPopup popup) {
+    
+    //Inizializza tableFilters se non esiste
+    tableFilters.putIfAbsent(table, new HashMap<>());
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
+    Tabelle.Tabelle_InizializzaHeader(table);
+    JTableHeader header = table.getTableHeader();
+
+    DefaultTableModel model = (DefaultTableModel) table.getModel();
+    TableRowSorter<DefaultTableModel> sorter;
+
+    if (table.getRowSorter() instanceof TableRowSorter) {
+        sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+    } else {
+        sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+    }
+    String filtrot = (filtro != null) ? filtro.getText() : "";
+    Tabelle.Tabelle_applyCombinedFilter(table, sorter, filtrot);
+
+
+    header.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getButton() == MouseEvent.BUTTON3) { // Tasto destro
+                header.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                int col = table.columnAtPoint(e.getPoint());
+                if (col >= 0) {
+                    int modelCol = table.convertColumnIndexToModel(col);
+                    List<String> valoriUnici = Tabelle.Tabelle_getUniqueValuesForColumn(table, modelCol);
+                    List<String> visibili = Tabelle.Tabelle_getVisibleValuesForColumn(table, col);
+
+                    //MultiSelectPopup popup = new MultiSelectPopup(SwingUtilities.getWindowAncestor(table), valoriUnici);
+                    popup.updateOptions(valoriUnici, visibili);
+
+                    for (JCheckBox cb : popup.getCheckBoxes()) {
+                        cb.setSelected(visibili.contains(cb.getText()));
+                    }
+
+                    popup.setApplyAction(() -> {
+                        
+                        List<String> selected = popup.getSelectedOptions();
+                        if (selected.isEmpty() || selected.size() == valoriUnici.size()) {
+                            // Nessun filtro: rimuovi filtro e icona
+                            activeFilters.remove(modelCol);
+                         //   filteredColumns.remove(modelCol);
+                        } 
+                         else {
+                            RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
+                                @Override
+                                public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                                    Object cellValue = entry.getValue(modelCol);
+                                    return selected.contains(cellValue != null ? cellValue.toString() : "");
+                                }
+                            };
+                            activeFilters.put(modelCol, filter);
+                        }
+                        String filtrot = (filtro != null) ? filtro.getText() : "";
+                        Tabelle.Tabelle_applyCombinedFilter(table,sorter, filtrot);
+                        popup.AzzeraTestoRicerca();
+                        
+                        
+                        header.repaint();
+                        popup.hide();
+                    });
+
+                    popup.setCancelAction(() -> {
+                        popup.AzzeraTestoRicerca();
+                        popup.hide();
+                    });
+                    
+                    Rectangle headerRect = header.getHeaderRect(col);
+                    Point headerLoc = header.getLocationOnScreen();
+
+                    int popupX = headerLoc.x + headerRect.x;
+                    int popupY = headerLoc.y + headerRect.height;
+
+                    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                    Dimension popupSize = popup.getPreferredSize();
+
+                    if (popupX + popupSize.width > screenSize.width) {
+                        popupX = Math.max(screenSize.width - popupSize.width, 0);
+                    }
+                    popup.showAt(popupX, popupY);
+                }
+                header.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        }
+    });
+    
+    
+    /*    Thread thread;
+            thread = new Thread() {
+                public void run() {
+
+                    Tabelle.Tabelle_getSommeColonne(table);
+                }
+            };
+            thread.start();*/
+}
+
+     
+     
+     
+    public static void Tabella_RimuoviFiltri(JTable table) {
+    // Rimuovi tutti i filtri dalla mappa relativa a questa tabella
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = tableFilters.get(table);
+    if (filters != null) {
+        filters.clear();
+    }
+
+    // Rimuovi colonne filtrate
+    Set<Integer> filteredCols = filters.keySet();
+    if (filteredCols != null) {
+        filteredCols.clear();
+    }
+
+    // Rimuovi il filtro dal TableRowSorter della tabella
+    RowSorter<?> rowSorter = table.getRowSorter();
+    if (rowSorter instanceof TableRowSorter<?>) {
+        ((TableRowSorter<?>) rowSorter).setRowFilter(null);
+    }
+
+    // Forza repaint dell'header per togliere icone o evidenziazioni
+    table.getTableHeader().repaint();
+}
+     
+     
 }

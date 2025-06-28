@@ -1312,6 +1312,7 @@ return ListaSaldi;
         Calcoli_RW.SistemaErroriInListe(MappaLista);
 return MappaLista;
 }
+      
     private static List<String[]> RW_RitornaListaDaMappa(Map<String, List<String[]>> MappaLista,String Key){
         List<String[]> lista;
             if(MappaLista.get(Key)==null){

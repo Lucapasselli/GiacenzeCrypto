@@ -20,7 +20,7 @@ import javax.swing.text.StyledDocument;
  *
  * @author luca.passelli
  */
-public class Transazione_Dettaglio extends javax.swing.JDialog {
+public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 //private static final long serialVersionUID = 8L;
 
     /**
@@ -302,7 +302,7 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
 
     }
     
-    public Transazione_Dettaglio() {
+    public GUI_DettaglioTransazione() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
 
@@ -496,7 +496,7 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
                 //Quando finisco la modifica apro di nuovo la maschera con il movimento
                 
                // CDC_Grafica.
-                Transazione_Dettaglio t =new Transazione_Dettaglio();
+                GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
                 t.AzzeraMap();
                 t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
                 t.setLocation(p);
@@ -527,7 +527,7 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
                 //Quando finisco la modifica apro di nuovo la maschera con il movimento
                 
                // CDC_Grafica.
-                Transazione_Dettaglio t =new Transazione_Dettaglio();
+                GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
                 t.AzzeraMap();
                 t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
                 t.setLocation(p);
@@ -558,21 +558,23 @@ public class Transazione_Dettaglio extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Transazione_Dettaglio.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_DettaglioTransazione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Transazione_Dettaglio.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_DettaglioTransazione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Transazione_Dettaglio.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_DettaglioTransazione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Transazione_Dettaglio.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_DettaglioTransazione.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Transazione_Dettaglio().setVisible(true);
+                new GUI_DettaglioTransazione().setVisible(true);
             }
         });
     }

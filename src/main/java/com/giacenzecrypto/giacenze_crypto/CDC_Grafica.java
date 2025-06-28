@@ -329,6 +329,7 @@ private static final long serialVersionUID = 3L;
         MenuItem_Copia = new javax.swing.JMenuItem();
         MenuItem_Incolla = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
         MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
         MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
         MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
@@ -668,6 +669,14 @@ private static final long serialVersionUID = 3L;
         });
         PopupMenu.add(MenuItem_Incolla);
         PopupMenu.add(jSeparator4);
+
+        MenuItem_LiFoTransazione.setText("Mostra LiFo Transazione");
+        MenuItem_LiFoTransazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_LiFoTransazioneActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_LiFoTransazione);
 
         MenuItem_DettagliMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Dettagli.png"))); // NOI18N
         MenuItem_DettagliMovimento.setText("Dettagli Movimento");
@@ -8728,7 +8737,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
                             
                         }
-                        LoggerGC.logInfo("Anno : "+RW_Anno_ComboBox.getSelectedItem().toString()+" - Wallet : "+key+" - gg detenzione :"+RW1[3],"CDCGrafica.RW_CalcolaRW");
+                       // LoggerGC.logInfo("Anno : "+RW_Anno_ComboBox.getSelectedItem().toString()+" - Wallet : "+key+" - gg detenzione :"+RW1[3],"CDCGrafica.RW_CalcolaRW");
                         
                     }
 
@@ -10937,7 +10946,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void MenuItem_DettagliMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DettagliMovimentoActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans!=null){
-            Transazione_Dettaglio t =new Transazione_Dettaglio();
+            GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
             t.AzzeraMap();
             t.TransazioniCrypto_CompilaTextPaneDatiMovimento(PopUp_IDTrans);
             t.setLocationRelativeTo(PopUp_Component);           
@@ -11334,6 +11343,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         Funzioni.ApriWeb("https://paypal.me/GiacenzeCrypto?country.x=IT&locale.x=it_IT");
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void MenuItem_LiFoTransazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_LiFoTransazioneActionPerformed
+        // TODO add your handling code here:
+        if (PopUp_IDTrans!=null){
+            Calcoli_PlusvalenzeNew.getMappaIDLiFo();
+            GUI_LiFoTransazione t =new GUI_LiFoTransazione(PopUp_IDTrans);
+            t.setLocationRelativeTo(PopUp_Component);           
+            t.setVisible(true);
+        }
+    }//GEN-LAST:event_MenuItem_LiFoTransazioneActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -13535,6 +13554,7 @@ try {
     private javax.swing.JMenuItem MenuItem_EliminaMovimento;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_Incolla;
+    private javax.swing.JMenuItem MenuItem_LiFoTransazione;
     private javax.swing.JMenuItem MenuItem_ModificaMovimento;
     private javax.swing.JMenuItem MenuItem_ModificaNote;
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;

@@ -222,30 +222,32 @@ public class Funzioni {
             //Se non passo l'id della transazione ingrigisco il tasto dettaglio movimento
             if (ID==null)
             {
-                PopUp_disableMenuItemByText(pop,"Dettagli Movimento");
-                PopUp_disableMenuItemByText(pop,"Modifica Movimento");
-                PopUp_disableMenuItemByText(pop,"Elimina Movimento");
-                PopUp_disableMenuItemByText(pop,"Classifica Movimento");
-                PopUp_disableMenuItemByText(pop,"Copia ID Transazione");
-                PopUp_disableMenuItemByText(pop,"Modifica Prezzo");
-                PopUp_disableMenuItemByText(pop,"Modifica Note");
-                PopUp_disableMenuItemByText(pop,"Cambia Tipologia Reward");
+                PopUp_disabilitaMenuDatesto(pop,"Dettagli Movimento");
+                PopUp_disabilitaMenuDatesto(pop,"Modifica Movimento");
+                PopUp_disabilitaMenuDatesto(pop,"Elimina Movimento");
+                PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");
+                PopUp_disabilitaMenuDatesto(pop,"Copia ID Transazione");
+                PopUp_disabilitaMenuDatesto(pop,"Modifica Prezzo");
+                PopUp_disabilitaMenuDatesto(pop,"Modifica Note");
+                PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
+                PopUp_disabilitaMenuDatesto(pop,"Mostra LiFo Transazione");
                 
             }else{
-                PopUp_enableMenuItemByText(pop,"Dettagli Movimento");
-                PopUp_enableMenuItemByText(pop,"Modifica Movimento");
-                PopUp_enableMenuItemByText(pop,"Elimina Movimento");
-                PopUp_enableMenuItemByText(pop,"Copia ID Transazione");
-                PopUp_enableMenuItemByText(pop,"Modifica Prezzo");
-                PopUp_enableMenuItemByText(pop,"Modifica Note");
+                PopUp_abilitaMenuDaTesto(pop,"Dettagli Movimento");
+                PopUp_abilitaMenuDaTesto(pop,"Modifica Movimento");
+                PopUp_abilitaMenuDaTesto(pop,"Elimina Movimento");
+                PopUp_abilitaMenuDaTesto(pop,"Copia ID Transazione");
+                PopUp_abilitaMenuDaTesto(pop,"Modifica Prezzo");
+                PopUp_abilitaMenuDaTesto(pop,"Modifica Note");
+                PopUp_abilitaMenuDaTesto(pop,"Mostra LiFo Transazione");
                 
                 if (isDepositoPrelievoClassificabile(ID, null)){
-                   PopUp_enableMenuItemByText(pop,"Classifica Movimento"); 
-                }else PopUp_disableMenuItemByText(pop,"Classifica Movimento");
+                   PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
+                }else PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");
                 
                 if(ID.split("_")[4].equals("RW")||CDC_Grafica.MappaCryptoWallet.get(ID)[18].contains("DAI -"))                    
-                    PopUp_enableMenuItemByText(pop,"Cambia Tipologia Reward");
-                else PopUp_disableMenuItemByText(pop,"Cambia Tipologia Reward");
+                    PopUp_abilitaMenuDaTesto(pop,"Cambia Tipologia Reward");
+                else PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
             }
             
             //Se è una tabella mi comporto in questo modo
@@ -253,15 +255,15 @@ public class Funzioni {
             {                
                 int row = table.getSelectedRow();
                 if (row == -1) return;
-                PopUp_disableMenuItemByText(pop,"Incolla");
-                PopUp_enableMenuItemByText(pop,"Esporta Tabella in Excel");
+                PopUp_disabilitaMenuDatesto(pop,"Incolla");
+                PopUp_abilitaMenuDaTesto(pop,"Esporta Tabella in Excel");
                 CDC_Grafica.PopUp_Tabella=table;
                 pop.show(c, Coordinata.x, Coordinata.y);
             }            
             else if (C_chiamante instanceof JTextField)
             {
-                PopUp_enableMenuItemByText(pop,"Incolla");
-                PopUp_disableMenuItemByText(pop,"Esporta Tabella in Excel");
+                PopUp_abilitaMenuDaTesto(pop,"Incolla");
+                PopUp_disabilitaMenuDatesto(pop,"Esporta Tabella in Excel");
                 pop.show(c, Coordinata.x, Coordinata.y);
                 CDC_Grafica.PopUp_Tabella=null;
             }
@@ -301,14 +303,14 @@ public class Funzioni {
     }
     
     
-    public static void PopUp_disableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
+    public static void PopUp_disabilitaMenuDatesto(JPopupMenu popupMenu, String textToDisable) {
         for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
             if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
                 item.setEnabled(false);
             }
         }
     }
-        public static void PopUp_enableMenuItemByText(JPopupMenu popupMenu, String textToDisable) {
+        public static void PopUp_abilitaMenuDaTesto(JPopupMenu popupMenu, String textToDisable) {
         for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
             if (item.getText() != null && item.getText().equalsIgnoreCase(textToDisable)) {
                 item.setEnabled(true);
@@ -1160,14 +1162,14 @@ return ListaSaldi;
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     //Prima cosa controllo che le date corrispondano all'ID
                     if(!movimento[0].substring(0, 4).equals(movimento[1].substring(0, 4))){
-                         LoggerGC.logInfo("ID diverso da data --- "+movimento[0]+ " --- "+movimento[1],"Funzioni.RW_GiacenzeInizioFineAnno");
+                        // LoggerGC.logInfo("ID diverso da data --- "+movimento[0]+ " --- "+movimento[1],"Funzioni.RW_GiacenzeInizioFineAnno");
                     }
                     
                     String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]);
                     //1 - Inizializzo le Mappe
                     if (MappaCoinsWallet.get(GruppoWallet)==null)
                     {
-                        LoggerGC.logInfo("Wallet - "+GruppoWallet+" - ID Iniziale --- "+movimento[0],"Funzioni.RW_GiacenzeInizioFineAnno");
+                       // LoggerGC.logInfo("Wallet - "+GruppoWallet+" - ID Iniziale --- "+movimento[0],"Funzioni.RW_GiacenzeInizioFineAnno");
                         QtaCrypto = new TreeMap<>();
                         MappaCoinsWallet.put(GruppoWallet, QtaCrypto);
                         String DataPartenza_Prezzo_ID[]=new String[]{movimento[1],movimento[15],movimento[0],movimento[11]};
@@ -1249,7 +1251,7 @@ return ListaSaldi;
         
         for(String GWallet:MappaCoinsWallet.keySet()){
             int DiffDate=OperazioniSuDate.DifferenzaDate(DataInizio, DataFine)+1;
-            LoggerGC.logInfo("DiffDate1 - "+DataInizio+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
+           // LoggerGC.logInfo("DiffDate1 - "+DataInizio+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
             Map<String, Moneta[]> QtaCrypt=MappaCoinsWallet.get(GWallet);
             lista=RW_RitornaListaDaMappa(MappaLista,GWallet);
           /*  if(MappaLista.get(GWallet)==null){
@@ -1263,12 +1265,12 @@ return ListaSaldi;
             String DataInizio1=DataInizio+" 00:00";
             if (lDataInizioWallet > lDataInizio) {
                 DiffDate = OperazioniSuDate.DifferenzaDate(OperazioniSuDate.ConvertiDatadaLong(lDataInizioWallet), DataFine) + 1;
-                LoggerGC.logInfo("DiffDate2 - "+GWallet+" - "+lDataInizioWallet+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
-                LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
+                //LoggerGC.logInfo("DiffDate2 - "+GWallet+" - "+lDataInizioWallet+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
+                //LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
                 DataInizio1 = DataInizioWallet;
                 lDataInizio1 = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizio1);
             }           
-            LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
+            //LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
             for(Moneta m[]:QtaCrypt.values()){
                 if(!(m[0].Qta.equals("0")&&m[1].Qta.equals("0")))
                 {

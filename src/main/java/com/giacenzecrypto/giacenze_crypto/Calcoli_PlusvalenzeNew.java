@@ -96,9 +96,11 @@ public class Calcoli_PlusvalenzeNew {
      */
     
     
-   private static Map<String, LifoXID> MappaIDTrans_LifoxID = new TreeMap<>();
+private static Map<String, LifoXID> MappaIDTrans_LifoxID = new TreeMap<>();
     
-
+public static Map<String, LifoXID> getMappaIDLiFo(){
+    return MappaIDTrans_LifoxID;
+}
     
  public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
     

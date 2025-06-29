@@ -138,12 +138,14 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             
             //Inserisco nello stack lifo della transazione i dati relativi alla moneta uscente
             //per riproporli poi nella maschera di dettaglio del Lifo
+            if (toglidaStack){
             String valoriDaTogliere[]=new String[4];
             valoriDaTogliere[0]=Moneta;
             valoriDaTogliere[1]=qtaEstratta.abs().toPlainString();
             valoriDaTogliere[2]=costoEstratto.toPlainString();
             valoriDaTogliere[3]=ultimoRecupero[3];
-            lifoID.StackUscito.push(valoriDaTogliere);
+            lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
+            }
         } else {
             // Caso in cui la quantità richiesta è inferiore a quella in stack
             //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
@@ -158,6 +160,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
             BigDecimal valoreRimanenteStack = costoUnitario
                 .multiply(qtaRimanenteStack)
+                //.setScale(2, RoundingMode.HALF_UP)
                 .setScale(DecimaliCalcoli, RoundingMode.HALF_UP)
                 .stripTrailingZeros();
 
@@ -165,7 +168,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 Moneta,
                 qtaRimanenteStack.toPlainString(),
                 valoreRimanenteStack.toPlainString(),
-                IDTransazione
+                ultimoRecupero[3]
             };
            // lifoID.StackEntrato.push(valori);
             stack.push(valori);
@@ -174,8 +177,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             costoTransazione = costoTransazione.add(valoreUsato);
 
            
-            
-            
+            //Questa cosa la faccio solo se il flag toglidastack è attivo il che significa solo se è un movimento
+            //che realmente movimenta lo stack
+            if (toglidaStack){
             //Inserisco nello stack lifo della transazione i dati relativi alla moneta uscente
             //per riproporli poi nella maschera di dettaglio del Lifo
             String valoriDaTogliere[]=new String[4];
@@ -183,9 +187,10 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             valoriDaTogliere[1]=qtaRimanente.abs().toPlainString();             //qta tolta dallo stack
             valoriDaTogliere[2]=valoreUsato.toPlainString();                    //costo della qta tolra
             valoriDaTogliere[3]=ultimoRecupero[3];                              //ID della Transazione
-            lifoID.StackUscito.push(valoriDaTogliere);
-            
-            
+            lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
+            //Stack Uscito Rimanenze sono appunto quello che rimane delle stack dopo il movimento
+            lifoID.StackUscitoRimanenze=stack.clone();
+            }
              qtaRimanente = BigDecimal.ZERO;
            // 
         }
@@ -218,11 +223,12 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
     // Funzione equivalente e semplificata di quella sopra    
     //Aggiungo allo stack della moneta anche questo valore
     ArrayDeque<String[]> stack = CryptoStack.computeIfAbsent(Moneta, k -> new ArrayDeque<>());
+    LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
+    lifoID.StackEntratoPreMovimento=stack.clone();
     stack.push(valori);
     
     //Aggiungo allo stack relativo all'id anche questo valore relativamente a quello che è entrato
     //Questo mi servirà per poi visualizzare per ogni transazione lo stack della stessa
-    LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
     lifoID.StackEntrato.push(valori);
 
 }
@@ -789,7 +795,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
           
 
           ArrayDeque<String[]> StackEntrato=new ArrayDeque<>();
+          ArrayDeque<String[]> StackEntratoPreMovimento=new ArrayDeque<>();
           ArrayDeque<String[]> StackUscito=new ArrayDeque<>();
+          ArrayDeque<String[]> StackUscitoRimanenze=new ArrayDeque<>();
           
           
           
@@ -806,10 +814,19 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
           {
             return StackEntrato;
           }  
+          public ArrayDeque<String[]> Get_CryptoStackEntratoPreMovimento()
+          {
+            return StackEntratoPreMovimento;
+          } 
           
           public ArrayDeque<String[]> Get_CryptoStackUscito()
           {
             return StackUscito;
+          }  
+          
+          public ArrayDeque<String[]> Get_CryptoStackUscitoRimanenze()
+          {
+            return StackUscitoRimanenze;
           }  
       
       }     

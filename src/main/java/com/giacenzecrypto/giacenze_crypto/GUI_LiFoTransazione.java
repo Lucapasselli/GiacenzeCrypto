@@ -5,8 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.PopUp_IDTrans;
-import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
@@ -32,33 +30,47 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         setTitle("LiFo Transazione : "+ID);
         Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(ID);
         ArrayDeque<String[]> StackEntrato=lifoID.Get_CryptoStackEntrato();
+        //Stack della moneta entrata prima el movimento
+        ArrayDeque<String[]> StackEntratoPreMovimento=lifoID.Get_CryptoStackEntratoPreMovimento();
+        //Parte dello stack della moneta uscita relativo alla transazione
         ArrayDeque<String[]> StackUscito=lifoID.Get_CryptoStackUscito();
-        PopolaTabella(Tabella_Lifo_Entrata,StackEntrato);
-        PopolaTabella(Tabella_Lifo_Uscita,StackUscito);
+        //Rimanenze dello stack della moneta uscita dopo la transazione
+        ArrayDeque<String[]> StackUscitoRimanenze=lifoID.Get_CryptoStackUscitoRimanenze();
+        int ordinamento =PopolaTabella(Tabella_Lifo_Entrata,StackEntrato,true,0);
+        PopolaTabella(Tabella_Lifo_Entrata,StackEntratoPreMovimento,false,ordinamento);
+        ordinamento =PopolaTabella(Tabella_Lifo_Uscita,StackUscito,true,0);
+        PopolaTabella(Tabella_Lifo_Uscita,StackUscitoRimanenze,false,ordinamento);
         
     }
 
-    private void PopolaTabella(JTable table,ArrayDeque<String[]> Stack){
-        DefaultTableModel ModelloTabella = inizializzaTabella(table);
+    private int PopolaTabella(JTable table,ArrayDeque<String[]> Stack,boolean RealtivoAMovimento,int ordinamento){
+        DefaultTableModel ModelloTabella;
+        if (ordinamento==0)ModelloTabella = inizializzaTabella(table);
+        else ModelloTabella = (DefaultTableModel) table.getModel();
         ArrayDeque<String[]> stack=Stack.clone();
+        int i=ordinamento;
         while (!stack.isEmpty()) {
+          //  String ordine=String.valueOf(i);
             String[] ultimoRecupero = stack.pop();
-            String[] riga = new String[6];
-            riga[0]=ultimoRecupero[3];
-            riga[1]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3])[1];
-            riga[2]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3])[6];
-            riga[3]=ultimoRecupero[0];
-            riga[4]=ultimoRecupero[1];
-            riga[5]=ultimoRecupero[2];
+            Object[] riga = new Object[8];
+            riga[0]=i;
+            riga[1]=ultimoRecupero[3];
+            riga[2]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3])[1];
+            riga[3]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3])[6];
+            riga[4]=ultimoRecupero[0];
+            riga[5]=ultimoRecupero[1];
+            riga[6]=ultimoRecupero[2];
+            riga[7]=RealtivoAMovimento;
             ModelloTabella.addRow(riga);
+            i++;
         }
-    
+    return i;
     }
     
     private DefaultTableModel inizializzaTabella(JTable table){
         DefaultTableModel ModelloTabella = (DefaultTableModel) table.getModel();
         Funzioni_Tabelle_PulisciTabella(ModelloTabella);
-        Tabelle.ColoraTabellaSemplice(table);
+        Tabelle.ColoraTabellaLiFoTransazione(table);
         Tabelle.Tabelle_FiltroColonne(table,null,popup);
         return ModelloTabella;
     }
@@ -91,22 +103,36 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Data Origine", "Movimento Origine", "Moneta", "Qta", "Valore"
+                "Ordine", "ID", "Data Origine", "Movimento Origine", "Moneta", "Qta", "Costo di Carico", "Relativo a Movimento"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
+        Tabella_Lifo_Uscita.setName("Uscita"); // NOI18N
         jScrollPane1.setViewportView(Tabella_Lifo_Uscita);
         if (Tabella_Lifo_Uscita.getColumnModel().getColumnCount() > 0) {
             Tabella_Lifo_Uscita.getColumnModel().getColumn(0).setMinWidth(0);
             Tabella_Lifo_Uscita.getColumnModel().getColumn(0).setPreferredWidth(0);
             Tabella_Lifo_Uscita.getColumnModel().getColumn(0).setMaxWidth(0);
+            Tabella_Lifo_Uscita.getColumnModel().getColumn(1).setMinWidth(0);
+            Tabella_Lifo_Uscita.getColumnModel().getColumn(1).setPreferredWidth(0);
+            Tabella_Lifo_Uscita.getColumnModel().getColumn(1).setMaxWidth(0);
+            Tabella_Lifo_Uscita.getColumnModel().getColumn(7).setMinWidth(0);
+            Tabella_Lifo_Uscita.getColumnModel().getColumn(7).setPreferredWidth(0);
+            Tabella_Lifo_Uscita.getColumnModel().getColumn(7).setMaxWidth(0);
         }
 
         Tabella_Lifo_Entrata.setModel(new javax.swing.table.DefaultTableModel(
@@ -114,22 +140,36 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Data Origine", "Movimento Origine", "Moneta", "Qta", "Valore"
+                "Ordine", "ID", "Data Origine", "Movimento Origine", "Moneta", "Qta", "Costo di Carico", "Relativo a Movimento"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
+        Tabella_Lifo_Entrata.setName("Entrata"); // NOI18N
         jScrollPane2.setViewportView(Tabella_Lifo_Entrata);
         if (Tabella_Lifo_Entrata.getColumnModel().getColumnCount() > 0) {
             Tabella_Lifo_Entrata.getColumnModel().getColumn(0).setMinWidth(0);
             Tabella_Lifo_Entrata.getColumnModel().getColumn(0).setPreferredWidth(0);
             Tabella_Lifo_Entrata.getColumnModel().getColumn(0).setMaxWidth(0);
+            Tabella_Lifo_Entrata.getColumnModel().getColumn(1).setMinWidth(0);
+            Tabella_Lifo_Entrata.getColumnModel().getColumn(1).setPreferredWidth(0);
+            Tabella_Lifo_Entrata.getColumnModel().getColumn(1).setMaxWidth(0);
+            Tabella_Lifo_Entrata.getColumnModel().getColumn(7).setMinWidth(0);
+            Tabella_Lifo_Entrata.getColumnModel().getColumn(7).setPreferredWidth(0);
+            Tabella_Lifo_Entrata.getColumnModel().getColumn(7).setMaxWidth(0);
         }
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -144,12 +184,12 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 912, Short.MAX_VALUE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -158,13 +198,13 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 209, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

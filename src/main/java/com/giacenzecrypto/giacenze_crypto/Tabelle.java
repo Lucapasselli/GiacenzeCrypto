@@ -415,6 +415,73 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
     return table;
 }
 
+public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
+    // Definizione dei colori
+  //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro
+  //  final Color bianco = Color.WHITE;                   // Colore bianco
+
+    // Renderer generico per alternare i colori delle righe
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int col) {
+            // Ottieni il componente standard per la cella
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                    Color bg;
+                    Color bgUscita;
+                    Color RossopiuLeggero = Color.decode("#ffe5e5");
+                    Color RossoLeggero = Color.decode("#ffcccc");
+                    Color verde1 = Color.decode("#e6f4ea");
+                    Color verde2 = Color.decode("#ccf2d5");
+                    Color bgEntrata;
+                    bgUscita= (row % 2 == 0  ? RossoLeggero : RossopiuLeggero);
+                    bgEntrata= (row % 2 == 0  ? verde1 : verde1);
+       // Color fore;
+        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+            bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
+            //fore=Color.lightGray;
+        }
+            else 
+        {
+            bg= (row % 2 == 0  ? grigioChiaro : bianco);
+         //   fore=table.getForeground();
+            //fore=Color.BLACK;
+        }
+            // Imposta il colore di sfondo alternato
+            if (isSelected) {
+                c.setBackground(table.getSelectionBackground());
+               // c.setForeground(table.getSelectionForeground());
+            }else if (table.getName().equalsIgnoreCase("Uscita") && (boolean)table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 7)) {
+                c.setBackground(bgUscita);
+                c.setForeground(Color.BLACK);
+            }
+            else if (table.getName().equalsIgnoreCase("Entrata") && (boolean)table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 7)) {
+                c.setBackground(bgEntrata);
+                c.setForeground(Color.BLACK);
+            }
+            else {
+                c.setBackground(bg);
+                c.setForeground(table.getSelectionForeground());
+            }
+
+            return c;
+        }
+    };
+
+    // Configura il renderer per i tipi più comuni
+    table.setDefaultRenderer(Object.class, renderer);
+    table.setDefaultRenderer(Double.class, renderer);
+    
+
+    // Restituisci la tabella
+    return table;
+}
+
+
 public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] ColVerde,int[] ColRosso) {
     // Definizione dei colori
   //  final Color grigioChiaro = new Color(240, 240, 240); // Colore grigio chiaro

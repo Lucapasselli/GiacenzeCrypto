@@ -1149,6 +1149,15 @@ private static void processNode(Node node, StringBuilder sb) {
     // Forza repaint dell'header per togliere icone o evidenziazioni
     table.getTableHeader().repaint();
 }
+
+    public static void Funzioni_Tabelle_PulisciTabella(DefaultTableModel modello) {
+        int z = modello.getRowCount();
+        // System.out.println(modelProblemi.getRowCount());
+        while (z != 0) {
+            modello.removeRow(0);
+            z = modello.getRowCount();
+        }
+    }
      
      
 }

@@ -4,7 +4,6 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Mappa_Wallet;
 import static com.giacenzecrypto.giacenze_crypto.Prezzi.MappaWallets;
@@ -287,7 +286,7 @@ public class GestioneWallets extends javax.swing.JDialog {
     private void PopolaTabella(){
 
         DefaultTableModel ModelloTabellaWallets = (DefaultTableModel) TabellaWallets.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabellaWallets);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaWallets);
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         Mappa_Wallet.clear();

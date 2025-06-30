@@ -12,7 +12,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_Tabelle_PulisciTabella;
 import java.awt.Cursor;
 import java.awt.event.ItemEvent;
 import java.math.RoundingMode;
@@ -49,7 +48,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(jTable1);
         String riga[]=DammiRigaTabellaDaID(ID);
         ModelloTabellaDepositiPrelievi.addRow(riga);
@@ -1789,7 +1788,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     public void CompilaTabellaMovimetiAssociabili(String ID) {
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         String attuale[] = MappaCryptoWallet.get(ID);
         long DataOraAttuale = OperazioniSuDate.ConvertiDatainLongMinuto(attuale[1]);

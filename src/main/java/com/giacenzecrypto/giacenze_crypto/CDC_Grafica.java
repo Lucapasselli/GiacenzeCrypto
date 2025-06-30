@@ -5570,9 +5570,9 @@ JPanel loadingBar = new JPanel() {
         DefaultTableModel CDC_FiatWallet_ModelloTabella1 = (DefaultTableModel) CDC_FiatWallet_Tabella1.getModel();
         DefaultTableModel CDC_FiatWallet_ModelloTabella2 = (DefaultTableModel) CDC_FiatWallet_Tabella2.getModel();
         DefaultTableModel CDC_FiatWallet_ModelloTabella3 = (DefaultTableModel) CDC_FiatWallet_Tabella3.getModel();
-        Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella1);
-        Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella2);
-        Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella3);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella1);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella2);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(CDC_FiatWallet_ModelloTabella3);
         Tabelle.Tabelle_FiltroColonne(CDC_FiatWallet_Tabella1,null,popup);
         Tabelle.Tabelle_FiltroColonne(CDC_FiatWallet_Tabella2,null,popup);
         Tabelle.Tabelle_FiltroColonne(CDC_FiatWallet_Tabella3,null,popup);
@@ -5683,15 +5683,6 @@ JPanel loadingBar = new JPanel() {
     }
    
    
-     public static void Funzioni_Tabelle_PulisciTabella(DefaultTableModel modello) {
-           int z=modello.getRowCount();
-        // System.out.println(modelProblemi.getRowCount());
-         while (z!=0){
-             modello.removeRow(0);
-             z=modello.getRowCount();
-         }
-         
-  }
    
      
 
@@ -5781,8 +5772,8 @@ JPanel loadingBar = new JPanel() {
       //  DefaultTableModel CDC_CardWallet_ModelloTabella2 = (DefaultTableModel) model;
       //  CDC_CardWallet_Tabella2.setModel(model);
         
-        Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella2);
-        Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella1);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella2);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(CDC_CardWallet_ModelloTabella1);
         
         Tabelle.Tabelle_FiltroColonne(CDC_CardWallet_Tabella1,null,popup);
         Tabelle.Tabelle_FiltroColonne(CDC_CardWallet_Tabella2,null,popup);
@@ -6184,7 +6175,7 @@ JPanel loadingBar = new JPanel() {
 
         //PULIZIA TABELLA
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
-        Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
         Tabelle.Tabelle_FiltroColonne(GiacenzeaData_TabellaDettaglioMovimenti,null,popup);
         
         //ANALISI E PROPOSTA
@@ -6296,7 +6287,7 @@ JPanel loadingBar = new JPanel() {
     
     private void Opzioni_Emoney_CaricaTabellaEmoney(){
         DefaultTableModel Emoney_ModelloTabella = (DefaultTableModel) this.Opzioni_Emoney_Tabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(Emoney_ModelloTabella);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(Emoney_ModelloTabella);
         TableColumn column1 = Opzioni_Emoney_Tabella.getColumnModel().getColumn(1);
         //JDateChooser DataChooser = new com.toedter.calendar.JDateChooser();
         
@@ -6322,7 +6313,7 @@ JPanel loadingBar = new JPanel() {
     
     private void Opzioni_GruppoWallet_CaricaGruppiWallet(){
         DefaultTableModel GruppoWallet_ModelloTabella = (DefaultTableModel) this.Opzioni_GruppoWallet_Tabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(GruppoWallet_ModelloTabella);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(GruppoWallet_ModelloTabella);
         Map<String, String[]> Mappa_GruppiAlias=DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         JComboBox<String> comboBox = new JComboBox<>();
         JCheckBox CheckBox=new JCheckBox();
@@ -6465,9 +6456,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
         DepositiPrelieviDaCategorizzare = new ArrayList<>();
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
         DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
         Tabelle.Tabelle_FiltroColonne(DepositiPrelievi_Tabella,null,popup);
         String WalletVoluto = DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
@@ -6549,7 +6540,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             {
         Map<String, String[]> SituazioneImport_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         DefaultTableModel ModelloTabella1SituazioneImport = (DefaultTableModel) this.SituazioneImport_Tabella1.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella1SituazioneImport);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella1SituazioneImport);
         Tabelle.ColoraRigheTabellaCrypto(SituazioneImport_Tabella1);
         for (String[] v : MappaCryptoWallet.values()) {
             
@@ -8310,12 +8301,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Come prima cosa faccio un pò di pulizia
         System.out.println("RW_CalcoloRW");
         DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
         DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         RW_Bottone_CorreggiErrore.setEnabled(false);
         RW_Bottone_IdentificaScam.setEnabled(false);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -8436,12 +8427,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Come prima cosa faccio un pò di pulizia
         System.out.println("RW_CalcoloRW");
         DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
         DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella2);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         RW_Bottone_CorreggiErrore.setEnabled(false);
         RW_Bottone_IdentificaScam.setEnabled(false);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -8630,11 +8621,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (RW_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabella = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
-            Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
             Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella_Dettagli);
             Tabelle.Tabelle_FiltroColonne(RW_Tabella_Dettagli,null,popup);
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
-            Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             
            // seguente scritta -> ATTENZIONE : Correggere gli errori per calcolare i totali corretti -> Se ci sono errori sulla riga
            int rigaselezionata = RW_Tabella.getSelectedRow();
@@ -8674,7 +8665,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (RW_Tabella_Dettagli.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
-            Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
             int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             String MonetaTabIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
@@ -9957,13 +9948,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         this.RT_Label_Avviso.setVisible(false);
         APlus=null;
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaRT);
         Tabelle.ColoraTabellaRTPrincipale(RT_Tabella_Principale);
         DefaultTableModel ModelloTabella = (DefaultTableModel) RT_Tabella_DettaglioMonete.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
         Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_DettaglioMonete);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
           //  Tabelle.ColoraTabellaSempliceDouble(RT_Tabella_DettaglioMonete);
         Download progress = new Download();
@@ -10028,14 +10019,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         RT_Bottone_ModificaPrezzo.setEnabled(false);
         RT_Bottone_ModificaGiacenza.setEnabled(false);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
         Tabelle.Tabelle_FiltroColonne(RT_Tabella_LiFo,null,popup);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (RT_Tabella_Principale.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabella = (DefaultTableModel) RT_Tabella_DettaglioMonete.getModel();
-            Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
            int rigaselezionata = RT_Tabella_Principale.getSelectedRow();
            String Anno = RT_Tabella_Principale.getModel().getValueAt(rigaselezionata, 0).toString();
            List<Object[]> tab=APlus.RitornaTabellaAnno(Anno);
@@ -10054,7 +10045,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void RT_CompilaTabellaLiFo(){
         
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
         if (RT_Tabella_Principale.getSelectedRow()>=0){
             int rigaselezionata = RT_Tabella_Principale.getSelectedRow();
@@ -11165,7 +11156,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Cancello Contenuto Tabella Dettagli
            // String ID=DepositiPrelievi_Tabella.get
             DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
-            Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
             int Verde[]=new int[]{11,13};
             int Rosso[]=new int[]{8,10};
             Tabelle.ColoraTabellaSempliceVerdeRosso(DepositiPrelievi_TabellaCorrelati,Verde,Rosso);
@@ -12051,13 +12042,13 @@ try {
         //azzera il sort ogni volta in sostanza ed evita errori
         DefaultTableModel GiacenzeaData_ModelloTabellaDettagli = (DefaultTableModel) this.GiacenzeaData_TabellaDettaglioMovimenti.getModel();
         if (CompiloTabella) {
-            Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabellaDettagli);
         }       
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) this.GiacenzeaData_Tabella.getModel();  
         if (CompiloTabella) {
             TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
             GiacenzeaData_Tabella.setRowSorter(sorter);            
-            Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
         }
         //Fase 2 Preparazione thead
         Download progress = new Download();
@@ -12156,7 +12147,7 @@ try {
                 progress.SetMassimo(QtaCrypto.size());
                 DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();
                 if (CompiloTabella) {
-                    Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+                    Tabelle.Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
                 }
                 Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
                 int i = 0;
@@ -12168,7 +12159,7 @@ try {
                         //Questo succede nel caso in cui termino il ciclo forzatamente
 
                         if (CompiloTabella) {
-                            Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
+                            Tabelle.Funzioni_Tabelle_PulisciTabella(GiacenzeaData_ModelloTabella);
                             TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
                             GiacenzeaData_Tabella.setRowSorter(sorter);
                         }
@@ -12414,7 +12405,7 @@ try {
             TransazioniCrypto_Bottone_MovimentoElimina.setEnabled(true);
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCrypto_Tabella_Dettagli.getModel();
-            Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
             
             
             
@@ -12646,7 +12637,7 @@ try {
     
        private void PulisciTabella(JTable T){
             DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) T.getModel();
-            Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
+            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
        }
     
     
@@ -12784,7 +12775,7 @@ try {
        // Map<String,String> Mappa_CommissioniDaCancellare = new TreeMap<>();
 
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) TransazioniCryptoTabella.getModel();
-        Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
         BigDecimal Plusvalenza = new BigDecimal("0");
         BigDecimal CostiCarico = new BigDecimal("0");
         BigDecimal Vendite = new BigDecimal("0");

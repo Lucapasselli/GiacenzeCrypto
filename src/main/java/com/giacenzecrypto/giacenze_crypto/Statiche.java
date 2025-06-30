@@ -10,6 +10,7 @@ package com.giacenzecrypto.giacenze_crypto;
  * @author luca
  */
 public class Statiche {
+    public static int DecimaliPlus=2;
     private static String pathRisorse="";
     private static String workingDirectory = System.getProperty("user.dir")+"/";
 

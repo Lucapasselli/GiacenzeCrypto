@@ -102,7 +102,106 @@ public static LifoXID getIDLiFo(String id){
     return MappaIDTrans_LifoxID.get(id);
 }
     
- public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
+ public static String StackLIFO_TogliQtaNEW(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
+    
+    LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
+   // lifoID.StackEntrato.push(valori);
+     
+    //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati 
+    if (Moneta.isBlank() || Qta.isBlank()) return "";
+    
+    ArrayDeque<String[]> originalStack = CryptoStack.get(Moneta);
+    if (originalStack == null) return "0.00";
+    
+    // Se non devo togliere dallo stack originale, lo clono
+    ArrayDeque<String[]> stack = toglidaStack ? originalStack : originalStack.clone();
+
+    BigDecimal qtaRimanente = new BigDecimal(Qta).abs();
+    BigDecimal costoTransazione = BigDecimal.ZERO;
+
+    //prima cosa individuo la moneta e prendo lo stack corrispondente
+   /* if (CryptoStack.get(Moneta)==null){
+        //ritorno="0";
+    }else{*/
+
+while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
+        String[] ultimoRecupero = stack.pop();
+        BigDecimal qtaEstratta = new BigDecimal(ultimoRecupero[1]).abs();
+        BigDecimal costoEstratto = new BigDecimal(ultimoRecupero[2]).abs();
+
+        if (qtaEstratta.compareTo(qtaRimanente) <= 0) {
+            // Caso semplice: uso tutta la quantità
+            //imposto il nuovo valore su qtarimanente che è uguale a qtarimanente-qtaestratta
+            qtaRimanente = qtaRimanente.subtract(qtaEstratta);
+            //recupero il valore di quella transazione e la aggiungo al costoTransazione
+            costoTransazione = costoTransazione.add(costoEstratto);
+            
+            //Inserisco nello stack lifo della transazione i dati relativi alla moneta uscente
+            //per riproporli poi nella maschera di dettaglio del Lifo
+            if (toglidaStack){
+            String valoriDaTogliere[]=new String[4];
+            valoriDaTogliere[0]=Moneta;
+            valoriDaTogliere[1]=qtaEstratta.abs().toPlainString();
+            valoriDaTogliere[2]=costoEstratto.toPlainString();
+            valoriDaTogliere[3]=ultimoRecupero[3];
+            lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
+            }
+        } else {
+            // Caso in cui la quantità richiesta è inferiore a quella in stack
+            //in quersto caso dove la qta estratta dallo stack è maggiore di quella richiesta devo fare dei calcoli ovvero
+            //recuperare il prezzo della sola qta richiesta e aggiungerla al costo di transazione totale
+            //recuperare il prezzo della qta rimanente e la qta rimanente e riaggiungerla allo stack
+            //non ho più qta rimanente
+                        
+            BigDecimal qtaRimanenteStack = qtaEstratta.subtract(qtaRimanente);
+
+            BigDecimal costoUnitario = costoEstratto
+                .divide(qtaEstratta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+
+            //Il valore lo arrotondo al secondo decimale per coerenza tanto poi il restante viene calcolato tramite sottrazione
+            BigDecimal valoreRimanenteStack = costoUnitario
+                .multiply(qtaRimanenteStack)
+               // .setScale(DecimaliCalcoli, RoundingMode.HALF_UP)
+                .setScale(Statiche.DecimaliPlus, RoundingMode.HALF_UP)
+                .stripTrailingZeros();
+
+            String[] valori = new String[] {
+                Moneta,
+                qtaRimanenteStack.toPlainString(),
+                valoreRimanenteStack.toPlainString(),
+                ultimoRecupero[3]
+            };
+           // lifoID.StackEntrato.push(valori);
+            stack.push(valori);
+
+            BigDecimal valoreUsato = costoEstratto.subtract(valoreRimanenteStack);
+            costoTransazione = costoTransazione.add(valoreUsato);
+
+           
+            //Questa cosa la faccio solo se il flag toglidastack è attivo il che significa solo se è un movimento
+            //che realmente movimenta lo stack
+            if (toglidaStack){
+            //Inserisco nello stack lifo della transazione i dati relativi alla moneta uscente
+            //per riproporli poi nella maschera di dettaglio del Lifo
+            String valoriDaTogliere[]=new String[4];
+            valoriDaTogliere[0]=Moneta;                                         //Moneta di riferimento
+            valoriDaTogliere[1]=qtaRimanente.abs().toPlainString();             //qta tolta dallo stack
+            valoriDaTogliere[2]=valoreUsato.toPlainString();                    //costo della qta tolra
+            valoriDaTogliere[3]=ultimoRecupero[3];                              //ID della Transazione
+            lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
+            //Stack Uscito Rimanenze sono appunto quello che rimane delle stack dopo il movimento
+            lifoID.StackUscitoRimanenze=stack.clone();
+            }
+             qtaRimanente = BigDecimal.ZERO;
+           // 
+        }
+    }
+
+    //return costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    return costoTransazione.toPlainString();
+}      
+ 
+public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
     
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
    // lifoID.StackEntrato.push(valori);
@@ -196,10 +295,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         }
     }
 
-    return costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
-}      
- 
- 
+    return costoTransazione.setScale(Statiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();
+   // return costoTransazione.setScale(4, RoundingMode.HALF_UP).toPlainString();
+}       
  
  
     

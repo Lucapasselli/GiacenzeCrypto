@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
+import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -24,20 +25,21 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
      * Creates new form Gui_LiFo_Transazione
      */
     private static String ID="";
-    private String Movimento[];
+   // private String Movimento[];
     public MultiSelectPopup popup = new MultiSelectPopup(this);
     
     public GUI_LiFoTransazione(String IDtr) {
-        ID=IDtr;
-        Movimento=CDC_Grafica.MappaCryptoWallet.get(IDtr);       
+      //  ID=IDtr;              
         initComponents();
         ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
-        setIconImage(icon.getImage());
-        setTitle("LiFo Transazione : "+ID);
-        InizializzaOggetti();        
+        setIconImage(icon.getImage());       
+        InizializzaOggetti(IDtr);        
     }
     
-    private void InizializzaOggetti(){
+    private void InizializzaOggetti(String IDtr){
+        ID=IDtr;
+        String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(IDtr);
+        setTitle("LiFo Transazione : "+IDtr);
          //Inizializza Label e Bottoni
         if (!Movimento[8].isBlank()){
             LabelLifoMU.setText("<html>L.i.F.o. Moneta Uscita : <b>"+Movimento[10]+" "+Movimento[8]+"</b></html>");
@@ -47,6 +49,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
             this.Bottone_MU_FrecciaSinistra.setToolTipText("Vedi stack relativo al movimento precedente di : "+Movimento[8]);
         }else
         {
+            LabelLifoMU.setText("<html>L.i.F.o. Moneta Uscita</html>");
             this.Bottone_MU_FrecciaDestra.setEnabled(false);
             this.Bottone_MU_FrecciaDestra.setToolTipText("");
             this.Bottone_MU_FrecciaSinistra.setEnabled(false);
@@ -60,6 +63,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
             this.Bottone_ME_FrecciaSinistra.setToolTipText("Vedi stack relativo al movimento precedente di : "+Movimento[11]);           
         }else
         {
+            LabelLifoME.setText("<html>L.i.F.o. Moneta Entrata</html>");
             this.Bottone_ME_FrecciaDestra.setEnabled(false);
             this.Bottone_ME_FrecciaDestra.setToolTipText("");
             this.Bottone_ME_FrecciaSinistra.setEnabled(false);
@@ -67,7 +71,14 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         }
         
         //Compilo le tabelle
-        Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(ID);
+        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)Tabella_Lifo_Entrata.getModel());
+        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)Tabella_Lifo_Uscita.getModel());
+        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)jTable1.getModel());
+        String rigaTab[]=new String[]{Movimento[0],Movimento[1],Movimento[5],Movimento[6],Movimento[8],Movimento[10],Movimento[11],Movimento[13],Movimento[15],Movimento[19]};
+        DefaultTableModel ModelloTabella=(DefaultTableModel)jTable1.getModel();
+        ModelloTabella.addRow(rigaTab);
+        
+        Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(IDtr);
         if (lifoID!=null){
         ArrayDeque<String[]> StackEntrato=lifoID.Get_CryptoStackEntrato();
         //Stack della moneta entrata prima el movimento
@@ -75,10 +86,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         //Parte dello stack della moneta uscita relativo alla transazione
         ArrayDeque<String[]> StackUscito=lifoID.Get_CryptoStackUscito();
         //Rimanenze dello stack della moneta uscita dopo la transazione
-        ArrayDeque<String[]> StackUscitoRimanenze=lifoID.Get_CryptoStackUscitoRimanenze();
-        
-        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)Tabella_Lifo_Entrata.getModel());
-        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)Tabella_Lifo_Uscita.getModel());
+        ArrayDeque<String[]> StackUscitoRimanenze=lifoID.Get_CryptoStackUscitoRimanenze();       
         int ordinamento =PopolaTabella(Tabella_Lifo_Entrata,StackEntrato,true,0);
         PopolaTabella(Tabella_Lifo_Entrata,StackEntratoPreMovimento,false,ordinamento);
         ordinamento =PopolaTabella(Tabella_Lifo_Uscita,StackUscito,true,0);
@@ -140,7 +148,45 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         return rounded.stripTrailingZeros().toPlainString();
     }
     
+    private void CaricaMovimentoSuccessivo(String IDtr, String Moneta) {
+        String IDCiclo = IDtr;
+        Map.Entry<String, String[]> suc;
+        while (true) {
+            suc = CDC_Grafica.MappaCryptoWallet.higherEntry(IDCiclo);
+            if (suc != null) {
+                IDCiclo = suc.getKey();
+                if (suc.getValue()[8].equals(Moneta) || suc.getValue()[11].equals(Moneta)) {
+                    if (Calcoli_PlusvalenzeNew.getIDLiFo(IDCiclo)!=null){
+                        InizializzaOggetti(IDCiclo);
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+
+        }
+    }
+    private void CaricaMovimentoPrecedente(String IDtr, String Moneta){
+            String IDCiclo = IDtr;
+        Map.Entry<String, String[]> suc;
+        while (true) {
+            suc = CDC_Grafica.MappaCryptoWallet.lowerEntry(IDCiclo);
+            if (suc != null) {
+                IDCiclo = suc.getKey();
+                if (suc.getValue()[8].equals(Moneta) || suc.getValue()[11].equals(Moneta)) {
+                    if (Calcoli_PlusvalenzeNew.getIDLiFo(IDCiclo)!=null){
+                        InizializzaOggetti(IDCiclo);
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+
+        }
     
+    }
     
     
     private DefaultTableModel inizializzaTabella(JTable table){
@@ -171,6 +217,8 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         Bottone_MU_FrecciaDestra = new javax.swing.JButton();
         Bottone_ME_FrecciaDestra = new javax.swing.JButton();
         Bottone_ME_FrecciaSinistra = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -256,12 +304,55 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/48_FrecciaSotto.png"))); // NOI18N
 
         Bottone_MU_FrecciaSinistra.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/40_FrecciaSinistra.png"))); // NOI18N
+        Bottone_MU_FrecciaSinistra.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_MU_FrecciaSinistraActionPerformed(evt);
+            }
+        });
 
         Bottone_MU_FrecciaDestra.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/40_FrecciaDestra.png"))); // NOI18N
+        Bottone_MU_FrecciaDestra.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_MU_FrecciaDestraActionPerformed(evt);
+            }
+        });
 
         Bottone_ME_FrecciaDestra.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/40_FrecciaDestra.png"))); // NOI18N
+        Bottone_ME_FrecciaDestra.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ME_FrecciaDestraActionPerformed(evt);
+            }
+        });
 
         Bottone_ME_FrecciaSinistra.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/40_FrecciaSinistra.png"))); // NOI18N
+        Bottone_ME_FrecciaSinistra.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ME_FrecciaSinistraActionPerformed(evt);
+            }
+        });
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "ID", "Data", "Tipo Movimento", "Title 4", "Moneta Uscita", "Qta Uscita", "Moneta Entrata", "Qta Entrata", "Valore Transazione", "Plusvalenza"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane4.setViewportView(jTable1);
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(0).setMinWidth(0);
+            jTable1.getColumnModel().getColumn(0).setPreferredWidth(0);
+            jTable1.getColumnModel().getColumn(0).setMaxWidth(0);
+        }
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -270,37 +361,36 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4)
                     .addComponent(jScrollPane1)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 912, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(LabelLifoMU, javax.swing.GroupLayout.PREFERRED_SIZE, 546, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_MU_FrecciaSinistra)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Bottone_MU_FrecciaDestra))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1012, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(LabelLifoME, javax.swing.GroupLayout.PREFERRED_SIZE, 546, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Bottone_ME_FrecciaSinistra)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_ME_FrecciaDestra))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(LabelLifoMU, javax.swing.GroupLayout.PREFERRED_SIZE, 546, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Bottone_MU_FrecciaSinistra)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_MU_FrecciaDestra)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(LabelLifoMU, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(9, 9, 9))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Bottone_MU_FrecciaSinistra)
-                            .addComponent(Bottone_MU_FrecciaDestra))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(Bottone_MU_FrecciaDestra)
+                    .addComponent(Bottone_MU_FrecciaSinistra)
+                    .addComponent(LabelLifoMU, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(5, 5, 5)
@@ -309,12 +399,36 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
                     .addComponent(Bottone_ME_FrecciaDestra)
                     .addComponent(Bottone_ME_FrecciaSinistra))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Bottone_MU_FrecciaDestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_MU_FrecciaDestraActionPerformed
+        // TODO add your handling code here:
+        String MU=CDC_Grafica.MappaCryptoWallet.get(ID)[8];
+        CaricaMovimentoSuccessivo(ID, MU);
+    }//GEN-LAST:event_Bottone_MU_FrecciaDestraActionPerformed
+
+    private void Bottone_ME_FrecciaDestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ME_FrecciaDestraActionPerformed
+        // TODO add your handling code here:
+        String ME=CDC_Grafica.MappaCryptoWallet.get(ID)[11];
+        CaricaMovimentoSuccessivo(ID, ME);
+    }//GEN-LAST:event_Bottone_ME_FrecciaDestraActionPerformed
+
+    private void Bottone_ME_FrecciaSinistraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ME_FrecciaSinistraActionPerformed
+        // TODO add your handling code here:
+        String ME=CDC_Grafica.MappaCryptoWallet.get(ID)[11];
+        CaricaMovimentoPrecedente(ID, ME);
+    }//GEN-LAST:event_Bottone_ME_FrecciaSinistraActionPerformed
+
+    private void Bottone_MU_FrecciaSinistraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_MU_FrecciaSinistraActionPerformed
+        // TODO add your handling code here:
+        String MU=CDC_Grafica.MappaCryptoWallet.get(ID)[8];
+        CaricaMovimentoPrecedente(ID, MU);
+    }//GEN-LAST:event_Bottone_MU_FrecciaSinistraActionPerformed
 
     /**
      * @param args the command line arguments
@@ -364,5 +478,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
 }

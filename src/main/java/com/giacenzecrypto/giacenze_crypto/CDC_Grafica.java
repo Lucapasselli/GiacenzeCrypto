@@ -47,8 +47,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
@@ -62,23 +60,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JWindow;
-import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -102,7 +95,7 @@ private static final long serialVersionUID = 3L;
     static public Map<String, List<String>> Mappa_Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
-    static public Map<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
+    static public TreeMap<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
     
     static public Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
     static public Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
@@ -1047,7 +1040,7 @@ private static final long serialVersionUID = 3L;
 
         jLabel11.setText("Tot. Costi di Carico:");
 
-        jLabel12.setText("Tot. Introiti :");
+        jLabel12.setText("Tot. Corrispettivi :");
 
         TransazioniCrypto_Text_CostiCarico.setEditable(false);
 
@@ -13134,17 +13127,6 @@ try {
         return m1;
     } 
     
-    public void test(java.beans.PropertyChangeEvent evt){
-       // System.out.println(((JDateChooser)(evt.getSource())).getDate());
-    //   System.out.println(evt.getNewValue());
-     // Opzioni_Emoney_Tabella.requestFocus();
-  /*    ((JDateChooser)(evt.getSource())).setDateFormatString("yyyy-MM-dd");
-            if (((JDateChooserRenderer)(evt.getSource())).getDate()!=null){
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            String Data=f.format(((JDateChooserRenderer)(evt.getSource())).getDate());
-        //    System.out.println(Data);
-        }*/
-    }
 
     /**
      * @param args the command line arguments

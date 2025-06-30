@@ -952,7 +952,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel12">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Tot. Introiti :"/>
+                <Property name="text" type="java.lang.String" value="Tot. Corrispettivi :"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="TransazioniCrypto_Text_CostiCarico">

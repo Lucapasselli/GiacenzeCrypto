@@ -6,9 +6,15 @@ package com.giacenzecrypto.giacenze_crypto;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MultiSelectPopup {
     private final JWindow window;
@@ -27,6 +33,13 @@ private boolean dragSelectionEnabled = false;
 private boolean dragSelectState = false; 
 private JCheckBox lastHighlighted = null;
 private final List<JCheckBox> currentlyHighlighted = new ArrayList<>();
+
+
+
+private List<String> cachedCombinedOptions = null;
+private Map<String, JCheckBox> checkboxCache = new HashMap<>();
+private List<String> previousAllOptions = null;
+
 
     public MultiSelectPopup(Window owner) {
     this(owner, new ArrayList<>());
@@ -125,7 +138,7 @@ private final List<JCheckBox> currentlyHighlighted = new ArrayList<>();
     }
     
     
-public void updateOptions(List<String> allOptions, List<String> selectedOptions) {
+public void updateOptionsOLD(List<String> allOptions, List<String> selectedOptions) {
     checkBoxes.clear();
     checkBoxPanel.removeAll();
     
@@ -181,6 +194,202 @@ checkBoxPanel.repaint();
 SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
 
 }
+
+
+    public void updateOptions(List<String> allOptions, List<String> selectedOptions) {
+        long tempoOperazione=System.currentTimeMillis();
+        checkBoxes.clear();
+        checkBoxPanel.removeAll();
+
+        Set<String> selectedSet = new HashSet<>(selectedOptions);
+
+        List<String> selected = new ArrayList<>();
+        List<String> unselected = new ArrayList<>();
+
+        for (String opt : allOptions) {
+            if (selectedSet.contains(opt)) {
+                selected.add(opt);
+            } else {
+                unselected.add(opt);
+            }
+        }
+        Comparator<String> numericAwareComparator = Comparator.comparing(
+                MultiSelectPopup::parseSmartNumber,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        ).thenComparing(String::compareToIgnoreCase);
+
+        selected.sort(numericAwareComparator);
+        unselected.sort(numericAwareComparator);
+
+        List<String> combined = new ArrayList<>(selected.size() + unselected.size());
+        combined.addAll(selected);
+        combined.addAll(unselected);
+
+        for (String opt : combined) {
+            JCheckBox cb = new JCheckBox(opt, selectedSet.contains(opt));
+            checkBoxes.add(cb);
+            checkBoxPanel.add(cb);
+        }
+
+        checkBoxPanel.revalidate();
+        checkBoxPanel.repaint();
+
+        SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
+        tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+        System.out.println("Tempo Ordinamento : "+tempoOperazione+" millisec.");
+    }
+
+    
+    public void updateOptionsOLDconCash(List<String> allOptions, List<String> selectedOptions) {
+    boolean shouldRebuild = (previousAllOptions == null || !previousAllOptions.equals(allOptions));
+
+    if (shouldRebuild) {
+        // Rebuild solo se le opzioni sono cambiate
+        previousAllOptions = new ArrayList<>(allOptions); // copia per confronto futuro
+        checkboxCache.clear(); // rimuovi vecchi componenti
+
+        Set<String> selectedSet = new HashSet<>(selectedOptions);
+        Map<String, Boolean> optionStates = new LinkedHashMap<>(allOptions.size());
+
+        for (String opt : allOptions) {
+            optionStates.put(opt, selectedSet.contains(opt));
+        }
+
+        List<String> selected = new ArrayList<>();
+        List<String> unselected = new ArrayList<>();
+
+        for (Map.Entry<String, Boolean> entry : optionStates.entrySet()) {
+            if (entry.getValue()) {
+                selected.add(entry.getKey());
+            } else {
+                unselected.add(entry.getKey());
+            }
+        }
+
+        Comparator<String> numericAwareComparator = Comparator.comparing(
+            MultiSelectPopup::parseSmartNumber,
+            Comparator.nullsLast(Comparator.naturalOrder())
+        ).thenComparing(String::compareToIgnoreCase);
+
+        selected = (selected.size() > 1000)
+            ? selected.parallelStream().sorted(numericAwareComparator).toList()
+            : selected.stream().sorted(numericAwareComparator).toList();
+
+        unselected = (unselected.size() > 1000)
+            ? unselected.parallelStream().sorted(numericAwareComparator).toList()
+            : unselected.stream().sorted(numericAwareComparator).toList();
+
+        cachedCombinedOptions = new ArrayList<>(selected.size() + unselected.size());
+        cachedCombinedOptions.addAll(selected);
+        cachedCombinedOptions.addAll(unselected);
+
+        for (String opt : cachedCombinedOptions) {
+            JCheckBox cb = new JCheckBox(opt);
+            checkboxCache.put(opt, cb);
+        }
+    }
+
+    // ✅ Seconda parte: aggiornamento UI
+    checkBoxes.clear();
+    checkBoxPanel.removeAll();
+
+    Set<String> selectedSet = new HashSet<>(selectedOptions);
+
+    for (String opt : cachedCombinedOptions) {
+        JCheckBox cb = checkboxCache.get(opt);
+        cb.setSelected(selectedSet.contains(opt));
+        checkBoxes.add(cb);
+        checkBoxPanel.add(cb);
+    }
+
+    checkBoxPanel.revalidate();
+    checkBoxPanel.repaint();
+
+    SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
+}
+
+    
+    
+    
+    public void updateOptionsoldmigliorato2(List<String> allOptions, List<String> selectedOptions) {
+    checkBoxes.clear();
+    checkBoxPanel.removeAll();
+
+    Set<String> selectedSet = new HashSet<>(selectedOptions);
+    Map<String, Boolean> optionStates = new LinkedHashMap<>(allOptions.size());
+
+    for (String opt : allOptions) {
+        optionStates.put(opt, selectedSet.contains(opt));
+    }
+
+    List<String> selected = new ArrayList<>(selectedSet.size());
+    List<String> unselected = new ArrayList<>(allOptions.size() - selectedSet.size());
+
+    for (Map.Entry<String, Boolean> entry : optionStates.entrySet()) {
+        if (entry.getValue()) {
+            selected.add(entry.getKey());
+        } else {
+            unselected.add(entry.getKey());
+        }
+    }
+
+    Comparator<String> numericAwareComparator = Comparator.comparing(
+        MultiSelectPopup::parseSmartNumber,
+        Comparator.nullsLast(Comparator.naturalOrder())
+    ).thenComparing(String::compareToIgnoreCase);
+
+    // Usa ordinamento parallelo solo per grandi liste (es. > 1000)
+    if (selected.size() > 1000) {
+        selected = selected.parallelStream().sorted(numericAwareComparator).toList();
+    } else {
+        selected.sort(numericAwareComparator);
+    }
+
+    if (unselected.size() > 1000) {
+        unselected = unselected.parallelStream().sorted(numericAwareComparator).toList();
+    } else {
+        unselected.sort(numericAwareComparator);
+    }
+
+    List<String> combined = new ArrayList<>(selected.size() + unselected.size());
+    combined.addAll(selected);
+    combined.addAll(unselected);
+
+    for (String opt : combined) {
+        JCheckBox cb = new JCheckBox(opt, optionStates.get(opt));
+        checkBoxes.add(cb);
+        checkBoxPanel.add(cb);
+    }
+
+    checkBoxPanel.revalidate();
+    checkBoxPanel.repaint();
+
+    SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
+}
+    
+    
+    
+private static BigDecimal parseSmartNumber(String s) {
+    if (s == null || s.isEmpty()) return null;
+
+    String cleaned = s.replaceAll("\\s", ""); // rimuovi spazi
+
+    // IT-style (1.000,25) → 1000.25
+    if (cleaned.matches(".*\\d+\\.\\d{3},\\d{1,2}.*") || cleaned.matches(".*\\d+,\\d{1,2}")) {
+        cleaned = cleaned.replace(".", "").replace(",", ".");
+    }
+    // EN-style (1,000.25) → 1000.25
+    else if (cleaned.matches(".*\\d{1,3}(,\\d{3})+(\\.\\d+)?")) {
+        cleaned = cleaned.replace(",", "");
+    }
+    try {
+        return new BigDecimal(cleaned);
+    } catch (NumberFormatException e) {
+        return null;
+    }
+}
+
+
 
 
 public void AzzeraTestoRicerca(){

@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -755,7 +756,7 @@ public static int getSelectedModelRow(JTable table) {
 }
        
        
-public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int col) {
+/*public static List<String> Tabelle_getUniqueValuesForColumnOLD(JTable table, int col) {
     List<String> values = new ArrayList<>();
     TableModel model = table.getModel();
     int rowCount = model.getRowCount();
@@ -768,62 +769,21 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
         }
     }
     return values;
-}
-
-    
- /*   public static void Tabelle_getSommeColonne2(JTable table) {
-    // Cattura snapshot sicuro dei dati visibili su EDT
-    SwingUtilities.invokeLater(() -> {
-        int rowCount = table.getRowCount();
-        TableModel model = table.getModel();
-        int colCount = model.getColumnCount();
-        TableRowSorter<?> sorter = null;
-
-        if (table.getRowSorter() instanceof TableRowSorter) {
-            sorter = (TableRowSorter<?>) table.getRowSorter();
-        }
-
-        // Prepara snapshot di indici visibili
-        int[] visibleRows = new int[rowCount];
-        for (int i = 0; i < rowCount; i++) {
-            visibleRows[i] = (sorter != null) ? sorter.convertRowIndexToModel(i) : i;
-        }
-
-        // Avvia calcolo in thread separato
-        new Thread(() -> {
-            Map<Integer, String> valori = new HashMap<>();
-
-            for (int col = 0; col < colCount; col++) {
-                BigDecimal somma = BigDecimal.ZERO;
-
-                for (int modelRow : visibleRows) {
-                    try {
-                        Object val = model.getValueAt(modelRow, col);
-                        if (val != null) {
-                            String strVal = val.toString();
-                            if (Funzioni.Funzioni_isNumeric(strVal, false)) {
-                                somma = somma.add(new BigDecimal(strVal));
-                            }
-                        }
-                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
-                        // Skip invalid/missing rows
-                    }
-                }
-
-                somma = somma.setScale(2, RoundingMode.HALF_UP);
-                String text = somma.compareTo(BigDecimal.ZERO) != 0 ? somma.toPlainString() : "";
-                if (!text.isBlank())text=Funzioni.formattaBigDecimal(somma, true);
-                valori.put(col, text);
-            }
-
-            // Aggiorna mappa e repaint header su EDT
-            SwingUtilities.invokeLater(() -> {
-                CDC_Grafica.SommaColonne.put(table, valori);
-                table.getTableHeader().repaint();
-            });
-        }).start();
-    });
 }*/
+public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int col) {
+    Set<String> values = new LinkedHashSet<>();
+    TableModel model = table.getModel();
+    int rowCount = model.getRowCount();
+
+    for (int row = 0; row < rowCount; row++) {
+        Object value = model.getValueAt(row, col);
+        String text = value != null ? value.toString() : "";
+        values.add(text); // niente più contains()
+    }
+    return new ArrayList<>(values);
+}
+    
+ 
     
     public static void Tabelle_getSommeColonne(JTable table) {
     SwingUtilities.invokeLater(() -> {
@@ -883,7 +843,7 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
 
        
        
-     public static List<String> Tabelle_getVisibleValuesForColumn(JTable table, int col) {
+  /*   public static List<String> Tabelle_getVisibleValuesForColumnOLD(JTable table, int col) {
     List<String> values = new ArrayList<>();
     int rowCount = table.getRowCount();
 
@@ -895,8 +855,19 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
         }
     }
     return values;
-}  
-       
+}  */
+    
+public static List<String> Tabelle_getVisibleValuesForColumn(JTable table, int col) {
+    Set<String> values = new LinkedHashSet<>();
+    int rowCount = table.getRowCount();
+
+    for (int row = 0; row < rowCount; row++) {
+        Object value = table.getValueAt(row, col);
+        String text = value != null ? value.toString() : "";
+        values.add(text); // niente più contains()
+    }
+    return new ArrayList<>(values);
+}       
   
 
 public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
@@ -1052,9 +1023,14 @@ private static void processNode(Node node, StringBuilder sb) {
                 int col = table.columnAtPoint(e.getPoint());
                 if (col >= 0) {
                     int modelCol = table.convertColumnIndexToModel(col);
+                   // long tempoOperazione=System.currentTimeMillis();
                     List<String> valoriUnici = Tabelle.Tabelle_getUniqueValuesForColumn(table, modelCol);
+                   // tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+                   // System.out.println("Tempo getUniqueValuesForColumn : "+tempoOperazione+" millisec.");
+                    //tempoOperazione=System.currentTimeMillis();
                     List<String> visibili = Tabelle.Tabelle_getVisibleValuesForColumn(table, col);
-
+                   // tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+                   // System.out.println("Tempo getVisibleValuesForColumn : "+tempoOperazione+" millisec.");
                     //MultiSelectPopup popup = new MultiSelectPopup(SwingUtilities.getWindowAncestor(table), valoriUnici);
                     popup.updateOptions(valoriUnici, visibili);
 

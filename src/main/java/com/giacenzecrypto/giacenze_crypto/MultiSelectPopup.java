@@ -12,9 +12,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.table.DefaultTableModel;
 
 public class MultiSelectPopup {
     private final JWindow window;
@@ -39,6 +41,7 @@ private final List<JCheckBox> currentlyHighlighted = new ArrayList<>();
 private List<String> cachedCombinedOptions = null;
 private Map<String, JCheckBox> checkboxCache = new HashMap<>();
 private List<String> previousAllOptions = null;
+public Set<String> selectedValues = new HashSet<>();
 
 
     public MultiSelectPopup(Window owner) {
@@ -61,8 +64,16 @@ private List<String> previousAllOptions = null;
         topPanel.add(filterField, BorderLayout.CENTER);
 
         JPanel selectButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
-        JButton selectAllButton = new JButton("Seleziona tutto");
-        JButton deselectAllButton = new JButton("Deseleziona tutto");
+        JButton selectAllButton = new JButton("<html><b>Seleziona tutto</b><br><center>- Azzera Filtri -</html>");
+        JButton deselectAllButton = new JButton("<html><b>Deseleziona tutto</b><br><center>- Azzera Filtri -</html>");
+        Dimension size = new Dimension(200, selectAllButton.getPreferredSize().height);
+        selectAllButton.setPreferredSize(size);
+        selectAllButton.setMinimumSize(size);
+        selectAllButton.setMaximumSize(size);
+        deselectAllButton.setPreferredSize(size);
+        deselectAllButton.setMinimumSize(size);
+        deselectAllButton.setMaximumSize(size);
+        
         selectAllButton.setMargin(new Insets(2, 5, 2, 5));
         deselectAllButton.setMargin(new Insets(2, 5, 2, 5));
         selectButtonsPanel.add(selectAllButton);
@@ -78,6 +89,7 @@ private List<String> previousAllOptions = null;
         checkBoxPanel = new JPanel();
         checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(checkBoxPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(7);
         scrollPane.setPreferredSize(new Dimension(200, 150));
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -138,225 +150,38 @@ private List<String> previousAllOptions = null;
     }
     
     
-public void updateOptionsOLD(List<String> allOptions, List<String> selectedOptions) {
+
+
+
+public void updateOptions(List<String[]> valori) {
     checkBoxes.clear();
     checkBoxPanel.removeAll();
-    
-    List<String> selected = new ArrayList<>();
-    List<String> unselected = new ArrayList<>();
 
-    for (String opt : allOptions) {
-        if (selectedOptions.contains(opt)) {
-            selected.add(opt);
+    List<String[]> selected = new ArrayList<>();
+    List<String[]> unselected = new ArrayList<>();
+
+    for (String[] entry : valori) {
+        if ("1".equals(entry[1])) {
+            selected.add(entry);
         } else {
-            unselected.add(opt);
+            unselected.add(entry);
         }
     }
 
-    Comparator<String> numericAwareComparator = (s1, s2) -> {
-        try {
-            Double n1 = Double.valueOf(s1);
-            Double n2 = Double.valueOf(s2);
-            return Double.compare(n1, n2);
-        } catch (NumberFormatException e1) {
-            try {
-                Double.valueOf(s1);                
-                return -1; // s1 è numero, s2 no → s1 prima
-            } catch (NumberFormatException e2) {
-                try {
-                    Double.valueOf(s2);
-                    return 1; // s2 è numero, s1 no → s2 prima
-                } catch (NumberFormatException e3) {
-                    return s1.compareToIgnoreCase(s2); // entrambi stringhe
-                }
-            }
-        }
-    };
+    Comparator<String[]> numericAwareComparator = Comparator
+        .comparing((String[] arr) -> MultiSelectPopup.parseSmartNumber(arr[0]),
+                   Comparator.nullsFirst(Comparator.naturalOrder()))
+        .thenComparing(arr -> arr[0], String::compareToIgnoreCase);
 
     selected.sort(numericAwareComparator);
     unselected.sort(numericAwareComparator);
 
-    List<String> combined = new ArrayList<>();
-    combined.addAll(selected);
-    combined.addAll(unselected);   
-
-    
-   for (String opt : combined) {
-    JCheckBox cb = new JCheckBox(opt, selected.contains(opt));
-    checkBoxes.add(cb);
-    checkBoxPanel.add(cb);
-}
-   
-checkBoxPanel.revalidate();
-checkBoxPanel.repaint();
-
-// ATTENZIONE: Abilita la selezione dopo che i nuovi checkbox sono visibili
-SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
-
-}
-
-
-    public void updateOptions(List<String> allOptions, List<String> selectedOptions) {
-        long tempoOperazione=System.currentTimeMillis();
-        checkBoxes.clear();
-        checkBoxPanel.removeAll();
-
-        Set<String> selectedSet = new HashSet<>(selectedOptions);
-
-        List<String> selected = new ArrayList<>();
-        List<String> unselected = new ArrayList<>();
-
-        for (String opt : allOptions) {
-            if (selectedSet.contains(opt)) {
-                selected.add(opt);
-            } else {
-                unselected.add(opt);
-            }
-        }
-        Comparator<String> numericAwareComparator = Comparator.comparing(
-                MultiSelectPopup::parseSmartNumber,
-                Comparator.nullsLast(Comparator.naturalOrder())
-        ).thenComparing(String::compareToIgnoreCase);
-
-        selected.sort(numericAwareComparator);
-        unselected.sort(numericAwareComparator);
-
-        List<String> combined = new ArrayList<>(selected.size() + unselected.size());
-        combined.addAll(selected);
-        combined.addAll(unselected);
-
-        for (String opt : combined) {
-            JCheckBox cb = new JCheckBox(opt, selectedSet.contains(opt));
-            checkBoxes.add(cb);
-            checkBoxPanel.add(cb);
-        }
-
-        checkBoxPanel.revalidate();
-        checkBoxPanel.repaint();
-
-        SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
-        tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-        System.out.println("Tempo Ordinamento : "+tempoOperazione+" millisec.");
-    }
-
-    
-    public void updateOptionsOLDconCash(List<String> allOptions, List<String> selectedOptions) {
-    boolean shouldRebuild = (previousAllOptions == null || !previousAllOptions.equals(allOptions));
-
-    if (shouldRebuild) {
-        // Rebuild solo se le opzioni sono cambiate
-        previousAllOptions = new ArrayList<>(allOptions); // copia per confronto futuro
-        checkboxCache.clear(); // rimuovi vecchi componenti
-
-        Set<String> selectedSet = new HashSet<>(selectedOptions);
-        Map<String, Boolean> optionStates = new LinkedHashMap<>(allOptions.size());
-
-        for (String opt : allOptions) {
-            optionStates.put(opt, selectedSet.contains(opt));
-        }
-
-        List<String> selected = new ArrayList<>();
-        List<String> unselected = new ArrayList<>();
-
-        for (Map.Entry<String, Boolean> entry : optionStates.entrySet()) {
-            if (entry.getValue()) {
-                selected.add(entry.getKey());
-            } else {
-                unselected.add(entry.getKey());
-            }
-        }
-
-        Comparator<String> numericAwareComparator = Comparator.comparing(
-            MultiSelectPopup::parseSmartNumber,
-            Comparator.nullsLast(Comparator.naturalOrder())
-        ).thenComparing(String::compareToIgnoreCase);
-
-        selected = (selected.size() > 1000)
-            ? selected.parallelStream().sorted(numericAwareComparator).toList()
-            : selected.stream().sorted(numericAwareComparator).toList();
-
-        unselected = (unselected.size() > 1000)
-            ? unselected.parallelStream().sorted(numericAwareComparator).toList()
-            : unselected.stream().sorted(numericAwareComparator).toList();
-
-        cachedCombinedOptions = new ArrayList<>(selected.size() + unselected.size());
-        cachedCombinedOptions.addAll(selected);
-        cachedCombinedOptions.addAll(unselected);
-
-        for (String opt : cachedCombinedOptions) {
-            JCheckBox cb = new JCheckBox(opt);
-            checkboxCache.put(opt, cb);
-        }
-    }
-
-    // ✅ Seconda parte: aggiornamento UI
-    checkBoxes.clear();
-    checkBoxPanel.removeAll();
-
-    Set<String> selectedSet = new HashSet<>(selectedOptions);
-
-    for (String opt : cachedCombinedOptions) {
-        JCheckBox cb = checkboxCache.get(opt);
-        cb.setSelected(selectedSet.contains(opt));
-        checkBoxes.add(cb);
-        checkBoxPanel.add(cb);
-    }
-
-    checkBoxPanel.revalidate();
-    checkBoxPanel.repaint();
-
-    SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
-}
-
-    
-    
-    
-    public void updateOptionsoldmigliorato2(List<String> allOptions, List<String> selectedOptions) {
-    checkBoxes.clear();
-    checkBoxPanel.removeAll();
-
-    Set<String> selectedSet = new HashSet<>(selectedOptions);
-    Map<String, Boolean> optionStates = new LinkedHashMap<>(allOptions.size());
-
-    for (String opt : allOptions) {
-        optionStates.put(opt, selectedSet.contains(opt));
-    }
-
-    List<String> selected = new ArrayList<>(selectedSet.size());
-    List<String> unselected = new ArrayList<>(allOptions.size() - selectedSet.size());
-
-    for (Map.Entry<String, Boolean> entry : optionStates.entrySet()) {
-        if (entry.getValue()) {
-            selected.add(entry.getKey());
-        } else {
-            unselected.add(entry.getKey());
-        }
-    }
-
-    Comparator<String> numericAwareComparator = Comparator.comparing(
-        MultiSelectPopup::parseSmartNumber,
-        Comparator.nullsLast(Comparator.naturalOrder())
-    ).thenComparing(String::compareToIgnoreCase);
-
-    // Usa ordinamento parallelo solo per grandi liste (es. > 1000)
-    if (selected.size() > 1000) {
-        selected = selected.parallelStream().sorted(numericAwareComparator).toList();
-    } else {
-        selected.sort(numericAwareComparator);
-    }
-
-    if (unselected.size() > 1000) {
-        unselected = unselected.parallelStream().sorted(numericAwareComparator).toList();
-    } else {
-        unselected.sort(numericAwareComparator);
-    }
-
-    List<String> combined = new ArrayList<>(selected.size() + unselected.size());
+    List<String[]> combined = new ArrayList<>(selected.size() + unselected.size());
     combined.addAll(selected);
     combined.addAll(unselected);
 
-    for (String opt : combined) {
-        JCheckBox cb = new JCheckBox(opt, optionStates.get(opt));
+    for (String[] entry : combined) {
+        JCheckBox cb = new JCheckBox(entry[0], "1".equals(entry[1]));
         checkBoxes.add(cb);
         checkBoxPanel.add(cb);
     }
@@ -366,6 +191,14 @@ SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
 
     SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
 }
+
+
+
+
+
+
+    
+
     
     
     
@@ -553,7 +386,8 @@ private void highlightCheckBox(JCheckBox cb, boolean highlight) {
     cb.repaint();
 }
 
-    
+
+
 }
 
 

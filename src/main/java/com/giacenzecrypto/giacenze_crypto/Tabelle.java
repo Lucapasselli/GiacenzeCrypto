@@ -19,10 +19,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
@@ -770,18 +772,7 @@ public static int getSelectedModelRow(JTable table) {
     }
     return values;
 }*/
-public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int col) {
-    Set<String> values = new LinkedHashSet<>();
-    TableModel model = table.getModel();
-    int rowCount = model.getRowCount();
 
-    for (int row = 0; row < rowCount; row++) {
-        Object value = model.getValueAt(row, col);
-        String text = value != null ? value.toString() : "";
-        values.add(text); // niente più contains()
-    }
-    return new ArrayList<>(values);
-}
     
  
     
@@ -839,36 +830,103 @@ public static List<String> Tabelle_getUniqueValuesForColumn(JTable table, int co
         }).start();
     });
 }
-
-
-       
-       
-  /*   public static List<String> Tabelle_getVisibleValuesForColumnOLD(JTable table, int col) {
-    List<String> values = new ArrayList<>();
-    int rowCount = table.getRowCount();
-
-    for (int row = 0; row < rowCount; row++) {
-        Object value = table.getValueAt(row, col);
-        String text = value != null ? value.toString() : "";
-        if (!values.contains(text)) {
-            values.add(text);
-        }
-    }
-    return values;
-}  */
-    
-public static List<String> Tabelle_getVisibleValuesForColumn(JTable table, int col) {
-    Set<String> values = new LinkedHashSet<>();
-    int rowCount = table.getRowCount();
-
-    for (int row = 0; row < rowCount; row++) {
-        Object value = table.getValueAt(row, col);
-        String text = value != null ? value.toString() : "";
-        values.add(text); // niente più contains()
-    }
-    return new ArrayList<>(values);
-}       
   
+
+
+
+public static Map<String, String[]> Tabelle_getValoriUnivociColonnaConVisibilita(
+        JTable table, int viewColIndex) {
+
+    Map<String, String[]> valori = new TreeMap<>();
+
+    DefaultTableModel model = (DefaultTableModel) table.getModel();
+    int modelColIndex = table.convertColumnIndexToModel(viewColIndex);
+    int rowCount = model.getRowCount();
+
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
+
+    boolean hasFilterOnCurrentColumn = filters.containsKey(modelColIndex);
+
+    RowSorter<? extends TableModel> sorter = table.getRowSorter();
+    if (sorter == null) {
+        // Se non c’è sorter considera tutte le righe visibili
+        // (valori visibili = tutte le righe)
+        for (int row = 0; row < rowCount; row++) {
+            Object valObj = model.getValueAt(row, modelColIndex);
+            String val = valObj != null ? valObj.toString() : "";
+            valori.put(val, new String[]{val, "1"});
+        }
+        return valori;
+    }
+
+    // Ottengo l’insieme di righe visibili col filtro completo (filtro su tutta la tabella)
+    Set<Integer> visibleRows = new HashSet<>();
+    int visibleRowCount = sorter.getViewRowCount();
+    for (int i = 0; i < visibleRowCount; i++) {
+        visibleRows.add(sorter.convertRowIndexToModel(i));
+    }
+
+    if (!hasFilterOnCurrentColumn) {
+        // Se non c’è filtro sulla colonna, mostro solo i valori delle righe visibili
+        for (Integer modelRow : visibleRows) {
+            Object valObj = model.getValueAt(modelRow, modelColIndex);
+            String val = valObj != null ? valObj.toString() : "";
+            valori.put(val, new String[]{val, "1"});
+        }
+        return valori;
+    }
+
+    // Se c’è filtro sulla colonna:
+
+    // 1) Ricavo filtro senza quello sulla colonna
+    List<RowFilter<DefaultTableModel, Integer>> filtersExcludingCurrent = filters.entrySet().stream()
+            .filter(e -> e.getKey() != modelColIndex)
+            .map(Map.Entry::getValue)
+            .toList();
+
+    RowFilter<DefaultTableModel, Integer> combinedFilterExcludingCurrent = null;
+    if (!filtersExcludingCurrent.isEmpty()) {
+        combinedFilterExcludingCurrent = RowFilter.andFilter(filtersExcludingCurrent);
+    }
+
+    TableRowSorter<DefaultTableModel> tempSorter = new TableRowSorter<>(model);
+    tempSorter.setRowFilter(combinedFilterExcludingCurrent);
+
+    // Ottengo righe visibili senza il filtro sulla colonna
+    Set<Integer> rowsVisibleWithoutCurrentFilter = new HashSet<>();
+    int tempVisibleCount = tempSorter.getViewRowCount();
+    for (int i = 0; i < tempVisibleCount; i++) {
+        rowsVisibleWithoutCurrentFilter.add(tempSorter.convertRowIndexToModel(i));
+    }
+
+    // Ora scorro tutte le righe del modello
+    for (int row = 0; row < rowCount; row++) {
+        Object valObj = model.getValueAt(row, modelColIndex);
+        String val = valObj != null ? valObj.toString() : "";
+
+        boolean isVisibleNow = visibleRows.contains(row);
+        boolean isVisibleWithoutFilter = rowsVisibleWithoutCurrentFilter.contains(row);
+
+        if (isVisibleNow) {
+            // Righe visibili col filtro completo, checkbox spuntato
+            valori.put(val, new String[]{val, "1"});
+        } else if (isVisibleWithoutFilter) {
+            // Righe non visibili col filtro completo ma visibili senza filtro sulla colonna
+            // checkbox NON spuntato, valore mostrato perché influenzabile
+            valori.put(val, valori.getOrDefault(val, new String[]{val, "0"}));
+        }
+        // Se non è visibile ne con ne senza filtro sulla colonna, non lo aggiungo (non influenzabile)
+    }
+
+    return valori;
+}
+
+
+
+
+
+
+
 
 public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
         JTable table,
@@ -1024,24 +1082,31 @@ private static void processNode(Node node, StringBuilder sb) {
                 if (col >= 0) {
                     int modelCol = table.convertColumnIndexToModel(col);
                    // long tempoOperazione=System.currentTimeMillis();
-                    List<String> valoriUnici = Tabelle.Tabelle_getUniqueValuesForColumn(table, modelCol);
-                   // tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-                   // System.out.println("Tempo getUniqueValuesForColumn : "+tempoOperazione+" millisec.");
-                    //tempoOperazione=System.currentTimeMillis();
-                    List<String> visibili = Tabelle.Tabelle_getVisibleValuesForColumn(table, col);
-                   // tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-                   // System.out.println("Tempo getVisibleValuesForColumn : "+tempoOperazione+" millisec.");
-                    //MultiSelectPopup popup = new MultiSelectPopup(SwingUtilities.getWindowAncestor(table), valoriUnici);
-                    popup.updateOptions(valoriUnici, visibili);
+                   // List<String> valoriUnici = Tabelle.Tabelle_getUniqueValuesForColumn(table, modelCol);
 
-                    for (JCheckBox cb : popup.getCheckBoxes()) {
+                //    List<String> visibili = Tabelle.Tabelle_getVisibleValuesForColumn(table, col);
+                    
+                  /*  Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
+                    Map<String, String[]> mappa = Tabelle_getValoriUnivociColonna(table, col, filters);*/
+                   // Map<String, String[]> mappa = Tabelle_getValoriUnivociColonna(table, col);
+                    Map<String, String[]> mappa = Tabelle_getValoriUnivociColonnaConVisibilita(table, col);
+                    List<String[]> valori = new ArrayList<>(mappa.values());
+                    popup.updateOptions(valori);
+                   /* Set<String> initialValues = popup.getFilteredColumnValues(table, col, activeFilters);
+                    popup.selectedValues = new HashSet<>(initialValues);
+                    popup.updateOptions(table,col,activeFilters);
+                    */
+                    
+                 //   popup.updateOptions(valoriUnici, visibili);
+
+                /*    for (JCheckBox cb : popup.getCheckBoxes()) {
                         cb.setSelected(visibili.contains(cb.getText()));
-                    }
+                    }*/
 
                     popup.setApplyAction(() -> {
                         
                         List<String> selected = popup.getSelectedOptions();
-                        if (selected.isEmpty() || selected.size() == valoriUnici.size()) {
+                        if (selected.isEmpty() || selected.size() == mappa.size()) {
                             // Nessun filtro: rimuovi filtro e icona
                             activeFilters.remove(modelCol);
                          //   filteredColumns.remove(modelCol);
@@ -1135,5 +1200,14 @@ private static void processNode(Node node, StringBuilder sb) {
         }
     }
      
-     
+    public static class OptionEntry {
+    public final String value;
+    public boolean selected;
+
+    public OptionEntry(String value) {
+        this.value = value;
+        this.selected = false;
+    }
+}
+
 }

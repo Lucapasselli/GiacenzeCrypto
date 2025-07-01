@@ -12496,11 +12496,13 @@ try {
             
             ModelloTabellaCrypto.addRow(Val);
             
-                        if (!Transazione[15].isBlank()){
+                if (!Transazione[15].isBlank()){
+                    if(new BigDecimal(Transazione[10]).compareTo(BigDecimal.ZERO)!=0){
                 BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
                 Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
                 Val=new String[]{"Valore Unitario "+Transazione[8],Valore};
                 ModelloTabellaCrypto.addRow(Val);
+                    }
             }
         }
         Valore=Transazione[9];

@@ -274,6 +274,15 @@ public class Funzioni {
         }
     }
     
+    
+    public static boolean isBigDecimalNonZero(String valore) {
+    try {
+        return new BigDecimal(valore).compareTo(BigDecimal.ZERO) != 0;
+    } catch (Exception e) {
+        return false;
+    }
+}
+    
     public static boolean PopUp_ClickInternoASelezione(JTable table,java.awt.event.MouseEvent e){
         int clickedRow = table.rowAtPoint(e.getPoint());
         if (clickedRow == -1) return false; // clic fuori da qualsiasi riga

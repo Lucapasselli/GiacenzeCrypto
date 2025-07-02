@@ -1839,7 +1839,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     String WalletRiferimento=v[3]+v[4];
                     BigDecimal Qta;
                     BigDecimal QtanoABS;
-                    BigDecimal DiffPrec;
+                    //BigDecimal DiffPrec;
                     String Moneta;
                     long DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
                     long DataMinima=DataOraAttuale- 86400000;
@@ -1848,23 +1848,23 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     {
                         Qta = new BigDecimal(v[13]).abs();
                         QtanoABS = new BigDecimal(v[13]);
-                        DiffPrec = QtaAttuale.divide(new BigDecimal(v[13]),10,RoundingMode.HALF_UP).subtract(BigDecimal.ONE).abs();
+                       /* if (Funzioni.isBigDecimalNonZero(v[13])){
+                            DiffPrec = QtaAttuale.divide(new BigDecimal(v[13]),10,RoundingMode.HALF_UP).subtract(BigDecimal.ONE).abs();
+                        }else DiffPrec = null;*/
                         Moneta = v[11].trim();
-                        /*DataMinima=DataOraAttuale- 86400000;
-                        DataMassima=DataOraAttuale+Giorni;*/
 
                     } else// if (TipoMovimento.equalsIgnoreCase("PC"))
-                    {
+                    {                       
                         Qta = new BigDecimal(v[10]).abs();
                         QtanoABS = new BigDecimal(v[10]);
-                        DiffPrec = QtaAttuale.divide(new BigDecimal(v[10]),10,RoundingMode.HALF_UP).subtract(BigDecimal.ONE).abs();
-                       // DiffPrec = QtaAttuale.add(new BigDecimal(v[10]));
+                       /* if (Funzioni.isBigDecimalNonZero(v[10])){
+                            DiffPrec = QtaAttuale.divide(new BigDecimal(v[10]),10,RoundingMode.HALF_UP).subtract(BigDecimal.ONE).abs();
+                        }
+                        else DiffPrec = null;*/
                         Moneta = v[8].trim();
-                       /* DataMinima=DataOraAttuale-Giorni;
-                        DataMassima=DataOraAttuale+ 86400000;*/
                     }
 
-                    if (Qta != null && DiffPrec != null && Moneta != null
+                    if (Qta != null &&/* DiffPrec != null && */Moneta != null
                             && MonetaAttuale.equals(Moneta)
                             && Qta.compareTo(QtaAttualeMax) == -1 && Qta.compareTo(QtaAttualeMin) == 1
                             && DataOra < (DataMassima)

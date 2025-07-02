@@ -38,7 +38,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.RowFilter;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -65,10 +64,14 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JWindow;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -148,9 +151,9 @@ private static final long serialVersionUID = 3L;
     
     
     //queste 2 variabili servono per gestire il popoup e i filtri su tabella
-        public MultiSelectPopup popup = new MultiSelectPopup(this);
-        public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
-        public static Map<JTable, Map<Integer, String>> SommaColonne = new HashMap<>(); 
+        public Tabelle_PopupSelezioneMultipla popup = new Tabelle_PopupSelezioneMultipla(this);
+        
+        
     public String SplashScreenText= "Caricamento in corso...";    
 
 
@@ -10766,13 +10769,51 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_MenuItem_DettagliMovimentoActionPerformed
 
     private void MenuItem_EsportaTabellaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EsportaTabellaActionPerformed
-        // TODO add your handling code here:
-       // this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            if (PopUp_Tabella!=null)
-            {
-              Funzioni.Export_CreaExcelDaTabella(PopUp_Tabella);  
+
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+    // Crea un dialogo modale con progress bar
+  /*  JDialog progressDialog = new JDialog(this, "Esportazione in corso...", true);
+    JProgressBar progressBar = new JProgressBar();
+    progressBar.setIndeterminate(true);
+    progressBar.setString("Esportazione in corso...");
+    progressBar.setStringPainted(true);
+
+    progressDialog.setLayout(new BorderLayout());
+    progressDialog.add(progressBar, BorderLayout.CENTER);
+    progressDialog.setSize(300, 80);
+    progressDialog.setLocationRelativeTo(this);
+    progressDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);*/
+
+    Download progress = new Download();
+    progress.MostraProgressAttesa("Esportazione in corso...");
+    progress.setLocationRelativeTo(this);
+        
+    // Esegui l'export in background
+    SwingWorker<Void, Void> worker = new SwingWorker<>() {
+        @Override
+        protected Void doInBackground() throws Exception {
+            if (PopUp_Tabella != null) {
+                Funzioni.Export_CreaExcelDaTabella(PopUp_Tabella);
             }
-        //this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            //progressDialog.dispose(); // Chiude il dialog al termine
+            progress.dispose();
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+          /*  JOptionPane.showMessageDialog(CDC_Grafica.this,
+                    "Esportazione completata con successo!",
+                    "Esportazione",
+                    JOptionPane.INFORMATION_MESSAGE);*/
+        }
+    };
+
+    worker.execute();
+// Questo blocca finché done() non chiama dispose()
+    progress.setVisible(true);
     }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
 
     private void Opzioni_Varie_RicalcolaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed
@@ -12747,11 +12788,22 @@ try {
        
        
     private void TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(boolean EscludiTI,boolean VediSoloSenzaPrezzo) {
-        
+       // TransazioniCryptoTabella.setIgnoreRepaint(true);
         long tempoOperazione=System.currentTimeMillis();
         NumErroriMovSconosciuti=0;
         NumErroriMovNoPrezzo=0;
-        //Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
+        
+
+       // Rimuovi il filtro dal TableRowSorter della tabella per velocizzare il caricamento della tabella con filtri attivi
+  /*  RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
+    if (rowSorter instanceof TableRowSorter<?>) {
+        ((TableRowSorter<?>) rowSorter).setRowFilter(null);
+    }*/
+        //Salvo il sorter e lo elimino per velocizareil caricamento della tbella
+        TableRowSorter<?> sorter = (TableRowSorter<?>) TransazioniCryptoTabella.getRowSorter();
+        List<? extends RowSorter.SortKey> sortKeys = sorter != null ? sorter.getSortKeys() : null;
+        TransazioniCryptoTabella.setRowSorter(null);
+       
         PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         //Disabilito i bottoni che devono essere attivi solo in caso vi sia qualcheria selezionata sulla tabella
         TransazioniCrypto_Bottone_MovimentoModifica.setEnabled(false);
@@ -12782,6 +12834,7 @@ try {
         if (WalletVoluto.contains(":")){GruppoWalletVoluto=WalletVoluto.split(" : ")[1].split("\\(")[0].trim();}
         String TokenVoluto=TransazioniCrypto_ComboBox_FiltroToken.getSelectedItem().toString();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        boolean EscludiTokenScamIsSelected=TransazioniCrypto_CheckBox_EscludiTokenScam.isSelected();
         for (String[] v : MappaCryptoWallet.values()) {
             Funzione_AggiornaMappaWallets(v);
             Funzione_AggiornaListaCrypto(v);
@@ -12812,7 +12865,7 @@ try {
            // }
            
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
-            String TipoMovimento=v[0].split("_")[4].trim();
+            String TipoMovimento=v[0].split("_")[4].trim().toUpperCase();
             if (!Prezzi.IndicaMovimentoPrezzato(v)) {
                 NumErroriMovNoPrezzo++;
             }
@@ -12823,7 +12876,7 @@ try {
             //Questo serve per incrementare il numero degli errori qualora vi fossero
             
           //AU sono equiparati a dei trasferimenti interni, da verifixcare accuratamente perchè così rischio di fare casino nelle esportazioni
-          if ((v[22]!=null&&!v[22].equalsIgnoreCase("AU"))//Escludo movimenti automatici
+   /*       if ((v[22]!=null&&!v[22].equalsIgnoreCase("AU"))//Escludo movimenti automatici
                   &&
                   v[18].trim().equalsIgnoreCase("")//Includo solo movimenti senza causale
                   &&
@@ -12833,12 +12886,34 @@ try {
           {
                     NumErroriMovSconosciuti++;
               
-          }
+          }*/
+           // String causale = v[18].trim();
+           
+           
+           //SEZIONE CONTEGGIO ERRORI
+            //Questo serve per incrementare il numero degli errori qualora vi fossero
+            //In questo caso incremento gli errori se trovo dei movimenti non classificati
+            boolean isAutomatico = "AU".equalsIgnoreCase(v[22]);//Escludo movimenti automatici
+            boolean causaleVuota = v[18].trim().isEmpty();//Includo solo movimenti senza causale
+
+            boolean isDepositoValido = TipoMovimento.equals("DC")
+                    && !Funzioni.isSCAM(v[11])//escludo se è scam
+                    && Funzioni.isBigDecimalNonZero(v[13]);//Escludo se la qta è zero
+
+            boolean isPrelievoValido = TipoMovimento.equals("PC")
+                    && !Funzioni.isSCAM(v[8])//escludo se è scam
+                    && Funzioni.isBigDecimalNonZero(v[10]);//Escludo se la qta è zero
+
+            if (!isAutomatico && causaleVuota && (isDepositoValido || isPrelievoValido)) {
+                NumErroriMovSconosciuti++;
+            }
 
           
+            
+            //Vecchio metodo per il caricamento della tabella filtrato, sostituito da quello più sotto
             //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
             //Filtro per i trasferimenti interni
-            if (EscludiTI == true && !v[5].trim().equalsIgnoreCase("Trasferimento Interno") || EscludiTI == false) {
+     /*       if (EscludiTI == true && !v[5].trim().equalsIgnoreCase("Trasferimento Interno") || EscludiTI == false) {
                 //Filtro Date
                 if (Funzioni_Date_ConvertiDatainLong(v[1]) >= Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale)
                         && Funzioni_Date_ConvertiDatainLong(v[1]) <= Funzioni_Date_ConvertiDatainLong(CDC_DataFinale)) {
@@ -12862,7 +12937,7 @@ try {
                     
                     //Filtro Token                   
                     if ((TokenVoluto.equalsIgnoreCase("Tutti") || v[8].equals(TokenVoluto) || v[11].equals(TokenVoluto))&&
-                       ( !TransazioniCrypto_CheckBox_EscludiTokenScam.isSelected()||
+                       ( !EscludiTokenScamIsSelected||
                             !((Funzioni.isSCAM(v[8])&&v[11].isBlank())
                             ||(Funzioni.isSCAM(v[11])&&v[8].isBlank())))
                     )
@@ -12879,7 +12954,63 @@ try {
                     }  
                 }
 
+            }*/
+     
+     
+            //Nuovo metodo per il caricamento della tabella
+            // Prepara e normalizza i dati richiesti più volte
+            String tipoMov = v[5].trim();
+            long dataMovLong = Funzioni_Date_ConvertiDatainLong(v[1]);
+            long dataInizio = Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale);
+            long dataFine = Funzioni_Date_ConvertiDatainLong(CDC_DataFinale);
+            String wallet = v[3];
+            String gruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(wallet);
+            String tokenOut = v[8];
+            String tokenIn = v[11];
+            String valorePlusvalenza = v[19];
+            boolean haPrezzo = !"NO".equalsIgnoreCase(v[32].trim());
+            boolean movimentoRilevante = "S".equals(v[33]);
+
+            boolean isTransferInterno = tipoMov.equalsIgnoreCase("Trasferimento Interno");
+            boolean passaFiltroTrasferimenti = !EscludiTI || (EscludiTI && !isTransferInterno);
+
+            boolean passaFiltroData = dataMovLong >= dataInizio && dataMovLong <= dataFine;
+
+            boolean walletMatch = WalletVoluto.equalsIgnoreCase("Tutti")
+                    || wallet.equalsIgnoreCase(WalletVoluto)
+                    || gruppoWallet.equalsIgnoreCase(GruppoWalletVoluto);
+
+            boolean tokenMatch = TokenVoluto.equalsIgnoreCase("Tutti")
+                    || tokenIn.equals(TokenVoluto)
+                    || tokenOut.equals(TokenVoluto);
+
+            boolean tokenNonScam = !EscludiTokenScamIsSelected
+                    || (!(Funzioni.isSCAM(tokenIn) && tokenOut.isBlank())
+                    && !(Funzioni.isSCAM(tokenOut) && tokenIn.isBlank()));
+
+            boolean passaFiltroPrezzo = !VediSoloSenzaPrezzo || !haPrezzo;
+
+            if (passaFiltroTrasferimenti && passaFiltroData && walletMatch && tokenMatch && tokenNonScam && passaFiltroPrezzo) {
+
+                // Plusvalenza
+                if (Funzioni_isNumeric(valorePlusvalenza, false)) {
+                    Plusvalenza = Plusvalenza.add(new BigDecimal(valorePlusvalenza));
+                }
+
+                // Vendite e Costi Carico
+                if (movimentoRilevante) {
+                    if (!v[15].isEmpty()) {
+                        Vendite = Vendite.add(new BigDecimal(v[15]));
+                    }
+                    if (!v[16].isEmpty()) {
+                        CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
+                    }
+                }
+
+                Object[] z = Funzioni.Converti_String_Object(v);
+                ModelloTabellaCrypto.addRow(z);
             }
+
 
         }
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -12911,10 +13042,18 @@ try {
         //Adesso aggiorno i componenti delle funzioni secondarie
         Funzione_AggiornaComboBox();
         
+        
+
         //Aggiungo i filtri sulla colonna
-       // 
-        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
-     
+        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);       
+        RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
+        // Riapplica le chiavi di ordinamento precedenti
+        if (sortKeys != null) {
+            rowSorter.setSortKeys(sortKeys);
+        }
+        
+      //  TransazioniCryptoTabella.setIgnoreRepaint(false);
+       // TransazioniCryptoTabella.repaint();
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         

@@ -26,7 +26,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
      */
     private static String ID="";
    // private String Movimento[];
-    public MultiSelectPopup popup = new MultiSelectPopup(this);
+    public Tabelle_PopupSelezioneMultipla popup = new Tabelle_PopupSelezioneMultipla(this);
     
     public GUI_LiFoTransazione(String IDtr) {
       //  ID=IDtr;              

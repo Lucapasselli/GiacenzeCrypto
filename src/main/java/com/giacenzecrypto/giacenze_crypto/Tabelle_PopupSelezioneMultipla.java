@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.table.DefaultTableModel;
 
-public class MultiSelectPopup {
+public class Tabelle_PopupSelezioneMultipla {
     private final JWindow window;
     private final JPanel mainPanel;
     private final JTextField filterField;
@@ -44,12 +44,12 @@ private List<String> previousAllOptions = null;
 public Set<String> selectedValues = new HashSet<>();
 
 
-    public MultiSelectPopup(Window owner) {
+    public Tabelle_PopupSelezioneMultipla(Window owner) {
     this(owner, new ArrayList<>());
 }
     
     
-    public MultiSelectPopup(Window owner, List<String> options) {
+    public Tabelle_PopupSelezioneMultipla(Window owner, List<String> options) {
         
         // popup.enableDragSelection();
         window = new JWindow(owner);
@@ -169,7 +169,7 @@ public void updateOptions(List<String[]> valori) {
     }
 
     Comparator<String[]> numericAwareComparator = Comparator
-        .comparing((String[] arr) -> MultiSelectPopup.parseSmartNumber(arr[0]),
+        .comparing((String[] arr) -> Tabelle_PopupSelezioneMultipla.parseSmartNumber(arr[0]),
                    Comparator.nullsFirst(Comparator.naturalOrder()))
         .thenComparing(arr -> arr[0], String::compareToIgnoreCase);
 

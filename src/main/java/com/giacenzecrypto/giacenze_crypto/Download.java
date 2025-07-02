@@ -8,6 +8,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
@@ -77,6 +79,39 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
      
 
+    }
+    
+       public void MostraProgressAttesa(String Messaggio){
+       // ProgressBarDownload.setVisible(false);
+       // LabelAvanzamento.setVisible(false);
+        Bottone_Interrompi.setEnabled(false);
+        Bottone_Interrompi.setVisible(false);
+        LabelScaricamento.setEnabled(false);
+        LabelScaricamento.setVisible(false);
+        textPane.setEnabled(false);
+        textPane.setVisible(false);
+        jScrollPane3.setEnabled(false);
+        jScrollPane3.setVisible(false);
+        jScrollPane4.setEnabled(false);
+        jScrollPane4.setVisible(false);
+        jLabel1.setEnabled(false);
+        jLabel1.setVisible(false);
+        jLabel2.setEnabled(false);
+        jLabel2.setVisible(false);
+        LabelAvanzamento.setEnabled(false);
+        LabelAvanzamento.setVisible(false);
+        this.setSize(new Dimension(300,80));
+        ProgressBarDownload.setIndeterminate(true);
+        ProgressBarDownload.setString(Messaggio);
+        ProgressBarDownload.setStringPainted(true);
+        //ProgressBarDownload.setSize(300, 70);
+        this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        this.setTitle(Messaggio);
+    } 
+    
+    
+    public void setIndeterminate(boolean b){
+        ProgressBarDownload.setIndeterminate(b);
     }
     
     public void SetThread(Thread T){

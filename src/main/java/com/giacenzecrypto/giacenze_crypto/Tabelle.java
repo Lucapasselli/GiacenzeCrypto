@@ -4,11 +4,11 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.tableFilters;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -20,7 +20,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +68,9 @@ public class Tabelle {
 
     //Questo serve per la funzione get SommeColonne e per fare in modo che il risultato dato sia l'ultimo eseguito
     private static final Map<JTable, AtomicInteger> versioniSomma = new ConcurrentHashMap<>();
+    
+    public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
+    public static Map<JTable, Map<Integer, String>> SommaColonne = new HashMap<>();
 
 
     
@@ -823,7 +825,7 @@ public static int getSelectedModelRow(JTable table) {
             SwingUtilities.invokeLater(() -> {
                 AtomicInteger attuale = versioniSomma.get(table);
                 if (attuale != null && attuale.get() == versioneCorrente) {
-                    CDC_Grafica.SommaColonne.put(table, valori);
+                        SommaColonne.put(table, valori);
                     table.getTableHeader().repaint();
                 }
             });
@@ -843,7 +845,7 @@ public static Map<String, String[]> Tabelle_getValoriUnivociColonnaConVisibilita
     int modelColIndex = table.convertColumnIndexToModel(viewColIndex);
     int rowCount = model.getRowCount();
 
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = tableFilters.getOrDefault(table, Map.of());
 
     boolean hasFilterOnCurrentColumn = filters.containsKey(modelColIndex);
 
@@ -958,7 +960,7 @@ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
         }
 
         // Recupera la somma dalla mappa globale
-        Map<Integer, String> colSums = CDC_Grafica.SommaColonne.get(table);
+        Map<Integer, String> colSums = SommaColonne.get(table);
         String somma = (colSums != null) ? colSums.get(modelCol) : null;
 
         // Testo header
@@ -1014,12 +1016,12 @@ private static void processNode(Node node, StringBuilder sb) {
     //ImageIcon originalIco = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
     Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
     Icon filterIco = new ImageIcon(scaledImag);
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = CDC_Grafica.tableFilters.get(table);
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
    table.getTableHeader().setDefaultRenderer(Tabelle.Tabelle_creaNuovoHeaderRenderer(table, activeFilters, filterIco));
 }
 
      public static void Tabelle_applyCombinedFilter(JTable table, TableRowSorter<DefaultTableModel> sorter, String globalFilterText) {
-    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = tableFilters.getOrDefault(table, Map.of());
 
     List<RowFilter<DefaultTableModel, Integer>> combinedFilters = new ArrayList<>(filters.values());
 
@@ -1052,7 +1054,7 @@ private static void processNode(Node node, StringBuilder sb) {
 
      
      
-    public static void Tabelle_FiltroColonne(JTable table,JTextField filtro,MultiSelectPopup popup) {
+    public static void Tabelle_FiltroColonne(JTable table,JTextField filtro,Tabelle_PopupSelezioneMultipla popup) {
     
     //Inizializza tableFilters se non esiste
     tableFilters.putIfAbsent(table, new HashMap<>());
@@ -1182,22 +1184,23 @@ private static void processNode(Node node, StringBuilder sb) {
     }
 
     // Rimuovi il filtro dal TableRowSorter della tabella
-    RowSorter<?> rowSorter = table.getRowSorter();
+   /* RowSorter<?> rowSorter = table.getRowSorter();
     if (rowSorter instanceof TableRowSorter<?>) {
         ((TableRowSorter<?>) rowSorter).setRowFilter(null);
-    }
-
+    }*/
+    table.setRowSorter(null);
     // Forza repaint dell'header per togliere icone o evidenziazioni
     table.getTableHeader().repaint();
 }
 
     public static void Funzioni_Tabelle_PulisciTabella(DefaultTableModel modello) {
-        int z = modello.getRowCount();
+     /*   int z = modello.getRowCount();
         // System.out.println(modelProblemi.getRowCount());
         while (z != 0) {
             modello.removeRow(0);
             z = modello.getRowCount();
-        }
+        }*/
+        modello.setRowCount(0);
     }
      
     public static class OptionEntry {
@@ -1210,4 +1213,48 @@ private static void processNode(Node node, StringBuilder sb) {
     }
 }
 
+    
+    public static class MultiSelectPopUp_CombinedIcon implements Icon {
+    private final Icon sortIcon;
+    private final Icon filterIcon;
+
+    public MultiSelectPopUp_CombinedIcon(Icon sortIcon, Icon filterIcon) {
+        // Se sortIcon è già un MultiSelectPopUp_CombinedIcon, estrai l'originale
+        if (sortIcon instanceof MultiSelectPopUp_CombinedIcon) {
+            MultiSelectPopUp_CombinedIcon ci = (MultiSelectPopUp_CombinedIcon) sortIcon;
+            this.sortIcon = ci.sortIcon;
+        } else {
+            this.sortIcon = sortIcon;
+        }
+        this.filterIcon = filterIcon;
+    }
+
+    @Override
+    public int getIconWidth() {
+        int w1 = sortIcon != null ? sortIcon.getIconWidth() : 0;
+        int w2 = filterIcon != null ? filterIcon.getIconWidth() : 0;
+        return w1 + w2;
+    }
+
+    @Override
+    public int getIconHeight() {
+        int h1 = sortIcon != null ? sortIcon.getIconHeight() : 0;
+        int h2 = filterIcon != null ? filterIcon.getIconHeight() : 0;
+        return Math.max(h1, h2);
+    }
+
+    @Override
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+        int xPos = x;
+        if (sortIcon != null) {
+            sortIcon.paintIcon(c, g, xPos, y);
+            xPos += sortIcon.getIconWidth();
+        }
+        if (filterIcon != null) {
+            filterIcon.paintIcon(c, g, xPos, y);
+        }
+    }
+}
+    
+    
 }

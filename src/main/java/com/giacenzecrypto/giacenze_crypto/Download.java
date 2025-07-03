@@ -81,7 +81,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     }
     
-       public void MostraProgressAttesa(String Messaggio){
+       public void MostraProgressAttesa(String Titolo,String Messaggio){
        // ProgressBarDownload.setVisible(false);
        // LabelAvanzamento.setVisible(false);
         Bottone_Interrompi.setEnabled(false);
@@ -106,7 +106,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         ProgressBarDownload.setStringPainted(true);
         //ProgressBarDownload.setSize(300, 70);
         this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        this.setTitle(Messaggio);
+        this.setTitle(Titolo);
     } 
     
     

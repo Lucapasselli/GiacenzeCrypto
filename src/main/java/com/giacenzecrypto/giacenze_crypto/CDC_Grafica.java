@@ -145,7 +145,7 @@ private static final long serialVersionUID = 3L;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
-    public String Versione="1.0.43";
+    public String Versione="1.0.44";
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
     
@@ -229,7 +229,7 @@ private static final long serialVersionUID = 3L;
         }
         if (VersioneCambiata) {
             DatabaseH2.Opzioni_Scrivi("Data_Lista_Coingecko", "1000000000000");
-            Download progress = new Download();
+           /* Download progress = new Download();
             progress.setLocationRelativeTo(this);
             progress.Titolo("Sistemazione dati per cambio versione... ATTENDERE...");
             progress.SetLabel("Caricamento e sistemazione Dati per cambio versione...");
@@ -251,7 +251,42 @@ private static final long serialVersionUID = 3L;
                 }
             };
             thread.start();
-            progress.setVisible(true);
+            progress.setVisible(true);*/
+            
+            
+            
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Download progress = new Download();
+        progress.MostraProgressAttesa("Cambio Versione", "Aggiornamento archivi in corso...");
+        progress.setLocationRelativeTo(this);
+        progress.NoModale();
+
+        // Esegui l'export in background
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                while (!FineCaricamentoDati) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                progress.dispose();
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
+
+        worker.execute();        
+        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+            
+            
+            
         }
         
         Funzioni_WalletDeFi.CompilaMappaChain();
@@ -10771,49 +10806,30 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void MenuItem_EsportaTabellaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EsportaTabellaActionPerformed
 
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Download progress = new Download();
+        progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
+        progress.setLocationRelativeTo(this);
 
-    // Crea un dialogo modale con progress bar
-  /*  JDialog progressDialog = new JDialog(this, "Esportazione in corso...", true);
-    JProgressBar progressBar = new JProgressBar();
-    progressBar.setIndeterminate(true);
-    progressBar.setString("Esportazione in corso...");
-    progressBar.setStringPainted(true);
-
-    progressDialog.setLayout(new BorderLayout());
-    progressDialog.add(progressBar, BorderLayout.CENTER);
-    progressDialog.setSize(300, 80);
-    progressDialog.setLocationRelativeTo(this);
-    progressDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);*/
-
-    Download progress = new Download();
-    progress.MostraProgressAttesa("Esportazione in corso...");
-    progress.setLocationRelativeTo(this);
-        
-    // Esegui l'export in background
-    SwingWorker<Void, Void> worker = new SwingWorker<>() {
-        @Override
-        protected Void doInBackground() throws Exception {
-            if (PopUp_Tabella != null) {
-                Funzioni.Export_CreaExcelDaTabella(PopUp_Tabella);
+        // Esegui l'export in background
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                if (PopUp_Tabella != null) {
+                    Funzioni.Export_CreaExcelDaTabella(PopUp_Tabella);
+                }
+                return null;
             }
-            return null;
-        }
 
-        @Override
-        protected void done() {
-            //progressDialog.dispose(); // Chiude il dialog al termine
-            progress.dispose();
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-          /*  JOptionPane.showMessageDialog(CDC_Grafica.this,
-                    "Esportazione completata con successo!",
-                    "Esportazione",
-                    JOptionPane.INFORMATION_MESSAGE);*/
-        }
-    };
+            @Override
+            protected void done() {
+                progress.dispose();
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
 
-    worker.execute();
-// Questo blocca finché done() non chiama dispose()
-    progress.setVisible(true);
+        worker.execute();        
+        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+    
     }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
 
     private void Opzioni_Varie_RicalcolaPrezziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_RicalcolaPrezziActionPerformed

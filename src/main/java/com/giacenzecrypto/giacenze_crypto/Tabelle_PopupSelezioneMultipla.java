@@ -9,14 +9,9 @@ import java.awt.event.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import javax.swing.table.DefaultTableModel;
 
 public class Tabelle_PopupSelezioneMultipla {
     private final JWindow window;
@@ -38,9 +33,7 @@ private final List<JCheckBox> currentlyHighlighted = new ArrayList<>();
 
 
 
-private List<String> cachedCombinedOptions = null;
-private Map<String, JCheckBox> checkboxCache = new HashMap<>();
-private List<String> previousAllOptions = null;
+
 public Set<String> selectedValues = new HashSet<>();
 
 

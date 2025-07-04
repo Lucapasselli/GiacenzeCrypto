@@ -23,9 +23,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="Label_Informazioni" max="32767" attributes="0"/>
                   <Component id="jScrollPane4" max="32767" attributes="0"/>
                   <Component id="jScrollPane1" max="32767" attributes="0"/>
                   <Component id="jScrollPane2" pref="1012" max="32767" attributes="0"/>
@@ -36,7 +37,6 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_ME_FrecciaDestra" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="LabelFreccia" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="LabelLifoMU" max="32767" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -58,24 +58,24 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane4" min="-2" pref="55" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="Label_Informazioni" min="-2" pref="140" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Component id="Bottone_MU_FrecciaDestra" alignment="1" max="32767" attributes="0"/>
                   <Component id="Bottone_MU_FrecciaSinistra" alignment="1" max="32767" attributes="0"/>
                   <Component id="LabelLifoMU" alignment="1" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="127" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="LabelFreccia" min="-2" pref="96" max="-2" attributes="0"/>
+              <Component id="jScrollPane1" min="-2" pref="150" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="Bottone_ME_FrecciaDestra" alignment="1" max="32767" attributes="0"/>
                   <Component id="Bottone_ME_FrecciaSinistra" alignment="1" max="32767" attributes="0"/>
                   <Component id="LabelLifoME" alignment="1" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane2" pref="149" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jScrollPane2" min="-2" pref="147" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -249,14 +249,6 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="LabelFreccia">
-      <Properties>
-        <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/Images/48_FrecciaSotto.png"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="Bottone_MU_FrecciaSinistra">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -384,6 +376,11 @@
     <Component class="javax.swing.JLabel" name="LabelMovimento">
       <Properties>
         <Property name="text" type="java.lang.String" value="Movimento di riferimento :"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_Informazioni">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Testo Informativo"/>
       </Properties>
     </Component>
   </SubComponents>

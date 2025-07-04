@@ -1518,19 +1518,50 @@ return MappaLista;
     
     
     public static boolean MovimentoRilevante(String[] Mov){
-        String ID=Mov[0];
-        String IDTS[]=ID.split("_");
-        Moneta m[]=Moneta.RitornaMoneteDaMov(Mov);
+        String ID = Mov[0];
+        String IDTS[] = ID.split("_");
+        Moneta m[] = Moneta.RitornaMoneteDaMov(Mov);
         String Data = Mov[1];
+        boolean Pre2023EarnCostoZero = false;
+        boolean Pre2023ScambiRilevanti = false;
+        long long2023 = OperazioniSuDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
+        long dataLong = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+        boolean DataSuperiore2023 = true;
+        if (dataLong < long2023) {
+            DataSuperiore2023 = false;
+        }
+        String Plusvalenze_Pre2023EarnCostoZero = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
+        if (Plusvalenze_Pre2023EarnCostoZero != null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")) {
+            Pre2023EarnCostoZero = true;
+        }
+        String Plusvalenze_Pre2023ScambiRilevanti = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
+        if (Plusvalenze_Pre2023ScambiRilevanti != null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("SI")) {
+            Pre2023ScambiRilevanti = true;
+        }
+        //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
+       boolean ConsideraMovimentiNC=true;
+       if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
+        
+        
         boolean rilevante=true;
         boolean plusvalenza=true;
         
         if (IDTS[4].equals("VC")                //Vendita Cripto Rilevante
-                || IDTS[4].equals("CM")         //Commissione Rilevante
-                || IDTS[4].equals("RW"))        //Rewards rilevante
+                || IDTS[4].equals("CM"))         //Commissione Rilevante
         {
             rilevante=true;
             plusvalenza=true;
+        } else if (IDTS[4].equals("RW")) //Rewards Rilevante
+        {
+            //A seconda dei casi può generare plusvalenza o meno
+            if ((DataSuperiore2023 && Funzioni.RewardRilevante(ID))
+                    || (!DataSuperiore2023 && !Pre2023EarnCostoZero && Funzioni.RewardRilevante(ID))) {
+                plusvalenza = true;
+
+            } else {
+                plusvalenza = false;
+            }
+            rilevante = true;
         }else if (IDTS[4].equals("AC"))//Acquisto Cripto Rilvente ma no Plusvalenza
                 {
             rilevante=true;
@@ -1544,40 +1575,70 @@ return MappaLista;
             rilevante=false;
             plusvalenza=false;
         }
-        else if (IDTS[4].equals("SC"))//deposito Fiat
+        else if (IDTS[4].equals("SC"))//scambio Crypto
         {
             String Tipo1 = RitornaTipoCrypto(m[0].Moneta, Data, m[0].Tipo);
             String Tipo2 = RitornaTipoCrypto(m[1].Moneta, Data, m[1].Tipo);
-            if (Tipo1.equalsIgnoreCase(Tipo2)) {
-                rilevante = false;
-                plusvalenza=false;
-            }else
-                {
+            if (DataSuperiore2023 || !Pre2023ScambiRilevanti) {
+                if (Tipo1.equalsIgnoreCase(Tipo2)) {
+                    rilevante = false;
+                    plusvalenza = false;
+                } else {
+                    rilevante = true;
+                    plusvalenza = true;
+                }
+            }else{
                 rilevante = true;
-                plusvalenza=true;
+                plusvalenza = true;
             }
         }
         else if (IDTS[4].equals("DC")//Deposito Crypto
-                        || IDTS[4].equals("PC"))//Prelievo Crypto
-                {
-                    //Le tipologie possono essere le seguenti
-                    //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
-                    //PCO -> Cashout o similare (prelievo)
-                    //PTW -> Trasferimento tra Wallet (prelievo)
-                    //DTW -> Trasferimento tra Wallet (deposito)
-                    //DAI -> Airdrop o similare (deposito)
-                    //DCZ -> Costo di carico 0 (deposito)
-                    if (Mov[18].isBlank()) {
-                        //Se Mov[18] è vuoto significa che non ho classificato il movimento
-                        //a questo punto devo decidere come comportarmi, se considerare il movimento rilevante o se invece non gestirlo
-                        //perora lo considero rilvente quindi tratterò i prelievi come cashout e i depositi come provento da detenzione es. Staking
-                        rilevante = true;
-                    }
-                }else if (Mov[18].contains("PWN") || Mov[18].contains("PCO")) {
-
-                    } else if (Mov[18].contains("DAI") || Mov[18].contains("DCZ")) {
-                        
-                    }
+                || IDTS[4].equals("PC"))//Prelievo Crypto
+        {
+            //Le tipologie possono essere le seguenti
+            //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
+            //PCO -> Cashout o similare (prelievo)
+            //PTW -> Trasferimento tra Wallet (prelievo)
+            //DTW -> Trasferimento tra Wallet (deposito)
+            //DAI -> Airdrop o similare (deposito)
+            //DCZ -> Costo di carico 0 (deposito)
+            //DAC -> Acquisto Crypto (deposito)  
+            if (Mov[18].isBlank()) {
+                //Movimento non classificato
+                if(ConsideraMovimentiNC){
+                    rilevante = true;
+                    plusvalenza = IDTS[4].equals("PC");
+                    
+                }
+                else{
+                    rilevante = false;
+                    plusvalenza = false;
+                }
+            }
+        } else if (Mov[18].contains("PWN")) {
+            //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
+            rilevante=false;
+            plusvalenza=false;
+        }  else if (Mov[18].contains("PCO")) {
+            rilevante=true;
+            plusvalenza=false;
+        }else if (Mov[18].contains("DAI") || Mov[18].contains("DCZ")) {
+            //A seconda dei casi può generare plusvalenza o meno
+            //plusvalenza è true se rispetta queste condizioni altrimenti è false
+            plusvalenza = (DataSuperiore2023 && Funzioni.RewardRilevante(ID))|| 
+                          (!DataSuperiore2023 && !Pre2023EarnCostoZero && Funzioni.RewardRilevante(ID));
+            rilevante = true;
+        }
+        else if (Mov[18].contains("PTW") || Mov[18].contains("DTW")) {
+            //Trasferimento tra wallet
+            rilevante=false;
+            plusvalenza=false;
+        }
+        else if (Mov[18].contains("DAC")) {
+            //Acquisto Crypto
+            rilevante=true;
+            plusvalenza=false;
+        }
         return rilevante;
     }
         
@@ -1593,6 +1654,7 @@ return MappaLista;
        }
        return Tipo;
    }
+    
     
       public static boolean RewardRilevante(String ID) {
 

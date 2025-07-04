@@ -198,6 +198,7 @@ private static final long serialVersionUID = 3L;
 
             
         initComponents();
+        SettaIcone();
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
@@ -809,7 +810,7 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento Rilevante", "ND"
+                "<html><center>ID<br>Transazione</html>", "Data e Ora", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico C.A. Uscente</html>", "<html><center>Nuovo<br>Costo di Carico<br>in EURO</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "DeFi - Blocco Transazione", "DeFi - Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "DeFi - Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "ND"
             }
         ) {
             Class[] types = new Class [] {
@@ -4677,7 +4678,15 @@ private static final long serialVersionUID = 3L;
 
 
 
-
+private void SettaIcone(){
+    this.TransazioniCrypto_Bottone_MovimentoModifica.setIcon(Icone.Modifica);
+    this.TransazioniCrypto_Bottone_Importa.setIcon(Icone.Carica);
+    this.TransazioniCrypto_Bottone_DettaglioDefi.setIcon(Icone.Catena);
+    DepositiPrelievi_Bottone_DettaglioDefi.setIcon(Icone.Catena);
+    GiacenzeaData_Bottone_MovimentiDefi.setIcon(Icone.Catena);
+    DepositiPrelievi_Bottone_Scam.setIcon(Icone.Banana);
+    GiacenzeaData_Bottone_Scam.setIcon(Icone.Banana);
+}
 
 
 
@@ -12985,7 +12994,7 @@ try {
             String tokenIn = v[11];
             String valorePlusvalenza = v[19];
             boolean haPrezzo = !"NO".equalsIgnoreCase(v[32].trim());
-            boolean movimentoRilevante = "S".equals(v[33]);
+            boolean haPlusvalenza = "S".equals(v[33]);
 
             boolean isTransferInterno = tipoMov.equalsIgnoreCase("Trasferimento Interno");
             boolean passaFiltroTrasferimenti = !EscludiTI || (EscludiTI && !isTransferInterno);
@@ -13014,7 +13023,7 @@ try {
                 }
 
                 // Vendite e Costi Carico
-                if (movimentoRilevante) {
+                if (haPlusvalenza) {
                     if (!v[15].isEmpty()) {
                         Vendite = Vendite.add(new BigDecimal(v[15]));
                     }

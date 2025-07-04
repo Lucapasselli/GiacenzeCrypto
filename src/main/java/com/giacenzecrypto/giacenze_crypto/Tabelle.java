@@ -4,17 +4,20 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -438,6 +441,7 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
                     Color bg;
                     Color bgUscita;
+                    Color fore=table.getSelectionForeground();
                     Color RossopiuLeggero = Color.decode("#ffe5e5");
                     Color RossoLeggero = Color.decode("#ffcccc");
                     Color verde1 = Color.decode("#e6f4ea");
@@ -445,7 +449,8 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
                     Color bgEntrata;
                     bgUscita= (row % 2 == 0  ? RossoLeggero : RossopiuLeggero);
                     bgEntrata= (row % 2 == 0  ? verde1 : verde1);
-       // Color fore;
+       // Riconversione riga se usa RowSorter
+    int modelRow = table.getRowSorter().convertRowIndexToModel(row);
         if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             //fore=Color.lightGray;
@@ -454,24 +459,49 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
          //   fore=table.getForeground();
-            //fore=Color.BLACK;
+            fore=Color.BLACK;
         }
             // Imposta il colore di sfondo alternato
             if (isSelected) {
                 c.setBackground(table.getSelectionBackground());
                // c.setForeground(table.getSelectionForeground());
-            }else if (table.getName().equalsIgnoreCase("Uscita") && (boolean)table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 7)) {
+            }
+          /*  else if (table.getName().equalsIgnoreCase("Uscita") && table.getModel().getValueAt(modelRow, 2).toString().contains("negativa")) {
+                c.setBackground(Color.RED);
+                c.setForeground(Color.BLACK);
+            }*/else if (table.getName().equalsIgnoreCase("Uscita") && (boolean)table.getModel().getValueAt(modelRow, 7)) {
                 c.setBackground(bgUscita);
                 c.setForeground(Color.BLACK);
             }
-            else if (table.getName().equalsIgnoreCase("Entrata") && (boolean)table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 7)) {
+
+            else if (table.getName().equalsIgnoreCase("Entrata") && (boolean)table.getModel().getValueAt(modelRow, 7)) {
                 c.setBackground(bgEntrata);
                 c.setForeground(Color.BLACK);
             }
             else {
                 c.setBackground(bg);
-                c.setForeground(table.getSelectionForeground());
+                c.setForeground(fore);
             }
+            
+                // Inserisci icona in colonna 2 se contiene "negativa"
+    if (col == 2 && table.getModel().getValueAt(modelRow, col).toString().toLowerCase().contains("negativa")) {
+        JLabel label = new JLabel();
+        label.setOpaque(true);
+        //label.setBackground(c.getBackground());
+        label.setBackground(Tabelle.rosso);
+        label.setForeground(c.getForeground());
+        label.setText(value.toString());
+
+        // Icona di alert (puoi cambiarla)
+        // Usa l'icona di default di Java (warning) e la ridimensiona
+        Icon icon = new FlatSVGIcon("Images/Alert.svg", 18, 18); // percorso relativo alle risorse
+        label.setIcon(icon);
+          //      Icon alertIcon = resizeIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Alert.png")),14,14);
+             //   label.setIcon(alertIcon);
+                label.setIconTextGap(6); // spazio tra icona e testo
+                return label;
+            }
+
 
             return c;
         }
@@ -484,6 +514,17 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
 
     // Restituisci la tabella
     return table;
+}
+
+
+public static Icon resizeIcon(Icon icon, int width, int height) {
+    BufferedImage img = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g2d = img.createGraphics();
+    icon.paintIcon(null, g2d, 0, 0);
+    g2d.dispose();
+
+    Image scaled = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+    return new ImageIcon(scaled);
 }
 
 
@@ -1012,7 +1053,10 @@ private static void processNode(Node node, StringBuilder sb) {
 
  
  public static void Tabelle_InizializzaHeader(JTable table) { 
-     ImageIcon originalIco = new javax.swing.ImageIcon(CDC_Grafica.class.getResource("/Images/24_Imbuto.png"));
+    ImageIcon originalIco = new javax.swing.ImageIcon(CDC_Grafica.class.getResource("/Images/24_Imbuto.png"));
+    //Image image = Icone.svgImbuto.getImage();  // Ottiene l'immagine interna
+   // ImageIcon originalIco = new ImageIcon(image);  // Converte in ImageIcon
+   //  ImageIcon originalIco = Icone.Imbuto;
     //ImageIcon originalIco = new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"));
     Image scaledImag = originalIco.getImage().getScaledInstance(12, 12, Image.SCALE_SMOOTH);
     Icon filterIco = new ImageIcon(scaledImag);

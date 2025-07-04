@@ -190,13 +190,16 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             valoriDaTogliere[3]=ultimoRecupero[3];                              //ID della Transazione
             lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
             //Stack Uscito Rimanenze sono appunto quello che rimane delle stack dopo il movimento
-            lifoID.StackUscitoRimanenze=stack.clone();
+            
             }
              qtaRimanente = BigDecimal.ZERO;
            // 
         }
+        
     }
-
+if (toglidaStack){
+    lifoID.StackUscitoRimanenze=stack.clone();
+}
     //return costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
     return costoTransazione.toPlainString();
 }      
@@ -288,12 +291,25 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             valoriDaTogliere[3]=ultimoRecupero[3];                              //ID della Transazione
             lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
             //Stack Uscito Rimanenze sono appunto quello che rimane delle stack dopo il movimento
-            lifoID.StackUscitoRimanenze=stack.clone();
+           // lifoID.StackUscitoRimanenze=stack.clone();
             }
              qtaRimanente = BigDecimal.ZERO;
            // 
         }
     }
+if (toglidaStack){
+    lifoID.StackUscitoRimanenze=stack.clone();
+}
+
+if (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && stack.isEmpty()){
+//Adesso verifico se sono rimaste ancora parti da togliere di cui non ho però l'equivalente nello stack e lo segnalo
+String valoriDaTogliere[]=new String[4];
+            valoriDaTogliere[0]=Moneta;                                         //Moneta di riferimento
+            valoriDaTogliere[1]=qtaRimanente.abs().toPlainString();             //qta tolta dallo stack
+            valoriDaTogliere[2]="0";                                            //costo della qta tolra
+            valoriDaTogliere[3]="";                                             //ID della Transazione
+            lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
+}
 
     return costoTransazione.setScale(Statiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();
    // return costoTransazione.setScale(4, RoundingMode.HALF_UP).toPlainString();
@@ -363,9 +379,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             //Questa funzione inizializza la mappa CryptoStack nel caso non esista già nella mappa MappaGrWallet_CryptoStack, nel qual caso recupera il suo valore         
             Map<String, ArrayDeque<String[]>> CryptoStack = MappaGrWallet_CryptoStack.computeIfAbsent(GruppoWallet, k -> new TreeMap<>());
 
-            String TipoMU = RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
+            String TipoMU = Funzioni.RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
            // if (v[12]==null)System.out.println(v[11]+"_"+v[1]+"_"+v[12]);
-            String TipoME = RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
+            String TipoME = Funzioni.RitornaTipoCrypto(v[11].trim(),v[1].trim(),v[12].trim());
             String IDTransazione=v[0];
             String IDTS[]=IDTransazione.split("_");
             String MonetaU=v[8];
@@ -547,49 +563,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     String IDControparte=temp[0];
                     String GruppoWalletControparte = temp[1];
                     
-                 /*   //comincio impostando le prime condizioni
-                    //v[20] non deve essere nullo ovvero devo avere transazioni allegate
-                    //v[18] deve essere un deposito derivante da trasferimenti e deve essere o un movimento importato o uno manuale (v[22]=ad A o M)
-                    if (!v[20].isBlank() && v[18].contains("DTW") && (v[22].equals("A") || v[22].equals("M"))) {
-
-                        //Se è un movimento di Trasferimento tra wallet (2 o 3 movimenti a seconda se ci sono le commissioni) il movimento controparte è l'unico PTW
-                        //Se è un movimento di scambio differito (5 movimenti) il movimento controparte è un PTW classificato come AU (posizione 22)
-                        //Tutto questo lo faccio però solo se il movimento di controparte PTW fa parte di un altro gruppo di wallet, altrimentio non faccio nulla.
-                        String Movimenti[] = v[20].split(",");
-
-                        if (Movimenti.length > 3)//Sono in presenza di uno scambio differito
-                        {
-                            for (String IdM : Movimenti) {
-                                String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
-                                //devo trovare la controparte che in questo caso è il movimento di prelievo creato automaticamente dal sistema
-                                //inoltre devo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
-                                //perchè se fanno parte dello stesso gruppo non devo fare nulla
-                                //se fanno parte dello stesso gruppo infatti è lo stesso movimento di scambio a spostare il costo di carico
-
-                                if (Mov[18].contains("PTW") && Mov[22].contains("AU")
-                                        && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
-                                    IDControparte = IdM;
-                                    GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
-                                }
-                            }
-                        } else {//Scambio tra wallet
-
-                            for (String IdM : Movimenti) {
-                                String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
-                                //devo trovare la controparte che in questo caso è l'unico movimento di prelievo
-                                //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
-                                //perchè se fanno parte dello stesso gruppo non devo fare nulla
-                                if (Mov[18].contains("PTW")
-                                        && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
-                                    IDControparte = IdM;
-                                    GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
-                                }
-
-                            }
-
-                        }
-
-                    }*/
+               
                     //Se ID controparte è diverso da null vuol dire che devo gestire il calcolo delle plusvalenze, altrimenti no
                     if (IDControparte != null) {
                         Plusvalenza = "0.00";
@@ -800,7 +774,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
      * 
      * 
      */
-   public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
+  /* public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
        String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
        if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
@@ -809,7 +783,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
            if (datascambio>=dataemoney) Tipo="EMoney";
        }
        return Tipo;
-   }
+   }*/
    
     public static String[] RitornaIDeGruppoControparteSeGruppoDiverso(String v[]) {
         

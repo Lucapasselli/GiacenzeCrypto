@@ -70,7 +70,7 @@ jobs:
             --vendor Luca \
             --linux-shortcut \
             --linux-menu-group "Utility" \
-            --linux-package-name Giacenze_Crypto \
+            --linux-package-name Giacenze-Crypto \
             --linux-deb-maintainer "Luca <giacenzecrypto@gmail.com>"
                        
       - name: Debug Linux output

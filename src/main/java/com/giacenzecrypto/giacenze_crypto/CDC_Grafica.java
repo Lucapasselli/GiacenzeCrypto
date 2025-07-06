@@ -4678,13 +4678,29 @@ private static final long serialVersionUID = 3L;
 
 
 private void SettaIcone(){
-    this.TransazioniCrypto_Bottone_MovimentoModifica.setIcon(Icone.Modifica);
-    this.TransazioniCrypto_Bottone_Importa.setIcon(Icone.Carica);
-    this.TransazioniCrypto_Bottone_DettaglioDefi.setIcon(Icone.Catena);
+    TransazioniCrypto_Bottone_MovimentoModifica.setIcon(Icone.Modifica);
+    GiacenzeaData_Bottone_CambiaNomeToken.setIcon(Icone.Modifica);
+    MenuItem_ModificaMovimento.setIcon(Icone.Modifica);
+    TransazioniCrypto_Bottone_Importa.setIcon(Icone.Carica);
+    TransazioniCrypto_Bottone_DettaglioDefi.setIcon(Icone.Catena);
     DepositiPrelievi_Bottone_DettaglioDefi.setIcon(Icone.Catena);
     GiacenzeaData_Bottone_MovimentiDefi.setIcon(Icone.Catena);
     DepositiPrelievi_Bottone_Scam.setIcon(Icone.Banana);
     GiacenzeaData_Bottone_Scam.setIcon(Icone.Banana);
+    RW_Bottone_IdentificaScam.setIcon(Icone.Banana);
+    TransazioniCrypto_Bottone_InserisciWallet.setIcon(Icone.Wallet);
+    GiacenzeaData_Bottone_GiacenzeExplorer.setIcon(Icone.Wallet);
+    TransazioniCrypto_Bottone_AzzeraFiltri.setIcon(Icone.ImbutoX);
+    TransazioniCrypto_Bottone_Annulla.setIcon(Icone.Annulla);
+    TransazioniCrypto_Bottone_Salva.setIcon(Icone.Salva);
+    MenuItem_LiFoTransazione.setIcon(Icone.Stack);
+    MenuItem_ModificaPrezzo.setIcon(Icone.Euro);
+    GiacenzeaData_Bottone_ModificaValore.setIcon(Icone.Euro);
+    RW_Bottone_ModificaVIniziale.setIcon(Icone.Euro);
+    RW_Bottone_ModificaVFinale.setIcon(Icone.Euro);
+    RT_Bottone_ModificaPrezzo.setIcon(Icone.Euro);
+    RT_Bottone_CorreggiErrori.setIcon(Icone.Attenzione);
+    RW_Bottone_CorreggiErrore.setIcon(Icone.Attenzione);
 }
 
 

@@ -25,6 +25,19 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.44
+Nuove Implementazioni : 
+ - Implementato visualizzazione dello stack del LiFo della transazione tramite tasto destro sulla riga della tabella selezionando "Mostra LiFo Transazione"
+ - Aggiunto ulteriori causali all'import di Binance
+ - Cominciato la conversione delle icone a quelle vettoriali per una più alta resa
+ - Migliorato performance dei filtri sulle tabelle che su molti movimenti (>20.000) potevano in taluni casi risultare molto lenti.
+ - Aggiunto pacchetti DMG per MacOS e DEB per le distribuzioni basate su Debian/Ubuntu
+Correzione di Bug :
+ - Corretto bug che poteva portare alla visualizzazione dei giorni negativi sugli Exchange per cui si era selezionata l'opzione "paga bollo"
+ - Corretto bug che non settava sul database al primo avvio del programma l'opzione presente in opzioni - opzioni di calcolo -> "Fino al 31-12-2022 considera tutti gli scambi crypto-crypto fiscalmente rilevanti"
+   In sostanza da programma veniva visualizzata l'opzione spuntata ma sul database non scriveva nulla e quindi l'opzione non veniva considerata.
+   L'opzione veniva poi scritta correttamente nel database la prima volta che ci si agiva fisicamente sopra premendoci con il mouse, da quel punto tutto poi funzionava correttamente.
+
 ver. 1.0.43
 Nuove Implementazioni : 
  - Implementato i filtri stile Excel su alcune tabelle, tasto destro sull'intestazione della colonna per modificarli.

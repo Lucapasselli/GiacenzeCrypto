@@ -49,6 +49,9 @@
         </Component>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_LiFoTransazione">
           <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/Images/24_Stack.png"/>
+            </Property>
             <Property name="text" type="java.lang.String" value="Mostra LiFo Transazione"/>
           </Properties>
           <Events>

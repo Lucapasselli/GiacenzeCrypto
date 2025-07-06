@@ -20,4 +20,8 @@ public class Icone {
     public static Icon Banana = new FlatSVGIcon("Images/Banana.svg", 24, 24);
     public static Icon Imbuto = new FlatSVGIcon("Images/Imbuto.svg", 24, 24);
    // public static FlatSVGIcon svgImbuto = new FlatSVGIcon("Images/Imbuto.svg", 12, 12);
+    
+    public static Icon getAlert(int Dimensione){
+        return new FlatSVGIcon("Images/Alert.svg", Dimensione, Dimensione);
+    }
 }

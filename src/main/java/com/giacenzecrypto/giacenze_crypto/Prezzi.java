@@ -780,18 +780,18 @@ public class Prezzi {
         boolean mettereND = false;
 
         Crypto = CDC_Grafica.Mappa_MoneteStessoPrezzo.getOrDefault(Crypto, Crypto);
-        
+        long Anno2017 = Long.parseLong("1483225200000");
+        long DataInizioBinance = Long.parseLong("1502942400000");
 
         long adesso = System.currentTimeMillis();
         if (Datalong > adesso) {
             return null;//se la data è maggiore di quella attuale allora ritrono subito null perchè non ho i prezzi
         }
-        if (Datalong < 1483225200) {
+        if (Datalong < Anno2017) {
             return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         }
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
-        long DataInizioBinance = Long.parseLong("1502942400000");
+        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);       
         //System.out.println("RecuperoCoinCap");
 
         risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);

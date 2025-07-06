@@ -64,10 +64,8 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
@@ -702,6 +700,7 @@ private static final long serialVersionUID = 3L;
         PopupMenu.add(MenuItem_Incolla);
         PopupMenu.add(jSeparator4);
 
+        MenuItem_LiFoTransazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
         MenuItem_LiFoTransazione.setText("Mostra LiFo Transazione");
         MenuItem_LiFoTransazione.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -4835,14 +4834,22 @@ JPanel loadingBar = new JPanel() {
         if(PlusXWallet!=null && PlusXWallet.equalsIgnoreCase("SI")){
             Opzioni_GruppoWallet_CheckBox_PlusXWallet.setSelected(true);
         }
+        
         String Plusvalenze_Pre2023EarnCostoZero=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
-        if(Plusvalenze_Pre2023EarnCostoZero!=null && Plusvalenze_Pre2023EarnCostoZero.equalsIgnoreCase("SI")){
-            this.Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero.setSelected(true);
+        if(Plusvalenze_Pre2023EarnCostoZero==null)
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023EarnCostoZero", "NO");
+            Plusvalenze_Pre2023EarnCostoZero="NO";
         }
+        Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero.setSelected("SI".equalsIgnoreCase(Plusvalenze_Pre2023EarnCostoZero));
+        
         String Plusvalenze_Pre2023ScambiRilevanti=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023ScambiRilevanti");
-        if(Plusvalenze_Pre2023ScambiRilevanti!=null && Plusvalenze_Pre2023ScambiRilevanti.equalsIgnoreCase("NO")){
-            this.Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected(false);
+        if(Plusvalenze_Pre2023ScambiRilevanti==null)
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023ScambiRilevanti", "SI");
+            Plusvalenze_Pre2023ScambiRilevanti="SI";
         }
+        Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected("SI".equalsIgnoreCase(Plusvalenze_Pre2023ScambiRilevanti));
         
         //Verifico se esiste l'opzione rilevanza e in caso la creo e gli assegno il valore C, qua sotto la simbologia
             //Rilevanza A = Solo Valori iniziali e finali

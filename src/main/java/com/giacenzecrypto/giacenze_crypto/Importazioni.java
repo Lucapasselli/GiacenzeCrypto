@@ -1729,15 +1729,26 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[5] = Mappa_Conversione_Causali.get(movimentoSplittato[9]);
                                 RT[6] = "-> "+movimentoSplittato[2];                                
                                 RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                String valoreEuro = "0";
+                                String valoreEuro;
                                     
                                     if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) {
                                         valoreEuro = movimentoSplittato[7];
+                                        RT[32]="SI";
                                     }
-                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
-                                        valoreEuro = Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);                                        
+                                    else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
+                                        valoreEuro = Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        RT[32]="SI";                                        
                                     }
-                                    
+                                    else
+                                    {
+                                        long Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                        Moneta Mon=new Moneta();
+                                        Mon.Moneta=movimentoSplittato[2];
+                                        Mon.Tipo="Crypto";
+                                        Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
+                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null);
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (RW)");
+                                    }
                                     valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toString();
                                 
                                 if (movimentoSplittato[3].contains("-")) {
@@ -1810,10 +1821,20 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[5]="DEPOSITO FIAT";
                                 String valoreEuro="0";
                                 if (movimentoSplittato[9].trim().equalsIgnoreCase("viban_purchase")){
-                                    if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[3];
-                                    if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
+                                    if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))
+                                    {
+                                        valoreEuro=movimentoSplittato[3];
+                                        RT[32]="SI";
+                                    }
+                                    else if (movimentoSplittato[2].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
+                                        RT[32]="SI";
+                                    }
+                                    else
+                                    {
+                                        RT[32]="NO";
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (DF)");
                                     }
                                     valoreEuro=new BigDecimal(valoreEuro).abs().toString(); 
                                     
@@ -1824,10 +1845,20 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }
                                 else 
                                     {
-                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                    if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
+                                    {
+                                        valoreEuro=movimentoSplittato[7];
+                                        RT[32]="SI";
+                                    }
+                                    else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        RT[32]="SI";
+                                    }
+                                    else
+                                    {
+                                        RT[32]="NO";
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (DF)");
                                     }
                                     valoreEuro=new BigDecimal(valoreEuro).abs().toString();
                                     
@@ -1877,7 +1908,11 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();
                                     RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
                                 }
-                                                              
+                                if (valoreEuro.equals("0"))
+                                {
+                                    RT[32]="NO";   
+                                    System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (AC)");
+                                }
                                 RT[7]=movimentoSplittato[9]+"("+movimentoSplittato[1]+")";                               
                                 RT[9]="FIAT";                                                                                              
                                 RT[12]="Crypto";
@@ -1913,11 +1948,16 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[9]="Crypto";
                                 RT[10]=new BigDecimal(movimentoSplittato[3]).toString();                                                                                                                            
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];///////
-                                String valoreEuro="";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
+                                String valoreEuro;
+                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
+                                {
+                                    valoreEuro=movimentoSplittato[7];
+                                    RT[32]="SI";
+                                }
                                 else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        RT[32]="SI";
                                     }
                                 else
                                     {
@@ -1953,11 +1993,26 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12]="FIAT";
                                 RT[13]=new BigDecimal(movimentoSplittato[5]).abs().toString();                                                                                            
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];///////
-                                String valoreEuro="";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                String valoreEuro;
+                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
+                                {
+                                    valoreEuro=movimentoSplittato[7];
+                                    RT[32]="SI";
+                                }
+                                else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        RT[32]="SI";
+                                    }
+                                else
+                                    {
+                                        long Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                        Moneta Mon=new Moneta();
+                                        Mon.Moneta=movimentoSplittato[2];
+                                        Mon.Tipo="Crypto";
+                                        Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
+                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null);
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (VC)");
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
@@ -1991,11 +2046,19 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[13]=""; 
                                 RT[14]=movimentoSplittato[4]+" "+movimentoSplittato[5];///////
                                 valoreEuro="";
-                                if (movimentoSplittato[4].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[5];
-                                if (movimentoSplittato[4].trim().equalsIgnoreCase("USD"))
+                                if (movimentoSplittato[4].trim().equalsIgnoreCase("EUR"))
+                                {
+                                    valoreEuro=movimentoSplittato[5];
+                                    RT[32]="SI";
+                                }
+                                else if (movimentoSplittato[4].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[5], data.split(" ")[0]);
+                                        RT[32]="SI";
                                     }
+                                else{
+                                System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (PF)");
+                                }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();                                
                                 RT[15]=valoreEuro;
                                 RT[16]="";
@@ -2029,12 +2092,30 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12]="Crypto";
                                 RT[13]=new BigDecimal(movimentoSplittato[5]).abs().toString();                                                                                            
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];///////
-                                String valoreEuro="";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                String valoreEuro;
+                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
+                                {
+                                    RT[32]="SI";
+                                    valoreEuro=movimentoSplittato[7];
+                                }
+                                else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        RT[32]="SI";
                                     }
+                                else{
+                                    long Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                        Moneta Mon=new Moneta();
+                                        Mon.Moneta=movimentoSplittato[2];
+                                        Mon.Tipo="Crypto";
+                                        Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
+                                        Moneta Mon2=new Moneta();
+                                        Mon2.Moneta=movimentoSplittato[4];
+                                        Mon2.Tipo="Crypto";
+                                        Mon2.Qta=new BigDecimal(movimentoSplittato[5]).toPlainString();
+                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, Mon2, Datalong, null, true, 10, null);
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (SC)");
+                                }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
@@ -2051,12 +2132,23 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             {
                                 
 // serve solo per il calcolo della percentuale di cro da attivare
-                                String valoreEuro = "";
+                                String valoreEuro;
                                 if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) {
                                     valoreEuro = movimentoSplittato[7];
+                                    RT[32]="SI";
                                 }
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
+                                else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
                                     valoreEuro = Prezzi.ConvertiUSDEUR(movimentoSplittato[7], movimentoSplittato[0].split(" ")[0]);
+                                    RT[32]="SI";
+                                }
+                                else {
+                                long Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                        Moneta Mon=new Moneta();
+                                        Mon.Moneta=movimentoSplittato[2];
+                                        Mon.Tipo="Crypto";
+                                        Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
+                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null);
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (DUST CONVERSION)");
                                 }
                                 Moneta Mon=new Moneta();
                                 Mon.Moneta=movimentoSplittato[2];
@@ -2067,78 +2159,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 String CausaleOriginale=movimentoSplittato[9];
                                 String IDOriginale="";
                                 Scambio.InserisciMoneteCEX(Mon,WalletSecondario,CausaleOriginale,IDOriginale);
-                                /*
-                                    // se è un movimento negativo lo inserisco tra gli addebiti
-                                    if (movimentoSplittato[3].contains("-")){
-                                        dust_addebitati[numeroAddebiti]=movimento;
-                                        dust_sommaaddebiti=new BigDecimal(dust_sommaaddebiti).abs().add(new BigDecimal(movimentoSplittato[7]).abs()).toString();
-                                        //System.out.println(dust_sommaaddebiti+ " "+movimentoSplittato[7]);
-                                       
-                                        numeroAddebiti++;
-                                       // System.out.println("ADDEBITI : "+movimento);
-                                    }
-                                    else
-                                    {
-                                       // System.out.println(dust_sommaaddebiti+ " "+movimentoSplittato[3]);
-                                       //System.out.println("ACCREDITI : "+movimento);
-                                       dust_accreditati=movimento;
-                                    }   
-                                
-                           // se è l'ultimo movimento allora creo anche le righe
-                                if (k==numMovimenti-1){
-                                  // System.out.println(movimento);
-                                 //  System.out.println(numeroAddebiti);
-                                    for (int w = 0; w < numeroAddebiti; w++) {
-                                        String splittata[]=dust_addebitati[w].split(",");
-                                        RT = new String[ColonneTabella];
-                                        RT[0] = data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_"+String.valueOf(w+1)+"_SC";
-                                        RT[1] = dataa;
-                                        RT[2] = w+1 + " di " + numeroAddebiti;
-                                        RT[3] = "Crypto.com App";
-                                        RT[4] = "Crypto Wallet";
-                                        RT[5] = "SCAMBIO CRYPTO";
-                                        RT[6] = splittata[2]+" -> "+dust_accreditati.split(",")[2];//da sistemare con ulteriore dettaglio specificando le monete trattate                                        
-                                        RT[7] = splittata[9] + "(" + splittata[1] + ")";
-                                        RT[8] = splittata[2];
-                                        RT[9] = "Crypto";
-                                        RT[10] = splittata[3];
-                                        RT[11] = dust_accreditati.split(",")[2];
-                                        RT[12] = "Crypto";
-                                        BigDecimal valoreTrans=new BigDecimal(splittata[7]);
-                                        BigDecimal sumAddebiti;
-                                        //System.out.println("dust_sommaaddebiti : "+dust_sommaaddebiti);
-                                        if (new BigDecimal(dust_sommaaddebiti).compareTo(new BigDecimal("0"))!=0){
-                                            sumAddebiti=new BigDecimal(dust_sommaaddebiti);
-                                        }else
-                                            {
-                                               sumAddebiti=new BigDecimal("0.000000001"); 
-                                            }
-                                        BigDecimal totCRO=new BigDecimal(dust_accreditati.split(",")[3]);
-                                        BigDecimal operazione;                                        
-                                        operazione=(valoreTrans.divide(sumAddebiti,30, RoundingMode.HALF_UP));
-                                        String numCRO=operazione.multiply(totCRO).stripTrailingZeros().abs().toString();//da sistemare calcolo errato
-                                        RT[13] =numCRO;//dust_accreditati.split(",")[3];//bisogna fare i calcoli
-                                        RT[14] = splittata[6] + " " + splittata[7];///////
-                                        String valoreEuro = "";
-                                        if (splittata[6].trim().equalsIgnoreCase("EUR")) {
-                                            valoreEuro = splittata[7];
-                                        }
-                                        if (splittata[6].trim().equalsIgnoreCase("USD")) {
-                                            valoreEuro = Prezzi.ConvertiUSDEUR(splittata[7], splittata[0].split(" ")[0]);
-                                        }
-                                        valoreEuro = new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toString();
-                                        RT[15] = valoreEuro;
-                                        RT[16] = "";
-                                        RT[17] = "Da calcolare";
-                                        RT[18] = "";
-                                        RT[19] = "0.00";
-                                        RT[20] = "";
-                                        RT[21] = "";
-                                        RT[22] = "A";
-                                        RiempiVuotiArray(RT);
-                                        lista.add(RT);
-                                    }
-                                }*/
                                 }
                                 else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
                             {
@@ -2216,12 +2236,26 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12]="";
                                 RT[13]="";                                                                                            
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
-                                String valoreEuro="";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                String valoreEuro;
+                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
+                                {
+                                    valoreEuro=movimentoSplittato[7];
+                                    RT[32]="SI";
+                                }
+                                else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        RT[32]="SI";
                                     }
+                                else{
+                                long Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                        Moneta Mon=new Moneta();
+                                        Mon.Moneta=movimentoSplittato[2];
+                                        Mon.Tipo="Crypto";
+                                        Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
+                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null);
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (TI)");
+                                }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
@@ -2301,12 +2335,26 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     RT[13]=new BigDecimal(movimentoSplittato[3]).abs().toString();                               
                                 }                                                                                            
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
-                                String valoreEuro="";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))valoreEuro=movimentoSplittato[7];
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
+                                String valoreEuro;
+                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
+                                {
+                                    valoreEuro=movimentoSplittato[7];
+                                    RT[32]="SI";
+                                }
+                                else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD"))
                                     {
                                         valoreEuro=Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                        RT[32]="SI";
                                     }
+                                else{
+                                    long Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                        Moneta Mon=new Moneta();
+                                        Mon.Moneta=movimentoSplittato[2];
+                                        Mon.Tipo="Crypto";
+                                        Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
+                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null);
+                                        System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (TC)");
+                                }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";

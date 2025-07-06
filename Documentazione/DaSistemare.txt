@@ -13,3 +13,6 @@
 - Nell'intestazione della tabella non fare la somma se il totale ha più di 2 cifre dopo la virgola perché significa che si parla di qta e non di euro (da valutare con calma questa modifica)
 - Nelle tabelle che hanno le intestazioni modificate fare in modo che compaiano sempre le modifiche e si aggiornino.
 - Nelle tabelle con le intestazioni modificate mettere un ulteriore tasto ("Azzera tutti i filtri") per eliminare i filtri applicati alla tabella.
+- Nelle importazioni di binance financial report controllare la numerazione dei k che sembra errata
+- Nelle importazioni da crypto.com controllare se il prodotto ha prezzo nel csv e se lo ha mettere S nel campo
+- Nelle importazioni di crypto.com inserire menù visivo come nelle altre

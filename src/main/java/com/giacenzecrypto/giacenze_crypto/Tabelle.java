@@ -494,7 +494,7 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
 
         // Icona di alert (puoi cambiarla)
         // Usa l'icona di default di Java (warning) e la ridimensiona
-        Icon icon = new FlatSVGIcon("Images/Alert.svg", 18, 18); // percorso relativo alle risorse
+        Icon icon = Icone.getAlert(18); // percorso relativo alle risorse
         label.setIcon(icon);
           //      Icon alertIcon = resizeIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Alert.png")),14,14);
              //   label.setIcon(alertIcon);

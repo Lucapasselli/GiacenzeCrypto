@@ -714,7 +714,17 @@ public static int getSelectedModelRow(JTable table) {
     }
     return table.convertRowIndexToModel(viewRow);
 }
-       
+
+public static int[] getRigheTabellaSelezionate(JTable table) {
+    int[] viewRows = table.getSelectedRows();
+    int[] modelRows = new int[viewRows.length];
+
+    for (int i = 0; i < viewRows.length; i++) {
+        modelRows[i] = table.convertRowIndexToModel(viewRows[i]);
+    }
+
+    return modelRows;
+}
        
            public static JTable ColoraTabellaEvidenzaRigheErrore(final JTable table) {
       //  bg=grigioChiaro;

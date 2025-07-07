@@ -27,6 +27,8 @@ public class Icone {
     public static Icon Euro = new FlatSVGIcon("Images/Euro.svg", 24, 24);
     public static Icon Attenzione = new FlatSVGIcon("Images/Attenzione.svg", 24, 24);
     public static Icon Unlock = new FlatSVGIcon("Images/Unlock.svg", 24, 24);
+    public static Icon Cestino = new FlatSVGIcon("Images/Cestino.svg", 24, 24);
+    public static Icon AssegnazioneAutomatica = new FlatSVGIcon("Images/AssegnazioneAutomatica.svg", 24, 24);
     
    // public static FlatSVGIcon svgImbuto = new FlatSVGIcon("Images/Imbuto.svg", 12, 12);
     

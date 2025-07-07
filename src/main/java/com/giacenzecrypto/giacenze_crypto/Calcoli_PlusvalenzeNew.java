@@ -102,7 +102,7 @@ public static LifoXID getIDLiFo(String id){
     return MappaIDTrans_LifoxID.get(id);
 }
     
- public static String StackLIFO_TogliQtaNEW(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
+/* public static String StackLIFO_TogliQtaNEW(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
     
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
    // lifoID.StackEntrato.push(valori);
@@ -124,7 +124,7 @@ public static LifoXID getIDLiFo(String id){
         //ritorno="0";
     }else{*/
 
-while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
+/*while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         String[] ultimoRecupero = stack.pop();
         BigDecimal qtaEstratta = new BigDecimal(ultimoRecupero[1]).abs();
         BigDecimal costoEstratto = new BigDecimal(ultimoRecupero[2]).abs();
@@ -202,13 +202,14 @@ if (toglidaStack){
 }
     //return costoTransazione.setScale(2, RoundingMode.HALF_UP).toPlainString();
     return costoTransazione.toPlainString();
-}      
+}      */
  
 public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> CryptoStack, String Moneta,String Qta,boolean toglidaStack,String IDTransazione) {
     
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
    // lifoID.StackEntrato.push(valori);
-     
+   
+     if (Moneta.equals("APE"))System.out.println("APE - "+Qta);
     //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati 
     if (Moneta.isBlank() || Qta.isBlank()) return "";
     
@@ -221,6 +222,7 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
     BigDecimal qtaRimanente = new BigDecimal(Qta).abs();
     BigDecimal costoTransazione = BigDecimal.ZERO;
 
+    if (Moneta.equals("APE"))System.out.println("APE " + stack.size()+ " - "+qtaRimanente);
     //prima cosa individuo la moneta e prendo lo stack corrispondente
    /* if (CryptoStack.get(Moneta)==null){
         //ritorno="0";
@@ -297,19 +299,24 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
            // 
         }
     }
-if (toglidaStack){
-    lifoID.StackUscitoRimanenze=stack.clone();
-}
+    if (toglidaStack) {
+        lifoID.StackUscitoRimanenze = stack.clone();
+    }
 
-if (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && stack.isEmpty()){
+    if (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && stack.isEmpty()) {
 //Adesso verifico se sono rimaste ancora parti da togliere di cui non ho però l'equivalente nello stack e lo segnalo
-String valoriDaTogliere[]=new String[4];
-            valoriDaTogliere[0]=Moneta;                                         //Moneta di riferimento
-            valoriDaTogliere[1]=qtaRimanente.abs().toPlainString();             //qta tolta dallo stack
-            valoriDaTogliere[2]="0";                                            //costo della qta tolra
-            valoriDaTogliere[3]="";                                             //ID della Transazione
-            lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
-}
+        String valoriDaTogliere[] = new String[4];
+        valoriDaTogliere[0] = Moneta;                                         //Moneta di riferimento
+        valoriDaTogliere[1] = qtaRimanente.abs().toPlainString();             //qta tolta dallo stack
+        valoriDaTogliere[2] = "0";                                            //costo della qta tolra
+        valoriDaTogliere[3] = "";                                             //ID della Transazione
+        lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
+
+//Segnalo l'errore anche direttamente sul movimento
+        //System.out.println("Errore");
+        CDC_Grafica.MappaCryptoWallet.get(IDTransazione)[38]="1";
+        System.out.println("Errore "+IDTransazione);
+    }
 
     return costoTransazione.setScale(Statiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();
    // return costoTransazione.setScale(4, RoundingMode.HALF_UP).toPlainString();

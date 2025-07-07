@@ -4701,6 +4701,8 @@ private void SettaIcone(){
     RT_Bottone_ModificaPrezzo.setIcon(Icone.Euro);
     RT_Bottone_CorreggiErrori.setIcon(Icone.Attenzione);
     RW_Bottone_CorreggiErrore.setIcon(Icone.Attenzione);
+    TransazioniCrypto_Bottone_MovimentoElimina.setIcon(Icone.Cestino);
+    DepositiPrelievi_Bottone_AssegnazioneAutomatica.setIcon(Icone.AssegnazioneAutomatica);
 }
 
 
@@ -6449,7 +6451,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
 
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
-        int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();
+        int rigaselezionata = Tabelle.getSelectedModelRow(DepositiPrelievi_Tabella);
         
         String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
        // System.out.println(IDTransazione);
@@ -7771,7 +7773,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
         // TODO add your handling code here:
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
-        int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
+        int rigaselezionata = Tabelle.getSelectedModelRow(DepositiPrelievi_Tabella);        
         String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
         if (!Funzioni_WalletDeFi.ApriExplorer(ID)){
             JOptionPane.showConfirmDialog(this, "Non è possibile aprire l'explorer per questa transazione.",
@@ -7848,7 +7850,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
         // TODO add your handling code here:
-        if (TransazioniCryptoTabella.getSelectedRow()>=0){
+         int righeSelezionate[] = Tabelle.getRigheTabellaSelezionate(TransazioniCryptoTabella);
+    //    if (righeSelezionate.length >= 0) {
+        //    for (int i = 0; i < righeSelezionate.length; i++) {
+        if (righeSelezionate.length>=0){
+            if (righeSelezionate.length>=1){
+                int risposta=JOptionPane.showOptionDialog(this,"Sono stati selezionati "+righeSelezionate.length+" movimenti, li vuoi cancellare tutti?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                if (risposta==0){
+                    for (int i = 0; i < righeSelezionate.length; i++) {
+                        String ID = TransazioniCryptoTabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+                        Funzioni.RimuoviMovimentazioneXID(ID);
+                    }
+                    TabellaCryptodaAggiornare=true;
+                    JOptionPane.showConfirmDialog(this, "Movimenti eliminati correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
+                    "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                }
+            }
+            else{
             int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
             String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
             int risposta=JOptionPane.showOptionDialog(this,"Sicuro di voler cancellare la transazione con ID "+IDTransazione+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
@@ -7856,11 +7874,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
                 Funzioni.RimuoviMovimentazioneXID(IDTransazione);
                 TabellaCryptodaAggiornare=true;
-                // TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-                // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
-                // TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 JOptionPane.showConfirmDialog(this, "Transazione con ID"+IDTransazione+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
                     "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            }
             }
         }
 
@@ -8729,7 +8745,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
-            int rigaselezionata = RW_Tabella_Dettagli.getSelectedRow();
+            int rigaselezionata = Tabelle.getSelectedModelRow(RW_Tabella_Dettagli);
             String Errore = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 15).toString();
             String MonetaTabIni = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString().trim();
             String MonetaTabFin = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString().trim();
@@ -9139,7 +9155,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
             MovimentoManuale_GUI a = new MovimentoManuale_GUI();
-        int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
+        int rigaselezionata = Tabelle.getSelectedModelRow(DepositiPrelievi_Tabella);        
         String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             a.CompilaMovimentoOppostoID(IDTransazione);
             a.setLocationRelativeTo(this);
@@ -10111,8 +10127,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
         if (RT_Tabella_Principale.getSelectedRow()>=0){
-            int rigaselezionata = RT_Tabella_Principale.getSelectedRow();
-            String Anno = RT_Tabella_Principale.getModel().getValueAt(rigaselezionata, 0).toString();
+            int rigaselezionata = Tabelle.getSelectedModelRow(RT_Tabella_Principale);
+           String Anno = RT_Tabella_Principale.getModel().getValueAt(rigaselezionata, 0).toString();
             //Attivo il bottone per poter modificare il prezzo dei token solo nel caso l'anno attuale non sia lo stesso di quello analizzato
             //non posso infatti modificare i prezzi di fine anno dell'anno in corso
             String AnnoAttuale = Year.now().toString();
@@ -10380,7 +10396,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
         // TODO add your handling code here:
-        int righeSelezionate[] = DepositiPrelievi_Tabella.getSelectedRows();
+        int righeSelezionate[] = Tabelle.getRigheTabellaSelezionate(DepositiPrelievi_Tabella);
         if (righeSelezionate.length >= 0) {
             /*String ID[]=new String[righeSelezionate.length];
             //Primo ciclo recupero tutti gli id dalla tabella
@@ -10390,6 +10406,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Secondo ciclo faccio le modifiche
             for (int i = 0; i < righeSelezionate.length; i++) {
                 String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
+                System.out.println(ID);
                 String Rete = Funzioni.TrovaReteDaID(ID);
                 //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
                 String Movimento[] = MappaCryptoWallet.get(ID);
@@ -10685,7 +10702,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void DepositiPrelievi_Bottone_DuplicaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
         // TODO add your handling code here:
         if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
-            int rigaselezionata = DepositiPrelievi_Tabella.getSelectedRow();        
+            int rigaselezionata = Tabelle.getSelectedModelRow(DepositiPrelievi_Tabella);        
             String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
            if(Funzioni.DuplicaMovimento(IDTransazione)){
                JOptionPane.showConfirmDialog(this, "<html>Movimento Duplicato<br>"

@@ -47,7 +47,10 @@
 35 - Campo di appoggio per prezzo transazione originale quando si classifica il movimento di deposito come Acquisto o Donazione
 36 - Address di Provenienza (Attualmente implementato solo in BinanceTaxReport)
 37 - Address di Destinazione (Attualmente Implementato solo in BananceTaxReport)
-38 - Campo Libero per implementazioni future
+38 - Campo Segnalazione Errori
+    1 -> Manca parte del LiFo
+    2 -> Da Implementare
+    3 -> Da Implementare
 39 - Campo Libero per implementazioni future
 */
 

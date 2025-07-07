@@ -5,14 +5,12 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.DecimaliCalcoli;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.Map;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;

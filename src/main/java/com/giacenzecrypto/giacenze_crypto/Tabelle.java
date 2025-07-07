@@ -4,7 +4,6 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -31,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -94,7 +92,7 @@ public class Tabelle {
                 
              
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-
+        int modelRow = table.getRowSorter().convertRowIndexToModel(row);
         Color bg; 
         Color fore;
         if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
@@ -113,7 +111,7 @@ public class Tabelle {
                    // c.revalidate();//NON CREDO SERVA PIU'
                 }
             
-                else if (col==3 && value.toString().toLowerCase().contains("deposito")) {
+                else if (col==3 && value.toString().toLowerCase().equals("deposito crypto")) {
                        // if (value.toString().equalsIgnoreCase("da calcolare"))
                          //   {
                    // c.setBackground(MappaColori.get(row));
@@ -122,7 +120,7 @@ public class Tabelle {
                    // }
 
                 } 
-                else if (col==3 && value.toString().toLowerCase().contains("prelievo")) {
+                else if (col==3 && value.toString().toLowerCase().equals("prelievo crypto")) {
                        // if (value.toString().equalsIgnoreCase("da calcolare"))
                          //   {
                    // c.setBackground(MappaColori.get(row));
@@ -131,28 +129,7 @@ public class Tabelle {
                    // }
 
                 } 
-
-                else if (value!=null && col==10 && value.toString().equalsIgnoreCase("da calcolare")) {
-                       // if (value.toString().equalsIgnoreCase("da calcolare"))
-                         //   {
-                   // c.setBackground(MappaColori.get(row));
-                    setBackground(arancione);
-                    setForeground(table.getForeground());
-                   // }
-
-                } else if (value!=null && col==11 && value.toString().equalsIgnoreCase("da calcolare")) { 
-                  //  c.setBackground(MappaColori.get(row));
-                    setBackground(arancione);
-                    setForeground(table.getForeground());
-                   // c.setBackground(MappaColori.get(row));
-                }
                 else if (value!=null && col==11 && value.toString().trim().contains("-")) {
-                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
-                    c.setBackground(bg);
-                    setForeground(rosso);
-                } 
-                else if (value!=null &&col==9&& table.getModel().getColumnCount()>32 && 
-                        table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 32).toString().toUpperCase().contains("NO")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
                     c.setBackground(bg);
                     setForeground(rosso);
@@ -170,10 +147,43 @@ public class Tabelle {
 
                 }
 
-              // riga=row;
+                // Inserisci icona in colonna 2 se contiene "negativa"
+                
+                if ((col == 11 && !table.getModel().getValueAt(modelRow, 38).toString().isBlank())//Manca parte del LiFo
+                        ||                     
+                    (col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO"))//Transazione senza prezzo
+                        ) 
+                {
+                    JLabel label = new JLabel();
+                    label.setOpaque(true);
+                    label.setBackground(c.getBackground());
+                    label.setForeground(c.getForeground());
+                    label.setText(value.toString());
+                    Icon icon = Icone.getAlert(18);
+                    label.setIcon(icon);
+                    label.setIconTextGap(6); // spazio tra icona e testo
+                    return label;
+                }
+                
+             /*   if (col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO")) {
+                  //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
+                    JLabel label = new JLabel();
+                    label.setOpaque(true);
+                    label.setBackground(c.getBackground());
+                    label.setForeground(c.getForeground());
+                    label.setText(value.toString());
+                    Icon icon = Icone.getAlert(18);
+                    label.setIcon(icon);
+                    label.setIconTextGap(6); // spazio tra icona e testo
+                    return label;
+                } */
+                
+
                 return c;
             }
         };
+
+        
         
         // Configura il renderer per i tipi più comuni
     table.setDefaultRenderer(Object.class, renderer);

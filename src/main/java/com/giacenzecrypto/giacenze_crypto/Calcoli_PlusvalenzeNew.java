@@ -209,20 +209,24 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
    // lifoID.StackEntrato.push(valori);
    
-     if (Moneta.equals("APE"))System.out.println("APE - "+Qta);
+    // if (Moneta.equals("APE"))System.out.println("APE - "+Qta);
     //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati 
     if (Moneta.isBlank() || Qta.isBlank()) return "";
     
+    //Se lo stack è vuoto salvo l'errore e ritorno 0.00 come costo di carico
     ArrayDeque<String[]> originalStack = CryptoStack.get(Moneta);
-    if (originalStack == null) return "0.00";
-    
+    if (originalStack == null) 
+    {
+       originalStack=new ArrayDeque<>();
+       // return "0.00";
+    }
     // Se non devo togliere dallo stack originale, lo clono
     ArrayDeque<String[]> stack = toglidaStack ? originalStack : originalStack.clone();
 
     BigDecimal qtaRimanente = new BigDecimal(Qta).abs();
     BigDecimal costoTransazione = BigDecimal.ZERO;
 
-    if (Moneta.equals("APE"))System.out.println("APE " + stack.size()+ " - "+qtaRimanente);
+    //if (Moneta.equals("APE")) System.out.println("APE " + stack.size()+ " - "+qtaRimanente);
     //prima cosa individuo la moneta e prendo lo stack corrispondente
    /* if (CryptoStack.get(Moneta)==null){
         //ritorno="0";
@@ -314,8 +318,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
 //Segnalo l'errore anche direttamente sul movimento
         //System.out.println("Errore");
-        CDC_Grafica.MappaCryptoWallet.get(IDTransazione)[38]="1";
-        System.out.println("Errore "+IDTransazione);
+        CDC_Grafica.MappaCryptoWallet.get(IDTransazione)[38]="A";
+       // System.out.println("Errore "+IDTransazione);
     }
 
     return costoTransazione.setScale(Statiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();

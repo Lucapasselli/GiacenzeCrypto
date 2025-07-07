@@ -456,7 +456,7 @@
                   <Properties>
                     <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                      <Table columnCount="35" rowCount="0">
+                      <Table columnCount="40" rowCount="0">
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;ID&lt;br&gt;Transazione&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="Data e Ora" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Numero&lt;br&gt;movimento&lt;br&gt;su Totale&lt;br&gt;movimenti&lt;/html&gt;" type="java.lang.Object"/>
@@ -492,6 +492,11 @@
                         <Column editable="false" title="Movimento Valorizzato" type="java.lang.Object"/>
                         <Column editable="false" title="Movimento con Plusvalenza" type="java.lang.Object"/>
                         <Column editable="false" title="ND" type="java.lang.Object"/>
+                        <Column editable="false" title="null" type="java.lang.Object"/>
+                        <Column editable="false" title="null" type="java.lang.Object"/>
+                        <Column editable="false" title="null" type="java.lang.Object"/>
+                        <Column editable="false" title="Errori" type="java.lang.Object"/>
+                        <Column editable="false" title="null" type="java.lang.Object"/>
                       </Table>
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -662,6 +667,31 @@
                           <Renderer/>
                         </Column>
                         <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="40" minWidth="40" prefWidth="40" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>

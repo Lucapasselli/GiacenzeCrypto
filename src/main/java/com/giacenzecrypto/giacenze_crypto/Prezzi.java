@@ -58,10 +58,10 @@ public class Prezzi {
 
     public static boolean IndicaMovimentoPrezzato(String[] Movimento) {
         boolean prezzato=true;
-        //questa funzione verifica se il movimento è senza prezzo e se lo è valorizza il campo 32 a SI altrimenti lo valorizza a NO
-        if (!Movimento[15].equals("0.00"))Movimento[32] = "SI";        
-        else if (!Movimento[11].isBlank()&&Funzioni.isSCAM(Movimento[11]))Movimento[32] = "SI";
-        else if (!Movimento[8].isBlank()&&Funzioni.isSCAM(Movimento[8]))Movimento[32] = "SI";
+        //se il movimento è già stato classificato ed ed ha prezzo ritorno subito true
+        //in caso di no non ritorno false perchè prima devo vedere se coinvolge movimenti scam
+        if (Movimento[32] != null && Movimento[32].equals("SI"))return true;
+        
         else if (Movimento[32] == null || Movimento[32].isBlank()) {//Questa cosa la faccio se il campo non è valorizzato o è valorizzato a NO
             if (!Movimento[15].equals("0.00")) {
                 Movimento[32] = "SI";
@@ -71,7 +71,14 @@ public class Prezzi {
                 Movimento[32] = "SI";
             }
         }
-        if (Movimento[32].equals("NO"))prezzato=false;
+        
+        //Controllo l'esito dei movimenti sopra e setto prezzato di conseguenza
+        prezzato=Movimento[32].equals("SI");
+        //if (Movimento[32].equals("NO"))prezzato=false;
+        
+        //Se è un movimento di un token scam lo indico come prezzato anche se non ho il prezzo perchè non mi interessa averlo evidenziato come errore
+        if (!Movimento[11].isBlank()&&Funzioni.isSCAM(Movimento[11]))prezzato=true;
+        if (!Movimento[8].isBlank()&&Funzioni.isSCAM(Movimento[8]))prezzato=true;
         return prezzato;
     }
     

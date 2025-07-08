@@ -209,7 +209,6 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
    // lifoID.StackEntrato.push(valori);
    
-    // if (Moneta.equals("APE"))System.out.println("APE - "+Qta);
     //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati 
     if (Moneta.isBlank() || Qta.isBlank()) return "";
     
@@ -226,11 +225,6 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
     BigDecimal qtaRimanente = new BigDecimal(Qta).abs();
     BigDecimal costoTransazione = BigDecimal.ZERO;
 
-    //if (Moneta.equals("APE")) System.out.println("APE " + stack.size()+ " - "+qtaRimanente);
-    //prima cosa individuo la moneta e prendo lo stack corrispondente
-   /* if (CryptoStack.get(Moneta)==null){
-        //ritorno="0";
-    }else{*/
 
 while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         String[] ultimoRecupero = stack.pop();

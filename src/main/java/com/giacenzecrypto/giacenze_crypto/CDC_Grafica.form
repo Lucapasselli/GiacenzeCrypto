@@ -691,7 +691,7 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="40" minWidth="40" prefWidth="40" resizable="true">
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -713,6 +713,8 @@
                     <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="TransazioniCryptoTabellaKeyReleased"/>
                   </Events>
                   <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new com.giacenzecrypto.giacenze_crypto.JTableConTooltipIcone()"/>
+                    <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="CDC_Grafica_TransazioniCryptoTabella"/>
                     <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));"/>
                   </AuxValues>
                 </Component>

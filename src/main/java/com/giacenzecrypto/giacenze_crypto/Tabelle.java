@@ -92,7 +92,10 @@ public class Tabelle {
                 
              
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-        int modelRow = table.getRowSorter().convertRowIndexToModel(row);
+        int modelRow=row;
+        if (table.getRowSorter()!=null){
+            modelRow = table.getRowSorter().convertRowIndexToModel(row);
+        }
         Color bg; 
         Color fore;
         if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
@@ -107,27 +110,15 @@ public class Tabelle {
             if (isSelected) {
 
                     setBackground(table.getSelectionBackground());
-                   // setForeground(Color.BLACK);
-                   // c.revalidate();//NON CREDO SERVA PIU'
                 }
             
                 else if (col==3 && value.toString().toLowerCase().equals("deposito crypto")) {
-                       // if (value.toString().equalsIgnoreCase("da calcolare"))
-                         //   {
-                   // c.setBackground(MappaColori.get(row));
                     setBackground(bg);
                     setForeground(verdeScuro);
-                   // }
-
                 } 
                 else if (col==3 && value.toString().toLowerCase().equals("prelievo crypto")) {
-                       // if (value.toString().equalsIgnoreCase("da calcolare"))
-                         //   {
-                   // c.setBackground(MappaColori.get(row));
                     setBackground(bg);
                     setForeground(rosso);
-                   // }
-
                 } 
                 else if (value!=null && col==11 && value.toString().trim().contains("-")) {
                   //  bg = (row % 2 == 0 ? grigioChiaro : bianco);
@@ -146,12 +137,25 @@ public class Tabelle {
                   
 
                 }
+            
+            
+            
 
                 // Inserisci icona in colonna 2 se contiene "negativa"
-                
-                if ((col == 11 && !table.getModel().getValueAt(modelRow, 38).toString().isBlank())//Manca parte del LiFo
+                if (col==3 &&(value.toString().toLowerCase().equals("deposito crypto")||value.toString().toLowerCase().equals("prelievo crypto"))) {
+                    JLabel label = new JLabel();
+                    label.setOpaque(true);
+                    label.setBackground(c.getBackground());
+                    label.setForeground(c.getForeground());
+                    label.setText(value.toString());
+                    Icon icon = Icone.getAlert(18);
+                    label.setIcon(icon);
+                    label.setIconTextGap(6); // spazio tra icona e testo
+                    return label;
+                }
+                else if ((col == 11 && !table.getModel().getValueAt(modelRow, 38).toString().isBlank())//Manca parte del LiFo
                         ||                     
-                    (col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO"))//Transazione senza prezzo
+                    (table.getModel().getColumnCount()>32 && col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO"))//Transazione senza prezzo
                         ) 
                 {
                     JLabel label = new JLabel();
@@ -162,6 +166,14 @@ public class Tabelle {
                     Icon icon = Icone.getAlert(18);
                     label.setIcon(icon);
                     label.setIconTextGap(6); // spazio tra icona e testo
+                   
+                    // Tooltip personalizzata in base alla colonna
+             /*       if (col == 11) {
+                        label.setToolTipText("Manca parte del calcolo LIFO – verifica che ci siano tutti gli acquisti");
+                    } else if (col == 9) {
+                        label.setToolTipText("Transazione senza prezzo");
+                    }*/
+                    
                     return label;
                 }
                 

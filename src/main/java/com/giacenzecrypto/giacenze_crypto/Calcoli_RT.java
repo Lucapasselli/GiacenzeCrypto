@@ -420,7 +420,7 @@ public class Calcoli_RT {
           }
            //Verifico se il movimento contiene errori di mancato prezzo.
            //Controllo che il movimento non abbia prezzo e sia rilevante fiscalmente.
-            if (!Prezzi.IndicaMovimentoPrezzato(v)&&v[33].equals("S")) {           
+            if (!Prezzi.isMovimentoPrezzato(v)&&v[33].equals("S")) {           
                 //Gestisco l'errore
                 if(Errori.equals("0"))Errori="2";
                 if (Errori.contains("1")&&!Errori.contains("2"))Errori=Errori+"2";

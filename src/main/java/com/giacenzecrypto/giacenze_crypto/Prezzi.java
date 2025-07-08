@@ -56,8 +56,18 @@ public class Prezzi {
     
   //DA FARE : Recupero prezzi orari in base all'ora più vicina  
 
-    public static boolean IndicaMovimentoPrezzato(String[] Movimento) {
-        boolean prezzato=true;
+
+    /**
+     * Questa funzione si occupa di fare 2 cose
+     * 1 - Verifica se il movimento ha prezzo e se lo ha mette "SI" nel posto _32
+     * 2 - Se il movimento ha prezzo o è scam ritorna true 
+     * (Se il token è scam devo tornare che ha prezzo altrimenti il programma segnala errore su quel token e i token scam non mi interessa gestirli)
+     *
+     * @param Movimento
+     * @return true se movimento prezzato o scam altrimenti false.
+     */
+    public static boolean isMovimentoPrezzato(String[] Movimento) {
+        boolean prezzato;
         //se il movimento è già stato classificato ed ed ha prezzo ritorno subito true
         //in caso di no non ritorno false perchè prima devo vedere se coinvolge movimenti scam
         if (Movimento[32] != null && Movimento[32].equals("SI"))return true;

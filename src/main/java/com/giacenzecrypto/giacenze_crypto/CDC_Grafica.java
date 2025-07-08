@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
@@ -62,6 +63,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -196,6 +198,7 @@ private static final long serialVersionUID = 3L;
 
             
         initComponents();
+      //  OverrideTabellaCrypto();
         SettaIcone();
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
@@ -374,7 +377,7 @@ private static final long serialVersionUID = 3L;
         CDC = new javax.swing.JTabbedPane();
         TransazioniCrypto = new javax.swing.JPanel();
         TransazioniCrypto_ScrollPane = new javax.swing.JScrollPane();
-        TransazioniCryptoTabella = new javax.swing.JTable();
+        TransazioniCryptoTabella = new com.giacenzecrypto.giacenze_crypto.JTableConTooltipIcone();
         TransazioniCrypto_Bottone_Importa = new javax.swing.JButton();
         TransazioniCrypto_Label_MovimentiNonSalvati = new javax.swing.JLabel();
         TransazioniCrypto_Bottone_Salva = new javax.swing.JButton();
@@ -915,9 +918,9 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(37).setMinWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(37).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(37).setMaxWidth(0);
-            TransazioniCryptoTabella.getColumnModel().getColumn(38).setMinWidth(40);
-            TransazioniCryptoTabella.getColumnModel().getColumn(38).setPreferredWidth(40);
-            TransazioniCryptoTabella.getColumnModel().getColumn(38).setMaxWidth(40);
+            TransazioniCryptoTabella.getColumnModel().getColumn(38).setMinWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(38).setPreferredWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(38).setMaxWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setMinWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setMaxWidth(0);
@@ -4682,12 +4685,7 @@ private static final long serialVersionUID = 3L;
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
-
-
-
-
-
+   
 
 
 
@@ -11571,7 +11569,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             boolean senzaPrezzo=true;
             Map<String,String[]> MappaMovimentiToken=GiacenzeaData_Funzione_RitornaIDMovimentiToken(NomeMoneta, Address, Rete);
             for (String movimento[]:MappaMovimentiToken.values()){
-               if (movimento[32].equalsIgnoreCase("SI")&&Double.parseDouble(movimento[15])!=0){
+               if (Prezzi.isMovimentoPrezzato(movimento)&&Double.parseDouble(movimento[15])!=0){
                    senzaPrezzo=false;
                }
             }
@@ -11775,8 +11773,8 @@ try {
                     String TokenE=movimento[11];
                     String Prezzo="";
                     String Simbolo="";
-                    boolean haprezzo=false;
-                    if (movimento[32].equalsIgnoreCase("SI"))haprezzo=true;
+                    boolean haprezzo=Prezzi.isMovimentoPrezzato(movimento);
+                    //if (movimento[32].equalsIgnoreCase("SI"))haprezzo=true;
                     boolean EstraiPrezzi=this.Opzioni_Export_EsportaPrezzi_CheckBox.isSelected();
                     if (haprezzo&&EstraiPrezzi)
                     {
@@ -11977,8 +11975,7 @@ try {
                     String TokenE=movimento[11];
                     String Prezzo="";
                     String Simbolo="";
-                    boolean haprezzo=false;
-                    if (movimento[32].equalsIgnoreCase("SI"))haprezzo=true;
+                    boolean haprezzo=Prezzi.isMovimentoPrezzato(movimento);
                     boolean EstraiPrezzi=this.Opzioni_Export_EsportaPrezzi_CheckBox.isSelected();
                     if (haprezzo&&EstraiPrezzi)
                     {
@@ -12832,7 +12829,7 @@ try {
 
                             //Adesso verifico se ho prezzi a zero non perchè valgano zero ma perchè non è presente un prezzo sul movimento e li segnalo
                             //col 32 a SI se il movimento è senza prezzo invece a NO se ha prezzo
-                            Prezzi.IndicaMovimentoPrezzato(splittata);                            
+                            Prezzi.isMovimentoPrezzato(splittata);                            
                             }
                             MappaCryptoWallet.put(splittata[0], splittata);
 
@@ -12946,7 +12943,7 @@ try {
            
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
             String TipoMovimento=v[0].split("_")[4].trim().toUpperCase();
-            if (!Prezzi.IndicaMovimentoPrezzato(v)) {
+            if (!Prezzi.isMovimentoPrezzato(v)) {
                 NumErroriMovNoPrezzo++;
             }
             
@@ -13048,7 +13045,7 @@ try {
             String tokenOut = v[8];
             String tokenIn = v[11];
             String valorePlusvalenza = v[19];
-            boolean haPrezzo = !"NO".equalsIgnoreCase(v[32].trim());
+            boolean haPrezzo = Prezzi.isMovimentoPrezzato(v);
             boolean haPlusvalenza = "S".equals(v[33]);
 
             boolean isTransferInterno = tipoMov.equalsIgnoreCase("Trasferimento Interno");

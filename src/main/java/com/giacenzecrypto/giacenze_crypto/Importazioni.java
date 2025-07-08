@@ -2424,7 +2424,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[26] = "";
                                             RT[28] = tokenE.MonetaAddress;
                                             Importazioni.RiempiVuotiArray(RT);
-                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            Prezzi.isMovimentoPrezzato(RT);
                                             if (!(RT[13].equals("0")))
                                             {
                                                 lista.add(RT);
@@ -2460,7 +2460,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[26] = tokenU.MonetaAddress;
                                             RT[28] = "";
                                             Importazioni.RiempiVuotiArray(RT);
-                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            Prezzi.isMovimentoPrezzato(RT);
                                             if (!(RT[10].equals("0")))
                                             {
                                                 lista.add(RT);
@@ -2523,7 +2523,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[28] = tokenE.MonetaAddress;
                                            // System.out.println(tokenU.MonetaAddress+" - "+tokenE.MonetaAddress);
                                             Importazioni.RiempiVuotiArray(RT);
-                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            Prezzi.isMovimentoPrezzato(RT);
                                             
                                             //se scambio la stessa moneta e stessa qta non genero il movimento
                                             if (!(RT[8].equals(RT[11])&&RT[10].equals(RT[13])))
@@ -4035,7 +4035,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[24] = IDOriginale;
                                 RT[28] = Mon.MonetaAddress;
                                 RiempiVuotiArray(RT);
-                                Prezzi.IndicaMovimentoPrezzato(RT);
+                                Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);
                                 
                             }                           
@@ -4084,7 +4084,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
-                                Prezzi.IndicaMovimentoPrezzato(RT);
+                                Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("COMMISSIONI"))
@@ -4109,7 +4109,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[24] = IDOriginale;
                                 RT[26] = Mon.MonetaAddress;
                                 RiempiVuotiArray(RT);
-                                Prezzi.IndicaMovimentoPrezzato(RT);
+                                Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);     
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION")||
@@ -4164,7 +4164,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
-                                Prezzi.IndicaMovimentoPrezzato(RT);
+                                Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);  
                                 
                                 //Se si creo anche il movimento opposto che arriva a destinazione
@@ -4200,7 +4200,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
-                                Prezzi.IndicaMovimentoPrezzato(RT);
+                                Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT); 
                                 }
                                
@@ -4242,7 +4242,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RiempiVuotiArray(RT);
-                                Prezzi.IndicaMovimentoPrezzato(RT);
+                                Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);
                                 //La lista autoinvest serve per individuare i movimenti di autoinvest che sono degli scambi differiti e successivamente analizzarla e sistemarli
                             }else if (movimentoConvertito.trim().equalsIgnoreCase("NON CONSIDERARE")){
@@ -4300,7 +4300,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[26] = "";
                                             RT[28] = tokenE.MonetaAddress;
                                             Importazioni.RiempiVuotiArray(RT);
-                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            Prezzi.isMovimentoPrezzato(RT);
                                             if (!(RT[13].equals("0")))
                                             {
                                                 lista.add(RT);
@@ -4336,7 +4336,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[26] = tokenU.MonetaAddress;
                                             RT[28] = "";
                                             Importazioni.RiempiVuotiArray(RT);
-                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            Prezzi.isMovimentoPrezzato(RT);
                                             if (!(RT[10].equals("0")))
                                             {
                                                 lista.add(RT);
@@ -4406,7 +4406,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[28] = tokenE.MonetaAddress;
                                            // System.out.println(tokenU.MonetaAddress+" - "+tokenE.MonetaAddress);
                                             Importazioni.RiempiVuotiArray(RT);
-                                            Prezzi.IndicaMovimentoPrezzato(RT);
+                                            Prezzi.isMovimentoPrezzato(RT);
                                             
                                             //se scambio la stessa moneta e stessa qta non genero il movimento
                                             if (!(RT[8].equals(RT[11])&&RT[10].equals(RT[13])))

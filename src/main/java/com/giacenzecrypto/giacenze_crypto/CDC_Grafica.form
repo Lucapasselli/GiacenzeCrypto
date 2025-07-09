@@ -1921,6 +1921,9 @@
                           <Events>
                             <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="SituazioneImport_Tabella1MouseReleased"/>
                           </Events>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="SituazioneImport_Tabella1.getTableHeader().setPreferredSize(new Dimension(SituazioneImport_Tabella1.getColumnModel().getTotalColumnWidth(), 48));"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -1983,7 +1986,8 @@
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="Giacenzeadata_Dettaglio_Label" min="-2" pref="163" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative" min="-2" pref="223" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <Component id="GiacenzeaData_Bottone_MovimentiDefi" min="-2" pref="190" max="-2" attributes="0"/>
@@ -1991,7 +1995,7 @@
                                       <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
-                                      <EmptySpace pref="145" max="32767" attributes="0"/>
+                                      <EmptySpace pref="149" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_CambiaNomeToken" min="-2" pref="190" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Scam" min="-2" pref="190" max="-2" attributes="0"/>
@@ -2048,7 +2052,10 @@
                               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                               <Component id="jSeparator5" min="-2" pref="4" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="Giacenzeadata_Dettaglio_Label" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="Giacenzeadata_Dettaglio_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="GiacenzeaData_ScrollPaneDettaglioMovimenti" pref="283" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -2215,7 +2222,7 @@
                               <Font name="sansserif" size="12" style="0"/>
                             </Property>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="9" rowCount="0">
+                              <Table columnCount="10" rowCount="0">
                                 <Column editable="false" title="Data" type="java.lang.Object"/>
                                 <Column editable="false" title="Wallet" type="java.lang.Object"/>
                                 <Column editable="false" title="Moneta" type="java.lang.Object"/>
@@ -2225,6 +2232,7 @@
                                 <Column editable="false" title="Valore in Euro" type="java.lang.Object"/>
                                 <Column editable="false" title="Qta Residua" type="java.lang.Object"/>
                                 <Column editable="false" title="ID" type="java.lang.Object"/>
+                                <Column editable="false" title="SaldiNegativiPrecedenti" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2269,7 +2277,12 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="1" minWidth="1" prefWidth="1" resizable="true">
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -2466,6 +2479,14 @@
                         <Property name="text" type="java.lang.String" value="ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!"/>
                       </Properties>
                     </Component>
+                    <Component class="javax.swing.JCheckBox" name="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Mostra solo Qta residue negative"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed"/>
+                      </Events>
+                    </Component>
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="RW">
@@ -2546,7 +2567,7 @@
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="204" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="205" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="RW_Label_SegnalaErrori" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
@@ -2554,7 +2575,7 @@
                                   <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane8" pref="274" max="32767" attributes="0"/>
+                              <Component id="jScrollPane8" pref="275" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -2564,7 +2585,7 @@
                                   <Component id="RW_Bottone_ModificaVIniziale" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="188" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="189" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -3251,13 +3272,13 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="jScrollPane12" pref="306" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane12" pref="309" max="32767" attributes="0"/>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" attributes="0">
                                               <Component id="jLabel17" min="-2" pref="22" max="-2" attributes="0"/>
                                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                                              <Component id="jScrollPane13" pref="171" max="32767" attributes="0"/>
+                                              <Component id="jScrollPane13" pref="175" max="32767" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
                                               <Component id="RT_Bottone_ModificaPrezzo" min="-2" pref="49" max="-2" attributes="0"/>

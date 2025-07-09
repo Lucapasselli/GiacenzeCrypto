@@ -464,6 +464,7 @@ private static final long serialVersionUID = 3L;
         Giacenzeadata_Walletb_Label = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_NascondiScam = new javax.swing.JCheckBox();
         GiacenzeaData_Label_Aggiornare = new javax.swing.JLabel();
+        GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
         RW = new javax.swing.JPanel();
         RW_Anno_ComboBox = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
@@ -1807,6 +1808,7 @@ private static final long serialVersionUID = 3L;
             SituazioneImport_Tabella1.getColumnModel().getColumn(3).setPreferredWidth(150);
             SituazioneImport_Tabella1.getColumnModel().getColumn(3).setMaxWidth(150);
         }
+        SituazioneImport_Tabella1.getTableHeader().setPreferredSize(new Dimension(SituazioneImport_Tabella1.getColumnModel().getTotalColumnWidth(), 48));
 
         javax.swing.GroupLayout SituazioneImportLayout = new javax.swing.GroupLayout(SituazioneImport);
         SituazioneImport.setLayout(SituazioneImportLayout);
@@ -1923,11 +1925,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID"
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1953,9 +1955,12 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setMinWidth(100);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setPreferredWidth(100);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setMaxWidth(100);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setMinWidth(1);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setPreferredWidth(1);
-            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setMaxWidth(1);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setMinWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setPreferredWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setMaxWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMinWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setPreferredWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMaxWidth(0);
         }
 
         Giacenzeadata_Dettaglio_Label.setText("Tabella dettaglio movimenti :");
@@ -2072,6 +2077,13 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Label_Aggiornare.setForeground(Tabelle.rosso);
         GiacenzeaData_Label_Aggiornare.setText("ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!");
 
+        GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative.setText("Mostra solo Qta residue negative");
+        GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout GiacenzeaDataLayout = new javax.swing.GroupLayout(GiacenzeaData);
         GiacenzeaData.setLayout(GiacenzeaDataLayout);
         GiacenzeaDataLayout.setHorizontalGroup(
@@ -2114,14 +2126,15 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(Giacenzeadata_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                         .addComponent(GiacenzeaData_Bottone_MovimentiDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addGap(18, 18, 18)
                         .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 145, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 149, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_CambiaNomeToken, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Bottone_Scam, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2166,7 +2179,9 @@ private static final long serialVersionUID = 3L;
                 .addGap(4, 4, 4)
                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Giacenzeadata_Dettaglio_Label)
+                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Giacenzeadata_Dettaglio_Label)
+                    .addComponent(GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2503,14 +2518,14 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Bottone_Calcola)
                         .addComponent(jLabel4)))
                 .addGap(8, 8, 8)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_CheckBox_VediSoloErrori)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(RWLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -2519,7 +2534,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(RW_Bottone_ModificaVFinale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2684,13 +2699,13 @@ private static final long serialVersionUID = 3L;
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE))
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -6309,6 +6324,9 @@ JPanel loadingBar = new JPanel() {
             }
             //Adesso compilo i movimenti
             BigDecimal TotaleQta = new BigDecimal(0);
+            boolean MostraSoloGiacNegative=GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative.isSelected();
+            // do una sequenza alle giacenze negative trovate
+            int NumNegativi=0;
             for (String[] movimento : MappaCryptoWallet.values()) {
                 String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);
                 if (ReteMov==null)ReteMov="";
@@ -6326,7 +6344,7 @@ JPanel loadingBar = new JPanel() {
                                 ) { 
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                            String riga[] = new String[9];
+                            String riga[] = new String[10];
                             riga[0] = movimento[1];
                             riga[1] = movimento[3];
                             riga[2] = movimento[8];
@@ -6336,11 +6354,19 @@ JPanel loadingBar = new JPanel() {
                             riga[6] = movimento[15];
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
-                            GiacenzeaData_ModelloTabella.addRow(riga);
+                            riga[9] = "";
+                            if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
+                            if(riga[7].contains("-")){
+                                NumNegativi++;
+                            }
+                            if(!MostraSoloGiacNegative||riga[7].contains("-"))
+                            {                     
+                                GiacenzeaData_ModelloTabella.addRow(riga);
+                            }
                         }
                         if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                            String riga[] = new String[9];
+                            String riga[] = new String[10];
                             riga[0] = movimento[1];
                             riga[1] = movimento[3];
                             riga[2] = movimento[11];
@@ -6350,7 +6376,15 @@ JPanel loadingBar = new JPanel() {
                             riga[6] = movimento[15];
                             riga[7] = TotaleQta.toPlainString();
                             riga[8] = movimento[0];
-                            GiacenzeaData_ModelloTabella.addRow(riga);
+                            riga[9] = "";
+                            if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
+                            if(riga[7].contains("-")){
+                                NumNegativi++;
+                            }
+                            if(!MostraSoloGiacNegative||riga[7].contains("-"))
+                            {
+                                GiacenzeaData_ModelloTabella.addRow(riga);
+                            }
                         }
                     }
                 }
@@ -7357,6 +7391,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String TipoMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionataTabPrincipale, 3).toString();
             String IDTrans = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 8).toString();
             String GiacenzaAttualeS = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
+            String GiacNegativaPrecedente = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 9).toString();
             String Moneta = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 2).toString();
             String AddressMoneta = null;
             if (GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 3) != null) {
@@ -7367,6 +7402,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             BigDecimal GiacenzaVoluta = new BigDecimal(0);
             BigDecimal QtaNuovoMovimento;
             String Wallet=Giacenzeadata_Walleta_Label.getText().trim();
+            
+            
+            /*   int risposta=JOptionPane.showOptionDialog(c,"Sicuro di voler cancellare la transazione con ID "+ID+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+            if (risposta==0){
+                
+            }*/
+            
+            
             if (!Wallet.equalsIgnoreCase("tutti")){
             if (TipoMoneta.equalsIgnoreCase("Crypto")){
             
@@ -7377,6 +7420,33 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
                 if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
                     GiacenzaVoluta = new BigDecimal(m);
+                    if (GiacNegativaPrecedente.equals("S")){
+                //Se arrivo qua vuol dire che sto cercando di modificare la giacenza di un token che ha saldi negativi precedenti
+                //In questo caso emetto un messaggio di alert che avvisa che sarebbe meglio correggere queste giacenze in ordine.
+                String testo = """
+                <html>
+                <b>Attenzione:</b><br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                               Stai tentando di <b>cambiare la giacenza</b> di un token che ha avuto <b>saldi negativi <u>in passato</u></b>.<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                               Sarebbe consigliabile <u>correggere i movimenti in ordine cronologico</u> per evitare discrepanze nei calcoli.<br><br>
+                    <b>Vuoi comunque proseguire con la modifica?</b>
+                    </html>
+                """;
+                JLabel labelTesto = new JLabel(testo);
+                labelTesto.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 14));
+               int risposta=JOptionPane.showOptionDialog(this,labelTesto, "Avviso", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Si", "No"}, "No");
+            if (risposta!=0){
+                return;
+            } 
+
+            }
+                    
+                    
+                    
+                    
+                    
+                    
                     QtaNuovoMovimento = GiacenzaVoluta.subtract(GiacenzaAttuale);
                     String SQta = QtaNuovoMovimento.toPlainString();
                     BigDecimal ValoreMovOrigine=new BigDecimal(GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 6).toString());
@@ -11263,6 +11333,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }//GEN-LAST:event_MenuItem_LiFoTransazioneActionPerformed
 
+    private void GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
+        // TODO add your handling code here:
+        GiacenzeaData_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -13525,6 +13600,7 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_MovimentiDefi;
     private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta;
     private javax.swing.JButton GiacenzeaData_Bottone_Scam;
+    private javax.swing.JCheckBox GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;

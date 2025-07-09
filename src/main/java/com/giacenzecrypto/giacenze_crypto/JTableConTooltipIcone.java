@@ -48,15 +48,27 @@ public class JTableConTooltipIcone extends JTable {
                         case 5 ->
                             """
 <html>
-    <b>Movimento non classificato</b><br><br>
+    <b>MOVIMENTO NON CLASSIFICATO</b><br><br>
     Per sistemarlo:<br>
     &nbsp;• Usa la funzione <i><b>'Classificazione Depositi/Prelievi'</b></i><br>
     &nbsp;• Oppure clicca col tasto destro e seleziona <i><b>'Classifica Movimento'</b></i>
 </html>
 """;
-                        case 15 -> "Transazione senza prezzo";
-                        case 19 -> "Calcolo LIFO mancante";
-                        default -> "Icona di avviso";
+                        case 15 -> """
+<html>
+    <b>TRANSAZIONE SENZA PREZZO</b><br><br>
+    Per sistemarlo:<br>
+    &nbsp;• Premi su <i><b>'Modifica Movimento'</b></i> e assegna un prezzo.<br>
+    &nbsp;• Oppure clicca col tasto destro e seleziona <i><b>'Modifica Prezzo'</b></i><br>
+    &nbsp;• Oppure classifica il movimento come Scam dalla funzione <i><b>'Classificazione Depositi/Prelievi'</b></i>
+</html>
+""";
+                        case 19 ->  """
+<html>
+    <b>MOVIMENTO IN INGRESSO MANCANTE</b>
+</html>
+""";
+                        default -> "";
                     };
                 }
             }

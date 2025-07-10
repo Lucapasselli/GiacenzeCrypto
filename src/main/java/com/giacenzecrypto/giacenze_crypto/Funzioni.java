@@ -1331,6 +1331,49 @@ return MappaLista;
         return lista;
     }
     
+    
+    public static void ControllaSaldiNegativi(String ID,Component c){
+     /*   JOptionPane.showConfirmDialog(c, "<html>Verranno ora mostrati i Wallet dove.<br>"
+                                        + "</html>",
+                            "Info", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
+        String mov[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+        
+        //controllo quali sono i token coinvolti nella transazione
+        String token1=mov[8];
+        String token2=mov[11];
+        String TokenScelto;
+        List<String> Bottoni = new ArrayList<>();
+        if (!token1.isBlank()) Bottoni.add(token1);
+        if (!token2.isBlank()) Bottoni.add(token2);
+        //se ce ne sono più di 1 allora chiedo di quale devo effettuare l'analisi
+        if (Bottoni.size()>1){
+                    int scelta = JOptionPane.showOptionDialog(c, "Di quale token si vogliono analizzare i Saldi?",
+                            "Verifica Saldi Negativi",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni.toArray(),
+                            null);
+            switch (scelta) {
+                case -1:
+                    return;
+                case 0:
+                    TokenScelto=token1;
+                    break;
+                default:
+                    TokenScelto=token2;
+                    break;
+            }
+        }else{
+            TokenScelto=Bottoni.toArray()[0].toString();
+        }
+        
+        //Ora che ho il token proseguo con l'analisi, devo trovare l'elenco di tutti i wallet dove il token ha giacenza negativa
+        System.out.println(TokenScelto);
+    }
+    
+    
+    
     public static boolean ApriWeb(String Url) {
 
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {

@@ -372,6 +372,7 @@ private static final long serialVersionUID = 3L;
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
         MenuItem_ModificaReward = new javax.swing.JMenuItem();
+        MenuItem_ControllaGiacenzeNegative = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
@@ -782,6 +783,14 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_ModificaReward);
+
+        MenuItem_ControllaGiacenzeNegative.setText("Controlla Saldi Negativi");
+        MenuItem_ControllaGiacenzeNegative.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ControllaGiacenzeNegativeActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ControllaGiacenzeNegative);
         PopupMenu.add(jSeparator7);
 
         MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
@@ -11338,6 +11347,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         GiacenzeaData_CompilaTabellaMovimenti();
     }//GEN-LAST:event_GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
 
+    private void MenuItem_ControllaGiacenzeNegativeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ControllaGiacenzeNegativeActionPerformed
+        // TODO add your handling code here:
+        Funzioni.ControllaSaldiNegativi(PopUp_IDTrans, this);
+    }//GEN-LAST:event_MenuItem_ControllaGiacenzeNegativeActionPerformed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -13621,6 +13635,7 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
+    private javax.swing.JMenuItem MenuItem_ControllaGiacenzeNegative;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_CopiaID;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;

@@ -140,6 +140,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ModificaRewardActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ControllaGiacenzeNegative">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Controlla Saldi Negativi"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ControllaGiacenzeNegativeActionPerformed"/>
+          </Events>
+        </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
         </Component>
         <MenuItem class="javax.swing.JMenuItem" name="MenuItem_EsportaTabella">

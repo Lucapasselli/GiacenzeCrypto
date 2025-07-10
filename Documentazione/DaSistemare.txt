@@ -5,14 +5,11 @@
 - Fare integrazione a ccxt
 - Cambiare gestione dei prezzi e passare ad una precisione al minuto
 - Al cambio di versione sostituire "COMMISSIONE" nel campo 5 con "COMMISSIONI"
-- Togliere gli zeri non significativi sulle QTA
+- Al cambio di versione Togliere gli zeri non significativi sulle QTA
 - Se non ci sono movimenti abbinati cambiare l'ID della transazione e accorciarlo per rendere il file più piccolo
 - In caso di selezione dell'opzione A del quadro RW devo comunque considerare che se viene pagato il bollo non devo mostrare i gg di detenzione.
-- In giacenze a data dove si vedono tutti i movimenti dare la possibilità di filtrare solo i movimenti negativi
- - Sempre nella stessa funzione se si cerca di sistemare una giacenza negativa ma ce n'è un altra precedente mandare un warning, andrebbero infatti sistemate le giacenze negative per ordine e non partendo dalle ultime.
 - Nell'intestazione della tabella non fare la somma se il totale ha più di 2 cifre dopo la virgola perché significa che si parla di qta e non di euro (da valutare con calma questa modifica)
-- Nelle tabelle che hanno le intestazioni modificate fare in modo che compaiano sempre le modifiche e si aggiornino.
 - Nelle tabelle con le intestazioni modificate mettere un ulteriore tasto ("Azzera tutti i filtri") per eliminare i filtri applicati alla tabella.
 - Nelle importazioni di binance financial report controllare la numerazione dei k che sembra errata
-- Nelle importazioni da crypto.com controllare se il prodotto ha prezzo nel csv e se lo ha mettere S nel campo
 - Nelle importazioni di crypto.com inserire menù visivo come nelle altre
+- Dopo la modifica delle note tramite tasto destro non mi propone di salvare i movimenti

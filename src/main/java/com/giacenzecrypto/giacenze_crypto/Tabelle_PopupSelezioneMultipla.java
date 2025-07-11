@@ -41,6 +41,9 @@ public Set<String> selectedValues = new HashSet<>();
     this(owner, new ArrayList<>());
 }
     
+    public Window getOwner(){
+        return window;
+    }
     
     public Tabelle_PopupSelezioneMultipla(Window owner, List<String> options) {
         

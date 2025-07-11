@@ -14,6 +14,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -72,6 +73,7 @@ public class Tabelle {
     
     public static final Map<JTable, Map<Integer, RowFilter<DefaultTableModel, Integer>>> tableFilters = new HashMap<>();
     public static Map<JTable, Map<Integer, String>> SommaColonne = new HashMap<>();
+    private static final Set<JTable> tabelleConFiltroColonne = new HashSet<>();
 
 
     
@@ -1130,11 +1132,12 @@ private static void processNode(Node node, StringBuilder sb) {
 
      
      
-    public static void Tabelle_FiltroColonne(JTable table,JTextField filtro,Tabelle_PopupSelezioneMultipla popup) {
+    public static void Tabelle_FiltroColonne2(JTable table,JTextField filtro,Tabelle_PopupSelezioneMultipla popup) {
     
     //Inizializza tableFilters se non esiste
     tableFilters.putIfAbsent(table, new HashMap<>());
     Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
+    
     Tabelle.Tabelle_InizializzaHeader(table);
     JTableHeader header = table.getTableHeader();
 
@@ -1147,6 +1150,7 @@ private static void processNode(Node node, StringBuilder sb) {
         sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
     }
+    
     String filtrot = (filtro != null) ? filtro.getText() : "";
     Tabelle.Tabelle_applyCombinedFilter(table, sorter, filtrot);
 
@@ -1156,30 +1160,14 @@ private static void processNode(Node node, StringBuilder sb) {
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON3) { // Tasto destro
                 header.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                System.out.println("Filtro colonne");
                 int col = table.columnAtPoint(e.getPoint());
                 if (col >= 0) {
                     int modelCol = table.convertColumnIndexToModel(col);
-                   // long tempoOperazione=System.currentTimeMillis();
-                   // List<String> valoriUnici = Tabelle.Tabelle_getUniqueValuesForColumn(table, modelCol);
-
-                //    List<String> visibili = Tabelle.Tabelle_getVisibleValuesForColumn(table, col);
-                    
-                  /*  Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = CDC_Grafica.tableFilters.getOrDefault(table, Map.of());
-                    Map<String, String[]> mappa = Tabelle_getValoriUnivociColonna(table, col, filters);*/
-                   // Map<String, String[]> mappa = Tabelle_getValoriUnivociColonna(table, col);
                     Map<String, String[]> mappa = Tabelle_getValoriUnivociColonnaConVisibilita(table, col);
                     List<String[]> valori = new ArrayList<>(mappa.values());
                     popup.updateOptions(valori);
-                   /* Set<String> initialValues = popup.getFilteredColumnValues(table, col, activeFilters);
-                    popup.selectedValues = new HashSet<>(initialValues);
-                    popup.updateOptions(table,col,activeFilters);
-                    */
-                    
-                 //   popup.updateOptions(valoriUnici, visibili);
 
-                /*    for (JCheckBox cb : popup.getCheckBoxes()) {
-                        cb.setSelected(visibili.contains(cb.getText()));
-                    }*/
 
                     popup.setApplyAction(() -> {
                         
@@ -1232,18 +1220,105 @@ private static void processNode(Node node, StringBuilder sb) {
         }
     });
     
-    
-    /*    Thread thread;
-            thread = new Thread() {
-                public void run() {
-
-                    Tabelle.Tabelle_getSommeColonne(table);
-                }
-            };
-            thread.start();*/
 }
 
-     
+
+
+public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabelle_PopupSelezioneMultipla popup) {
+    // Inizializza tableFilters se non esiste
+    tableFilters.putIfAbsent(table, new HashMap<>());
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
+
+    Tabelle.Tabelle_InizializzaHeader(table);
+    JTableHeader header = table.getTableHeader();
+
+    DefaultTableModel model = (DefaultTableModel) table.getModel();
+    TableRowSorter<DefaultTableModel> sorter;
+
+    if (table.getRowSorter() instanceof TableRowSorter) {
+        sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+    } else {
+        sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+    }
+
+    String filtrot = (filtro != null) ? filtro.getText() : "";
+    Tabelle.Tabelle_applyCombinedFilter(table, sorter, filtrot);
+
+    // Evita di aggiungere il listener più volte
+    if (!tabelleConFiltroColonne.contains(table)) {
+
+        header.addMouseListener(new MouseAdapter() {
+            @Override
+            public String toString() {
+                return "FiltroColonneMouseListener";
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) { // Tasto destro
+                    header.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                    int col = table.columnAtPoint(e.getPoint());
+                    if (col >= 0) {
+                        int modelCol = table.convertColumnIndexToModel(col);
+                        Map<String, String[]> mappa = Tabelle_getValoriUnivociColonnaConVisibilita(table, col);
+                        List<String[]> valori = new ArrayList<>(mappa.values());
+                        popup.updateOptions(valori);
+
+                        popup.setApplyAction(() -> {
+                            List<String> selected = popup.getSelectedOptions();
+                            if (selected.isEmpty() || selected.size() == mappa.size()) {
+                                activeFilters.remove(modelCol);
+                            } else {
+                                RowFilter<DefaultTableModel, Integer> filter = new RowFilter<>() {
+                                    @Override
+                                    public boolean include(RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                                        Object cellValue = entry.getValue(modelCol);
+                                        return selected.contains(cellValue != null ? cellValue.toString() : "");
+                                    }
+                                };
+                                activeFilters.put(modelCol, filter);
+                            }
+
+                            String filtrot = (filtro != null) ? filtro.getText() : "";
+                            Tabelle.Tabelle_applyCombinedFilter(table, sorter, filtrot);
+                            popup.AzzeraTestoRicerca();
+                            header.repaint();
+                            popup.hide();
+                        });
+
+                        popup.setCancelAction(() -> {
+                            popup.AzzeraTestoRicerca();
+                            popup.hide();
+                        });
+
+                        Rectangle headerRect = header.getHeaderRect(col);
+                        Point headerLoc = header.getLocationOnScreen();
+
+                        int popupX = headerLoc.x + headerRect.x;
+                        int popupY = headerLoc.y + headerRect.height;
+
+                        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                        Dimension popupSize = popup.getPreferredSize();
+
+                        if (popupX + popupSize.width > screenSize.width) {
+                            popupX = Math.max(screenSize.width - popupSize.width, 0);
+                        }
+
+                        popup.showAt(popupX, popupY);
+                    }
+
+                    header.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        });
+
+        // Segna che la tabella ha già il listener
+        tabelleConFiltroColonne.add(table);
+    }
+}
+   
      
      
     public static void Tabella_RimuoviFiltri(JTable table) {

@@ -149,8 +149,8 @@ private static final long serialVersionUID = 3L;
     
     
     
-    //queste 2 variabili servono per gestire il popoup e i filtri su tabella
-        public Tabelle_PopupSelezioneMultipla popup = new Tabelle_PopupSelezioneMultipla(this);
+    //questa variabili servono per gestire il popoup e i filtri su tabella
+   public Tabelle_PopupSelezioneMultipla popup = new Tabelle_PopupSelezioneMultipla(this);
         
         
     public String SplashScreenText= "Caricamento in corso...";    
@@ -436,12 +436,13 @@ private static final long serialVersionUID = 3L;
         SaldiNegativi = new javax.swing.JPanel();
         jScrollPane15 = new javax.swing.JScrollPane();
         SaldiNegativi_TabPrincipale = new javax.swing.JTable();
-        jLabel31 = new javax.swing.JLabel();
-        GiacenzeaData_CheckBox_NascondiScam1 = new javax.swing.JCheckBox();
-        GiacenzeaData_ScrollPaneDettaglioMovimenti1 = new javax.swing.JScrollPane();
-        GiacenzeaData_TabellaDettaglioMovimenti1 = new javax.swing.JTable();
-        Giacenzeadata_Dettaglio_Label1 = new javax.swing.JLabel();
-        GiacenzeaData_Bottone_RettificaQta1 = new javax.swing.JButton();
+        SaldiNegativi_LabelSpiegazioni = new javax.swing.JLabel();
+        SaldiNegativi_CheckBox_NascondiScam = new javax.swing.JCheckBox();
+        SaldiNegativi_ScrollPaneDettaglioMovimenti = new javax.swing.JScrollPane();
+        SaldiNegativi_TabellaDettaglioMovimenti = new javax.swing.JTable();
+        SaldiNegativi_Dettaglio_Label = new javax.swing.JLabel();
+        SaldiNegativi_Bottone_RettificaQta = new javax.swing.JButton();
+        SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -1802,21 +1803,34 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        SaldiNegativi_TabPrincipale.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                SaldiNegativi_TabPrincipaleMouseClicked(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                SaldiNegativi_TabPrincipaleMouseReleased(evt);
+            }
+        });
+        SaldiNegativi_TabPrincipale.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                SaldiNegativi_TabPrincipaleKeyReleased(evt);
+            }
+        });
         jScrollPane15.setViewportView(SaldiNegativi_TabPrincipale);
 
-        jLabel31.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel31.setText("<html>\nIn questa sezione vengono elencati tutti i token che, anche una sola volta nell’intero storico di un singolo wallet, hanno registrato un <b>Saldo Negativo</b>.<br><br>\nSelezionando una riga nella tabella, sarà possibile visualizzare nel dettaglio le transazioni corrispondenti e i saldi associati, così da poter analizzare e, se necessario, correggere la posizione.\n</html>");
+        SaldiNegativi_LabelSpiegazioni.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        SaldiNegativi_LabelSpiegazioni.setText("<html>\nIn questa sezione vengono elencati tutti i token che, anche una sola volta nell’intero storico di un singolo wallet, hanno registrato un <b>Saldo Negativo</b>.<br><br>\nSelezionando una riga nella tabella, sarà possibile visualizzare nel dettaglio le transazioni corrispondenti e i saldi associati, così da poter analizzare e, se necessario, correggere la posizione.\n</html>");
 
-        GiacenzeaData_CheckBox_NascondiScam1.setSelected(true);
-        GiacenzeaData_CheckBox_NascondiScam1.setText("Nascondi Token Scam");
-        GiacenzeaData_CheckBox_NascondiScam1.addActionListener(new java.awt.event.ActionListener() {
+        SaldiNegativi_CheckBox_NascondiScam.setSelected(true);
+        SaldiNegativi_CheckBox_NascondiScam.setText("Nascondi Token Scam");
+        SaldiNegativi_CheckBox_NascondiScam.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                GiacenzeaData_CheckBox_NascondiScam1ActionPerformed(evt);
+                SaldiNegativi_CheckBox_NascondiScamActionPerformed(evt);
             }
         });
 
-        GiacenzeaData_TabellaDettaglioMovimenti1.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
-        GiacenzeaData_TabellaDettaglioMovimenti1.setModel(new javax.swing.table.DefaultTableModel(
+        SaldiNegativi_TabellaDettaglioMovimenti.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
+        SaldiNegativi_TabellaDettaglioMovimenti.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -1832,49 +1846,61 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
-        GiacenzeaData_TabellaDettaglioMovimenti1.addMouseListener(new java.awt.event.MouseAdapter() {
+        SaldiNegativi_TabellaDettaglioMovimenti.setName("SaldiNegativi_Movimenti"); // NOI18N
+        SaldiNegativi_TabellaDettaglioMovimenti.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
-                GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased(evt);
+                SaldiNegativi_TabellaDettaglioMovimentiMouseReleased(evt);
             }
         });
-        GiacenzeaData_TabellaDettaglioMovimenti1.addKeyListener(new java.awt.event.KeyAdapter() {
+        SaldiNegativi_TabellaDettaglioMovimenti.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased(evt);
+                SaldiNegativi_TabellaDettaglioMovimentiKeyReleased(evt);
             }
         });
-        GiacenzeaData_ScrollPaneDettaglioMovimenti1.setViewportView(GiacenzeaData_TabellaDettaglioMovimenti1);
-        if (GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumnCount() > 0) {
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(0).setMinWidth(120);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(0).setPreferredWidth(120);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(0).setMaxWidth(120);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(2).setPreferredWidth(50);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(6).setMinWidth(100);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(6).setPreferredWidth(100);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(6).setMaxWidth(100);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(8).setMinWidth(0);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(8).setPreferredWidth(0);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(8).setMaxWidth(0);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(9).setMinWidth(0);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(9).setPreferredWidth(0);
-            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(9).setMaxWidth(0);
+        SaldiNegativi_ScrollPaneDettaglioMovimenti.setViewportView(SaldiNegativi_TabellaDettaglioMovimenti);
+        if (SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(120);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(120);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(120);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(2).setPreferredWidth(50);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(3).setMinWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(3).setPreferredWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(3).setMaxWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setMinWidth(100);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setPreferredWidth(100);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(6).setMaxWidth(100);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setMinWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setPreferredWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(8).setMaxWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMinWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setPreferredWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMaxWidth(0);
         }
+        SaldiNegativi_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
 
-        Giacenzeadata_Dettaglio_Label1.setText("Tabella dettaglio movimenti :");
+        SaldiNegativi_Dettaglio_Label.setText("Tabella dettaglio movimenti :");
 
-        GiacenzeaData_Bottone_RettificaQta1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
-        GiacenzeaData_Bottone_RettificaQta1.setText("Sistema Qta Residua");
-        GiacenzeaData_Bottone_RettificaQta1.setEnabled(false);
-        GiacenzeaData_Bottone_RettificaQta1.setMaximumSize(new java.awt.Dimension(137, 27));
-        GiacenzeaData_Bottone_RettificaQta1.setMinimumSize(new java.awt.Dimension(137, 27));
-        GiacenzeaData_Bottone_RettificaQta1.setPreferredSize(new java.awt.Dimension(137, 27));
-        GiacenzeaData_Bottone_RettificaQta1.addMouseListener(new java.awt.event.MouseAdapter() {
+        SaldiNegativi_Bottone_RettificaQta.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
+        SaldiNegativi_Bottone_RettificaQta.setText("Sistema Qta Residua");
+        SaldiNegativi_Bottone_RettificaQta.setEnabled(false);
+        SaldiNegativi_Bottone_RettificaQta.setMaximumSize(new java.awt.Dimension(137, 27));
+        SaldiNegativi_Bottone_RettificaQta.setMinimumSize(new java.awt.Dimension(137, 27));
+        SaldiNegativi_Bottone_RettificaQta.setPreferredSize(new java.awt.Dimension(137, 27));
+        SaldiNegativi_Bottone_RettificaQta.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
-                GiacenzeaData_Bottone_RettificaQta1MouseReleased(evt);
+                SaldiNegativi_Bottone_RettificaQtaMouseReleased(evt);
             }
         });
-        GiacenzeaData_Bottone_RettificaQta1.addActionListener(new java.awt.event.ActionListener() {
+        SaldiNegativi_Bottone_RettificaQta.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                GiacenzeaData_Bottone_RettificaQta1ActionPerformed(evt);
+                SaldiNegativi_Bottone_RettificaQtaActionPerformed(evt);
+            }
+        });
+
+        SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative.setText("Mostra solo Qta residue negative");
+        SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SaldiNegativi_CheckBox_DettaglioFiltraQtaNegativeActionPerformed(evt);
             }
         });
 
@@ -1885,33 +1911,40 @@ private static final long serialVersionUID = 3L;
             .addGroup(SaldiNegativiLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel31, javax.swing.GroupLayout.DEFAULT_SIZE, 1281, Short.MAX_VALUE)
+                    .addComponent(SaldiNegativi_LabelSpiegazioni, javax.swing.GroupLayout.DEFAULT_SIZE, 1281, Short.MAX_VALUE)
                     .addComponent(jScrollPane15)
-                    .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti1)
+                    .addComponent(SaldiNegativi_ScrollPaneDettaglioMovimenti)
                     .addGroup(SaldiNegativiLayout.createSequentialGroup()
                         .addGroup(SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(GiacenzeaData_CheckBox_NascondiScam1, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Giacenzeadata_Dettaglio_Label1, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addGroup(SaldiNegativiLayout.createSequentialGroup()
+                                .addComponent(SaldiNegativi_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(SaldiNegativiLayout.createSequentialGroup()
+                                .addComponent(SaldiNegativi_Dettaglio_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SaldiNegativiLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(GiacenzeaData_Bottone_RettificaQta1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(SaldiNegativi_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         SaldiNegativiLayout.setVerticalGroup(
             SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(SaldiNegativiLayout.createSequentialGroup()
-                .addComponent(jLabel31, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(SaldiNegativi_LabelSpiegazioni, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_CheckBox_NascondiScam1)
-                .addGap(17, 17, 17)
-                .addComponent(Giacenzeadata_Dettaglio_Label1)
+                .addComponent(SaldiNegativi_CheckBox_NascondiScam)
+                .addGap(13, 13, 13)
+                .addGroup(SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(SaldiNegativi_Dettaglio_Label)
+                    .addComponent(SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                .addComponent(SaldiNegativi_ScrollPaneDettaglioMovimenti, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GiacenzeaData_Bottone_RettificaQta1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(SaldiNegativi_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -2110,6 +2143,7 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setPreferredWidth(0);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMaxWidth(0);
         }
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
 
         Giacenzeadata_Dettaglio_Label.setText("Tabella dettaglio movimenti :");
 
@@ -5020,14 +5054,19 @@ JPanel loadingBar = new JPanel() {
     
     private void SaldiNegativi_CompilaTabellaPrincipale(){
         new Thread(() -> {
+          //  System.out.println("Ricalcolo Saldi Negativi");
         DepositiPrelieviDaCategorizzare = new ArrayList<>();
         DefaultTableModel ModelloPrincipale = (DefaultTableModel) this.SaldiNegativi_TabPrincipale.getModel();
         Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloPrincipale);
+        DefaultTableModel ModelloMovimenti = (DefaultTableModel) this.SaldiNegativi_TabellaDettaglioMovimenti.getModel();
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloMovimenti);
         Tabelle.ColoraTabellaSemplice(SaldiNegativi_TabPrincipale);
+        boolean NascondiScam=SaldiNegativi_CheckBox_NascondiScam.isSelected();
         List<String> SaldiNegativit=Funzioni.ControllaSaldiNegativi();
         for (String v : SaldiNegativit) {
             String riga[]=v.split(";");
-            ModelloPrincipale.addRow(riga);
+            if (!NascondiScam||!Funzioni.isSCAM(riga[2]))
+                ModelloPrincipale.addRow(riga);
         }
         }).start();
     }
@@ -6424,6 +6463,85 @@ JPanel loadingBar = new JPanel() {
         return IDconMoneta;
     }
     
+    
+    private void SaldiNegativi_CompilaTabellaMovimenti(){
+            //Gestisco i bottoni
+       
+
+        //PULIZIA TABELLA
+        DefaultTableModel SaldiNegativi_ModelloTabella = (DefaultTableModel) this.SaldiNegativi_TabellaDettaglioMovimenti.getModel();
+        Tabelle.Funzioni_Tabelle_PulisciTabella(SaldiNegativi_ModelloTabella);
+        Tabelle.Tabelle_FiltroColonne(SaldiNegativi_TabellaDettaglioMovimenti,null,popup);
+        Tabelle.ColoraRigheTabella1GiacenzeaData(SaldiNegativi_TabellaDettaglioMovimenti);
+        
+        //ANALISI E PROPOSTA
+        if (SaldiNegativi_TabPrincipale.getSelectedRow() >= 0) {
+            int rigaselezionata = Tabelle.getSelectedModelRow(SaldiNegativi_TabPrincipale);
+          //  int rigaselezionata = SaldiNegativi_TabPrincipale.getRowSorter().convertRowIndexToModel(SaldiNegativi_TabPrincipale.getSelectedRow());
+            String mon = SaldiNegativi_TabPrincipale.getModel().getValueAt(rigaselezionata, 2).toString();
+            String Wallet = SaldiNegativi_TabPrincipale.getModel().getValueAt(rigaselezionata, 0).toString();
+            String SottoWallet = SaldiNegativi_TabPrincipale.getModel().getValueAt(rigaselezionata, 1).toString();
+
+
+
+            //Adesso compilo i movimenti
+            BigDecimal TotaleQta = new BigDecimal(0);
+            boolean MostraSoloGiacNegative=SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative.isSelected();
+            // do una sequenza alle giacenze negative trovate
+            int NumNegativi=0;
+            for (String[] movimento : MappaCryptoWallet.values()) {
+                    if (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim())) {
+                        if (movimento[8].equals(mon)) {
+                            TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                            String riga[] = new String[10];
+                            riga[0] = movimento[1];
+                            riga[1] = movimento[3]+" ("+movimento[4]+")";
+                            riga[2] = movimento[8];
+                            riga[3] = "";
+                            riga[4] = movimento[5];
+                            riga[5] = movimento[10];
+                            riga[6] = movimento[15];
+                            riga[7] = TotaleQta.toPlainString();
+                            riga[8] = movimento[0];
+                            riga[9] = "";
+                            if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
+                            if(riga[7].contains("-")){
+                                NumNegativi++;
+                            }
+                            if(!MostraSoloGiacNegative||riga[7].contains("-"))
+                            {                     
+                                SaldiNegativi_ModelloTabella.addRow(riga);
+                            }
+                        }
+                        if (movimento[11].equals(mon)) {
+                            TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                            String riga[] = new String[10];
+                            riga[0] = movimento[1];
+                            riga[1] = movimento[3];
+                            riga[2] = movimento[11];
+                            riga[3] = "";
+                            riga[4] = movimento[5];
+                            riga[5] = movimento[13];
+                            riga[6] = movimento[15];
+                            riga[7] = TotaleQta.toPlainString();
+                            riga[8] = movimento[0];
+                            riga[9] = "";
+                            if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
+                            if(riga[7].contains("-")){
+                                NumNegativi++;
+                            }
+                            if(!MostraSoloGiacNegative||riga[7].contains("-"))
+                            {
+                                SaldiNegativi_ModelloTabella.addRow(riga);
+                            }
+                        }
+                    }
+                
+            }
+            
+        }
+        
+    }
     
     private void GiacenzeaData_CompilaTabellaMovimenti() {
         
@@ -11485,25 +11603,48 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Funzioni.ControllaSaldiNegativi();
     }//GEN-LAST:event_MenuItem_ControllaGiacenzeNegativeActionPerformed
 
-    private void GiacenzeaData_CheckBox_NascondiScam1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_NascondiScam1ActionPerformed
+    private void SaldiNegativi_CheckBox_NascondiScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_CheckBox_NascondiScamActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_GiacenzeaData_CheckBox_NascondiScam1ActionPerformed
+        SaldiNegativi_CompilaTabellaPrincipale();
+    }//GEN-LAST:event_SaldiNegativi_CheckBox_NascondiScamActionPerformed
 
-    private void GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased
+    private void SaldiNegativi_TabellaDettaglioMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_TabellaDettaglioMovimentiMouseReleased
         // TODO add your handling code here:
-    }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased
+        Funzioni_RichiamaPopUpdaTabella(SaldiNegativi_TabellaDettaglioMovimenti,evt,8);
+    }//GEN-LAST:event_SaldiNegativi_TabellaDettaglioMovimentiMouseReleased
 
-    private void GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased
+    private void SaldiNegativi_TabellaDettaglioMovimentiKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_SaldiNegativi_TabellaDettaglioMovimentiKeyReleased
         // TODO add your handling code here:
-    }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased
+    }//GEN-LAST:event_SaldiNegativi_TabellaDettaglioMovimentiKeyReleased
 
-    private void GiacenzeaData_Bottone_RettificaQta1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQta1MouseReleased
+    private void SaldiNegativi_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
-    }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQta1MouseReleased
+    }//GEN-LAST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
 
-    private void GiacenzeaData_Bottone_RettificaQta1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQta1ActionPerformed
+    private void SaldiNegativi_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQta1ActionPerformed
+    }//GEN-LAST:event_SaldiNegativi_Bottone_RettificaQtaActionPerformed
+
+    private void SaldiNegativi_TabPrincipaleKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_SaldiNegativi_TabPrincipaleKeyReleased
+        // TODO add your handling code here:
+        SaldiNegativi_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_SaldiNegativi_TabPrincipaleKeyReleased
+
+    private void SaldiNegativi_TabPrincipaleMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_TabPrincipaleMouseClicked
+        // TODO add your handling code here:
+        //SaldiNegativi_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_SaldiNegativi_TabPrincipaleMouseClicked
+
+    private void SaldiNegativi_TabPrincipaleMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_TabPrincipaleMouseReleased
+        // TODO add your handling code here:
+        Funzioni_RichiamaPopUpdaTabella(SaldiNegativi_TabPrincipale,evt,-1);
+        SaldiNegativi_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_SaldiNegativi_TabPrincipaleMouseReleased
+
+    private void SaldiNegativi_CheckBox_DettaglioFiltraQtaNegativeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
+        // TODO add your handling code here:
+        SaldiNegativi_CompilaTabellaMovimenti();
+    }//GEN-LAST:event_SaldiNegativi_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -13771,21 +13912,17 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_ModificaValore;
     private javax.swing.JButton GiacenzeaData_Bottone_MovimentiDefi;
     private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta;
-    private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta1;
     private javax.swing.JButton GiacenzeaData_Bottone_Scam;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam;
-    private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam1;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
     private javax.swing.JLabel GiacenzeaData_Data_Label;
     private javax.swing.JLabel GiacenzeaData_Label_Aggiornare;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPane;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPaneDettaglioMovimenti;
-    private javax.swing.JScrollPane GiacenzeaData_ScrollPaneDettaglioMovimenti1;
     private javax.swing.JTable GiacenzeaData_Tabella;
     private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti;
-    private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti1;
     private javax.swing.JLabel GiacenzeaData_Totali_Label;
     private javax.swing.JTextField GiacenzeaData_Totali_TextField;
     private javax.swing.JComboBox<String> GiacenzeaData_Wallet2_ComboBox;
@@ -13794,7 +13931,6 @@ try {
     private javax.swing.JComboBox<String> GiacenzeaData_Wallet_ComboBox;
     private javax.swing.JLabel GiacenzeaData_Wallet_Label;
     private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
-    private javax.swing.JLabel Giacenzeadata_Dettaglio_Label1;
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
@@ -13910,7 +14046,14 @@ try {
     private javax.swing.JTextField RW_Text_IC;
     private javax.swing.ButtonGroup RW_Trasferimenti;
     private javax.swing.JPanel SaldiNegativi;
+    private javax.swing.JButton SaldiNegativi_Bottone_RettificaQta;
+    private javax.swing.JCheckBox SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative;
+    private javax.swing.JCheckBox SaldiNegativi_CheckBox_NascondiScam;
+    private javax.swing.JLabel SaldiNegativi_Dettaglio_Label;
+    private javax.swing.JLabel SaldiNegativi_LabelSpiegazioni;
+    private javax.swing.JScrollPane SaldiNegativi_ScrollPaneDettaglioMovimenti;
     private javax.swing.JTable SaldiNegativi_TabPrincipale;
+    private javax.swing.JTable SaldiNegativi_TabellaDettaglioMovimenti;
     private javax.swing.JPanel SituazioneImport;
     private javax.swing.JTable SituazioneImport_Tabella1;
     private javax.swing.JPanel TransazioniCrypto;
@@ -13968,7 +14111,6 @@ try {
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
-    private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

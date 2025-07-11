@@ -65,7 +65,9 @@ public class JTableConTooltipIcone extends JTable {
 """;
                         case 19 ->  """
 <html>
-    <b>MOVIMENTO IN INGRESSO MANCANTE</b>
+    <b>MOVIMENTO IN INGRESSO MANCANTE</b><br><br>
+    Per sistemarlo:<br>
+    &nbsp;• Utilizzare l'apposita funzione <i><b>'Verifica Saldi Negativi'</b></i> presente nella tab <i><b>'Analisi Crypto'</b></i>.<br>
 </html>
 """;
                         default -> "";

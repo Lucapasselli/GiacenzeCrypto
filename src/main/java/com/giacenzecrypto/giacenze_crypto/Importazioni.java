@@ -492,7 +492,7 @@ public class Importazioni {
         Transazioni=numeromov;
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
-        if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+        if (TransazioniAggiunte>0)CDC_Grafica.TabellaCryptodaAggiornare=true;
         
         
     return true;    
@@ -813,7 +813,7 @@ System.out.println(response.body().string());
         Transazioni=numeromov;
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
-        if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+        if (TransazioniAggiunte>0)CDC_Grafica.TabellaCryptodaAggiornare=true;
         
         
     return true;    
@@ -1058,7 +1058,7 @@ System.out.println(response.body().string());
         Transazioni=numeromov;
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
-        if (TransazioniAggiunte>0)CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+        if (TransazioniAggiunte>0)CDC_Grafica.TabellaCryptodaAggiornare=true;
         
     }
     
@@ -1276,7 +1276,7 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         TrasazioniScartate=numeroscartati;
      //   Prezzi.ScriviFileConversioneXXXEUR();
         if (TransazioniAggiunte>0) 
-            CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+            CDC_Grafica.TabellaCryptodaAggiornare=true;
             
         
         return true;
@@ -1418,7 +1418,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         TrasazioniScartate=numeroscartati;
      //   Prezzi.ScriviFileConversioneXXXEUR();
         if (TransazioniAggiunte>0) 
-            CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+            CDC_Grafica.TabellaCryptodaAggiornare=true;
             
         
         return true;
@@ -1606,7 +1606,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         TransazioniAggiunte=numeroaggiunti;
         TrasazioniScartate=numeroscartati;
         if (TransazioniAggiunte>0) 
-            CDC_Grafica.TransazioniCrypto_DaSalvare=true;
+            CDC_Grafica.TabellaCryptodaAggiornare=true;
             
         
         return true;

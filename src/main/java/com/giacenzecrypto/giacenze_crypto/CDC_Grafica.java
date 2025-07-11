@@ -46,7 +46,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
@@ -63,7 +62,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -144,6 +142,7 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
+    
     
     public String Versione="1.0.44";
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
@@ -434,6 +433,15 @@ private static final long serialVersionUID = 3L;
         jScrollPane14 = new javax.swing.JScrollPane();
         DepositiPrelievi_TabellaCorrelati = new javax.swing.JTable();
         jLabel21 = new javax.swing.JLabel();
+        SaldiNegativi = new javax.swing.JPanel();
+        jScrollPane15 = new javax.swing.JScrollPane();
+        SaldiNegativi_TabPrincipale = new javax.swing.JTable();
+        jLabel31 = new javax.swing.JLabel();
+        GiacenzeaData_CheckBox_NascondiScam1 = new javax.swing.JCheckBox();
+        GiacenzeaData_ScrollPaneDettaglioMovimenti1 = new javax.swing.JScrollPane();
+        GiacenzeaData_TabellaDettaglioMovimenti1 = new javax.swing.JTable();
+        Giacenzeadata_Dettaglio_Label1 = new javax.swing.JLabel();
+        GiacenzeaData_Bottone_RettificaQta1 = new javax.swing.JButton();
         SituazioneImport = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
@@ -1777,6 +1785,137 @@ private static final long serialVersionUID = 3L;
         );
 
         AnalisiCrypto.addTab("Classificazione Depositi/Prelievi", DepositiPrelievi);
+
+        SaldiNegativi_TabPrincipale.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Exchange/Wallet", "Dettaglio Wallet", "Moneta"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane15.setViewportView(SaldiNegativi_TabPrincipale);
+
+        jLabel31.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel31.setText("<html>\nIn questa sezione vengono elencati tutti i token che, anche una sola volta nell’intero storico di un singolo wallet, hanno registrato un <b>Saldo Negativo</b>.<br><br>\nSelezionando una riga nella tabella, sarà possibile visualizzare nel dettaglio le transazioni corrispondenti e i saldi associati, così da poter analizzare e, se necessario, correggere la posizione.\n</html>");
+
+        GiacenzeaData_CheckBox_NascondiScam1.setSelected(true);
+        GiacenzeaData_CheckBox_NascondiScam1.setText("Nascondi Token Scam");
+        GiacenzeaData_CheckBox_NascondiScam1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_CheckBox_NascondiScam1ActionPerformed(evt);
+            }
+        });
+
+        GiacenzeaData_TabellaDettaglioMovimenti1.setFont(new java.awt.Font("sansserif", 0, 12)); // NOI18N
+        GiacenzeaData_TabellaDettaglioMovimenti1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        GiacenzeaData_TabellaDettaglioMovimenti1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased(evt);
+            }
+        });
+        GiacenzeaData_TabellaDettaglioMovimenti1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased(evt);
+            }
+        });
+        GiacenzeaData_ScrollPaneDettaglioMovimenti1.setViewportView(GiacenzeaData_TabellaDettaglioMovimenti1);
+        if (GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumnCount() > 0) {
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(0).setMinWidth(120);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(0).setPreferredWidth(120);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(0).setMaxWidth(120);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(2).setPreferredWidth(50);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(6).setMinWidth(100);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(6).setPreferredWidth(100);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(6).setMaxWidth(100);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(8).setMinWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(8).setPreferredWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(8).setMaxWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(9).setMinWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(9).setPreferredWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti1.getColumnModel().getColumn(9).setMaxWidth(0);
+        }
+
+        Giacenzeadata_Dettaglio_Label1.setText("Tabella dettaglio movimenti :");
+
+        GiacenzeaData_Bottone_RettificaQta1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
+        GiacenzeaData_Bottone_RettificaQta1.setText("Sistema Qta Residua");
+        GiacenzeaData_Bottone_RettificaQta1.setEnabled(false);
+        GiacenzeaData_Bottone_RettificaQta1.setMaximumSize(new java.awt.Dimension(137, 27));
+        GiacenzeaData_Bottone_RettificaQta1.setMinimumSize(new java.awt.Dimension(137, 27));
+        GiacenzeaData_Bottone_RettificaQta1.setPreferredSize(new java.awt.Dimension(137, 27));
+        GiacenzeaData_Bottone_RettificaQta1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                GiacenzeaData_Bottone_RettificaQta1MouseReleased(evt);
+            }
+        });
+        GiacenzeaData_Bottone_RettificaQta1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_RettificaQta1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout SaldiNegativiLayout = new javax.swing.GroupLayout(SaldiNegativi);
+        SaldiNegativi.setLayout(SaldiNegativiLayout);
+        SaldiNegativiLayout.setHorizontalGroup(
+            SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(SaldiNegativiLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel31, javax.swing.GroupLayout.DEFAULT_SIZE, 1281, Short.MAX_VALUE)
+                    .addComponent(jScrollPane15)
+                    .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti1)
+                    .addGroup(SaldiNegativiLayout.createSequentialGroup()
+                        .addGroup(SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(GiacenzeaData_CheckBox_NascondiScam1, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Giacenzeadata_Dettaglio_Label1, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SaldiNegativiLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(GiacenzeaData_Bottone_RettificaQta1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        SaldiNegativiLayout.setVerticalGroup(
+            SaldiNegativiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(SaldiNegativiLayout.createSequentialGroup()
+                .addComponent(jLabel31, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GiacenzeaData_CheckBox_NascondiScam1)
+                .addGap(17, 17, 17)
+                .addComponent(Giacenzeadata_Dettaglio_Label1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GiacenzeaData_ScrollPaneDettaglioMovimenti1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(GiacenzeaData_Bottone_RettificaQta1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        AnalisiCrypto.addTab("Verifica Saldi Negativi", SaldiNegativi);
 
         SituazioneImport.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -4878,6 +5017,23 @@ JPanel loadingBar = new JPanel() {
     }
     
     
+    
+    private void SaldiNegativi_CompilaTabellaPrincipale(){
+        new Thread(() -> {
+        DepositiPrelieviDaCategorizzare = new ArrayList<>();
+        DefaultTableModel ModelloPrincipale = (DefaultTableModel) this.SaldiNegativi_TabPrincipale.getModel();
+        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloPrincipale);
+        Tabelle.ColoraTabellaSemplice(SaldiNegativi_TabPrincipale);
+        List<String> SaldiNegativit=Funzioni.ControllaSaldiNegativi();
+        for (String v : SaldiNegativit) {
+            String riga[]=v.split(";");
+            ModelloPrincipale.addRow(riga);
+        }
+        }).start();
+    }
+    
+    
+    
     private void AggiornaSpunte() throws ParseException{
         
    
@@ -6549,7 +6705,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     public void Funzioni_AggiornaTutto() {
         //Se selezionato Situazione Import Crypto lo aggiorno
-       // System.out.println("Aggiorna Tutto");
+       System.out.println("Aggiorna Tutto");
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
        
         if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1();       
@@ -6559,7 +6715,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_DaSalvare = true;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         long tempoOperazione=System.currentTimeMillis();
-        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        //Aggiorno le Plusvalenze
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();              
+        
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         System.out.println("Tempo calcolo plusvalenza : "+tempoOperazione+" millisec.");
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
@@ -6910,18 +7068,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (numeromodifiche>0){
         JOptionPane.showConfirmDialog(this, "Sono stati individuati e aggiornati "+numeromodifiche+" coppie di transazioni, ricordarsi di salvare le modifiche!!",
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-       
-                    TransazioniCrypto_DaSalvare=true;
-            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
+            Funzioni_AggiornaTutto();
+            DepositiPrelievi_Caricatabella();
         }
         else{
         JOptionPane.showConfirmDialog(this, "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente",
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);   
         }
-        
-        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-        DepositiPrelievi_Caricatabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
@@ -6956,24 +7109,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }//GEN-LAST:event_formWindowGainedFocus
 
-    private void TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto(){
-                if (TabellaCryptodaAggiornare) {
-          //  System.out.println("AggiornoTabella");
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
-            TabellaCryptodaAggiornare = false;
-            TransazioniCrypto_DaSalvare = true;
-            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-            TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-            TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-            RW_RicalcolaRWseEsiste();
-            //GiacenzeaData_AggiornaComboBoxWallet();
-           /* TransazioniCrypto_Bottone_Annulla.setEnabled(true);
-            TransazioniCrypto_Bottone_Salva.setEnabled(true);
-            TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(true);*/
-            this.setCursor(Cursor.getDefaultCursor());
-        }
-    }
     
     private void Analisi_CryptoComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_Analisi_CryptoComponentShown
         // TODO add your handling code here:
@@ -7892,9 +8027,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
                 Funzioni.RimuoviMovimentazioneXID(ID);
                 TabellaCryptodaAggiornare=true;
-                // TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-                // TransazioniCrypto_Funzioni_AggiornaPlusvalenze();
-                // TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(this.TransazioniCrypto_CheckBox_EscludiTI.isSelected());
                 JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
                     "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             }
@@ -8068,11 +8200,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         Importazioni_Gestione gest = new Importazioni_Gestione();
         gest.setLocationRelativeTo(this);
         gest.setVisible(true);
-
+       // System.out.println(TabellaCryptodaAggiornare);
+       // Funzioni_AggiornaTutto();
         //   TransazioniCrypto_Funzioni_PulisciMovimentiAssociatinonEsistenti();
-        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+     /*   Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
         TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-
+*/
         //questo sotto serve per aumentare la diomensione dell'header della tabella
         //Calcoli.RecuperaTassidiCambio();
     }//GEN-LAST:event_TransazioniCrypto_Bottone_ImportaActionPerformed
@@ -11349,8 +11482,28 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void MenuItem_ControllaGiacenzeNegativeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ControllaGiacenzeNegativeActionPerformed
         // TODO add your handling code here:
-        Funzioni.ControllaSaldiNegativi(PopUp_IDTrans, this);
+        Funzioni.ControllaSaldiNegativi();
     }//GEN-LAST:event_MenuItem_ControllaGiacenzeNegativeActionPerformed
+
+    private void GiacenzeaData_CheckBox_NascondiScam1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_NascondiScam1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_GiacenzeaData_CheckBox_NascondiScam1ActionPerformed
+
+    private void GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimenti1MouseReleased
+
+    private void GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_GiacenzeaData_TabellaDettaglioMovimenti1KeyReleased
+
+    private void GiacenzeaData_Bottone_RettificaQta1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQta1MouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQta1MouseReleased
+
+    private void GiacenzeaData_Bottone_RettificaQta1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQta1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQta1ActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -13220,6 +13373,11 @@ try {
         
       //  TransazioniCryptoTabella.setIgnoreRepaint(false);
        // TransazioniCryptoTabella.repaint();
+       
+       //Se ho dovuto ricaricare la mappa sicuramente ho dei valori da aggiornare quindi prima di chiudere carico in backgroud la tabella dei saldi negativi
+       //Aggiorno in background la tabella dei saldi negativi 
+        //(Questa funzione viene lanciata in un thread separato per non appesantire il caricamento delle altre tabelle) 
+        SaldiNegativi_CompilaTabellaPrincipale();
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         
@@ -13613,17 +13771,21 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_ModificaValore;
     private javax.swing.JButton GiacenzeaData_Bottone_MovimentiDefi;
     private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta;
+    private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta1;
     private javax.swing.JButton GiacenzeaData_Bottone_Scam;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam;
+    private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam1;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
     private javax.swing.JLabel GiacenzeaData_Data_Label;
     private javax.swing.JLabel GiacenzeaData_Label_Aggiornare;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPane;
     private javax.swing.JScrollPane GiacenzeaData_ScrollPaneDettaglioMovimenti;
+    private javax.swing.JScrollPane GiacenzeaData_ScrollPaneDettaglioMovimenti1;
     private javax.swing.JTable GiacenzeaData_Tabella;
     private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti;
+    private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti1;
     private javax.swing.JLabel GiacenzeaData_Totali_Label;
     private javax.swing.JTextField GiacenzeaData_Totali_TextField;
     private javax.swing.JComboBox<String> GiacenzeaData_Wallet2_ComboBox;
@@ -13632,6 +13794,7 @@ try {
     private javax.swing.JComboBox<String> GiacenzeaData_Wallet_ComboBox;
     private javax.swing.JLabel GiacenzeaData_Wallet_Label;
     private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
+    private javax.swing.JLabel Giacenzeadata_Dettaglio_Label1;
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
@@ -13746,6 +13909,8 @@ try {
     private javax.swing.JTable RW_Tabella_DettaglioMovimenti;
     private javax.swing.JTextField RW_Text_IC;
     private javax.swing.ButtonGroup RW_Trasferimenti;
+    private javax.swing.JPanel SaldiNegativi;
+    private javax.swing.JTable SaldiNegativi_TabPrincipale;
     private javax.swing.JPanel SituazioneImport;
     private javax.swing.JTable SituazioneImport_Tabella1;
     private javax.swing.JPanel TransazioniCrypto;
@@ -13803,6 +13968,7 @@ try {
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
+    private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -13817,6 +13983,7 @@ try {
     private javax.swing.JScrollPane jScrollPane12;
     private javax.swing.JScrollPane jScrollPane13;
     private javax.swing.JScrollPane jScrollPane14;
+    private javax.swing.JScrollPane jScrollPane15;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;

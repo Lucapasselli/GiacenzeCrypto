@@ -39,10 +39,14 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1332,46 +1336,50 @@ return MappaLista;
     }
     
     
-    public static void ControllaSaldiNegativi(String ID,Component c){
-     /*   JOptionPane.showConfirmDialog(c, "<html>Verranno ora mostrati i Wallet dove.<br>"
-                                        + "</html>",
-                            "Info", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
-        String mov[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+    public static List<String> ControllaSaldiNegativi(){
         
-        //controllo quali sono i token coinvolti nella transazione
-        String token1=mov[8];
-        String token2=mov[11];
-        String TokenScelto;
-        List<String> Bottoni = new ArrayList<>();
-        if (!token1.isBlank()) Bottoni.add(token1);
-        if (!token2.isBlank()) Bottoni.add(token2);
-        //se ce ne sono più di 1 allora chiedo di quale devo effettuare l'analisi
-        if (Bottoni.size()>1){
-                    int scelta = JOptionPane.showOptionDialog(c, "Di quale token si vogliono analizzare i Saldi?",
-                            "Verifica Saldi Negativi",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni.toArray(),
-                            null);
-            switch (scelta) {
-                case -1:
-                    return;
-                case 0:
-                    TokenScelto=token1;
-                    break;
-                default:
-                    TokenScelto=token2;
-                    break;
+         Map<String, BigDecimal> saldi = new HashMap<>();
+        Set<String> segnalati = new HashSet<>();
+
+        for (String[] movimento : MappaCryptoWallet.values()) {
+            String exchange = movimento[3];
+            String wallet = movimento[4];
+
+            // Uscita
+            String tokenUscita = movimento[8];
+            String keyUscita = exchange + ";" + wallet + ";" + tokenUscita;
+            BigDecimal qtaUscita = parseBigDecimalSafe(movimento[10]);
+
+            if (!tokenUscita.isEmpty()) {
+                saldi.put(keyUscita, saldi.getOrDefault(keyUscita, BigDecimal.ZERO).add(qtaUscita));
+                if (saldi.get(keyUscita).compareTo(BigDecimal.ZERO) < 0) {
+                    segnalati.add(keyUscita);
+                }
             }
-        }else{
-            TokenScelto=Bottoni.toArray()[0].toString();
+
+            // Entrata
+            String tokenEntrata = movimento[11];
+            String keyEntrata = exchange + ";" + wallet + ";" + tokenEntrata;
+            BigDecimal qtaEntrata = parseBigDecimalSafe(movimento[13]);
+
+            if (!tokenEntrata.isEmpty()) {
+                saldi.put(keyEntrata, saldi.getOrDefault(keyEntrata, BigDecimal.ZERO).add(qtaEntrata));
+            }
         }
+
+        List<String> listaOrdinata = new ArrayList<>(segnalati);
+        Collections.sort(listaOrdinata);
+        return listaOrdinata; 
         
-        //Ora che ho il token proseguo con l'analisi, devo trovare l'elenco di tutti i wallet dove il token ha giacenza negativa
-        System.out.println(TokenScelto);
+        
     }
-    
+    private static BigDecimal parseBigDecimalSafe(String s) {
+        try {
+            return new BigDecimal(s.trim());
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
     
     
     public static boolean ApriWeb(String Url) {

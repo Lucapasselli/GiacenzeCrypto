@@ -48,7 +48,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
-        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabelle.ColoraRigheTabellaCrypto(jTable1);
         String riga[]=DammiRigaTabellaDaID(ID);
         ModelloTabellaDepositiPrelievi.addRow(riga);
@@ -1788,7 +1788,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     public void CompilaTabellaMovimetiAssociabili(String ID) {
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
-        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         String attuale[] = MappaCryptoWallet.get(ID);
         long DataOraAttuale = OperazioniSuDate.ConvertiDatainLongMinuto(attuale[1]);

@@ -116,9 +116,9 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
             Label_Informazioni.setText(text);
         }
         //Compilo le tabelle
-        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)Tabella_Lifo_Entrata.getModel());
-        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)Tabella_Lifo_Uscita.getModel());
-        Tabelle.Funzioni_Tabelle_PulisciTabella((DefaultTableModel)jTable1.getModel());
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel)Tabella_Lifo_Entrata.getModel());
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel)Tabella_Lifo_Uscita.getModel());
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel)jTable1.getModel());
         String rigaTab[]=new String[]{Movimento[0],Movimento[1],Movimento[5],Movimento[6],Movimento[8],Movimento[10],Movimento[11],Movimento[13],Movimento[15],Movimento[19]};
         DefaultTableModel ModelloTabella=(DefaultTableModel)jTable1.getModel();
         ModelloTabella.addRow(rigaTab);
@@ -242,7 +242,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     
     private DefaultTableModel inizializzaTabella(JTable table){
         DefaultTableModel ModelloTabella = (DefaultTableModel) table.getModel();
-        Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabella);
+        Tabelle.Funzioni_PulisciTabella(ModelloTabella);
         Tabelle.ColoraTabellaLiFoTransazione(table);
         Tabelle.Tabelle_FiltroColonne(table,null,popup);
         return ModelloTabella;

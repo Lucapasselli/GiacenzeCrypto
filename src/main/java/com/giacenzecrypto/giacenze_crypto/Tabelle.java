@@ -270,6 +270,10 @@ public class Tabelle {
              
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
+        int modelRow=row;
+        if (table.getRowSorter()!=null){
+            modelRow = table.getRowSorter().convertRowIndexToModel(row);
+        }
 
         Color bg;
         Color bg2;
@@ -312,11 +316,11 @@ public class Tabelle {
                     setForeground(Color.black);
                   c.setBackground(bg2);
                 }
-            else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(row, 5).toString().contains("-")) {
+            else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(modelRow, 5).toString().contains("-")) {
                     setBackground(bg);
                     setForeground(verdeScuro);
                 } 
-                else if (table.getModel().getColumnCount()>4 && table.getModel().getValueAt(row, 5).toString().contains("-")) {
+                else if (table.getModel().getColumnCount()>4 && table.getModel().getValueAt(modelRow, 5).toString().contains("-")) {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
@@ -336,7 +340,7 @@ public class Tabelle {
     
    
         
-   public static void PosizionaTabellasuRiga(JTable tabella,int riga,boolean misposto){
+   public static void Funzioni_PosizionaTabellasuRiga(JTable tabella,int riga,boolean misposto){
        tabella.setRowSelectionInterval(riga, riga);
        //Se misposto è true oltre che ad evidenziare la riga indicata mi sposto anche in quella riga
        if (misposto){
@@ -731,7 +735,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
       
 
 
-public static int getSelectedModelRow(JTable table) {
+public static int Funzioni_getRigaSelezionata(JTable table) {
     int viewRow = table.getSelectedRow();
     if (viewRow == -1) {
         return -1; // Nessuna riga selezionata
@@ -739,7 +743,7 @@ public static int getSelectedModelRow(JTable table) {
     return table.convertRowIndexToModel(viewRow);
 }
 
-public static int[] getRigheTabellaSelezionate(JTable table) {
+public static int[] Funzioni_getRigheSelezionate(JTable table) {
     int[] viewRows = table.getSelectedRows();
     int[] modelRows = new int[viewRows.length];
 
@@ -1344,7 +1348,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
     table.getTableHeader().repaint();
 }
 
-    public static void Funzioni_Tabelle_PulisciTabella(DefaultTableModel modello) {
+    public static void Funzioni_PulisciTabella(DefaultTableModel modello) {
      /*   int z = modello.getRowCount();
         // System.out.println(modelProblemi.getRowCount());
         while (z != 0) {
@@ -1406,6 +1410,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         }
     }
 }
-    
+
+
     
 }

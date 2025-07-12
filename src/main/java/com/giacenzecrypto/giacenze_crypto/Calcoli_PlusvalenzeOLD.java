@@ -17,7 +17,7 @@ import java.util.TreeMap;
  *
  * @author luca.passelli
  */
-public class Calcoli_Plusvalenze {
+public class Calcoli_PlusvalenzeOLD {
     
     /**
      *
@@ -432,7 +432,7 @@ public class Calcoli_Plusvalenze {
             //System.out.println("aaa "+IDTransazione);
             if (IDTS[4].equals("VC")){
                 //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                 
                 //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
                 NuovoPrezzoCarico="";
@@ -449,23 +449,23 @@ public class Calcoli_Plusvalenze {
                 
                 if (DataSuperiore2023||!Pre2023ScambiRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
                     //Tolgo dallo stack il costo di carico della cripèto uscita
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                     
                     //Inserisco il costo di carico nello stack della cripto entrata
                     NuovoPrezzoCarico=VecchioPrezzoCarico;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                     
                     //La plusvalenza va valorizzata a zero
                     Plusvalenza="0.00";
                     CalcoloPlusvalenza="N";
                  }else {//altrimenti calcolo la plusvalenza
                     //Tolgo dallo stack il vecchio costo di carico
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                     
                     //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
                     //lo aggiungo quindi allo stack del lifo
                     NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                     
                     //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
                     Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
@@ -480,12 +480,12 @@ public class Calcoli_Plusvalenze {
                     !TipoMU.isBlank() && !TipoME.isBlank())  
             {
                     //Tolgo dallo stack il vecchio costo di carico
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                     
                     //il prezzo di carico della moneta entrante diventa il valore della moneta stessa
                     //lo aggiungo quindi allo stack del lifo
                     NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                     
                     //La plusvalenza è uguale al valore della moneta entrante meno il costo di carico della moneta uscente
                     Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
@@ -500,7 +500,7 @@ public class Calcoli_Plusvalenze {
             {
                 
                     NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                     
                     Plusvalenza="0.00";
                     CalcoloPlusvalenza="N";
@@ -516,7 +516,7 @@ public class Calcoli_Plusvalenze {
                     !TipoMU.isBlank() && !TipoME.isBlank())  
             {
                 //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                 
                 //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
                 NuovoPrezzoCarico="";
@@ -547,7 +547,7 @@ public class Calcoli_Plusvalenze {
                     {
                         NuovoPrezzoCarico = Valore;
 
-                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+                        Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
 
                         Plusvalenza = Valore;
                         CalcoloPlusvalenza="S";
@@ -555,7 +555,7 @@ public class Calcoli_Plusvalenze {
                         VecchioPrezzoCarico = "";
                     } else {
                         NuovoPrezzoCarico = "0.00";
-                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+                        Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
 
                         Plusvalenza = "0.00";
                         CalcoloPlusvalenza="N";
@@ -639,8 +639,8 @@ public class Calcoli_Plusvalenze {
                             //In teoria qua non ci dovrei mai entrare
                             NuovoPrezzoCarico = "";
                         } else {
-                            NuovoPrezzoCarico = Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true);
-                            Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+                            NuovoPrezzoCarico = Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true);
+                            Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
                         }
 
                     } else {
@@ -658,7 +658,7 @@ public class Calcoli_Plusvalenze {
                 else if(v[18].contains("DCZ")){
                      
                      NuovoPrezzoCarico="0.00";
-                     Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                     Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                      
                      Plusvalenza="0.00";
                      CalcoloPlusvalenza="N";
@@ -670,7 +670,7 @@ public class Calcoli_Plusvalenze {
                 else if(v[18].contains("DAC")){
                     
                     NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                     
                     Plusvalenza="0.00";
                     CalcoloPlusvalenza="N";
@@ -682,7 +682,7 @@ public class Calcoli_Plusvalenze {
                     // nel caso la variabile considera movimenti non classficati sia a trueconsidero il movimento come deposito a zero
                      if (ConsideraMovimentiNC) {
                         NuovoPrezzoCarico = "0.00";
-                        Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
+                        Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico);
 
                         Plusvalenza = "0.00";
                         CalcoloPlusvalenza = "N";
@@ -709,7 +709,7 @@ public class Calcoli_Plusvalenze {
                 //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
                 if(IDTS[4].equalsIgnoreCase("RW")){
                     //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                 
                     //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
                     NuovoPrezzoCarico="";
@@ -722,7 +722,7 @@ public class Calcoli_Plusvalenze {
                 else if(IDTS[4].equalsIgnoreCase("CM")||v[18].contains("PCO")){
                     
                     //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                 
                     //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
                     NuovoPrezzoCarico="";
@@ -749,7 +749,7 @@ public class Calcoli_Plusvalenze {
                         //e solo se ho attiva l'opzione che vuole il calcolo delle plusvalenze divise per wallet
                         //altrimenti lo tratto alla stregua di un trasferimento interno e non metto nulla, tanto è un movimento completamente irrilevante
                         //In ogni caso non lo tolgo dal LiFo perchè lo toglierò dal LiFo nel momento in cui c'è il deposito nel nuovo wallet
-                        VecchioPrezzoCarico = Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, false);
+                        VecchioPrezzoCarico = Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, false);
                     } else
                         VecchioPrezzoCarico = "";
 
@@ -758,7 +758,7 @@ public class Calcoli_Plusvalenze {
                 //Tipologia = 10;//(Prelievo a plusvalenza Zero ma toglie dal Lifo) FURTO o DONAZIONE
                 else if(v[18].contains("PWN")){
                     
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                     
                     NuovoPrezzoCarico="";
                     
@@ -770,7 +770,7 @@ public class Calcoli_Plusvalenze {
                 else if(v[18].isBlank()){
                     if (ConsideraMovimentiNC) {
                         //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                        VecchioPrezzoCarico = Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true);
+                        VecchioPrezzoCarico = Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true);
 
                         //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
                         NuovoPrezzoCarico = "";
@@ -822,8 +822,8 @@ public class Calcoli_Plusvalenze {
        // Map<String, ArrayDeque> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, ArrayDeque<String[]>> CryptoStack = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
-            int TipoMovimento=Calcoli_Plusvalenze.CategorizzaTransazioneOLD(v);
-            int TipologieCalcoli[]=Calcoli_Plusvalenze.RitornaTipologieCalcoli(TipoMovimento);
+            int TipoMovimento=Calcoli_PlusvalenzeOLD.CategorizzaTransazioneOLD(v);
+            int TipologieCalcoli[]=Calcoli_PlusvalenzeOLD.RitornaTipologieCalcoli(TipoMovimento);
             String MonetaU=v[8];
             String QtaU=v[10];
             String MonetaE=v[11];
@@ -837,12 +837,12 @@ public class Calcoli_Plusvalenze {
             switch (TipologieCalcoli[2]) {//Qui analizzo se devo o meno cancellare dallo stack il vecchio costo
                 case 0 -> {//Non tolgo dallo stack il vecchio costo di carico
                    
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,false);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,false);
                     //questa seconda casistica succede solo in presenza di depositi
-                    if (VecchioPrezzoCarico.isBlank())VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaE,QtaE,false);
+                    if (VecchioPrezzoCarico.isBlank())VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaE,QtaE,false);
                 }
                 case 1 -> {//Tolgo dallo stack il vecchio costo di carico
-                    VecchioPrezzoCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
+                    VecchioPrezzoCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true);
                 }
 
             }
@@ -850,18 +850,18 @@ public class Calcoli_Plusvalenze {
                 case 0 -> {
                     //il nuovo prezzo di carico ovviamente è valorizzato a Zero
                     NuovoPrezzoCarico="0.00";
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                 }
                 case 1 -> {
                     NuovoPrezzoCarico="";
                 }
                 case 2 -> {
                     NuovoPrezzoCarico=VecchioPrezzoCarico;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                 }
                 case 3 -> {
                     NuovoPrezzoCarico=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico);
                 }
 
             }
@@ -1035,7 +1035,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
        // System.out.println(stack.pop());
         Map<String, ArrayDeque<String[]>> CryptoStack = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String[] v : MappaCryptoWallet.values()) {
-            Calcoli_Plusvalenze.CategorizzaTransazioneOLD(v);
+            Calcoli_PlusvalenzeOLD.CategorizzaTransazioneOLD(v);
             
             //Plusvalenze.
             //Se deposito crypto non associato o prelievo crypto non associato non lo considero e lo salto - DC-PC()
@@ -1065,17 +1065,17 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 String Qta=v[13];
                 String Valore=v[15];
                 if (v[18].contains("DTW")||v[18].equalsIgnoreCase("")){
-                    String PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
+                    String PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
                     v[17]=PrzCarico;
                     v[19]="0.00";
                 }else if(v[18].contains("DAI")){
                     v[17]=Valore;
                     v[19]=Valore;
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,Valore);
                 }else if(v[18].contains("DCZ")){
                     v[17]="0.00";
                     v[19]="0.00";
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,"0.00");                    
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,"0.00");                    
                 }
                 //System.out.println(v[18]);
             }else if (IDTS[4].equalsIgnoreCase("PC")||IDTS[4].equalsIgnoreCase("PN")){ //questo vale sia per crypto che nft
@@ -1089,16 +1089,16 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 String Qta=new BigDecimal(v[10]).abs().toPlainString();
                 String Valore=v[15];
                 if (v[18].contains("PTW")||v[18].equalsIgnoreCase("")){
-                    String PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
+                    String PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
                     v[17]=PrzCarico;
                     v[19]="0.00";
                 }else if(v[18].contains("PCO")){
-                    String PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
+                    String PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
                     String Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                     v[17]=PrzCarico;
                     v[19]=Plusvalenza;
                 }else if(v[18].contains("PWN")){
-                    String PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
+                    String PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
                     v[17]=PrzCarico;
                     v[19]="0.00";                    
                 }
@@ -1114,7 +1114,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                     String Moneta=v[11];
                     String Qta=v[13];
                     String Valore=v[15];
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,Valore);
                     v[17]=v[15];
                     v[19]="0.00";
                 }else{
@@ -1125,13 +1125,13 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                     String PrzCarico;
                     String Plusvalenza;
                     String Valore=v[15];
-                    PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true); 
+                    PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true); 
                     Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                     v[17]=PrzCarico;
                     v[19]=Plusvalenza;
                     String Moneta2=v[11];
                     String Qta2=v[13];
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, Moneta2,Qta2,PrzCarico);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, Moneta2,Qta2,PrzCarico);
                 }
                 
             }else if (IDTS[4].equalsIgnoreCase("VC")||IDTS[4].equalsIgnoreCase("VN")){ //Vendita Crypto o NFT
@@ -1140,7 +1140,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 String Valore=v[15];
                 String PrzCarico;
                 String Plusvalenza;
-                PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
+                PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
                 Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                 v[17]=PrzCarico;
                 v[19]=Plusvalenza;
@@ -1155,14 +1155,14 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 //String Valore=v[15];
                 String PrzCarico;
                 //String Plusvalenza;
-                PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
+                PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
                 //Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                 v[17]=PrzCarico;
                 v[19]="0.00";  
                 String Moneta2=v[11];
                 String Qta2=v[13];
                 //System.out.println(Moneta2+" - "+Qta2+" - "+PrzCarico);
-                Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, Moneta2,Qta2,PrzCarico);
+                Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, Moneta2,Qta2,PrzCarico);
                 
             }else if (IDTS[4].equalsIgnoreCase("RW")){ //Reward varie
                 //IN QUESTO CASO DEVO SOLO INSERIRE IL DATO NELLO STACK
@@ -1173,12 +1173,12 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 //se esiste la qta in quella possizione vuol dire che è una rewad, altrimenti è un rimborso di una reward
                 if (!Qta.equalsIgnoreCase(""))
                     {
-                    Calcoli_Plusvalenze.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,Valore);
+                    Calcoli_PlusvalenzeOLD.StackLIFO_InserisciValore(CryptoStack, Moneta,Qta,Valore);
                     }
                 else{
                     Moneta=v[8];
                     Qta=new BigDecimal(v[10]).abs().toPlainString();
-                    String PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
+                    String PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
                     String Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                     v[17]=PrzCarico;
                     v[19]=Plusvalenza;
@@ -1189,13 +1189,13 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 String Moneta=v[11];
                 String Qta=v[13];
                 if (!Qta.equalsIgnoreCase("")){
-                String PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
+                String PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
                 v[17]=PrzCarico;
                 }
                 else {
                     Moneta=v[8];
                     Qta=new BigDecimal(v[10]).abs().toPlainString();
-                    String PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
+                    String PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,false);
                     v[17]=PrzCarico;
                 }
             }else if (IDTS[4].equalsIgnoreCase("CM")){ //Commissioni
@@ -1204,7 +1204,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                 String Valore=v[15];
                 String PrzCarico;
                 String Plusvalenza;
-                PrzCarico=Calcoli_Plusvalenze.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
+                PrzCarico=Calcoli_PlusvalenzeOLD.StackLIFO_TogliQta(CryptoStack,Moneta,Qta,true);
                 Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(PrzCarico)).toPlainString();
                 v[17]=PrzCarico;
                 v[19]=Plusvalenza;                

@@ -569,7 +569,7 @@ public class Calcoli_RT {
                                 //se è attiva la funzione delle divisione delle plusvalenze per gruppo
                                 //e se lo scambio avviene tra wallet di gruppi diversi
                                 //Recupero quindi il tutto dalla funzione che c'è nel calcolo delle pluvalenze
-                                String ris[] = Calcoli_Plusvalenze.RitornaIDeGruppoControparteSeGruppoDiverso(v);
+                                String ris[] = Calcoli_PlusvalenzeNew.RitornaIDeGruppoControparteSeGruppoDiverso(v);
                                 String IDControparte = ris[0];
                                 String WalletControparte = ris[1];
                                 //IDControparte è null se i wallet di origine e destinazione sono uguali o se

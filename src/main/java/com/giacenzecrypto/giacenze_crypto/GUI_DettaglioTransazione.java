@@ -40,7 +40,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) Tabella.getModel();
-            Tabelle.Funzioni_Tabelle_PulisciTabella(ModelloTabellaCrypto);
+            Tabelle.Funzioni_PulisciTabella(ModelloTabellaCrypto);
 
         
         //come prima cosa mi occupo del pulsante defi, deve essere attivo se abbiamo movimenti in defi e disattivo in caso contrario 

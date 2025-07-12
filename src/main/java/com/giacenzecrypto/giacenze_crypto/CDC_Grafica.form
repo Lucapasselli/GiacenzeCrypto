@@ -723,7 +723,7 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new com.giacenzecrypto.giacenze_crypto.JTableConTooltipIcone()"/>
                     <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="CDC_Grafica_TransazioniCryptoTabella"/>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));&#xd;&#xa;Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -1958,6 +1958,9 @@
                             <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="SaldiNegativi_TabPrincipaleMouseReleased"/>
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="SaldiNegativi_TabPrincipaleKeyReleased"/>
                           </Events>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Tabelle.ColoraTabellaSemplice(SaldiNegativi_TabPrincipale);"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -2068,7 +2071,7 @@
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="SaldiNegativi_TabellaDettaglioMovimentiKeyReleased"/>
                           </Events>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="SaldiNegativi_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));"/>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="SaldiNegativi_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));&#xd;&#xa;Tabelle.ColoraRigheTabella1GiacenzeaData(SaldiNegativi_TabellaDettaglioMovimenti);"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>
@@ -2442,7 +2445,7 @@
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="GiacenzeaData_TabellaKeyReleased"/>
                           </Events>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));"/>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));&#xd;&#xa;Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>

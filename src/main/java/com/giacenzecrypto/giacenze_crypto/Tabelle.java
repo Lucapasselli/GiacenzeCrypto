@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
@@ -144,7 +145,7 @@ public class Tabelle {
             
 
                 // Inserisci icona in colonna 2 se contiene "negativa"
-                if (col==3 &&(value.toString().toLowerCase().equals("deposito crypto")||value.toString().toLowerCase().equals("prelievo crypto"))) {
+                if (table.getName()!=null&&col==3 &&table.getName().equals("TabellaMovimentiCrypto")&&(value.toString().toLowerCase().equals("deposito crypto")||value.toString().toLowerCase().equals("prelievo crypto"))) {
                     JLabel label = new JLabel();
                     label.setOpaque(true);
                     label.setBackground(c.getBackground());
@@ -340,14 +341,41 @@ public class Tabelle {
     
    
         
-   public static void Funzioni_PosizionaTabellasuRiga(JTable tabella,int riga,boolean misposto){
+  /* public static void Funzioni_PosizionaTabellasuRiga(JTable tabella,int riga,boolean misposto){
        tabella.setRowSelectionInterval(riga, riga);
        //Se misposto è true oltre che ad evidenziare la riga indicata mi sposto anche in quella riga
        if (misposto){
             tabella.scrollRectToVisible(new Rectangle(tabella.getCellRect(riga, 0, true))); 
        }
-   }     
+   }   */ 
+   
+   public static void Funzioni_PosizionaTabellasuRiga(JTable tabella, int riga, boolean misposto) {
+    if (riga >= 0 && riga < tabella.getRowCount()) {
+        tabella.setRowSelectionInterval(riga, riga);
+    }
+    if (misposto) {
+        SwingUtilities.invokeLater(() -> {
+            Rectangle rect = tabella.getCellRect(riga, 0, true);
+            tabella.scrollRectToVisible(rect);
+        });
+    }
+}
+   
+   public static void Funzioni_RipristinaSelezioneEPosizione(JTable tabella, int riga,int scrollValue) {
+   JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, tabella);
+  if (riga >= 0 && riga < tabella.getRowCount()) {
+            tabella.setRowSelectionInterval(riga, riga);
+        }
+
+    SwingUtilities.invokeLater(() -> {
+
+        if (scrollPane != null) {
+            scrollPane.getVerticalScrollBar().setValue(scrollValue);
+        }
         
+    });
+}
+   
         
    public static JTable ColoraTabelladiGrigio(final JTable table) {
       //  bg=grigioChiaro;

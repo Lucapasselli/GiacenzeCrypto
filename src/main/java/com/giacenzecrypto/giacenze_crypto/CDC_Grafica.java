@@ -66,6 +66,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JWindow;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
@@ -433,6 +434,9 @@ private static final long serialVersionUID = 3L;
         jScrollPane14 = new javax.swing.JScrollPane();
         DepositiPrelievi_TabellaCorrelati = new javax.swing.JTable();
         jLabel21 = new javax.swing.JLabel();
+        SituazioneImport = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        SituazioneImport_Tabella1 = new javax.swing.JTable();
         SaldiNegativi = new javax.swing.JPanel();
         jScrollPane15 = new javax.swing.JScrollPane();
         SaldiNegativi_TabPrincipale = new javax.swing.JTable();
@@ -443,9 +447,6 @@ private static final long serialVersionUID = 3L;
         SaldiNegativi_Dettaglio_Label = new javax.swing.JLabel();
         SaldiNegativi_Bottone_RettificaQta = new javax.swing.JButton();
         SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
-        SituazioneImport = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        SituazioneImport_Tabella1 = new javax.swing.JTable();
         GiacenzeaData = new javax.swing.JPanel();
         GiacenzeaData_Wallet_Label = new javax.swing.JLabel();
         GiacenzeaData_Wallet_ComboBox = new javax.swing.JComboBox<>();
@@ -1788,6 +1789,64 @@ private static final long serialVersionUID = 3L;
 
         AnalisiCrypto.addTab("Classificazione Depositi/Prelievi", DepositiPrelievi);
 
+        SituazioneImport.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                SituazioneImportComponentShown(evt);
+            }
+        });
+
+        SituazioneImport_Tabella1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Exchange / Wallet", "Data Primo Movimento", "Data Ultimo Movimento", "Numero Movimenti"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        SituazioneImport_Tabella1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                SituazioneImport_Tabella1MouseReleased(evt);
+            }
+        });
+        jScrollPane3.setViewportView(SituazioneImport_Tabella1);
+        if (SituazioneImport_Tabella1.getColumnModel().getColumnCount() > 0) {
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setPreferredWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setMaxWidth(150);
+        }
+        SituazioneImport_Tabella1.getTableHeader().setPreferredSize(new Dimension(SituazioneImport_Tabella1.getColumnModel().getTotalColumnWidth(), 48));
+
+        javax.swing.GroupLayout SituazioneImportLayout = new javax.swing.GroupLayout(SituazioneImport);
+        SituazioneImport.setLayout(SituazioneImportLayout);
+        SituazioneImportLayout.setHorizontalGroup(
+            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(SituazioneImportLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1277, Short.MAX_VALUE))
+        );
+        SituazioneImportLayout.setVerticalGroup(
+            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SituazioneImportLayout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 793, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        AnalisiCrypto.addTab("Situazione Import Crypto", SituazioneImport);
+
         SaldiNegativi_TabPrincipale.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -1952,64 +2011,6 @@ private static final long serialVersionUID = 3L;
         );
 
         AnalisiCrypto.addTab("Verifica Saldi Negativi", SaldiNegativi);
-
-        SituazioneImport.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentShown(java.awt.event.ComponentEvent evt) {
-                SituazioneImportComponentShown(evt);
-            }
-        });
-
-        SituazioneImport_Tabella1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Exchange / Wallet", "Data Primo Movimento", "Data Ultimo Movimento", "Numero Movimenti"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        SituazioneImport_Tabella1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                SituazioneImport_Tabella1MouseReleased(evt);
-            }
-        });
-        jScrollPane3.setViewportView(SituazioneImport_Tabella1);
-        if (SituazioneImport_Tabella1.getColumnModel().getColumnCount() > 0) {
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setMaxWidth(150);
-        }
-        SituazioneImport_Tabella1.getTableHeader().setPreferredSize(new Dimension(SituazioneImport_Tabella1.getColumnModel().getTotalColumnWidth(), 48));
-
-        javax.swing.GroupLayout SituazioneImportLayout = new javax.swing.GroupLayout(SituazioneImport);
-        SituazioneImport.setLayout(SituazioneImportLayout);
-        SituazioneImportLayout.setHorizontalGroup(
-            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(SituazioneImportLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1277, Short.MAX_VALUE))
-        );
-        SituazioneImportLayout.setVerticalGroup(
-            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SituazioneImportLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 793, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        AnalisiCrypto.addTab("Situazione Import Crypto", SituazioneImport);
 
         GiacenzeaData.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -3084,6 +3085,7 @@ private static final long serialVersionUID = 3L;
             CDC_CardWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
             CDC_CardWallet_Tabella1.getColumnModel().getColumn(1).setMaxWidth(100);
         }
+        Tabelle.ColoraTabellaSemplice(CDC_CardWallet_Tabella1);
 
         CDC_CardWallet_Tabella2.setAutoCreateRowSorter(true);
         CDC_CardWallet_Tabella2.setModel(new javax.swing.table.DefaultTableModel(
@@ -3123,6 +3125,7 @@ private static final long serialVersionUID = 3L;
             CDC_CardWallet_Tabella2.getColumnModel().getColumn(3).setPreferredWidth(100);
             CDC_CardWallet_Tabella2.getColumnModel().getColumn(3).setMaxWidth(100);
         }
+        Tabelle.ColoraTabellaSemplice(CDC_CardWallet_Tabella2);
 
         CDC_CardWallet_Label_Tabella1.setBackground(new java.awt.Color(255, 255, 255));
         CDC_CardWallet_Label_Tabella1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -3362,6 +3365,7 @@ private static final long serialVersionUID = 3L;
             CDC_FiatWallet_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(100);
             CDC_FiatWallet_Tabella1.getColumnModel().getColumn(1).setMaxWidth(100);
         }
+        Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella1);
 
         CDC_FiatWallet_Tabella2.setAutoCreateRowSorter(true);
         CDC_FiatWallet_Tabella2.setModel(new javax.swing.table.DefaultTableModel(
@@ -3401,6 +3405,7 @@ private static final long serialVersionUID = 3L;
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(4).setPreferredWidth(100);
             CDC_FiatWallet_Tabella2.getColumnModel().getColumn(4).setMaxWidth(100);
         }
+        Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella2);
 
         CDC_FiatWallet_Label_Tabella2.setBackground(new java.awt.Color(255, 255, 255));
         CDC_FiatWallet_Label_Tabella2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -3466,6 +3471,7 @@ private static final long serialVersionUID = 3L;
             CDC_FiatWallet_Tabella3.getColumnModel().getColumn(1).setPreferredWidth(100);
             CDC_FiatWallet_Tabella3.getColumnModel().getColumn(1).setMaxWidth(100);
         }
+        Tabelle.ColoraTabellaSemplice(CDC_FiatWallet_Tabella3);
 
         CDC_FiatWallet_Label_Tabella3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         CDC_FiatWallet_Label_Tabella3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -5074,6 +5080,8 @@ JPanel loadingBar = new JPanel() {
         if (rigaSelTabPrincipale!=-1){
             WalletToken=SaldiNegativi_TabPrincipale.getValueAt(rigaSelTabPrincipale, 0).toString()+SaldiNegativi_TabPrincipale.getValueAt(rigaSelTabPrincipale, 1).toString()+SaldiNegativi_TabPrincipale.getValueAt(rigaSelTabPrincipale, 2).toString();
         }
+        JScrollPane scrollPane1 = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, SaldiNegativi_TabPrincipale);
+        int scrollValuePrincipale = (scrollPane1 != null) ? scrollPane1.getVerticalScrollBar().getValue() : 0;
         
         //Recupero i dati del Wallet Selezionato prima di cancellare tutto per ripristinare poi la selezione
         int rigaSelTabMov=SaldiNegativi_TabellaDettaglioMovimenti.getSelectedRow();
@@ -5081,6 +5089,9 @@ JPanel loadingBar = new JPanel() {
         if (rigaSelTabMov!=-1){
             MovSelezionato=SaldiNegativi_TabellaDettaglioMovimenti.getValueAt(rigaSelTabMov, 8).toString();
         }
+        //Salvo posizione scrollbar
+        JScrollPane scrollPaneMovimenti = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, SaldiNegativi_TabellaDettaglioMovimenti);
+        int scrollValueMovimenti = (scrollPaneMovimenti != null) ? scrollPaneMovimenti.getVerticalScrollBar().getValue() : 0;
         
         DepositiPrelieviDaCategorizzare = new ArrayList<>();
         DefaultTableModel ModelloPrincipale = (DefaultTableModel) this.SaldiNegativi_TabPrincipale.getModel();
@@ -5108,14 +5119,17 @@ JPanel loadingBar = new JPanel() {
             for(int i=0;i<SaldiNegativi_TabPrincipale.getRowCount();i++){
                 String temp=SaldiNegativi_TabPrincipale.getValueAt(i, 0).toString()+SaldiNegativi_TabPrincipale.getValueAt(i, 1).toString()+SaldiNegativi_TabPrincipale.getValueAt(i, 2).toString();
                 if (temp.equals(WalletToken)){
-                    Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabPrincipale, i,true);
+                    Tabelle.Funzioni_RipristinaSelezioneEPosizione(SaldiNegativi_TabPrincipale, i,scrollValuePrincipale);
+                    //Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabPrincipale, i,false);
                     SaldiNegativi_CompilaTabellaMovimenti();
                     if (rigaSelTabMov!=-1){
                         //Adesso cerco di ripristinare la selezione sulla tabella movimenti se ancora disponibile
                         for(int k=0;k<SaldiNegativi_TabellaDettaglioMovimenti.getRowCount();k++){
                             if (MovSelezionato.equals(SaldiNegativi_TabellaDettaglioMovimenti.getValueAt(k, 8).toString())){
                                 //Riseleziono la riga
-                                Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabellaDettaglioMovimenti, k,true);
+                                //System.out.println("Riga = "+k);
+                                //Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabellaDettaglioMovimenti, k,true);
+                                Tabelle.Funzioni_RipristinaSelezioneEPosizione(SaldiNegativi_TabellaDettaglioMovimenti, k,scrollValueMovimenti);
                                 break;
                             }
                         }
@@ -8021,6 +8035,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
 
                     }
+                    
+                    //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
+                        
+                    //Aggiorno tutto in un thread separato così viene fatto tutto in backgroud intanto che 
+                    //Viene premuto sul messaggio di conferma
+                 //   new Thread(() -> {
+                        Funzioni_AggiornaTutto();
+                  //  }).start();
                     //Adesso avviso che il movimento è inserito e ricarico l'intera pagina
                     this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     if (scelta != 0 && scelta != -1) {
@@ -8051,8 +8073,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         //E ricarico la tabella secondaria
 
                         // GiacenzeaData_CompilaTabellaToken();
-                        //Avviso il programma che devo anche aggiornare la tabella crypto e ricalcolare le plusvalenze
-                        TabellaCryptodaAggiornare = true;
+                        
                         //Tra le altre cose devo anche ricalcolare l'RW qualora sia stato già calcolato
                     }
                 } else {
@@ -8367,6 +8388,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         } catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
+        //Metto gli avvisi sulle funzioni che probabilmente sono da ricalcolare
+        if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1(); 
+        if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
+        if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         this.setCursor(Cursor.getDefaultCursor());
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
@@ -11705,6 +11730,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void SaldiNegativi_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
+        GiacenzeaData_Funzione_SistemaQta(SaldiNegativi_TabellaDettaglioMovimenti,null);
     }//GEN-LAST:event_SaldiNegativi_Bottone_RettificaQtaMouseReleased
 
     private void SaldiNegativi_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_Bottone_RettificaQtaActionPerformed
@@ -12617,6 +12643,7 @@ try {
         Map<String, Object[]> TabellaToken = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
         Tabelle.Tabelle_FiltroColonne(GiacenzeaData_Tabella,null,popup);
+        GiacenzeaData_Label_Aggiornare.setVisible(false);
          
                 
                 
@@ -12632,6 +12659,9 @@ try {
                     GiacenzeaData_Tabella.getValueAt(rigaSelTabPrincipale, 2).toString()+
                     GiacenzeaData_Tabella.getValueAt(rigaSelTabPrincipale, 3).toString();
         }
+        JScrollPane scrollPane1 = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, GiacenzeaData_Tabella);
+        int scrollValuePrincipale = (scrollPane1 != null) ? scrollPane1.getVerticalScrollBar().getValue() : 0;
+        
         
         //Recupero i dati del Wallet Selezionato prima di cancellare tutto per ripristinare poi la selezione
         int rigaSelTabMov=GiacenzeaData_TabellaDettaglioMovimenti.getSelectedRow();
@@ -12639,7 +12669,8 @@ try {
         if (rigaSelTabMov!=-1){
             MovSelezionato=GiacenzeaData_TabellaDettaglioMovimenti.getValueAt(rigaSelTabMov, 8).toString();
         }
-        
+        JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, GiacenzeaData_TabellaDettaglioMovimenti);
+        int scrollValueMovimenti = (scrollPane != null) ? scrollPane.getVerticalScrollBar().getValue() : 0;
         
         
         
@@ -12653,8 +12684,8 @@ try {
         }       
         DefaultTableModel GiacenzeaData_ModelloTabella = (DefaultTableModel) GiacenzeaData_Tabella.getModel();  
         if (CompiloTabella) {
-            TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
-            GiacenzeaData_Tabella.setRowSorter(sorter);            
+           // TableRowSorter<TableModel> sorter = new TableRowSorter<>(GiacenzeaData_Tabella.getModel());
+         //   GiacenzeaData_Tabella.setRowSorter(sorter);            
             Tabelle.Funzioni_PulisciTabella(GiacenzeaData_ModelloTabella);
         }   
 
@@ -12861,14 +12892,16 @@ try {
                         GiacenzeaData_Tabella.getValueAt(z, 2).toString()+
                         GiacenzeaData_Tabella.getValueAt(z, 3).toString();
                 if (temp.equals(WalletToken)){
-                    Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, z,true);
+                    Tabelle.Funzioni_RipristinaSelezioneEPosizione(GiacenzeaData_Tabella, z,scrollValuePrincipale);
+                    //Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, z,false);
                     GiacenzeaData_CompilaTabellaMovimenti();
                     if (rigaSelTabMov!=-1){
                         //Adesso cerco di ripristinare la selezione sulla tabella movimenti se ancora disponibile
                         for(int k=0;k<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();k++){
                             if (MovSelezionato.equals(GiacenzeaData_TabellaDettaglioMovimenti.getValueAt(k, 8).toString())){
                                 //Riseleziono la riga
-                                Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_TabellaDettaglioMovimenti, k,true);
+                               // Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_TabellaDettaglioMovimenti, k,true);
+                                Tabelle.Funzioni_RipristinaSelezioneEPosizione(GiacenzeaData_TabellaDettaglioMovimenti, k,scrollValueMovimenti);
                                 break;
                             }
                         }

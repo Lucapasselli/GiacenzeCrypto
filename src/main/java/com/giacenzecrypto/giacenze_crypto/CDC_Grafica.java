@@ -434,9 +434,6 @@ private static final long serialVersionUID = 3L;
         jScrollPane14 = new javax.swing.JScrollPane();
         DepositiPrelievi_TabellaCorrelati = new javax.swing.JTable();
         jLabel21 = new javax.swing.JLabel();
-        SituazioneImport = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        SituazioneImport_Tabella1 = new javax.swing.JTable();
         SaldiNegativi = new javax.swing.JPanel();
         jScrollPane15 = new javax.swing.JScrollPane();
         SaldiNegativi_TabPrincipale = new javax.swing.JTable();
@@ -447,6 +444,9 @@ private static final long serialVersionUID = 3L;
         SaldiNegativi_Dettaglio_Label = new javax.swing.JLabel();
         SaldiNegativi_Bottone_RettificaQta = new javax.swing.JButton();
         SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
+        SituazioneImport = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        SituazioneImport_Tabella1 = new javax.swing.JTable();
         GiacenzeaData = new javax.swing.JPanel();
         GiacenzeaData_Wallet_Label = new javax.swing.JLabel();
         GiacenzeaData_Wallet_ComboBox = new javax.swing.JComboBox<>();
@@ -1789,64 +1789,6 @@ private static final long serialVersionUID = 3L;
 
         AnalisiCrypto.addTab("Classificazione Depositi/Prelievi", DepositiPrelievi);
 
-        SituazioneImport.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentShown(java.awt.event.ComponentEvent evt) {
-                SituazioneImportComponentShown(evt);
-            }
-        });
-
-        SituazioneImport_Tabella1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Exchange / Wallet", "Data Primo Movimento", "Data Ultimo Movimento", "Numero Movimenti"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        SituazioneImport_Tabella1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                SituazioneImport_Tabella1MouseReleased(evt);
-            }
-        });
-        jScrollPane3.setViewportView(SituazioneImport_Tabella1);
-        if (SituazioneImport_Tabella1.getColumnModel().getColumnCount() > 0) {
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setPreferredWidth(150);
-            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setMaxWidth(150);
-        }
-        SituazioneImport_Tabella1.getTableHeader().setPreferredSize(new Dimension(SituazioneImport_Tabella1.getColumnModel().getTotalColumnWidth(), 48));
-
-        javax.swing.GroupLayout SituazioneImportLayout = new javax.swing.GroupLayout(SituazioneImport);
-        SituazioneImport.setLayout(SituazioneImportLayout);
-        SituazioneImportLayout.setHorizontalGroup(
-            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(SituazioneImportLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1277, Short.MAX_VALUE))
-        );
-        SituazioneImportLayout.setVerticalGroup(
-            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SituazioneImportLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 793, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        AnalisiCrypto.addTab("Situazione Import Crypto", SituazioneImport);
-
         SaldiNegativi_TabPrincipale.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -2011,6 +1953,64 @@ private static final long serialVersionUID = 3L;
         );
 
         AnalisiCrypto.addTab("Verifica Saldi Negativi", SaldiNegativi);
+
+        SituazioneImport.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                SituazioneImportComponentShown(evt);
+            }
+        });
+
+        SituazioneImport_Tabella1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Exchange / Wallet", "Data Primo Movimento", "Data Ultimo Movimento", "Numero Movimenti"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        SituazioneImport_Tabella1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                SituazioneImport_Tabella1MouseReleased(evt);
+            }
+        });
+        jScrollPane3.setViewportView(SituazioneImport_Tabella1);
+        if (SituazioneImport_Tabella1.getColumnModel().getColumnCount() > 0) {
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setPreferredWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(1).setMaxWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setPreferredWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(2).setMaxWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setPreferredWidth(150);
+            SituazioneImport_Tabella1.getColumnModel().getColumn(3).setMaxWidth(150);
+        }
+        SituazioneImport_Tabella1.getTableHeader().setPreferredSize(new Dimension(SituazioneImport_Tabella1.getColumnModel().getTotalColumnWidth(), 48));
+
+        javax.swing.GroupLayout SituazioneImportLayout = new javax.swing.GroupLayout(SituazioneImport);
+        SituazioneImport.setLayout(SituazioneImportLayout);
+        SituazioneImportLayout.setHorizontalGroup(
+            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(SituazioneImportLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1277, Short.MAX_VALUE))
+        );
+        SituazioneImportLayout.setVerticalGroup(
+            SituazioneImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, SituazioneImportLayout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 793, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        AnalisiCrypto.addTab("Situazione Import Crypto", SituazioneImport);
 
         GiacenzeaData.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -5060,12 +5060,21 @@ JPanel loadingBar = new JPanel() {
         
     }
     
-    
+    private void Funzione_CaricaTabelleSecondarieInBackgroud(){
+        //Verranno caricate tutte le tabelle secondarie che dovranno essere aggiornate  ad ogni cambio della tabella principale
+        new Thread(() -> {
+            long tempoOperazione=System.currentTimeMillis();
+            SaldiNegativi_CompilaTabellaPrincipale();
+            DepositiPrelievi_Caricatabella();
+            SituazioneImport_Caricatabella1();
+            tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+        System.out.println("Tempo calcolo Tabelle secondarie : "+tempoOperazione+" millisec.");
+        }).start();
+    }
     
     private void SaldiNegativi_CompilaTabellaPrincipale(){
         
-        new Thread(() -> {
-        long tempoOperazione=System.currentTimeMillis();
+        
           //  System.out.println("Ricalcolo Saldi Negativi");
         //Il bottone  dei saldi le metto a false
         //Verrà rimesso a true solo se ci sono righe selezionate
@@ -5119,8 +5128,8 @@ JPanel loadingBar = new JPanel() {
             for(int i=0;i<SaldiNegativi_TabPrincipale.getRowCount();i++){
                 String temp=SaldiNegativi_TabPrincipale.getValueAt(i, 0).toString()+SaldiNegativi_TabPrincipale.getValueAt(i, 1).toString()+SaldiNegativi_TabPrincipale.getValueAt(i, 2).toString();
                 if (temp.equals(WalletToken)){
-                    Tabelle.Funzioni_RipristinaSelezioneEPosizione(SaldiNegativi_TabPrincipale, i,scrollValuePrincipale);
-                    //Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabPrincipale, i,false);
+                   // Tabelle.Funzioni_RipristinaSelezioneEPosizione(SaldiNegativi_TabPrincipale, i,scrollValuePrincipale);
+                    Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabPrincipale, i,false);
                     SaldiNegativi_CompilaTabellaMovimenti();
                     if (rigaSelTabMov!=-1){
                         //Adesso cerco di ripristinare la selezione sulla tabella movimenti se ancora disponibile
@@ -5129,7 +5138,8 @@ JPanel loadingBar = new JPanel() {
                                 //Riseleziono la riga
                                 //System.out.println("Riga = "+k);
                                 //Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabellaDettaglioMovimenti, k,true);
-                                Tabelle.Funzioni_RipristinaSelezioneEPosizione(SaldiNegativi_TabellaDettaglioMovimenti, k,scrollValueMovimenti);
+                                //Tabelle.Funzioni_RipristinaSelezioneEPosizione(SaldiNegativi_TabellaDettaglioMovimenti, k,scrollValueMovimenti);
+                                Tabelle.Funzioni_PosizionaTabellasuRiga(SaldiNegativi_TabellaDettaglioMovimenti, k,true);
                                 break;
                             }
                         }
@@ -5140,9 +5150,7 @@ JPanel loadingBar = new JPanel() {
             }
             
         }
-        tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-        System.out.println("Tempo calcolo Tabella Saldi Negativi : "+tempoOperazione+" millisec.");
-        }).start();
+        
     }
     
     
@@ -6865,7 +6873,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
         if (mod.getModificaEffettuata()){
             Funzioni_AggiornaTutto();
-            DepositiPrelievi_Caricatabella();
+          //  DepositiPrelievi_Caricatabella();
         }
              
       //  DepositiPrelievi_Caricatabella();
@@ -6899,8 +6907,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //Se selezionato Situazione Import Crypto lo aggiorno
        System.out.println("Aggiorna Tutto");
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-       
-        if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1();       
+           
         //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
@@ -7045,7 +7052,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void DepositiPrelieviComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DepositiPrelieviComponentShown
         // TODO add your handling code here:
-        DepositiPrelievi_Caricatabella();
+      //  DepositiPrelievi_Caricatabella();
       //System.out.println("mi vedi");
     }//GEN-LAST:event_DepositiPrelieviComponentShown
 
@@ -7263,7 +7270,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         JOptionPane.showConfirmDialog(this, "Sono stati individuati e aggiornati "+numeromodifiche+" coppie di transazioni, ricordarsi di salvare le modifiche!!",
         "Resoconto",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
             Funzioni_AggiornaTutto();
-            DepositiPrelievi_Caricatabella();
+          //  DepositiPrelievi_Caricatabella();
         }
         else{
         JOptionPane.showConfirmDialog(this, "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente",
@@ -7274,7 +7281,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void SituazioneImportComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_SituazioneImportComponentShown
         // TODO add your handling code here:
-        SituazioneImport_Caricatabella1();
       
       
     }//GEN-LAST:event_SituazioneImportComponentShown
@@ -7295,19 +7301,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
-        System.out.println("Focus"); 
-        if (TabellaCryptodaAggiornare) {
-            //TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
-            TabellaCryptodaAggiornare = false;
-            Funzioni_AggiornaTutto();
-        }
+        System.out.println("Focus");
+       // this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+       // SwingUtilities.invokeLater(() -> {
+       // new Thread(() -> {
+      // this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            if (TabellaCryptodaAggiornare) {
+                //TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
+                TabellaCryptodaAggiornare = false;
+                Funzioni_AggiornaTutto();
+            }
+       // this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+       // });
+      //  }).start();
     }//GEN-LAST:event_formWindowGainedFocus
 
     
     private void Analisi_CryptoComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_Analisi_CryptoComponentShown
         // TODO add your handling code here:
         //System.out.println("CaricaTabella");
-        DepositiPrelievi_Caricatabella();
+       // DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_Analisi_CryptoComponentShown
 
     private void GiacenzeaDataComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GiacenzeaDataComponentShown
@@ -8252,8 +8265,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
                 Funzioni.RimuoviMovimentazioneXID(ID);
                 TabellaCryptodaAggiornare=true;
+                SwingUtilities.invokeLater(() -> {
                 JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
                     "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                });
             }
     }
     
@@ -8303,7 +8318,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     //    if (righeSelezionate.length >= 0) {
         //    for (int i = 0; i < righeSelezionate.length; i++) {
         if (righeSelezionate.length>=0){
-            if (righeSelezionate.length>=1){
+            if (righeSelezionate.length>1){
                 int risposta=JOptionPane.showOptionDialog(this,"Sono stati selezionati "+righeSelezionate.length+" movimenti, li vuoi cancellare tutti?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
                 if (risposta==0){
                     for (int i = 0; i < righeSelezionate.length; i++) {
@@ -8311,8 +8326,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         Funzioni.RimuoviMovimentazioneXID(ID);
                     }
                     TabellaCryptodaAggiornare=true;
-                    JOptionPane.showConfirmDialog(this, "Movimenti eliminati correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
-                    "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showConfirmDialog(this, "Movimenti eliminati correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
+                        "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    });
+                    
                 }
             }
             else{
@@ -8323,14 +8341,19 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
                 Funzioni.RimuoviMovimentazioneXID(IDTransazione);
                 TabellaCryptodaAggiornare=true;
-                JOptionPane.showConfirmDialog(this, "Transazione con ID"+IDTransazione+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showConfirmDialog(this, "Transazione con ID"+IDTransazione+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
                     "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                });
             }
             }
         }
 
     }//GEN-LAST:event_TransazioniCrypto_Bottone_MovimentoEliminaActionPerformed
 
+   
+    
+    
     
     
     private void TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_MovimentoNuovoActionPerformed
@@ -8389,7 +8412,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         }
         //Metto gli avvisi sulle funzioni che probabilmente sono da ricalcolare
-        if (AnalisiCrypto.getSelectedIndex()==1) SituazioneImport_Caricatabella1(); 
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         this.setCursor(Cursor.getDefaultCursor());
@@ -9475,7 +9497,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
                        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-                       DepositiPrelievi_Caricatabella();
+                      // DepositiPrelievi_Caricatabella();
                        RW_CalcolaRW();
                        RW_Tabella.setRowSelectionInterval(riga, riga);
                        RW_CompilaTabellaDettagli();
@@ -9495,8 +9517,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                        TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
 
                        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
-                       this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-                       DepositiPrelievi_Caricatabella();
+                       TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+                       //DepositiPrelievi_Caricatabella();
                        RW_CalcolaRW();
                        RW_Tabella.setRowSelectionInterval(riga, riga);
                        RW_CompilaTabellaDettagli();
@@ -9621,7 +9643,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         a.setVisible(true);
         }
                   //  Funzioni_AggiornaTutto();
-            DepositiPrelievi_Caricatabella();
+            //DepositiPrelievi_Caricatabella();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
@@ -10892,7 +10914,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
            
             }
             Funzioni_AggiornaTutto();
-            DepositiPrelievi_Caricatabella();
+           // DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamActionPerformed
 
@@ -11164,7 +11186,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             "Operazione Conclusa", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                //Aggiorno la tabella
             Funzioni_AggiornaTutto();
-            DepositiPrelievi_Caricatabella();
+           // DepositiPrelievi_Caricatabella();
             //Mi riposiziono sulla riga
             Tabelle.Funzioni_PosizionaTabellasuRiga(DepositiPrelievi_Tabella, rigaselezionata,false);
            }
@@ -11433,9 +11455,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void MenuItem_EliminaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EliminaMovimentoActionPerformed
         // TODO add your handling code here:
-                if (PopUp_IDTrans!=null){
-           Funzione_EliminaMovimento(PopUp_IDTrans,PopUp_Component);
-          if (PopUp_Tabella.getName()!=null&&PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
+        if (PopUp_IDTrans != null) {
+
+                Funzione_EliminaMovimento(PopUp_IDTrans, PopUp_Component);
+
+            // if (PopUp_Tabella.getName()!=null&&PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_MenuItem_EliminaMovimentoActionPerformed
 
@@ -11716,7 +11740,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void SaldiNegativi_CheckBox_NascondiScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_CheckBox_NascondiScamActionPerformed
         // TODO add your handling code here:
+        
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         SaldiNegativi_CompilaTabellaPrincipale();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_SaldiNegativi_CheckBox_NascondiScamActionPerformed
 
     private void SaldiNegativi_TabellaDettaglioMovimentiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SaldiNegativi_TabellaDettaglioMovimentiMouseReleased
@@ -13698,7 +13725,7 @@ try {
         
 
         //Aggiungo i filtri sulla colonna
-        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);       
+        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup); 
         RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
         // Riapplica le chiavi di ordinamento precedenti
         if (sortKeys != null) {
@@ -13711,7 +13738,7 @@ try {
        //Se ho dovuto ricaricare la mappa sicuramente ho dei valori da aggiornare quindi prima di chiudere carico in backgroud la tabella dei saldi negativi
        //Aggiorno in background la tabella dei saldi negativi 
         //(Questa funzione viene lanciata in un thread separato per non appesantire il caricamento delle altre tabelle) 
-        SaldiNegativi_CompilaTabellaPrincipale();
+        Funzione_CaricaTabelleSecondarieInBackgroud();
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         

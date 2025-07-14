@@ -12,7 +12,7 @@
             <properties>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>--NoJarPath --workdir ./test/</exec.appArgs>
+                <exec.appArgs>--NoJarPath --workdir ./test/Dichiarazione/</exec.appArgs>
                 <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
@@ -29,7 +29,7 @@
             <properties>
                 <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>--NoJarPath --workdir ./test/</exec.appArgs>
+                <exec.appArgs>--NoJarPath --workdir ./test/Dichiarazione/</exec.appArgs>
                 <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
@@ -49,7 +49,7 @@
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--NoJarPath --workdir ./test/</exec.appArgs>
+                <exec.appArgs>--NoJarPath --workdir ./test/Dichiarazione/</exec.appArgs>
             </properties>
         </action>
     </actions>

@@ -13,3 +13,5 @@
 - Nelle importazioni di binance financial report controllare la numerazione dei k che sembra errata
 - Nelle importazioni di crypto.com inserire menù visivo come nelle altre
 - Dopo la modifica delle note tramite tasto destro non mi propone di salvare i movimenti
+- Qta residua totale in Verifica Saldi Negativi
+- Sistemare l'ordine nello scambio crypto differito

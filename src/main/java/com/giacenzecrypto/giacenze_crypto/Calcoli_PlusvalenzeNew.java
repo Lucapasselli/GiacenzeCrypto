@@ -208,6 +208,7 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
     
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
    // lifoID.StackEntrato.push(valori);
+   String mov[]=MappaCryptoWallet.get(IDTransazione);
    
     //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati 
     if (Moneta.isBlank() || Qta.isBlank()) return "";
@@ -310,10 +311,18 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         valoriDaTogliere[3] = "";                                             //ID della Transazione
         lifoID.StackUscito.addLast(valoriDaTogliere);//lo inserisco in coda allo stack (devo ordinarli inversamente)
 
-//Segnalo l'errore anche direttamente sul movimento
+//Segnalo l'errore anche direttamente sul movimento ma solo se questo non è scam
         //System.out.println("Errore");
-        CDC_Grafica.MappaCryptoWallet.get(IDTransazione)[38]="A";
+        if (!Funzioni.isSCAM(Moneta))
+        {
+            mov[38]="A";
+        }else{
+            mov[38]="";
+        }
        // System.out.println("Errore "+IDTransazione);
+    }else if (!mov[38].isBlank()){
+        //Segnalo che il movimento non ha mancanze nel LiFo
+        mov[38]="";
     }
 
     return costoTransazione.setScale(Statiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();

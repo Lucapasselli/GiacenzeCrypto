@@ -139,8 +139,11 @@ private static final long serialVersionUID = 3L;
     
     public transient Calcoli_RT.AnalisiPlus APlus;
     public static String tema;
+    
     public int NumErroriMovSconosciuti=0;
     public int NumErroriMovNoPrezzo=0;
+    public int NumErroriStackLiFoMancante=0;
+    
     public static Map<String, String> MappaRetiSupportate = new TreeMap<>();//Mappa delle chain supportate
     public static boolean InterrompiCiclo=false;
     
@@ -372,7 +375,6 @@ private static final long serialVersionUID = 3L;
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
         MenuItem_ModificaReward = new javax.swing.JMenuItem();
-        MenuItem_ControllaGiacenzeNegative = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
@@ -414,6 +416,7 @@ private static final long serialVersionUID = 3L;
         jLabel27 = new javax.swing.JLabel();
         jSeparator10 = new javax.swing.JSeparator();
         jLabel28 = new javax.swing.JLabel();
+        TransazioniCrypto_CheckBox_VediLiFoMancante = new javax.swing.JCheckBox();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -793,14 +796,6 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_ModificaReward);
-
-        MenuItem_ControllaGiacenzeNegative.setText("Controlla Saldi Negativi");
-        MenuItem_ControllaGiacenzeNegative.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ControllaGiacenzeNegativeActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ControllaGiacenzeNegative);
         PopupMenu.add(jSeparator7);
 
         MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
@@ -1214,6 +1209,13 @@ private static final long serialVersionUID = 3L;
 
         jLabel28.setText("Nota : Tasto destro su intestazione colonna per ulteriori filtri.");
 
+        TransazioniCrypto_CheckBox_VediLiFoMancante.setText("Vedi solo movimenti con LiFo Mancante");
+        TransazioniCrypto_CheckBox_VediLiFoMancante.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -1221,7 +1223,7 @@ private static final long serialVersionUID = 3L;
             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1470, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_ScrollPane)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -1258,7 +1260,7 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 351, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1280,26 +1282,24 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(TransazioniCrypto_Label_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(18, 18, 18)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addGap(18, 18, 18)
+                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCrypto_CheckBox_VediLiFoMancante, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                         .addComponent(TransazioniCrypto_Label_FiltroToken)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
-                                        .addComponent(TransazioniCrypto_Label_Filtro))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
-                                        .addGap(31, 31, 31)
-                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCrypto_Label_Filtro)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
-                                        .addGap(0, 0, Short.MAX_VALUE)
-                                        .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                    .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri, javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel28, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addContainerGap())))
         );
         TransazioniCryptoLayout.setVerticalGroup(
@@ -1333,9 +1333,10 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
                     .addComponent(TransazioniCrypto_CheckBox_EscludiTI)
                     .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam)
-                    .addComponent(jLabel28))
+                    .addComponent(jLabel28)
+                    .addComponent(TransazioniCrypto_CheckBox_VediLiFoMancante))
                 .addGap(10, 10, 10)
-                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
+                .addComponent(TransazioniCrypto_ScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1360,7 +1361,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(Bottone_Errori, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(TransazioniCrypto_TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(13, 13, 13))
@@ -10742,8 +10743,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             + "<b>SCEGLIRE QUALE TIPOLOGIA DI ERRORE CORREGGERE.<br><br><b>"
                             + "</html>";
                    // A
-                    Object[] Bottoni = {"Annulla", "MOVIMENTO NON CLASSIFICATO ("+(String.valueOf(NumErroriMovSconosciuti))+")", 
-                    "TRANSAZIONE SENZA PREZZO ("+NumErroriMovNoPrezzo+")"};
+                    Object[] Bottoni = {"Annulla", 
+                        "MOVIMENTO NON CLASSIFICATO ("+(String.valueOf(NumErroriMovSconosciuti))+")", 
+                    "TRANSAZIONE SENZA PREZZO ("+NumErroriMovNoPrezzo+")",
+                    "PARTE DEL LIFO MANCANTE ("+NumErroriStackLiFoMancante+")"};
                     int scelta = JOptionPane.showOptionDialog(this, Testo,
                             "Correzione errori",
                             JOptionPane.YES_NO_CANCEL_OPTION,
@@ -10763,7 +10766,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         + "come un deposito a costo Zero mentre tutti i prelievi non classificati verranno considerati alla stregua di un cashout.</html>",
                             "Movimenti non classificati", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                              CDC.setSelectedIndex(1);
-                             AnalisiCrypto.setSelectedIndex(0);
+                             AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
                              DepositiPrelievi.requestFocus();
                                 
                             }
@@ -10775,6 +10778,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 TransazioniCrypto_CheckBox_VediSenzaPrezzo.setSelected(true);
                                 this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
                                 CDC.setSelectedIndex(0);
+                             
+                            }
+                            case 3 -> {
+                                JOptionPane.showConfirmDialog(this, "<html>Se manca parte della pila del LiFo significa che ci sono delle giacenze negative, generalmente mancano degli acquisti/earn.<br><br>"
+                                        + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b> per risolvere le problematiche.<br><br>"
+                                        + "</html>",
+                            "Parte del LiFo Mancante", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                                CDC.setSelectedIndex(1);
+                                AnalisiCrypto.setSelectedComponent(SaldiNegativi);
+                                SaldiNegativi.requestFocus();
                              
                             }
                             default -> {
@@ -11733,11 +11746,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         GiacenzeaData_CompilaTabellaMovimenti();
     }//GEN-LAST:event_GiacenzeaData_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
 
-    private void MenuItem_ControllaGiacenzeNegativeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ControllaGiacenzeNegativeActionPerformed
-        // TODO add your handling code here:
-        Funzioni.ControllaSaldiNegativi();
-    }//GEN-LAST:event_MenuItem_ControllaGiacenzeNegativeActionPerformed
-
     private void SaldiNegativi_CheckBox_NascondiScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaldiNegativi_CheckBox_NascondiScamActionPerformed
         // TODO add your handling code here:
         
@@ -11784,6 +11792,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         SaldiNegativi_CompilaTabellaMovimenti();
     }//GEN-LAST:event_SaldiNegativi_CheckBox_DettaglioFiltraQtaNegativeActionPerformed
+
+    private void TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed
+        // TODO add your handling code here:
+        this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
+       
+    }//GEN-LAST:event_TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -13472,6 +13486,7 @@ try {
         long tempoOperazione=System.currentTimeMillis();
         NumErroriMovSconosciuti=0;
         NumErroriMovNoPrezzo=0;
+        NumErroriStackLiFoMancante=0;
         
 
        // Rimuovi il filtro dal TableRowSorter della tabella per velocizzare il caricamento della tabella con filtri attivi
@@ -13515,6 +13530,10 @@ try {
         String TokenVoluto=TransazioniCrypto_ComboBox_FiltroToken.getSelectedItem().toString();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         boolean EscludiTokenScamIsSelected=TransazioniCrypto_CheckBox_EscludiTokenScam.isSelected();
+        
+        long dataInizio = Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale);
+        long dataFine = Funzioni_Date_ConvertiDatainLong(CDC_DataFinale);
+        
         for (String[] v : MappaCryptoWallet.values()) {
             Funzione_AggiornaMappaWallets(v);
             Funzione_AggiornaListaCrypto(v);
@@ -13544,33 +13563,24 @@ try {
                 }
            // }
            
+           
+           //SEZIONE CONTEGGIO ERRORI
+           
+           //1 - Movimenti senza prezzo
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
             String TipoMovimento=v[0].split("_")[4].trim().toUpperCase();
             if (!Prezzi.isMovimentoPrezzato(v)) {
                 NumErroriMovNoPrezzo++;
             }
-            
-            
-            
-            //SEZIONE CONTEGGIO ERRORI
-            //Questo serve per incrementare il numero degli errori qualora vi fossero
-            
-          //AU sono equiparati a dei trasferimenti interni, da verifixcare accuratamente perchè così rischio di fare casino nelle esportazioni
-   /*       if ((v[22]!=null&&!v[22].equalsIgnoreCase("AU"))//Escludo movimenti automatici
-                  &&
-                  v[18].trim().equalsIgnoreCase("")//Includo solo movimenti senza causale
-                  &&
-                  (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])&&new BigDecimal(v[13]).compareTo(BigDecimal.ZERO)!=0//Includo movimenti di deposito non scam
-                      ||
-                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8])&&new BigDecimal(v[10]).compareTo(BigDecimal.ZERO)!=0))//Includo movimenti di prelievo
-          {
-                    NumErroriMovSconosciuti++;
-              
-          }*/
-           // String causale = v[18].trim();
+
+            boolean lifomancante=false;
+            //2 - parte del LiFo Mancante
+            if (!v[38].isBlank()) {
+              NumErroriStackLiFoMancante++;
+              lifomancante=true;
+            }
            
-           
-           //SEZIONE CONTEGGIO ERRORI
+            //3 - Depositi/Prelievi sconosciuti
             //Questo serve per incrementare il numero degli errori qualora vi fossero
             //In questo caso incremento gli errori se trovo dei movimenti non classificati
             boolean isAutomatico = "AU".equalsIgnoreCase(v[22]);//Escludo movimenti automatici
@@ -13588,7 +13598,7 @@ try {
                 NumErroriMovSconosciuti++;
             }
 
-          
+            //2 - 
             
             //Vecchio metodo per il caricamento della tabella filtrato, sostituito da quello più sotto
             //questo scrive i dati sulla mappa ed esclude i trasferimenti esterni se specificato
@@ -13638,16 +13648,19 @@ try {
      
      
             //Nuovo metodo per il caricamento della tabella
-            // Prepara e normalizza i dati richiesti più volte
             String tipoMov = v[5].trim();
             long dataMovLong = Funzioni_Date_ConvertiDatainLong(v[1]);
-            long dataInizio = Funzioni_Date_ConvertiDatainLong(CDC_DataIniziale);
-            long dataFine = Funzioni_Date_ConvertiDatainLong(CDC_DataFinale);
+
             String wallet = v[3];
             String gruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(wallet);
             String tokenOut = v[8];
             String tokenIn = v[11];
             String valorePlusvalenza = v[19];
+            
+            //è true se il lifo è mancante sul movimento
+            //oppure se non è selezionato il checkbox che dice di far vedere solo i movimenti con lifo mancante
+            boolean passaLifoMancante=lifomancante || !TransazioniCrypto_CheckBox_VediLiFoMancante.isSelected();
+                    
             boolean haPrezzo = Prezzi.isMovimentoPrezzato(v);
             boolean haPlusvalenza = "S".equals(v[33]);
 
@@ -13670,7 +13683,7 @@ try {
 
             boolean passaFiltroPrezzo = !VediSoloSenzaPrezzo || !haPrezzo;
 
-            if (passaFiltroTrasferimenti && passaFiltroData && walletMatch && tokenMatch && tokenNonScam && passaFiltroPrezzo) {
+            if (passaFiltroTrasferimenti && passaFiltroData && walletMatch && tokenMatch && tokenNonScam && passaFiltroPrezzo &&passaLifoMancante) {
 
                 // Plusvalenza
                 if (Funzioni_isNumeric(valorePlusvalenza, false)) {
@@ -13708,7 +13721,7 @@ try {
         
         
         //Questo attiva il tasto degli errori qualora ve ne trovassimo
-        int err=NumErroriMovNoPrezzo+NumErroriMovSconosciuti;
+        int err=NumErroriMovNoPrezzo+NumErroriMovSconosciuti+NumErroriStackLiFoMancante;
          if(err==0){
             Bottone_Errori.setEnabled(false);
             Bottone_Errori.setText("Errori (0)");
@@ -14154,7 +14167,6 @@ try {
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
-    private javax.swing.JMenuItem MenuItem_ControllaGiacenzeNegative;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_CopiaID;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;
@@ -14291,6 +14303,7 @@ try {
     private javax.swing.JButton TransazioniCrypto_Bottone_Salva;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_EscludiTI;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_EscludiTokenScam;
+    private javax.swing.JCheckBox TransazioniCrypto_CheckBox_VediLiFoMancante;
     private javax.swing.JCheckBox TransazioniCrypto_CheckBox_VediSenzaPrezzo;
     private javax.swing.JComboBox<String> TransazioniCrypto_ComboBox_FiltroToken;
     private javax.swing.JComboBox<String> TransazioniCrypto_ComboBox_FiltroWallet;

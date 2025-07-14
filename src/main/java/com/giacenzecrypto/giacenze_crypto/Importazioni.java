@@ -48,9 +48,9 @@
 36 - Address di Provenienza (Attualmente implementato solo in BinanceTaxReport)
 37 - Address di Destinazione (Attualmente Implementato solo in BananceTaxReport)
 38 - Campo Segnalazione Errori
-    1 -> Manca parte del LiFo
-    2 -> Da Implementare
-    3 -> Da Implementare
+    A -> Manca parte del LiFo
+    B -> Da Implementare
+    C -> Da Implementare
 39 - Campo Libero per implementazioni future
 */
 

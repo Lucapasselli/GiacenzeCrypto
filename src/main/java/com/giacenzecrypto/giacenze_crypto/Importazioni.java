@@ -835,7 +835,9 @@ System.out.println(response.body().string());
         if (MappaCryptoWallet.get(Chiave) != null) {
             //FASE 2 : SE ESISTE IL MOVIMENTO ELIMINA EVENTUALI ASSOCIAZIONI VECCHIE SUL MOVIMENTO DA SOSTITUIRE
             String PartiCoinvolte[] = (Chiave + "," + MappaCryptoWallet.get(Chiave)[20]).split(",");
-            RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
+            //In questo caso devo solo eliminare le associazioni e non mi interessa se questo provoca un cambio di ID
+            //Lo dovesse provocare meglio vorrà dire che avrò sia il vecchio che il nuovo movimento
+            RiportaTransazioniASituazioneIniziale(PartiCoinvolte,Chiave);
         }
         //FASE 3: Inserisocil movimento in mappa
         MappaCryptoWallet.put(Chiave, Valore);

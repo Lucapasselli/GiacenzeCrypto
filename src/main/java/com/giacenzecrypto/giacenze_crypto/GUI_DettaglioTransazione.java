@@ -61,11 +61,11 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         StyledDocument doc = TextPane_Titolo.getStyledDocument();
         doc.setParagraphAttributes(0, doc.getLength(), center, false);
        // TextArea_Titolo.setText(Transazione[1]+"\n"+Transazione[5]);
-        String ReteDefi=Funzioni.RitornaReteDefi(IDTransazione);
+        String ReteDefi=Funzioni.TrovaReteDaID(IDTransazione);
         //System.out.println("retedefi:"+ReteDefi);
         String THash=Transazione[24];
         //System.out.println("hash:"+THash);
-            if(!THash.isEmpty()&&!ReteDefi.isEmpty()){
+            if(!THash.isEmpty()&&ReteDefi!=null){
                 Bottone_DeFi.setEnabled(true);
             }else{
                 Bottone_DeFi.setEnabled(false);
@@ -89,7 +89,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             ModelloTabellaCrypto.addRow(Val);
         }
         
-        Valore=Funzioni.RitornaReteDefi(Transazione[0]);
+        Valore=Funzioni.TrovaReteDaID(Transazione[0]);
         if (Valore!=null&&!Valore.isBlank()){
             Val=new String[]{"Rete ",Valore};
             ModelloTabellaCrypto.addRow(Val);
@@ -483,7 +483,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 //No=1
                 switch (risposta) {
                     case 0 -> {
-                        ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte); 
+                        ID=ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID); 
 
                         //String id=mappa_ID.get(Riferimento);
                 Point p = this.getLocation();

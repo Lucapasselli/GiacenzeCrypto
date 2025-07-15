@@ -39,6 +39,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,7 +121,8 @@ public class Funzioni {
             if (Annessi!=null){
             String PartiCoinvolte[]=(ID+","+Annessi[20]).split(",");
             if (Annessi[20]!=null && !Annessi[20].equalsIgnoreCase("")){
-                ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
+                //L'ID può infatti cambiare in fase di ripristino dei movimenti
+                ID=ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID);
             }
             CDC_Grafica.MappaCryptoWallet.remove(ID);
             } 
@@ -1078,7 +1080,7 @@ public class Funzioni {
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
-                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
@@ -1197,7 +1199,7 @@ return ListaSaldi;
                     //2 - 
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
-                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
 
 
@@ -1410,8 +1412,9 @@ return MappaLista;
     }
     
     
-        public static String RitornaReteDefi(String ID) {
+        public static String RitornaReteDefi(String ID,int k) {
         String Transazione[]=MappaCryptoWallet.get(ID);
+        if (Transazione==null)return "";
         String Wallet=Transazione[3].trim();
         String appoggio[]=Wallet.split(" ");
         String Rete="";
@@ -1457,7 +1460,7 @@ return MappaLista;
             
             
             //PASSO 1 - RINOMINO I TOKEN CHE DEVONO ESSERE RINOMINATI
-            String Rete = Funzioni.TrovaReteDaID(v[0]);
+            String Rete = Funzioni.TrovaReteDaIMovimento(v);
             String AddressU = v[26];
             String AddressE = v[28];
             //if (!Funzioni.noData(Rete)) {
@@ -1816,20 +1819,13 @@ return MappaLista;
 
             String IDSplittato[]=ID.split("_");
             String IDDettSplittato[]=IDSplittato[1].split("\\.");
+            List<String> prefixValidi = Arrays.asList("BC", "00BC", "01BC", "02BC", "03BC", "04BC");
             if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && 
-                    (IDDettSplittato[0].equalsIgnoreCase("BC")||IDDettSplittato[0].equalsIgnoreCase("00BC"))){//00BC viene usato negli scambi differiti automatici
+                    prefixValidi.contains(IDDettSplittato[0].toUpperCase())){//00BC viene usato negli scambi differiti automatici
                 Rete=IDDettSplittato[1];
                 return Rete;
             }
-            
-            //Se il primo if non trova la rete la cerco tra i movimenti manuali, a patto che venga inserito il contratto del token
-         /*   if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
-                String Mov[] = MappaCryptoWallet.get(ID);
-                if (Mov!=null&&(!Mov[26].isEmpty() || !Mov[28].isEmpty())) {
-                    Rete = IDSplittato[1].split("\\(")[1].split("\\)")[0];
-                    return Rete;
-                }
-            }*/
+
          
             //Se il primo if non trova la rete la cerco tra i movimenti manuali, a patto che la chain sia supportata
             if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
@@ -1843,7 +1839,47 @@ return MappaLista;
             
         return Rete;
         }
+        
+        public static String TrovaReteDaIMovimento(String[] mov){
+        String Rete=null;
+        String ID=mov[0];
+        if (!mov[34].isBlank()) {
+            //se è valorizzato a N ritorno null altrimenti ritorno il valore della rete
+           // return mov[34].equals("N") ? null : mov[34];
+           return mov[34];
+        }
+        // Se è blank, prosegue senza return
+        
+        //System.out.println(ID);
+        //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
+
+            String IDSplittato[]=ID.split("_");
+            String IDDettSplittato[]=IDSplittato[1].split("\\.");
+            List<String> prefixValidi = Arrays.asList("BC", "00BC", "01BC", "02BC", "03BC", "04BC");
+            if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && 
+                    prefixValidi.contains(IDDettSplittato[0].toUpperCase())){//00BC viene usato negli scambi differiti automatici
+                Rete=IDDettSplittato[1];
+                mov[34]=Rete;
+                return Rete;
+            }
+
+         
+            //Se il primo if non trova la rete la cerco tra i movimenti manuali, a patto che la chain sia supportata
+            if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
+               // String Mov[] = MappaCryptoWallet.get(ID);
+                String ret=IDSplittato[1].split("\\(")[1].split("\\)")[0].trim();
+                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allra la gestisco come tale
+                    Rete = ret;
+                    return Rete;
+                }
+            }
+        
+       // if (Rete==null)mov[34]="N";//N Significa che non ha reti, per ora non lo metto, preferisco che venga ogni volta controllato se la rete è valida
+        return Rete;
+        }
        
+        
+        
         public static void CompilaMappaRetiSupportate(){
             
             MappaRetiSupportate.put("ARB", "");

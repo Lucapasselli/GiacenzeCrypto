@@ -6537,7 +6537,7 @@ JPanel loadingBar = new JPanel() {
         //Questa funzione ritorna un array con tutti gli ID che coinvolgono la moneta in questione
         Map<String, String[]> IDconMoneta = new TreeMap<>();
         for (String[] movimento : MappaCryptoWallet.values()) {
-            String ReteMovimento = Funzioni.TrovaReteDaID(movimento[0]);
+            String ReteMovimento = Funzioni.TrovaReteDaIMovimento(movimento);
             if ((movimento[8].equals(Moneta) && movimento[26].equals(Address) && ReteMovimento.equals(Rete))
                     || (movimento[11].equals(Moneta) && movimento[28].equals(Address) && ReteMovimento.equals(Rete))) {
                 IDconMoneta.put(movimento[0], movimento);
@@ -6694,7 +6694,7 @@ JPanel loadingBar = new JPanel() {
             // do una sequenza alle giacenze negative trovate
             int NumNegativi=0;
             for (String[] movimento : MappaCryptoWallet.values()) {
-                String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);
+                String ReteMov=Funzioni.TrovaReteDaIMovimento(movimento);
                 if (ReteMov==null)ReteMov="";
                 long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                 if (DataMovimento < DataRiferimento) {
@@ -6928,7 +6928,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     private void DepositiPrelievi_Caricatabella() {
-        long tempoOperazione=System.currentTimeMillis();
+       // long tempoOperazione=System.currentTimeMillis();
         if (!tabDepositiPrelieviCaricataprimavolta) {
             tabDepositiPrelieviCaricataprimavolta = true;
             //Questo serve per sistemare il pregresso prima della versione 1.15
@@ -7009,8 +7009,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         DepositiPrelievi_Tabella.setRowSorter(sorter);
     }  
     Tabelle_applyCombinedFilter(DepositiPrelievi_Tabella, sorter, "");*/
-        tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
-        System.out.println("Tempo calcolo Tabella DepositiPrelievi : "+tempoOperazione+" millisec.");
+      /*  tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+        System.out.println("Tempo calcolo Tabella DepositiPrelievi : "+tempoOperazione+" millisec.");*/
 
 
     
@@ -7149,7 +7149,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //FASE 2 : Adesso gestisco tutta la parte delle reward da Defi
         for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
             String Movimento[]=MappaCryptoWallet.get(IDnc);
-            String Rete=Funzioni.TrovaReteDaID(IDnc);
+            String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             if(Movimento[18].equalsIgnoreCase("")&&
                   Rete!=null&&
                   Movimento[0].split("_")[4].equalsIgnoreCase("DC")&&
@@ -7167,7 +7167,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
             //ad uno ad uno controllo tutti i movimenti non ancora categorizzati
             String Movimento[]=MappaCryptoWallet.get(IDnc);
-            String Rete=Funzioni.TrovaReteDaID(IDnc);
+            String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             if (Rete!=null&&Movimento[18].equalsIgnoreCase("")&&//Verifico che il movimento sia in defi e non sia già classificato
                     Movimento[0].split("_")[4].equals("PC")&&//che sia un movimento di prelievo
                     Movimento[8].contains("-LP"))//che sia di un Token LP
@@ -7190,7 +7190,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
 
             String Movimento[] = MappaCryptoWallet.get(IDnc);
-            String Rete=Funzioni.TrovaReteDaID(IDnc);
+            String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             //Se non è un movimento in defi non gestisco nulla perchè non ho le basi per farlo e devo gestirlo a mano
             if (Rete!=null && Movimento[18].equalsIgnoreCase("")) {
 
@@ -7198,7 +7198,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 for (String IDnc2 : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
 
                     String Movimento2[] = MappaCryptoWallet.get(IDnc2);
-                    String Rete2=Funzioni.TrovaReteDaID(IDnc2);
+                    String Rete2=Funzioni.TrovaReteDaIMovimento(Movimento2);
                     String DataConfronto2 = IDnc2.split("_")[0];
                     if (DataConfronto1.equals(DataConfronto2)&&
                             Rete2!=null&& Movimento2[18].equalsIgnoreCase("")&&
@@ -7231,7 +7231,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     &&//Classificato come withdraw
                     Movimento[30].equalsIgnoreCase("0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23")
                     &&//Arriva da contratto WCRO
-                    Funzioni.TrovaReteDaID(IDnc).equalsIgnoreCase("CRO")) //Rete Cronos
+                    Funzioni.TrovaReteDaIMovimento(Movimento).equalsIgnoreCase("CRO")) //Rete Cronos
             {
                 //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
                 String MT[] = new String[Importazioni.ColonneTabella];
@@ -7872,7 +7872,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 M1.MonetaAddress = AddressMoneta;
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
-                                M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
+                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
@@ -8010,7 +8010,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 M1.MonetaAddress = AddressMoneta;
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
-                                M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
+                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
@@ -8286,7 +8286,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //No=1
                 switch (risposta) {
                     case 0 -> {
-                        ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte); 
+                        ID=ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID); 
 
                             a.CompilaCampidaID(ID);
                             a.setLocationRelativeTo(c);
@@ -10895,10 +10895,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //Secondo ciclo faccio le modifiche
             for (int i = 0; i < righeSelezionate.length; i++) {
                 String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
-                System.out.println(ID);
-                String Rete = Funzioni.TrovaReteDaID(ID);
+                //System.out.println(ID);
+                
                 //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
                 String Movimento[] = MappaCryptoWallet.get(ID);
+                String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
                 if (Movimento[18] == null || Movimento[18].isBlank()) {
                     //Controllo se è un movimento di prelievo o deposito
                     String Tipo = ID.split("_")[4];
@@ -12304,7 +12305,7 @@ try {
                     DataMovimento = romeZonedDateTime.format(formatter);
                     
                     
-                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
                     String TokenU=movimento[8];
                     String TokenE=movimento[11];
                     String Prezzo="";
@@ -12503,7 +12504,7 @@ try {
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
-                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
                     String IDTS[] = movimento[0].split("_");
                     String secondi=IDTS[0].substring(12, 14);
                     String DataMovimento = movimento[1]+":"+secondi;
@@ -12779,7 +12780,7 @@ try {
                 for (String[] movimento : MappaCryptoWallet.values()) {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
-                    String Rete = Funzioni.TrovaReteDaID(movimento[0]);
+                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
                     //System.out.println(Rete);
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
@@ -13144,11 +13145,12 @@ try {
         //come prima cosa mi occupo del pulsante defi, deve essere attivo se abbiamo movimenti in defi e disattivo in caso contrario 
         //per controllare verifico di avere il transaction hash e il nome della rete quindi
         String Transazione[]=MappaCryptoWallet.get(IDTransazione);
-        String ReteDefi=Funzioni.RitornaReteDefi(IDTransazione);
-        //System.out.println("retedefi:"+ReteDefi);
+        String ReteDefi=Funzioni.TrovaReteDaIMovimento(Transazione);
+       // String ReteDefi="";
+       // System.out.println("retedefi:"+ReteDefi);
         String THash=Transazione[24];
-        //System.out.println("hash:"+THash);
-            if(!THash.isEmpty()&&!ReteDefi.isEmpty()){
+      //  System.out.println("hash:"+THash);
+            if(!THash.isEmpty()&&ReteDefi!=null){
                 this.TransazioniCrypto_Bottone_DettaglioDefi.setEnabled(true);
             }else{
                 this.TransazioniCrypto_Bottone_DettaglioDefi.setEnabled(false);
@@ -13156,12 +13158,12 @@ try {
         
         String Valore;
         String Val[];
-        
+        String secondi=Transazione[0].split("_")[0].substring(12);
 
         
         Valore=Transazione[1];
         if (!Valore.isBlank()){
-            Valore="<html><b>"+Valore+"</html>";
+            Valore="<html><b>"+Valore+":"+secondi+"</html>";
             Val=new String[]{"Data e Ora ",Valore};
             ModelloTabellaCrypto.addRow(Val);
         }
@@ -13413,12 +13415,12 @@ try {
                             
                             
                             
-                            
+                           
                             
                             
                             //Adesso faccio in modo che che i sottowallet CRO Transaction, BSC transaction etc.... vengano convertiti in
                             if (VersioneCambiata){
-                            if (Funzioni.TrovaReteDaID(splittata[0]) != null && !Funzioni.TrovaReteDaID(splittata[0]).isBlank()) {
+                            if (Funzioni.TrovaReteDaIMovimento(splittata) != null && !Funzioni.TrovaReteDaIMovimento(splittata).isBlank()) {
                                 if (splittata[4].split(" ").length > 1 && splittata[4].contains("Transaction")) {
                                     splittata[4] = "Wallet";
                                 }
@@ -13540,7 +13542,8 @@ try {
 
             //questo rinomina i token con nomi personalizzati
             //Solo in caso di defi
-            String Rete = Funzioni.TrovaReteDaID(v[0]);
+            String Rete = Funzioni.TrovaReteDaIMovimento(v);
+            
             String AddressU = v[26];
             String AddressE = v[28];
             //if (!Funzioni.noData(Rete)) {

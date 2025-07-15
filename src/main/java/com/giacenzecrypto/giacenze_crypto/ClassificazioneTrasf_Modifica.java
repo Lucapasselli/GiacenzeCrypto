@@ -725,8 +725,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
          if (PartiCoinvolte.length > 1) {
             //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
             //a cancellare le eventuali commissioni e riportare i prezzi e qta allo stato originale
-            RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
+            IDTrans=RiportaTransazioniASituazioneIniziale(PartiCoinvolte,IDTrans);
         }
+         //Adesso controllo se esiste ancora IDTrans e proseguio solo se esiste
+         //if (MappaCryptoWallet.get(IDTrans)!=null){
             //System.out.println("Completato");
             if (descrizione.equalsIgnoreCase("TRASFERIMENTO A PIATTAFORMA")) {
                 //creo movimento di deposito su Vault e movifico il movimento originale
@@ -809,6 +811,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 }
 
             }
+        // }
         }
 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
@@ -1465,6 +1468,12 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //System.out.println("Creo 3 movimenti");
         String MovimentoPrelievo[]=MappaCryptoWallet.get(IDPrelievo);
         String MovimentoDeposito[]=MappaCryptoWallet.get(IDDeposito);
+                    //Rimuovo le movimentazioni perchè devo codificarle con altro id per metterle in ordine corretto
+            //E' l'id infatti che da l'ordine alle transazioni
+            //poi ricreo i movimenti ma con il nuovo ID
+            Funzioni.RimuoviMovimentazioneXID(IDPrelievo);
+            Funzioni.RimuoviMovimentazioneXID(IDDeposito);
+        
        // BigDecimal QtaPrelievoValoreAssoluto=new BigDecimal(MovimentoPrelievo[10]).stripTrailingZeros().abs();
        // BigDecimal QtaDepositoValoreAssoluto=new BigDecimal(MovimentoDeposito[13]).stripTrailingZeros().abs();
         //Vado avanti solo se la qta prelevata è maggiore o uguale di quelòla ricevuta
@@ -1482,10 +1491,12 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         String MS[]=new String[Importazioni.ColonneTabella];
         String MT2[]=new String[Importazioni.ColonneTabella];
         String IDSpezzato[]=IDPrelievo.split("_");
-        IDTrasferimento1=IDSpezzato[0]+"_"+IDSpezzato[1]+"_"+IDSpezzato[2]+"A_"+IDSpezzato[3]+"_DC";
+        MovimentoPrelievo[0]=IDSpezzato[0]+"_00"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_"+IDSpezzato[4];
+        IDTrasferimento1=IDSpezzato[0]+"_01"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_DC";
         String IDSpezzatoDeposito[]=IDDeposito.split("_");
-        IDScambio=IDSpezzatoDeposito[0]+"_00"+IDSpezzato[1]+"_00"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_SC";
-        IDTrasferimento2=IDSpezzatoDeposito[0]+"_00"+IDSpezzato[1]+"_0"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+        IDScambio=IDSpezzatoDeposito[0]+"_02"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_SC";
+        IDTrasferimento2=IDSpezzatoDeposito[0]+"_03"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+        MovimentoDeposito[0]=IDSpezzatoDeposito[0]+"_04"+IDSpezzatoDeposito[1]+"_"+IDSpezzatoDeposito[2]+"_"+IDSpezzatoDeposito[3]+"_"+IDSpezzatoDeposito[4];
         MT1[0]=IDTrasferimento1;
         MS[0]=IDScambio;
         MT2[0]=IDTrasferimento2;
@@ -1575,11 +1586,11 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         MT2[18]="PTW - Trasferimento Interno";
         MovimentoDeposito[18]="DTW - Scambio Differito"; 
         
-        MovimentoPrelievo[20]=IDTrasferimento1+","+IDScambio+","+IDTrasferimento2+","+IDDeposito;
-        MT1[20]=IDPrelievo+","+IDScambio+","+IDTrasferimento2+","+IDDeposito;
-        MS[20]=IDPrelievo+","+IDTrasferimento1+","+IDTrasferimento2+","+IDDeposito;
-        MT2[20]=IDPrelievo+","+IDTrasferimento1+","+IDScambio+","+IDDeposito;
-        MovimentoDeposito[20]=IDPrelievo+","+IDTrasferimento1+","+IDScambio+","+IDTrasferimento2;
+        MovimentoPrelievo[20]=IDTrasferimento1+","+IDScambio+","+IDTrasferimento2+","+MovimentoDeposito[0];
+        MT1[20]=MovimentoPrelievo[0]+","+IDScambio+","+IDTrasferimento2+","+MovimentoDeposito[0];
+        MS[20]=MovimentoPrelievo[0]+","+IDTrasferimento1+","+IDTrasferimento2+","+MovimentoDeposito[0];
+        MT2[20]=MovimentoPrelievo[0]+","+IDTrasferimento1+","+IDScambio+","+MovimentoDeposito[0];
+        MovimentoDeposito[20]=MovimentoPrelievo[0]+","+IDTrasferimento1+","+IDScambio+","+IDTrasferimento2;
         
         MT1[22]="AU";
         MS[22]="AU";
@@ -1608,9 +1619,13 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             Importazioni.RiempiVuotiArray(MS);
             Importazioni.RiempiVuotiArray(MT2); 
 
+            
+
+            MappaCryptoWallet.put(MovimentoPrelievo[0], MovimentoPrelievo);
             MappaCryptoWallet.put(IDTrasferimento1, MT1);
             MappaCryptoWallet.put(IDScambio, MS);
             MappaCryptoWallet.put(IDTrasferimento2, MT2);
+            MappaCryptoWallet.put(MovimentoDeposito[0], MovimentoDeposito);
 
       //   }
 
@@ -1728,7 +1743,8 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                   Tabelle.ColoraTabelladiGrigio(Tabella_MovimentiAbbinati);
     }
     
-    public static void RiportaTransazioniASituazioneIniziale(String IDPartiConvolte[]){
+    public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolte[],String IDOri){
+        String IDRitorno=IDOri;
         BigDecimal QtaCommissione=null;
         BigDecimal QtaReward=null;
         BigDecimal PrezzoCommissione=null;
@@ -1757,15 +1773,20 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
             String attuale[] = MappaCryptoWallet.get(ID);
             if (attuale != null) {
+                
+                //Adesso restano i movimenti che non sono stati generati automaticamente
                 if (ID.split("_")[4].equalsIgnoreCase("DC")) {
 
                     attuale[5] = "DEPOSITO CRYPTO";
+                   // System.out.println("Deposito "+attuale[18]+" - "+attuale[19]);
 
                 } else if (ID.split("_")[4].equalsIgnoreCase("PC")) {
                     //Essendo questo il prelievo devo farci delle modifiche sopra
                     //ovvero sistemare un pò di qta e prezzo transazione (posizione 10 e 15)
 
                     attuale[5] = "PRELIEVO CRYPTO";
+                    
+                   // System.out.println("Prelievo "+attuale[18]+" - "+attuale[19]);
                     if (QtaCommissione != null) {
                         attuale[10] = new BigDecimal(attuale[10]).add(QtaCommissione).toPlainString();
                         attuale[15] = new BigDecimal(attuale[15]).add(PrezzoCommissione).toPlainString();
@@ -1777,14 +1798,41 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
 
                 }
+                String Old18=attuale[18].trim();
                 attuale[18] = "";
                 attuale[19] = "";
-                attuale[20] = "";
+                attuale[20] = "";//Questi sono i movimenti associati che ovvimante vanno annullati
                 attuale[31] = "";//data e ora di fine trasferimento
+                
+                //Adesso controllo se è un movimento di scambio differito fatto con la nuova funzione
+                //Ovvero la seconda parte dell'ID deve iniziare con 00 o con 04
+                String[] IDSplittato = attuale[0].split("_");
+                if ((Old18.equalsIgnoreCase("PTW - Scambio Differito")
+                        || Old18.equalsIgnoreCase("DTW - Scambio Differito"))
+                        && (IDSplittato[1].startsWith("00") || IDSplittato[1].startsWith("04"))) 
+                {
+                    //Appurato che è uno scambio differito gestito con il nuovo metodo ripristo l'id originale al movimento
+                    
+                    //Recupero ID Originale
+                    IDSplittato[1] = IDSplittato[1].substring(2);
+                    attuale[0] = String.join("_", IDSplittato);
+                    //Cancello movimento con id modificato
+                    MappaCryptoWallet.remove(ID);
+                    //Se questo è il movimento che sto analizzando cambio anche l'IDTrans che indica appunto il movimento analizzato
+                    //non lo facessi poi la funzione andrebbe in errore perchè cercherebbe un movimento che non esiste più.
+                    if (ID.equals(IDOri))IDRitorno=attuale[0];
+                    //System.out.println("Rimuovo "+ID);
+                    //Ricreo il movimenti con l'id Corretto
+                    MappaCryptoWallet.put(attuale[0], attuale);
+
+                }
             }
         }
+        return IDRitorno;
     }
 
+    
+    
 
     public void CompilaTabellaMovimetiAssociabili(String ID) {
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();

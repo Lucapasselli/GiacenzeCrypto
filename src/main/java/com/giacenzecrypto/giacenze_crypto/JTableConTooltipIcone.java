@@ -43,12 +43,15 @@ public class JTableConTooltipIcone extends JTable {
                 String MonetaU = mov[8];
                 String QtaMancanteLiFo="";
                 String ValRimanenze="";
-                if (Funzioni.Funzioni_isNumeric(mov[10], false)){
+                if (Funzioni.Funzioni_isNumeric(mov[10], false))
+                {
                     BigDecimal QtaU = new BigDecimal(mov[10]);
                     BigDecimal ValTrans=new BigDecimal(mov[15]);
                     QtaMancanteLiFo=RecuperaQtaMancante(ID);
-                    if(QtaU.compareTo(BigDecimal.ZERO)!=0)
+                    if(QtaMancanteLiFo!=null&&Funzioni.Funzioni_isNumeric(QtaMancanteLiFo, false)&&QtaU.compareTo(BigDecimal.ZERO)!=0)
+                    {
                         ValRimanenze=ValTrans.divide(QtaU, 10, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaMancanteLiFo)).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
+                    }
                 }
                 int iconWidth = icon.getIconWidth();
                 int iconHeight = icon.getIconHeight();
@@ -96,6 +99,7 @@ public class JTableConTooltipIcone extends JTable {
     
     private String RecuperaQtaMancante(String ID){
         Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(ID);
+        if (lifoID==null)return null;
         ArrayDeque<String[]> StackUscito=lifoID.Get_CryptoStackUscito();
         ArrayDeque<String[]> stack=StackUscito.clone();
         //System.out.println(stack.size());

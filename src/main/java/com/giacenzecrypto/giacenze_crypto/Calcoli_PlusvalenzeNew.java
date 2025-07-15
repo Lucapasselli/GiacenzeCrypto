@@ -320,7 +320,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             mov[38]="";
         }
        // System.out.println("Errore "+IDTransazione);
-    }else if (!mov[38].isBlank()){
+    }else if (mov!=null&&!mov[38].isBlank()){
         //Segnalo che il movimento non ha mancanze nel LiFo
         mov[38]="";
     }

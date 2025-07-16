@@ -148,7 +148,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.44";
+    public String Versione="1.0.45";
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
     
@@ -1839,11 +1839,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti"
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "Rimanenze Wallet", "Rimanenze Gruppo", "Rimanenze Totali"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1863,9 +1863,9 @@ private static final long serialVersionUID = 3L;
         });
         SaldiNegativi_ScrollPaneDettaglioMovimenti.setViewportView(SaldiNegativi_TabellaDettaglioMovimenti);
         if (SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumnCount() > 0) {
-            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(120);
-            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(120);
-            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(120);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMinWidth(130);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setPreferredWidth(130);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(0).setMaxWidth(130);
             SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(2).setPreferredWidth(50);
             SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(3).setMinWidth(0);
             SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(3).setPreferredWidth(0);
@@ -1879,6 +1879,15 @@ private static final long serialVersionUID = 3L;
             SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMinWidth(0);
             SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setPreferredWidth(0);
             SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMaxWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(10).setMinWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(10).setPreferredWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(10).setMaxWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(11).setMinWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(11).setPreferredWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(11).setMaxWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setMinWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setPreferredWidth(0);
+            SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setMaxWidth(0);
         }
         SaldiNegativi_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(SaldiNegativi_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
         Tabelle.ColoraRigheTabella1GiacenzeaData(SaldiNegativi_TabellaDettaglioMovimenti);
@@ -2112,11 +2121,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti"
+                "Data", "Wallet", "Moneta", "Address Moneta", "Tipo Movimento", "Quantita'", "Valore in Euro", "Qta Residua", "ID", "SaldiNegativiPrecedenti", "null", "null", "null"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2148,6 +2157,15 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMinWidth(0);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setPreferredWidth(0);
             GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(9).setMaxWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(10).setMinWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(10).setPreferredWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(10).setMaxWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(11).setMinWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(11).setPreferredWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(11).setMaxWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setMinWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setPreferredWidth(0);
+            GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getColumn(12).setMaxWidth(0);
         }
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
 
@@ -6569,57 +6587,98 @@ JPanel loadingBar = new JPanel() {
 
             //Adesso compilo i movimenti
             BigDecimal TotaleQta = new BigDecimal(0);
+            BigDecimal TotaleQtaWallet = new BigDecimal(0);
+            BigDecimal TotaleQtaGruppo = new BigDecimal(0);
+            BigDecimal TotaleQtaTotale = new BigDecimal(0);
             boolean MostraSoloGiacNegative=SaldiNegativi_CheckBox_DettaglioFiltraQtaNegative.isSelected();
             // do una sequenza alle giacenze negative trovate
             int NumNegativi=0;
             for (String[] movimento : MappaCryptoWallet.values()) {
-                    if (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim())) {
-                        if (movimento[8].equals(mon)) {
-                            TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                            String riga[] = new String[10];
-                            riga[0] = movimento[1];
-                            riga[1] = movimento[3]+" ("+movimento[4]+")";
-                            riga[2] = movimento[8];
-                            riga[3] = "";
-                            riga[4] = movimento[5];
-                            riga[5] = movimento[10];
-                            riga[6] = movimento[15];
-                            riga[7] = TotaleQta.toPlainString();
-                            riga[8] = movimento[0];
-                            riga[9] = "";
-                            if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
-                            if(riga[7].contains("-")){
-                                NumNegativi++;
-                            }
-                            if(!MostraSoloGiacNegative||riga[7].contains("-"))
-                            {                     
-                                SaldiNegativi_ModelloTabella.addRow(riga);
-                            }
-                        }
-                        if (movimento[11].equals(mon)) {
-                            TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                            String riga[] = new String[10];
-                            riga[0] = movimento[1];
-                            riga[1] = movimento[3]+" ("+movimento[4]+")";
-                            riga[2] = movimento[11];
-                            riga[3] = "";
-                            riga[4] = movimento[5];
-                            riga[5] = movimento[13];
-                            riga[6] = movimento[15];
-                            riga[7] = TotaleQta.toPlainString();
-                            riga[8] = movimento[0];
-                            riga[9] = "";
-                            if (NumNegativi>0)riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
-                            if(riga[7].contains("-")){
-                                NumNegativi++;
-                            }
-                            if(!MostraSoloGiacNegative||riga[7].contains("-"))
-                            {
-                                SaldiNegativi_ModelloTabella.addRow(riga);
-                            }
-                        }
+                if (movimento[8].equals(mon)) {
+                    //Rimanenze Globali del token
+                    TotaleQtaTotale = TotaleQtaTotale.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                    //Rimanenze relative al Wallet
+                    if (Wallet.equalsIgnoreCase(movimento[3].trim())) {
+                        TotaleQtaWallet = TotaleQtaWallet.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                     }
-                
+                    //Rimanenze relative al Gruppo Wallet
+                    if (DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equalsIgnoreCase(DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3].trim()))) {
+                        TotaleQtaGruppo = TotaleQtaGruppo.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                    }
+                    
+                    //Rimanenze relative al SottoWallet
+                    if (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase(movimento[4].trim())) {
+                        TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                        String riga[] = new String[13];
+                        riga[0] = Funzioni.getOradaID(movimento[0]);
+                        riga[1] = movimento[3] + " (" + movimento[4] + ")";
+                        riga[2] = movimento[8];
+                        riga[3] = "";
+                        riga[4] = movimento[5];
+                        riga[5] = movimento[10];
+                        riga[6] = movimento[15];
+                        riga[7] = TotaleQta.toPlainString();
+                        riga[8] = movimento[0];
+                        riga[9] = "";
+                        riga[10]=TotaleQtaWallet.toPlainString();
+                        riga[11]=TotaleQtaGruppo.toPlainString();
+                        riga[12]=TotaleQtaTotale.toPlainString();
+                        if (NumNegativi > 0) {
+                            riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
+                        }
+                        if (riga[7].contains("-")) {
+                            NumNegativi++;
+                        }
+                        if (!MostraSoloGiacNegative || riga[7].contains("-")) {
+                            SaldiNegativi_ModelloTabella.addRow(riga);
+                        }
+                        
+                    }
+                }
+                if (movimento[11].equals(mon)) {
+                    //Rimanenze Globali del token
+                    TotaleQtaTotale = TotaleQtaTotale.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                    
+                    //Rimanenze relative al Wallet
+                    if (Wallet.equalsIgnoreCase(movimento[3].trim())) {
+                        TotaleQtaWallet = TotaleQtaWallet.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                    }
+                    
+                    //Rimanenze relative al Gruppo Wallet
+                    if (DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equalsIgnoreCase(DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3].trim()))) {
+                        TotaleQtaGruppo = TotaleQtaGruppo.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                    }
+                    
+                    //Rimanenze relative al SottoWallet
+                    if (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase(movimento[4].trim())) {
+                        TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                        String riga[] = new String[13];
+                        riga[0] = Funzioni.getOradaID(movimento[0]);
+                        riga[1] = movimento[3] + " (" + movimento[4] + ")";
+                        riga[2] = movimento[11];
+                        riga[3] = "";
+                        riga[4] = movimento[5];
+                        riga[5] = movimento[13];
+                        riga[6] = movimento[15];
+                        riga[7] = TotaleQta.toPlainString();
+                        riga[8] = movimento[0];
+                        riga[9] = "";
+                        riga[10]=TotaleQtaWallet.toPlainString();
+                        riga[11]=TotaleQtaGruppo.toPlainString();
+                        riga[12]=TotaleQtaTotale.toPlainString();
+                        if (NumNegativi > 0) {
+                            riga[9] = "S";//Questo significa che ci sono movimenti con giacenza negativa prima di questo
+                        }
+                        if (riga[7].contains("-")) {
+                            NumNegativi++;
+                        }
+                        if (!MostraSoloGiacNegative || riga[7].contains("-")) {
+                            SaldiNegativi_ModelloTabella.addRow(riga);
+                        }
+                        
+                    }
+                }
+
             }
             
         }
@@ -7856,17 +7915,18 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                                long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) + 1;
-                                String RT[] = new String[ColonneTabella];
-                                RT[0] = "";//questo può variare in caso di movimento di commissione per cui lo metto nel capitolo successivo
-                                RT[1] = RTOri[1];
-                                RT[2] = "1 di 1";
-                                RT[3] = RTOri[3];
-                                RT[4] = RTOri[4];
-                                RT[6] = Moneta + " ->";
-                                RT[8] = Moneta;
-                                RT[9] = TipoMoneta;//da prendere dalla tabella prima
-                                RT[10] = SQta;
+                                String NuovoOrario=Funzioni.DataIDaggiungiUnSecondo(RTOri[0].split("_")[0]);
+                                //long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) + 1;
+                                String RT2[] = new String[ColonneTabella];
+                                RT2[0] = "";//questo può variare in caso di movimento di commissione per cui lo metto nel capitolo successivo
+                                RT2[1] = Funzioni.getOradaIDalMinuto(NuovoOrario);
+                                RT2[2] = "1 di 1";
+                                RT2[3] = RTOri[3];
+                                RT2[4] = RTOri[4];
+                                RT2[6] = Moneta + " ->";
+                                RT2[8] = Moneta;
+                                RT2[9] = TipoMoneta;//da prendere dalla tabella prima
+                                RT2[10] = SQta;
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = Moneta;
                                 M1.MonetaAddress = AddressMoneta;
@@ -7877,12 +7937,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
-                                RT[15] = Prezzo.toPlainString();
-                                RT[21] = Nota;
-                                RT[22] = "M";
-                                RT[26] = AddressMoneta;
-                                RT[29] = RTOri[29];
-                                RiempiVuotiArray(RT);
+                                RT2[15] = Prezzo.toPlainString();
+                                RT2[21] = Nota;
+                                RT2[22] = "M";
+                                RT2[26] = AddressMoneta;
+                                RT2[29] = RTOri[29];
+                                RiempiVuotiArray(RT2);
 
                                 String IDOriSplittato[] = RTOri[0].split("_");
                                 switch (scelta) {
@@ -7891,63 +7951,63 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         //Ciclo per creare un movimento con il primo ID libero
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(RT2[0])==null){
                                                break;
                                             }
                                         }
-                                        RT[5] = "PRELIEVO "+TipoMoneta.toUpperCase();
-                                        RT[18] = "";
+                                        RT2[5] = "PRELIEVO "+TipoMoneta.toUpperCase();
+                                        RT2[18] = "";
                                     }
                                     case 2 -> {
                                         //CashOut
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                            if(MappaCryptoWallet.get(RT[0])==null){                                              
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(RT2[0])==null){                                              
                                                break;
                                             }
                                         }
-                                        RT[5] = "CASHOUT O SIMILARE";
-                                        RT[18] = "PCO - CASHOUT O SIMILARE";
+                                        RT2[5] = "CASHOUT O SIMILARE";
+                                        RT2[18] = "PCO - CASHOUT O SIMILARE";
                                     }
                                     case 3 -> {
                                         //Commissione                                        
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
                                             else
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_CM";
-                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_CM";
+                                            if(MappaCryptoWallet.get(RT2[0])==null){
                                                break;
                                             }
                                         }
-                                        RT[5] = "COMMISSIONE";
-                                        RT[18] = "";
+                                        RT2[5] = "COMMISSIONE";
+                                        RT2[18] = "";
                                     }
                                     case 4 -> {
                                         //Rettifica Giacenza                                       
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(RT2[0])==null){
                                                break;
                                             }
                                         }
-                                        RT[5] = "RETTIFICA GIACENZA";
-                                        RT[18] = "PWN - RETTIFICA GIACENZA";
+                                        RT2[5] = "RETTIFICA GIACENZA";
+                                        RT2[18] = "PWN - RETTIFICA GIACENZA";
                                     }
                                     default -> {
                                     }
                                 }
                                 //Adesso scrivo il movimento
-                                MappaCryptoWallet.put(RT[0], RT);
+                                MappaCryptoWallet.put(RT2[0], RT2);
 
                             }
                         }
@@ -7986,25 +8046,25 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi tolgo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                                long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) - 1;
-                                String RT[] = new String[ColonneTabella];
+                                String NuovoOrario=Funzioni.DataIDtogliUnSecondo(RTOri[0].split("_")[0]);
+                                String RT1[]= new String[ColonneTabella];
                                 for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                                RT1[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
                                             else
-                                                RT[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_DC";
-                                            if(MappaCryptoWallet.get(RT[0])==null){
+                                                RT1[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_DC";
+                                            if(MappaCryptoWallet.get(RT1[0])==null){
                                                break;
                                             }
                                         }
-                                RT[1] = RTOri[1];
-                                RT[2] = "1 di 1";
-                                RT[3] = RTOri[3];
-                                RT[4] = RTOri[4];
-                                RT[6] = " ->" + Moneta;
-                                RT[11] = Moneta;
-                                RT[12] = TipoMoneta;
-                                RT[13] = SQta;
+                                RT1[1] = Funzioni.getOradaIDalMinuto(NuovoOrario);
+                                RT1[2] = "1 di 1";
+                                RT1[3] = RTOri[3];
+                                RT1[4] = RTOri[4];
+                                RT1[6] = " ->" + Moneta;
+                                RT1[11] = Moneta;
+                                RT1[12] = TipoMoneta;
+                                RT1[13] = SQta;
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = Moneta;
                                 M1.MonetaAddress = AddressMoneta;
@@ -8015,34 +8075,34 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
-                                RT[15] = Prezzo.toPlainString();
-                                RT[21] = Nota;
-                                RT[22] = "M";
-                                RT[28] = AddressMoneta;
-                                RT[29] = RTOri[29];
-                                RiempiVuotiArray(RT);
+                                RT1[15] = Prezzo.toPlainString();
+                                RT1[21] = Nota;
+                                RT1[22] = "M";
+                                RT1[28] = AddressMoneta;
+                                RT1[29] = RTOri[29];
+                                RiempiVuotiArray(RT1);
 
                                 switch (scelta) {
                                     case 1 -> {
                                         //Non Classifico Movimento                                
-                                        RT[5] = "DEPOSITO "+TipoMoneta.toUpperCase();
-                                        RT[18] = "";
+                                        RT1[5] = "DEPOSITO "+TipoMoneta.toUpperCase();
+                                        RT1[18] = "";
                                     }
                                     case 2 -> {
                                         //Rendita da Capitale
-                                        RT[5] = "EARN";
-                                        RT[18] = "DAI - Provento da Detenzione";
+                                        RT1[5] = "EARN";
+                                        RT1[18] = "DAI - Provento da Detenzione";
                                     }
                                     case 3 -> {
                                         //Costo di carico 0
-                                        RT[5] = "DEPOSITO A COSTO 0";
-                                        RT[18] = "DCZ - DEPOSITO A COSTO 0";
+                                        RT1[5] = "DEPOSITO A COSTO 0";
+                                        RT1[18] = "DCZ - DEPOSITO A COSTO 0";
                                     }
                                     default -> {
                                     }
                                 }
                                 //Adesso scrivo il movimento
-                                MappaCryptoWallet.put(RT[0], RT);
+                                MappaCryptoWallet.put(RT1[0], RT1);
 
                             }
                         }
@@ -11133,6 +11193,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Object[] Bottoni = {"OK"};
                 JOptionPane.showOptionDialog(this, Testo,
                         "Errori da correggere",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null,
+                        Bottoni,
+                        null);
+            }
+            if (Anno<2023){
+            String Testo = "<html>Attenzione!<br>"
+                        +"E' stato scelto un anno inferiore al 2023.<br>"
+                        +"In quegli anni <b>vigevano regole diverse</b> il report potrebbe non essere corretto.<br>"
+                        +"La stampa proseguirà ugualmente.<br>";
+            Object[] Bottoni = {"OK"};
+                JOptionPane.showOptionDialog(this, Testo,
+                        "Attenzione!",
                         JOptionPane.YES_NO_CANCEL_OPTION,
                         JOptionPane.INFORMATION_MESSAGE,
                         null,

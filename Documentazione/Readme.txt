@@ -25,6 +25,21 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.45
+Nuove Implementazioni : 
+ - Aggiunto un nuovo filtro nella tabella principale che trova i movimenti a cui manca una parte delle stack del LiFo (tipicamente mancano acquisti per coprire la transazione)
+ - Aggiunto icone di Alert sui movimenti con errori da correggere, posizionando il mouse sull'icona compare la spiegazione
+ - Aggiunto al pulsante degli Errori anche i casi in cui manca parte del LiFo, mancando parte dello stack infatti verrebbe calcolata una plusvalenza più alta se non vengono corretti.
+ - Aggiunto Funzione "Verifica Saldi Negativi" sotto "Analisi Crypto", in questa funzione vengono elencati tutti i momenti in cui c'è stato un saldo negativo su un qualsiasi wallet.
+	Attenzione : Questo non significa che tutti i movimenti segnalati abbiano portato ad un errore nello Stack del LiFo che ricordo non è legato al dettaglio di un singolo Wallet ma alla totalità degli stessi piuttosto che al Gruppo (dipende dalle impostazioni scelte), è opportuno lo stesso effettuare tutte le correzioni per avere la plusvalenza il più corretta possibile.
+ - Aggiunto messaggio che, qualora si cercasse di stampare il quadro RT relativo ad anni precedenti il 2023, ricorda che in quegli anni c'erano regole diverse e che la stampa del quadro potrebbe non essere corretta (il quadro era diverso e anche le regole, ad esempio i proventi d Staking andavano teoricamente in RL).
+Correzione Bug : 
+ - Corretto funzione per la rettifica giacenza che in taluni casi poteva portare ad un errore nella generazione dell'ID del movimento.
+ - Corretto errore nella funzione "Scambio Crypto Differito", poteva capitare che i movimenti non venissero ordinati correttamente e portare ad errori visualizzabili nella nuova funzione "Verifica Saldi Negativi", per correggere basta togliere l'associazione del movimento e rifarlo, a quel punto l'ordine dei movimenti verrà creato correttamente.
+ - Corretto bug che poteva portare cali di prestazioni fino al blocco del programma applicando i filtri sulle tabelle in un certo modo
+ - Corretto bug che portava alla selezione errata del rigo di un paio di tabelle nel caso fossero applicati dei filtri.
+ - Corretto bug che in taluni casi poteva mostrare uno stack del LiFo vuoto utilizzando la nuova funzione "Mostra LiFo Transazione"
+
 ver. 1.0.44
 Nuove Implementazioni : 
  - Implementato visualizzazione dello stack del LiFo della transazione tramite tasto destro sulla riga della tabella selezionando "Mostra LiFo Transazione"

@@ -275,6 +275,12 @@ public class Tabelle {
         if (table.getRowSorter()!=null){
             modelRow = table.getRowSorter().convertRowIndexToModel(row);
         }
+        String GiacWallet=null;
+        
+        String GiacGruppo=null;
+        
+        String GiacTotale=null;
+        
 
         Color bg;
         Color bg2;
@@ -295,6 +301,10 @@ public class Tabelle {
             fore2=Color.BLACK;
         }
  
+          /*  if(col==10){if (table.getModel().getValueAt(modelRow, 10)!=null)GiacWallet=table.getModel().getValueAt(modelRow, 10).toString();
+            System.out.println(table.getModel().getValueAt(modelRow, 10));}
+            if(col==11){if (table.getModel().getValueAt(modelRow, 11)!=null)GiacGruppo=table.getModel().getValueAt(modelRow, 11).toString();}
+            if(col==12){if (table.getModel().getValueAt(modelRow, 12)!=null)GiacTotale=table.getModel().getValueAt(modelRow, 12).toString();}*/
             if (isSelected&&col!=7) {
 
                     c.setBackground(table.getSelectionBackground());
@@ -310,12 +320,47 @@ public class Tabelle {
                     c.setBackground(table.getSelectionBackground());
                 }
             else if (col==7 && !value.toString().toLowerCase().contains("-")) {
-                    setForeground(fore2);
-                  c.setBackground(bg);
+                JLabel label = new JLabel();
+                    label.setOpaque(true);
+                    label.setBackground(bg);
+                    label.setForeground(fore2);
+                    label.setText(value.toString());
+                    if (table.getModel().getValueAt(modelRow, 10)!=null)GiacWallet=table.getModel().getValueAt(modelRow, 10).toString();
+                    if (table.getModel().getValueAt(modelRow, 11)!=null)GiacGruppo=table.getModel().getValueAt(modelRow, 11).toString();
+                    if (table.getModel().getValueAt(modelRow, 12)!=null)GiacTotale=table.getModel().getValueAt(modelRow, 12).toString();
+                    //System.out.println(GiacTotale);
+                    if (GiacTotale!=null){
+                        String text="<html>"
+                                + "Rimanenze Wallet = "+GiacWallet+"<br>"
+                                + "Rimanenze Gruppo = "+GiacGruppo+"<br>"
+                                + "Rimanenze Totali = "+GiacTotale                               
+                                + "</html>";
+                        label.setToolTipText(text);
+                    }
+                    return label;
+                 //   setForeground(fore2);
+                //  c.setBackground(bg);
                 }
             else if (col==7 && value.toString().toLowerCase().contains("-")) {
-                    setForeground(Color.black);
-                  c.setBackground(bg2);
+                JLabel label = new JLabel();
+                    label.setOpaque(true);
+                    label.setBackground(bg2);
+                    label.setForeground(Color.black);
+                    label.setText(value.toString());
+                    if (table.getModel().getValueAt(modelRow, 10)!=null)GiacWallet=table.getModel().getValueAt(modelRow, 10).toString();
+                    if (table.getModel().getValueAt(modelRow, 11)!=null)GiacGruppo=table.getModel().getValueAt(modelRow, 11).toString();
+                    if (table.getModel().getValueAt(modelRow, 12)!=null)GiacTotale=table.getModel().getValueAt(modelRow, 12).toString();
+                    if (GiacTotale!=null){
+                        String text="<html>"
+                                + "Rimanenze Wallet = "+GiacWallet+"<br>"
+                                + "Rimanenze Gruppo = "+GiacGruppo+"<br>"
+                                + "Rimanenze Totali = "+GiacTotale                               
+                                + "</html>";
+                        label.setToolTipText(text);
+                    }
+                    return label;
+                 //   setForeground(Color.black);
+                //  c.setBackground(bg2);
                 }
             else if (table.getModel().getColumnCount()>4 && !table.getModel().getValueAt(modelRow, 5).toString().contains("-")) {
                     setBackground(bg);

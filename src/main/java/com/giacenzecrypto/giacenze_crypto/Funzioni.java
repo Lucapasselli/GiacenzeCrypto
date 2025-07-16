@@ -38,6 +38,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -142,8 +143,56 @@ public class Funzioni {
             throw new RuntimeException("Impossibile ottenere il path del JAR", e);
         }
     } 
-         
-         
+       
+    public static String getOradaID(String ID) {
+        String input = ID.split("_")[0];
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(input, inputFormatter);
+            return dateTime.format(outputFormatter);
+        } catch (DateTimeParseException e) {
+            return CDC_Grafica.MappaCryptoWallet.get(ID)[1];
+        }
+    }
+    public static String getOradaIDalMinuto(String ID) {
+        String input = ID.split("_")[0];
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(input, inputFormatter);
+            return dateTime.format(outputFormatter);
+        } catch (DateTimeParseException e) {
+            return CDC_Grafica.MappaCryptoWallet.get(ID)[1];
+        }
+    }
+    
+        public static String DataIDaggiungiUnSecondo(String input) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(input, formatter);
+            LocalDateTime incrementata = dateTime.plusSeconds(1);
+            return incrementata.format(formatter);
+        } catch (DateTimeParseException e) {
+            return "nonOK";
+        }
+    }
+        
+        public static String DataIDtogliUnSecondo(String input) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(input, formatter);
+            LocalDateTime incrementata = dateTime.minusSeconds(1);
+            return incrementata.format(formatter);
+        } catch (DateTimeParseException e) {
+            return "nonOK";
+        }
+    }
+    
         public static String formattaBigDecimal(BigDecimal numero,boolean decimali) {
         // Crea un'istanza di DecimalFormatSymbols per il locale italiano
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ITALY);

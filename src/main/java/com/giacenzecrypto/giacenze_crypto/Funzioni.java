@@ -153,19 +153,7 @@ public class Funzioni {
             LocalDateTime dateTime = LocalDateTime.parse(input, inputFormatter);
             return dateTime.format(outputFormatter);
         } catch (DateTimeParseException e) {
-            return CDC_Grafica.MappaCryptoWallet.get(ID)[1];
-        }
-    }
-    public static String getOradaIDalMinuto(String ID) {
-        String input = ID.split("_")[0];
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-        try {
-            LocalDateTime dateTime = LocalDateTime.parse(input, inputFormatter);
-            return dateTime.format(outputFormatter);
-        } catch (DateTimeParseException e) {
-            return CDC_Grafica.MappaCryptoWallet.get(ID)[1];
+            return CDC_Grafica.MappaCryptoWallet.get(ID)[1]+":00";
         }
     }
     
@@ -1904,7 +1892,7 @@ return MappaLista;
 
             String IDSplittato[]=ID.split("_");
             String IDDettSplittato[]=IDSplittato[1].split("\\.");
-            List<String> prefixValidi = Arrays.asList("BC", "00BC", "01BC", "02BC", "03BC", "04BC");
+            List<String> prefixValidi = Arrays.asList("BC", "00BC", "01BC", "02BC", "03BC", "04BC", "ZZBC");
             if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && 
                     prefixValidi.contains(IDDettSplittato[0].toUpperCase())){//00BC viene usato negli scambi differiti automatici
                 Rete=IDDettSplittato[1];

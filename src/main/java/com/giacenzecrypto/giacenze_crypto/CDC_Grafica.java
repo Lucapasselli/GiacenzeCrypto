@@ -6770,7 +6770,7 @@ JPanel loadingBar = new JPanel() {
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                             String riga[] = new String[10];
-                            riga[0] = movimento[1];
+                            riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[8];
                             riga[3] = AddressU;
@@ -6792,7 +6792,7 @@ JPanel loadingBar = new JPanel() {
                         if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
                             String riga[] = new String[10];
-                            riga[0] = movimento[1];
+                            riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[11];
                             riga[3] = AddressE;
@@ -7915,11 +7915,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                                String NuovoOrario=Funzioni.DataIDaggiungiUnSecondo(RTOri[0].split("_")[0]);
+                               // String NuovoOrario=Funzioni.DataIDaggiungiUnSecondo(RTOri[0].split("_")[0]);
                                 //long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) + 1;
                                 String RT2[] = new String[ColonneTabella];
                                 RT2[0] = "";//questo può variare in caso di movimento di commissione per cui lo metto nel capitolo successivo
-                                RT2[1] = Funzioni.getOradaIDalMinuto(NuovoOrario);
+                                RT2[1] = RTOri[1];
                                 RT2[2] = "1 di 1";
                                 RT2[3] = RTOri[3];
                                 RT2[4] = RTOri[4];
@@ -7951,9 +7951,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         //Ciclo per creare un movimento con il primo ID libero
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
                                             if(MappaCryptoWallet.get(RT2[0])==null){
                                                break;
                                             }
@@ -7965,9 +7965,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         //CashOut
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
                                             if(MappaCryptoWallet.get(RT2[0])==null){                                              
                                                break;
                                             }
@@ -7979,9 +7979,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         //Commissione                                        
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
                                             else
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_CM";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_CM";
                                             if(MappaCryptoWallet.get(RT2[0])==null){
                                                break;
                                             }
@@ -7993,9 +7993,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                         //Rettifica Giacenza                                       
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
-                                                RT2[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
                                             if(MappaCryptoWallet.get(RT2[0])==null){
                                                break;
                                             }
@@ -8046,18 +8046,18 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi tolgo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                                String NuovoOrario=Funzioni.DataIDtogliUnSecondo(RTOri[0].split("_")[0]);
+                                //String NuovoOrario=Funzioni.DataIDtogliUnSecondo(RTOri[0].split("_")[0]);
                                 String RT1[]= new String[ColonneTabella];
                                 for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT1[0] = NuovoOrario + "_" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                                RT1[0] = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
                                             else
-                                                RT1[0] = NuovoOrario + "_" + IDOriSplittato[1] + "_1_"+ki+"_DC";
+                                                RT1[0] = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + "_1_"+ki+"_DC";
                                             if(MappaCryptoWallet.get(RT1[0])==null){
                                                break;
                                             }
                                         }
-                                RT1[1] = Funzioni.getOradaIDalMinuto(NuovoOrario);
+                                RT1[1] = RTOri[1];
                                 RT1[2] = "1 di 1";
                                 RT1[3] = RTOri[3];
                                 RT1[4] = RTOri[4];

@@ -52,8 +52,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         //System.out.println(IDTransazione);
         //System.out.println(CDC_Grafica.MappaCryptoWallet.get(IDTransazione));
         //String Titolo="<html><p align=\"center\">"+"Pippo<br>"+"Pluto</html>";
-        String secondi=Transazione[0].split("_")[0].substring(12);
-        String Titolo="<html>"+Transazione[1]+":"+secondi+"<br>"+Transazione[5]+"</html>";
+       // String secondi=Transazione[0].split("_")[0].substring(12);
+       // Funzioni.getOradaID(Transazione[0]);
+        String Titolo="<html>"+Funzioni.getOradaID(Transazione[0])+"<br>"+Transazione[5]+"</html>";
         TextPane_Titolo.setText(Titolo);
         //Accenstro il testo
         SimpleAttributeSet center = new SimpleAttributeSet();
@@ -78,7 +79,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         
         Valore=Transazione[1];
         if (!Valore.isBlank()){
-            Valore="<html><b>"+Valore+":"+secondi+"</html>";
+            Valore="<html><b>"+Funzioni.getOradaID(Transazione[0])+"</html>";
             Val=new String[]{"Data e Ora ",Valore};
             ModelloTabellaCrypto.addRow(Val);
         }

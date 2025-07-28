@@ -57,8 +57,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -7488,7 +7491,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 
                 
                // BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
-                
+                //System.out.println(DataPrezzo+" - "+mon+"..");
                 String Prezz = Funzioni.GUIDammiPrezzo(this, mon, OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
                 //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
                 if (Prezz != null) {
@@ -7530,10 +7533,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             Address=Mone.MonetaAddress;
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
                         BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
-                        if (Address != null && Rete != null) {
+                        if (Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()) {
                                 DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
+                                //System.out.println(DataconOra + "_" + Address + "_" + Rete);
                         } else {
                                 DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
+                               // System.out.println(DataconOra + " " + mon);
                         }
                         } 
                         
@@ -13032,6 +13037,7 @@ try {
     }
   
     private void Funzione_AggiornaComboBox() {
+        SwingUtilities.invokeLater(() -> {
         //1 - Aggiorno i combobox releativi ai token
         String VecchioValore;
         Collections.sort(Lista_Cryptovalute);
@@ -13052,54 +13058,87 @@ try {
        // int Selezionata=GiacenzeaData_Wallet_ComboBox.getSelectedIndex();
        //String VecchioValore;
       // String VecchioValoreTC=TransazioniCrypto_ComboBox_FiltroWallet.getSelectedItem().toString();
-       if(GiacenzeaData_Wallet_ComboBox.getSelectedItem()!=null)
+      /* if(GiacenzeaData_Wallet_ComboBox.getSelectedItem()!=null)
             VecchioValore=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
-       else VecchioValore="";
+       else VecchioValore="";*/
         Map<String, String> MappaGruppiWalletUtilizzati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         boolean VecchioTrovato=false;
        // int Selezionata2=GiacenzeaData_Wallet2_ComboBox.getSelectedIndex();
-        GiacenzeaData_Wallet_ComboBox.removeAllItems();
-        Opzioni_Export_Wallets_Combobox.removeAllItems();
+        
         //TransazioniCrypto_ComboBox_FiltroWallet.removeAllItems();
         //DepositiPrelievi_ComboBox_FiltroWallet.removeAllItems();
-        if(!Funzione_itemEsiste_ComboBox(TransazioniCrypto_ComboBox_FiltroWallet, "Tutti"))TransazioniCrypto_ComboBox_FiltroWallet.addItem("Tutti");
-        if(!Funzione_itemEsiste_ComboBox(DepositiPrelievi_ComboBox_FiltroWallet, "Tutti"))DepositiPrelievi_ComboBox_FiltroWallet.addItem("Tutti");
-        GiacenzeaData_Wallet_ComboBox.addItem("Tutti");
-        Opzioni_Export_Wallets_Combobox.addItem("Tutti");
+        Set<String> setUnivocoWallets = new LinkedHashSet<>();
+        setUnivocoWallets.add("Tutti");
+      //  GiacenzeaData_Wallet_ComboBox.addItem("Tutti");
+     //   Opzioni_Export_Wallets_Combobox.addItem("Tutti");
+        
        /* Mappa_Wallet.clear();
         for (String[] v : MappaCryptoWallet.values()) {
             Funzione_AggiornaMappaWallets(v);
         }*/
         for (String v : Mappa_Wallet.keySet()) {
-            this.GiacenzeaData_Wallet_ComboBox.addItem(v);
-            Opzioni_Export_Wallets_Combobox.addItem(v);
-            if(!Funzione_itemEsiste_ComboBox(TransazioniCrypto_ComboBox_FiltroWallet, v))TransazioniCrypto_ComboBox_FiltroWallet.addItem(v);
-            if(!Funzione_itemEsiste_ComboBox(DepositiPrelievi_ComboBox_FiltroWallet, v))DepositiPrelievi_ComboBox_FiltroWallet.addItem(v);
+            setUnivocoWallets.add(v);
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v);
             MappaGruppiWalletUtilizzati.put(GruppoWallet, GruppoWallet);
-            if (v.equals(VecchioValore)) {
+           /* if (v.equals(VecchioValore)) {
                 VecchioTrovato=true;
-            }
+            }*/
         }
         for (String v : MappaGruppiWalletUtilizzati.keySet()) {
-            String Alias=DatabaseH2.Pers_GruppoAlias_Leggi(v)[1];
-                        
+            String Alias=DatabaseH2.Pers_GruppoAlias_Leggi(v)[1];                        
             v=v+" ( "+Alias+" )";
             String nome="Gruppo : "+v;
-            this.GiacenzeaData_Wallet_ComboBox.addItem(nome);
-            Opzioni_Export_Wallets_Combobox.addItem(nome);
-            if(!Funzione_itemEsiste_ComboBox(TransazioniCrypto_ComboBox_FiltroWallet, nome))TransazioniCrypto_ComboBox_FiltroWallet.addItem(nome);
-            if(!Funzione_itemEsiste_ComboBox(DepositiPrelievi_ComboBox_FiltroWallet, nome))DepositiPrelievi_ComboBox_FiltroWallet.addItem(nome);
-            if (nome.equals(VecchioValore)) {
+            setUnivocoWallets.add(nome);
+          /*  if (nome.equals(VecchioValore)) {
                 VecchioTrovato=true;
-            }
+            }*/
         }
-        if (VecchioTrovato)
-            GiacenzeaData_Wallet_ComboBox.setSelectedItem(VecchioValore);
-        //TransazioniCrypto_ComboBox_FiltroWallet.setSelectedItem(VecchioValoreTC);
+        
+        
+        
+        //Adesso aggiorno i combobox con la lista appena creata
+        String VecchioValoreTC=TransazioniCrypto_ComboBox_FiltroWallet.getSelectedItem().toString();
+        String VecchioValoreDP=DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
+        String VecchioValoreGD=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+        TransazioniCrypto_ComboBox_FiltroWallet.removeAllItems();
+        DepositiPrelievi_ComboBox_FiltroWallet.removeAllItems();
+        GiacenzeaData_Wallet_ComboBox.removeAllItems();
+        Opzioni_Export_Wallets_Combobox.removeAllItems();
+        for (String s : setUnivocoWallets) {
+            TransazioniCrypto_ComboBox_FiltroWallet.addItem(s);
+            DepositiPrelievi_ComboBox_FiltroWallet.addItem(s);
+            GiacenzeaData_Wallet_ComboBox.addItem(s);
+            Opzioni_Export_Wallets_Combobox.addItem(s);      
+        }
+        Funzione_RiposizionaComboBox(TransazioniCrypto_ComboBox_FiltroWallet, VecchioValoreTC);
+        Funzione_RiposizionaComboBox(DepositiPrelievi_ComboBox_FiltroWallet, VecchioValoreDP);
+        Funzione_RiposizionaComboBox(GiacenzeaData_Wallet_ComboBox, VecchioValoreGD);
+
+       /* if (VecchioTrovato){
+            GiacenzeaData_Wallet_ComboBox.setSelectedItem(VecchioValoreGD);
+        }*/
         GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
+        
+        });
     }
-       
+ 
+    
+    public static void Funzione_RiposizionaComboBox(JComboBox<String> comboBox, String item) {
+        if (item.contains("</b> non più disponibile</html>")){
+            item=item.replace("</b> non più disponibile</html>", "");
+            item=item.replace("<html>Wallet <b>", "");
+        }
+        
+        if(Funzione_itemEsiste_ComboBox(comboBox, item))
+            comboBox.setSelectedItem(item);
+        else
+        {
+            comboBox.addItem("<html>Wallet <b>"+item+"</b> non più disponibile</html>");
+            comboBox.setSelectedItem("<html>Wallet <b>"+item+"</b> non più disponibile</html>");
+        }
+    }
+    
+    
      public static boolean Funzione_itemEsiste_ComboBox(JComboBox<String> comboBox, String item) {
         for (int i = 0; i < comboBox.getItemCount(); i++) {
             if (comboBox.getItemAt(i).equals(item)) {

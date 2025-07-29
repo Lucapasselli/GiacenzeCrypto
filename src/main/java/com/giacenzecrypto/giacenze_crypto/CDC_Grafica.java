@@ -6719,16 +6719,16 @@ JPanel loadingBar = new JPanel() {
                 
             }
             //gestione bottone scam token da abilitare solo in presenza di un token in defi
-            if (Address.contains("0x")&&!Rete.isBlank())
-                {
+          /*  if (Address.contains("0x")&&!Rete.isBlank())
+                {*/
                 GiacenzeaData_Bottone_Scam.setEnabled(true);
                 GiacenzeaData_Bottone_CambiaNomeToken.setEnabled(true);
-                }
+        /*        }
             else
             {
                 GiacenzeaData_Bottone_Scam.setEnabled(false);
                 GiacenzeaData_Bottone_CambiaNomeToken.setEnabled(false);
-                }
+                }*/
             
                     //ABILITO BOTTONE DEFI SE CI SONO LE CONDIZIONI
         String Wallet=Giacenzeadata_Walleta_Label.getText().trim(); 
@@ -8224,7 +8224,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
                 
             }
-             String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(mon,Address,Rete);
+            String Wallet=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+             String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(mon,Address,Rete,Wallet);
              
              //Adesso sistemo i tasti
             GiacenzeaData_Tabella.getModel().setValueAt(NuovoNome, rigaselezionata, 0);
@@ -10958,7 +10959,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 ID[i] = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
             }*/
             //Secondo ciclo faccio le modifiche
+            Set<String> setUnivoco = new LinkedHashSet<>(); 
             for (int i = 0; i < righeSelezionate.length; i++) {
+                
                 String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
                 //System.out.println(ID);
                 
@@ -10978,7 +10981,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         NomeMoneta = Movimento[11];
                         Address = Movimento[28];
                     }
-                    GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete);
+                    String Wallet=Movimento[3];
+                    
+                    //Se non l'ho già fatto classifico il movimento
+                    if (!setUnivoco.contains(NomeMoneta)){
+                        String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(NomeMoneta, Address, Rete,Wallet);
+                        setUnivoco.add(NuovoNome);
+                    }
 
 
                 } else {
@@ -12174,23 +12183,79 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     
-    private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete) {
+    private String GiacenzeaData_Funzione_IdentificaComeScam(String NomeMoneta,String Address,String Rete,String Wallet) {
+        
+        //Recupero tutti i movimenti del token
+        if (Wallet==null)Wallet="Tutti";
+        if (Rete==null)Rete="";
+        //Il globale serve nel caso in cui abbia address e rete e possa operare tranquillamente su tutti i wallet indiscriminatamente
+        Set<String> IDMovimentiTokenGlobale=Funzione_ElencoIDMovimentiTokeneWalletSelezionato("Tutti","Tutti",NomeMoneta,Rete,Address);
+        //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
+        Set<String> IDMovimentiTokenWallet=Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet,"Tutti",NomeMoneta,Rete,Address);
+        
                 //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
                 String NuovoNome=NomeMoneta;
 
             String Testo;
-            //Come prima cosa controllo nella tabella del dettaglio se il token ha mai avuto prezzo
+            
+//1 - Verifico se il token ha mai avuto Prezzo      
+            //Controllo nella tabella del dettaglio se il token ha mai avuto prezzo
             //se non ha avuto mai prezzo permetto di identificare il token come scam
-            //il tipo movimento è il 4
-            boolean senzaPrezzo=true;
-            Map<String,String[]> MappaMovimentiToken=GiacenzeaData_Funzione_RitornaIDMovimentiToken(NomeMoneta, Address, Rete);
-            for (String movimento[]:MappaMovimentiToken.values()){
-               if (Prezzi.isMovimentoPrezzato(movimento)&&Double.parseDouble(movimento[15])!=0){
-                   senzaPrezzo=false;
-               }
+            for (String ID : IDMovimentiTokenGlobale) {
+            String movimento[] = MappaCryptoWallet.get(ID);
+            //Controllo se il movimento è prezzato
+            //Qualora lo sia e la moneta deve essere classificata con SCAM (non il contratio)
+            //emetto un avviso ed esco dalla funzione
+            if (Prezzi.isMovimentoPrezzato(movimento) && Double.parseDouble(movimento[15]) != 0 && !Funzioni.isSCAM(NomeMoneta)) {
+                Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>" + NomeMoneta + "</b> ha dei movimenti Valorizzati.<br><br>"
+                        + "<b>Sicuro di voler continuare?</b><br><br>"
+                        + "Solitamente i token scam non sono mai valorizzati!<br><br>"
+                        + "<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br></html>";
+                Object[] Bottoni = {"Si", "No"};
+                int scelta = JOptionPane.showOptionDialog(this, Testo,
+                        "Verifica i movimenti",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        Bottoni,
+                        null);
+                if (scelta != 0) {
+                    return NuovoNome;
+                } else {
+                    break;
+                }
+            }
+        }
+            
+//2 - Verifico che il token abbia subito solo movimentazioni di deposito e prelievo              
+            for (String ID : IDMovimentiTokenGlobale) {
+                String movimento[] = MappaCryptoWallet.get(ID);
+                String TipoMov=movimento[0].split("_")[4];
+                if (!TipoMov.equals("PC")&&!TipoMov.equals("DC")&& !Funzioni.isSCAM(NomeMoneta)){
+                Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>"+NomeMoneta+"</b> ha dei movimenti diversi dal semplice Deposito/Prelievo.<br><br>"
+                                + "<b>Sicuro di voler continuare?</b><br><br>"
+                                + "Solitamente i token scam presentano solamente movimenti di Deposito o Prelievo!<br><br>"
+                        +"<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br></html>";
+                
+                 Object[] Bottoni = {"Si", "No"};
+                        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                                "Verifica i movimenti",
+                                JOptionPane.YES_NO_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE,
+                                null,
+                                Bottoni,
+                                null);
+                    if (scelta!=0)return NuovoNome;
+                    else break;
+                    }
             }
             
             
+            
+     
+//Se passo i primi 2 controlli proseguo con l'assegnazione dello stutus di Token SCAM            
+            if (!Address.isBlank()&&!Rete.isBlank())
+            {
             if (!Funzioni.isSCAM(NomeMoneta)){
                 Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> con Address <b>"+Address+"</b> come SCAM?<br><br>"
                                 + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
@@ -12210,7 +12275,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 Bottoni,
                                 null);
                         if (scelta == 0 && !Funzioni.isSCAM(NomeMoneta)) {
-                            if (senzaPrezzo){//proseguo solo se il token non ha mai prezzo
                             String nomi[]=DatabaseH2.RinominaToken_Leggi(Address+"_"+Rete);
                             //Se nomi[0] è null vuol dire che questo token non ha mai neanche subito una rinomina
                             //altrimenti vuol dire che è stato rinominato quindi prima di considerarlo come scam
@@ -12237,13 +12301,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             
                             //Aggiorno le tabelle
                             TabellaCryptodaAggiornare = true;
-                           }
-                            else{
-                                //Se ci sono altri movimenti emetto un messaggio di avviso
-                                JOptionPane.showConfirmDialog(this, "<html>Attenzione! Possono essere considerati SCAM solo i token che non hanno prezzo<br>"
-                                        + "L'operazione verrà annullata!<br></html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                                }
+                           
                         }
                         else if (scelta == 0 && Funzioni.isSCAM(NomeMoneta)) {
                             //Metto a zero il time nella tabella addressSenzaPrezzo in modo che la volta successiva il programma
@@ -12260,12 +12318,25 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 NuovoNome=NomeMoneta;
                                 DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, NuovoNome);
                             }
+                            
+                            
+                            
+                        /*   Vecchia Parte sostituita da quella sotto 
                             //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
                             //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
                             for (int i=0;i<GiacenzeaData_TabellaDettaglioMovimenti.getRowCount();i++){
                                 String ID = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(i, 8).toString();
                                 MappaCryptoWallet.get(ID)[32]="";
                                 //dati[32]="";
+                                //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
+                                //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
+                            }*/
+                        
+                        
+                            //Prima di aggiornare la tabella devo verificare se il token ha prezzo ed eventualmente rimetterlo
+                            //la cosa più semplice è svuotare la colonna [32] dei movimenti che coinvolgono il token
+                            for (String ID:IDMovimentiTokenGlobale){
+                                MappaCryptoWallet.get(ID)[32]="";
                                 //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
                                 //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
                             }
@@ -12277,9 +12348,88 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             TabellaCryptodaAggiornare = true;
                          //   DatabaseH2.RinominaToken_Scrivi(Address+"_"+Rete, NomeMoneta,NomeMoneta+" **"); 
                         }
+            }else{
+                if (!Funzioni.isSCAM(NomeMoneta)){
+                Testo = "<html>Vuoi identificare il Token <b>"+NomeMoneta+"</b> come SCAM?<br><br>"
+                        + "<b>ATTENZIONE : Il token in oggetto non ha Address o Rete valorizzati, verranno contrassegnati come SCAM tutti i token "
+                        + "appartenenti al wallet "+Wallet+" attualmente in archivio.<br>"
+                        + "Quelli futuri saranno da riclassificare come SCAM da questa stessa funzione.</b><br><br>"
+                                + "(Nelle varie funzioni del programma verrà data la possibilità di nascondere tali asset<br>"
+                                + "e quando mostrati verranno identificati con un doppio asterisco (**) alla fine del nome)<br><br>"
+                        +"NB : Per far tornare 'normale' un token identificato come Scam utilizzare l'apposito tasto nelle funzione 'Giacenze a data'</html>";
+                }
+            else {
+                Testo = "<html>Vuoi che il Token <b>"+NomeMoneta+"</b> non venga più considerato SCAM?<br><br>"
+                + "</html>";
+            }
+                Object[] Bottoni = {"Si", "No"};
+                        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                                "Classificazione del movimento",
+                                JOptionPane.YES_NO_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE,
+                                null,
+                                Bottoni,
+                                null);
+                if (scelta == 0) {
+                    //Adesso cambio il nome di tutti i token del Wallet Selezionato
+                    boolean isSCAM = Funzioni.isSCAM(NomeMoneta);
+                    NuovoNome = isSCAM ? NomeMoneta.replace(" **", "") : NomeMoneta + " **";
+
+                    for (String ID : IDMovimentiTokenWallet) {
+                        String[] Mov = MappaCryptoWallet.get(ID);
+                        if (Mov[8].equals(NomeMoneta)) {
+                            Mov[8] = NuovoNome;
+                        }
+                        if (Mov[11].equals(NomeMoneta)) {
+                            Mov[11] = NuovoNome;
+                        }
+                    }
+                    
+                    //Se il movimento è scam e lo riporto a situazionenormale devo anche dirgli di ricontrollare se il token ha prezzo o meno.
+                    if (isSCAM) {
+                        for (String ID : IDMovimentiTokenGlobale) {
+                            MappaCryptoWallet.get(ID)[32] = "";
+                            //il flag verrà rimesso in automatico dal programma non appena si caricherà la tabella crypto
+                            //andrà a controllare se il prodotto ha prezzo o meno e inserirà si o no
+                        }
+                    }
+                    TabellaCryptodaAggiornare = true;
+                }
+            }
 
         return NuovoNome;    
     }
+    
+    private Set<String> Funzione_ElencoIDMovimentiTokeneWalletSelezionato(String Wallet,String SottoWallet,String Moneta,String Rete,String Address){
+        
+        if (Rete==null)Rete="";
+        if (Address==null)Address="";
+        Set<String> setUnivoco = new LinkedHashSet<>();        
+        for (String[] movimento : MappaCryptoWallet.values()) {
+                String ReteMov=Funzioni.TrovaReteDaIMovimento(movimento);
+                if (ReteMov==null)ReteMov="";
+                        String gruppoWallet="";
+                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
+                        String AddressU = movimento[26];
+                        String AddressE = movimento[28];
+                    // adesso verifico il wallet
+                    if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
+                                || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
+                                ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ) { 
+                        if (movimento[8].equals(Moneta) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
+                            setUnivoco.add(movimento[0]);
+                        }
+                        if (movimento[11].equals(Moneta) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
+                            setUnivoco.add(movimento[0]);
+                        }
+                    }
+                
+            }
+        return setUnivoco;
+    }
+    
     
     private void GiacenzeaData_Funzione_CambiaNomeToken() {
         //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho

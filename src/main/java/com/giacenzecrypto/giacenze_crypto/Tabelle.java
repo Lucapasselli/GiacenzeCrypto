@@ -14,7 +14,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -115,11 +114,13 @@ public class Tabelle {
                     setBackground(table.getSelectionBackground());
                 }
             
-                else if (col==3 && value.toString().toLowerCase().equals("deposito crypto")) {
+                else if (col==3 && 
+                        (value.toString().toLowerCase().equals("deposito crypto")||value.toString().toLowerCase().equals("deposito nft"))) {
                     setBackground(bg);
                     setForeground(verdeScuro);
                 } 
-                else if (col==3 && value.toString().toLowerCase().equals("prelievo crypto")) {
+                else if (col==3 && 
+                        (value.toString().toLowerCase().equals("prelievo crypto")||value.toString().toLowerCase().equals("prelievo nft"))) {
                     setBackground(bg);
                     setForeground(rosso);
                 } 
@@ -145,30 +146,43 @@ public class Tabelle {
             
 
                 // Inserisci icona in colonna 2 se contiene "negativa"
-                if (table.getName()!=null&&col==3 &&table.getName().equals("TabellaMovimentiCrypto")&&(value.toString().toLowerCase().equals("deposito crypto")||value.toString().toLowerCase().equals("prelievo crypto"))) {
-                    JLabel label = new JLabel();
-                    label.setOpaque(true);
-                    label.setBackground(c.getBackground());
-                    label.setForeground(c.getForeground());
-                    label.setText(value.toString());
-                    Icon icon = Icone.getAlert(18);
-                    label.setIcon(icon);
-                    label.setIconTextGap(6); // spazio tra icona e testo
-                    return label;
+                if (table.getName()!=null&&col==3 &&table.getName().equals("TabellaMovimentiCrypto")&&
+                        (value.toString().toLowerCase().equals("deposito crypto")
+                        ||value.toString().toLowerCase().equals("prelievo crypto")
+                        ||value.toString().toLowerCase().equals("deposito nft")
+                        ||value.toString().toLowerCase().equals("prelievo nft"))) {
+                    
+                    //adesso verifico che il movimento non coinvolga tokenscam altrimenti non voglio che venga evidenziato il problema
+                    boolean SCAMUscita=Funzioni.isSCAM(table.getModel().getValueAt(modelRow, 8).toString());
+                    boolean SCAMEntrata=Funzioni.isSCAM(table.getModel().getValueAt(modelRow, 11).toString());
+                    if(!SCAMUscita&&!SCAMEntrata){
+                        JLabel label = new JLabel();
+                        label.setOpaque(true);
+                        label.setBackground(c.getBackground());
+                        label.setForeground(c.getForeground());
+                        label.setText(value.toString());
+                        Icon icon = Icone.getAlert(18);
+                        label.setIcon(icon);
+                        label.setIconTextGap(6); // spazio tra icona e testo
+                        return label;
+                    }
                 }
                 else if ((col == 11 && !table.getModel().getValueAt(modelRow, 38).toString().isBlank())//Manca parte del LiFo
                         ||                     
                     (table.getModel().getColumnCount()>32 && col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO"))//Transazione senza prezzo
                         ) 
                 {
-                    JLabel label = new JLabel();
-                    label.setOpaque(true);
-                    label.setBackground(c.getBackground());
-                    label.setForeground(c.getForeground());
-                    label.setText(value.toString());
-                    Icon icon = Icone.getAlert(18);
-                    label.setIcon(icon);
-                    label.setIconTextGap(6); // spazio tra icona e testo
+                    boolean SCAMUscita=Funzioni.isSCAM(table.getModel().getValueAt(modelRow, 8).toString());
+                    boolean SCAMEntrata=Funzioni.isSCAM(table.getModel().getValueAt(modelRow, 11).toString());
+                    if(!SCAMUscita&&!SCAMEntrata){
+                        JLabel label = new JLabel();
+                        label.setOpaque(true);
+                        label.setBackground(c.getBackground());
+                        label.setForeground(c.getForeground());
+                        label.setText(value.toString());
+                        Icon icon = Icone.getAlert(18);
+                        label.setIcon(icon);
+                        label.setIconTextGap(6); // spazio tra icona e testo
                    
                     // Tooltip personalizzata in base alla colonna
              /*       if (col == 11) {
@@ -178,6 +192,7 @@ public class Tabelle {
                     }*/
                     
                     return label;
+                    }
                 }
                 
              /*   if (col==9&& table.getModel().getValueAt(modelRow, 32).toString().toUpperCase().contains("NO")) {

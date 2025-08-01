@@ -1294,7 +1294,7 @@ private static final long serialVersionUID = 3L;
                                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                         .addComponent(TransazioniCrypto_Label_FiltroToken)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
                                         .addComponent(TransazioniCrypto_Label_Filtro)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -12208,22 +12208,25 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //emetto un avviso ed esco dalla funzione
             if (Prezzi.isMovimentoPrezzato(movimento) && Double.parseDouble(movimento[15]) != 0 && !Funzioni.isSCAM(NomeMoneta)) {
                 Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>" + NomeMoneta + "</b> ha dei movimenti Valorizzati.<br><br>"
-                        + "<b>Sicuro di voler continuare?</b><br><br>"
-                        + "Solitamente i token scam non sono mai valorizzati!<br><br>"
-                        + "<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br></html>";
-                Object[] Bottoni = {"Si", "No"};
-                int scelta = JOptionPane.showOptionDialog(this, Testo,
+                       // + "<b>Sicuro di voler continuare?</b><br><br>"
+                        + "I token scam non dovrebbero mai essere valorizzati!<br><br>"
+                        + "Se si vuole forzare l'assegnazione di questo token come scam bisogna prima portare a zero il valore dei movimenti che lo riguardano<br>"
+                       // + "<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br>"
+                        + "</html>";
+                Object[] Bottoni = {"OK"};
+               // int scelta = 
+                        JOptionPane.showOptionDialog(this, Testo,
                         "Verifica i movimenti",
                         JOptionPane.YES_NO_CANCEL_OPTION,
                         JOptionPane.PLAIN_MESSAGE,
                         null,
                         Bottoni,
                         null);
-                if (scelta != 0) {
+              //  if (scelta != 0) {
                     return NuovoNome;
-                } else {
-                    break;
-                }
+              //  } else {
+              //      break;
+              //  }
             }
         }
             
@@ -12235,7 +12238,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>"+NomeMoneta+"</b> ha dei movimenti diversi dal semplice Deposito/Prelievo.<br><br>"
                                 + "<b>Sicuro di voler continuare?</b><br><br>"
                                 + "Solitamente i token scam presentano solamente movimenti di Deposito o Prelievo!<br><br>"
-                        +"<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br></html>";
+                        +"<b>NB : Se non si è certi di quello che si sta facendo proseguire potrebbe portare a CALCOLI ERRATI!!!</b><br><br>"
+                        + "</html>";
                 
                  Object[] Bottoni = {"Si", "No"};
                         int scelta = JOptionPane.showOptionDialog(this, Testo,
@@ -12430,7 +12434,84 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         return setUnivoco;
     }
     
-    
+    private String Funzione_CambiaNomeToken(String NomeMoneta, String Address, String Rete,String Wallet) {
+        
+//Se è un token che ha rete e Address lo salvo anche nel database affinchè anche nelle successive importazioni si ricordi della modifica        
+        if (!Address.isBlank() && !Rete.isBlank()) {
+            String Testo;
+            String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
+            Testo = "<html>Indica il nuovo nome della Moneta<b>" + NomeMoneta + "</b> con Address <b>" + Address + "</b><br>";
+            if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
+                Testo = Testo
+                        + "Il nome Originale da prima importazione era : <b>" + nomi[0] + "</b><br>";
+            }
+            Testo = Testo + "<b>NB :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br></html>";
+            String m = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
+            if (m != null) {
+                m = m.trim();
+                m = Funzioni.NormalizzaNome(m);//Tolgo virgole e punti e virgola dal nome perchè possono creare problemi con il csv dei movimenti
+                //Se il nome token è di almeno 2 caratteri allora proseguo
+                if (m.length() > 2) {
+                    if (nomi[0] == null) {
+                        DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, m);
+                        //GiacenzeaData_Tabella.getModel().setValueAt(m, rigaselezionata, 0);
+                    } else {
+                        DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], m);
+                       // GiacenzeaData_Tabella.getModel().setValueAt(m, rigaselezionata, 0);
+                    }
+                    TabellaCryptodaAggiornare = true;
+                    return m;
+                } else {
+                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un nome valido!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    return NomeMoneta;
+                }
+            }
+        } 
+//Se è un token che non ha rete o address lo modifico solo nello storico perchè non posso fare altro        
+        else {
+            //Quello per wallet serve quando invece non ho i dati sopra e voglio operare solo sul wallet selezionato
+            Set<String> IDMovimentiTokenWallet=Funzione_ElencoIDMovimentiTokeneWalletSelezionato(Wallet,"Tutti",NomeMoneta,Rete,Address);
+            String Testo;
+
+                Testo = "<html>Come vuoi rinominare il Token <b>"+NomeMoneta+"</b> relativo al Wallet <b>"+Wallet+"</b>?<br><br>"
+                        + "<b>ATTENZIONE : Il token in oggetto non ha Address o Rete valorizzati, verranno quindi rinominati tutti i token "
+                        + "appartenenti al wallet "+Wallet+" attualmente in archivio.<br>"
+                        + "I movimenti futuri del token saranno da rinominare da questa stessa funzione.</b><br><br>"
+                        + "<b>NB :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br>"
+                        + "</html>";
+                String NuovoNome = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
+                if (NuovoNome != null) {
+                NuovoNome = NuovoNome.trim();
+                NuovoNome = Funzioni.NormalizzaNome(NuovoNome);//Tolgo virgole e punti e virgola dal nome perchè possono creare problemi con il csv dei movimenti
+                //Se il nome token è di almeno 1 carattere allora proseguo
+                if (NuovoNome.length() >= 1) {
+                    
+                    //Rinomino tutti i token del Wallet
+                    for (String ID : IDMovimentiTokenWallet) {
+                        String[] Mov = MappaCryptoWallet.get(ID);
+                        if (Mov[8].equals(NomeMoneta)) {
+                            Mov[8] = NuovoNome;
+                        }
+                        if (Mov[11].equals(NomeMoneta)) {
+                            Mov[11] = NuovoNome;
+                        }
+                        //Rinomino anche il dettaglio del movimento che contiene il nome del token
+                        Mov[6]=Mov[6].replace(NomeMoneta, NuovoNome);
+                    }
+                    TabellaCryptodaAggiornare = true;
+                    return NuovoNome;
+                } else {
+                    JOptionPane.showConfirmDialog(this, "Attenzione, " + NuovoNome + " non è un nome valido!",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    return NomeMoneta;
+                }
+            }
+                      
+        }
+        return NomeMoneta;
+    }
+
     private void GiacenzeaData_Funzione_CambiaNomeToken() {
         //Recupero Address e Nome Moneta attuale tanto so già che se arrivo qua significa che i dati li ho
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
@@ -12442,35 +12523,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 {
                 Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
                 }
-            String Testo;
-            String nomi[] = DatabaseH2.RinominaToken_Leggi(Address + "_" + Rete);
-           // System.out.println(Address + "_" + Rete);
-            Testo = "<html>Indica il nuovo nome della Moneta<b>" + NomeMoneta + "</b> con Address <b>" + Address + "</b><br>";
-            if (nomi[0] != null && !nomi[0].equalsIgnoreCase(NomeMoneta)) {
-                Testo = Testo
-                        + "Il nome Originale da prima importazione era : <b>" + nomi[0] + "</b><br>";
-            }
-            Testo = Testo + "<b>Attenzione :</b> I nomi dei token sono CaseSensitive quindi ad esempio BTC è diverso da Btc o btc<br><br></html>";
-            String m = JOptionPane.showInputDialog(this, Testo, NomeMoneta);
-            if (m != null) {
-                m = m.trim();
-                m = Funzioni.NormalizzaNome(m);//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                //Se il nome toke è di almeno 2 caratteri allora proseguo
-                if (m.length() > 2) {
-                    if (nomi[0] == null) {
-                        DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, NomeMoneta, m);
-                        GiacenzeaData_Tabella.getModel().setValueAt(m, rigaselezionata, 0);
-                    } else {
-                        DatabaseH2.RinominaToken_Scrivi(Address + "_" + Rete, nomi[0], m);
-                        GiacenzeaData_Tabella.getModel().setValueAt(m, rigaselezionata, 0);
-                    }
-                    TabellaCryptodaAggiornare = true;
-                } else {
-                    JOptionPane.showConfirmDialog(this, "Attenzione, " + m + " non è un nome valido!",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                }
-            }
-            NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String Wallet=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+            
+            NomeMoneta=Funzione_CambiaNomeToken(NomeMoneta, Address, Rete,Wallet);
+            GiacenzeaData_Tabella.getModel().setValueAt(NomeMoneta, rigaselezionata, 0);
+           // NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             if (Funzioni.isSCAM(NomeMoneta)) {
                 GiacenzeaData_Bottone_Scam.setText("Rimuovi da SCAM");
             } else {

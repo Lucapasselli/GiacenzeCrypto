@@ -263,7 +263,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 System.out.println(Directory);
                 boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                 Importazioni.AzzeraContatori();
-                Importazioni.Importa_Crypto_CDCApp(FileDaImportare, SovrascriEsistenti);
+                Importazioni.CDCAPP_Importa(FileDaImportare, SovrascriEsistenti);
                 Importazioni_Resoconto res = new Importazioni_Resoconto();
                 res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                 res.setLocationRelativeTo(this);

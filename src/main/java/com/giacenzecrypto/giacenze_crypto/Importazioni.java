@@ -844,7 +844,7 @@ System.out.println(response.body().string());
     }
     
     
-    public static void Importa_Crypto_CDCApp(String fileCDCapp,boolean SovrascriEsistenti) {
+    public static void CDCAPP_Importa(String fileCDCapp,boolean SovrascriEsistenti) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
         //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
@@ -859,12 +859,18 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("card_cashback_reverted", "CASHBACK");              //Cashback ripristinato
         Mappa_Conversione_Causali.put("referral_card_cashback", "CASHBACK");              //Cashback della Carta MCO
         Mappa_Conversione_Causali.put("crypto_earn_interest_paid", "EARN");               //Interessi maturati da una Crypto in Earn
+        Mappa_Conversione_Causali.put("mobile_airtime_reward", "EARN");               //Reward di qualche tipo, la classifico come Earn
+        
 
         Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
         Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito 
         Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito
+        //Mappa_Conversione_Causali.put("finance.crypto_basket.purchase.crypto_wallet.credit", "SCAMBIO CRYPTO-CRYPTO");//Primo acquisto dal basket
+        //finance.crypto_basket.purchase.crypto_wallet.credit
         
         Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
+        Mappa_Conversione_Causali.put("invest_deposit", "TRASFERIMENTO-CRYPTO");          //Totalmente controintuitivo ma questo è un prelievo (Testato su Koinly e Cointraking, per Tatax invece è un deposito)
+        Mappa_Conversione_Causali.put("invest_withdrawal", "TRASFERIMENTO-CRYPTO");       //Totalmente controintuitivo ma questo è un deposito (Testato su Koinly e Cointraking, per Tatax invece è un prelievo)
         Mappa_Conversione_Causali.put("crypto_withdrawal", "TRASFERIMENTO-CRYPTO");       //Prelievo di una Crypto verso portafogli esterni
         Mappa_Conversione_Causali.put("crypto_to_exchange_transfer", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
         Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
@@ -886,7 +892,11 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("dust_conversion_credited", "DUST-CONVERSION");//Conversione di Crypto in CRO. CRO Ricevuti dalla conversione.
         Mappa_Conversione_Causali.put("dust_conversion_debited", "DUST-CONVERSION");//Conversione di Crypto in CRO. Crypto da convertire in CRO.
         Mappa_Conversione_Causali.put("crypto_wallet_swap_credited", "DUST-CONVERSION");//Conversione di monete
-        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", "DUST-CONVERSION");//Conversione di monete       
+        Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", "DUST-CONVERSION");//Conversione di monete  
+        Mappa_Conversione_Causali.put("interest_swap_credited", "DUST-CONVERSION");//Conversione di monete 
+        Mappa_Conversione_Causali.put("interest_swap_debited", "DUST-CONVERSION");//Conversione di monete 
+//        Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION");//Conversione di monete (
+//        Mappa_Conversione_Causali.put("lockup_swap_debited", "DUST-CONVERSION");//Conversione di monete 
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", fileDaImportare);//Bonus Swap MCO/CRO
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_credited", fileDaImportare);     //Scambio MCO in CRO (MCO in Earn). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_debited", fileDaImportare);      //Scambio MCO in CRO (MCO in Earn). Vendita degli MCO
@@ -997,7 +1007,7 @@ System.out.println(response.body().string());
                     else //altrimenti consolido il movimento precedente
                     {
                        // System.out.println(riga);
-                        List<String[]> listaConsolidata = ConsolidaMovimenti_CDCAPP(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
+                        List<String[]> listaConsolidata = CDCAPP_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
                         int nElementi = listaConsolidata.size();
                         for (int i = 0; i < nElementi; i++) {
                             String consolidata[] = listaConsolidata.get(i);
@@ -1020,7 +1030,7 @@ System.out.println(response.body().string());
                                 }
                 }
             }
-            List<String[]> listaConsolidata = ConsolidaMovimenti_CDCAPP(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
+            List<String[]> listaConsolidata = CDCAPP_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali);
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
                 String consolidata[] = listaConsolidata.get(i);
@@ -1670,7 +1680,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
     
         
         
-         public static List<String[]> ConsolidaMovimenti_CDCAPP(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
+         public static List<String[]> CDCAPP_Consolida(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato

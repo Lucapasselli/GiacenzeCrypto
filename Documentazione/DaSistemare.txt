@@ -12,6 +12,8 @@
 - Nelle tabelle con le intestazioni modificate mettere un ulteriore tasto ("Azzera tutti i filtri") per eliminare i filtri applicati alla tabella.
 - Nelle importazioni di binance financial report controllare la numerazione dei k che sembra errata
 - Nelle importazioni di crypto.com inserire menù visivo come nelle altre
-- Dopo la modifica delle note tramite tasto destro non mi propone di salvare i movimenti
 - Qta residua totale in Verifica Saldi Negativi
-- Sistemare l'ordine nello scambio crypto differito
+
+Da Fare per versione 46
+
+- Spostare elenco Wallet su database, adesso è su un file a parte che tra l'altro non è nella posizione giusta

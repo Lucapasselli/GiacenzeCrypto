@@ -57,7 +57,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11739,7 +11738,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
         // TODO add your handling code here:
-        Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans);
+        if (Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans))TabellaCryptodaAggiornare=true;
+        
     }//GEN-LAST:event_MenuItem_ModificaNoteActionPerformed
 
     private void DepositiPrelievi_TabellaCorrelatiFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiFocusGained

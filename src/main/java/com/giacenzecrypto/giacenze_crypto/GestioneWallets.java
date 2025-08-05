@@ -6,16 +6,14 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Mappa_Wallet;
-import static com.giacenzecrypto.giacenze_crypto.Prezzi.MappaWallets;
+//import static com.giacenzecrypto.giacenze_crypto.Prezzi.MappaWallets;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -249,6 +247,7 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     private void Bottone_InserisciWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciWalletActionPerformed
         // TODO add your handling code here:
+        Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
         String Wallet=TextField_IndirizzoWallet.getText().trim();
         String Rete=ComboBox_Rete.getItemAt(ComboBox_Rete.getSelectedIndex());
         if (Rete.split("\\(").length>1){
@@ -274,9 +273,10 @@ public class GestioneWallets extends javax.swing.JDialog {
             }
             //2 - Inserisco il wallet nella lista
             else{
-                MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
-                System.out.println(Wallet+"_"+Rete);
-                ScriviFileWallets();
+               // MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
+                DatabaseH2.Pers_Wallets_Scrivi(Wallet, Rete);
+                System.out.println("Scrivo il Wallet nel Database : "+Wallet+"_"+Rete);
+               // ScriviFileWallets();
                 PopolaTabella();
             }
         }
@@ -287,6 +287,7 @@ public class GestioneWallets extends javax.swing.JDialog {
 
         DefaultTableModel ModelloTabellaWallets = (DefaultTableModel) TabellaWallets.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaWallets);
+       // Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         Mappa_Wallet.clear();
@@ -301,7 +302,8 @@ public class GestioneWallets extends javax.swing.JDialog {
                 }else Mappa_Wallet.put(v[3], v[1]+";"+v[23]);               
             }           
         }
-        for (String riga:MappaWallets.values())
+        //Questa sotto è la mappa dei wallet nella tabella
+        for (String riga:DatabaseH2.Pers_Wallets_LeggiTabella().values())
         {
                 String splittata[] = riga.split(";");
                 String rigaTabella[]=new String[5];
@@ -333,6 +335,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         Component c = com.giacenzecrypto.giacenze_crypto.GestioneWallets.this;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
+        Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
 //progress.RipristinaStdout();
 
 
@@ -493,8 +496,8 @@ public class GestioneWallets extends javax.swing.JDialog {
                  IDWallet=IDWallet+"_"+TabellaWallets.getModel().getValueAt(rigaselezionata, 2).toString();
               //  System.out.println(r);
                 if(r==0){
-                MappaWallets.remove(IDWallet);
-                ScriviFileWallets();
+                DatabaseH2.Pers_Wallets_Cancella(IDWallet);
+                //ScriviFileWallets();
                 PopolaTabella();
                 String Messaggio = "Il Wallet è stato cancellato \nVuoi cancellare anche tutte le movimentazioni importate finora?";
             r=JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"SI","NO"}, "OK");
@@ -588,42 +591,48 @@ public class GestioneWallets extends javax.swing.JDialog {
     }
 
     
-    public static void LeggiFileWallets(){
-         try {
-             //Il file wallet è così composto
-             //IndirizzoWallet;Rete;
-             //la mappa che andrò a generare invece sarà
-             //key:IndirizzoWallet_Rete
-             //Dati:IndirizzoWallet;Rete
-             File file=new File ("Wallets.db");
-             if (!file.exists()) file.createNewFile();
-             String riga;
-             try (FileReader fire = new FileReader("Wallets.db");
-                     BufferedReader bure = new BufferedReader(fire);)
-             {
-                 while((riga=bure.readLine())!=null)
-                 {
-                     String rigaSplittata[]=riga.split(";");
-                     if (rigaSplittata.length==2)
-                     {
-                         MappaWallets.put(rigaSplittata[0]+"_"+rigaSplittata[1], riga);
-                     }
-                 }
-                // bure.close();
-                // fire.close();        
-             } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-             } catch (IOException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-             }
+    public static void LeggiFileWallets() {
 
-         } catch (IOException ex) {        
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }    
+            //Il file wallet è così composto
+            //IndirizzoWallet;Rete;
+            //la mappa che andrò a generare invece sarà
+            //key:IndirizzoWallet_Rete
+            //Dati:IndirizzoWallet;Rete
+            File file = new File("Wallets.db");
+          /*  if (!file.exists()) {
+                //Se il file non esiste adesso lo creo ma successivamente non lo farò più, i dati verranno infatti messi nel database
+                file.createNewFile();
+            }*/
+            if (file.exists()) {
+                //Se il file esiste recupero i dati e lo metto nel database
+                //successivamente leggerò i dati dal database
+                String riga;
+                try (FileReader fire = new FileReader("Wallets.db"); BufferedReader bure = new BufferedReader(fire);) {
+                    while ((riga = bure.readLine()) != null) {
+                        String rigaSplittata[] = riga.split(";");
+                        if (rigaSplittata.length == 2) {
+                            DatabaseH2.Pers_Wallets_Scrivi(rigaSplittata[0], rigaSplittata[1]);
+                        }
+                    }     
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                //A questo punto devo cancellare il file, ho salvato tutto nel database
+                file.delete();
+
+            }
+            
+            //Leggo i dati dal database
+        //    MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
+            
+
+       
+    }
     
     
-    static void ScriviFileWallets() {
+  /*  static void ScriviFileWallets() {
    try { 
        FileWriter w=new FileWriter("Wallets.db");
        BufferedWriter b=new BufferedWriter (w);
@@ -637,7 +646,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                  //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
                }
    
-   }
+   }*/
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

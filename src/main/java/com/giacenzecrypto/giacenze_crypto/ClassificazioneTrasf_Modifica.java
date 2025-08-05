@@ -1878,7 +1878,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             //2 - Il movimento deve essere opposto
             //3 - Qta deve essere compreso tra qtaMax e QtaMin che sono un 5%
             //4 - il movimento deve essere fatto nel giro di max 24 ore dopo quello analizzata e massimo 24 ore prima
-            //5 - La qta uscita non deve essere ami inferiore alla qta ricevuta
+            //5 - La qta uscita non deve essere mai inferiore alla qta ricevuta
             //6 - Exchange+Wallet non deve essere lo stesso (DA FARE!!!!!!!!!!!!!!!!)
             
             for (String[] v : MappaCryptoWallet.values()) {
@@ -1962,7 +1962,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
             //In questo caso i movimenti per essere accettati bisogna che abbiano le seguenti carattaristiche
             //1 - Devono essere del tipo movimento opposto a quello del movimento evidenziato
-            //2 - Devono essere di una moneta con nome differente
+            //2 - Devono essere di una moneta con nome differente (questo limite lo tolgo)
             //3 - Non deve essere passato più di 1 mese 
             //(Metto un mese per gestire anche casi come GMR in cui i soldi li caricavi in una piattaforma e quando pronto il cambio di contratto ti giravano i nuovi token)
             for (String[] v : MappaCryptoWallet.values()) {
@@ -1987,7 +1987,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         Moneta = v[8].trim();
                     }
                     if (Moneta != null && QtanoABS!=null
-                            && !MonetaAttuale.equalsIgnoreCase(Moneta)
+                           // && !MonetaAttuale.equalsIgnoreCase(Moneta)  //TOLGO MOMENTANEAMENTE QUESTO FILTRO, DA VALUTARE CON CALMA
                             && DataOra <= (DataMassima)
                             && DataOra >= (DataMinima)
                             ) 

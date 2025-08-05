@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -86,6 +87,10 @@ public class DatabaseH2 {
             preparedStatement.execute();  
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZEBLOCKCHAIN (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
+            preparedStatement.execute();
+            
+            createTableSQL = "CREATE TABLE IF NOT EXISTS WALLETS (Wallet_Rete VARCHAR(255) PRIMARY KEY, Wallet VARCHAR(255), Rete VARCHAR(255))";
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
@@ -265,6 +270,80 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Risultato;
+    }
+     
+        public static Map<String, String> Pers_Wallets_LeggiTabella() {
+            //List<String> tabella= new ArrayList<>();
+            Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+            //String Risultato;
+        try {
+            String checkIfExistsSQL = "SELECT Wallet, Rete FROM WALLETS";
+            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        //Il risultato lo restituisco in questa forma per retrocompatibilità
+                        //I dati prima venivano infatti messi in un file
+                        String Risultato = resultSet.getString("Wallet")+";"+resultSet.getString("Rete");
+                        String ID = resultSet.getString("Wallet")+"_"+resultSet.getString("Rete");
+                        Mappa_Wallet.put(ID, Risultato);
+                        
+                        //tabella.add(Risultato);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Mappa_Wallet;
+    }    
+   
+        public static void Pers_Wallets_Scrivi(String Wallet,String Rete) {
+        try {
+            
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETS WHERE Wallet_Rete = ?";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Wallet+"_"+Rete);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                //Questa non dovrebbe servire a nulla perchè non devo mai aggiornare i valori di questa tabella ma solo cancellare e ricreare
+                String updateSQL = "UPDATE WALLETS SET Wallet = ? WHERE Wallet_Rete = ?";
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.setString(1, Wallet);
+                updateStatement.setString(2, Wallet+"_"+Rete);
+                updateStatement.executeUpdate();
+
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO WALLETS (Wallet_Rete, Wallet, Rete) VALUES (?, ?, ?)";
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.setString(1, Wallet+"_"+Rete);
+                insertStatement.setString(2, Wallet);
+                insertStatement.setString(3, Rete);
+                insertStatement.executeUpdate();
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
+        
+        public static void Pers_Wallets_Cancella(String IDWallet) {
+               //completamente da gestire
+        try {
+            String checkIfExistsSQL = "DELETE FROM WALLETS WHERE Wallet_Rete = ?";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, IDWallet);
+            checkStatement.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
         
         public static void Pers_Emoney_PopolaMappaEmoney() {

@@ -305,6 +305,8 @@
                                       <Component id="TransazioniCrypto_Bottone_Importa" min="-2" pref="150" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="TransazioniCrypto_Bottone_InserisciWallet" min="-2" pref="150" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="jButton3" min="-2" pref="146" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Component id="TransazioniCrypto_Label_MovimentiNonSalvati" min="-2" pref="558" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -372,6 +374,7 @@
                           <Component id="TransazioniCrypto_Bottone_Salva" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_Annulla" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="TransazioniCrypto_Bottone_InserisciWallet" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jButton3" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -1123,6 +1126,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="jButton3">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="jButton3"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton3ActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

@@ -45,15 +45,35 @@
   </build>
   <repositories>
     <repository>
+      <id>graalvm-repo</id>
+      <url>https://packages.graalvm.org/maven/</url>
+    </repository>
+    <repository>
       <id>unknown-jars-temp-repo</id>
       <name>A temporary repository created by NetBeans for libraries and jars it could not identify. Please replace the dependencies in this repository with correct ones and delete this repository.</name>
       <url>file:${project.basedir}/lib</url>
     </repository>
   </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>org.graalvm.polyglot</groupId>
+      <artifactId>js</artifactId>
+      <version>24.2.2</version>
+      <type>pom</type>
+      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>js</artifactId>
+          <groupId>org.graalvm.js</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
   <properties>
     <maven.compiler.target>21</maven.compiler.target>
     <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
     <maven.compiler.source>21</maven.compiler.source>
+    <graalvm.version>24.2.2</graalvm.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>

@@ -419,6 +419,7 @@ private static final long serialVersionUID = 3L;
         jSeparator10 = new javax.swing.JSeparator();
         jLabel28 = new javax.swing.JLabel();
         TransazioniCrypto_CheckBox_VediLiFoMancante = new javax.swing.JCheckBox();
+        jButton3 = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -1218,6 +1219,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        jButton3.setText("jButton3");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -1262,6 +1270,8 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1313,7 +1323,8 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati)
                     .addComponent(TransazioniCrypto_Bottone_Salva)
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
-                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet))
+                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet)
+                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -11888,6 +11899,49 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
        
     }//GEN-LAST:event_TransazioniCrypto_CheckBox_VediLiFoMancanteActionPerformed
 
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+
+        // TODO add your handling code here:
+        CcxtInterop a = new CcxtInterop();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Download progress = new Download();
+        progress.RipristinaStdout();
+        //progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
+        progress.setLocationRelativeTo(this);
+
+        // Esegui l'export in background
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    a.ensureNodeInstalled();
+                    a.installCcxt();
+                    System.out.println("Eseguo la chiamata");
+           a.fetchMovimenti("binance", "1", "2");
+                } catch (IOException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                //progress.dispose();
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
+
+        worker.execute();
+        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+ 
+
+        
+
+
+    }//GEN-LAST:event_jButton3ActionPerformed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -14643,6 +14697,7 @@ try {
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

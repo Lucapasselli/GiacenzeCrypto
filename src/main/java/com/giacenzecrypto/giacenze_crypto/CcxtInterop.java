@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.zip.*;
-import org.graalvm.polyglot.*;
 
 public class CcxtInterop {
     
@@ -164,10 +163,10 @@ private static Path getNodeExePath() {
     
     
 
-    public static void fetchMovimenti(String exchangeId, String apiKey, String secret) {
+    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, String startDate,String Tokens) {
     try {
         Path nodePath = getNodeExePath();
-        Path scriptPath = Paths.get("src/main/resources/js/FetchMovimenti.js");
+        Path scriptPath = Paths.get("src/main/resources/js/earn_staking.js");
 
         if (!Files.exists(nodePath)) {
             System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
@@ -178,14 +177,15 @@ private static Path getNodeExePath() {
             return;
         }
 
+        
         ProcessBuilder builder = new ProcessBuilder(
                 nodePath.toString(),
                 scriptPath.toAbsolutePath().toString(),
-                exchangeId, apiKey, secret
+                exchangeId, apiKey, secret, startDate,Tokens
         );
         builder.directory(scriptPath.getParent().toFile());
-        builder.redirectErrorStream(true); // stderr → stdout
-        
+        // Non reindirizziamo stderr su stdout
+        // builder.redirectErrorStream(true);
         // Calcola la cartella base di Node in modo multipiattaforma
         Path nodeBaseDir = nodePath.getParent(); // es: .../node-vXX-PLATFORM[/bin]
         if (!nodeBaseDir.getFileName().toString().equals("bin")) {
@@ -205,19 +205,29 @@ private static Path getNodeExePath() {
         }
         env.put("NODE_PATH", newNodePath);
 
-
         Process process = builder.start();
 
+        // Thread per log (stderr)
+        new Thread(() -> {
+            try (BufferedReader logReader = new BufferedReader(
+                    new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
+                String logLine;
+                while ((logLine = logReader.readLine()) != null) {
+                    System.out.println("[Node-LOG] " + logLine);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
 
-        // Leggi e stampa output dello script
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
-        );
+        // Lettura JSON finale (stdout)
         StringBuilder output = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            System.out.println("[Node] " + line);  // ← stampa output da Node.js
-            output.append(line);
+        try (BufferedReader jsonReader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            String jsonLine;
+            while ((jsonLine = jsonReader.readLine()) != null) {
+                output.append(jsonLine);
+            }
         }
 
         int exitCode = process.waitFor();
@@ -226,30 +236,76 @@ private static Path getNodeExePath() {
             return;
         }
 
-        // Parsing JSON di risposta con Gson
+        // Parse JSON con Gson
         Gson gson = new Gson();
+        System.out.println(output.toString());
         JsonObject json = gson.fromJson(output.toString(), JsonObject.class);
 
-        if (json.has("error") && !json.get("error").isJsonNull()) {
-            System.err.println("Errore: " + json.get("error").getAsString());
+        if (json.has("error") && !json.get("error").isJsonNull() && !json.get("error").getAsString().isEmpty()) {
+            System.err.println("Errore dallo script JS: " + json.get("error").getAsString());
         } else {
-            System.out.println("Depositi:");
-            JsonArray deposits = json.getAsJsonArray("deposits");
+            // Depositi
+            System.out.println("=== Depositi ===");
+            JsonArray deposits = json.has("deposits") ? json.getAsJsonArray("deposits") : new JsonArray();
             for (JsonElement d : deposits) {
                 System.out.println(d.toString());
             }
 
-            System.out.println("Prelievi:");
-            JsonArray withdrawals = json.getAsJsonArray("withdrawals");
+            // Prelievi
+            System.out.println("=== Prelievi ===");
+            JsonArray withdrawals = json.has("withdrawals") ? json.getAsJsonArray("withdrawals") : new JsonArray();
             for (JsonElement w : withdrawals) {
                 System.out.println(w.toString());
             }
-        }
 
+            // Trades
+            System.out.println("=== Trades ===");
+            JsonArray trades = json.has("trades") ? json.getAsJsonArray("trades") : new JsonArray();
+            for (JsonElement t : trades) {
+                System.out.println(t.toString());
+            }
+
+            // Conversioni
+            System.out.println("=== Conversioni ===");
+            JsonArray conversions = json.has("conversions") ? json.getAsJsonArray("conversions") : new JsonArray();
+            for (JsonElement c2 : conversions) {
+                System.out.println(c2.toString());
+            }
+
+            // Savings / Earn
+            System.out.println("=== Savings ===");
+            JsonArray savings = json.has("savings") ? json.getAsJsonArray("savings") : new JsonArray();
+            for (JsonElement s : savings) {
+                System.out.println(s.toString());
+            }
+
+            // Staking
+            System.out.println("=== Staking ===");
+            JsonArray staking = json.has("staking") ? json.getAsJsonArray("staking") : new JsonArray();
+            for (JsonElement s2 : staking) {
+                System.out.println(s2.toString());
+            }
+            
+            // Staking
+            System.out.println("=== earnFlexible ===");
+            JsonArray earnFlexible = json.has("earnFlexible") ? json.getAsJsonArray("earnFlexible") : new JsonArray();
+            for (JsonElement s2 : earnFlexible) {
+                System.out.println(s2.toString());
+            }
+            
+            // Staking
+            System.out.println("=== earnLocked ===");
+            JsonArray earnLocked = json.has("earnLocked") ? json.getAsJsonArray("earnLocked") : new JsonArray();
+            for (JsonElement s2 : earnLocked) {
+                System.out.println(s2.toString());
+            }
+            
+        }
     } catch (Exception e) {
         e.printStackTrace();
     }
 }
+
 
 
 

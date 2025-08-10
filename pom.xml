@@ -88,22 +88,7 @@
             <version>3.6</version>
             <type>jar</type>
         </dependency>
-        
-                <!-- Core GraalVM SDK -->
 
-        <!-- Optional: JS Script Engine if you use javax.script -->
-
-        <dependency>
-    <groupId>org.graalvm.polyglot</groupId>
-    <artifactId>polyglot</artifactId>
-    <version>${graalvm.version}</version>
-</dependency>
-<dependency>
-    <groupId>org.graalvm.polyglot</groupId>
-    <artifactId>js</artifactId>
-    <version>${graalvm.version}</version>
-    <type>pom</type>
-</dependency>
     
     </dependencies>
     <build>

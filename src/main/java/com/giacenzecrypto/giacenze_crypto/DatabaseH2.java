@@ -10,7 +10,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -96,6 +95,10 @@ public class DatabaseH2 {
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS RINOMINATOKEN (address_chain VARCHAR(255) PRIMARY KEY, VecchioNome VARCHAR(255), NuovoNome VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
+            preparedStatement.execute(); 
+            
+            createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGEAPI (Nome VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Chiave VARCHAR(255), Segreto VARCHAR(255),Opzionale VARCHAR(255))";
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute(); 
             
             //Tabella che associa i Wallet ad un Gruppo per poter poi gestire correttamente i quadri RW
@@ -545,7 +548,27 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-        
+    
+        public static String[] Pers_ExchangeApi_Leggi(String Nome) {
+                String Risultato[] = new String[4];
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT Nome,Exchange,Chiave,Segreto FROM EXCHANGEAPI WHERE Nome = '" + Nome + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato[0] = resultSet.getString("Nome");
+                Risultato[1] = resultSet.getString("Exchange");
+                Risultato[2] = resultSet.getString("Chiave");
+                Risultato[3] = resultSet.getString("Segreto");
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Risultato;
+        //Con questa query ritorno sia il vecchio che il nuovo nome
+    }    
     
     /**
      *

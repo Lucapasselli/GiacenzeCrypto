@@ -3271,75 +3271,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }
                                 else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
                             {
-                               
-                            /*    //come prima cosa devo individuare il portafoglio nel quale vanno i token
-                                String Wallet=movimentoSplittato[2];
-                                
-                                
-                                RT = new String[ColonneTabella];
-                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_TI";
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3]="Binance";
-                                RT[4]=Wallet;
-                                RT[5]="TRASFERIMENTO INTERNO";
-                                RT[7]=movimentoSplittato[3];
-                                if (movimentoSplittato[5].contains("-")){
-                                    RT[6]=Mon.Moneta+" -> ";
-                                    RT[8]=Mon.Moneta;
-                                    RT[9]=Mon.Tipo;
-                                    RT[10]=Mon.Qta;
-                                }else{
-                                    // i movimenti di rientro vanno sempre dopo e li distinguo con la A
-                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_A"+String.valueOf(k+1)+ "_1_TI";
-                                    RT[6]="-> "+Mon.Moneta;                                   
-                                    RT[11]=Mon.Moneta;
-                                    RT[12]=Mon.Tipo;
-                                    RT[13]=Mon.Qta;
-                                }                     
-                                RT[15]=valoreEuro;                                
-                                RT[19]="0.00";
-                                RT[22]="A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);  
-                                
-                                if (movimentoSplittato[3].equalsIgnoreCase("Simple Earn Flexible Subscription")||
-                                        movimentoSplittato[3].equalsIgnoreCase("Simple Earn Flexible Redemption")||
-                                        movimentoSplittato[3].equalsIgnoreCase("Simple Earn Locked Subscription")||
-                                        movimentoSplittato[3].equalsIgnoreCase("Simple Earn Locked Redemption")||
-                                        movimentoSplittato[3].equalsIgnoreCase("Staking Purchase")||
-                                        movimentoSplittato[3].equalsIgnoreCase("Staking Redemption"))
-                                {
-                                RT = new String[ColonneTabella];
-                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_2_TI";
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3]="Binance";
-                                if (movimentoSplittato[3].contains("Staking"))RT[4]="Staking";
-                                //else if (movimentoSplittato[3].contains("Earn"))RT[4]="EARN";
-                                else if (movimentoSplittato.length>6)RT[4]=movimentoSplittato[6];
-                                else RT[4]=WalletSecondario;
-                                RT[5]="TRASFERIMENTO INTERNO";
-                                RT[7]=movimentoSplittato[3];
-                                if (!movimentoSplittato[5].contains("-")){
-                                    RT[6]=Mon.Moneta+" -> ";
-                                    RT[8]=Mon.Moneta;
-                                    RT[9]=Mon.Tipo;
-                                    RT[10]="-"+Mon.Qta;
-                                }else{
-                                    RT[6]=" -> "+Mon.Moneta;                                   
-                                    RT[11]=Mon.Moneta;
-                                    RT[12]=Mon.Tipo;
-                                    RT[13]=new BigDecimal(Mon.Qta).abs().toPlainString();
-                                }                     
-                                RT[15]=valoreEuro;                                
-                                RT[19]="0.00";
-                                RT[22]="A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);  
-                                }
-                                
-                              */  
+                               //I movimenti di trasferimento interno gli salto perchè non sono rilevanti sono dei semplici spostamenti
+                                //all'interno dello stesso exchange.
+                                //Sono ad esempio gli spostamenti in earn e ritorno, genererebbero solo tantissimi movimenti inutili e 
+                                //appesantirebbero il database.
                             }
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")||
                                        movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))

@@ -47,6 +47,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
+import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -78,6 +79,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import org.json.JSONArray;
 
 
 /**
@@ -1324,7 +1326,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(TransazioniCrypto_Bottone_Salva)
                     .addComponent(TransazioniCrypto_Bottone_Annulla)
                     .addComponent(TransazioniCrypto_Bottone_InserisciWallet)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -11901,7 +11903,31 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
-        // TODO add your handling code here:
+    /*try {
+        String chiavi[]=DatabaseH2.Pers_ExchangeApi_Leggi("Binance");
+        String apiKey = chiavi[2];
+        String secretKey = chiavi[3];
+        
+        System.out.println(apiKey);
+        System.out.println(secretKey);
+        
+        BinanceTaxReportClient c = new BinanceTaxReportClient(apiKey, secretKey);
+        c.syncTime();
+        if (!c.checkAuthentication()) {
+            System.err.println("API key/permessi non validi.");
+            return;
+        }
+        // 1) TUTTI GLI EARN (ALL TIME) + normalizzazione + CSV su stdout
+        JSONArray earn = c.fetchAllEarnAllHistory();
+        System.out.println("[LOG] Earn totali: " + earn.length());
+        JSONArray norm = c.normalizeEarn(earn);
+        c.exportEarnToCSV(norm, new OutputStreamWriter(System.out));
+        } catch (Exception ex) {
+        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+    }*/
+        
+        
+              // TODO add your handling code here:
         CcxtInterop a = new CcxtInterop();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Download progress = new Download();
@@ -11911,32 +11937,34 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
         // Esegui l'export in background
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                try {
-                    a.ensureNodeInstalled();
-                    a.installCcxt();
-                    System.out.println("Eseguo la chiamata");
-           a.fetchMovimenti("binance", "1", "2");
-                } catch (IOException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                //progress.dispose();
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
+        @Override
+        protected Void doInBackground() throws Exception {
+        try {
+        a.ensureNodeInstalled();
+        a.installCcxt();
+        System.out.println("Eseguo la chiamata");
+        String chiavi[]=DatabaseH2.Pers_ExchangeApi_Leggi("Binance");
+        
+        a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2022-06-08","");
+        } catch (IOException ex) {
+        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+        }
+        
+        @Override
+        protected void done() {
+        //progress.dispose();
+        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
         };
 
         worker.execute();
         progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
- 
-
+        
+      
         
 
 

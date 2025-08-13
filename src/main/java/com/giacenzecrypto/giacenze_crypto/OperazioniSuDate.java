@@ -167,12 +167,11 @@ public class OperazioniSuDate {
             "yyyy-MM-dd H:mm:ss"  // Formato con ora a due cifre
             };
             LocalDateTime localDateTime = null;
-            DateTimeFormatter formatter =null;
 
         // Prova ciascun formato fino a trovare quello giusto
         for (String format : FormatiPossibili) {
             try {
-                formatter = DateTimeFormatter.ofPattern(format);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
                 localDateTime = LocalDateTime.parse(Data, formatter);
                 break; // Se il parsing riesce, esci dal ciclo
             } catch (DateTimeParseException e) {
@@ -180,10 +179,11 @@ public class OperazioniSuDate {
             }
         }
         if (localDateTime != null) {
+            DateTimeFormatter formatterOutput = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             return localDateTime
             .atOffset(ZoneOffset.UTC)
             .atZoneSameInstant(ZoneId.of("Europe/Rome"))
-            .format(formatter);
+            .format(formatterOutput);
         }else return null;
         
     }    

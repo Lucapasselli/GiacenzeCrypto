@@ -1958,6 +1958,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 if (movimentoSplittato[9].contains("crypto_basket")){
                                     RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPPA_"+String.valueOf(k+1)+ "_2_AC"; 
                                     RT[4]="Crypto Basket";
+                                    RT[6]=movimentoSplittato[6]+" -> "+movimentoSplittato[2];
+                                    RT[8]=movimentoSplittato[6];
+                                    RT[9]="FIAT";
+                                    RT[10]="-"+new BigDecimal(movimentoSplittato[7]).abs().toString();
                                 }
                                 
                                 RiempiVuotiArray(RT);
@@ -2275,6 +2279,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 //come prima cosa devo individuare il portafoglio nel quale vanno i token
                                 String WalletPartenza="";
                                 String WalletDestinazione="";
+                                String ExchangeID="CDCAPP";
+                                
+                                
+                                
                                 if (movimentoSplittato[9].toLowerCase().contains("supercharger"))
                                 {
                                     if (movimentoSplittato[3].contains("-"))
@@ -2325,6 +2333,16 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     }
                                 }else if (movimentoSplittato[9].toLowerCase().contains("crypto_basket"))
                                 {
+                                    //Questi movimenti possono essere preceduti o seguiti dai movimenti di scambio
+                                    if (movimentoSplittato[9].toLowerCase().contains("purchase")){
+                                        //Se è un movimento di acquisto il movimento interno deve avvenire prima degli altri movimenti
+                                        //Per far si che questo accada aggiungo la lettera B davanti al nome dell'exchange
+                                        ExchangeID="BCDCAPP";
+                                    }else{
+                                        //Se è un movimento di vendita il movimento interno deve avvenire successivamente agli altri movimenti
+                                        //Per far si che questo accada aggiungo la lettera D davanti al nome dell'exchange
+                                        ExchangeID="DCDCAPP";
+                                    }
                                     if (!movimentoSplittato[3].contains("-"))
                                     {
                                         WalletPartenza="Crypto Wallet";
@@ -2341,7 +2359,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }
                                 
                                 RT = new String[ColonneTabella];
-                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_1_TI";
+                                RT[0]=data.replaceAll(" |-|:", "") +"_"+ExchangeID+"_"+String.valueOf(k+1)+ "_1_TI";
                                 RT[1]=dataa;
                                 RT[2]=1+" di "+2;
                                 RT[3]="Crypto.com App";
@@ -2392,7 +2410,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 
                                 
                                 RT = new String[ColonneTabella];
-                                RT[0]=data.replaceAll(" |-|:", "") +"_CDCAPP_"+String.valueOf(k+1)+ "_2_TI";
+                                RT[0]=data.replaceAll(" |-|:", "") +"_"+ExchangeID+"_"+String.valueOf(k+1)+ "_2_TI";
                                 RT[1]=dataa;
                                 RT[2]=2+" di "+2;
                                 RT[3]="Crypto.com App";

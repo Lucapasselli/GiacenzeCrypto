@@ -120,7 +120,7 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray,
     const intervalRewards = [];
     let currentStartTime = startTime;
     let iterazione = 1;
-    const maxIterazioni = 1000;
+    const maxIterazioni = 5000;
     
     logInfo(`Recupero ${rewardType} da ${new Date(startTime).toISOString()} a ${new Date(endTime).toISOString()}`);
     

@@ -166,7 +166,7 @@ private static Path getNodeExePath() {
     public static void fetchMovimenti(String exchangeId, String apiKey, String secret, String startDate,String Tokens) {
     try {
         Path nodePath = getNodeExePath();
-        Path scriptPath = Paths.get("src/main/resources/js/earn_staking.js");
+        Path scriptPath = Paths.get("src/main/resources/js/Conversioni.js");
 
         if (!Files.exists(nodePath)) {
             System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());

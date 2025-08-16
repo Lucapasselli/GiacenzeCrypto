@@ -117,7 +117,8 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray)
     const intervalRewards = [];
     let currentStartTime = startTime;
     let iterazione = 1;
-    const maxIterazioni = 1000;
+    const maxIterazioni = 5000;
+    const itarezioniBinanceMassime = 100;
     
     logInfo(`Recupero Rewards bloccate da ${new Date(startTime).toISOString()} a ${new Date(endTime).toISOString()}`);
     
@@ -127,7 +128,7 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray)
                 //type: rewardType,
                 startTime: currentStartTime,
                 endTime: endTime,
-                size: 100
+                size: itarezioniBinanceMassime
             };
             
             const response = await safeApiCall(
@@ -135,7 +136,9 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray)
                 'simple-earn/locked/history/rewardsRecord',
                 params
             );
-            
+    
+
+           // logInfo(JSON.stringify(response, null, 2));
             const records = response?.rows || [];
             logDebug(`Ricevuti ${records.length} Rewards bloccate records`);
             
@@ -149,7 +152,7 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray)
             intervalRewards.push(...filteredRecords);
             
             // Se abbiamo meno record del massimo, abbiamo finito
-            if (records.length < 100) break;
+            if (records.length < itarezioniBinanceMassime) break;
             
             // Aggiorna il cursore
             const maxTimestamp = Math.max(...records.map(r => parseInt(r.time)));
@@ -188,7 +191,7 @@ async function fetchAllRewards(exchange, startTime, endTime, assetArray) {
                     chunk.endTime,
                     assetArray
                 );
-                
+                //logInfo("Risposta:", rewards); 
                 allRewards.push(...rewards);
                 logInfo(`Trovati ${rewards.length} records (totale: ${allRewards.length})`);
             } catch (error) {
@@ -261,6 +264,7 @@ async function main() {
         // Output
         // Per lo script LOCKED:
 console.log(JSON.stringify({ earnLocked: allRewards }, null, 2));
+
         
     } catch (error) {
         logError(`Errore critico: ${error.message}`);

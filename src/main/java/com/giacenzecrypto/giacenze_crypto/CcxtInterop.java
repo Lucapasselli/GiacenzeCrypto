@@ -166,7 +166,7 @@ private static Path getNodeExePath() {
     public static void fetchMovimenti(String exchangeId, String apiKey, String secret, String startDate,String Tokens) {
     try {
         Path nodePath = getNodeExePath();
-        Path scriptPath = Paths.get("src/main/resources/js/Conversioni.js");
+        Path scriptPath = Paths.get("src/main/resources/js/Binance_Trades.js");
 
         if (!Files.exists(nodePath)) {
             System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
@@ -295,7 +295,7 @@ private static Path getNodeExePath() {
             
             // Staking
             System.out.println("=== earnLocked ===");
-            JsonArray earnLocked = json.has("earnLocked") ? json.getAsJsonArray("earnLocked") : new JsonArray();
+            JsonArray earnLocked = json.has("Binance_EarnLocked") ? json.getAsJsonArray("earnLocked") : new JsonArray();
             for (JsonElement s2 : earnLocked) {
                 System.out.println(s2.toString());
             }

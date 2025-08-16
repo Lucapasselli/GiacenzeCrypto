@@ -7,7 +7,7 @@ const ccxt = require('ccxt');
 
 // Configurazione
 const BINANCE_CONFIG = {
-    minDelayMs: 2000,
+    minDelayMs: 5000,
     maxRetries: 5,
     baseBackoffMs: 5000,
     maxBackoffMs: 60000,
@@ -89,16 +89,18 @@ async function fetchTradesForSymbol(exchange, symbol, startTime, endTime) {
     const intervalTrades = [];
     let currentStartTime = startTime;
     let iterazione = 1;
-    const maxIterazioni = 500;
+    const maxIterazioni = 1000;
+    const Limit = 1000;
 
-    logInfo(`Recupero trades per ${symbol} da ${new Date(startTime).toISOString()} a ${new Date(endTime).toISOString()}`);
+    //logInfo(`Recupero trades per ${symbol} da ${new Date(startTime).toISOString()} a ${new Date(endTime).toISOString()}`);
 
     while (iterazione <= maxIterazioni) {
         try {
             const params = {
                 startTime: currentStartTime,
                 //endTime: endTime,
-                limit: 500 // max consentito
+                //current: iterazione,
+                limit: Limit // max consentito
             };
             const trades = await safeApiCall(
                 () => exchange.fetchMyTrades(symbol, currentStartTime, params.limit, params),
@@ -128,12 +130,51 @@ async function fetchTradesForSymbol(exchange, symbol, startTime, endTime) {
 }
 
 
+//Recupero i Simboli gestiti da Binance e li salva su File
+const fs = require('fs');
+const path = require('path');
+
+async function getMarketsSymbols(exchange) {
+    const marketsFile = path.join(__dirname, `markets_${exchange.id}.json`);
+    let markets;
+
+    if (fs.existsSync(marketsFile)) {
+        const stats = fs.statSync(marketsFile);
+        const fileAgeMs = Date.now() - stats.mtimeMs;
+        const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+
+        if (fileAgeMs > twentyFourHoursMs) {
+            // File troppo vecchio → lo elimino e ricarico
+            fs.unlinkSync(marketsFile);
+            logInfo(`File ${marketsFile} più vecchio di 24 ore, eliminato. Carico markets da API...`);
+            markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+            fs.writeFileSync(marketsFile, JSON.stringify(markets, null, 2), 'utf8');
+        } else {
+            // File recente → uso i dati locali
+            logInfo(`Carico markets da file locale ${marketsFile} (meno di 24 ore)`);
+            const rawData = fs.readFileSync(marketsFile, 'utf8');
+            markets = JSON.parse(rawData);
+        }
+    } else {
+        // Nessun file → carico da API e salvo
+        logInfo(`Nessun file ${marketsFile} trovato, carico markets da API...`);
+        markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+        fs.writeFileSync(marketsFile, JSON.stringify(markets, null, 2), 'utf8');
+    }
+
+    return markets;
+}
+
+
+
 // ======================= Fetch Trades =======================
 
 // Funzione principale per recuperare tutti i trade
 async function fetchAllTrades(exchange, startTime, endTime, tokenArray) {
+    let CoppieDaInterrogare=0;
     const allTrades = [];
-    const markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+    //const markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+    const markets = await getMarketsSymbols(exchange);
     const symbols = Object.keys(markets);
 
     // Genera tutte le coppie possibili dai token in input e verifica se esistono su Binance
@@ -150,11 +191,15 @@ async function fetchAllTrades(exchange, startTime, endTime, tokenArray) {
     if (validSymbols.length === 0) {
         logError("Nessuna coppia valida trovata su Binance per i token forniti");
         return allTrades;
+    }else
+    {
+       CoppieDaInterrogare=validSymbols.length;
+       logInfo(`Ci sono ${validSymbols.length} possibili coppie da interrogare`); 
     }
-
+    let iterazione=1;
     for (const symbol of validSymbols) {
 
-            logInfo(`Recupero trades per ${symbol}: ${new Date(startTime).toISOString()} - ${new Date(endTime).toISOString()}`);
+            logInfo(`[${iterazione}/${CoppieDaInterrogare}] Recupero trades per ${symbol}: ${new Date(startTime).toISOString()} - ${new Date(endTime).toISOString()}`);
             try {
                 const trades = await fetchTradesForSymbol(exchange, symbol, startTime, endTime);
                 allTrades.push(...trades);
@@ -162,6 +207,7 @@ async function fetchAllTrades(exchange, startTime, endTime, tokenArray) {
             } catch (error) {
                 throw error;
             }
+            iterazione++;
     }
     logInfo(`Recupero completato. Totale trades: ${allTrades.length}`);
     return allTrades;

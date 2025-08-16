@@ -12,13 +12,50 @@ const PRICE_CACHE = {};
 const TRADING_PAIRS_CACHE = new Set();
 
 
+//Recupero i Simboli gestiti da Binance e li salva su File
+const fs = require('fs');
+const path = require('path');
+
+async function getMarketsSymbols(exchange) {
+    const marketsFile = path.join(__dirname, `markets_${exchange.id}.json`);
+    let markets;
+
+    if (fs.existsSync(marketsFile)) {
+        const stats = fs.statSync(marketsFile);
+        const fileAgeMs = Date.now() - stats.mtimeMs;
+        const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+
+        if (fileAgeMs > twentyFourHoursMs) {
+            // File troppo vecchio → lo elimino e ricarico
+            fs.unlinkSync(marketsFile);
+            logInfo(`File ${marketsFile} più vecchio di 24 ore, eliminato. Carico markets da API...`);
+            markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+            fs.writeFileSync(marketsFile, JSON.stringify(markets, null, 2), 'utf8');
+        } else {
+            // File recente → uso i dati locali
+            logInfo(`Carico markets da file locale ${marketsFile} (meno di 24 ore)`);
+            const rawData = fs.readFileSync(marketsFile, 'utf8');
+            markets = JSON.parse(rawData);
+        }
+    } else {
+        // Nessun file → carico da API e salvo
+        logInfo(`Nessun file ${marketsFile} trovato, carico markets da API...`);
+        markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+        fs.writeFileSync(marketsFile, JSON.stringify(markets, null, 2), 'utf8');
+    }
+
+    return markets;
+}
+
+
+
 // Funzione per recuperare le coppie di trading disponibili
 async function fetchTradingPairs(exchange) {
     if (TRADING_PAIRS_CACHE.size > 0) return;
     
     try {
         await smartRateLimit();
-        const markets = await exchange.loadMarkets();
+        const markets = await getMarketsSymbols(exchange);
         Object.keys(markets).forEach(pair => TRADING_PAIRS_CACHE.add(pair));
         logInfo(`Caricate ${TRADING_PAIRS_CACHE.size} coppie di trading`);
     } catch (error) {
@@ -156,13 +193,13 @@ async function safeApiCall(exchange, endpoint, params) {
         try {
             await smartRateLimit();
              // Verifica la sincronizzazione dell'orario
-                const serverTime = await exchange.fetchTime();
+       /*         const serverTime = await exchange.fetchTime();
              // Aggiungi timestamp corrente a ogni richiesta
              //Questa parte potrebbe non servire, dipende dall'endpoint
             const timestampParams = {
                 ...params,
                 timestamp: serverTime
-            };
+            };*/
             
             logDebug(`Chiamata API (tentativo ${attempt}): ${endpoint}`);
             const response = await exchange.fetch2(endpoint, 'sapi', 'GET', params);

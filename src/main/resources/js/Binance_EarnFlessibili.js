@@ -10,7 +10,7 @@ const REWARD_TYPES = ['BONUS', 'REALTIME', 'REWARDS'];
 
 // Configurazione
 const BINANCE_CONFIG = {
-    minDelayMs: 2000,
+    minDelayMs: 2500,
     maxRetries: 5,
     baseBackoffMs: 5000,
     maxBackoffMs: 60000,
@@ -116,11 +116,12 @@ function splitTimeRange(startTime, endTime) {
 }
 
 // Recupera rewards per un singolo intervallo di tempo
-async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray, rewardType) {
+async function fetchRewardsForInterval(exchange, startTime, endTime, rewardType) {
     const intervalRewards = [];
     let currentStartTime = startTime;
     let iterazione = 1;
-    const maxIterazioni = 5000;
+    const maxIterazioni = 1000;
+    const Size =100;
     
     logInfo(`Recupero ${rewardType} da ${new Date(startTime).toISOString()} a ${new Date(endTime).toISOString()}`);
     
@@ -130,9 +131,10 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray,
                 type: rewardType,
                 startTime: currentStartTime,
                 endTime: endTime,
-                size: 100
+                current: iterazione,
+                size: Size
             };
-            
+            logInfo(`Recupero Pag.${iterazione}`);
             const response = await safeApiCall(
                 exchange,
                 'simple-earn/flexible/history/rewardsRecord',
@@ -145,20 +147,21 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray,
             if (records.length === 0) break;
             
             // Filtra per asset se specificato
-            const filteredRecords = assetArray.length > 0
+          /*  const filteredRecords = assetArray.length > 0
                 ? records.filter(record => assetArray.includes(record.asset))
-                : records;
+                : records;*/
             
-            intervalRewards.push(...filteredRecords);
+            intervalRewards.push(...records);
             
             // Se abbiamo meno record del massimo, abbiamo finito
-            if (records.length < 100) break;
+            if (records.length < Size) break;
+            logInfo(`Trovata nuova pagina di dati per il periodo indicato`);
             
             // Aggiorna il cursore
-            const maxTimestamp = Math.max(...records.map(r => parseInt(r.time)));
+           /* const maxTimestamp = Math.max(...records.map(r => parseInt(r.time)));
             currentStartTime = maxTimestamp + 1;
             
-            if (currentStartTime >= endTime) break;
+            if (currentStartTime >= endTime) break;*/
             
             iterazione++;
         } catch (error) {
@@ -174,11 +177,11 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, assetArray,
 }
 
 // Funzione principale per recuperare tutti i rewards
-async function fetchAllRewards(exchange, startTime, endTime, assetArray) {
+async function fetchAllRewards(exchange, startTime, endTime) {
     const allRewards = [];
     const timeChunks = splitTimeRange(startTime, endTime);
     
-    logInfo(`Recupero storico rewards (${timeChunks.length} chunk da 90gg)`);
+    logInfo(`Recupero storico rewards (${timeChunks.length} chunk da ${BINANCE_CONFIG.maxQueryDays}gg)`);
     
     for (const rewardType of REWARD_TYPES) {
         logInfo(`Processo tipo: ${rewardType}`);
@@ -191,7 +194,6 @@ async function fetchAllRewards(exchange, startTime, endTime, assetArray) {
                     exchange,
                     chunk.startTime,
                     chunk.endTime,
-                    assetArray,
                     rewardType
                 );
                 
@@ -222,7 +224,7 @@ async function main() {
         const [exchangeId, apiKey, secret, startDate, assetArrayStr] = args;
         const endTime = Date.now();
         const startTime = dateToTimestamp(startDate);
-        const assetArray = assetArrayStr.split(',').map(s => s.trim()).filter(Boolean);
+       // const assetArray = assetArrayStr.split(',').map(s => s.trim()).filter(Boolean);
         
         // Inizializza exchange
         const exchange = new ccxt[exchangeId]({
@@ -262,7 +264,7 @@ async function main() {
         }
         
         // Recupera rewards
-        const allRewards = await fetchAllRewards(exchange, startTime, endTime, assetArray);
+        const allRewards = await fetchAllRewards(exchange, startTime, endTime);
         
         // Output
         // Per lo script FLEXIBLE:

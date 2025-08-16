@@ -2,7 +2,7 @@ const ccxt = require('ccxt');
 
 // Configurazione
 const BINANCE_CONFIG = {
-    minDelayMs: 2000,
+    minDelayMs: 2500,
     maxRetries: 5,
     maxQueryDays: 90,
     stakingProducts: ['STAKING', 'F_DEFI', 'L_DEFI']

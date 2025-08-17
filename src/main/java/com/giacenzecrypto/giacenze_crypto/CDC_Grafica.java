@@ -11945,7 +11945,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         System.out.println("Eseguo la chiamata");
         String chiavi[]=DatabaseH2.Pers_ExchangeApi_Leggi("Binance");
         
-        a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2017-01-01","ETH,BTC,USDT,USDC,TOWNS");
+        a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2025-07-01","");
         } catch (IOException ex) {
         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {

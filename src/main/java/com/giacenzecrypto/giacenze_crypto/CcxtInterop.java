@@ -14,11 +14,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.zip.*;
+import org.json.JSONObject;
 
 public class CcxtInterop {
     
@@ -166,7 +169,7 @@ private static Path getNodeExePath() {
     public static void fetchMovimenti(String exchangeId, String apiKey, String secret, String startDate,String Tokens) {
     try {
         Path nodePath = getNodeExePath();
-        Path scriptPath = Paths.get("src/main/resources/js/Binance_Trades.js");
+        Path scriptPath = Paths.get("src/main/resources/js/prelievi.js");
 
         if (!Files.exists(nodePath)) {
             System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
@@ -247,6 +250,8 @@ private static Path getNodeExePath() {
             // Depositi
             System.out.println("=== Depositi ===");
             JsonArray deposits = json.has("deposits") ? json.getAsJsonArray("deposits") : new JsonArray();
+            //convertDepositi(deposits,"Binance");
+            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertDepositi(deposits,"Binance"));
             for (JsonElement d : deposits) {
                 System.out.println(d.toString());
             }
@@ -254,6 +259,7 @@ private static Path getNodeExePath() {
             // Prelievi
             System.out.println("=== Prelievi ===");
             JsonArray withdrawals = json.has("withdrawals") ? json.getAsJsonArray("withdrawals") : new JsonArray();
+            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertPrelievi(withdrawals,"Binance"));
             for (JsonElement w : withdrawals) {
                 System.out.println(w.toString());
             }
@@ -308,6 +314,300 @@ private static Path getNodeExePath() {
 
 
 
+    
+public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange) {
+        List<String[]> lista = new ArrayList<>();
+        
+         // Ordiniamo per completeTime (servono per avere gruppi ordinati)
+        List<JsonObject> objects = new ArrayList<>();
+        for (JsonElement el : jsonList) {
+            objects.add(el.getAsJsonObject());
+        }
+        objects.sort((o1, o2) -> {
+            long t1 = Long.parseLong(
+                o1.has("insertTime") ? o1.get("insertTime").getAsString() : o1.get("completeTime").getAsString()
+            );
+            long t2 = Long.parseLong(
+                o2.has("insertTime") ? o2.get("insertTime").getAsString() : o2.get("completeTime").getAsString()
+            );
+            return Long.compare(t1, t2);
+        });
+        
+        
+        
+        
+        int totMov = 1;
+        int i = 1;
+        String OldData="0";
+
+        for (JsonElement el : jsonList) {
+            JSONObject obj = new JSONObject(el.toString());
+
+            String coin = obj.optString("coin", "");
+            String amount = obj.optString("amount", "");
+            String network = obj.optString("network", "");
+            String txId = obj.optString("txId", "");
+            String address = obj.optString("address", "");
+            String insertTime = obj.optString("insertTime", "completeTime");
+            //String completeTime = obj.optString("completeTime", insertTime);
+
+            long time = Long.parseLong(insertTime);
+            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
+            //Altrimenti andrei a sovrascrivere il movimento precedente
+            if (OldData.equals(data))totMov++;
+            else {
+                totMov=1;
+                OldData=data;
+            }
+            
+            String dataForId = data.replaceAll(" |-|:", "");
+            String dataa = data.trim().substring(0, data.length()-3);
+
+
+            
+            // Tipo moneta: se c'è l'address --> Crypto
+            // se non c'è l'address --> FIAT solo se coin = EUR o USD
+            String tipoMoneta;
+            if (!address.isEmpty()) {
+                tipoMoneta = "Crypto";
+            } else {
+                if (coin.equalsIgnoreCase("EUR") || coin.equalsIgnoreCase("USD")) {
+                    tipoMoneta = "FIAT";
+                } else {
+                    tipoMoneta = "Crypto";
+                }
+            }
+
+            Moneta Mon=new Moneta();
+            Mon.Moneta=coin;
+            Mon.Tipo=tipoMoneta;
+            Mon.Qta=amount;
+            // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
+            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+
+            String[] RT = new String[Importazioni.ColonneTabella];
+            RT[1] = dataa;                                               // Data e ora
+            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[3] = Exchange;                                            // Exchange
+            RT[4] = "Principale";                                        // Wallet
+            RT[7] = "";                                                  // Causale originale (vuoto)
+            if (tipoMoneta.equals("FIAT"))
+            {
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_DF"; // TrasID
+                RT[5]="DEPOSITO FIAT";
+            }else 
+                {
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_DC"; // TrasID
+                RT[5]="DEPOSITO CRYPTO";
+                }
+            // Deposito → moneta entrante
+            RT[6]  = "-> " + Mon.Moneta;                                 // Dettaglio Movimento
+            RT[8]  = "";
+            RT[9]  = "";
+            RT[10] = "";
+            RT[11] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
+            RT[12] = Mon.Tipo;                                           // Tipo Moneta Acq.
+            RT[13] = Mon.Qta;                                            // Quantità Acq.
+        
+            RT[14] = "";                                                 // Valore Mercato originale
+            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
+            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
+            RT[22] = "A";                                               // Auto
+            RT[23] = "";                                                 // [DEFI] Blocco Transazione
+            RT[24] = txId;                                               // [DEFI] Hash Transazione
+            RT[25] = "";                                                 // Nome Token Uscita
+            RT[26] = "";                                                 // Address Token Uscita
+            RT[27] = "";                                                 // Nome Token Entrata
+            RT[28] = "";                                                 // Address Token Entrata
+            RT[29] = insertTime;                                         // Timestamp
+            RT[30] = "";                                                 // Address controparte
+            RT[31] = "";                                                 // Data fine trasferimento
+            RT[32] = "";                                                 // Movimento ha prezzo
+            RT[33] = "";                                                 // Movimento genera plusvalenza
+            RT[34] = network;                                            // Rete
+            RT[35] = ""; RT[36] = ""; 
+            RT[37] = address; 
+            RT[38] = ""; RT[39] = "";
+
+            Importazioni.RiempiVuotiArray(RT);
+            //System.out.println(RT[0]);
+            lista.add(RT);
+        }
+
+        return lista;
+    }    
+    
+   public static List<String[]> convertPrelievi(JsonArray jsonList,String Exchange) {
+        List<String[]> lista = new ArrayList<>();
+        
+         // Ordiniamo per completeTime (servono per avere gruppi ordinati)
+        List<JsonObject> objects = new ArrayList<>();
+        for (JsonElement el : jsonList) {
+            objects.add(el.getAsJsonObject());
+        }
+        objects.sort((o1, o2) -> {
+            long t1 = Long.parseLong(
+                o1.has("insertTime") ? o1.get("insertTime").getAsString() : o1.get("completeTime").getAsString()
+            );
+            long t2 = Long.parseLong(
+                o2.has("insertTime") ? o2.get("insertTime").getAsString() : o2.get("completeTime").getAsString()
+            );
+            return Long.compare(t1, t2);
+        });
+        
+        
+        
+        
+        int totMov = 1;
+        int i = 1;
+        String OldData="0";
+
+        for (JsonElement el : jsonList) {
+            JSONObject obj = new JSONObject(el.toString());
+
+            String coin = obj.optString("coin", "");
+            String amount = obj.optString("amount", "");
+            String network = obj.optString("network", "");
+            String txId = obj.optString("txId", "");
+            String address = obj.optString("address", "");
+            //String transferType = obj.optString("transferType", "0"); // 0 deposito, 1 prelievo
+            String fee = obj.optString("transactionFee", "0"); // 0 deposito, 1 prelievo
+            String insertTime = obj.optString("insertTime", "completeTime");
+            //String completeTime = obj.optString("completeTime", insertTime);
+
+            long time = Long.parseLong(insertTime);
+            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
+            //Altrimenti andrei a sovrascrivere il movimento precedente
+            if (OldData.equals(data))totMov++;
+            else {
+                totMov=1;
+                OldData=data;
+            }
+            
+            String dataForId = data.replaceAll(" |-|:", "");
+            String dataa = data.trim().substring(0, data.length()-3);
+
+
+            
+            // Tipo moneta: se c'è l'address --> Crypto
+            // se non c'è l'address --> FIAT solo se coin = EUR o USD
+            String tipoMoneta;
+            if (!address.isEmpty()) {
+                tipoMoneta = "Crypto";
+            } else {
+                if (coin.equalsIgnoreCase("EUR") || coin.equalsIgnoreCase("USD")) {
+                    tipoMoneta = "FIAT";
+                } else {
+                    tipoMoneta = "Crypto";
+                }
+            }
+
+            Moneta Mon=new Moneta();
+            Mon.Moneta=coin;
+            Mon.Tipo=tipoMoneta;
+            Mon.Qta=new BigDecimal(amount).abs().multiply(new BigDecimal(-1)).toPlainString();
+            // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
+            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+
+            String[] RT = new String[Importazioni.ColonneTabella];
+            RT[1] = dataa;                                               // Data e ora
+            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[3] = Exchange;                                            // Exchange
+            RT[4] = "Principale";                                        // Wallet
+            RT[7] = "";                                                  // Causale originale (vuoto)
+            // Prelievo → moneta uscente
+            if (tipoMoneta.equals("FIAT"))
+            {    
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_PF"; // TrasID
+                RT[5]="PRELIEVO FIAT";
+            }
+            else 
+            {    
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_PC"; // TrasID
+                RT[5]="PRELIEVO CRYPTO";
+            }
+            RT[6]  = Mon.Moneta + " ->";                                       // Dettaglio Movimento
+            RT[8]  = Mon.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
+            RT[9]  = Mon.Tipo;                                         // Tipo Moneta Venduta
+            RT[10] = Mon.Qta;                                             // Quantità Venduta
+            RT[11] = "";
+            RT[12] = "";
+            RT[13] = "";
+            RT[14] = "";                                                 // Valore Mercato originale
+            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
+            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
+            RT[22] = "A";                                               // Auto
+            RT[23] = "";                                                 // [DEFI] Blocco Transazione
+            RT[24] = txId;                                               // [DEFI] Hash Transazione
+            RT[25] = "";                                                 // Nome Token Uscita
+            RT[26] = "";                                                 // Address Token Uscita
+            RT[27] = "";                                                 // Nome Token Entrata
+            RT[28] = "";                                                 // Address Token Entrata
+            RT[29] = insertTime;                                         // Timestamp
+            RT[30] = "";                                                 // Address controparte
+            RT[31] = "";                                                 // Data fine trasferimento
+            RT[32] = "";                                                 // Movimento ha prezzo
+            RT[33] = "";                                                 // Movimento genera plusvalenza
+            RT[34] = network;                                            // Rete
+            RT[35] = ""; RT[36] = ""; 
+            RT[37] = address; 
+            RT[38] = ""; RT[39] = "";
+
+            Importazioni.RiempiVuotiArray(RT);
+            //System.out.println(RT[0]);
+            lista.add(RT);
+            
+            
+            //SECONDA PARTE RELATIVA ALLE FEE
+            Mon.Qta=new BigDecimal(fee).abs().multiply(new BigDecimal(-1)).toPlainString();
+            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+            
+            RT = new String[Importazioni.ColonneTabella];
+            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_CM"; // TrasID
+            RT[1] = dataa;                                               // Data e ora
+            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[3] = Exchange;                                            // Exchange
+            RT[4] = "Principale";                                        // Wallet
+            RT[5] = "COMMISSIONI";
+            RT[7] = "";                                                  // Causale originale (vuoto)
+            RT[6]  = Mon.Moneta + " ->";                                       // Dettaglio Movimento
+            RT[8]  = Mon.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
+            RT[9]  = Mon.Tipo;                                         // Tipo Moneta Venduta
+            RT[10] = Mon.Qta;                                             // Quantità Venduta
+            RT[11] = "";
+            RT[12] = "";
+            RT[13] = "";
+            RT[14] = "";                                                 // Valore Mercato originale
+            RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
+            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
+            RT[22] = "A";                                               // Auto
+            RT[23] = "";                                                 // [DEFI] Blocco Transazione
+            RT[24] = txId;                                               // [DEFI] Hash Transazione
+            RT[25] = "";                                                 // Nome Token Uscita
+            RT[26] = "";                                                 // Address Token Uscita
+            RT[27] = "";                                                 // Nome Token Entrata
+            RT[28] = "";                                                 // Address Token Entrata
+            RT[29] = insertTime;                                         // Timestamp
+            RT[30] = "";                                                 // Address controparte
+            RT[31] = "";                                                 // Data fine trasferimento
+            RT[32] = "";                                                 // Movimento ha prezzo
+            RT[33] = "";                                                 // Movimento genera plusvalenza
+            RT[34] = network;                                            // Rete
+            RT[35] = ""; RT[36] = ""; 
+            RT[37] = address; 
+            RT[38] = ""; RT[39] = "";
+
+            Importazioni.RiempiVuotiArray(RT);
+            //System.out.println(RT[0]);
+            lista.add(RT);
+        }
+
+        return lista;
+    }     
+    
+    
 
     public static void main(String[] args) {
 

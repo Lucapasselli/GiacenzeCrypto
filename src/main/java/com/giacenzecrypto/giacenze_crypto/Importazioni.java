@@ -820,6 +820,19 @@ System.out.println(response.body().string());
     }
     
     
+        
+        
+    public static void inserisciListaMovimentisuMappaCryptoWallet(List<String[]> Movimenti){
+       for (String[] v : Movimenti) {
+               InserisciMovimentosuMappaCryptoWallet(v[0], v);
+               CDC_Grafica.TabellaCryptodaAggiornare=true;
+               //System.out.println(v[0]);              
+       }
+       //CDC_Grafica.TabellaCryptodaAggiornare=true;
+    }    
+        
+        
+    
     public static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore) {
        //QUA DOVRO' INSERIRE ANCHE L'EVENTUALE CAMBIO NOME DEL TOKEN
        //PER EVITARE DI FARLO AD OGNI CARICAMENTO DI TABELLA E AUMENTARE LA VELOCITA' MA LO VEDRO' CON CALMA PIU' AVANTI  

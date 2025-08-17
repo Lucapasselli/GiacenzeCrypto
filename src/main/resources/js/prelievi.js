@@ -118,6 +118,10 @@ async function fetchAllWithdrawalsRaw(exchange, rateLimiter, globalStartTime, gl
           duplicates++;
           continue;
         }
+        // Converte la data in ms (creo i campi corretti per il json)
+        w.insertTime = Date.parse(w.applyTime);//Questo serve per rendere compatibile la cosa con l'output dei depositi
+        w.completeTime = Date.parse(w.completeTime);//Questo serve per rendere compatibile la cosa con l'output dei depositi
+        
         seenIds.add(id);
         out.push(w);
         newCount++;

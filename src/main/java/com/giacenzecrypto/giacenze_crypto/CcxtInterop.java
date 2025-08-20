@@ -55,7 +55,7 @@ public class CcxtInterop {
         String filename = "node-" + NODE_VERSION + "-" + platform + "." + extension;
         String url = "https://nodejs.org/dist/" + NODE_VERSION + "/" + filename;
 
-        Path downloadPath = Paths.get(Statiche.getPathRisorse()+"tools", filename);
+        Path downloadPath = Paths.get(Statiche.getWorkingDirectory()+"tools", filename);
         Files.createDirectories(downloadPath.getParent());
 
         try (InputStream in = new URL(url).openStream()) {
@@ -268,6 +268,7 @@ private static Path getNodeExePath() {
             // Trades
             System.out.println("=== Trades ===");
             JsonArray trades = json.has("trades") ? json.getAsJsonArray("trades") : new JsonArray();
+            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertTrades(trades,"Binance"));
             for (JsonElement t : trades) {
                 System.out.println(t.toString());
             }
@@ -570,7 +571,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
             
             RT = new String[Importazioni.ColonneTabella];
-            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_CM"; // TrasID
+            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
@@ -644,25 +645,28 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             if (verso.equalsIgnoreCase("sell"))
             {
                 mu.Moneta=Simboli[0];
-                mu.Qta=obj.optString("qty", "");
+                mu.Qta=obj.getJSONObject("info").optString("qty", "");
                 mu.Tipo = (mu.Moneta.equalsIgnoreCase("EUR") || mu.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
                 me.Moneta=Simboli[1];
-                me.Qta=obj.optString("quoteQty", "");
+                me.Qta=obj.getJSONObject("info").optString("quoteQty", "");
                 me.Tipo = (me.Moneta.equalsIgnoreCase("EUR") || me.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
             }
             else
             {
                 mu.Moneta=Simboli[1];
-                mu.Qta=obj.optString("quoteQty", "");
+                mu.Qta=obj.getJSONObject("info").optString("quoteQty", "");
                 mu.Tipo = (mu.Moneta.equalsIgnoreCase("EUR") || mu.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
                 me.Moneta=Simboli[0];
-                me.Qta=obj.optString("qty", "");
+                me.Qta=obj.getJSONObject("info").optString("qty", "");
                 me.Tipo = (me.Moneta.equalsIgnoreCase("EUR") || me.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
             }
             
+            mu.Qta=new BigDecimal(mu.Qta).abs().stripTrailingZeros().multiply(new BigDecimal(-1)).toPlainString();
+            me.Qta=new BigDecimal(me.Qta).abs().stripTrailingZeros().toPlainString();
+            
             Moneta mc=new Moneta();
-            mc.Moneta = obj.optString("currency", "");
-            mc.Qta = new BigDecimal(obj.optString("cost", "")).toPlainString();
+            mc.Moneta = obj.getJSONObject("fee").optString("currency", "");
+            mc.Qta = new BigDecimal(obj.getJSONObject("fee").optString("cost", "")).stripTrailingZeros().toPlainString();
             mc.Tipo = (mc.Moneta.equalsIgnoreCase("EUR") || mc.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
             String Time = obj.optString("timestamp", "");
             //String completeTime = obj.optString("completeTime", insertTime);
@@ -751,7 +755,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             String PrezzoC = Prezzi.DammiPrezzoTransazione(mc, null, time, null, true, 2, null);
             
             RT = new String[Importazioni.ColonneTabella];
-            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_CM"; // TrasID
+            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange

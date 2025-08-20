@@ -102,7 +102,7 @@ async function fetchHistoricalPrice(exchange, asset, timestamp) {
 
 // Trova la coppia di trading disponibile per un asset
 function findTradingPair(asset) {
-    const stablecoins = ['USDT', 'USDC', 'BUSD', 'EUR'];
+    const stablecoins = ['USDT', 'USDC', 'EUR'];
     
     for (const stablecoin of stablecoins) {
         const pair1 = `${asset}/${stablecoin}`;
@@ -146,9 +146,9 @@ const BINANCE_CONFIG = {
 };
 
 // Utility functions
-function logError(message) { console.error(`[ERROR] ${new Date().toISOString()}: ${message}`); }
-function logInfo(message) { console.error(`[INFO] ${new Date().toISOString()}: ${message}`); }
-function logDebug(message) { console.error(`[DEBUG] ${new Date().toISOString()}: ${message}`); }
+function logError(message) { console.error(`[ERROR] ${message}`); }
+function logInfo(message) { console.error(`[INFO] ${message}`); }
+function logDebug(message) { console.error(`[DEBUG] ${message}`); }
 
 function dateToTimestamp(dateString) {
     const date = new Date(dateString);

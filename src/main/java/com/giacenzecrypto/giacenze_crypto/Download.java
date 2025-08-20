@@ -174,8 +174,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
      public void RipristinaStdout()
              {
                  nascondiLog=true;
-                     System.setOut(oldStdout);
-        System.setErr(oldStderr);
+        //System.setOut(oldStdout);
+        //System.setErr(oldStderr);
+        LoggerGC.disableTextPaneOut();
+        LoggerGC.disableTextPaneErr();
      }
              
           public void SetMessaggioAvanzamento (String Messaggio) {
@@ -271,10 +273,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel1)
-                                .addGap(207, 207, 207)
+                                .addGap(244, 244, 244)
                                 .addComponent(Bottone_Interrompi, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(ProgressBarDownload, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 742, Short.MAX_VALUE)
+                            .addComponent(ProgressBarDownload, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 812, Short.MAX_VALUE)
                             .addComponent(LabelAvanzamento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(LabelScaricamento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())))
@@ -308,8 +310,10 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
 
-        System.setOut(oldStdout);
-        System.setErr(oldStderr);
+        //System.setOut(oldStdout);
+        //System.setErr(oldStderr);
+        LoggerGC.disableTextPaneOut();
+        LoggerGC.disableTextPaneErr();
       //  System.out.println("Finestra Attesa Chiusa");
 
     }//GEN-LAST:event_formWindowClosed
@@ -332,10 +336,12 @@ private Timer timer = new Timer(1000, new ActionListener() {
         // TODO add your handling code here:
      //   System.out.println("Finestra Attesa Aperta");
      if (!nascondiLog) {
-        PrintStream printStream = new PrintStream(new CustomOutputStream(textPane));
+       /* PrintStream printStream = new PrintStream(new CustomOutputStream(textPane));
         System.setOut(printStream);
         PrintStream printStreamErr = new PrintStream(new CustomOutputStream(textPaneErrori));
-        System.setErr(printStreamErr);
+        System.setErr(printStreamErr);*/
+        LoggerGC.enableTextPaneOut(textPane);
+        LoggerGC.enableTextPaneErr(textPaneErrori);
         }
         //System.out.println("Finestra Attesa Aperta");
     }//GEN-LAST:event_formWindowOpened
@@ -392,7 +398,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
 
 
-   public class CustomOutputStream extends OutputStream {
+ /*  public class CustomOutputStream extends OutputStream {
   
        
 
@@ -421,7 +427,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     }
     
     
-} 
+} */
     
     
     

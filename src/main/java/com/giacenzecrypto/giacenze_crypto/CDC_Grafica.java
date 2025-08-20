@@ -11931,7 +11931,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         CcxtInterop a = new CcxtInterop();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Download progress = new Download();
-        progress.RipristinaStdout();
+        //progress.RipristinaStdout();
         //progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
         progress.setLocationRelativeTo(this);
 
@@ -11945,7 +11945,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         System.out.println("Eseguo la chiamata");
         String chiavi[]=DatabaseH2.Pers_ExchangeApi_Leggi("Binance");
         
-        a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2025-07-01","BTC,ETH,USDC");
+        a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2025-07-01","BTC,ETH");
         } catch (IOException ex) {
         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {

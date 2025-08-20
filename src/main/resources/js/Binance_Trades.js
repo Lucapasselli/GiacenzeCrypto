@@ -16,9 +16,9 @@ const BINANCE_CONFIG = {
 };
 
 // Utility functions
-function logError(message) { console.error(`[ERROR] ${new Date().toISOString()}: ${message}`); }
-function logInfo(message) { console.error(`[INFO] ${new Date().toISOString()}: ${message}`); }
-function logDebug(message) { console.error(`[DEBUG] ${new Date().toISOString()}: ${message}`); }
+function logError(message) { console.error(`[ERROR] ${message}`); }
+function logInfo(message) { console.error(`[INFO] ${message}`); }
+function logDebug(message) { console.error(`[DEBUG] ${message}`); }
 
 function dateToTimestamp(dateString) {
     const date = new Date(dateString);

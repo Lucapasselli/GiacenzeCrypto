@@ -9,6 +9,8 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +58,21 @@ public class Giacenze_Crypto {
             System.exit(0);
         }
         LoggerGC.init(); 
-        
+        // Flusso su console (System.err originale)
+       /* PrintStream consoleErr = System.err;
+
+        OutputStream logStream = new OutputStream() {
+            @Override
+            public void write(int b) {
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) {
+                String msg = new String(b, off, len);
+                LoggerGC.logError(msg, null);
+            }
+        };
+        System.setErr(new PrintStream(new OutputStreamLog(consoleErr, logStream), true));*/
         
         CDC_Grafica.tema=DatabaseH2.Opzioni_Leggi("Tema");
         if (CDC_Grafica.tema==null)CDC_Grafica.tema="Chiaro";

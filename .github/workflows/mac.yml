@@ -46,6 +46,8 @@ jobs:
         run: |
           mkdir -p build/Immagini
           cp -r Immagini/* build/Immagini/
+          mkdir -p build/Scripts
+          cp -r Scripts/* build/Scripts/
           cp logo.png build/
           cp GestitiCoincap.csv build/
           cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar

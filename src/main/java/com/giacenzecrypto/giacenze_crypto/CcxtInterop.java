@@ -168,7 +168,8 @@ private static Path getNodeExePath() {
     public static void fetchMovimenti(String exchangeId, String apiKey, String secret, String startDate,String Tokens) {
     try {
         Path nodePath = getNodeExePath();
-        Path scriptPath = Paths.get("src/main/resources/js/"
+        Path scriptPath = Paths.get(Statiche.getPathRisorse()
+                + "Scripts/"
                 + "Binance_Conversioni"
                 + ".js");
 
@@ -275,7 +276,8 @@ private static Path getNodeExePath() {
 
             // Conversioni
             System.out.println("=== Conversioni ===");
-            JsonArray conversions = json.has("conversions") ? json.getAsJsonArray("conversions") : new JsonArray();
+            JsonArray conversions = json.has("Binance_smallAssetConversions") ? json.getAsJsonArray("Binance_smallAssetConversions") : new JsonArray();
+            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertConversioni(conversions,"Binance"));
             for (JsonElement c2 : conversions) {
                 System.out.println(c2.toString());
             }
@@ -797,6 +799,153 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
         return lista;
     }     
    
+      public static List<String[]> convertConversioni(JsonArray jsonList,String Exchange) {
+        List<String[]> lista = new ArrayList<>();
+        
+         // Ordiniamo per completeTime (servono per avere gruppi ordinati)
+        List<JsonObject> objects = new ArrayList<>();
+        if (jsonList==null)return lista;
+        for (JsonElement el : jsonList) {
+            objects.add(el.getAsJsonObject());
+        }
+        objects.sort((o1, o2) -> {
+            long t1 = Long.parseLong(o1.get("operateTime").getAsString());
+            long t2 = Long.parseLong(o2.get("operateTime").getAsString());
+            return Long.compare(t1, t2);
+        });
+        
+        
+        
+        
+        int totMov = 1;
+        int i = 1;
+        String OldData="0";
+
+        for (JsonElement el : objects) {
+            JSONObject obj = new JSONObject(el.toString());
+            Moneta mu=new Moneta();
+            Moneta me=new Moneta();
+            
+            
+            String Simboli[] = obj.optString("symbol", "").split("/");
+
+                mu.Moneta=obj.optString("fromAsset", "");
+                mu.Qta=obj.optString("amount", "");
+                mu.Tipo = (mu.Moneta.equalsIgnoreCase("EUR") || mu.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
+                me.Moneta=obj.optString("toAsset", "");
+                me.Qta=obj.optString("transferedAmount", "");
+                me.Tipo = (me.Moneta.equalsIgnoreCase("EUR") || me.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
+ 
+            
+            mu.Qta=new BigDecimal(mu.Qta).abs().stripTrailingZeros().multiply(new BigDecimal(-1)).toPlainString();
+            me.Qta=new BigDecimal(me.Qta).abs().stripTrailingZeros().toPlainString();
+            
+            Moneta mc=new Moneta();
+            mc.Moneta = obj.optString("toAsset", "");
+            mc.Qta = new BigDecimal(obj.optString("serviceChargeAmount", "")).stripTrailingZeros().toPlainString();
+            mc.Tipo = (mc.Moneta.equalsIgnoreCase("EUR") || mc.Moneta.equalsIgnoreCase("USD")) ? "FIAT" : "Crypto";
+            
+            String Time = obj.optString("operateTime", "");
+            //String completeTime = obj.optString("completeTime", insertTime);
+
+            long time = Long.parseLong(Time);
+            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
+            //Altrimenti andrei a sovrascrivere il movimento precedente
+            if (OldData.equals(data))totMov++;
+            else {
+                totMov=1;
+                OldData=data;
+            }
+            
+            String dataForId = data.replaceAll(" |-|:", "");
+            String dataa = data.trim().substring(0, data.length()-3);
+
+
+            String PrezzoT = Prezzi.DammiPrezzoTransazione(mu, me, time, null, true, 2, null);
+
+            String[] RT = new String[Importazioni.ColonneTabella];
+            RT[1] = dataa;                                               // Data e ora
+            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[3] = Exchange;                                            // Exchange
+            RT[4] = "Principale";                                        // Wallet
+            RT[7] = "asset/dribblet (API)";                              // Causale originale (vuoto)
+            // Prelievo → moneta uscente
+            
+            //Scambio FIAT
+            if (mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
+            {    
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SF"; // TrasID
+                RT[5]="SCAMBIO FIAT";
+            }
+            //Acquisto Crypto
+            else if (mu.Tipo.equalsIgnoreCase("FIAT") && !me.Tipo.equalsIgnoreCase("FIAT"))
+            {    
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_AC"; // TrasID
+                RT[5]="ACQUISTO CRYPTO";
+            }
+            //Vendita Crypto
+            else if (!mu.Tipo.equalsIgnoreCase("FIAT") && me.Tipo.equalsIgnoreCase("FIAT"))
+            {    
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_VC"; // TrasID
+                RT[5]="VENDITA CRYPTO";
+            }
+            //Scambio Crypto
+            else {
+                RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_SC"; // TrasID
+                RT[5]="SCAMBIO CRYPTO";
+            }
+            RT[6]  = mu.Moneta + " -> "+me.Moneta;                                       // Dettaglio Movimento
+            RT[8]  = mu.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
+            RT[9]  = mu.Tipo;                                         // Tipo Moneta Venduta
+            RT[10] = mu.Qta;                                             // Quantità Venduta
+            RT[11] = me.Moneta;
+            RT[12] = me.Tipo;
+            RT[13] = me.Qta;
+            RT[14] = "";                                                 // Valore Mercato originale
+            RT[15] = PrezzoT;                                          // Valore in EURO (qui 0)
+            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
+            RT[22] = "A";                                               // Auto
+            RT[29] = Time;                                                 // Timestamp
+
+
+            Importazioni.RiempiVuotiArray(RT);
+            //System.out.println(RT[0]);
+            lista.add(RT);
+            
+            
+            //SECONDA PARTE RELATIVA ALLE FEE
+            mc.Qta=new BigDecimal(mc.Qta).abs().multiply(new BigDecimal(-1)).toPlainString();
+            String PrezzoC = Prezzi.DammiPrezzoTransazione(mc, null, time, null, true, 2, null);
+            
+            RT = new String[Importazioni.ColonneTabella];
+            RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
+            RT[1] = dataa;                                               // Data e ora
+            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[3] = Exchange;                                            // Exchange
+            RT[4] = "Principale";                                        // Wallet
+            RT[5] = "COMMISSIONI";
+            RT[7] = "asset/dribblet (API)";                                                  // Causale originale (vuoto)
+            RT[6]  = mc.Moneta + " ->";                                       // Dettaglio Movimento
+            RT[8]  = mc.Moneta;                                               // Moneta Venduta/Trasferita (vuoto per deposito)
+            RT[9]  = mc.Tipo;                                         // Tipo Moneta Venduta
+            RT[10] = mc.Qta;                                             // Quantità Venduta
+            RT[11] = "";
+            RT[12] = "";
+            RT[13] = "";
+            RT[14] = "";                                                 // Valore Mercato originale
+            RT[15] = PrezzoC;                                         // Valore in EURO (qui 0)
+            RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
+            RT[22] = "A";                                               // Auto
+            RT[29] = Time;                                         // Timestamp
+
+            Importazioni.RiempiVuotiArray(RT);
+            //System.out.println(RT[0]);
+            lista.add(RT);
+        }
+
+        return lista;
+    } 
    
     
    public static List<String[]> convertEarn(JsonArray jsonList,String Exchange) {

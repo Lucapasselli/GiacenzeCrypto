@@ -36,6 +36,8 @@ jobs:
       - name: Copy extra resources
         run: |
             mkdir -p build/Immagini
+            mkdir -p build/Scripts
+            cp -r Scripts/* build/Scripts/
             cp -r Immagini/* build/Immagini/
             cp logo.png build/
             cp GestitiCoincap.csv build/

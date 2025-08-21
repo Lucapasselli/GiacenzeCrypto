@@ -47,7 +47,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
-import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -79,7 +78,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.json.JSONArray;
 
 
 /**
@@ -153,6 +151,7 @@ private static final long serialVersionUID = 3L;
     
     
     public String Versione="1.0.45";
+    
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
     
@@ -167,7 +166,9 @@ private static final long serialVersionUID = 3L;
     
     
     
-    public CDC_Grafica() {     
+    public CDC_Grafica() {
+    //Salvo la versione nei log
+    System.out.println("Versione attuale : "+Versione);
         
     try {    
         //imposto la velocità di comparsa dei tooltip a 100ms invece che 750
@@ -11945,7 +11946,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         System.out.println("Eseguo la chiamata");
         String chiavi[]=DatabaseH2.Pers_ExchangeApi_Leggi("Binance");
         
-        a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2025-08-01","");
+        a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2025-08-15","");
         } catch (IOException ex) {
         Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {

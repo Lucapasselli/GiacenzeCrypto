@@ -141,17 +141,17 @@ async function getMarketsSymbols(exchange) {
     if (fs.existsSync(marketsFile)) {
         const stats = fs.statSync(marketsFile);
         const fileAgeMs = Date.now() - stats.mtimeMs;
-        const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+        const twentyFourHoursMs = 1 * 60 * 60 * 1000;//Prima veniva scaricato ogni 24 ore adesso l'ho messo ogni ora per sicurezza e per evitare di saltare qualche token appena uscito
 
         if (fileAgeMs > twentyFourHoursMs) {
             // File troppo vecchio → lo elimino e ricarico
             fs.unlinkSync(marketsFile);
-            logInfo(`File ${marketsFile} più vecchio di 24 ore, eliminato. Carico markets da API...`);
+            logInfo(`File ${marketsFile} più vecchio di 1 ore, eliminato. Carico markets da API...`);
             markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
             fs.writeFileSync(marketsFile, JSON.stringify(markets, null, 2), 'utf8');
         } else {
             // File recente → uso i dati locali
-            logInfo(`Carico markets da file locale ${marketsFile} (meno di 24 ore)`);
+            logInfo(`Carico markets da file locale ${marketsFile} (meno di 1 ore)`);
             const rawData = fs.readFileSync(marketsFile, 'utf8');
             markets = JSON.parse(rawData);
         }

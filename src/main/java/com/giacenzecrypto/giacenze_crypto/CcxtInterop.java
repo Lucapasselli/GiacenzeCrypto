@@ -169,7 +169,7 @@ private static Path getNodeExePath() {
     try {
         Path nodePath = getNodeExePath();
         Path scriptPath = Paths.get("src/main/resources/js/"
-                + "Binance_Trades"
+                + "Binance_Conversioni"
                 + ".js");
 
         if (!Files.exists(nodePath)) {

@@ -23,29 +23,64 @@ async function getMarketsSymbols(exchange) {
     if (fs.existsSync(marketsFile)) {
         const stats = fs.statSync(marketsFile);
         const fileAgeMs = Date.now() - stats.mtimeMs;
-        const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+        const twentyFourHoursMs = 1 * 60 * 60 * 1000;//Adesso aspetta 1 ora non 24
 
         if (fileAgeMs > twentyFourHoursMs) {
             // File troppo vecchio → lo elimino e ricarico
             fs.unlinkSync(marketsFile);
-            logInfo(`File ${marketsFile} più vecchio di 24 ore, eliminato. Carico markets da API...`);
-            markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+            logInfo(`File ${marketsFile} più vecchio di 1 ore, eliminato. Carico markets da API...`);
+            markets = await safeApiCallMarkets(() => exchange.loadMarkets(), "loadMarkets");
             fs.writeFileSync(marketsFile, JSON.stringify(markets, null, 2), 'utf8');
         } else {
             // File recente → uso i dati locali
-            logInfo(`Carico markets da file locale ${marketsFile} (meno di 24 ore)`);
+            logInfo(`Carico markets da file locale ${marketsFile} (meno di 1 ore)`);
             const rawData = fs.readFileSync(marketsFile, 'utf8');
             markets = JSON.parse(rawData);
         }
     } else {
         // Nessun file → carico da API e salvo
         logInfo(`Nessun file ${marketsFile} trovato, carico markets da API...`);
-        markets = await safeApiCall(() => exchange.loadMarkets(), "loadMarkets");
+        markets = await safeApiCallMarkets(() => exchange.loadMarkets(), "loadMarkets");
         fs.writeFileSync(marketsFile, JSON.stringify(markets, null, 2), 'utf8');
     }
 
     return markets;
 }
+
+
+// Chiamata API con gestione errori e retry
+async function safeApiCallMarkets(fn, attemptLabel) {
+    let attempt = 1;
+    while (attempt <= BINANCE_CONFIG.maxRetries) {
+        try {
+            await smartRateLimit();
+            logDebug(`Chiamata API (tentativo ${attempt}): ${attemptLabel}`);
+            return await fn();
+        } catch (error) {
+            logError(`Tentativo ${attempt} fallito: ${error.message}`);
+
+            if (error.message.includes('429') || error.message.includes('rate limit')) {
+                if (attempt < BINANCE_CONFIG.maxRetries) {
+                    await handleRateLimit(attempt);
+                    attempt++;
+                    continue;
+                }
+                throw new Error(`Rate limit persistente dopo ${BINANCE_CONFIG.maxRetries} tentativi`);
+            }
+
+            if (error.message.includes('timeout') || error.message.includes('network')) {
+                if (attempt < BINANCE_CONFIG.maxRetries) {
+                    await sleep(3000);
+                    attempt++;
+                    continue;
+                }
+                throw new Error(`Errore di connessione persistente: ${error.message}`);
+            }
+            throw error;
+        }
+    }
+}
+
 
 
 
@@ -80,19 +115,42 @@ async function fetchHistoricalPrice(exchange, asset, timestamp) {
             return null;
         }
 
-        const response = await exchange.fetchOHLCV(
+    /*    const response = await exchange.fetchOHLCV(
             symbol,
             '1m',
             timestamp - 60000, // 1 minuto prima
             timestamp + 60000, // 1 minuto dopo
             1
-        );
+        );*/
+const response = await exchange.fetchOHLCV(
+    symbol,
+    '1m',
+    timestamp - 600000, // "since" = millisecondi di inizio candela (comincio a prendere i prezzi 10 minuti prima
+    60          // richiedo 60 candele e prendo quella più vicina al timetamp di riferimento (60 candele sono 1 ora di dati)
+);
 
+//FUNZIONE CHE PRENDE LA CANDELA PIU' VICINA 
+   if (response && response.length > 0) {
+    // Trova la candela più vicina al timestamp
+    const candle = response.reduce((prev, curr) => {
+        return Math.abs(curr[0] - timestamp) < Math.abs(prev[0] - timestamp) ? curr : prev;
+    });
+    const price = candle[4]; // close price
+    logInfo(`Recupero del prezzo a data ${timestampToRomeDate(timestamp)} per ${asset}: $${price}`);
+    PRICE_CACHE[cacheKey] = price;
+    return price;
+}
+
+
+
+     /*   //logInfo(`Recupero del prezzo per ${asset}: ${response}`);
         if (response.length > 0) {
+            
             const price = response[0][4]; // Prezzo di chiusura
+            logInfo(`Recupero del prezzo per ${symbol}: ${price}`);
             PRICE_CACHE[cacheKey] = price;
             return price;
-        }
+        }*/
         return null;
     } catch (error) {
         logError(`Errore nel recupero del prezzo per ${asset}: ${error.message}`);
@@ -100,16 +158,22 @@ async function fetchHistoricalPrice(exchange, asset, timestamp) {
     }
 }
 
+
+function timestampToRomeDate(ts) {
+  return new Date(ts).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+}
+
+
 // Trova la coppia di trading disponibile per un asset
 function findTradingPair(asset) {
-    const stablecoins = ['USDT', 'USDC', 'EUR'];
+    const stablecoins = ['USDT', 'USDC'];
     
     for (const stablecoin of stablecoins) {
         const pair1 = `${asset}/${stablecoin}`;
-        const pair2 = `${stablecoin}/${asset}`;
+        //const pair2 = `${stablecoin}/${asset}`;
         
         if (TRADING_PAIRS_CACHE.has(pair1)) return pair1;
-        if (TRADING_PAIRS_CACHE.has(pair2)) return pair2;
+        //if (TRADING_PAIRS_CACHE.has(pair2)) return pair2;
     }
     
     return null;
@@ -414,7 +478,7 @@ async function fetchAllConversions(exchange, startTime, endTime, assetArray) {
     const allConversions = [];
     const timeChunks = splitTimeRange(startTime, endTime);
     
-    logInfo(`Recupero storico conversioni (${timeChunks.length} chunk da 90gg)`);
+    logInfo(`Recupero storico conversioni (${timeChunks.length} chunk da ${BINANCE_CONFIG.maxQueryDays}gg)`);
     
     for (const [index, chunk] of timeChunks.entries()) {
         logInfo(`Processo chunk ${index + 1}/${timeChunks.length}: ${new Date(chunk.startTime).toISOString()} - ${new Date(chunk.endTime).toISOString()}`);

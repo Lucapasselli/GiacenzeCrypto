@@ -11,17 +11,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
-import javax.swing.JTextPane;
 import javax.swing.Timer;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 
 
 
@@ -39,8 +32,6 @@ public int Massimo;
 public int avanzamento;
 public transient Thread thread;
 public static boolean FineThread=false;
-transient PrintStream oldStdout = System.out;
-transient PrintStream oldStderr = System.err;
 public boolean nascondiLog=false;
 
 //    static boolean DownloadTerminato=false;
@@ -73,6 +64,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
          this.setIconImage(icon.getImage());
          initComponents();
          Download.FineThread=false;
+         CDC_Grafica.InterrompiCiclo=false;
      
         
 //RipristinaStdout();
@@ -112,6 +104,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     
     public void setIndeterminate(boolean b){
         ProgressBarDownload.setIndeterminate(b);
+        ProgressBarDownload.setString("");
     }
     
     public void SetThread(Thread T){
@@ -133,6 +126,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         if (thread!=null&&!thread.isAlive()){
             this.dispose();
         }
+        CDC_Grafica.InterrompiCiclo=false;
         return Download.FineThread;
     }
     
@@ -174,21 +168,13 @@ private Timer timer = new Timer(1000, new ActionListener() {
      public void RipristinaStdout()
              {
                  nascondiLog=true;
-        //System.setOut(oldStdout);
-        //System.setErr(oldStderr);
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();
      }
              
-          public void SetMessaggioAvanzamento (String Messaggio) {
- //Thread thread = new Thread() {
- //           public void run() {
-        // avanzamento=Avanzamento;
-        // ProgressBarDownload.setValue(Avanzamento);
-         LabelAvanzamento.setText(Messaggio);
- //}      };
-// thread.start();
+    public void SetMessaggioAvanzamento (String Messaggio) {
 
+         LabelAvanzamento.setText(Messaggio);
      }
      
      public void ChiudiFinestra (){
@@ -310,11 +296,9 @@ private Timer timer = new Timer(1000, new ActionListener() {
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
 
-        //System.setOut(oldStdout);
-        //System.setErr(oldStderr);
+        CDC_Grafica.InterrompiCiclo=false;
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();
-      //  System.out.println("Finestra Attesa Chiusa");
 
     }//GEN-LAST:event_formWindowClosed
 

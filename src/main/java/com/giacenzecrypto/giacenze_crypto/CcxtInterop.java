@@ -170,7 +170,7 @@ private static Path getNodeExePath() {
         Path nodePath = getNodeExePath();
         Path scriptPath = Paths.get(Statiche.getPathRisorse()
                 + "Scripts/"
-                + "Binance_Conversioni"
+                + "Binance_Trades"
                 + ".js");
 
         if (!Files.exists(nodePath)) {
@@ -218,6 +218,12 @@ private static Path getNodeExePath() {
                     new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
                 String logLine;
                 while ((logLine = logReader.readLine()) != null) {
+                    if(CDC_Grafica.InterrompiCiclo)
+                    {
+                        System.out.println("Premuto tasto INTERROMPI, blocco l'esecuzione dello script");
+                        process.destroy();
+                        return;
+                    }
                     System.out.println("[Node-LOG] " + logLine);
                 }
             } catch (IOException e) {
@@ -435,7 +441,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[34] = network;                                            // Rete
             RT[35] = ""; RT[36] = ""; 
             RT[37] = address; 
-            RT[38] = ""; RT[39] = "";
+            RT[38] = "";
+            RT[39] = "A"; //Fonte dati A = API Exchange  
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
@@ -561,7 +568,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[34] = network;                                            // Rete
             RT[35] = ""; RT[36] = ""; 
             RT[37] = address; 
-            RT[38] = ""; RT[39] = "";
+            RT[38] = ""; 
+            RT[39] = "A"; //Fonte dati A = API Exchange  
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
@@ -605,7 +613,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[34] = network;                                            // Rete
             RT[35] = ""; RT[36] = ""; 
             RT[37] = address; 
-            RT[38] = ""; RT[39] = "";
+            RT[38] = ""; 
+            RT[39] = "A"; //Fonte dati A = API Exchange  
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
@@ -745,7 +754,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[34] = "";                                            // Rete
             RT[35] = ""; RT[36] = ""; 
             RT[37] = ""; 
-            RT[38] = ""; RT[39] = "";
+            RT[38] = ""; 
+            RT[39] = "A"; //Fonte dati A = API Exchange  
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
@@ -789,7 +799,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[34] = "";                                            // Rete
             RT[35] = ""; RT[36] = ""; 
             RT[37] = ""; 
-            RT[38] = ""; RT[39] = "";
+            RT[38] = ""; 
+            RT[39] = "A"; //Fonte dati A = API Exchange  
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
@@ -827,7 +838,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             Moneta me=new Moneta();
             
             
-            String Simboli[] = obj.optString("symbol", "").split("/");
+          //  String Simboli[] = obj.optString("symbol", "").split("/");
 
                 mu.Moneta=obj.optString("fromAsset", "");
                 mu.Qta=obj.optString("amount", "");
@@ -907,7 +918,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
             RT[22] = "A";                                               // Auto
             RT[29] = Time;                                                 // Timestamp
-
+            RT[39] = "A"; //Fonte dati A = API Exchange                      
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
@@ -938,6 +949,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[16] = ""; RT[17] = ""; RT[18] = ""; RT[19] = ""; RT[20] = ""; RT[21] = "";
             RT[22] = "A";                                               // Auto
             RT[29] = Time;                                         // Timestamp
+            RT[39] = "A"; //Fonte dati A = API Exchange  
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
@@ -1058,7 +1070,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[34] = "";                                            // Rete
             RT[35] = ""; RT[36] = ""; 
             RT[37] = ""; 
-            RT[38] = ""; RT[39] = "";
+            RT[38] = ""; 
+            RT[39] = "A"; //Fonte dati A = API Exchange  
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);

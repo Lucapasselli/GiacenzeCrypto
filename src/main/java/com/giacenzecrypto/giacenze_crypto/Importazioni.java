@@ -51,7 +51,12 @@
     A -> Manca parte del LiFo
     B -> Da Implementare
     C -> Da Implementare
-39 - Campo Libero per implementazioni future
+39 - Fonte dati (Per il momento implementata solo sulle nuove funzioni di import dati tramite API Exchange)
+    A -> API Exchange
+    B -> API Explorer
+    C -> CSV Exchange
+    D -> CSV Generico
+    E -> Inserimento Manuale
 */
 
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI

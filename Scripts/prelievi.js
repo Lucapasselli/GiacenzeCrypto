@@ -119,8 +119,10 @@ async function fetchAllWithdrawalsRaw(exchange, rateLimiter, globalStartTime, gl
           continue;
         }
         // Converte la data in ms (creo i campi corretti per il json)
-        w.insertTime = Date.parse(w.applyTime);//Questo serve per rendere compatibile la cosa con l'output dei depositi
-        w.completeTime = Date.parse(w.completeTime);//Questo serve per rendere compatibile la cosa con l'output dei depositi
+        //w.insertTime = Date.parse(w.applyTime);//Questo serve per rendere compatibile la cosa con l'output dei depositi
+       // w.completeTime = Date.parse(w.completeTime);//Questo serve per rendere compatibile la cosa con l'output dei depositi
+        w.insertTime = normalizeBinanceTime(w.applyTime);   // compatibile con i depositi
+        w.completeTime = normalizeBinanceTime(w.completeTime);
         
         seenIds.add(id);
         out.push(w);
@@ -144,6 +146,38 @@ async function fetchAllWithdrawalsRaw(exchange, rateLimiter, globalStartTime, gl
   console.error(`[Node-LOG] Prelievi totali dopo filtro: ${filteredOut.length}`);
   return filteredOut;
 }
+
+
+
+function normalizeBinanceTime(value) {
+  if (!value) return null;
+
+  // Se è già un numero (epoch in ms)
+  if (!isNaN(value)) {
+    return Number(value);
+  }
+
+  // Se è una stringa (es: "2025-08-25 09:00:00")
+  if (typeof value === 'string') {
+    // ISO già con Z o offset (+hh:mm / -hhmm)
+    if (/T.*Z$/.test(value) || /[+-]\d\d:?(\d\d)?$/.test(value)) {
+      return new Date(value).getTime();
+    }
+    // "YYYY-MM-DD HH:mm:ss" (documentato come UTC)
+    const m = value.match(
+      /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?$/
+    );
+    if (m) {
+      const [, y, mo, d, h, mi, se] = m;
+      return Date.UTC(+y, +mo - 1, +d, +h, +mi, +se);
+    }
+    // fallback
+    return Date.parse(value);
+  }
+
+  return null;
+}
+
 
 // ======================= MAIN =======================
 

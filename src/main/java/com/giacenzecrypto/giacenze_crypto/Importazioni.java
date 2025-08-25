@@ -27,7 +27,7 @@
 15 - Valore di Mercato Transazione in EURO -> es. 9
 16 - Costo di Carico Moneta Uscente
 17 - Costo di carico Moneta Entrante
-18 - Tipo Trasferimento
+18 - Tipo Trasferimento (Ad esempio PCO - Commissione) Serve per l'dentificazione dei movimenti di deposito e prelievo
 19 - Plusvalenza in EUR della Transazione -> es 3
 20 - Riferimento x Trasferimenti -> Se è un traferimento si mette il riferimento al wallet/ transazione che l'ha generato es. 202112031045_Crypto.com_TraferimentoCrypto
 21 - Note -> Eventuali note sulla transazione o sulla singola parte della transazione.

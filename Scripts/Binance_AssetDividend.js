@@ -120,6 +120,7 @@ function splitTimeRange(startTime, endTime) {
 async function fetchRewardsForInterval(exchange, startTime, endTime, rewardType) {
     const intervalRewards = [];
     let currentStartTime = startTime;
+    let currentEndTime = endTime;
     let iterazione = 1;
     const maxIterazioni = 1000;
     const Size =500;
@@ -131,7 +132,7 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, rewardType)
             const params = {
               //  type: rewardType,
                 startTime: currentStartTime,
-                endTime: endTime,
+                endTime: currentEndTime,
                // current: iterazione,
                 limit: Size
             };
@@ -144,7 +145,7 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, rewardType)
             
             //logInfo(`Risposta : ${response}`);
             const records = response?.rows || [];
-            logDebug(`Risposta : ${JSON.stringify(response, null, 2)}`);
+           // logDebug(`Risposta : ${JSON.stringify(response, null, 2)}`);
             logDebug(`Ricevuti ${records.length} ${rewardType} records`);
             
             if (records.length === 0) break;
@@ -161,10 +162,12 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, rewardType)
             logInfo(`Trovata nuova pagina di dati per il periodo indicato`);
             
             // Aggiorna il cursore
-           /* const maxTimestamp = Math.max(...records.map(r => parseInt(r.time)));
-            currentStartTime = maxTimestamp + 1;
-            
-            if (currentStartTime >= endTime) break;*/
+            const maxTimestamp = Math.max(...records.map(r => parseInt(r.divTime)));
+            const minTimestamp = Math.min(...records.map(r => parseInt(r.divTime)));
+            currentEndTime = minTimestamp - 1;
+            //currentStartTime = maxTimestamp + 1;
+            if (currentEndTime <= currentStartTime) break;
+            //if (currentStartTime >= endTime) break;
             
             iterazione++;
         } catch (error) {
@@ -272,7 +275,7 @@ async function main() {
         
         // Output
         // Per lo script FLEXIBLE:
-        console.log(JSON.stringify({ Binance_earnFlexible: allRewards }, null, 2));
+        console.log(JSON.stringify({ Binance_Rewards: allRewards }, null, 2));
         
     } catch (error) {
         logError(`Errore critico: ${error.message}`);

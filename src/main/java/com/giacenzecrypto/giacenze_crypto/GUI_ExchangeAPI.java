@@ -583,7 +583,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
             
             long data=Long.parseLong("1483228800000");
-            String wallet = model.getValueAt(modelRow, 1).toString().toLowerCase(); // 1 = seconda colonna
+            String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
             String ApiKey = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
             String ApiSecret = model.getValueAt(modelRow, 3).toString(); // 1 = seconda colonna
             //come data di inizio metto la data dell'ulti movimento + 1 secondo

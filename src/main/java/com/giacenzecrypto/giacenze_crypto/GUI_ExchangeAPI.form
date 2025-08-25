@@ -33,7 +33,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jTabbedPane1" pref="1029" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -78,10 +78,8 @@
                               <EmptySpace min="-2" pref="92" max="-2" attributes="0"/>
                               <Component id="Bottone_InserisciChiave" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="TextField_ApiSecret" alignment="1" pref="453" max="32767" attributes="0"/>
-                              <Component id="TextField_ApiKey" alignment="1" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="TextField_ApiSecret" alignment="1" pref="453" max="32767" attributes="0"/>
+                          <Component id="TextField_ApiKey" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">

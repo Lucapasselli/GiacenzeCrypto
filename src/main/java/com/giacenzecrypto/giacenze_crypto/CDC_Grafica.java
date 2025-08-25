@@ -6783,7 +6783,7 @@ JPanel loadingBar = new JPanel() {
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
-                        if(AddressU.isBlank()&&AddressE.isBlank())ReteMov="";
+                       // if(AddressU.isBlank()&&AddressE.isBlank())ReteMov="";
                     // adesso verifico il wallet
                     if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
@@ -13175,9 +13175,9 @@ try {
                             Monete[1].Qta = movimento[13];
                             Monete[1].Rete = Rete;
                             //Se non c'è l'address della moneta allora la rete non la metto visto che non è importante
-                            if (Monete[0].MonetaAddress.isBlank())Monete[0].Rete = "";
+                          /*  if (Monete[0].MonetaAddress.isBlank())Monete[0].Rete = "";
                             if (Monete[1].MonetaAddress.isBlank())Monete[1].Rete = "";
-                            if (Monete[0].Rete.isBlank()&&Monete[1].Rete.isBlank())Rete="";
+                            if (Monete[0].Rete.isBlank()&&Monete[1].Rete.isBlank())Rete="";*/
                             //System.out.println(Rete+" - "+movimento[0]);
                             if (Rete == null) {
                                 Rete = "";

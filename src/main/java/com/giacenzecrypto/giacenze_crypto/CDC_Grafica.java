@@ -1325,13 +1325,14 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransazioniCryptoLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati)
-                    .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(TransazioniCrypto_Bottone_ExchangeAPI, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati)
+                        .addComponent(TransazioniCrypto_Bottone_ExchangeAPI, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -6782,6 +6783,7 @@ JPanel loadingBar = new JPanel() {
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
+                        if(AddressU.isBlank()&&AddressE.isBlank())ReteMov="";
                     // adesso verifico il wallet
                     if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
@@ -13172,6 +13174,10 @@ try {
                             Monete[1].Tipo = movimento[12];
                             Monete[1].Qta = movimento[13];
                             Monete[1].Rete = Rete;
+                            //Se non c'è l'address della moneta allora la rete non la metto visto che non è importante
+                            if (Monete[0].MonetaAddress.isBlank())Monete[0].Rete = "";
+                            if (Monete[1].MonetaAddress.isBlank())Monete[1].Rete = "";
+                            if (Monete[0].Rete.isBlank()&&Monete[1].Rete.isBlank())Rete="";
                             //System.out.println(Rete+" - "+movimento[0]);
                             if (Rete == null) {
                                 Rete = "";

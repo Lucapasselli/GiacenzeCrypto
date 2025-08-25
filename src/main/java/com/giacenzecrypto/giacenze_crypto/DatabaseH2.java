@@ -568,7 +568,36 @@ public class DatabaseH2 {
         }
         return Risultato;
         //Con questa query ritorno sia il vecchio che il nuovo nome
-    }    
+    }   
+        
+        
+            public static Map<String, String[]> Pers_ExchangeApi_LeggiTabella() {
+            //List<String> tabella= new ArrayList<>();
+            Map<String, String[]> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+            //String Risultato;
+        try {
+            String checkIfExistsSQL = "SELECT Nome,Exchange,Chiave,Segreto FROM EXCHANGEAPI";
+            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String record[]=new String[4];
+                        record[0] = resultSet.getString("Nome");
+                        record[1] = resultSet.getString("Exchange");
+                        record[2] = resultSet.getString("Chiave");
+                        record[3] = resultSet.getString("Segreto");
+                        Mappa_Wallet.put(record[0], record);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Mappa_Wallet;
+    }        
+    
+        
+        
     
     /**
      *

@@ -16,6 +16,7 @@ public class Icone {
     public static Icon FrecciaSinistra = new FlatSVGIcon("Images/FrecciaSinistra.svg", 40, 40);
     public static Icon Modifica = new FlatSVGIcon("Images/Modifica.svg", 24, 24);
     public static Icon Carica = new FlatSVGIcon("Images/Carica.svg", 24, 24);
+    public static Icon Chiave = new FlatSVGIcon("Images/Chiave.svg", 24, 24);
     public static Icon Catena = new FlatSVGIcon("Images/Catena.svg", 24, 24);
     public static Icon Banana = new FlatSVGIcon("Images/Banana.svg", 24, 24);
     public static Icon Imbuto = new FlatSVGIcon("Images/Imbuto.svg", 24, 24);

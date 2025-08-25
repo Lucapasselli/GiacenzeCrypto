@@ -10,7 +10,7 @@ const REWARD_TYPES = ['BONUS', 'REALTIME', 'REWARDS'];
 
 // Configurazione
 const BINANCE_CONFIG = {
-    minDelayMs: 2500,
+    minDelayMs: 10000,
     maxRetries: 5,
     baseBackoffMs: 5000,
     maxBackoffMs: 60000,
@@ -223,7 +223,8 @@ async function main() {
         
         const [exchangeId, apiKey, secret, startDate, assetArrayStr] = args;
         const endTime = Date.now();
-        const startTime = dateToTimestamp(startDate);
+        //const startTime = dateToTimestamp(startDate);
+        let startTime = Number(startDate);
        // const assetArray = assetArrayStr.split(',').map(s => s.trim()).filter(Boolean);
         
         // Inizializza exchange
@@ -268,7 +269,7 @@ async function main() {
         
         // Output
         // Per lo script FLEXIBLE:
-        console.log(JSON.stringify({ earnFlexible: allRewards }, null, 2));
+        console.log(JSON.stringify({ Binance_earnFlexible: allRewards }, null, 2));
         
     } catch (error) {
         logError(`Errore critico: ${error.message}`);

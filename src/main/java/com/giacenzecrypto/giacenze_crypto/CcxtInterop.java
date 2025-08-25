@@ -13,13 +13,18 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.*;
+import javax.swing.SwingWorker;
 import org.json.JSONObject;
 
 public class CcxtInterop {
@@ -164,29 +169,228 @@ private static Path getNodeExePath() {
     }
     
     
+    public static void fetchMovimentiConBar(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Component c) {
+             // TODO add your handling code here:
+        //CcxtInterop a = new CcxtInterop();
+        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Download progress = new Download();
+        progress.setIndeterminate(true);
+        progress.SetLabel("Scaricamento da API in corso...");
+        //progress.RipristinaStdout();
+        //progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
+        progress.setLocationRelativeTo(c);
 
-    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, String startDate,String Tokens) {
+        // Esegui l'export in background
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+        @Override
+        protected Void doInBackground() throws Exception {
+        try {
+        System.out.println("Verifico Installazione di Node");
+        ensureNodeInstalled();
+        System.out.println("Verifico Installazione di CCXT");
+        installCcxt();
+        System.out.println("Eseguo la chiamata");
+        
+        fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens);
+        } catch (IOException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+        }
+        
+        @Override
+        protected void done() {
+        progress.dispose();
+        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+        };
+
+        worker.execute();
+        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+        
+    }
+    
+    
+
+    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens) {
+       // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        List<JsonObject> Jsons = new ArrayList<>();
+        
+        //BINACE TEST
+        if (exchangeId.equalsIgnoreCase("Binancet")) {
+            
+            //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
+           // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
+            String estrazioni[] = new String[]{"depositi"};
+            for (String script : estrazioni) {
+                JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", script);
+                if (json != null) {
+                    Jsons.add(json);
+                }
+            }
+
+            
+            //2 - RECUPERO I TOKEN COINVOLTI NELLE TRANSAZIONI
+            //Adesso che ho scaricato tutti i movimenti recupero la lista dei movimenti nel formato standard di GiacenzeCrypto
+            List<String[]> lista = getListaMovimenti(Jsons, exchangeId);
+
+            //Adesso devo recuperare tutti i token movimentati per poter poi creare un array di token da passare per il recupero dei trades
+            for (String[] riga : lista) {
+                //Se il token non è presente nella lista lo aggiungo
+                if (!riga[8].isBlank() && !Tokens.contains(riga[8])) {
+                    Tokens = Tokens + "," + riga[8];
+                }
+                if (!riga[11].isBlank() && !Tokens.contains(riga[11])) {
+                    Tokens = Tokens + "," + riga[11];
+                }
+            }
+
+            //3 - RECUPERO I TRADES DEI TOKEN COINVOLTI + QUELLI RICHIESTI IN ORIGINE
+            //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(
+            //Recuperato la lista di token da richiedere procedo con il recupero dei trades
+           // JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, Tokens, "Binance_Trades");
+           // lista.addAll(getListaMovimento(json, exchangeId));
+
+            //4 - IMPORTO TUTTO NEL DATABASE
+            //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
+            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
+
+        }
+        
+        //BINACE
+        if (exchangeId.equalsIgnoreCase("Binance")) {
+            
+            //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
+            String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
+            for (String script : estrazioni) {
+                JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", script);
+                if (json != null) {
+                    Jsons.add(json);
+                }
+            }
+
+            
+            //2 - RECUPERO I TOKEN COINVOLTI NELLE TRANSAZIONI
+            //Adesso che ho scaricato tutti i movimenti recupero la lista dei movimenti nel formato standard di GiacenzeCrypto
+            List<String[]> lista = getListaMovimenti(Jsons, exchangeId);
+
+            //Adesso devo recuperare tutti i token movimentati per poter poi creare un array di token da passare per il recupero dei trades
+            for (String[] riga : lista) {
+                //Se il token non è presente nella lista lo aggiungo
+                if (!riga[8].isBlank() && !Tokens.contains(riga[8])) {
+                    Tokens = Tokens + "," + riga[8];
+                }
+                if (!riga[11].isBlank() && !Tokens.contains(riga[11])) {
+                    Tokens = Tokens + "," + riga[11];
+                }
+            }
+
+            //3 - RECUPERO I TRADES DEI TOKEN COINVOLTI + QUELLI RICHIESTI IN ORIGINE
+            //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(
+            //Recuperato la lista di token da richiedere procedo con il recupero dei trades
+            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, Tokens, "Binance_Trades");
+            lista.addAll(getListaMovimento(json, exchangeId));
+
+            //4 - IMPORTO TUTTO NEL DATABASE
+            //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
+            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
+
+        }
+    }
+    
+    public static List<String[]> getListaMovimento(JsonObject json,String Exchange) {
+             List<String[]> lista = new ArrayList<>();       
+             // Depositi
+            JsonArray deposits = json.has("deposits") ? json.getAsJsonArray("deposits") : new JsonArray();
+            lista.addAll(convertDepositi(deposits,Exchange));
+          /*  for (JsonElement d : deposits) {
+                System.out.println(d.toString());
+            }*/
+
+            // Prelievi
+            JsonArray withdrawals = json.has("withdrawals") ? json.getAsJsonArray("withdrawals") : new JsonArray();
+            lista.addAll(convertPrelievi(withdrawals,Exchange));
+           /* for (JsonElement w : withdrawals) {
+                System.out.println(w.toString());
+            }*/
+
+            // Trades
+            JsonArray trades = json.has("trades") ? json.getAsJsonArray("trades") : new JsonArray();
+            lista.addAll(convertTrades(trades,Exchange));
+           /* for (JsonElement t : trades) {
+                System.out.println(t.toString());
+            }*/
+
+            // Conversioni
+            JsonArray conversions = json.has("Binance_smallAssetConversions") ? json.getAsJsonArray("Binance_smallAssetConversions") : new JsonArray();
+            lista.addAll(convertBinanceConversioni(conversions,Exchange));
+           /* for (JsonElement c2 : conversions) {
+                System.out.println(c2.toString());
+            }*/
+
+            // Savings / Earn
+            JsonArray savings = json.has("savings") ? json.getAsJsonArray("savings") : new JsonArray();
+           /* for (JsonElement s : savings) {
+                System.out.println(s.toString());
+            }*/
+
+            // Staking
+            JsonArray staking = json.has("staking") ? json.getAsJsonArray("staking") : new JsonArray();
+          /*  for (JsonElement s2 : staking) {
+                System.out.println(s2.toString());
+            }*/
+            
+            // Binance Earn Flessibile
+            JsonArray earnFlexible = json.has("Binance_earnFlexible") ? json.getAsJsonArray("Binance_earnFlexible") : new JsonArray();
+            lista.addAll(convertBinanceEarn(earnFlexible,Exchange));
+          /*  for (JsonElement s2 : earnFlexible) {
+                System.out.println(s2.toString());
+            }*/
+            
+            // Binance Earn Bloccato
+            JsonArray earnLocked = json.has("Binance_EarnLocked") ? json.getAsJsonArray("Binance_EarnLocked") : new JsonArray();
+            lista.addAll(convertBinanceEarn(earnLocked,Exchange));
+            /*for (JsonElement s2 : earnLocked) {
+                System.out.println(s2.toString());
+            }*/
+            return lista;
+    }
+    
+    public static List<String[]> getListaMovimenti(List<JsonObject> Jsons,String Exchange) {
+        List<String[]> lista = new ArrayList<>();
+        for(JsonObject json:Jsons){
+            lista.addAll(getListaMovimento(json,Exchange));
+        }
+       return lista; 
+    }
+    
+    public static JsonObject fetchMovimento(String exchangeId, String apiKey, String secret, long startDate,String Tokens,String script) {
     try {
+        
+        
+        
         Path nodePath = getNodeExePath();
         Path scriptPath = Paths.get(Statiche.getPathRisorse()
                 + "Scripts/"
-                + "Binance_Trades"
+                + script
                 + ".js");
 
         if (!Files.exists(nodePath)) {
             System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
-            return;
+            return null;
         }
         if (!Files.exists(scriptPath)) {
             System.err.println("Errore: script JS non trovato a " + scriptPath.toAbsolutePath());
-            return;
+            return null;
         }
 
-        
+        System.out.println("Eseguo script : "+script+".js");
         ProcessBuilder builder = new ProcessBuilder(
                 nodePath.toString(),
                 scriptPath.toAbsolutePath().toString(),
-                exchangeId, apiKey, secret, startDate,Tokens
+                exchangeId, apiKey, secret, String.valueOf(startDate),Tokens
         );
         builder.directory(scriptPath.getParent().toFile());
         // Non reindirizziamo stderr su stdout
@@ -244,7 +448,7 @@ private static Path getNodeExePath() {
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             System.err.println("Errore: processo Node.js terminato con codice " + exitCode);
-            return;
+            return null;
         }
 
         // Parse JSON con Gson
@@ -254,74 +458,15 @@ private static Path getNodeExePath() {
 
         if (json.has("error") && !json.get("error").isJsonNull() && !json.get("error").getAsString().isEmpty()) {
             System.err.println("Errore dallo script JS: " + json.get("error").getAsString());
+            return null;
         } else {
-            // Depositi
-            System.out.println("=== Depositi ===");
-            JsonArray deposits = json.has("deposits") ? json.getAsJsonArray("deposits") : new JsonArray();
-            //convertDepositi(deposits,"Binance");
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertDepositi(deposits,"Binance"));
-            for (JsonElement d : deposits) {
-                System.out.println(d.toString());
-            }
-
-            // Prelievi
-            System.out.println("=== Prelievi ===");
-            JsonArray withdrawals = json.has("withdrawals") ? json.getAsJsonArray("withdrawals") : new JsonArray();
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertPrelievi(withdrawals,"Binance"));
-            for (JsonElement w : withdrawals) {
-                System.out.println(w.toString());
-            }
-
-            // Trades
-            System.out.println("=== Trades ===");
-            JsonArray trades = json.has("trades") ? json.getAsJsonArray("trades") : new JsonArray();
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertTrades(trades,"Binance"));
-            for (JsonElement t : trades) {
-                System.out.println(t.toString());
-            }
-
-            // Conversioni
-            System.out.println("=== Conversioni ===");
-            JsonArray conversions = json.has("Binance_smallAssetConversions") ? json.getAsJsonArray("Binance_smallAssetConversions") : new JsonArray();
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertConversioni(conversions,"Binance"));
-            for (JsonElement c2 : conversions) {
-                System.out.println(c2.toString());
-            }
-
-            // Savings / Earn
-            System.out.println("=== Savings ===");
-            JsonArray savings = json.has("savings") ? json.getAsJsonArray("savings") : new JsonArray();
-            for (JsonElement s : savings) {
-                System.out.println(s.toString());
-            }
-
-            // Staking
-            System.out.println("=== Staking ===");
-            JsonArray staking = json.has("staking") ? json.getAsJsonArray("staking") : new JsonArray();
-            for (JsonElement s2 : staking) {
-                System.out.println(s2.toString());
-            }
-            
-            // Staking
-            System.out.println("=== earnFlexible ===");
-            JsonArray earnFlexible = json.has("earnFlexible") ? json.getAsJsonArray("earnFlexible") : new JsonArray();
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertEarn(earnFlexible,"Binance"));
-            for (JsonElement s2 : earnFlexible) {
-                System.out.println(s2.toString());
-            }
-            
-            // Staking
-            System.out.println("=== earnLocked ===");
-            JsonArray earnLocked = json.has("Binance_EarnLocked") ? json.getAsJsonArray("Binance_EarnLocked") : new JsonArray();
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(convertEarn(earnLocked,"Binance"));
-            for (JsonElement s2 : earnLocked) {
-                System.out.println(s2.toString());
-            }
-            
+            return json;
+                     
         }
     } catch (Exception e) {
         e.printStackTrace();
     }
+    return null;
 }
 
 
@@ -810,7 +955,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
         return lista;
     }     
    
-      public static List<String[]> convertConversioni(JsonArray jsonList,String Exchange) {
+      public static List<String[]> convertBinanceConversioni(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
          // Ordiniamo per completeTime (servono per avere gruppi ordinati)
@@ -960,7 +1105,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
     } 
    
     
-   public static List<String[]> convertEarn(JsonArray jsonList,String Exchange) {
+   public static List<String[]> convertBinanceEarn(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
          // Ordiniamo per completeTime (servono per avere gruppi ordinati)
@@ -1080,6 +1225,10 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
 
         return lista;
     }    
+   
+   
+   
+   
    
    
    

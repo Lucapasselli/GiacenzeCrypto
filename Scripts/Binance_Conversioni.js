@@ -207,7 +207,7 @@ function findTradingPair(asset) {
 
 // Configurazione Principale
 const BINANCE_CONFIG = {
-    minDelayMs: 2000,
+    minDelayMs: 2500,
     maxRetries: 5,
     baseBackoffMs: 5000,
     maxBackoffMs: 60000,
@@ -523,7 +523,8 @@ async function main() {
         
         const [exchangeId, apiKey, secret, startDate, assetArrayStr] = args;
         const endTime = Date.now();
-        const startTime = dateToTimestamp(startDate);
+        //const startTime = dateToTimestamp(startDate);
+        let startTime = Number(startDate);
         const assetArray = assetArrayStr.split(',').map(s => s.trim()).filter(Boolean);
         
         // Inizializza exchange

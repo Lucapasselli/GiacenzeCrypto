@@ -141,8 +141,9 @@ async function fetchAllDepositsRaw(exchange, rateLimiter, globalStartTime, globa
 // ======================= MAIN =======================
 
 async function main() {
-  const [,, exchangeId, apiKey, secret, startDateArg = "2017-01-01"] = process.argv;
-  let startTime = new Date(startDateArg).getTime();
+  const [,, exchangeId, apiKey, secret, startDateArg = "1483228800000"] = process.argv;
+  //let startTime = new Date(startDateArg).getTime();
+  let startTime = Number(startDateArg);
   const endTime = Date.now();
 
   if (startTime < EPOCH_ALL_HISTORY) {
@@ -150,7 +151,7 @@ async function main() {
   }
 
   const ExchangeClass = ccxt[exchangeId];
-  const exchange = new ExchangeClass({ apiKey, secret, enableRateLimit: false, options: { recvWindow: 60000 }, timeout: 60000 });
+  const exchange = new ExchangeClass({ apiKey, secret, enableRateLimit: true, options: { recvWindow: 60000 }, timeout: 60000 });
 
   const rateLimiter = exchangeId === 'binance' ? new BinanceRateLimiter() : null;
 

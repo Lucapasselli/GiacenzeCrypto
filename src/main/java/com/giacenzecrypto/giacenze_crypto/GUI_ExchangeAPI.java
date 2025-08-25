@@ -5,8 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Mappa_Wallet;
-//import static com.giacenzecrypto.giacenze_crypto.Prezzi.MappaWallets;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -42,7 +40,7 @@ Funzioni da sistemare per aggiungere nuova rete
 public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
-
+    Map<String, String> Mappa_Exchange = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     /**
      * Creates new form GestioneWallets
      */
@@ -66,18 +64,20 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        Bottone_InserisciAPI = new javax.swing.JButton();
-        Bottone_RimuoviAPI = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        Pannello_Chiavi = new javax.swing.JPanel();
         ScrollPaneTabellaWallets = new javax.swing.JScrollPane();
         TabellaWallets = new javax.swing.JTable();
-        Label_APIkey = new javax.swing.JLabel();
-        Label_Rete = new javax.swing.JLabel();
-        TextField_APIkey = new javax.swing.JTextField();
+        TextField_ApiKey = new javax.swing.JTextField();
+        Label_IndirizzoWallet1 = new javax.swing.JLabel();
+        Label_IndirizzoWallet = new javax.swing.JLabel();
+        TextField_ApiSecret = new javax.swing.JTextField();
+        Label_Exchange = new javax.swing.JLabel();
         ComboBox_Exchange = new javax.swing.JComboBox<>();
-        Bottone_Aggiorna = new javax.swing.JButton();
+        Bottone_InserisciChiave = new javax.swing.JButton();
+        Bottone_RimuoviChiave = new javax.swing.JButton();
         Bottone_AggiornaSelezionati = new javax.swing.JButton();
-        Label_APIsecret = new javax.swing.JLabel();
-        TextField_APIsecret = new javax.swing.JTextField();
+        Bottone_Aggiorna = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -97,22 +97,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             }
         });
 
-        Bottone_InserisciAPI.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
-        Bottone_InserisciAPI.setText("Inserisci API");
-        Bottone_InserisciAPI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Bottone_InserisciAPIActionPerformed(evt);
-            }
-        });
-
-        Bottone_RimuoviAPI.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
-        Bottone_RimuoviAPI.setText("Rimuovi Wallet Selezionato");
-        Bottone_RimuoviAPI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Bottone_RimuoviAPIActionPerformed(evt);
-            }
-        });
-
         TabellaWallets.setAutoCreateRowSorter(true);
         TabellaWallets.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -122,7 +106,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 {null, null, null, null, null}
             },
             new String [] {
-                "Nome Wallet", "Indirizo Wallet", "Rete", "<html><center>Data Ultimo Movimento<br>Importato</html>", "Ultimo Blocco"
+                "Gruppo", "Exchange", "API Key", "API Secret", "<html><center>Data Ultimo Movimento<br>Importato</html>"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -137,27 +121,37 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         if (TabellaWallets.getColumnModel().getColumnCount() > 0) {
             TabellaWallets.getColumnModel().getColumn(0).setPreferredWidth(150);
             TabellaWallets.getColumnModel().getColumn(0).setMaxWidth(150);
-            TabellaWallets.getColumnModel().getColumn(2).setPreferredWidth(60);
-            TabellaWallets.getColumnModel().getColumn(2).setMaxWidth(60);
-            TabellaWallets.getColumnModel().getColumn(3).setPreferredWidth(200);
-            TabellaWallets.getColumnModel().getColumn(3).setMaxWidth(200);
-            TabellaWallets.getColumnModel().getColumn(4).setPreferredWidth(100);
-            TabellaWallets.getColumnModel().getColumn(4).setMaxWidth(100);
+            TabellaWallets.getColumnModel().getColumn(1).setPreferredWidth(150);
+            TabellaWallets.getColumnModel().getColumn(1).setMaxWidth(150);
+            TabellaWallets.getColumnModel().getColumn(4).setPreferredWidth(150);
+            TabellaWallets.getColumnModel().getColumn(4).setMaxWidth(150);
         }
         TabellaWallets.getTableHeader().setPreferredSize(new Dimension(TabellaWallets.getColumnModel().getTotalColumnWidth(), 48));
 
-        Label_APIkey.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        Label_APIkey.setText("Api Key :");
+        Label_IndirizzoWallet1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        Label_IndirizzoWallet1.setText("Api Key :");
 
-        Label_Rete.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        Label_Rete.setText("Exchange :");
+        Label_IndirizzoWallet.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        Label_IndirizzoWallet.setText("Api Secret :");
 
-        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance", " " }));
+        Label_Exchange.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        Label_Exchange.setText("Exchange :");
 
-        Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
-        Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
+        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance" }));
+
+        Bottone_InserisciChiave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
+        Bottone_InserisciChiave.setText("Inserisci Chiave");
+        Bottone_InserisciChiave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Bottone_AggiornaActionPerformed(evt);
+                Bottone_InserisciChiaveActionPerformed(evt);
+            }
+        });
+
+        Bottone_RimuoviChiave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
+        Bottone_RimuoviChiave.setText("Rimuovi Wallet Selezionato");
+        Bottone_RimuoviChiave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_RimuoviChiaveActionPerformed(evt);
             }
         });
 
@@ -169,8 +163,82 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             }
         });
 
-        Label_APIsecret.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        Label_APIsecret.setText("Api Secret :");
+        Bottone_Aggiorna.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Aggiorna.png"))); // NOI18N
+        Bottone_Aggiorna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_AggiornaActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Pannello_ChiaviLayout = new javax.swing.GroupLayout(Pannello_Chiavi);
+        Pannello_Chiavi.setLayout(Pannello_ChiaviLayout);
+        Pannello_ChiaviLayout.setHorizontalGroup(
+            Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(Label_IndirizzoWallet1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Label_IndirizzoWallet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                    .addComponent(Label_Exchange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                        .addComponent(ComboBox_Exchange, 0, 222, Short.MAX_VALUE)
+                        .addGap(92, 92, 92)
+                        .addComponent(Bottone_InserisciChiave))
+                    .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(TextField_ApiSecret, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                        .addComponent(TextField_ApiKey, javax.swing.GroupLayout.Alignment.TRAILING)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+                    .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(4, 4, 4)
+                .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(ScrollPaneTabellaWallets)
+                    .addContainerGap()))
+        );
+        Pannello_ChiaviLayout.setVerticalGroup(
+            Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pannello_ChiaviLayout.createSequentialGroup()
+                .addContainerGap(375, Short.MAX_VALUE)
+                .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                        .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(TextField_ApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Label_IndirizzoWallet1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Label_IndirizzoWallet)
+                            .addComponent(TextField_ApiSecret, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Label_Exchange)
+                            .addComponent(ComboBox_Exchange, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_InserisciChiave))
+                        .addGap(7, 7, 7))
+                    .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                        .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                                .addComponent(Bottone_RimuoviChiave)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Bottone_AggiornaSelezionati)))
+                        .addGap(29, 29, 29))))
+            .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(119, Short.MAX_VALUE)))
+        );
+
+        Bottone_Aggiorna.setText("<html>Scarica nuovi movimenti<br>da tutti i Wallet della lista</html>");
+
+        jTabbedPane1.addTab("Chiavi API", Pannello_Chiavi);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -178,62 +246,15 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ScrollPaneTabellaWallets)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(Label_APIsecret, javax.swing.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE)
-                                    .addComponent(Label_APIkey, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(TextField_APIkey, javax.swing.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
-                                    .addComponent(TextField_APIsecret)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Label_Rete, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(ComboBox_Exchange, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 126, Short.MAX_VALUE)
-                                .addComponent(Bottone_InserisciAPI)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Bottone_RimuoviAPI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1029, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(TextField_APIkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Label_APIkey))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Bottone_RimuoviAPI)
-                            .addComponent(TextField_APIsecret, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Label_APIsecret))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(Label_Rete)
-                                .addComponent(ComboBox_Exchange, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(Bottone_InserisciAPI))
-                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
-
-        Bottone_Aggiorna.setText("<html>Scarica nuovi movimenti<br>da tutti i Wallet della lista</html>");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -260,10 +281,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     }
     */
     
-    private void Bottone_InserisciAPIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciAPIActionPerformed
+    private void Bottone_InserisciChiaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciChiaveActionPerformed
         // TODO add your handling code here:
         Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
-        String Wallet=TextField_APIkey.getText().trim();
+        String Wallet=TextField_ApiSecret.getText().trim();
         String Rete=ComboBox_Exchange.getItemAt(ComboBox_Exchange.getSelectedIndex());
         if (Rete.split("\\(").length>1){
             Rete=Rete.split("\\(")[1].trim().substring(0, Rete.split("\\(")[1].length()-1);
@@ -295,48 +316,37 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 PopolaTabella();
             }
         }
-    }//GEN-LAST:event_Bottone_InserisciAPIActionPerformed
+    }//GEN-LAST:event_Bottone_InserisciChiaveActionPerformed
 
     
     private void PopolaTabella(){
+        
+        
 
         DefaultTableModel ModelloTabellaWallets = (DefaultTableModel) TabellaWallets.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaWallets);
        // Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
-        Mappa_Wallet.clear();
+        Mappa_Exchange.clear();
         for (String[] v : MappaCryptoWallet.values()) {
-            if (Funzioni.Funzioni_isNumeric(v[23], false)){
-                if (Mappa_Wallet.get(v[3])!=null && Mappa_Wallet.get(v[3]).split(";").length>1){
-                        int bloccoMaggiore=Integer.parseInt(Mappa_Wallet.get(v[3]).split(";")[1]);
-                        int bloccoUltimaTransazione=Integer.parseInt(v[23]);
-                        if(bloccoUltimaTransazione>bloccoMaggiore){
-                            Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
-                        }                   
-                }else Mappa_Wallet.put(v[3], v[1]+";"+v[23]);               
-            }           
+                    Mappa_Exchange.put(v[3], Funzioni.getOradaID(v[0]));  
         }
         //Questa sotto è la mappa dei wallet nella tabella
-        for (String riga:DatabaseH2.Pers_Wallets_LeggiTabella().values())
+        for (String splittata[]:DatabaseH2.Pers_ExchangeApi_LeggiTabella().values())
         {
-                String splittata[] = riga.split(";");
                 String rigaTabella[]=new String[5];
-                String w=splittata[0]+" ("+splittata[1]+")";
+                String w=splittata[0];
                 rigaTabella[0]=DatabaseH2.Pers_GruppoWallet_Leggi(w);
                 rigaTabella[0]=DatabaseH2.Pers_GruppoAlias_Leggi(rigaTabella[0])[1];
-                rigaTabella[1]=splittata[0];
-                rigaTabella[2]=splittata[1];
-                if (Mappa_Wallet.get(w)==null){
-                    rigaTabella[3]="0";
+                rigaTabella[1]=splittata[1];
+                rigaTabella[2]=splittata[2];
+                rigaTabella[3]=splittata[3];
+                if (Mappa_Exchange.get(w)==null){
                     rigaTabella[4]="0";
                 }
                 else{
-                    if (Mappa_Wallet.get(w).split(";").length>1)
-                    {
-                    rigaTabella[3]=Mappa_Wallet.get(w).split(";")[0];
-                    rigaTabella[4]=Mappa_Wallet.get(w).split(";")[1];
-                    }
+                    rigaTabella[4]=Mappa_Exchange.get(w);
                 }
                     
                 ModelloTabellaWallets.addRow(rigaTabella);            
@@ -362,7 +372,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 if (selezionati==null){
                 for (String riga : MappaWallets.values()) {
                     String splittata[] = riga.split(";");
-                    String blocco = Mappa_Wallet.get(splittata[0] + " (" + splittata[1] + ")");
+                    String blocco = Mappa_Exchange.get(splittata[0] + " (" + splittata[1] + ")");
                     if (blocco != null) {
                         blocco = blocco.split(";")[1];
                     } else {
@@ -473,7 +483,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         thread = new Thread() {
             public void run() {
                 //Importazioni.GiacenzeCRO_Sistema("", c, progress, thread);
-                        for (String v : Mappa_Wallet.keySet()) {
+                        for (String v : Mappa_Exchange.keySet()) {
                             if (v.contains("(CRO)")){
                               //  System.out.println(v);
                                 Importazioni.GiacenzeCRO_Sistema(v, c, progress);
@@ -493,13 +503,15 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
-        LeggiFileWallets();
         PopolaTabella();
     }//GEN-LAST:event_formWindowOpened
 
-    private void Bottone_RimuoviAPIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_RimuoviAPIActionPerformed
+    private void Bottone_RimuoviChiaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_RimuoviChiaveActionPerformed
         // TODO add your handling code here:
-                if (TabellaWallets.getSelectedRow() >= 0) {
+              
+        
+        
+        /*if (TabellaWallets.getSelectedRow() >= 0) {
             int rigaselezionata = TabellaWallets.getRowSorter().convertRowIndexToModel(TabellaWallets.getSelectedRow());
 
             String IDWallet = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
@@ -534,12 +546,16 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
            {
             JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare un Wallet per poterlo eliminare",
                             "Nessun Wallet selezionato",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);    
-           }          
-    }//GEN-LAST:event_Bottone_RimuoviAPIActionPerformed
+           } */
+                
+                
+                
+                
+    }//GEN-LAST:event_Bottone_RimuoviChiaveActionPerformed
 
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed
         // TODO add your handling code here:
-        AggiornaWallets(null);
+      //  AggiornaWallets(null);
         
     }//GEN-LAST:event_Bottone_AggiornaActionPerformed
 
@@ -562,16 +578,29 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             }
         TableModel model = TabellaWallets.getModel();
         
-        List<String> selezionati = new ArrayList<>();
         for (int viewRow : selectedRows) {
             int modelRow = TabellaWallets.convertRowIndexToModel(viewRow);
 
-            String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
-            String blocco = model.getValueAt(modelRow, 4).toString(); // 1 = seconda colonna
-            String rete = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
-            selezionati.add(wallet+";"+blocco+";"+rete);
+            
+            long data=Long.parseLong("1483228800000");
+            String wallet = model.getValueAt(modelRow, 1).toString().toLowerCase(); // 1 = seconda colonna
+            String ApiKey = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
+            String ApiSecret = model.getValueAt(modelRow, 3).toString(); // 1 = seconda colonna
+            //come data di inizio metto la data dell'ulti movimento + 1 secondo
+            if (!model.getValueAt(modelRow, 4).toString().equals("0"))
+                data = OperazioniSuDate.ConvertiDatainLongSecondo(model.getValueAt(modelRow, 4).toString())+1000; // 1 = seconda colonna
+            
+           CcxtInterop.fetchMovimentiConBar(wallet, ApiKey, ApiSecret, data,"",this);
+         /*  System.out.println(wallet);
+           System.out.println(ApiKey);
+           System.out.println(ApiSecret);
+           System.out.println(data);*/
+            
+            
+
         }
-        AggiornaWallets(selezionati);
+        //AggiornaWallets(selezionati);
+     
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 
     /**
@@ -667,15 +696,17 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
-    private javax.swing.JButton Bottone_InserisciAPI;
-    private javax.swing.JButton Bottone_RimuoviAPI;
+    private javax.swing.JButton Bottone_InserisciChiave;
+    private javax.swing.JButton Bottone_RimuoviChiave;
     private javax.swing.JComboBox<String> ComboBox_Exchange;
-    private javax.swing.JLabel Label_APIkey;
-    private javax.swing.JLabel Label_APIsecret;
-    private javax.swing.JLabel Label_Rete;
+    private javax.swing.JLabel Label_Exchange;
+    private javax.swing.JLabel Label_IndirizzoWallet;
+    private javax.swing.JLabel Label_IndirizzoWallet1;
+    private javax.swing.JPanel Pannello_Chiavi;
     private javax.swing.JScrollPane ScrollPaneTabellaWallets;
     private javax.swing.JTable TabellaWallets;
-    private javax.swing.JTextField TextField_APIkey;
-    private javax.swing.JTextField TextField_APIsecret;
+    private javax.swing.JTextField TextField_ApiKey;
+    private javax.swing.JTextField TextField_ApiSecret;
+    private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 }

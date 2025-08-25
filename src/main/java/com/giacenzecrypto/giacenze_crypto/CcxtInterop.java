@@ -219,11 +219,11 @@ private static Path getNodeExePath() {
         List<JsonObject> Jsons = new ArrayList<>();
         
         //BINACE TEST
-        if (exchangeId.equalsIgnoreCase("Binancet")) {
+        if (exchangeId.equalsIgnoreCase("Binance")) {
             
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
            // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
-            String estrazioni[] = new String[]{"depositi"};
+            String estrazioni[] = new String[]{"Binance_AssetDividend"};
             for (String script : estrazioni) {
                 JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", script);
                 if (json != null) {
@@ -260,7 +260,7 @@ private static Path getNodeExePath() {
         }
         
         //BINACE
-        if (exchangeId.equalsIgnoreCase("Binance")) {
+        if (exchangeId.equalsIgnoreCase("Binancet")) {
             
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
             String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};

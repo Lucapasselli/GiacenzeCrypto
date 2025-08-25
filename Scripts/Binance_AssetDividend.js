@@ -122,27 +122,29 @@ async function fetchRewardsForInterval(exchange, startTime, endTime, rewardType)
     let currentStartTime = startTime;
     let iterazione = 1;
     const maxIterazioni = 1000;
-    const Size =100;
+    const Size =500;
     
     logInfo(`Recupero ${rewardType} da ${new Date(startTime).toISOString()} a ${new Date(endTime).toISOString()}`);
     
     while (iterazione <= maxIterazioni) {
         try {
             const params = {
-                type: rewardType,
+              //  type: rewardType,
                 startTime: currentStartTime,
                 endTime: endTime,
-                current: iterazione,
-                size: Size
+               // current: iterazione,
+                limit: Size
             };
             logInfo(`Recupero Pag.${iterazione}`);
             const response = await safeApiCall(
                 exchange,
-                'simple-earn/flexible/history/rewardsRecord',
+                'asset/assetDividend',
                 params
             );
             
+            //logInfo(`Risposta : ${response}`);
             const records = response?.rows || [];
+            logDebug(`Risposta : ${JSON.stringify(response, null, 2)}`);
             logDebug(`Ricevuti ${records.length} ${rewardType} records`);
             
             if (records.length === 0) break;

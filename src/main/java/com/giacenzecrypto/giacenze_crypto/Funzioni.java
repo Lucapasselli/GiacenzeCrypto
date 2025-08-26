@@ -1386,19 +1386,20 @@ return MappaLista;
 
             // Uscita
             String tokenUscita = movimento[8];
-            String keyUscita = exchange + ";" + wallet + ";" + tokenUscita;
+            String keyUscita = exchange.toLowerCase() + ";" + wallet.toLowerCase() + ";" + tokenUscita;//usato per i controlli
+            String keyUscitaCase = exchange + ";" + wallet + ";" + tokenUscita;//usato come ritorno
             BigDecimal qtaUscita = parseBigDecimalSafe(movimento[10]);
 
             if (!tokenUscita.isEmpty()) {
                 saldi.put(keyUscita, saldi.getOrDefault(keyUscita, BigDecimal.ZERO).add(qtaUscita));
                 if (saldi.get(keyUscita).compareTo(BigDecimal.ZERO) < 0) {
-                    segnalati.add(keyUscita);
+                    segnalati.add(keyUscitaCase);
                 }
             }
 
             // Entrata
             String tokenEntrata = movimento[11];
-            String keyEntrata = exchange + ";" + wallet + ";" + tokenEntrata;
+            String keyEntrata = exchange.toLowerCase() + ";" + wallet.toLowerCase() + ";" + tokenEntrata;
             BigDecimal qtaEntrata = parseBigDecimalSafe(movimento[13]);
 
             if (!tokenEntrata.isEmpty()) {
@@ -1412,6 +1413,10 @@ return MappaLista;
         
         
     }
+    
+    
+    
+    
     private static BigDecimal parseBigDecimalSafe(String s) {
         try {
             return new BigDecimal(s.trim());
@@ -1449,7 +1454,7 @@ return MappaLista;
     }
     
     
-        public static String RitornaReteDefi(String ID,int k) {
+        public static String Deprecato_RitornaReteDefi(String ID,int k) {
         String Transazione[]=MappaCryptoWallet.get(ID);
         if (Transazione==null)return "";
         String Wallet=Transazione[3].trim();
@@ -1486,7 +1491,7 @@ return MappaLista;
      *Questa funzione non serve più e la rinomino
      */
     
-    public static void Dismessa_ConvertiInvioSuStessoWallet1(){
+    public static void Deprecato_ConvertiInvioSuStessoWallet(){
         Map<String,String> Mappa_CommissioniDaCancellare=new TreeMap<>();
         Map<String,String> Mappa_CommissioniPerHash=new TreeMap<>();
         Map<String,String> Mappa_MovimentiDaEliminare=new TreeMap<>();
@@ -1849,8 +1854,8 @@ return MappaLista;
         
         public static String TrovaReteDaID(String ID){
 
-
-        String Rete=null;
+            return TrovaReteDaIMovimento(CDC_Grafica.MappaCryptoWallet.get(ID));
+      /*  String Rete=null;
         //System.out.println(ID);
         //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
 
@@ -1874,7 +1879,7 @@ return MappaLista;
                 }
             }
             
-        return Rete;
+        return Rete;*/
         }
         
         public static String TrovaReteDaIMovimento(String[] mov){
@@ -1909,7 +1914,7 @@ return MappaLista;
             if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
                // String Mov[] = MappaCryptoWallet.get(ID);
                 String ret=IDSplittato[1].split("\\(")[1].split("\\)")[0].trim();
-                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allra la gestisco come tale
+                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allora la gestisco come tale
                     Rete = ret;
                     return Rete;
                 }

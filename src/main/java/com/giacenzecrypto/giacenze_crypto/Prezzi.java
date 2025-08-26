@@ -95,14 +95,24 @@ public class Prezzi {
     public static String DammiPrezzoDaTransazione(String[] v,int decimali){
 
             long data=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
-            String Rete = Funzioni.TrovaReteDaID(v[0]);
-            //if (v[0].equals("20221230131704_CDCAPP_1_1_RW")) System.out.println(Rete);
+            String Rete = Funzioni.TrovaReteDaIMovimento(v);
+            
+            
             Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
             //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
             Monete[0] = new Moneta();
             Monete[1] = new Moneta();
-            Monete[0].MonetaAddress = v[26];
-            Monete[1].MonetaAddress = v[28];
+            
+            //Se la rete non è tra quelle supportate non la metto nella ricerca del prezzo e azzero anche gli address
+            //Sono dati che non mi interessa avere infatti in questo caso perchè non posso recuperare i prezzi da coingecko
+            if(Rete==null||CDC_Grafica.MappaRetiSupportate.get(Rete)==null){
+                Rete="";
+                Monete[0].MonetaAddress="";
+                Monete[1].MonetaAddress="";
+            }else{
+                Monete[0].MonetaAddress = v[26];
+                Monete[1].MonetaAddress = v[28];
+            }
             //ovviamente gli address se non rispettano le 2 condizioni precedenti sono null
             Monete[0].Moneta = v[8];
             Monete[0].Tipo = v[9];

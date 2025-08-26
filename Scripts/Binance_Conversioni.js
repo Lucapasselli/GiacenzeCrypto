@@ -145,7 +145,7 @@ const response = await exchange.fetchOHLCV(
         return Math.abs(curr[0] - timestamp) < Math.abs(prev[0] - timestamp) ? curr : prev;
     });
     const price = candle[4]; // close price
-    logInfo(`Recupero del prezzo a data ${timestampToRomeDate(timestamp)} per ${asset}: $${price}`);
+    logDebug(`Recupero del prezzo a data ${timestampToRomeDate(timestamp)} per ${asset}: $${price}`);
     PRICE_CACHE[cacheKey] = price;
     return price;
 }

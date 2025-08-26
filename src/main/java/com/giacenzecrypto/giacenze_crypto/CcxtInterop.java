@@ -266,6 +266,54 @@ private static Path getNodeExePath() {
         //BINACE
         if (exchangeId.equalsIgnoreCase("Binance")) {
             
+            //Intanto aggiungo in una lista univoca i tokens
+            Set<String> setTokens = new HashSet<>();
+            String tokens[]=Tokens.split(",");
+            setTokens.addAll(Arrays.asList(tokens));
+            
+            //0 - RECUPERO TUTTI I TOKEN DI BINANCE CON GIACENZA DIVERSA DA ZERO
+            //Recupero la lista dei token con le varie somme e prendo solo quelli che hanno una somma diversa da zero
+            //solo su quelli vado a cercare i trades, infatti i token che vanno a zero molto probabilmente non sono stati scambiati oltre le varie conversions
+            Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto la moneta con tutti i dati
+            for (String[] movimento : CDC_Grafica.MappaCryptoWallet.values()) {
+                if (movimento[3].trim().equalsIgnoreCase("Binance")) {
+                    Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
+                    //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
+                    Monete[0] = new Moneta();
+                    Monete[1] = new Moneta();
+                    Monete[0].Moneta = movimento[8];
+                    Monete[0].Tipo = movimento[9];
+                    Monete[0].Qta = movimento[10];
+                    Monete[1].Moneta = movimento[11];
+                    Monete[1].Tipo = movimento[12];
+                    Monete[1].Qta = movimento[13];
+                    //questo ciclo for serve per recuperare le qta di tutte le monete
+                    for (int a = 0; a < 2; a++) {
+                        //ANALIZZO MOVIMENTI
+                        if (!Monete[a].Moneta.isBlank() && QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo) != null) {
+                            //Movimento già presente da implementare
+                            Moneta M1 = QtaCrypto.get(Monete[a].Moneta + ";" + Monete[a].Tipo);
+                            M1.Qta = new BigDecimal(M1.Qta)
+                                    .add(new BigDecimal(Monete[a].Qta)).stripTrailingZeros().toPlainString();
+
+                        } else if (!Monete[a].Moneta.isBlank()) {
+                            //Movimento Nuovo da inserire
+                            Moneta M1 = new Moneta();
+                            M1.InserisciValori(Monete[a].Moneta, Monete[a].Qta, "", Monete[a].Tipo);//il campo vuoto sarebbe risevato all'address che non mi serve in questo momento
+                            QtaCrypto.put(Monete[a].Moneta + ";" + Monete[a].Tipo, M1);
+
+                        }
+                    }
+                }
+            }           
+            //Adesso che ho le qta di tutte le monete le metto quelli che hanno qta zero in una lista separata da virgole e la do in pasto alla funzione che recupera i trades
+            for(Moneta m:QtaCrypto.values()){
+                if (BG(m.Qta).compareTo(BigDecimal.ZERO)!=0){
+                    //Tokens=Tokens+","+m.Moneta;
+                    setTokens.add(m.Moneta);
+                }
+            }
+            
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
             String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_AssetDividend","Binance_EarnFlessibili","Binance_EarnLocked"};
             for (String script : estrazioni) {
@@ -280,20 +328,10 @@ private static Path getNodeExePath() {
             //Adesso che ho scaricato tutti i movimenti recupero la lista dei movimenti nel formato standard di GiacenzeCrypto
             List<String[]> lista = getListaMovimenti(Jsons, exchangeId);
 
-        /*    //Adesso devo recuperare tutti i token movimentati per poter poi creare un array di token da passare per il recupero dei trades
-            for (String[] riga : lista) {
-                //Se il token non è presente nella lista lo aggiungo
-                if (!riga[8].isBlank() && !Tokens.contains(riga[8])) {
-                    Tokens = Tokens + "," + riga[8];
-                }
-                if (!riga[11].isBlank() && !Tokens.contains(riga[11])) {
-                    Tokens = Tokens + "," + riga[11];
-                }
-            }*/
 
             //Recupero la lista dei token con le varie somme e prendo solo quelli che hanno una somma diversa da zero
             //solo su quelli vado a cercare i trades, infatti i token che vanno a zero molto probabilmente non sono stati scambiati oltre le varie conversions
-            Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto la moneta con tutti i dati
+            QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto la moneta con tutti i dati
             for (String[] movimento : lista) {
                 Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
                 //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
@@ -327,14 +365,19 @@ private static Path getNodeExePath() {
             //Adesso che ho le qta di tutte le monete le metto quelli che hanno qta zero in una lista separata da virgole e la do in pasto alla funzione che recupera i trades
             for(Moneta m:QtaCrypto.values()){
                 if (BG(m.Qta).compareTo(BigDecimal.ZERO)!=0){
-                    Tokens=Tokens+","+m.Moneta;
+                    setTokens.add(m.Moneta);
+                    //Tokens=Tokens+","+m.Moneta;
                 }
+            }
+            String tok="";
+            for (String t:setTokens){
+                tok=tok+","+t;
             }
             
             //3 - RECUPERO I TRADES DEI TOKEN COINVOLTI + QUELLI RICHIESTI IN ORIGINE
             //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(
             //Recuperato la lista di token da richiedere procedo con il recupero dei trades
-            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, Tokens, "Binance_Trades");
+            JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, tok, "Binance_Trades");
             lista.addAll(getListaMovimento(json, exchangeId));
 
             //4 - IMPORTO TUTTO NEL DATABASE

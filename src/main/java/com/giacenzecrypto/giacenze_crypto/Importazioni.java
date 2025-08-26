@@ -5929,7 +5929,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         &&//Classificato come withdraw
                                         movimento[30].equalsIgnoreCase("0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23")
                                         &&//Arriva da contratto WCRO
-                                        Funzioni.TrovaReteDaID(movimento[0]).equalsIgnoreCase("CRO")) //Rete Cronos
+                                        Funzioni.TrovaReteDaIMovimento(movimento).equalsIgnoreCase("CRO")) //Rete Cronos
                                 {
                                     //Creo un movimento di uscita di WCRO che poi verrà trasformato in scambio differito dal sistema
                                     String MT[] = new String[Importazioni.ColonneTabella];
@@ -6063,7 +6063,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             String AddressU = movimento[26];
             String AddressE = movimento[28];
             String WalletRiga = movimento[3].split("\\(")[0].trim();
-            String ReteMov=Funzioni.TrovaReteDaID(movimento[0]);           
+            String ReteMov=Funzioni.TrovaReteDaIMovimento(movimento);           
             if (Wallet.equalsIgnoreCase(WalletRiga) && movimento[4].trim().equalsIgnoreCase("Wallet")){
                 //if (ReteMov==null)System.out.println("ERRORE NEL RECUPERO DELLA RETE : "+movimento[0]);
                 if (ReteMov!=null&&ReteMov.equalsIgnoreCase(Rete)) {
@@ -6118,7 +6118,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.MonetaAddress = MonetaRete;
                                 M1.Qta = QtaNuovoMovimento;
                                 M1.Tipo = "Crypto";
-                                M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
+                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
                                 /*if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(QtaNuovoMovimento)).setScale(2,RoundingMode.HALF_UP).abs();
@@ -6166,7 +6166,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.MonetaAddress = MonetaRete;
                                 M1.Qta = QtaNuovoMovimento;
                                 M1.Tipo = "Crypto";
-                                M1.Rete = Funzioni.TrovaReteDaID(RTOri[0]);
+                                M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
                                 /*if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
@@ -6656,7 +6656,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         List<String> Trovati = new ArrayList<>();
         
         for (String Movimento[]:MappaCryptoWallet.values()){
-            String Rete=Funzioni.TrovaReteDaID(Movimento[0]);
+            String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             if(Movimento[0].split("_")[4].equalsIgnoreCase("SC")&&
                     Movimento[8].contains("-LP")&&
                     Rete!=null&&

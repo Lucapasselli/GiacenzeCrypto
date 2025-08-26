@@ -2110,7 +2110,7 @@ private static final long serialVersionUID = 3L;
         if (GiacenzeaData_Tabella.getColumnModel().getColumnCount() > 0) {
             GiacenzeaData_Tabella.getColumnModel().getColumn(1).setMinWidth(40);
             GiacenzeaData_Tabella.getColumnModel().getColumn(1).setPreferredWidth(40);
-            GiacenzeaData_Tabella.getColumnModel().getColumn(1).setMaxWidth(40);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(1).setMaxWidth(80);
             GiacenzeaData_Tabella.getColumnModel().getColumn(3).setMinWidth(50);
             GiacenzeaData_Tabella.getColumnModel().getColumn(3).setPreferredWidth(50);
             GiacenzeaData_Tabella.getColumnModel().getColumn(3).setMaxWidth(50);
@@ -5130,8 +5130,8 @@ JPanel loadingBar = new JPanel() {
         if (rigaSelTabPrincipale!=-1){
             WalletToken=SaldiNegativi_TabPrincipale.getValueAt(rigaSelTabPrincipale, 0).toString()+SaldiNegativi_TabPrincipale.getValueAt(rigaSelTabPrincipale, 1).toString()+SaldiNegativi_TabPrincipale.getValueAt(rigaSelTabPrincipale, 2).toString();
         }
-        JScrollPane scrollPane1 = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, SaldiNegativi_TabPrincipale);
-        int scrollValuePrincipale = (scrollPane1 != null) ? scrollPane1.getVerticalScrollBar().getValue() : 0;
+       /* JScrollPane scrollPane1 = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, SaldiNegativi_TabPrincipale);
+        int scrollValuePrincipale = (scrollPane1 != null) ? scrollPane1.getVerticalScrollBar().getValue() : 0;*/
         
         //Recupero i dati del Wallet Selezionato prima di cancellare tutto per ripristinare poi la selezione
         int rigaSelTabMov=SaldiNegativi_TabellaDettaglioMovimenti.getSelectedRow();
@@ -5140,8 +5140,8 @@ JPanel loadingBar = new JPanel() {
             MovSelezionato=SaldiNegativi_TabellaDettaglioMovimenti.getValueAt(rigaSelTabMov, 8).toString();
         }
         //Salvo posizione scrollbar
-        JScrollPane scrollPaneMovimenti = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, SaldiNegativi_TabellaDettaglioMovimenti);
-        int scrollValueMovimenti = (scrollPaneMovimenti != null) ? scrollPaneMovimenti.getVerticalScrollBar().getValue() : 0;
+      /*  JScrollPane scrollPaneMovimenti = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, SaldiNegativi_TabellaDettaglioMovimenti);
+        int scrollValueMovimenti = (scrollPaneMovimenti != null) ? scrollPaneMovimenti.getVerticalScrollBar().getValue() : 0;*/
         
         DepositiPrelieviDaCategorizzare = new ArrayList<>();
         DefaultTableModel ModelloPrincipale = (DefaultTableModel) this.SaldiNegativi_TabPrincipale.getModel();
@@ -5152,7 +5152,7 @@ JPanel loadingBar = new JPanel() {
         
         
         
-        //FUNZIONE DI VERIFICA SEI SALDI VERA E PROPRIA
+        //FUNZIONE DI VERIFICA DEI SALDI VERA E PROPRIA
         boolean NascondiScam=SaldiNegativi_CheckBox_NascondiScam.isSelected();
         List<String> SaldiNegativit=Funzioni.ControllaSaldiNegativi();
         for (String v : SaldiNegativit) {
@@ -6783,7 +6783,13 @@ JPanel loadingBar = new JPanel() {
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
                         String AddressU = movimento[26];
                         String AddressE = movimento[28];
-                       // if(AddressU.isBlank()&&AddressE.isBlank())ReteMov="";
+                        //Se gli address sono vuoti allora considero vuota anche la rete visto che vanno a braccetto
+                        //Stessa cosa per gli address se la rete non c'è
+                        if(AddressU.isBlank()&&AddressE.isBlank())ReteMov="";
+                        if(ReteMov.isBlank()){
+                            AddressU="";
+                            AddressE="";
+                        }
                     // adesso verifico il wallet
                     if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
@@ -13175,13 +13181,18 @@ try {
                             Monete[1].Qta = movimento[13];
                             Monete[1].Rete = Rete;
                             //Se non c'è l'address della moneta allora la rete non la metto visto che non è importante
-                          /*  if (Monete[0].MonetaAddress.isBlank())Monete[0].Rete = "";
-                            if (Monete[1].MonetaAddress.isBlank())Monete[1].Rete = "";
-                            if (Monete[0].Rete.isBlank()&&Monete[1].Rete.isBlank())Rete="";*/
-                            //System.out.println(Rete+" - "+movimento[0]);
-                            if (Rete == null) {
-                                Rete = "";
+                            //Stessa cosa se non ho la rete non mi serve mettere l'address
+                            if (Rete == null||Rete.isBlank()){
+                               Monete[0].MonetaAddress="";
+                               Monete[1].MonetaAddress="";
+                               Monete[1].Rete="";
+                               Monete[1].Rete="";
+                               Rete = "";
                             }
+                            if(Monete[0].MonetaAddress.isBlank()&&Monete[1].MonetaAddress.isBlank()){
+                               Rete = ""; 
+                            }
+
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
                             for (int a = 0; a < 2; a++) {
                                 //ANALIZZO MOVIMENTI

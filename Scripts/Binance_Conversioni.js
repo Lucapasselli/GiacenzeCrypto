@@ -108,7 +108,9 @@ async function fetchTradingPairs(exchange) {
 
 // Funzione per recuperare i prezzi storici
 async function fetchHistoricalPrice(exchange, asset, timestamp) {
-    const cacheKey = `${asset}_${timestamp}`;
+    const assetMod = (asset === "USDT") ? "USDC" : asset;
+    
+    const cacheKey = `${assetMod}_${timestamp}`;
     
     if (PRICE_CACHE[cacheKey]) {
         return PRICE_CACHE[cacheKey];
@@ -116,7 +118,7 @@ async function fetchHistoricalPrice(exchange, asset, timestamp) {
 
     try {
         await smartRateLimit();
-        const symbol = findTradingPair(asset);
+        const symbol = findTradingPair(assetMod);
         if (!symbol) {
             logDebug(`Nessuna coppia trovata per ${asset}`);
             return null;

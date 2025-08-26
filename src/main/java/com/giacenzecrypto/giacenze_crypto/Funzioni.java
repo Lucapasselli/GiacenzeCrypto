@@ -1486,7 +1486,7 @@ return MappaLista;
      *Questa funzione non serve più e la rinomino
      */
     
-    public static void Dismessa_ConvertiInvioSuStessoWallet(){
+    public static void Dismessa_ConvertiInvioSuStessoWallet1(){
         Map<String,String> Mappa_CommissioniDaCancellare=new TreeMap<>();
         Map<String,String> Mappa_CommissioniPerHash=new TreeMap<>();
         Map<String,String> Mappa_MovimentiDaEliminare=new TreeMap<>();
@@ -1868,7 +1868,7 @@ return MappaLista;
             if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
                // String Mov[] = MappaCryptoWallet.get(ID);
                 String ret=IDSplittato[1].split("\\(")[1].split("\\)")[0].trim();
-                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allra la gestisco come tale
+                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allora la gestisco come tale
                     Rete = ret;
                     return Rete;
                 }
@@ -1878,11 +1878,15 @@ return MappaLista;
         }
         
         public static String TrovaReteDaIMovimento(String[] mov){
+        boolean controllaAddress=false;
         String Rete=null;
         String ID=mov[0];
         if (!mov[34].isBlank()) {
-            //se è valorizzato a N ritorno null altrimenti ritorno il valore della rete
+            //se è valorizzato a N ritorno null altrimenti ritorno il valore della rete NON PIU GESTITO COSI
            // return mov[34].equals("N") ? null : mov[34];
+           //Se il boolean controllaAddress è true verifico anche gli address e se questi sono vuoti anche la rete la restituisco vuota
+           if(controllaAddress&&mov[28].isBlank()&&mov[26].isBlank())return "";
+           //Altrimenti la valorizzo così com'è.
            return mov[34];
         }
         // Se è blank, prosegue senza return

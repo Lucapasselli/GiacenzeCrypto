@@ -949,7 +949,7 @@ private static final long serialVersionUID = 9L;
         String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
 
         String Rete = Funzioni.TrovaReteDaID(ID);
-        if (ModificaMovimento&&Rete==null) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
+        if (ModificaMovimento&&Rete==null) Rete=Funzioni.TrovaReteDaIMovimento(MovimentoRiportato);
 
         //Se il prezzo scritto è zero controllo se i token hanno un valore, così non fosse chiedo all'utente se vuole confermare che il prezzo sia zero
         if (ValoreTransazione.equals("0.00")) {

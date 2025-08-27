@@ -13,12 +13,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -218,8 +225,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ComboBox_Exchange, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(Bottone_InserisciChiave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(Label_Exchange))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(Label_Exchange)))
                     .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Pannello_ChiaviLayout.createSequentialGroup()
@@ -281,42 +287,126 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     
     private void Bottone_InserisciChiaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InserisciChiaveActionPerformed
         // TODO add your handling code here:
-        Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
-        String Wallet=TextField_ApiSecret.getText().trim();
-        String Rete=ComboBox_Exchange.getItemAt(ComboBox_Exchange.getSelectedIndex());
-        if (Rete.split("\\(").length>1){
-            Rete=Rete.split("\\(")[1].trim().substring(0, Rete.split("\\(")[1].length()-1);
-        } else {
-        }
+        Map<String, String[]> MappaWallets=DatabaseH2.Pers_ExchangeApi_LeggiTabella();
+        String Key=TextField_ApiKey.getText().trim();
+        String Segreto=TextField_ApiSecret.getText().trim();
+        String Exchange=ComboBox_Exchange.getItemAt(ComboBox_Exchange.getSelectedIndex());
+
         if(ComboBox_Exchange.getSelectedIndex()==0){
             //non è valido la selezione della combobox
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare una rete valida",
-                            "Rete non valida",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);            
+            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare un exchange",
+                            "Exchange non selezionato",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);            
         }
-        else if (!Funzioni_WalletDeFi.isValidAddress(Wallet,Rete)){
+        else if (MappaWallets.get(Exchange)!=null){
+                JOptionPane.showConfirmDialog(this, "Attenzione! \nExchange gia' prensente nella lista",
+                            "Exchange gia' presente",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);  
+            }
+        else if (!isValidApi(Exchange,Key,Segreto)){
                 //non è un indirizzo di wallet valido
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nIl Wallet specificato non è valido",
-                            "Wallet non Valido",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            JOptionPane.showConfirmDialog(this, "Attenzione! \nLe API specificate non sono valide",
+                            "API non valide",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
         }
         else{
-            //Se arrivo qui i dati sono corretti adesso devo
-            //1 - Controllare se non esiste già un wallet della stessa rete con lo stesso indirizzo
-            if (MappaWallets.get(Wallet+"_"+Rete)!=null){
-                JOptionPane.showConfirmDialog(this, "Attenzione! \nWallet gia' prensente nella lista",
-                            "Wallet gia' presente",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);  
-            }
-            //2 - Inserisco il wallet nella lista
-            else{
                // MappaWallets.put(Wallet+"_"+Rete, Wallet+";"+Rete);
-                DatabaseH2.Pers_Wallets_Scrivi(Wallet, Rete);
-                System.out.println("Scrivo il Wallet nel Database : "+Wallet+"_"+Rete);
+                DatabaseH2.Pers_ExchangeApi_Scrivi(Exchange, Key,Segreto);
+                System.out.println("Scrivo le Api Exchange nel Database : "+Exchange+" "+Key);
+                JOptionPane.showConfirmDialog(this, "Le chiavi API fornite sono valide e sono state correttamente inserite.",
+                            "Chiavi API valide",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                // ScriviFileWallets();
                 PopolaTabella();
-            }
+            
         }
     }//GEN-LAST:event_Bottone_InserisciChiaveActionPerformed
 
+    private static boolean isValidApi(String Exchange,String Key,String Secret){
+        boolean valido=false;
+        if (Exchange.trim().equalsIgnoreCase("Binance")){
+            return Binance_testApiKeys(Key,Secret);
+        }
+        
+        return valido;
     
+    }
+    
+    // Firma HMAC-SHA256
+    private static String hmacSHA256(String secret, String data) throws Exception {
+        Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        sha256_HMAC.init(secretKey);
+        byte[] hash = sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8));
+
+        // Converti in esadecimale
+        StringBuilder result = new StringBuilder();
+        for (byte b : hash) {
+            result.append(String.format("%02x", b));
+        }
+        return result.toString();
+    }
+    
+    public static boolean Binance_testApiKeys(String apiKey, String secret) {
+        try {
+            String BASE_URL = "https://api.binance.com";
+            long serverTime = Binance_getServerTime();
+            long localTime = System.currentTimeMillis();
+            long offset = serverTime - localTime;
+
+            long timestamp = localTime + offset; // sincronizzato con server
+            String query = "timestamp=" + URLEncoder.encode(String.valueOf(timestamp), "UTF-8");
+            String signature = hmacSHA256(secret, query);
+            String urlStr = BASE_URL + "/api/v3/account?" + query + "&signature=" + signature;
+
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("X-MBX-APIKEY", apiKey);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            int responseCode = conn.getResponseCode();
+
+            if (responseCode == 200) {
+                // chiavi valide
+                return true;
+            } else {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        System.err.println(line);
+                    }
+                }
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("Errore test API: " + e.getMessage());
+            return false;
+        }
+    }
+
+        
+    
+        // Legge l'orologio del server Binance
+    private static long Binance_getServerTime() throws Exception {
+        String BASE_URL = "https://api.binance.com";
+        URL url = new URL(BASE_URL + "/api/v3/time");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(5000);
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                response.append(line);
+            }
+            // Risposta tipo: {"serverTime":1724677114351}
+            String json = response.toString();
+            String timeStr = json.replaceAll("\\D+",""); // estrai solo numeri
+            return Long.parseLong(timeStr);
+        }
+    }    
+        
+        
     private void PopolaTabella(){
         
         
@@ -403,42 +493,25 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
               
         
         
-        /*if (TabellaWallets.getSelectedRow() >= 0) {
+        if (TabellaWallets.getSelectedRow() >= 0) {
             int rigaselezionata = TabellaWallets.getRowSorter().convertRowIndexToModel(TabellaWallets.getSelectedRow());
 
-            String IDWallet = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
-            if (IDWallet != null) {
+            String Exchange = TabellaWallets.getModel().getValueAt(rigaselezionata, 1).toString();
+            if (Exchange != null) {
                 
-                 int r= JOptionPane.showConfirmDialog(this, "Attenzione! \nSei sicuro di voler eliminare il wallet \n"
-                         + IDWallet+" ?",
-                            "Wallet non Valido",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                 IDWallet=IDWallet+"_"+TabellaWallets.getModel().getValueAt(rigaselezionata, 2).toString();
-              //  System.out.println(r);
+                 int r= JOptionPane.showConfirmDialog(this, "Attenzione! \nSei sicuro di voler eliminare le API dell'Exchange \n"
+                         + Exchange+" ?",
+                            "Vuo Cancellare?",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                 if(r==0){
-                DatabaseH2.Pers_Wallets_Cancella(IDWallet);
-                //ScriviFileWallets();
-                PopolaTabella();
-                String Messaggio = "Il Wallet è stato cancellato \nVuoi cancellare anche tutte le movimentazioni importate finora?";
-            r=JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"SI","NO"}, "OK");
-           if(r==0){
-               //Sicome devo mettere dei limiti di data metto l'anno 2100 come limite superiore e zero (1970) come limite inferiore
-             //  long Data2100=Long.parseLong("4105615230000");
-             int movEliminati=Funzioni.CancellaMovimentazioniXWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")",0,0);
-             if (movEliminati>0){
-                 CDC_Grafica.TabellaCryptodaAggiornare=true;
-                 Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";
-                JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
-                //Calcoli_Plusvalenze.AggiornaPlusvalenze();
-                }
-           }
-           
+                DatabaseH2.Pers_ExchangeApi_Cancella(Exchange);
+                PopolaTabella(); 
                 }
             }
         }else
            {
-            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare un Wallet per poterlo eliminare",
-                            "Nessun Wallet selezionato",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);    
-           } */
+            JOptionPane.showConfirmDialog(this, "Attenzione! \nDevi selezionare un rigo per poterlo eliminare",
+                            "Nessuna API selezionata",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);    
+           } 
                 
                 
                 

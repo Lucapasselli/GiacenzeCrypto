@@ -1852,35 +1852,36 @@ return MappaLista;
             return noData;
         }
         
-        public static String TrovaReteDaID(String ID){
-
+        public static String TrovaReteDaID(String ID) {
+        if (MappaCryptoWallet.get(ID) != null) {
             return TrovaReteDaIMovimento(CDC_Grafica.MappaCryptoWallet.get(ID));
-      /*  String Rete=null;
-        //System.out.println(ID);
-        //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
+        } else {
+            String Rete = null;
+            //System.out.println(ID);
+            //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
 
-            String IDSplittato[]=ID.split("_");
-            String IDDettSplittato[]=IDSplittato[1].split("\\.");
+            String IDSplittato[] = ID.split("_");
+            String IDDettSplittato[] = IDSplittato[1].split("\\.");
             List<String> prefixValidi = Arrays.asList("BC", "00BC", "01BC", "02BC", "03BC", "04BC");
-            if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && 
-                    prefixValidi.contains(IDDettSplittato[0].toUpperCase())){//00BC viene usato negli scambi differiti automatici
-                Rete=IDDettSplittato[1];
+            if ((IDDettSplittato.length == 4 || IDDettSplittato.length == 5)
+                    && prefixValidi.contains(IDDettSplittato[0].toUpperCase())) {//00BC viene usato negli scambi differiti automatici
+                Rete = IDDettSplittato[1];
                 return Rete;
             }
 
-         
             //Se il primo if non trova la rete la cerco tra i movimenti manuali, a patto che la chain sia supportata
-            if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
-               // String Mov[] = MappaCryptoWallet.get(ID);
-                String ret=IDSplittato[1].split("\\(")[1].split("\\)")[0].trim();
-                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allora la gestisco come tale
+            if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")") && IDSplittato[1].split("\\(").length > 1) {
+                // String Mov[] = MappaCryptoWallet.get(ID);
+                String ret = IDSplittato[1].split("\\(")[1].split("\\)")[0].trim();
+                if (MappaRetiSupportate.get(ret) != null) {//se è una chain supportata allora la gestisco come tale
                     Rete = ret;
                     return Rete;
                 }
             }
-            
-        return Rete;*/
+
+            return Rete;
         }
+    }
         
         public static String TrovaReteDaIMovimento(String[] mov){
         boolean controllaAddress=false;

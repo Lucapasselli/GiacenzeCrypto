@@ -243,7 +243,7 @@ async function main() {
                 recvWindow: 10000,
                 adjustForTimeDifference: true
             },
-            enableRateLimit: true,
+            enableRateLimit: false,
             rateLimit: BINANCE_CONFIG.minDelayMs
         });
 

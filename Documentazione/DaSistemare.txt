@@ -16,4 +16,4 @@
 
 Da Fare per versione 46
 
-- Spostare elenco Wallet su database, adesso è su un file a parte che tra l'altro non è nella posizione giusta
+- In modifica movimento se il nuovo id diventa uguale al vecchio provare a portare avanti i contatori prima di proporre il cambio orario

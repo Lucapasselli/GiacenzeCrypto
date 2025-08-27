@@ -594,9 +594,61 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Mappa_Wallet;
-    }        
+    }     
+            
+            
+        public static void Pers_ExchangeApi_Scrivi(String Exchange,String Chiave,String Segreto) {
+        try {
+            
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM EXCHANGEAPI WHERE Nome = ?";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Exchange);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                //Questa non dovrebbe servire a nulla perchè non devo mai aggiornare i valori di questa tabella ma solo cancellare e ricreare
+                String updateSQL = "UPDATE EXCHANGEAPI SET Exchange = ?,Chiave = ?,Segreto = ? WHERE Nome = ?";
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.setString(1, Exchange);
+                updateStatement.setString(2, Chiave);
+                updateStatement.setString(3, Segreto);
+                updateStatement.setString(4, Exchange);
+                updateStatement.executeUpdate();
+
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO EXCHANGEAPI (Nome, Exchange, Chiave, Segreto) VALUES (?, ?, ?, ?)";
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.setString(1, Exchange);
+                insertStatement.setString(2, Exchange);
+                insertStatement.setString(3, Chiave);
+                insertStatement.setString(4, Segreto);
+                insertStatement.executeUpdate();
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
+                    
+                    
     
-        
+            public static void Pers_ExchangeApi_Cancella(String Exchange) {
+               //completamente da gestire
+        try {
+            String checkIfExistsSQL = "DELETE FROM EXCHANGEAPI WHERE Nome = ?";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Exchange);
+            checkStatement.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
         
     
     /**

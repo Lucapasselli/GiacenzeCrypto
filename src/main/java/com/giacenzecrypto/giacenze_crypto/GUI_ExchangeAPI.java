@@ -148,7 +148,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         });
 
         Bottone_RimuoviChiave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
-        Bottone_RimuoviChiave.setText("Rimuovi Wallet Selezionato");
+        Bottone_RimuoviChiave.setText("Rimuovi Chiave Selezionata");
         Bottone_RimuoviChiave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_RimuoviChiaveActionPerformed(evt);
@@ -182,31 +182,30 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                     .addComponent(Label_Exchange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
-                        .addComponent(ComboBox_Exchange, 0, 222, Short.MAX_VALUE)
-                        .addGap(92, 92, 92)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pannello_ChiaviLayout.createSequentialGroup()
+                        .addComponent(ComboBox_Exchange, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
                         .addComponent(Bottone_InserisciChiave))
-                    .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(TextField_ApiSecret, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-                        .addComponent(TextField_ApiKey, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addComponent(TextField_ApiSecret, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                    .addComponent(TextField_ApiKey, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+                    .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
                     .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(4, 4, 4)
+                .addGap(10, 10, 10)
                 .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(ScrollPaneTabellaWallets)
+                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         Pannello_ChiaviLayout.setVerticalGroup(
             Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pannello_ChiaviLayout.createSequentialGroup()
-                .addContainerGap(375, Short.MAX_VALUE)
-                .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addContainerGap(387, Short.MAX_VALUE)
+                .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
                         .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(TextField_ApiKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -217,23 +216,22 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                             .addComponent(TextField_ApiSecret, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Label_Exchange)
-                            .addComponent(ComboBox_Exchange, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Bottone_InserisciChiave))
-                        .addGap(7, 7, 7))
-                    .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
-                        .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
-                                .addComponent(Bottone_RimuoviChiave)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Bottone_AggiornaSelezionati)))
-                        .addGap(29, 29, 29))))
+                            .addComponent(ComboBox_Exchange, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_InserisciChiave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(Label_Exchange))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(Bottone_Aggiorna, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Pannello_ChiaviLayout.createSequentialGroup()
+                            .addComponent(Bottone_RimuoviChiave, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(Bottone_AggiornaSelezionati, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(7, 7, 7))
             .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(119, Short.MAX_VALUE)))
+                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(111, Short.MAX_VALUE)))
         );
 
         Bottone_Aggiorna.setText("<html>Scarica nuovi movimenti<br>da tutti i Wallet della lista</html>");
@@ -246,7 +244,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1029, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -356,122 +354,16 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     
     
     
-    public void AggiornaWallets(List<String> selezionati) {
-        Component c = com.giacenzecrypto.giacenze_crypto.GUI_ExchangeAPI.this;
-        Download progress = new Download();
-        progress.setLocationRelativeTo(this);
-        Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
-//progress.RipristinaStdout();
+    public void ScaricaExchange(String Exchange,String ApiKey,String ApiSecret,String DataUltimoMovimento) {
 
-
-        Thread thread;
-        thread = new Thread() {
-            public void run() {
-                int i = 0;
-                List<String> Portafogli = new ArrayList<>();
-                if (selezionati==null){
-                for (String riga : MappaWallets.values()) {
-                    String splittata[] = riga.split(";");
-                    String blocco = Mappa_Exchange.get(splittata[0] + " (" + splittata[1] + ")");
-                    if (blocco != null) {
-                        blocco = blocco.split(";")[1];
-                    } else {
-                        blocco = "0";
-                    }
-                    //boolean retecompatibile=false;
-                    for(String rete : CDC_Grafica.Mappa_ChainExplorer.keySet()){
-                        if (rete.equalsIgnoreCase(splittata[1]))
-                        {
-                           if (selezionati==null)  {
-                                Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
-                           }else{
-                               for(String p:selezionati){
-                                   if (p.equals(splittata[0])){
-                                       Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
-                                   }
-                               }
-                           }
-                        }
-                    }
-                 /*   if (splittata[1].equalsIgnoreCase("BSC")
-                            ||splittata[1].equalsIgnoreCase("CRO")
-                            ||splittata[1].equalsIgnoreCase("ETH")
-                            ||splittata[1].equalsIgnoreCase("BASE")
-                            ||splittata[1].equalsIgnoreCase("ARB")
-                            ||splittata[1].equalsIgnoreCase("SOL")
-                            ||splittata[1].equalsIgnoreCase("BERA")
-                            ) {
-                        Portafogli.add(splittata[0] + ";" + blocco+";"+splittata[1]);
-                    }*/
-                }
-                }else{
-                    Portafogli=selezionati;
-                    }
-
-                //Tutte le nuove operazioni trovat vengono messe nella mappaTransazioniDefi
-                Map<String,String[]> Mappa_Wallet_Dati = new TreeMap<>();
-                Map<String, TransazioneDefi> MappaTransazioniDefi = Importazioni.DeFi_RitornaTransazioni(Portafogli, c, progress);
-               // System.out.println("DIM:"+MappaTransazioniDefi.size());
-                if (MappaTransazioniDefi != null) {
-                    //Scrivo tutte le nuove transazioni nella mappa principale
-                    for (TransazioneDefi v : MappaTransazioniDefi.values()) {
-                        for (String[] st : v.RitornaRigheTabella()) {
-                            CDC_Grafica.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
-                            //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
-                            Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
-                         //   MappaCryptoWallet.put(st[0], st);
-                            i++;
-                            
-                            //Questa parte serve per memorizzare in una mappa tutti i wallet che hanno avuto aggiornamenti con questa funzione
-                            //in questo modo posso poi andare a cercare le giacenze di fine importazione per quanbto riguarda il token di riferimento
-                            //ad es. eth per base, o bnb per la binance smart chain
-                            //Salto la cronoschain perchè quella viene gestita a parte
-                            String WalletRete=st[3];
-                            String Wallet=st[3].split("\\(")[0].trim();
-                            String ReteW=Funzioni.TrovaReteDaID(st[0]);
-                            String Dati[]=new String[]{Wallet,ReteW};
-                            if (!ReteW.equals("CRO"))Mappa_Wallet_Dati.put(WalletRete,Dati);
-
-                            
-                        }
-                    }
-                    
-                    //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
-                    //Salto la cronoschain perchè quella viene gestita a parte
-                    int r= JOptionPane.showConfirmDialog(c, "Vuoi che venga controllata la giacenza del token di riferimento delle chain \n"
-                         + "e in caso di differenze creato un movimento di rettifica ?",
-                            "Rettifiche movimenti",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                 
-              //  System.out.println(r);
-                if(r==0){
-                    //System.out.println("Sistemo le giacenze");
-                    for (String Dati[]:Mappa_Wallet_Dati.values()){
-                         //System.out.println(Dati[0]);
-                        Importazioni.DeFi_GiacenzeL1_Sistema(Dati[0], Dati[1], c, progress);
-                    }}
-                   // Importazioni.DeFi_GiacenzeL1_Rimanze(Portafogli,"pippo");
-                 //   Prezzi.ScriviFileConversioneXXXEUR();
-                    Importazioni.TransazioniAggiunte = i;
-                    if (Importazioni.TransazioniAggiunte != 0) {
-                        CDC_Grafica.TabellaCryptodaAggiornare = true;
-                    }
-                    
-                }
-                
-                progress.dispose();
-
+            long data=Long.parseLong("1483228800000");//   01/01/2017 data di default
+            if (!DataUltimoMovimento.equals("0"))
+            {
+                data = OperazioniSuDate.ConvertiDatainLongSecondo(DataUltimoMovimento)+1000; // 1 = seconda colonna
             }
-        };
-        progress.SetThread(thread);
-        thread.start();
-        progress.setVisible(true);
-        //progress parte in modalità esclusiva quindi le istruzioni qua sotto non vengono eseguite fino a che la finestra non viene chiusa
-        Importazioni.ConvertiScambiLPinDepositiPrelievi();
-        CorreggiGiacenzeCronos();
-        JOptionPane.showConfirmDialog(c, "Importazione Terminata \nSono stati inseriti " + Importazioni.TransazioniAggiunte + " nuovi movimenti",
-                "Importazione Terminata", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-        PopolaTabella();
-        c.setCursor(Cursor.getDefaultCursor());
+           CcxtInterop.fetchMovimentiConBar(Exchange, ApiKey, ApiSecret, data,"",this);
+        
+        
 
     }
  
@@ -556,6 +448,22 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private void Bottone_AggiornaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AggiornaActionPerformed
         // TODO add your handling code here:
       //  AggiornaWallets(null);
+       int numeroRighi=TabellaWallets.getRowCount();
+        if (numeroRighi == 0) {
+            return;
+            }
+        TableModel model = TabellaWallets.getModel();
+        
+        for (int i=0;i<numeroRighi;i++) {
+            int modelRow = TabellaWallets.convertRowIndexToModel(i);
+            String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
+            String ApiKey = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
+            String ApiSecret = model.getValueAt(modelRow, 3).toString(); // 1 = seconda colonna
+            String DataConSecondi =model.getValueAt(modelRow, 4).toString();
+            
+            ScaricaExchange(wallet,ApiKey,ApiSecret,DataConSecondi);
+        }
+        PopolaTabella();
         
     }//GEN-LAST:event_Bottone_AggiornaActionPerformed
 
@@ -573,33 +481,20 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         // TODO add your handling code here:
         int[] selectedRows = TabellaWallets.getSelectedRows();
         if (selectedRows.length == 0) {
-            //System.out.println("Nessuna riga selezionata.");
             return;
             }
         TableModel model = TabellaWallets.getModel();
         
         for (int viewRow : selectedRows) {
             int modelRow = TabellaWallets.convertRowIndexToModel(viewRow);
-
-            
-            long data=Long.parseLong("1483228800000");
             String wallet = model.getValueAt(modelRow, 1).toString(); // 1 = seconda colonna
             String ApiKey = model.getValueAt(modelRow, 2).toString(); // 1 = seconda colonna
             String ApiSecret = model.getValueAt(modelRow, 3).toString(); // 1 = seconda colonna
-            //come data di inizio metto la data dell'ulti movimento + 1 secondo
-            if (!model.getValueAt(modelRow, 4).toString().equals("0"))
-                data = OperazioniSuDate.ConvertiDatainLongSecondo(model.getValueAt(modelRow, 4).toString())+1000; // 1 = seconda colonna
+            String DataConSecondi =model.getValueAt(modelRow, 4).toString();
             
-           CcxtInterop.fetchMovimentiConBar(wallet, ApiKey, ApiSecret, data,"",this);
-         /*  System.out.println(wallet);
-           System.out.println(ApiKey);
-           System.out.println(ApiSecret);
-           System.out.println(data);*/
-            
-            
-
+            ScaricaExchange(wallet,ApiKey,ApiSecret,DataConSecondi);
         }
-        //AggiornaWallets(selezionati);
+        PopolaTabella();
      
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 

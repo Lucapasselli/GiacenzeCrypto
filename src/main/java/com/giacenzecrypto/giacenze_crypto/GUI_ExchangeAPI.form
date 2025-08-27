@@ -73,9 +73,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="ComboBox_Exchange" pref="222" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="92" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="ComboBox_Exchange" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Bottone_InserisciChiave" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="TextField_ApiSecret" alignment="1" pref="453" max="32767" attributes="0"/>
@@ -83,17 +83,17 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="Bottone_RimuoviChiave" pref="295" max="32767" attributes="0"/>
+                          <Component id="Bottone_RimuoviChiave" pref="289" max="32767" attributes="0"/>
                           <Component id="Bottone_AggiornaSelezionati" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Component id="Bottone_Aggiorna" min="-2" pref="182" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="ScrollPaneTabellaWallets" max="32767" attributes="0"/>
+                          <Component id="ScrollPaneTabellaWallets" pref="1015" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -102,9 +102,9 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace pref="375" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace pref="387" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="TextField_ApiKey" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Label_IndirizzoWallet1" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -116,30 +116,28 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="ComboBox_Exchange" alignment="3" min="-2" pref="31" max="-2" attributes="0"/>
+                                  <Component id="Bottone_InserisciChiave" alignment="3" max="32767" attributes="0"/>
                                   <Component id="Label_Exchange" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="ComboBox_Exchange" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Bottone_InserisciChiave" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="Bottone_Aggiorna" min="-2" pref="76" max="-2" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Component id="Bottone_RimuoviChiave" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="Bottone_AggiornaSelezionati" min="-2" max="-2" attributes="0"/>
-                                  </Group>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="Bottone_Aggiorna" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="Bottone_RimuoviChiave" min="-2" pref="40" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="Bottone_AggiornaSelezionati" min="-2" pref="41" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="ScrollPaneTabellaWallets" min="-2" pref="356" max="-2" attributes="0"/>
-                          <EmptySpace pref="119" max="32767" attributes="0"/>
+                          <Component id="ScrollPaneTabellaWallets" min="-2" pref="365" max="-2" attributes="0"/>
+                          <EmptySpace pref="111" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -255,7 +253,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/Images/24_Cestino.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Rimuovi Wallet Selezionato"/>
+                <Property name="text" type="java.lang.String" value="Rimuovi Chiave Selezionata"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_RimuoviChiaveActionPerformed"/>

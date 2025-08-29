@@ -199,10 +199,12 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             ModelloTabellaCrypto.addRow(Val);
             
             if (!Transazione[15].isBlank()){
-                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
-                Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
-                Val=new String[]{"Valore Unitario "+Transazione[11],Valore};
-                ModelloTabellaCrypto.addRow(Val);
+                if (new BigDecimal(Transazione[15]).compareTo(BigDecimal.ZERO)!=0){
+                    BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                    Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
+                    Val=new String[]{"Valore Unitario "+Transazione[11],Valore};
+                    ModelloTabellaCrypto.addRow(Val);
+                }
             }
         }
         Valore=Transazione[12];

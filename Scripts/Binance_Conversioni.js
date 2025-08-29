@@ -215,7 +215,7 @@ const BINANCE_CONFIG = {
     maxBackoffMs: 60000,
     requestsPerMinute: 20,
     burstLimit: 5,
-    maxQueryDays: 30 // Massimo intervallo di giorni consentito da Binance
+    maxQueryDays: 28 // Massimo intervallo di giorni consentito da Binance
 };
 
 // Utility functions

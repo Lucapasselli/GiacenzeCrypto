@@ -219,13 +219,13 @@ private static Path getNodeExePath() {
         List<JsonObject> Jsons = new ArrayList<>();
         
         //BINACE TEST
-        if (exchangeId.equalsIgnoreCase("Binancet")) {
-            long inizioanno=Long.parseLong("1735685999000");
+        if (exchangeId.equalsIgnoreCase("Binance")) {
+            //long inizioanno=Long.parseLong("1735685999000");
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
            // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
-            String estrazioni[] = new String[]{"prelievi"};
+            String estrazioni[] = new String[]{"Binance_MovimentiFiat"};
             for (String script : estrazioni) {
-                JsonObject json = fetchMovimento(exchangeId, apiKey, secret, inizioanno, "", script);
+                JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", script);
                 if (json != null) {
                     Jsons.add(json);
                 }
@@ -264,7 +264,7 @@ private static Path getNodeExePath() {
         }
         
         //BINACE
-        if (exchangeId.equalsIgnoreCase("Binance")) {
+        if (exchangeId.equalsIgnoreCase("BinanceOK")) {
             
             //Intanto aggiungo in una lista univoca i tokens
             Set<String> setTokens = new HashSet<>();
@@ -1270,6 +1270,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             Mon.Moneta=coin;
             Mon.Tipo=tipoMoneta;
             Mon.Qta=amount;
+            
+            
             // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
 
@@ -1278,7 +1280,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
             RT[4] = "Principale";                                        // Wallet
-            RT[7] = "";                                                  // Causale originale (vuoto)
+            RT[7] = tipo;                                                  // Causale originale (vuoto)
             if (tipoMoneta.equals("FIAT"))
             {
                 RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_DF"; // TrasID
@@ -1320,7 +1322,8 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
-            lista.add(RT);
+            //inserisco il movimento solo se il quantitativo è diverso da zero
+            if (!Mon.Qta.equals("0")) lista.add(RT);
         }
 
         return lista;
@@ -1445,7 +1448,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
 
             Importazioni.RiempiVuotiArray(RT);
             //System.out.println(RT[0]);
-            lista.add(RT);
+            if (!Mon.Qta.equals("0")) lista.add(RT);
         }
 }
         return lista;

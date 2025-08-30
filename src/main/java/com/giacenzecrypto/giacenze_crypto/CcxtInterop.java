@@ -219,7 +219,7 @@ private static Path getNodeExePath() {
         List<JsonObject> Jsons = new ArrayList<>();
         
         //BINACE TEST
-        if (exchangeId.equalsIgnoreCase("Binance")) {
+        if (exchangeId.equalsIgnoreCase("Binancet")) {
             //long inizioanno=Long.parseLong("1735685999000");
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
            // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
@@ -264,7 +264,7 @@ private static Path getNodeExePath() {
         }
         
         //BINACE
-        if (exchangeId.equalsIgnoreCase("BinanceOK")) {
+        if (exchangeId.equalsIgnoreCase("Binance")) {
             
             //Intanto aggiungo in una lista univoca i tokens
             Set<String> setTokens = new HashSet<>();

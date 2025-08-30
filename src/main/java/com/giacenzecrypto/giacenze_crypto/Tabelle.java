@@ -1421,17 +1421,18 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
     }
 
     // Rimuovi colonne filtrate
+    //if (filters.keySet()!=null){
     Set<Integer> filteredCols = filters.keySet();
     if (filteredCols != null) {
         filteredCols.clear();
     }
 
     // Rimuovi il filtro dal TableRowSorter della tabella
-   /* RowSorter<?> rowSorter = table.getRowSorter();
+    RowSorter<?> rowSorter = table.getRowSorter();
     if (rowSorter instanceof TableRowSorter<?>) {
         ((TableRowSorter<?>) rowSorter).setRowFilter(null);
-    }*/
-    table.setRowSorter(null);
+    }
+    //table.setRowSorter(null);
     // Forza repaint dell'header per togliere icone o evidenziazioni
     table.getTableHeader().repaint();
 }

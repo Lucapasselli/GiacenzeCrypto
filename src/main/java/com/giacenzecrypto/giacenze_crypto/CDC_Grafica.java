@@ -13925,10 +13925,18 @@ try {
     if (rowSorter instanceof TableRowSorter<?>) {
         ((TableRowSorter<?>) rowSorter).setRowFilter(null);
     }*/
+ // Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
         //Salvo il sorter e lo elimino per velocizareil caricamento della tbella
         TableRowSorter<?> sorter = (TableRowSorter<?>) TransazioniCryptoTabella.getRowSorter();
         List<? extends RowSorter.SortKey> sortKeys = sorter != null ? sorter.getSortKeys() : null;
-        TransazioniCryptoTabella.setRowSorter(null);
+       // TransazioniCryptoTabella.setRowSorter(null);
+       //E' un pò più lento ma dovrebbe impedire i problemi che si hanno mettendo a null il rowsorter 
+       RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
+        if (rowSorter instanceof TableRowSorter<?>) {
+            ((TableRowSorter<?>) rowSorter).setRowFilter(null);
+        }
+    /*  if(TransazioniCryptoTabella.getRowSorter()!=null)
+        Tabelle.Tabella_RimuoviFiltri(TransazioniCryptoTabella);*/
        
         PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         //Disabilito i bottoni che devono essere attivi solo in caso vi sia qualcheria selezionata sulla tabella
@@ -14170,12 +14178,14 @@ try {
         
 
         //Aggiungo i filtri sulla colonna
-        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup); 
-        RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
+        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
+       // RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
         // Riapplica le chiavi di ordinamento precedenti
         if (sortKeys != null) {
             rowSorter.setSortKeys(sortKeys);
         }
+        //Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
+      // TransazioniCryptoTabella.getTableHeader().repaint();
         
       //  TransazioniCryptoTabella.setIgnoreRepaint(false);
        // TransazioniCryptoTabella.repaint();

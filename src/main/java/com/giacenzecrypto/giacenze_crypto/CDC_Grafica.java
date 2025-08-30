@@ -621,6 +621,7 @@ private static final long serialVersionUID = 3L;
         jSeparator3 = new javax.swing.JSeparator();
         Plusvalenze_Opzioni_NonConsiderareMovimentiNC = new javax.swing.JCheckBox();
         RT_Bottone_Documentazione1 = new javax.swing.JButton();
+        Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_StakingZero = new javax.swing.JCheckBox();
@@ -4004,6 +4005,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni.setText("Le commissioni non generano plusvalenza");
+        Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
         Opzioni_Calcolo_PannelloLayout.setHorizontalGroup(
@@ -4020,15 +4028,15 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti))
-                                .addGap(32, 107, Short.MAX_VALUE))
+                                .addGap(32, 244, Short.MAX_VALUE))
                             .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
-                                .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC, javax.swing.GroupLayout.PREFERRED_SIZE, 741, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC, javax.swing.GroupLayout.PREFERRED_SIZE, 741, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(RT_Bottone_Documentazione1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
-            .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(RT_Bottone_Documentazione1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_Calcolo_PannelloLayout.setVerticalGroup(
             Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4045,9 +4053,11 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addGap(18, 18, 18)
                 .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC)
-                .addGap(91, 91, 91)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni)
+                .addGap(65, 65, 65)
                 .addComponent(RT_Bottone_Documentazione1)
-                .addContainerGap(483, Short.MAX_VALUE))
+                .addContainerGap(479, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni di Calcolo", Opzioni_Calcolo_Pannello);
@@ -4920,7 +4930,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(CDC_Text_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(CDC_Label_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC, javax.swing.GroupLayout.DEFAULT_SIZE, 853, Short.MAX_VALUE))
+                .addComponent(CDC, javax.swing.GroupLayout.PREFERRED_SIZE, 853, Short.MAX_VALUE))
         );
 
         pack();
@@ -5201,6 +5211,14 @@ JPanel loadingBar = new JPanel() {
         if(PlusXWallet!=null && PlusXWallet.equalsIgnoreCase("SI")){
             Opzioni_GruppoWallet_CheckBox_PlusXWallet.setSelected(true);
         }
+        
+        String Plusvalenze_NoPlusvalenzeCommissioni=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
+        if(Plusvalenze_NoPlusvalenzeCommissioni==null)
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
+            Plusvalenze_NoPlusvalenzeCommissioni="NO";
+        }
+        Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni.setSelected("SI".equalsIgnoreCase(Plusvalenze_NoPlusvalenzeCommissioni));
         
         String Plusvalenze_Pre2023EarnCostoZero=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_Pre2023EarnCostoZero");
         if(Plusvalenze_Pre2023EarnCostoZero==null)
@@ -11953,6 +11971,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     }//GEN-LAST:event_TransazioniCryptoTabellaMouseReleased
 
+    private void Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
+        // TODO add your handling code here:
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni.isSelected()) {
+            //scrivo nelle Opzioni del DB che voglio il calcolo delle plus X Gruppo Wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "SI");
+        } else {
+            //scrivo nelle Opzioni del DB che nel calcolo delle plus non considero la suddivisione per wallet
+            DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
+        }
+        //TabellaCryptodaAggiornare=true;
+       // Calcoli_Plusvalenze.AggiornaPlusvalenze();
+       Funzioni_AggiornaTutto();
+       this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -14629,6 +14664,7 @@ try {
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
     private javax.swing.JButton Opzioni_Varie_RicalcolaPrezzi;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;

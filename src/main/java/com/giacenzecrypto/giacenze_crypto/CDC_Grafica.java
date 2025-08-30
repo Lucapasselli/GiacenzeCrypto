@@ -150,7 +150,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.45.01";
+    public String Versione="1.0.45.02";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
@@ -13927,8 +13927,8 @@ try {
     }*/
  // Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
         //Salvo il sorter e lo elimino per velocizareil caricamento della tbella
-        TableRowSorter<?> sorter = (TableRowSorter<?>) TransazioniCryptoTabella.getRowSorter();
-        List<? extends RowSorter.SortKey> sortKeys = sorter != null ? sorter.getSortKeys() : null;
+       /* TableRowSorter<?> sorter = (TableRowSorter<?>) TransazioniCryptoTabella.getRowSorter();
+        List<? extends RowSorter.SortKey> sortKeys = sorter != null ? sorter.getSortKeys() : null;*/
        // TransazioniCryptoTabella.setRowSorter(null);
        //E' un pò più lento ma dovrebbe impedire i problemi che si hanno mettendo a null il rowsorter 
        RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
@@ -14181,9 +14181,9 @@ try {
         Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
        // RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
         // Riapplica le chiavi di ordinamento precedenti
-        if (sortKeys != null) {
+    /*    if (sortKeys != null) {
             rowSorter.setSortKeys(sortKeys);
-        }
+        }*/
         //Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
       // TransazioniCryptoTabella.getTableHeader().repaint();
         

@@ -380,11 +380,11 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
     //    Map<String, String[]> MappaCryptoWalletTemp=MappaCryptoWallet;
         
         //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
-        boolean PlusXWallet=false;
         String PlusXW=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
-        if(PlusXW!=null && PlusXW.equalsIgnoreCase("SI")){
-            PlusXWallet=true;
-        }
+        boolean PlusXWallet = (PlusXW != null && PlusXW.equalsIgnoreCase("SI"));
+        String NoPlusCom=DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_NoPlusvalenzeCommissioni");
+        boolean NoPlusCommissioni = (NoPlusCom != null && NoPlusCom.equalsIgnoreCase("SI"));
+        
         for (String[] v : MappaCryptoWallet.values()) {
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
                // System.out.println(GruppoWallet);
@@ -672,19 +672,29 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     CalcoloPlusvalenza="S";
                 }
                 //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
-                else if(IDTS[4].equalsIgnoreCase("CM")||v[18].contains("PCO")){
+                else if (IDTS[4].equalsIgnoreCase("CM") || v[18].contains("PCO")) {
+                    //Se contiene commissioni e è fleggato noplusvalenze commissioni lo considero come una donazione a livello fiscale
+                    //System.out.println(v[15]);
+                    if (v[5].toUpperCase().contains("COMMISSION") && NoPlusCommissioni) {
+                        VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
                     
-                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                    VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
-                
-                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                    NuovoPrezzoCarico="";
-                
-                    //Calcolo la plusvalenza
-                  //  if (Funzioni.Funzioni_isNumeric(Valore, false)&&Funzioni.Funzioni_isNumeric(VecchioPrezzoCarico, false))
-                        Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
-                        CalcoloPlusvalenza="S";
-                   // else Plusvalenza="ERRORE";
+                        NuovoPrezzoCarico="";
+                    
+                        Plusvalenza="0.00";
+                        CalcoloPlusvalenza="N";  
+                    } else {
+                        //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+
+                        //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                        NuovoPrezzoCarico = "";
+
+                        //Calcolo la plusvalenza
+                        //  if (Funzioni.Funzioni_isNumeric(Valore, false)&&Funzioni.Funzioni_isNumeric(VecchioPrezzoCarico, false))
+                        Plusvalenza = new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        CalcoloPlusvalenza = "S";
+                        // else Plusvalenza="ERRORE";
+                    }
                 }
                 //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
                 else if (IDTS[4].equalsIgnoreCase("TI")||v[18].contains("PTW")) {

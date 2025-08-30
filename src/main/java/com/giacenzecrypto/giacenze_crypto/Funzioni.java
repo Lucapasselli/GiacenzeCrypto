@@ -1834,6 +1834,7 @@ return MappaLista;
             for (int i=0;i<ritorno.length;i++){
                 
                 if (i==19||i==15){
+                   // if(riga[i].isBlank())riga[i]="0";
                     ritorno[i]=new BigDecimal(riga[i]);
                 }else
                   {

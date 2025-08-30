@@ -6806,7 +6806,9 @@ JPanel loadingBar = new JPanel() {
                         String AddressE = movimento[28];
                         //Se gli address sono vuoti allora considero vuota anche la rete visto che vanno a braccetto
                         //Stessa cosa per gli address se la rete non c'è
-                        if(AddressU.isBlank()&&AddressE.isBlank())ReteMov="";
+                       // if(AddressU.isBlank()&&AddressE.isBlank())ReteMov="";
+                       //la riga sopra è commentata perchè potrebbe essere un problema nascondere la rete
+                       //se ad esempio abbiamo un rigo con una moneta che ha l'address e l'altra no risulterebbe senza address anche la moneta che ce l'ha
                         if(ReteMov.isBlank()){
                             AddressU="";
                             AddressE="";
@@ -13176,6 +13178,7 @@ try {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
                     String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
+                  //  System.out.println(movimento[0]+" - "+Rete);
                     //System.out.println(Rete);
                     long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
@@ -13211,12 +13214,14 @@ try {
                             if (Rete == null||Rete.isBlank()){
                                Monete[0].MonetaAddress="";
                                Monete[1].MonetaAddress="";
-                               Monete[1].Rete="";
+                               Monete[0].Rete="";
                                Monete[1].Rete="";
                                Rete = "";
                             }
                             if(Monete[0].MonetaAddress.isBlank()&&Monete[1].MonetaAddress.isBlank()){
-                               Rete = ""; 
+                          /*     Rete = "";
+                               Monete[0].Rete="";
+                               Monete[1].Rete="";*/
                             }
 
                             //questo ciclo for serve per inserire i valori sia della moneta uscita che di quella entrata
@@ -13841,8 +13846,9 @@ try {
                             //Inoltre metto a true VersioneCambiata perchè questo è un caso che non dovrebbe mai capitare
                             //può capitare solo se metto in una versione nuova un file di una vecchia versione del programma 
                             
-                            
                             if (Importazioni.ColonneTabella>splittata.length){
+                                System.out.println("Trovata riga con lunghezza errata : "+splittata[0]+ " - Lunghezza : "+splittata.length);
+                                //Logger.getLogger(CDC_Grafica.class.getName()).log(Level.WARNING, null, "Trovata riga con lunghezza errata : "+splittata[0]);
                                 String nuovoArray[]=new String[Importazioni.ColonneTabella];
                                 //splittata = java.util.Arrays.copyOf(splittata, Importazioni.ColonneTabella);
                                 System.arraycopy(splittata, 0, nuovoArray, 0, splittata.length);

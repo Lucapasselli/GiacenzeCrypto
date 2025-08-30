@@ -14,6 +14,7 @@ import com.toedter.calendar.JDateChooserCellEditor;
 import com.toedter.calendar.JTextFieldDateEditor;
 import static com.giacenzecrypto.giacenze_crypto.Importazioni.ColonneTabella;
 import static com.giacenzecrypto.giacenze_crypto.Importazioni.RiempiVuotiArray;
+import static com.giacenzecrypto.giacenze_crypto.Tabelle.tableFilters;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -70,6 +71,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JWindow;
+import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -864,12 +866,18 @@ private static final long serialVersionUID = 3L;
         });
         TransazioniCrypto_ScrollPane.setViewportView(TransazioniCryptoTabella);
         if (TransazioniCryptoTabella.getColumnModel().getColumnCount() > 0) {
+            TransazioniCryptoTabella.getColumnModel().getColumn(0).setMinWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(0).setPreferredWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(0).setMaxWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(1).setMinWidth(120);
             TransazioniCryptoTabella.getColumnModel().getColumn(1).setPreferredWidth(120);
             TransazioniCryptoTabella.getColumnModel().getColumn(1).setMaxWidth(120);
-            TransazioniCryptoTabella.getColumnModel().getColumn(2).setMinWidth(70);
-            TransazioniCryptoTabella.getColumnModel().getColumn(2).setPreferredWidth(70);
-            TransazioniCryptoTabella.getColumnModel().getColumn(2).setMaxWidth(70);
+            TransazioniCryptoTabella.getColumnModel().getColumn(2).setMinWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(2).setPreferredWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(2).setMaxWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(7).setMinWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(7).setPreferredWidth(0);
+            TransazioniCryptoTabella.getColumnModel().getColumn(7).setMaxWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setMinWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setPreferredWidth(60);
             TransazioniCryptoTabella.getColumnModel().getColumn(8).setMaxWidth(100);
@@ -946,8 +954,9 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(39).setMaxWidth(0);
         }
-        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));
+        TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 72));
         Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);
+        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
 
         TransazioniCrypto_Bottone_Importa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Upload.png"))); // NOI18N
         TransazioniCrypto_Bottone_Importa.setText("Carica CSV");
@@ -13918,8 +13927,8 @@ try {
         NumErroriMovSconosciuti=0;
         NumErroriMovNoPrezzo=0;
         NumErroriStackLiFoMancante=0;
-        
-
+      
+       
        // Rimuovi il filtro dal TableRowSorter della tabella per velocizzare il caricamento della tabella con filtri attivi
   /*  RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
     if (rowSorter instanceof TableRowSorter<?>) {
@@ -13930,13 +13939,15 @@ try {
        /* TableRowSorter<?> sorter = (TableRowSorter<?>) TransazioniCryptoTabella.getRowSorter();
         List<? extends RowSorter.SortKey> sortKeys = sorter != null ? sorter.getSortKeys() : null;*/
        // TransazioniCryptoTabella.setRowSorter(null);
+       
+       
        //E' un pò più lento ma dovrebbe impedire i problemi che si hanno mettendo a null il rowsorter 
+       //pulisco il rowsorter, tanto poi lo riapplico alla fine
        RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
         if (rowSorter instanceof TableRowSorter<?>) {
             ((TableRowSorter<?>) rowSorter).setRowFilter(null);
         }
-    /*  if(TransazioniCryptoTabella.getRowSorter()!=null)
-        Tabelle.Tabella_RimuoviFiltri(TransazioniCryptoTabella);*/
+
        
         PulisciTabella(TransazioniCrypto_Tabella_Dettagli);
         //Disabilito i bottoni che devono essere attivi solo in caso vi sia qualcheria selezionata sulla tabella
@@ -14176,14 +14187,20 @@ try {
         Funzione_AggiornaComboBox();
         
         
+//ripristinaFiltri(TransazioniCryptoTabella);
 
         //Aggiungo i filtri sulla colonna
         Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
-       // RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
+        
+        
+     /*   RowSorter<?> rowSorter = TransazioniCryptoTabella.getRowSorter();
         // Riapplica le chiavi di ordinamento precedenti
-    /*    if (sortKeys != null) {
+        if (sortKeys != null) {
             rowSorter.setSortKeys(sortKeys);
         }*/
+    // ripristinaFiltri(TransazioniCryptoTabella);
+
+     
         //Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
       // TransazioniCryptoTabella.getTableHeader().repaint();
         
@@ -14203,6 +14220,26 @@ try {
         
     }    
     
+public static void ripristinaFiltri(JTable table) {
+    // Crea un nuovo sorter per la tabella
+    DefaultTableModel model = (DefaultTableModel) table.getModel();
+    TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+
+    // Recupera i filtri salvati per questa tabella
+    Map<Integer, RowFilter<DefaultTableModel, Integer>> colFilters = tableFilters.get(table);
+
+    if (colFilters != null && !colFilters.isEmpty()) {
+        // Combina tutti i filtri in un unico RowFilter
+        List<RowFilter<DefaultTableModel, Integer>> filters = new ArrayList<>(colFilters.values());
+        RowFilter<DefaultTableModel, Integer> combined = RowFilter.andFilter(filters);
+        sorter.setRowFilter(combined);
+    } else {
+        sorter.setRowFilter(null); // Nessun filtro se la mappa è vuota
+    }
+
+    // Applica il sorter ricostruito alla tabella
+    table.setRowSorter(sorter);
+}
 
 
     

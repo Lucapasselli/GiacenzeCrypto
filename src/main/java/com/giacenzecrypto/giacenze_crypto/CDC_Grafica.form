@@ -500,7 +500,7 @@
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                       <TableColumnModel selectionModel="0">
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -510,7 +510,7 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="70" minWidth="70" prefWidth="70" resizable="true">
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -535,7 +535,7 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -714,7 +714,7 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new com.giacenzecrypto.giacenze_crypto.JTableConTooltipIcone()"/>
                     <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="CDC_Grafica_TransazioniCryptoTabella"/>
-                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 64));&#xd;&#xa;Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);"/>
+                    <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="TransazioniCryptoTabella.getTableHeader().setPreferredSize(new Dimension(TransazioniCryptoTabella.getColumnModel().getTotalColumnWidth(), 72));&#xd;&#xa;Tabelle.ColoraRigheTabellaCrypto(TransazioniCryptoTabella);&#xd;&#xa;Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

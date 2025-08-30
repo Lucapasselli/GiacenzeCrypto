@@ -1110,6 +1110,7 @@ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
 
         // ICONE
         Icon sortIcon = null;
+      //  if(tbl.getRowSorter()!=null){
         List<? extends RowSorter.SortKey> sortKeys = tbl.getRowSorter().getSortKeys();
         if (!sortKeys.isEmpty()) {
             RowSorter.SortKey primarySortKey = sortKeys.get(0);
@@ -1119,6 +1120,7 @@ public static TableCellRenderer Tabelle_creaNuovoHeaderRenderer(
                         : "Table.descendingSortIcon");
             }
         }
+      //  }
 
         if (activeFilters.containsKey(modelCol)) {
             label.setIcon(new MultiSelectPopUp_CombinedIcon(sortIcon, filterIcon));

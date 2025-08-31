@@ -219,7 +219,7 @@ private static Path getNodeExePath() {
         List<JsonObject> Jsons = new ArrayList<>();
         
         //BINACE TEST
-        if (exchangeId.equalsIgnoreCase("Binancet")) {
+        if (exchangeId.equalsIgnoreCase("Binance")) {
             //long inizioanno=Long.parseLong("1735685999000");
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
            // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
@@ -264,7 +264,7 @@ private static Path getNodeExePath() {
         }
         
         //BINACE
-        if (exchangeId.equalsIgnoreCase("Binance")) {
+        if (exchangeId.equalsIgnoreCase("Binancet")) {
             
             //Intanto aggiungo in una lista univoca i tokens
             Set<String> setTokens = new HashSet<>();
@@ -421,6 +421,13 @@ private static Path getNodeExePath() {
                 System.out.println(c2.toString());
             }*/
 
+           
+           // Depositi/prelievi e acquisti/vendite FIAT
+            JsonObject Binance_fiat = json.has("Binance_fiat") ? json.getAsJsonObject("Binance_fiat") : new JsonObject();
+            lista.addAll(convertBinanceMovimentiFiat(Binance_fiat,Exchange));
+
+            
+            
             // Savings / Earn
             JsonArray savings = json.has("savings") ? json.getAsJsonArray("savings") : new JsonArray();
            /* for (JsonElement s : savings) {
@@ -697,6 +704,292 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
         return lista;
     }    
     
+
+public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,String Exchange) {
+        List<String[]> lista = new ArrayList<>();
+        
+        //Dentro orders ci sono i depositi e prelievi FIAT
+        JsonArray orders= JObjetc.has("orders") ? JObjetc.getAsJsonArray("orders") : new JsonArray();
+        //Dentro payments ci sono invece  gli acquisti e vendite crypto tramite fiat che non passano per i trades
+        //Ad esempio acquisti con carte
+        JsonArray payments= JObjetc.has("payments") ? JObjetc.getAsJsonArray("payments") : new JsonArray();
+        
+         // Ordiniamo per completeTime (servono per avere gruppi ordinati)
+        List<JsonObject> ordersOBJ = new ArrayList<>();
+        List<JsonObject> paymentsOBJ = new ArrayList<>();
+        if (orders==null&&payments==null)return lista;
+        
+        
+        for (JsonElement el : orders) {
+            ordersOBJ.add(el.getAsJsonObject());
+        }
+        
+        for (JsonElement el : payments) {
+            paymentsOBJ.add(el.getAsJsonObject());
+        }
+        
+        ordersOBJ.sort((o1, o2) -> {
+            long t1 = Long.parseLong(
+                o1.has("updateTime") ? o1.get("updateTime").getAsString() : o1.get("createTime").getAsString()
+            );
+            long t2 = Long.parseLong(
+                o2.has("updateTime") ? o2.get("updateTime").getAsString() : o2.get("createTime").getAsString()
+            );
+            return Long.compare(t1, t2);
+        });
+        
+        paymentsOBJ.sort((o1, o2) -> {
+            long t1 = Long.parseLong(
+                o1.has("updateTime") ? o1.get("updateTime").getAsString() : o1.get("createTime").getAsString()
+            );
+            long t2 = Long.parseLong(
+                o2.has("updateTime") ? o2.get("updateTime").getAsString() : o2.get("createTime").getAsString()
+            );
+            return Long.compare(t1, t2);
+        });
+        
+        //Cominciamo dai depositi prelievi FIAT
+        int totMov = 1;
+        //int i = 1;
+        String OldData="0";
+
+        for (JsonElement el : ordersOBJ) {
+            JSONObject obj = new JSONObject(el.toString());
+
+            String coin = obj.optString("fiatCurrency", "");
+            String amount = obj.optString("indicatedAmount", "");
+            String amountp = obj.optString("amount", "");
+            String feeamount = obj.optString("totalFee", "");
+            String metodo = obj.optString("method", "");//Metodo di pagamento
+            String direzione = obj.optString("movimento", "");//può essere deposito o prelievo
+            String insertTime = obj.optString("updateTime", "createTime");
+            String status=obj.optString("status", "");//deve essere Successful perchè sia valido
+
+
+            long time = Long.parseLong(insertTime);
+            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
+            //Altrimenti andrei a sovrascrivere il movimento precedente
+            if (OldData.equals(data))totMov++;
+            else {
+                totMov=1;
+                OldData=data;
+            }
+            
+            String dataForId = data.replaceAll(" |-|:", "");
+            String dataa = data.trim().substring(0, data.length()-3);
+
+            if (status.trim().equalsIgnoreCase("Successful")) {
+                Moneta Mon = new Moneta();
+                Mon.Moneta = coin;
+                Mon.Tipo = "FIAT";
+                Mon.Qta = amount;
+                // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
+                Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+
+                String[] RT = new String[Importazioni.ColonneTabella];
+                RT[1] = dataa;                                               // Data e ora
+                RT[2] = "1 di 2";                                 // Numero movimenti
+                RT[3] = Exchange;                                            // Exchange
+                RT[4] = "Principale";                                        // Wallet
+                RT[7] = "Metodo di pagamento : " + metodo;                     // Causale originale (vuoto)
+                if (direzione.equalsIgnoreCase("deposito")) {
+                    Mon.Qta = amount;
+                    Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_DF"; // TrasID
+                    RT[5] = "DEPOSITO FIAT";
+                    RT[6] = "-> " + Mon.Moneta;
+                    RT[11] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
+                    RT[12] = Mon.Tipo;                                           // Tipo Moneta Acq.
+                    RT[13] = Mon.Qta;                                            // Quantità Acq.
+                } else //Il fatto che sia prelievo è sottointeso visto che ci sono solo 2 opzioni
+                {
+                    Mon.Qta = amountp;
+                    Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_PF"; // TrasID
+                    RT[5] = "PRELIEVO FIAT";
+                    RT[6] = Mon.Moneta + " ->";
+                    RT[8] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
+                    RT[9] = Mon.Tipo;                                           // Tipo Moneta Acq.
+                    RT[10] = Mon.Qta;                                            // Quantità Acq.
+                }
+
+                RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
+                RT[22] = "A";                                               // Auto
+                RT[29] = insertTime;                                         // Timestamp
+                RT[39] = "A"; //Fonte dati A = API Exchange  
+
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+
+                //Adesso è il turno delle commissioni
+                Mon.Qta = feeamount;
+                Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+                RT = new String[Importazioni.ColonneTabella];
+                RT[1] = dataa;                                               // Data e ora
+                RT[2] = "2 di 2";                                   // Numero movimenti
+                RT[3] = Exchange;                                            // Exchange
+                RT[4] = "Principale";                                        // Wallet
+                RT[7] = "";                                                  // Causale originale (vuoto)                
+                RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_2_CM"; // TrasID
+                RT[5] = "COMMISSIONI";
+                RT[6] = Mon.Moneta + " ->";
+                RT[8] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
+                RT[9] = Mon.Tipo;                                           // Tipo Moneta Acq.
+                RT[10] = Mon.Qta;                                            // Quantità Acq.                
+                RT[14] = "";                                                 // Valore Mercato originale
+                RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
+                RT[22] = "A";                                               // Auto
+                RT[29] = insertTime;                                         // Timestamp
+                RT[39] = "A"; //Fonte dati A = API Exchange  
+
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
+        }
+
+        
+        
+        //Adesso è il turno dei pagamenti
+        totMov = 1;
+        //int i = 1;
+        OldData="0";
+
+        for (JsonElement el : ordersOBJ) {
+            JSONObject obj = new JSONObject(el.toString());
+            
+            boolean inserisciFee=false;
+            boolean inserisciArrivoFIAT=false;
+            
+            Moneta FIAT = new Moneta();
+            Moneta CRYPTO = new Moneta();
+            Moneta FEE = new Moneta();
+
+            String feeamount = obj.optString("totalFee", "");
+            String direzione = obj.optString("movimento", "");//può essere acquisto o vendita
+            String souceAmount = obj.optString("sourceAmount", "");
+            String metodo = obj.optString("paymentMethod", "");//Metodo di pagamento
+            //se il metodo è diverso da Cash Balance devo anche inserire un movimento di DEPOSITO FIAT
+            if (!metodo.trim().equalsIgnoreCase("Cash Balance"))inserisciArrivoFIAT=true;
+            
+            FIAT.Moneta = obj.optString("fiatCurrency", "");
+            FIAT.Qta = souceAmount;
+            FIAT.Tipo="FIAT";
+            CRYPTO.Moneta = obj.optString("cryptoCurrency", "");
+            CRYPTO.Qta = obj.optString("obtainAmount", "");
+            CRYPTO.Tipo="Crypto";
+            
+            //Adesso a seconda del movimento calcolo anche la fee
+            if (direzione.equalsIgnoreCase("acquisto")){//Acquisto
+                FIAT.Qta=new BigDecimal(FIAT.Qta).subtract(new BigDecimal(feeamount)).toPlainString();
+                FEE.Moneta=FIAT.Moneta;
+                FEE.Qta=feeamount;
+                FEE.Tipo=FIAT.Tipo;
+                if (new BigDecimal(FEE.Qta).compareTo(BigDecimal.ZERO)!=0){
+                    inserisciFee=true;
+                }
+                
+            }else{//Vendita
+                //Non ho i dati nei miei file quindi per le vendite per ora non calcolo le fee ma prendo il prezzo lordo
+                inserisciFee=false;
+            }
+
+            String amount = obj.optString("indicatedAmount", "");
+            String amountp = obj.optString("amount", "");
+            
+            
+            String insertTime = obj.optString("updateTime", "createTime");
+            String status=obj.optString("status", "");//deve essere Completed perchè sia valido
+
+
+            long time = Long.parseLong(insertTime);
+            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
+            //Altrimenti andrei a sovrascrivere il movimento precedente
+            if (OldData.equals(data))totMov++;
+            else {
+                totMov=1;
+                OldData=data;
+            }
+            
+            String dataForId = data.replaceAll(" |-|:", "");
+            String dataa = data.trim().substring(0, data.length()-3);
+
+            if (status.trim().equalsIgnoreCase("Completed")) {
+                Moneta Mon = new Moneta();
+                Mon.Tipo = "FIAT";
+                Mon.Qta = amount;
+                // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
+                Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+
+                String[] RT = new String[Importazioni.ColonneTabella];
+                RT[1] = dataa;                                               // Data e ora
+                RT[2] = "1 di 2";                                 // Numero movimenti
+                RT[3] = Exchange;                                            // Exchange
+                RT[4] = "Principale";                                        // Wallet
+                RT[7] = "Metodo di pagamento : " + metodo;                     // Causale originale (vuoto)
+                if (direzione.equalsIgnoreCase("deposito")) {
+                    Mon.Qta = amount;
+                    Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_DF"; // TrasID
+                    RT[5] = "DEPOSITO FIAT";
+                    RT[6] = "-> " + Mon.Moneta;
+                    RT[11] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
+                    RT[12] = Mon.Tipo;                                           // Tipo Moneta Acq.
+                    RT[13] = Mon.Qta;                                            // Quantità Acq.
+                } else //Il fatto che sia prelievo è sottointeso visto che ci sono solo 2 opzioni
+                {
+                    Mon.Qta = amountp;
+                    Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+                    RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_PF"; // TrasID
+                    RT[5] = "PRELIEVO FIAT";
+                    RT[6] = Mon.Moneta + " ->";
+                    RT[8] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
+                    RT[9] = Mon.Tipo;                                           // Tipo Moneta Acq.
+                    RT[10] = Mon.Qta;                                            // Quantità Acq.
+                }
+
+                RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
+                RT[22] = "A";                                               // Auto
+                RT[29] = insertTime;                                         // Timestamp
+                RT[39] = "A"; //Fonte dati A = API Exchange  
+
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+
+                //Adesso è il turno delle commissioni
+                Mon.Qta = feeamount;
+                Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null);
+                RT = new String[Importazioni.ColonneTabella];
+                RT[1] = dataa;                                               // Data e ora
+                RT[2] = "2 di 2";                                   // Numero movimenti
+                RT[3] = Exchange;                                            // Exchange
+                RT[4] = "Principale";                                        // Wallet
+                RT[7] = "";                                                  // Causale originale (vuoto)                
+                RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_2_CM"; // TrasID
+                RT[5] = "COMMISSIONI";
+                RT[6] = Mon.Moneta + " ->";
+                RT[8] = Mon.Moneta;                                         // Moneta Acq/Ricevuta
+                RT[9] = Mon.Tipo;                                           // Tipo Moneta Acq.
+                RT[10] = Mon.Qta;                                            // Quantità Acq.                
+                RT[14] = "";                                                 // Valore Mercato originale
+                RT[15] = Mon.Prezzo;                                         // Valore in EURO (qui 0)
+                RT[22] = "A";                                               // Auto
+                RT[29] = insertTime;                                         // Timestamp
+                RT[39] = "A"; //Fonte dati A = API Exchange  
+
+                Importazioni.RiempiVuotiArray(RT);
+                lista.add(RT);
+            }
+        }
+        
+        
+        
+        
+        return lista;
+    }    
+
+
    public static List<String[]> convertPrelievi(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
         
@@ -773,7 +1066,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
 
             String[] RT = new String[Importazioni.ColonneTabella];
             RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[2] = "1 di 2";                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
             RT[4] = "Principale";                                        // Wallet
             RT[7] = "";                                                  // Causale originale (vuoto)
@@ -828,7 +1121,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT = new String[Importazioni.ColonneTabella];
             RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
             RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[2] = "2 di 2";                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
             RT[4] = "Principale";                                        // Wallet
             RT[5] = "COMMISSIONI";
@@ -945,7 +1238,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
 
             String[] RT = new String[Importazioni.ColonneTabella];
             RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[2] = "1 di 2";                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
             RT[4] = "Principale";                                        // Wallet
             RT[7] = "";                                                  // Causale originale (vuoto)
@@ -1014,7 +1307,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             RT = new String[Importazioni.ColonneTabella];
             RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
             RT[1] = dataa;                                               // Data e ora
-            RT[2] = i + " di " + totMov;                                 // Numero movimenti
+            RT[2] = "2 di 2";                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
             RT[4] = "Principale";                                        // Wallet
             RT[5] = "COMMISSIONI";

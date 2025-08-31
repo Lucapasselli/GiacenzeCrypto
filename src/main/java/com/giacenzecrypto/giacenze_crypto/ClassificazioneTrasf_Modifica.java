@@ -1764,7 +1764,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 QtaReward=new BigDecimal(attuale[13]);
                 PrezzoReward=new BigDecimal(attuale[15]);
                 MappaCryptoWallet.remove(ID);
-            }else if (attuale[22].equalsIgnoreCase("AU")){
+            }else if (attuale!=null&&attuale[22].equalsIgnoreCase("AU")){
                 MappaCryptoWallet.remove(ID);
             }
         }

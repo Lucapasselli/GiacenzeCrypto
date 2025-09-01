@@ -13219,7 +13219,7 @@ try {
                                Rete = "";
                             }
                             if(Monete[0].MonetaAddress.isBlank()&&Monete[1].MonetaAddress.isBlank()){
-                          /*     Rete = "";
+                             /*  Rete = "";
                                Monete[0].Rete="";
                                Monete[1].Rete="";*/
                             }

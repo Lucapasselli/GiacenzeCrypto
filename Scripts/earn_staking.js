@@ -122,7 +122,9 @@ async function fetchStakingProductRewards(exchange, startTime, endTime, assetArr
         };
         
         try {
-            const response = await safeApiCall(exchange, 'staking/positionHistory', params);
+            
+            const response = await safeApiCall(exchange, 'staking/stakingRecord', params);
+           // const response = await safeApiCall(exchange, 'staking/positionHistory', params);
             const filtered = assetArray.length > 0 
                 ? response.filter(tx => assetArray.includes(tx.asset))
                 : response;
@@ -173,7 +175,7 @@ async function main() {
         
         const [exchangeId, apiKey, secret, startDate, assetArrayStr] = args;
         const assetArray = assetArrayStr.split(',').map(s => s.trim()).filter(Boolean);
-        const startTime = dateToTimestamp(startDate);
+        const startTime = Number(startDate);
         const endTime = Date.now();
         
         logInfo(`Inizializzazione exchange ${exchangeId}...`);

@@ -223,7 +223,7 @@ private static Path getNodeExePath() {
             long inizioanno=Long.parseLong("1609465487000");
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
            // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
-            String estrazioni[] = new String[]{"Binance_Conversioni"};
+            String estrazioni[] = new String[]{"earn_staking"};
             for (String script : estrazioni) {
                 JsonObject json = fetchMovimento(exchangeId, apiKey, secret, inizioanno, "", script);
                 if (json != null) {

@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.*;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import org.json.JSONObject;
 
@@ -191,7 +192,7 @@ private static Path getNodeExePath() {
         installCcxt();
         System.out.println("Eseguo la chiamata");
         
-        fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens);
+        fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,progress,c);
         } catch (IOException ex) {
             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
@@ -214,16 +215,16 @@ private static Path getNodeExePath() {
     
     
 
-    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens) {
+    public static void fetchMovimenti(String exchangeId, String apiKey, String secret, long startDate,String Tokens,Download progress,Component c) {
        // Map<String, JsonObject> Mappa_Json = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         List<JsonObject> Jsons = new ArrayList<>();
         
         //BINACE TEST
-        if (exchangeId.equalsIgnoreCase("Binance")) {
+        if (exchangeId.equalsIgnoreCase("Binancet")) {
             long inizioanno=Long.parseLong("1609465487000");
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
            // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
-            String estrazioni[] = new String[]{"earn_staking"};
+            String estrazioni[] = new String[]{"Binance_AssetDividend"};
             for (String script : estrazioni) {
                 JsonObject json = fetchMovimento(exchangeId, apiKey, secret, inizioanno, "", script);
                 if (json != null) {
@@ -259,12 +260,18 @@ private static Path getNodeExePath() {
 
             //4 - IMPORTO TUTTO NEL DATABASE
             //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
+            if(!CDC_Grafica.InterrompiCiclo)
+                Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
+            //Solo se non ho premutol il tasto annulla, in quel caso non faccio nulla
+            else{
+                JOptionPane.showConfirmDialog(c, "Elaborazione interrotta dall'utente!",
+                                "Attenzione", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+            }
 
         }
         
         //BINACE
-        if (exchangeId.equalsIgnoreCase("Binancet")) {
+        if (exchangeId.equalsIgnoreCase("Binance")) {
             
             //Intanto aggiungo in una lista univoca i tokens
             Set<String> setTokens = new HashSet<>();
@@ -315,8 +322,13 @@ private static Path getNodeExePath() {
             }
             
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
+            progress.setTitle("Scaricamento dei dati di "+exchangeId+" tramite API");
             String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_MovimentiFiat","Binance_Conversioni","Binance_ConversioniSmall", "Binance_AssetDividend","Binance_EarnFlessibili","Binance_EarnLocked"};
+            int chiamate=estrazioni.length+1;
+            int j=0;
             for (String script : estrazioni) {
+                j++;
+                progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
                 JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", script);
                 if (json != null) {
                     Jsons.add(json);
@@ -377,6 +389,8 @@ private static Path getNodeExePath() {
             //3 - RECUPERO I TRADES DEI TOKEN COINVOLTI + QUELLI RICHIESTI IN ORIGINE
             //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(
             //Recuperato la lista di token da richiedere procedo con il recupero dei trades
+            j++;
+            progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
             JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, tok, "Binance_Trades");
             lista.addAll(getListaMovimento(json, exchangeId));
 
@@ -608,6 +622,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
         String OldData="0";
 
         for (JsonElement el : objects) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("coin", "");
@@ -756,6 +771,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : ordersOBJ) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("fiatCurrency", "");
@@ -858,6 +874,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         OldData="0";
 
         for (JsonElement el : paymentsOBJ) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
             
             boolean inserisciFee=false;
@@ -1055,6 +1072,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("coin", "");
@@ -1186,7 +1204,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             RT[31] = "";                                                 // Data fine trasferimento
             RT[32] = "";                                                 // Movimento ha prezzo
             RT[33] = "";                                                 // Movimento genera plusvalenza
-            RT[34] = network;                                            // Rete
+            RT[21] = "Rete di trasferimento : "+ network;                                          // Rete
             RT[35] = ""; RT[36] = ""; 
             RT[37] = address; 
             RT[38] = ""; 
@@ -1223,6 +1241,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
             Moneta mu=new Moneta();
             Moneta me=new Moneta();
@@ -1409,6 +1428,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             //System.out.println("Conversioni!!! : "+el);
             JSONObject obj = new JSONObject(el.toString());
             Moneta mu=new Moneta();
@@ -1536,7 +1556,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         return lista;
     } 
    
-         public static List<String[]> convertBinanceConversioni(JsonArray jsonList,String Exchange) {
+        public static List<String[]> convertBinanceConversioni(JsonArray jsonList,String Exchange) {
         List<String[]> lista = new ArrayList<>();
          // Ordiniamo per completeTime (servono per avere gruppi ordinati)
         List<JsonObject> objects = new ArrayList<>();
@@ -1559,6 +1579,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             //System.out.println("Conversioni!!! : "+el);
             JSONObject obj = new JSONObject(el.toString());
             Moneta mu=new Moneta();
@@ -1680,6 +1701,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("asset", "");
@@ -1805,6 +1827,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
+            if(CDC_Grafica.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("asset", "");
@@ -1813,8 +1836,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String insertTime = obj.optString("divTime", "");
             
             //Queste tipologie non le voglio conteggiare perchè già conteggiate in altro ciclo
-            if (!tipo.equalsIgnoreCase("Flexible")&&!tipo.equalsIgnoreCase("Locked")&&!tipo.equalsIgnoreCase("BNB Vault")){
-
+            if (!tipo.equalsIgnoreCase("Flexible")&&!tipo.equalsIgnoreCase("Locked")){
+//&&!tipo.equalsIgnoreCase("BNB Vault")
             //System.out.println("Inserito " +amount+" "+coin+" - tipologia:"+tipo);
 
             long time = Long.parseLong(insertTime);
@@ -1863,6 +1886,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 {
                 RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + i + "_RW"; // TrasID
                 RT[5]="EARN";
+                if (tipo.toLowerCase().contains("staking"))RT[5]="STAKING";
                 }
             // Deposito → moneta entrante
             RT[6]  = "-> " + Mon.Moneta;                                 // Dettaglio Movimento

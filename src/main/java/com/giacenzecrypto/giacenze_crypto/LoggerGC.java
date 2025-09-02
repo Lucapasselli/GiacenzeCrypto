@@ -70,7 +70,7 @@ public class LoggerGC {
             @Override
             public void write(int b) throws IOException {
                 originalOut.write(b);
-                logger.info(String.valueOf((char) b));
+                //logger.info(String.valueOf((char) b));
                 if (textPaneOutStream != null) textPaneOutStream.write(b);
             }
             @Override
@@ -87,7 +87,7 @@ public class LoggerGC {
             @Override
             public void write(int b) throws IOException {
                 originalErr.write(b);
-                logger.severe(String.valueOf((char) b));
+                //logger.severe(String.valueOf((char) b));
                 if (textPaneErrStream != null) textPaneErrStream.write(b);
             }
             @Override

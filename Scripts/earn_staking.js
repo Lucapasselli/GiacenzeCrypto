@@ -116,15 +116,19 @@ async function fetchStakingProductRewards(exchange, startTime, endTime, assetArr
         const params = {
             product,
             txnType: 'INTEREST',
+           // product : 'ALL',
+            //txnType: 'REDEMPTION',
+            //txnType: 'SUBSCRIPTION',
             startTime: chunk.startTime,
             endTime: chunk.endTime,
             size: 100
         };
         
         try {
-            
+            //mining/merchantIncome
+            //const response = await safeApiCall(exchange, 'mining/merchantIncome', params);
             const response = await safeApiCall(exchange, 'staking/stakingRecord', params);
-           // const response = await safeApiCall(exchange, 'staking/positionHistory', params);
+            //const response = await safeApiCall(exchange, 'staking/positionHistory', params);
             const filtered = assetArray.length > 0 
                 ? response.filter(tx => assetArray.includes(tx.asset))
                 : response;

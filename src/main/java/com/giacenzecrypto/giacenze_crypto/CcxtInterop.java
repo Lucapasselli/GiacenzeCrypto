@@ -30,16 +30,13 @@ import org.json.JSONObject;
 
 public class CcxtInterop {
     
-    private static final String NODE_VERSION = "v20.13.1";
+    private static final String NODE_VERSION = "v24.7.0";
     private static final Path NODE_DIR = Paths.get(Statiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();;
     
 
     
     public static void ensureNodeInstalled() throws IOException {
-        if (Files.exists(NODE_DIR)) {
-            System.out.println("✅ Node.js già presente");
-            return;
-        }
+        
 
         System.out.println("⬇️ Scarico Node.js standalone...");
         String os = System.getProperty("os.name").toLowerCase();
@@ -60,6 +57,12 @@ public class CcxtInterop {
 
         String filename = "node-" + NODE_VERSION + "-" + platform + "." + extension;
         String url = "https://nodejs.org/dist/" + NODE_VERSION + "/" + filename;
+        
+        //Verifico se è presente una specifica versione di node, qualora non lo sia scarico la nuova
+        if (Files.exists(Paths.get(NODE_DIR.toString()+"/node-" + NODE_VERSION + "-" + platform))) {
+            System.out.println("✅ Node.js già presente");
+            return;
+        }
 
         Path downloadPath = Paths.get(Statiche.getWorkingDirectory()+"tools", filename);
         Files.createDirectories(downloadPath.getParent());
@@ -69,6 +72,7 @@ public class CcxtInterop {
         }
 
         System.out.println("Scaricato: " + filename);
+        System.out.println("Node DIR = "+NODE_DIR);
         extractArchive(downloadPath, NODE_DIR, extension);
         System.out.println("Estratto Node.js");
 
@@ -76,9 +80,26 @@ public class CcxtInterop {
         // su Linux/macOS, sono in /bin
     }
     
+
+    
     
     public static void installCcxt() throws IOException, InterruptedException {
+        
+        
+        Path nodePath = getNodeExePath();
+        System.out.println("nodePath="+nodePath);
+
+        // Non reindirizziamo stderr su stdout
+        // builder.redirectErrorStream(true);
+        // Calcola la cartella base di Node in modo multipiattaforma
+    /*    Path nodeBaseDir = nodePath.getParent(); // es: .../node-vXX-PLATFORM[/bin]
+        if (!nodeBaseDir.getFileName().toString().equals("bin")) {
+            // Se siamo su Windows, node.exe sta direttamente in base dir, altrimenti sotto bin
+            nodeBaseDir = nodeBaseDir.getParent();
+        }      */
+        
     Path nodeModulesDir = NODE_DIR.resolve("node_modules");
+    //Path nodeModulesDir = nodeBaseDir.resolve("node_modules").toAbsolutePath();
     Path ccxtDir = nodeModulesDir.resolve("ccxt");
 
     if (Files.exists(ccxtDir) && Files.isDirectory(ccxtDir)) {
@@ -87,12 +108,15 @@ public class CcxtInterop {
     }    
     
     Path npmPath = getNpmPath();
-    Path nodePath = getNodeExePath();
+    System.out.println("npmPath="+npmPath);
+    
 
     System.out.println("Installo ccxt...");
     ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", "ccxt");
     System.out.println(Statiche.getWorkingDirectory() + "tools/node");
-    builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
+    builder.directory(NODE_DIR.toFile());
+    //builder.directory(nodeModulesDir.toFile());
+    //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
     System.out.println("Comando: " + String.join(" ", builder.command()));
     System.out.println("Working directory: " + builder.directory().getAbsolutePath());
     Map<String, String> env = builder.environment();
@@ -164,8 +188,15 @@ private static Path getNodeExePath() {
             
         } else {
             // Richiede tar + xz nel sistema (presente su Linux/macOS)
-            new ProcessBuilder("tar", "-xf", archive.toString(), "-C", targetDir.getParent().toString())
-                .inheritIO().start();
+          /*  new ProcessBuilder("tar", "-xf", archive.toString(), "-C", targetDir.getParent().toString())
+                .inheritIO().start();*/
+          // Creare la cartella targetDir se non esiste
+        if (!Files.exists(targetDir)) {
+            Files.createDirectories(targetDir);
+        }
+        //  System.out.println("AAA "+targetDir.toString());
+            new ProcessBuilder("tar", "-xf", archive.toString(), "-C", targetDir.toString())
+            .inheritIO().start();
         }
     }
     
@@ -224,7 +255,7 @@ private static Path getNodeExePath() {
             long inizioanno=Long.parseLong("1609465487000");
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
            // String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_Conversioni", "Binance_EarnFlessibili", "Binance_EarnLocked"};
-            String estrazioni[] = new String[]{"Binance_AssetDividend"};
+            String estrazioni[] = new String[]{"check_node_path"};
             for (String script : estrazioni) {
                 JsonObject json = fetchMovimento(exchangeId, apiKey, secret, inizioanno, "", script);
                 if (json != null) {
@@ -519,23 +550,28 @@ private static Path getNodeExePath() {
         // Non reindirizziamo stderr su stdout
         // builder.redirectErrorStream(true);
         // Calcola la cartella base di Node in modo multipiattaforma
-        Path nodeBaseDir = nodePath.getParent(); // es: .../node-vXX-PLATFORM[/bin]
+      /*  Path nodeBaseDir = nodePath.getParent(); // es: .../node-vXX-PLATFORM[/bin]
         if (!nodeBaseDir.getFileName().toString().equals("bin")) {
             // Se siamo su Windows, node.exe sta direttamente in base dir, altrimenti sotto bin
             nodeBaseDir = nodeBaseDir.getParent();
         }
-
-        Path nodeModulesPath = nodeBaseDir.resolve("node_modules").toAbsolutePath();
-
+*/
+        //Path nodeModulesPath = nodeBaseDir.resolve("node_modules").toAbsolutePath();
+        Path nodeModulesPath = NODE_DIR.resolve("node_modules").toAbsolutePath();
+        
         Map<String, String> env = builder.environment();
 
         // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
         String existingNodePath = env.get("NODE_PATH");
+        //System.out.println("existingNodePath : "+existingNodePath);
         String newNodePath = nodeModulesPath.toString();
+        //String newNodePath = NODE_DIR.toString();
+        //System.out.println("newNodePath : "+newNodePath);
         if (existingNodePath != null && !existingNodePath.isEmpty()) {
             newNodePath += File.pathSeparator + existingNodePath;
         }
         env.put("NODE_PATH", newNodePath);
+        System.out.println("newNodePath : "+newNodePath);
 
         Process process = builder.start();
 

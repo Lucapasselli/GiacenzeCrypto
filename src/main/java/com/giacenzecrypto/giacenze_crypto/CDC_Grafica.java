@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -6975,11 +6976,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
 
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
-        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
+        //int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
         
-        String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-       // System.out.println(IDTransazione);
-        ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(IDTransazione);
+        int righeselezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
+        Set<String> setIDs = new HashSet<>();
+        for (int riga:righeselezionate){
+            setIDs.add(DepositiPrelievi_Tabella.getModel().getValueAt(riga, 0).toString());
+        }
+        
+         
+        
+       // String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+
+        //ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(IDTransazione);
+        ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(setIDs);
         mod.setLocationRelativeTo(this);
         mod.setVisible(true);
 

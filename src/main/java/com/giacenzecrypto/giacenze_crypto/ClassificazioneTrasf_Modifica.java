@@ -15,6 +15,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.Cursor;
 import java.awt.event.ItemEvent;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -40,6 +44,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
     
     static String IDTrans="";
+    static Set<String> IDsTrans=new HashSet<>();
     boolean ModificaEffettuata=false;
     @SuppressWarnings("unchecked")
     public ClassificazioneTrasf_Modifica(String ID) {
@@ -114,6 +119,141 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             TextArea_Note.setText(v[21].replace("<br>" ,"\n"));
         //    CompilaTabellaMovimetiAssociabili(ID);
 
+        
+        
+    }
+    
+    public ClassificazioneTrasf_Modifica(Set<String> IDs) {
+        ModificaEffettuata=false;
+        IDsTrans=IDs;
+        boolean MovimentoMultiplo=false;
+        if (IDs.size()>1)MovimentoMultiplo=true;
+        //Controllo che tutti i movimenti appartegano alla stessa categoria
+        boolean trovatoDeposito=false;
+        boolean trovatoPrelievo=false;
+        for (String ID:IDsTrans){
+            if(ID.split("_")[4].equalsIgnoreCase("DC"))trovatoDeposito=true;
+            if(ID.split("_")[4].equalsIgnoreCase("PC"))trovatoPrelievo=true;
+        }
+ 
+  
+        //IDTrans=ID;
+        setModalityType(ModalityType.APPLICATION_MODAL);
+        initComponents();
+        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
+        Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabelle.ColoraRigheTabellaCrypto(jTable1);
+        for (String ID:IDs){
+            String riga[] = DammiRigaTabellaDaID(ID);
+            ModelloTabellaDepositiPrelievi.addRow(riga);
+        }
+        
+        
+ 
+        
+        String papele[];
+        if (!MovimentoMultiplo) {
+            String ID=IDs.toArray()[0].toString();
+            IDTrans=ID;
+            String riga[] = DammiRigaTabellaDaID(ID);            
+            String tipomov = riga[6].split("-")[0].trim();
+            int ntipo = 0;//e' il numero di quello che deve essere evidenziato nella combobox
+            if (tipomov.equalsIgnoreCase("PWN")) {
+                ntipo = 2;
+                TransferNO();
+            } else if (tipomov.equalsIgnoreCase("PCO")) {
+                ntipo = 1;
+                TransferNO();
+            } else if (tipomov.equalsIgnoreCase("PTW")) {
+                ntipo = 3;
+                if (riga[6].contains("Scambio")) {
+                    ntipo = 4;
+                }
+                if (riga[6].contains("Rendita")) {
+                    ntipo = 5;//Prelievo per Piattoforma a rendita
+                }
+                TransferSI();
+            } else if (tipomov.equalsIgnoreCase("DTW")) {
+                ntipo = 3;
+                if (riga[6].contains("Scambio")) {
+                    ntipo = 5;//Deposito per Scambio Differito
+                }
+                if (riga[6].contains("Rendita")) {
+                    ntipo = 6;//Deposito da Piattoforma a rendita
+                }
+                TransferSI();
+            } else if (tipomov.equalsIgnoreCase("DAI")) {
+                ntipo = 1;
+                TransferNO();
+            } else if (tipomov.equalsIgnoreCase("DCZ")) {
+                ntipo = 2;
+                TransferNO();
+            } else if (tipomov.equalsIgnoreCase("DAC")) {
+                ntipo = 4;
+                TransferNO();
+            } else {
+                TransferNO();
+            }
+            
+            
+            if (ID.split("_")[4].equalsIgnoreCase("DC")) {
+                papele = new String[]{"- nessuna selezione -",
+                    "AIRDROP, CASHBACK, EARN etc...",
+                    "DEPOSITO CON COSTO DI CARICO A ZERO",
+                    "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)",
+                    "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE",
+                    "SCAMBIO CRYPTO DIFFERITO",
+                    "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
+
+            } else {
+                papele = new String[]{"- nessuna selezione -",
+                    "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
+                    "DONAZIONE o FURTO Crypto-Attività",
+                    "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)",
+                    "SCAMBIO CRYPTO DIFFERITO",
+                    "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
+
+            }
+            ArrayList<String> elements = new ArrayList<>();
+            elements.addAll(java.util.Arrays.asList(papele));
+       
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
+            ComboBox_TipoMovimento.setModel(model);
+            this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
+            String v[]=MappaCryptoWallet.get(ID);
+            TextArea_Note.setText(v[21].replace("<br>" ,"\n"));
+
+        } else {
+
+            if (trovatoDeposito) {
+                papele = new String[]{"- nessuna selezione -",
+                    "AIRDROP, CASHBACK, EARN etc...",
+                    "DEPOSITO CON COSTO DI CARICO A ZERO",
+                    "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
+
+            } else {
+                papele = new String[]{"- nessuna selezione -",
+                    "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
+                    "DONAZIONE o FURTO Crypto-Attività",
+                    "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
+
+            }
+            ArrayList<String> elements = new ArrayList<>();
+            elements.addAll(java.util.Arrays.asList(papele));
+       
+            ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
+            ComboBox_TipoMovimento.setModel(model);
+
+        }
+            
+        if (trovatoDeposito&&trovatoPrelievo)
+        {
+            //Se ho sia depositi che prelievi esco dalla funzione perchè non possono essere categorizzati assieme
+            JOptionPane.showConfirmDialog(this, "Non è possibile eseguire una classificazione multipla su movimenti disomogenei,\n"
+                    + "selezionare solo depositi o solo prelievi.",
+        "Classificazione Multipla",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            SwingUtilities.invokeLater(() -> dispose());
+        }    
         
         
     }
@@ -355,7 +495,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

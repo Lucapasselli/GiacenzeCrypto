@@ -5140,9 +5140,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
          {   
              String Tipologia=null;
              String CodiceTipologia=null;
-             if(TipoUscita==null){
+             if(TipoUscita==null||TipoUscita.isBlank()){
                  //ora gestisco le varie casistiche se M1 è una crypto
-                 if(TipoEntrata==null){
+                 if(TipoEntrata==null||TipoEntrata.isBlank()){
                      Tipologia=null;
                      CodiceTipologia=null;
                  }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
@@ -5158,7 +5158,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 }
              else if(TipoUscita.trim().equalsIgnoreCase("Crypto")){
                  //ora gestisco le varie casistiche se M1 è una crypto
-                 if(TipoEntrata==null){
+                 if(TipoEntrata==null||TipoEntrata.isBlank()){
                      Tipologia="PRELIEVO CRYPTO";
                      CodiceTipologia="PC";
                  }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
@@ -5174,7 +5174,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 }
              else if(TipoUscita.trim().equalsIgnoreCase("NFT")){
                  //ora gestisco le varie casistiche se M1 è una crypto
-                 if(TipoEntrata==null){
+                 if(TipoEntrata==null||TipoEntrata.isBlank()){
                      Tipologia="PRELIEVO NFT";
                      CodiceTipologia="PC";//Mantengo la stessa nomenclatura che per i depositi crypto altrimenti ho troppe varianti da gestire
                  }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){
@@ -5190,7 +5190,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 }
              else if(TipoUscita.trim().equalsIgnoreCase("FIAT")){
                  //ora gestisco le varie casistiche se M1 è una crypto
-                 if(TipoEntrata==null){
+                 if(TipoEntrata==null||TipoEntrata.isBlank()){
                      Tipologia="PRELIEVO FIAT";
                      CodiceTipologia="PF";
                  }else if (TipoEntrata.trim().equalsIgnoreCase("Crypto")){

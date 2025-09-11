@@ -5117,6 +5117,11 @@ JPanel loadingBar = new JPanel() {
     
     private void Funzione_CaricaTabelleSecondarieInBackgroud(){
         //Verranno caricate tutte le tabelle secondarie che dovranno essere aggiornate  ad ogni cambio della tabella principale
+        SwingUtilities.invokeLater(() -> {
+             //   JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
+             //       "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+               
+        
         new Thread(() -> {
             long tempoOperazione=System.currentTimeMillis();
             SaldiNegativi_CompilaTabellaPrincipale();
@@ -5125,6 +5130,7 @@ JPanel loadingBar = new JPanel() {
             tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         System.out.println("Tempo calcolo Tabelle secondarie : "+tempoOperazione+" millisec.");
         }).start();
+        });
     }
     
     private void SaldiNegativi_CompilaTabellaPrincipale(){

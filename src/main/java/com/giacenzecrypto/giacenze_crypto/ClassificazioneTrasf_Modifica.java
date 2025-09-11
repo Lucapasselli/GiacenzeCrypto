@@ -131,6 +131,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     public ClassificazioneTrasf_Modifica(Set<String> IDs) {
         ModificaEffettuata=false;
         IDsTrans=IDs;
+        IDTrans=IDs.toArray()[0].toString();
         boolean MovimentoMultiplo=false;
         if (IDs.size()>1)MovimentoMultiplo=true;
         //Controllo che tutti i movimenti appartegano alla stessa categoria
@@ -203,15 +204,20 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
             
             if (ID.split("_")[4].equalsIgnoreCase("DC")) {
                 papele = new String[]{"- nessuna selezione -",
-                    "AIRDROP, CASHBACK, EARN etc...",
-                    "DEPOSITO CON COSTO DI CARICO A ZERO",
-                    "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
+                "AIRDROP, CASHBACK, EARN etc...",
+                "DEPOSITO CON COSTO DI CARICO A ZERO",
+                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)",
+                "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE",
+                "SCAMBIO CRYPTO DIFFERITO",
+                "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
 
             } else {
                 papele = new String[]{"- nessuna selezione -",
-                    "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
-                    "DONAZIONE o FURTO Crypto-Attività",
-                    "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
+                "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
+                "DONAZIONE o FURTO Crypto-Attività",
+                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)",
+                "SCAMBIO CRYPTO DIFFERITO",
+                "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
 
             }
             ArrayList<String> elements = new ArrayList<>();
@@ -227,20 +233,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
             if (trovatoDeposito) {
                 papele = new String[]{"- nessuna selezione -",
-                "AIRDROP, CASHBACK, EARN etc...",
-                "DEPOSITO CON COSTO DI CARICO A ZERO",
-                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)",
-                "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE",
-                "SCAMBIO CRYPTO DIFFERITO",
-                "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
+                    "AIRDROP, CASHBACK, EARN etc...",
+                    "DEPOSITO CON COSTO DI CARICO A ZERO"};
 
             } else {
                 papele = new String[]{"- nessuna selezione -",
                     "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
-                    "DONAZIONE o FURTO Crypto-Attività",
-                    "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)",
-                    "SCAMBIO CRYPTO DIFFERITO",
-                    "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
+                    "DONAZIONE o FURTO Crypto-Attività"};
 
             }
             ArrayList<String> elements = new ArrayList<>();
@@ -545,9 +544,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //DAI -> Airdrop o similare (deposito)
         //DCZ -> Costo di carico 0 (deposito)
         //for (IDTrans:IDsTrans){
-        if (IDTrans==null)IDTrans=IDsTrans.toArray()[0].toString();
+        if (IDTrans==null||IDTrans.isBlank())IDTrans=IDsTrans.toArray()[0].toString();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        int scelta = this.ComboBox_TipoMovimento.getSelectedIndex();
+        int scelta;
         String sceltaS = this.ComboBox_TipoMovimento.getSelectedItem().toString();
         boolean completato = true;
         String descrizione;
@@ -573,10 +572,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         String plusvalenza = "Da calcolare";
         String PrzVecchio ="";//Viene usato per spostare il prezzo orginale delle donazioni/acquisti
         boolean trasferimento = false;
+        System.out.println(sceltaS);
+        System.out.println(IDTrans);
         if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
             //in questo caso sono in presenza di un movimento di deposito
-            if(sceltaS.contains("AIRDROP")){
+            if(sceltaS.contains("AIRDROP")){//Può essere un movimento multiplo
             //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
+
                     descrizione = "REWARD";
                     dettaglio = "DAI - Airdrop,Cashback,Rewards etc.. ";
                     String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
@@ -691,7 +693,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     //Adesso se trovo movimenti con le stesse caratteristiche chiedo se voglio assegnarli tutti allo stesso modo
 
             }
-            else if(sceltaS.contains("DEPOSITO")){
+            else if(sceltaS.contains("DEPOSITO")){//Può essere un movimento multiplo
                     descrizione = "DEPOSITO CRYPTO (a costo zero)";
                     dettaglio = "DCZ - Deposito a costo zero (no plusvalenza)";
                     PrzCarico = "0.00";
@@ -770,13 +772,12 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     trasferimento = false;
             }
             else {
-                    descrizione = Importazioni.RitornaTipologiaTransazione(null, attuale[12], 1);
+                    descrizione = "";
             }
 
         } else {
             //in questo caso sono in presenza di un movimento di prelievo
-            switch (scelta) {
-                case 1 -> {
+            if(sceltaS.contains("CASHOUT")){//può essere un movimento multiplo
                     descrizione = "CASHOUT o COMMISSIONI";
                     dettaglio = "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
                     //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
@@ -809,9 +810,9 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     else{
                         completato=false;
                     }
-                }
-                case 2 -> {
-                    //descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
+            }
+            else if(sceltaS.contains("DONAZIONE")){//può essere un movimento multiplo
+                                //descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
                    // dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
                     descrizione = "FURTO o DONAZIONE";
                     dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
@@ -848,44 +849,35 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                         completato=false;
                     }
                     plusvalenza = "0";
-                }
-                case 3 -> {
+            }
+            else if(sceltaS.contains("TRASFERIMENTO TRA")){
                     descrizione = "TRASFERIMENTO TRA WALLET";
                     dettaglio = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     plusvalenza = "0";
                     trasferimento = true;
-                }
-                case 4 -> {
+            }
+            else if(sceltaS.contains("SCAMBIO CRYPTO")){
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
                     trasferimento = true;
-                }
-                case 5 -> {
+            }
+            else if(sceltaS.contains("RENDITA")){
                     descrizione = "TRASFERIMENTO A PIATTAFORMA";
                     dettaglio = "PTW - Trasferimento a Vault/Piattaforma a Rendita";
                     trasferimento = true;
-                }
-                default ->
-                    //descrizione = "PRELIEVO CRYPTO";
-                    descrizione = Importazioni.RitornaTipologiaTransazione(attuale[9], null, 1);
+            }
+            else{
+                    descrizione = "";
             }
         }
 
         if (completato) {
         
         
-        
+                    //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
+            //a cancellare le eventuali commissioni e riportare i prezzi e qta allo stato originale
         IDsTrans=RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
         IDTrans=IDsTrans.toArray()[0].toString();
-         /*   for (String Parti[]:PartiCoinvolte){
-            //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
-            //a cancellare le eventuali commissioni e riportare i prezzi e qta allo stato originale
-            //DA CONTROLLARE CON CALMA POTREBBE PORTARSI DIETRO PROBLEMI
-            //IN PARTICOLARE BISOGNA CONTROLLARE IDTRANS A CHE SERVE
-            if (Parti.length > 1) {
-                IDTrans=RiportaTransazioniASituazioneIniziale2(Parti,IDTrans);
-            }
-        
-        }*/
+
 
          //Adesso controllo se esiste ancora IDTrans e proseguio solo se esiste
          //if (MappaCryptoWallet.get(IDTrans)!=null){
@@ -899,18 +891,30 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 CreaMovimentiTrasferimentoDaVault(IDTrans, descrizione, dettaglio);
                 this.dispose();
             } else if (!trasferimento) {
-                attuale[5] = descrizione;
-                attuale[17] = PrzCarico;
-                attuale[18] = dettaglio;
-                attuale[19] = plusvalenza;
-                attuale[20] = "";
-                attuale[21] = Note;
-                //Se trovo un prezzo vecchio (originale) messo da parte, lo ripristino
-                if (attuale[35]!=null&&!attuale[35].isBlank())attuale[15]=attuale[35];
-                attuale[35] = PrzVecchio;
-                
-                //in teoria avendo preso l'oggetto e modificandone il contenuto non serve questa seconda parte
-                MappaCryptoWallet.put(IDTrans, attuale);
+                //Solo in questo caso posso avere movimenti multipli
+                //Quindi solo qua gestisco questa cosa
+                for (String IDTr : IDsTrans) {
+
+                    attuale = MappaCryptoWallet.get(IDTr);
+                    if (descrizione.isBlank()) {
+                       
+                        descrizione = Importazioni.RitornaTipologiaTransazione(attuale[9], attuale[12], 1);
+                    }
+                    attuale[5] = descrizione;
+                    attuale[17] = PrzCarico;
+                    attuale[18] = dettaglio;
+                    attuale[19] = plusvalenza;
+                    attuale[20] = "";
+                    attuale[21] = Note;
+                    //Se trovo un prezzo vecchio (originale) messo da parte, lo ripristino
+                    if (attuale[35] != null && !attuale[35].isBlank()) {
+                        attuale[15] = attuale[35];
+                    }
+                    attuale[35] = PrzVecchio;
+
+                    //in teoria avendo preso l'oggetto e modificandone il contenuto non serve questa seconda parte
+                    //MappaCryptoWallet.put(IDTrans, attuale);
+                }
                 JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
                         "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                 ModificaEffettuata = true;
@@ -977,6 +981,169 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     }//GEN-LAST:event_Bottone_OKActionPerformed
 
+    
+    private boolean DaEliminare_Crea_Reward(Set<String> IDsTr,String Note){
+        //Può essere un movimento multiplo
+        Map<String,String[]> PartiCoinvolte=new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for(String id:IDsTr){
+            String att[] = MappaCryptoWallet.get(id);
+            String PartiMovimento[] = (id + "," + att[20]).split(",");
+            PartiCoinvolte.put(id,PartiMovimento);
+        }
+            //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
+                    //String attuale[]=MappaCryptoWallet.get(IDnc);
+                    String descrizione = "REWARD";
+                    String dettaglio = "DAI - Airdrop,Cashback,Rewards etc.. ";
+                    String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
+                            + "<b>Come classifichiamo il movimento?<br><br><b>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "REWARD", "STAKING REWARD", "EARN", "CASHBACK", "AIRDROP"};
+                    int scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Classificazione del movimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                descrizione = "REWARD";
+                            }
+                            case 2 -> {
+                                descrizione = "STAKING REWARD";
+                            }
+                            case 3 -> {
+                                descrizione = "EARN";
+                            }
+                            case 4 -> {
+                                descrizione = "CASHBACK";
+                            }
+                            case 5 -> {
+                                descrizione = "AIRDROP";
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        return false;
+                        //completato=false;
+                    }
+                    if (IDsTr.size()==1){//La faccio solo se seleziono il singolo movimento
+                        //Se effettuo una scelta valida controllo se è un movimento in defi
+                        //Qualora lo fosse e trovo movimenti identici chiedo se si vuole classificare anche tutti gli altri movimenti allo stesso modo
+                        //Se rispondo si li faccio tutti
+                        //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
+                        String IDSingolo=IDsTr.toArray()[0].toString();
+                        String attuale[] = MappaCryptoWallet.get(IDSingolo);
+                        String Moneta = attuale[11];
+                        String AddressMoneta=attuale[28];
+                        String AddressContratto = null;
+                        if (attuale.length > 30) {
+                            AddressContratto = attuale[30];
+                        }
+                        ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
+                        //for (String[] v : MappaCryptoWallet.values()) {
+                        for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+                            String v[] = MappaCryptoWallet.get(IDnc);
+                            //considero solo i movimenti che hanno l'address del contratto in memoria
+                            //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
+                            if (v.length > 30) {
+                                String AddContratto = v[30];
+                                if (AddressContratto != null && AddContratto != null
+                                        && !AddressContratto.isBlank() && !AddContratto.isBlank()
+                                        && AddressContratto.equalsIgnoreCase(AddContratto)
+                                        && !v[0].equals(IDSingolo)
+                                        && v[0].split("_")[4].equalsIgnoreCase("DC")
+                                        && v[11].equals(Moneta)
+                                        && v[28].equals(AddressMoneta)
+                                        && v[18].isBlank()) {//questo serve per trovare solo i movimenti non ancora classificati
+
+                                    //Sotto questa if ci sono tutti i movimenti di deposito
+                                    //che riguardano la stessa moneta e lo stesso contratto
+                                    ListaIDMovimentiUguali.add(v[0]);
+                                }
+
+                            }
+                        }
+                        //boolean TuttiiMovimenti = false;
+                        if (!ListaIDMovimentiUguali.isEmpty()){
+                String Messaggio="Sono stati trovati altri "+ListaIDMovimentiUguali.size()+" movimenti analoghi non ancora classificati, vuoi considerarli allo stesso modo?";
+                int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Classificazione movimenti multipli", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+                //Si=0
+                //No=1
+                switch (risposta) {
+                    case 0 -> {
+                        //modifico tutti i movimenti
+                        //Salvo un booleano a true in mdo da sapere che ho fatto questa scelta per dopo
+
+                        for (String IDMov:ListaIDMovimentiUguali){
+                            String mov[]=MappaCryptoWallet.get(IDMov);
+                                mov[5] = descrizione;
+                                mov[18] = dettaglio;
+                                mov[20] = "";
+                                mov[21] = Note;
+                                MappaCryptoWallet.put(IDMov, mov);
+                        }
+                        ModificaEffettuata=true;
+                       // TuttiiMovimenti=true;
+                    }
+                    case 1 -> {
+                        //modifico il solo movimento interessato
+                        //in sostanza non faccio nulla di più perchè il movimento verrà modificato già dalla funzione stessa
+                    }
+                    case -1 -> {
+                       // completato=false;
+                        return false;
+                    }
+                    default -> {
+                    }
+                }
+               // System.out.println(risposta);
+            }
+                    }
+                    //Adesso se trovo movimenti con le stesse caratteristiche chiedo se voglio assegnarli tutti allo stesso modo
+
+        
+        
+                IDsTr=RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
+
+    
+                //Solo in questo caso posso avere movimenti multipli
+                //Quindi solo qua gestisco questa cosa
+                for (String IDTr : IDsTr) {
+
+                    String attuale[] = MappaCryptoWallet.get(IDTr);
+                    if (descrizione.isBlank()) {
+                       
+                        descrizione = Importazioni.RitornaTipologiaTransazione(attuale[9], attuale[12], 1);
+                    }
+                    attuale[5] = descrizione;
+                    attuale[17] = "";
+                    attuale[18] = dettaglio;
+                    attuale[19] = "";
+                    attuale[20] = "";
+                    attuale[21] = Note;
+                    //Se trovo un prezzo vecchio (originale) messo da parte, lo ripristino
+                    if (attuale[35] != null && !attuale[35].isBlank()) {
+                        attuale[15] = attuale[35];
+                    }
+                    attuale[35] = "";
+
+                    //in teoria avendo preso l'oggetto e modificandone il contenuto non serve questa seconda parte
+                    //MappaCryptoWallet.put(IDTrans, attuale);
+                }
+                JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+               // ModificaEffettuata = true;
+               // this.dispose();
+                return true;
+    }
+    
     
     public static void CreaMovimentiTrasferimentosuWalletProprio(String IDPrelievo,String IDDeposito){
         //come prima cosa devo generare un nuovo id per il prelievo
@@ -1797,14 +1964,15 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
     private void ComboBox_TipoMovimentoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoMovimentoItemStateChanged
         // TODO add your handling code here:
-        if (IDTrans==null)IDTrans=IDsTrans.toArray()[0].toString();
+        if (IDTrans==null||IDTrans.isBlank())IDTrans=IDsTrans.toArray()[0].toString();
        
         int scelta=ComboBox_TipoMovimento.getSelectedIndex();
         if (evt.getStateChange() == ItemEvent.SELECTED){
        // if (evt.getItem().toString().equals(ComboBox_TipoMovimento.getSelectedItem().toString())){
          //    System.out.println("cambio "+scelta);
         String descrizione,dettaglio;
-                if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
+        //System.out.println("-"+IDTrans);
+          if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
           //in questo caso sono in presenza di un movimento di deposito
           switch(scelta){
               case 1 -> {
@@ -1922,6 +2090,7 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
 public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolte[],String IDOri){
         //In ritorno torno gli IDOriginali che nel frattempo potrebbero cambiare
+        if (IDPartiConvolte.length<2) return IDOri;
         String IDRitorno=IDOri;
         BigDecimal QtaCommissione=null;
         BigDecimal QtaReward=null;

@@ -5122,14 +5122,14 @@ JPanel loadingBar = new JPanel() {
              //       "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                
         
-        new Thread(() -> {
+      //  new Thread(() -> {
             long tempoOperazione=System.currentTimeMillis();
             SaldiNegativi_CompilaTabellaPrincipale();
             DepositiPrelievi_Caricatabella();
             SituazioneImport_Caricatabella1();
             tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         System.out.println("Tempo calcolo Tabelle secondarie : "+tempoOperazione+" millisec.");
-        }).start();
+       // }).start();
         });
     }
     
@@ -12024,7 +12024,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             int Verde[]=new int[]{11,13};
             int Rosso[]=new int[]{8,10};
             Tabelle.ColoraTabellaSempliceVerdeRosso(DepositiPrelievi_TabellaCorrelati,Verde,Rosso);
-            String ID=DepositiPrelievi_Tabella.getModel().getValueAt(DepositiPrelievi_Tabella.getSelectedRow(), 0).toString();
+            int viewRow = DepositiPrelievi_Tabella.getSelectedRow();
+            int modelRow = DepositiPrelievi_Tabella.convertRowIndexToModel(viewRow);
+            String ID = DepositiPrelievi_Tabella.getModel().getValueAt(modelRow, 0).toString();
+            //String ID=DepositiPrelievi_Tabella.getModel().getValueAt(DepositiPrelievi_Tabella.getSelectedRow(), 0).toString();
             //System.out.println(ID);
             String IDCorrelati[]=CDC_Grafica.MappaCryptoWallet.get(ID)[20].split(",");
             List<String> lista;

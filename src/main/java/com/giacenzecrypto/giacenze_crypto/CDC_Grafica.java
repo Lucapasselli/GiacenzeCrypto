@@ -11449,7 +11449,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void DepositiPrelievi_ComboBox_FiltroWalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed
         // TODO add your handling code here:
-                if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroWallet.hasFocus()){
+            if(evt.getModifiers()!=0&&DepositiPrelievi_ComboBox_FiltroWallet.hasFocus()){
             DepositiPrelievi_Caricatabella();
         }
     }//GEN-LAST:event_DepositiPrelievi_ComboBox_FiltroWalletActionPerformed

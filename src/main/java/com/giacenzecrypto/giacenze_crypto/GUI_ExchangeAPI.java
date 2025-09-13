@@ -6,7 +6,6 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,8 +17,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -85,6 +82,13 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Bottone_RimuoviChiave = new javax.swing.JButton();
         Bottone_AggiornaSelezionati = new javax.swing.JButton();
         Bottone_Aggiorna = new javax.swing.JButton();
+        Pannello_Binance = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        Binance_Tabella = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -211,7 +215,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Pannello_ChiaviLayout.setVerticalGroup(
             Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pannello_ChiaviLayout.createSequentialGroup()
-                .addContainerGap(387, Short.MAX_VALUE)
+                .addContainerGap(435, Short.MAX_VALUE)
                 .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
                         .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -236,13 +240,75 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             .addGroup(Pannello_ChiaviLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(Pannello_ChiaviLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(111, Short.MAX_VALUE)))
+                    .addComponent(ScrollPaneTabellaWallets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(104, Short.MAX_VALUE)))
         );
 
         Bottone_Aggiorna.setText("<html>Scarica nuovi movimenti<br>da tutti i Wallet della lista</html>");
 
         jTabbedPane1.addTab("Chiavi API", Pannello_Chiavi);
+
+        jTextPane1.setEditable(false);
+        jTextPane1.setContentType("text/html"); // NOI18N
+        jTextPane1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jTextPane1.setText("<div style=\"font-family: Arial, Helvetica, sans-serif; max-width:700px; padding:14px; border-radius:10px;\n            background: linear-gradient(180deg,#ffffff,#f6f9ff); border:1px solid #d6e0ff; color:#1a1a1a;\">\n  <div style=\"display:flex; align-items:center; gap:10px; margin-bottom:8px;\">\n    <div>\n      <div style=\"font-size:16px; font-weight:700; margin-bottom:2px;\">Nota su scaricamento Trades da Binance</div>\n      <div style=\"font-size:12px; color:#4b5876;\">Leggi con attenzione</div>\n    </div>\n  </div>\n\n  <p style=\"margin:10px 0; line-height:1.45;\">\n    Binance non permette di scaricare l'elenco di <strong>tutte</strong> le transazioni tramite API: è necessario specificare la <em>coppia</em> tradata.\n  </p>\n\n  <p style=\"margin:10px 0; line-height:1.45;\">\n    Questo crea un grosso problema poiché, per cercare in tutte le coppie disponibili, il programma potrebbe impiegare delle ore.<br>\n    Per ridurre i tempi vengono applicate delle logiche euristiche per individuare le coppie più probabili nel periodo analizzato, ma potrebbe comunque sfuggirne qualcuna.\n  </p>\n\n  <div style=\"background:#fbfdff; border:1px dashed #cfe3ff; padding:10px; border-radius:8px; margin:10px 0;\">\n    <strong>Come risolvere</strong>\n    <p style=\"margin:8px 0 0 0; line-height:1.4;\">\n      Nella tabella a destra puoi inserire manualmente tutti i token di cui sei sicuro di aver usato le coppie,\n      o quelli che noti manchino nell'elenco delle transazioni: al prossimo scaricamento il programma richiederà anche\n      i trades per quei token.\n    </p>\n  </div>\n\n  <p style=\"margin:10px 0; font-weight:700; color:#8a1f1f;\">Attenzione</p>\n  <p style=\"margin:4px 0 0 0; line-height:1.45;\">\n    Se devi inserire la coppia BTCUSDC dovrai effettuare <strong>2 inserimenti</strong>: uno per BTC e uno per USDC.\n  </p>\n\n  <div style=\"margin-top:12px; font-size:12px; color:#556078;\">\n    <span style=\"display:inline-block; margin-right:10px;\">✔️ Consiglio: inserisci solo token che sei sicuro di aver usato.</span><br>\n    <span style=\"display:inline-block; margin-left:14px;\">🔁 Al prossimo download verranno richiesti i trades aggiuntivi.</span>\n  </div>\n</div>\n");
+        jTextPane1.setToolTipText("");
+        jScrollPane1.setViewportView(jTextPane1);
+
+        Binance_Tabella.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Crypto"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(Binance_Tabella);
+
+        jButton1.setText("Aggiungi");
+
+        jButton2.setText("Rimuovi");
+
+        javax.swing.GroupLayout Pannello_BinanceLayout = new javax.swing.GroupLayout(Pannello_Binance);
+        Pannello_Binance.setLayout(Pannello_BinanceLayout);
+        Pannello_BinanceLayout.setHorizontalGroup(
+            Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pannello_BinanceLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pannello_BinanceLayout.createSequentialGroup()
+                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        Pannello_BinanceLayout.setVerticalGroup(
+            Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pannello_BinanceLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
+                    .addGroup(Pannello_BinanceLayout.createSequentialGroup()
+                        .addComponent(jScrollPane2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("<html>Particolarita'<br>Binance</html>", Pannello_Binance);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -457,31 +523,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
     }
  
-    private void CorreggiGiacenzeCronos() {
-         Component c = this;
-        Download progress = new Download();
-        progress.setLocationRelativeTo(this);
-                Thread thread;
-        thread = new Thread() {
-            public void run() {
-                //Importazioni.GiacenzeCRO_Sistema("", c, progress, thread);
-                        for (String v : Mappa_Exchange.keySet()) {
-                            if (v.contains("(CRO)")){
-                              //  System.out.println(v);
-                                Importazioni.GiacenzeCRO_Sistema(v, c, progress);
-                            }
-            //Mappa_Wallet.put(v[3], v[1]);
-        }
-             //   Importazioni.GiacenzeCRO_Sistema("0x7bfa44a6dad637e8416eabe568c285cc94c7e7a7", c, progress);//da gestire il wallet
-                progress.dispose();
-                //in teoria dovrei trovarli e gestirli in automatico
-                //in qualche variabile dovrei avere l'elenco dei wallet da cui estrarre solo quelli su rete CRO
-            }
-         };
-        progress.SetThread(thread);
-        thread.start();
-        progress.setVisible(true);
-    }
+
     
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
@@ -595,10 +637,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GestioneWallets().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new GestioneWallets().setVisible(true);
         });
     }
 
@@ -662,6 +702,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable Binance_Tabella;
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
     private javax.swing.JButton Bottone_InserisciChiave;
@@ -670,11 +711,17 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JLabel Label_Exchange;
     private javax.swing.JLabel Label_IndirizzoWallet;
     private javax.swing.JLabel Label_IndirizzoWallet1;
+    private javax.swing.JPanel Pannello_Binance;
     private javax.swing.JPanel Pannello_Chiavi;
     private javax.swing.JScrollPane ScrollPaneTabellaWallets;
     private javax.swing.JTable TabellaWallets;
     private javax.swing.JTextField TextField_ApiKey;
     private javax.swing.JTextField TextField_ApiSecret;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
 }

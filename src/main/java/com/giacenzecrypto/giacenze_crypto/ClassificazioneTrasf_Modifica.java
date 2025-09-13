@@ -46,6 +46,8 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     //DEFINIZIONI CAMPI COMBOBOX
     
     //COMBOBOX DEPOSITI
+    static final String CB_NESSUNASELEZIONE="- nessuna selezione / disassocia movimento -";
+    
     static final String CB_DC_REWARDS="AIRDROP, CASHBACK, EARN etc...";
     static final String CB_DC_COSTO0="DEPOSITO CON COSTO DI CARICO A ZERO";
     static final String CB_DC_TRASFERIMENTO="TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)";
@@ -54,7 +56,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     static final String CB_DC_ARENDITA="TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA";
     //ComboBox completo per singolo movimento
     static String[] CB_DC_SINGOLO = new String[]{
-        "- nessuna selezione -",
+        CB_NESSUNASELEZIONE,
         CB_DC_REWARDS,
         CB_DC_COSTO0,
         CB_DC_TRASFERIMENTO,
@@ -64,20 +66,20 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     };
     //ComboBox completo per movimento multiplo
     static String[] CB_DC_MULTIPLO = new String[]{
-        "- nessuna selezione -",
+        CB_NESSUNASELEZIONE,
         CB_DC_REWARDS,
         CB_DC_COSTO0
     };
     
     //COMBOBOX PRELIEVI
-    static final String CB_PC_CASHOUTCOMMISSIONE="CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)";
-    static final String CB_PC_DONAZIONEFURTO="DONAZIONE o FURTO Crypto-Attività";
+    static final String CB_PC_CASHOUTCOMMISSIONE="CASHOUT / COMMISSIONI";
+    static final String CB_PC_DONAZIONEFURTO="DONAZIONE, FURTO, BURN di Cripto-Attività";
     static final String CB_PC_TRASFERIMENTO="TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)";
     static final String CB_PC_SCAMBIODIFF="SCAMBIO CRYPTO DIFFERITO";
     static final String CB_PC_DARENDITA="TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA";
     //ComboBox completo per singolo movimento
     static String[] CB_PC_SINGOLO = new String[]{
-        "- nessuna selezione -",
+        CB_NESSUNASELEZIONE,
         CB_PC_CASHOUTCOMMISSIONE,
         CB_PC_DONAZIONEFURTO,
         CB_PC_TRASFERIMENTO,
@@ -86,7 +88,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     };
     //ComboBox completo per movimento multiplo
     static String[] CB_PC_MULTIPLO = new String[]{
-        "- nessuna selezione -",
+        CB_NESSUNASELEZIONE,
         CB_PC_CASHOUTCOMMISSIONE,
         CB_PC_DONAZIONEFURTO
     };
@@ -562,285 +564,116 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         //for (IDTrans:IDsTrans){
         if (IDTrans==null||IDTrans.isBlank())IDTrans=IDsTrans.toArray()[0].toString();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        int scelta;
         String sceltaS = this.ComboBox_TipoMovimento.getSelectedItem().toString();
-        boolean completato = true;
+
         String descrizione;
-        String dettaglio = "";
+        String dettaglio;
         //String Note=jTextField1.getText();
         String Note = TextArea_Note.getText().replace("\n", "<br>");
-        String attuale[] = MappaCryptoWallet.get(IDTrans);
         
-       // String PartiCoinvoltea[] = (IDTrans + "," + attuale[20]).split(",");
-        
-        //Recupero tutti i movimenti associati ai movimenti selezionati
-        //e li metto nella mappa associati al movimento principale/selezionato
-        //Set<String[]> PartiCoinvolte = new HashSet<>();
-        Map<String,String[]> PartiCoinvolte=new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for(String id:IDsTrans){
-            String att[] = MappaCryptoWallet.get(id);
-            String PartiMovimento[] = (id + "," + att[20]).split(",");
-            PartiCoinvolte.put(id,PartiMovimento);
+        //Se scelgo nessuna selezione riporto tutto allo stato originale
+        if (sceltaS.equals(CB_NESSUNASELEZIONE)){
+            PulisciMovimentiAssociati(IDsTrans);
+            ModificaEffettuata=true;
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            this.dispose();
+            return;
         }
         
-       
-        String PrzCarico = "Da calcolare";
-        String plusvalenza = "Da calcolare";
-        String PrzVecchio ="";//Viene usato per spostare il prezzo orginale delle donazioni/acquisti
-        boolean trasferimento = false;
-        System.out.println(sceltaS);
-        System.out.println(IDTrans);
         if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
             //in questo caso sono in presenza di un movimento di deposito
-            if(sceltaS.equals(CB_DC_REWARDS)){
-                //Può essere un movimento multiplo
-                //Parte relativa alle rewards
-               ModificaEffettuata=Crea_Reward(IDsTrans,Note);
-               this.dispose();
-               return;
-            }
-            else if(sceltaS.equals(CB_DC_COSTO0)){//Può essere un movimento multiplo
+            switch (sceltaS) {
+                case CB_DC_REWARDS -> {
+                    //Può essere un movimento multiplo
+                    //Parte relativa alle rewards
+                    ModificaEffettuata=Crea_Reward(IDsTrans,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_DC_COSTO0 -> {
+                    //Può essere un movimento multiplo
                     descrizione = "DEPOSITO CRYPTO (a costo zero)";
                     dettaglio = "DCZ - Deposito a costo zero (no plusvalenza)";
                     ClassificaMovimenti(IDsTrans,descrizione,dettaglio,Note,"",true);
                     ModificaEffettuata=true;
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
-            }
-            else if(sceltaS.equals(CB_DC_TRASFERIMENTO)){
+                }
+                case CB_DC_TRASFERIMENTO -> {
                     descrizione = "TRASFERIMENTO TRA WALLET";
-                    dettaglio = "DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    plusvalenza = "0.00";
-                    trasferimento = true;
-            }
-            else if(sceltaS.equals(CB_DC_ACQUISTO)){
-                //movimento solo singolo, fatta comunque predisposizione per poterlo cambiare in multiplo successivamente
-                ModificaEffettuata=Crea_Acquisto(IDsTrans,Note);
-                this.dispose();
-                return;
-                    
-            }
-            else if(sceltaS.equals(CB_DC_SCAMBIODIFF)){
+                    ModificaEffettuata=Crea_Trasferimenti(IDsTrans,descrizione,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_DC_ACQUISTO -> {
+                    //movimento solo singolo, fatta comunque predisposizione per poterlo cambiare in multiplo successivamente
+                    ModificaEffettuata=Crea_Acquisto(IDsTrans,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_DC_SCAMBIODIFF -> {
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
-                    trasferimento = true;           
-            }
-            else if(sceltaS.equals(CB_DC_ARENDITA)){
+                    ModificaEffettuata=Crea_Trasferimenti(IDsTrans,descrizione,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_DC_ARENDITA -> {
                     descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
                     CreaMovimentiTrasferimentoDaVault(IDTrans, descrizione, dettaglio);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
-            }
-            else {
-                    descrizione = "";
+                }
             }
 
         } else {
             //in questo caso sono in presenza di un movimento di prelievo
-            if(sceltaS.equals(CB_PC_CASHOUTCOMMISSIONE)){//può essere un movimento multiplo
-                    descrizione = "CASHOUT o COMMISSIONI";
-                    dettaglio = "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
-                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
-                    String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
-                            + "<b>Come classifichiamo il movimento?<br><br><b>"
-                            + "</html>";
-                    Object[] Bottoni = {"Annulla", "CASH OUT", "COMMISSIONI"};
-                    scelta = JOptionPane.showOptionDialog(this, Testo,
-                            "Classificazione del movimento",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
-
-                        switch (scelta) {
-                            case 1 -> {
-                                descrizione = "CASH OUT";
-                            }
-                            case 2 -> {
-                                descrizione = "COMMISSIONI";
-                            }
-                            default -> {
-                            }
-                        }
-                    }
-                    else{
-                        completato=false;
-                    }
-            }
-            else if(sceltaS.equals(CB_PC_DONAZIONEFURTO)){//può essere un movimento multiplo
-                                //descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
-                   // dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
-                    descrizione = "FURTO o DONAZIONE";
-                    dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
-                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
-                    String Testo = "<html>Furto o Donazione?<br><br>"
-                            + "<b>Come classifichiamo il movimento?<br><br><b>"
-                            + "</html>";
-                    Object[] Bottoni = {"Annulla", "FURTO", "DONAZIONE"};
-                    scelta = JOptionPane.showOptionDialog(this, Testo,
-                            "Classificazione del movimento",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            Bottoni,
-                            null);
-                    //Adesso genero il movimento a seconda della scelta
-                    //0 o 1 significa che non bisogna fare nulla
-                    if (scelta != 0 && scelta != -1) {
-
-                        switch (scelta) {
-                            case 1 -> {
-                                descrizione = "FURTO";
-                                dettaglio = "PWN - Furto";
-                            }
-                            case 2 -> {
-                                descrizione = "DONAZIONE";
-                                dettaglio = "PWN - Donazione";
-                            }
-                            default -> {
-                            }
-                        }
-                    }
-                    else{
-                        completato=false;
-                    }
-                    plusvalenza = "0";
-            }
-            else if(sceltaS.equals(CB_PC_TRASFERIMENTO)){
+            switch (sceltaS) {
+                case CB_PC_CASHOUTCOMMISSIONE -> {
+                    //può essere un movimento multiplo
+                    ModificaEffettuata=Crea_CashoutCommissioni(IDsTrans,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_PC_DONAZIONEFURTO -> {
+                    ModificaEffettuata=Crea_DonazioneFurto(IDsTrans,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_PC_TRASFERIMENTO -> {
                     descrizione = "TRASFERIMENTO TRA WALLET";
-                    dettaglio = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    plusvalenza = "0";
-                    trasferimento = true;
-            }
-            else if(sceltaS.equals(CB_PC_SCAMBIODIFF)){
+                    ModificaEffettuata=Crea_Trasferimenti(IDsTrans,descrizione,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_PC_SCAMBIODIFF -> {
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
-                    trasferimento = true;
-            }
-            else if(sceltaS.equals(CB_PC_DARENDITA)){
+                    ModificaEffettuata=Crea_Trasferimenti(IDsTrans,descrizione,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    this.dispose();
+                    return;
+                }
+                case CB_PC_DARENDITA -> {
                     descrizione = "TRASFERIMENTO A PIATTAFORMA";
                     dettaglio = "PTW - Trasferimento a Vault/Piattaforma a Rendita";
                     CreaMovimentiTrasferimentoAVault(IDTrans, descrizione, dettaglio);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
                     return;
-                    //trasferimento = true;
-            }
-            else{
-                    descrizione = "";
-            }
-        }
-
-        if (completato) {
-        
-        
-                    //se controparte non è vuota vado ad eliminare l'associazione anche al movimento associato
-            //a cancellare le eventuali commissioni e riportare i prezzi e qta allo stato originale
-        IDsTrans=RiportaTransazioniASituazioneIniziale(PartiCoinvolte);
-        IDTrans=IDsTrans.toArray()[0].toString();
-
-
-         //Adesso controllo se esiste ancora IDTrans e proseguio solo se esiste
-         //if (MappaCryptoWallet.get(IDTrans)!=null){
-            //System.out.println("Completato");
-            if (descrizione.equalsIgnoreCase("TRASFERIMENTO A PIATTAFORMA")) {
-                //creo movimento di deposito su Vault e movifico il movimento originale
-                //in questa funzione non devo controllare nulla di particolare
-                CreaMovimentiTrasferimentoAVault(IDTrans, descrizione, dettaglio);
-                this.dispose();
-            } else if (descrizione.equalsIgnoreCase("TRASFERIMENTO DA PIATTAFORMA")) {
-                CreaMovimentiTrasferimentoDaVault(IDTrans, descrizione, dettaglio);
-                this.dispose();
-            } else if (!trasferimento) {
-                //Solo in questo caso posso avere movimenti multipli
-                //Quindi solo qua gestisco questa cosa
-                for (String IDTr : IDsTrans) {
-
-                    attuale = MappaCryptoWallet.get(IDTr);
-                    if (descrizione.isBlank()) {
-                       
-                        descrizione = Importazioni.RitornaTipologiaTransazione(attuale[9], attuale[12], 1);
-                    }
-                    attuale[5] = descrizione;
-                    attuale[17] = PrzCarico;
-                    attuale[18] = dettaglio;
-                    attuale[19] = plusvalenza;
-                    attuale[20] = "";
-                    attuale[21] = Note;
-                    //Se trovo un prezzo vecchio (originale) messo da parte, lo ripristino
-                    if (attuale[35] != null && !attuale[35].isBlank()) {
-                        attuale[15] = attuale[35];
-                    }
-                    attuale[35] = PrzVecchio;
-
-                    //in teoria avendo preso l'oggetto e modificandone il contenuto non serve questa seconda parte
-                    //MappaCryptoWallet.put(IDTrans, attuale);
                 }
-                JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                ModificaEffettuata = true;
-                this.dispose();
-            } else {
-                //Se arrivo qua sono in presenza di un trasferimento tra wallet o uno scambio differito
-                if (Tabella_MovimentiAbbinati.getSelectedRow() >= 0) {
-                    int rigaselezionata = Tabella_MovimentiAbbinati.getSelectedRow();
-                    String IDTransazioneControparte = Tabella_MovimentiAbbinati.getValueAt(rigaselezionata, 0).toString();
-                    //devo aggiungere che dettaglioTrasferimento deve essere vuoto!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    String attualeControparte[] = MappaCryptoWallet.get(IDTransazioneControparte);
-                    String IDPrelievo;
-                    String IDDeposito;
-                    //se il movimento selezionato non è associato a nulla alloro lo associo, altrimenti faccio uscire un messaggio di errore
-                    if (attualeControparte[20].equalsIgnoreCase("")) {
-
-                        if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
-                            // tipoControparte = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                            IDDeposito = IDTrans;
-                            IDPrelievo = IDTransazioneControparte;
-                            //creo movimento di commissione etc
-                            if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
-                                CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
-                            } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
-                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
-                              /*  JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
-                            }
-                        } else {
-                            IDDeposito = IDTransazioneControparte;
-                            IDPrelievo = IDTrans;
-                            //creo movimento di commissione e valori
-                            if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
-                                CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
-                            } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
-                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
-                               /* JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
-                            }
-
-                        }
-                        attuale[21] = Note;
-
-                        JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
-                                "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                        ModificaEffettuata = true;
-                        this.dispose();
-
-                    } else {
-                        JOptionPane.showConfirmDialog(this, "Il movimento selezionato dalla tabella è già abbinato ad un altro movimento!\n"
-                                + "Scegliere altro movimento oppure disabbinare dal movimento precedentemente associato e ripetere la procedura.",
-                                "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
-                    }
-                } else {
-                    //in questo caso mando fuori un messaggio che dice di selezionare un movimento di conroparte per andare avanti
-                    JOptionPane.showConfirmDialog(this, "Per questo tipo di movimentazione è obbligatorio selezionare il movimento corrispondente nella tabella!",
-                            "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
-                }
-
+                 
             }
-        // }
-        }
-this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    }
+setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     }//GEN-LAST:event_Bottone_OKActionPerformed
 
@@ -1004,6 +837,171 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                
                 return true;
     }
+    
+     private boolean Crea_CashoutCommissioni(Set<String> IDsTr,String Note){
+        //Può essere un movimento multiplo
+
+        
+        String descrizione = "CASHOUT o COMMISSIONI";
+                    String dettaglio = "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
+                    //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
+                    String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
+                            + "<b>Come classifichiamo il movimento?<br><br><b>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "CASH OUT", "COMMISSIONI"};
+                    int scelta = JOptionPane.showOptionDialog(this, Testo,
+                            "Classificazione del movimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                descrizione = "CASH OUT";
+                            }
+                            case 2 -> {
+                                descrizione = "COMMISSIONI";
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        return false;
+                    }
+        
+                
+                
+                ClassificaMovimenti(IDsTr,descrizione,dettaglio,Note,"",false);
+               
+               
+               
+               
+               JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+               
+               
+                return true;
+    }
+     
+    private boolean Crea_DonazioneFurto(Set<String> IDsTr, String Note) {
+        //Può essere un movimento multiplo
+        //può essere un movimento multiplo
+        //descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
+        // dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+        String descrizione = "FURTO o DONAZIONE";
+        String dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+        //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
+        String Testo = "<html>Furto o Donazione?<br><br>"
+                + "<b>Come classifichiamo il movimento?<br><br><b>"
+                + "</html>";
+        Object[] Bottoni = {"Annulla", "FURTO", "DONAZIONE","BURN"};
+        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                "Classificazione del movimento",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                Bottoni,
+                null);
+        //Adesso genero il movimento a seconda della scelta
+        //0 o 1 significa che non bisogna fare nulla
+        if (scelta != 0 && scelta != -1) {
+
+            switch (scelta) {
+                case 1 -> {
+                    descrizione = "FURTO";
+                    dettaglio = "PWN - Furto";
+                }
+                case 2 -> {
+                    descrizione = "DONAZIONE";
+                    dettaglio = "PWN - Donazione";
+                }
+                case 3 -> {
+                    descrizione = "BURN";
+                    dettaglio = "PWN - Burn";
+                }
+                default -> {
+                }
+            }
+        } else {
+            return false;
+        }
+
+        ClassificaMovimenti(IDsTr, descrizione, dettaglio, Note, "", false);
+
+        JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+
+        return true;
+    }
+     
+     private boolean Crea_Trasferimenti(Set<String> IDsTr, String descrizione,String Note) {
+        if (Tabella_MovimentiAbbinati.getSelectedRow() >= 0&&IDsTr.size()==1) {
+                    
+                    int rigaselezionata = Tabella_MovimentiAbbinati.getSelectedRow();
+                    String IDTransazioneControparte = Tabella_MovimentiAbbinati.getValueAt(rigaselezionata, 0).toString();
+                    //devo aggiungere che dettaglioTrasferimento deve essere vuoto!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    String attualeControparte[] = MappaCryptoWallet.get(IDTransazioneControparte);
+                    String IDPrelievo;
+                    String IDDeposito;
+                    //se il movimento selezionato non è associato a nulla alloro lo associo, altrimenti faccio uscire un messaggio di errore
+                    if (attualeControparte[20].equalsIgnoreCase("")) {
+                        
+                        //Se arrivo qua vuol dire che posso pulire il movimento
+                        IDsTr=PulisciMovimentiAssociati(IDsTr);
+                        String id=IDsTr.toArray()[0].toString();
+                        String attuale[] = MappaCryptoWallet.get(id);
+
+                        if (id.split("_")[4].equalsIgnoreCase("DC")) {
+                            // tipoControparte = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+                            IDDeposito = id;
+                            IDPrelievo = IDTransazioneControparte;
+                            //creo movimento di commissione etc
+                            if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
+                                CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
+                            } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
+                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
+                              /*  JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
+                            }
+                        } else {
+                            IDDeposito = IDTransazioneControparte;
+                            IDPrelievo = id;
+                            //creo movimento di commissione e valori
+                            if (descrizione.equalsIgnoreCase("TRASFERIMENTO TRA WALLET")) {
+                                CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo, IDDeposito);
+                            } else if (descrizione.equalsIgnoreCase("SCAMBIO CRYPTO DIFFERITO")) {
+                                CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito);
+                               /* JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                                        "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);*/
+                            }
+
+                        }
+                        attuale[21] = Note;
+
+                        JOptionPane.showConfirmDialog(this, "Modifiche effettuate, ricordarsi di Salvare!! (sezione Transazioni Crypto)",
+                                "Modifiche fatte!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        return true;
+
+                    } else {
+                        JOptionPane.showConfirmDialog(this, "Il movimento selezionato dalla tabella è già abbinato ad un altro movimento!\n"
+                                + "Scegliere altro movimento oppure disabbinare dal movimento precedentemente associato e ripetere la procedura.",
+                                "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                        return false;
+                    }
+                } else {
+                    //in questo caso mando fuori un messaggio che dice di selezionare un movimento di conroparte per andare avanti
+                    JOptionPane.showConfirmDialog(this, "Per questo tipo di movimentazione è obbligatorio selezionare il movimento corrispondente nella tabella!",
+                            "Attenzione richiesta!", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                    return false;
+                }
+    }
+    
     
     private boolean Crea_Acquisto(Set<String> IDsTr,String Note){
         boolean ritorno=false;
@@ -1920,76 +1918,24 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
     
     private void ComboBox_TipoMovimentoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoMovimentoItemStateChanged
-        // TODO add your handling code here:
-        
+
         //Serve per sistemare le tabelle accessorie e pulsanti in caso di cambiamento su combobox
         //utile sopratutto quando si passa a movimenti di trasferimento
         if (IDTrans==null||IDTrans.isBlank())IDTrans=IDsTrans.toArray()[0].toString();
        
-        int scelta=ComboBox_TipoMovimento.getSelectedIndex();
         String sceltaS=ComboBox_TipoMovimento.getSelectedItem().toString();
         if (evt.getStateChange() == ItemEvent.SELECTED){
-       // if (evt.getItem().toString().equals(ComboBox_TipoMovimento.getSelectedItem().toString())){
-         //    System.out.println("cambio "+scelta);
-//DA SISTEMARE CON VERIFICA SU NOME E NON SU ID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//ALTRIMENTI DA PROBLEMI CON I MOVIMENTI MULTIPLI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //System.out.println("-"+IDTrans);
-          if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
-          //in questo caso sono in presenza di un movimento di deposito
-          switch(scelta){
-              case 1 -> {
 
-                  TransferNO();
-                }
-              case 2 -> {
-
-                  TransferNO();
-                }
-              case 3 -> {
-
-                  TransferSI();
-                }
-              case 4 -> {
-
-                    TransferNO();
-
-                }
-              case 5 -> {
-
-                    TransferSI();
-                 //   System.out.println("Scambio");
-
-                }
-              default -> {
-               TransferNO();}
-                  //qui si va solo in caso la scelata sia nessuna
+          if (sceltaS.equals(CB_DC_TRASFERIMENTO)||sceltaS.equals(CB_DC_SCAMBIODIFF)||
+                  sceltaS.equals(CB_PC_TRASFERIMENTO)||sceltaS.equals(CB_PC_SCAMBIODIFF))
+          {
+            TransferSI();
           }
-        }else{
-          //in questo caso sono in presenza di un movimento di prelievo
-          switch(scelta){
-              case 1 -> {
-
-                  TransferNO();
-                }
-              case 2 -> {
-
-                  TransferNO();
-                }
-              case 3 -> {
-
-                  TransferSI();
-                }
-              case 4 -> {
-
-                    TransferSI();
-                   // System.out.println("Scambio");
-
-                }
-              default -> {
-
-              TransferNO();}
+          else
+          {
+            TransferNO();
           }
-        }
+        
         }
     }//GEN-LAST:event_ComboBox_TipoMovimentoItemStateChanged
 

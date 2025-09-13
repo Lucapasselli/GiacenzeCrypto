@@ -102,7 +102,7 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace pref="387" max="32767" attributes="0"/>
+                      <EmptySpace pref="435" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -135,8 +135,8 @@
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="ScrollPaneTabellaWallets" min="-2" pref="365" max="-2" attributes="0"/>
-                          <EmptySpace pref="111" max="32767" attributes="0"/>
+                          <Component id="ScrollPaneTabellaWallets" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="104" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -281,6 +281,117 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="Bottone_Aggiorna.setText(&quot;&lt;html&gt;Scarica nuovi movimenti&lt;br&gt;da tutti i Wallet della lista&lt;/html&gt;&quot;);"/>
               </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="Pannello_Binance">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="&lt;html&gt;Particolarita&apos;&lt;br&gt;Binance&lt;/html&gt;">
+                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;Particolarita&apos;&lt;br&gt;Binance&lt;/html&gt;"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jScrollPane1" pref="705" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="jButton1" max="32767" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="jButton2" min="-2" pref="146" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="jScrollPane2" min="-2" pref="304" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane1" pref="529" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="jScrollPane2" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="jButton1" alignment="3" min="-2" pref="48" max="-2" attributes="0"/>
+                                  <Component id="jButton2" alignment="3" min="-2" pref="48" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextPane" name="jTextPane1">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                    <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Segoe UI" size="14" style="0"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="&lt;div style=&quot;font-family: Arial, Helvetica, sans-serif; max-width:700px; padding:14px; border-radius:10px;&#xa;            background: linear-gradient(180deg,#ffffff,#f6f9ff); border:1px solid #d6e0ff; color:#1a1a1a;&quot;&gt;&#xa;  &lt;div style=&quot;display:flex; align-items:center; gap:10px; margin-bottom:8px;&quot;&gt;&#xa;    &lt;div&gt;&#xa;      &lt;div style=&quot;font-size:16px; font-weight:700; margin-bottom:2px;&quot;&gt;Nota su scaricamento Trades da Binance&lt;/div&gt;&#xa;      &lt;div style=&quot;font-size:12px; color:#4b5876;&quot;&gt;Leggi con attenzione&lt;/div&gt;&#xa;    &lt;/div&gt;&#xa;  &lt;/div&gt;&#xa;&#xa;  &lt;p style=&quot;margin:10px 0; line-height:1.45;&quot;&gt;&#xa;    Binance non permette di scaricare l&apos;elenco di &lt;strong&gt;tutte&lt;/strong&gt; le transazioni tramite API: &#xe8; necessario specificare la &lt;em&gt;coppia&lt;/em&gt; tradata.&#xa;  &lt;/p&gt;&#xa;&#xa;  &lt;p style=&quot;margin:10px 0; line-height:1.45;&quot;&gt;&#xa;    Questo crea un grosso problema poich&#xe9;, per cercare in tutte le coppie disponibili, il programma potrebbe impiegare delle ore.&lt;br&gt;&#xa;    Per ridurre i tempi vengono applicate delle logiche euristiche per individuare le coppie pi&#xf9; probabili nel periodo analizzato, ma potrebbe comunque sfuggirne qualcuna.&#xa;  &lt;/p&gt;&#xa;&#xa;  &lt;div style=&quot;background:#fbfdff; border:1px dashed #cfe3ff; padding:10px; border-radius:8px; margin:10px 0;&quot;&gt;&#xa;    &lt;strong&gt;Come risolvere&lt;/strong&gt;&#xa;    &lt;p style=&quot;margin:8px 0 0 0; line-height:1.4;&quot;&gt;&#xa;      Nella tabella a destra puoi inserire manualmente tutti i token di cui sei sicuro di aver usato le coppie,&#xa;      o quelli che noti manchino nell&apos;elenco delle transazioni: al prossimo scaricamento il programma richieder&#xe0; anche&#xa;      i trades per quei token.&#xa;    &lt;/p&gt;&#xa;  &lt;/div&gt;&#xa;&#xa;  &lt;p style=&quot;margin:10px 0; font-weight:700; color:#8a1f1f;&quot;&gt;Attenzione&lt;/p&gt;&#xa;  &lt;p style=&quot;margin:4px 0 0 0; line-height:1.45;&quot;&gt;&#xa;    Se devi inserire la coppia BTCUSDC dovrai effettuare &lt;strong&gt;2 inserimenti&lt;/strong&gt;: uno per BTC e uno per USDC.&#xa;  &lt;/p&gt;&#xa;&#xa;  &lt;div style=&quot;margin-top:12px; font-size:12px; color:#556078;&quot;&gt;&#xa;    &lt;span style=&quot;display:inline-block; margin-right:10px;&quot;&gt;&#x2714;&#xfe0f; Consiglio: inserisci solo token che sei sicuro di aver usato.&lt;/span&gt;&lt;br&gt;&#xa;    &lt;span style=&quot;display:inline-block; margin-left:14px;&quot;&gt;\ud83d\udd01 Al prossimo download verranno richiesti i trades aggiuntivi.&lt;/span&gt;&#xa;  &lt;/div&gt;&#xa;&lt;/div&gt;&#xa;" containsInvalidXMLChars="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value=""/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTable" name="Binance_Tabella">
+                  <Properties>
+                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                      <Table columnCount="1" rowCount="0">
+                        <Column editable="false" title="Crypto" type="java.lang.Object"/>
+                      </Table>
+                    </Property>
+                    <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                      <TableColumnModel selectionModel="0">
+                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                      </TableColumnModel>
+                    </Property>
+                    <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                      <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JButton" name="jButton1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Aggiungi"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="jButton2">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Rimuovi"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

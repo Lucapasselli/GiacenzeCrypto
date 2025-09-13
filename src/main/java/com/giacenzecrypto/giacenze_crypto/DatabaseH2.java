@@ -10,8 +10,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,6 +93,12 @@ public class DatabaseH2 {
             preparedStatement.execute();
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS WALLETS (Wallet_Rete VARCHAR(255) PRIMARY KEY, Wallet VARCHAR(255), Rete VARCHAR(255))";
+            preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
+            preparedStatement.execute();
+            
+            //Questa tabella è stata creata principalmente per gestire i token di binance che vengono usati nei trades
+            //Serve per poter aggiungere manualmente una lista di tokens di cui verranno richiesti i trades
+            createTableSQL = "CREATE TABLE IF NOT EXISTS EXCHANGETOKENS (Exchange_Token VARCHAR(255) PRIMARY KEY, Exchange VARCHAR(255), Token VARCHAR(255))";
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
             
@@ -634,8 +643,79 @@ public class DatabaseH2 {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }    
-                    
-                    
+    
+        
+        
+        public static void Pers_ExchangeTokens_Scrivi(String Exchange,String Token) {
+        try {
+            
+            String ExchangeToken=Exchange+"_"+Token;
+            
+            String checkIfExistsSQL = "SELECT COUNT(*) FROM EXCHANGETOKENS WHERE Exchange_Token = ?";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, ExchangeToken);
+            int rowCount = 0;
+            // Esegui la query e controlla il risultato
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                rowCount = resultSet.getInt(1);
+            }
+            if (rowCount > 0) {
+                //Questa non dovrebbe servire a nulla perchè non devo mai aggiornare i valori di questa tabella ma solo cancellare e ricreare
+                String updateSQL = "UPDATE EXCHANGETOKENS SET Exchange = ?,Token = ? WHERE Exchange_Token = ?";
+                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
+                updateStatement.setString(1, Exchange);
+                updateStatement.setString(2, Token);
+                updateStatement.setString(3, ExchangeToken);
+                updateStatement.executeUpdate();
+
+            } else {
+                // La riga non esiste, esegui l'inserimento
+                String insertSQL = "INSERT INTO EXCHANGETOKENS (Exchange_Token, Exchange, Token) VALUES (?, ?, ?)";
+                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
+                insertStatement.setString(1, ExchangeToken);
+                insertStatement.setString(2, Exchange);
+                insertStatement.setString(3, Token);
+                insertStatement.executeUpdate();
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }      
+        
+        public static List<String> Pers_ExchangeTokens_LeggiTokensExchange(String Exchange) {
+            List<String> lista= new ArrayList<>();
+        try {
+            String checkIfExistsSQL = "SELECT Token FROM EXCHANGETOKENS WHERE Exchange = ?";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Exchange);
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        lista.add(resultSet.getString("Token"));
+                    }
+                }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
+        
+        public static void Pers_ExchangeTokens_Cancella(String Exchange) {
+               //completamente da gestire
+        try {
+            String checkIfExistsSQL = "DELETE FROM EXCHANGETOKENS WHERE Exchange_Token = ?";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            checkStatement.setString(1, Exchange);
+            checkStatement.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
+        
+        
     
             public static void Pers_ExchangeApi_Cancella(String Exchange) {
                //completamente da gestire

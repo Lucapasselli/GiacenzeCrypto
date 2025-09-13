@@ -43,6 +43,57 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     //DAC -> Acquisto Crypto (deposito)  
    //////////// //DSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Non Utilizzato per ora)
 
+    //DEFINIZIONI CAMPI COMBOBOX
+    
+    //COMBOBOX DEPOSITI
+    static final String CB_DC_REWARDS="AIRDROP, CASHBACK, EARN etc...";
+    static final String CB_DC_COSTO0="DEPOSITO CON COSTO DI CARICO A ZERO";
+    static final String CB_DC_TRASFERIMENTO="TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)";
+    static final String CB_DC_ACQUISTO="ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE";
+    static final String CB_DC_SCAMBIODIFF="SCAMBIO CRYPTO DIFFERITO";
+    static final String CB_DC_ARENDITA="TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA";
+    //ComboBox completo per singolo movimento
+    static String[] CB_DC_SINGOLO = new String[]{
+        "- nessuna selezione -",
+        CB_DC_REWARDS,
+        CB_DC_COSTO0,
+        CB_DC_TRASFERIMENTO,
+        CB_DC_ACQUISTO,
+        CB_DC_SCAMBIODIFF,
+        CB_DC_ARENDITA
+    };
+    //ComboBox completo per movimento multiplo
+    static String[] CB_DC_MULTIPLO = new String[]{
+        "- nessuna selezione -",
+        CB_DC_REWARDS,
+        CB_DC_COSTO0
+    };
+    
+    //COMBOBOX PRELIEVI
+    static final String CB_PC_CASHOUTCOMMISSIONE="CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)";
+    static final String CB_PC_DONAZIONEFURTO="DONAZIONE o FURTO Crypto-Attività";
+    static final String CB_PC_TRASFERIMENTO="TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)";
+    static final String CB_PC_SCAMBIODIFF="SCAMBIO CRYPTO DIFFERITO";
+    static final String CB_PC_DARENDITA="TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA";
+    //ComboBox completo per singolo movimento
+    static String[] CB_PC_SINGOLO = new String[]{
+        "- nessuna selezione -",
+        CB_PC_CASHOUTCOMMISSIONE,
+        CB_PC_DONAZIONEFURTO,
+        CB_PC_TRASFERIMENTO,
+        CB_PC_SCAMBIODIFF,
+        CB_PC_DARENDITA
+    };
+    //ComboBox completo per movimento multiplo
+    static String[] CB_PC_MULTIPLO = new String[]{
+        "- nessuna selezione -",
+        CB_PC_CASHOUTCOMMISSIONE,
+        CB_PC_DONAZIONEFURTO
+    };
+    
+    
+
+    
     
     static String IDTrans="";
     static Set<String> IDsTrans=new HashSet<>();
@@ -89,28 +140,17 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         } else {
             TransferNO();
         }
-        String papele[];
+
+        ArrayList<String> elements = new ArrayList<>();
         if (ID.split("_")[4].equalsIgnoreCase("DC")){
-            papele=new String[]{"- nessuna selezione -",
-                "AIRDROP, CASHBACK, EARN etc...",
-                "DEPOSITO CON COSTO DI CARICO A ZERO",
-                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)",
-                "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE",
-                "SCAMBIO CRYPTO DIFFERITO",
-                "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
+            elements.addAll(java.util.Arrays.asList(CB_DC_SINGOLO));
 
         }else
         {
-            papele=new String[]{"- nessuna selezione -",
-                "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
-                "DONAZIONE o FURTO Crypto-Attività",
-                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)",
-                "SCAMBIO CRYPTO DIFFERITO",
-                "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
+            elements.addAll(java.util.Arrays.asList(CB_PC_SINGOLO));
 
         }
-            ArrayList<String> elements = new ArrayList<>();
-            elements.addAll(java.util.Arrays.asList(papele));
+
        
             //ComboBoxModel model = new DefaultComboBoxModel(elements.toArray());
             ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
@@ -157,7 +197,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         
  
         
-        String papele[];
+        ArrayList<String> elements = new ArrayList<>();
         if (!MovimentoMultiplo) {
             String ID=IDs.toArray()[0].toString();
             IDTrans=ID;
@@ -201,28 +241,13 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                 TransferNO();
             }
             
-            
+
             if (ID.split("_")[4].equalsIgnoreCase("DC")) {
-                papele = new String[]{"- nessuna selezione -",
-                "AIRDROP, CASHBACK, EARN etc...",
-                "DEPOSITO CON COSTO DI CARICO A ZERO",
-                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di prelievo nella tabella sotto)",
-                "ACQUISTO CRYPTO (Tramite contanti,servizi esterni etc...) o DONAZIONE",
-                "SCAMBIO CRYPTO DIFFERITO",
-                "TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA"};
+                elements.addAll(java.util.Arrays.asList(CB_DC_SINGOLO));
 
             } else {
-                papele = new String[]{"- nessuna selezione -",
-                "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
-                "DONAZIONE o FURTO Crypto-Attività",
-                "TRASFERIMENTO TRA WALLET DI PROPRIETA' (bisognerà selezionare il movimento di deposito nella tabella sotto)",
-                "SCAMBIO CRYPTO DIFFERITO",
-                "TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA"};
-
-            }
-            ArrayList<String> elements = new ArrayList<>();
-            elements.addAll(java.util.Arrays.asList(papele));
-       
+                elements.addAll(java.util.Arrays.asList(CB_PC_SINGOLO));
+            }     
             ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
             ComboBox_TipoMovimento.setModel(model);
             this.ComboBox_TipoMovimento.setSelectedIndex(ntipo);
@@ -232,19 +257,10 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         } else {
 
             if (trovatoDeposito) {
-                papele = new String[]{"- nessuna selezione -",
-                    "AIRDROP, CASHBACK, EARN etc...",
-                    "DEPOSITO CON COSTO DI CARICO A ZERO"};
-
+                elements.addAll(java.util.Arrays.asList(CB_DC_MULTIPLO));
             } else {
-                papele = new String[]{"- nessuna selezione -",
-                    "CASHOUT / COMMISSIONE (verrà calcolata la plusvalenza)",
-                    "DONAZIONE o FURTO Crypto-Attività"};
-
+                elements.addAll(java.util.Arrays.asList(CB_PC_MULTIPLO));
             }
-            ArrayList<String> elements = new ArrayList<>();
-            elements.addAll(java.util.Arrays.asList(papele));
-       
             ComboBoxModel<String> model = new DefaultComboBoxModel<>(elements.toArray(String[]::new));
             ComboBox_TipoMovimento.setModel(model);
 
@@ -576,41 +592,39 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         System.out.println(IDTrans);
         if (IDTrans.split("_")[4].equalsIgnoreCase("DC")) {
             //in questo caso sono in presenza di un movimento di deposito
-            if(sceltaS.contains("AIRDROP")){
+            if(sceltaS.equals(CB_DC_REWARDS)){
                 //Può essere un movimento multiplo
                 //Parte relativa alle rewards
                ModificaEffettuata=Crea_Reward(IDsTrans,Note);
                this.dispose();
                return;
             }
-            else if(sceltaS.contains("DEPOSITO")){//Può essere un movimento multiplo
+            else if(sceltaS.equals(CB_DC_COSTO0)){//Può essere un movimento multiplo
                     descrizione = "DEPOSITO CRYPTO (a costo zero)";
                     dettaglio = "DCZ - Deposito a costo zero (no plusvalenza)";
                     ClassificaMovimenti(IDsTrans,descrizione,dettaglio,Note,"",true);
                     ModificaEffettuata=true;
                     this.dispose();
                     return;
-                    //PrzCarico = "0.00";
-                    //plusvalenza = "0.00";
             }
-            else if(sceltaS.contains("TRASFERIMENTO TRA")){
+            else if(sceltaS.equals(CB_DC_TRASFERIMENTO)){
                     descrizione = "TRASFERIMENTO TRA WALLET";
                     dettaglio = "DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     plusvalenza = "0.00";
                     trasferimento = true;
             }
-            else if(sceltaS.contains("ACQUISTO")){
+            else if(sceltaS.equals(CB_DC_ACQUISTO)){
                 //movimento solo singolo, fatta comunque predisposizione per poterlo cambiare in multiplo successivamente
                 ModificaEffettuata=Crea_Acquisto(IDsTrans,Note);
                 this.dispose();
                 return;
                     
             }
-            else if(sceltaS.contains("DIFFERITO")){
+            else if(sceltaS.equals(CB_DC_SCAMBIODIFF)){
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
                     trasferimento = true;           
             }
-            else if(sceltaS.contains("RENDITA")){
+            else if(sceltaS.equals(CB_DC_ARENDITA)){
                     descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
                     CreaMovimentiTrasferimentoDaVault(IDTrans, descrizione, dettaglio);
@@ -623,7 +637,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
 
         } else {
             //in questo caso sono in presenza di un movimento di prelievo
-            if(sceltaS.contains("CASHOUT")){//può essere un movimento multiplo
+            if(sceltaS.equals(CB_PC_CASHOUTCOMMISSIONE)){//può essere un movimento multiplo
                     descrizione = "CASHOUT o COMMISSIONI";
                     dettaglio = "PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
                     //Se scelgo il caso 1 faccio scegliere che tipo di reward voglio
@@ -657,7 +671,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                         completato=false;
                     }
             }
-            else if(sceltaS.contains("DONAZIONE")){//può essere un movimento multiplo
+            else if(sceltaS.equals(CB_PC_DONAZIONEFURTO)){//può essere un movimento multiplo
                                 //descrizione = "PRELIEVO CRYPTO (tolgo dai calcoli)";
                    // dettaglio = "PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
                     descrizione = "FURTO o DONAZIONE";
@@ -696,17 +710,17 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
                     }
                     plusvalenza = "0";
             }
-            else if(sceltaS.contains("TRASFERIMENTO TRA")){
+            else if(sceltaS.equals(CB_PC_TRASFERIMENTO)){
                     descrizione = "TRASFERIMENTO TRA WALLET";
                     dettaglio = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
                     plusvalenza = "0";
                     trasferimento = true;
             }
-            else if(sceltaS.contains("SCAMBIO CRYPTO")){
+            else if(sceltaS.equals(CB_PC_SCAMBIODIFF)){
                     descrizione = "SCAMBIO CRYPTO DIFFERITO";
                     trasferimento = true;
             }
-            else if(sceltaS.contains("RENDITA")){
+            else if(sceltaS.equals(CB_PC_DARENDITA)){
                     descrizione = "TRASFERIMENTO A PIATTAFORMA";
                     dettaglio = "PTW - Trasferimento a Vault/Piattaforma a Rendita";
                     CreaMovimentiTrasferimentoAVault(IDTrans, descrizione, dettaglio);
@@ -1907,46 +1921,46 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     
     private void ComboBox_TipoMovimentoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ComboBox_TipoMovimentoItemStateChanged
         // TODO add your handling code here:
+        
+        //Serve per sistemare le tabelle accessorie e pulsanti in caso di cambiamento su combobox
+        //utile sopratutto quando si passa a movimenti di trasferimento
         if (IDTrans==null||IDTrans.isBlank())IDTrans=IDsTrans.toArray()[0].toString();
        
         int scelta=ComboBox_TipoMovimento.getSelectedIndex();
+        String sceltaS=ComboBox_TipoMovimento.getSelectedItem().toString();
         if (evt.getStateChange() == ItemEvent.SELECTED){
        // if (evt.getItem().toString().equals(ComboBox_TipoMovimento.getSelectedItem().toString())){
          //    System.out.println("cambio "+scelta);
-        String descrizione,dettaglio;
+//DA SISTEMARE CON VERIFICA SU NOME E NON SU ID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//ALTRIMENTI DA PROBLEMI CON I MOVIMENTI MULTIPLI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         //System.out.println("-"+IDTrans);
           if (IDTrans.split("_")[4].equalsIgnoreCase("DC")){
           //in questo caso sono in presenza di un movimento di deposito
           switch(scelta){
               case 1 -> {
-                  descrizione="AIRDROP o SIMILARE";
-                  dettaglio="DAI - Airdrop,Cashback,Rewards etc..";
+
                   TransferNO();
                 }
               case 2 -> {
-                  descrizione="DEPOSITO CRYPTO";
-                  dettaglio="DCZ - Deposito a costo zero (no plusvalenza)";
+
                   TransferNO();
                 }
               case 3 -> {
-                  descrizione="TRASFERIMENTO TRA WALLET";
-                  dettaglio="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+
                   TransferSI();
                 }
               case 4 -> {
-                    descrizione = "ACQUISTO CRYPTO";
-                    dettaglio = "DAC - Acquisto Crypto";
+
                     TransferNO();
 
                 }
               case 5 -> {
-                    descrizione = "SCAMBIO CRYPTO DIFFERITO";
-                    dettaglio = "DSC - Scambio Crypto Differito";
+
                     TransferSI();
                  //   System.out.println("Scambio");
 
                 }
-              default -> {descrizione="DEPOSITO CRYPTO";
+              default -> {
                TransferNO();}
                   //qui si va solo in caso la scelata sia nessuna
           }
@@ -1954,28 +1968,25 @@ this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
           //in questo caso sono in presenza di un movimento di prelievo
           switch(scelta){
               case 1 -> {
-                  descrizione="CASHOUT o SIMILARI";
-                  dettaglio="PCO - Cashout, acquisti con crypto etc.. (plusvalenza)";
+
                   TransferNO();
                 }
               case 2 -> {
-                  descrizione="PRELIEVO CRYPTO";
-                  dettaglio="PWN - Tolgo dai calcoli delle medie (no plusvalenza)";
+
                   TransferNO();
                 }
               case 3 -> {
-                  descrizione="TRASFERIMENTO TRA WALLET";
-                  dettaglio="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
+
                   TransferSI();
                 }
               case 4 -> {
-                    descrizione = "SCAMBIO CRYPTO DIFFERITO";
-                    dettaglio = "PSC - Scambio Crypto Differito";
+
                     TransferSI();
                    // System.out.println("Scambio");
 
                 }
-              default -> {descrizione="PRELIEVO CRYPTO";
+              default -> {
+
               TransferNO();}
           }
         }

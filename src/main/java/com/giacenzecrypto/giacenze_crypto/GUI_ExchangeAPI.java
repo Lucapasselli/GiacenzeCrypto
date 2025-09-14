@@ -5,6 +5,7 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -17,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -24,7 +26,11 @@ import java.util.logging.Logger;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -87,8 +93,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         jTextPane1 = new javax.swing.JTextPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         Binance_Tabella = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        Binance_BottoneAggiungi = new javax.swing.JButton();
+        Binance_BottoneRimuovi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -255,6 +261,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         jTextPane1.setToolTipText("");
         jScrollPane1.setViewportView(jTextPane1);
 
+        Binance_Tabella.setAutoCreateRowSorter(true);
         Binance_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -273,9 +280,19 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         });
         jScrollPane2.setViewportView(Binance_Tabella);
 
-        jButton1.setText("Aggiungi");
+        Binance_BottoneAggiungi.setText("Aggiungi");
+        Binance_BottoneAggiungi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Binance_BottoneAggiungiActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Rimuovi");
+        Binance_BottoneRimuovi.setText("Rimuovi");
+        Binance_BottoneRimuovi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Binance_BottoneRimuoviActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout Pannello_BinanceLayout = new javax.swing.GroupLayout(Pannello_Binance);
         Pannello_Binance.setLayout(Pannello_BinanceLayout);
@@ -287,9 +304,9 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pannello_BinanceLayout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Binance_BottoneAggiungi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(Binance_BottoneRimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -303,8 +320,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         .addComponent(jScrollPane2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(Pannello_BinanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(Binance_BottoneAggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Binance_BottoneRimuovi, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
 
@@ -505,7 +522,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                     
                 ModelloTabellaWallets.addRow(rigaTabella);            
             }
-
+        Binance_CaricaTabella();
     }
     
     
@@ -613,6 +630,49 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
      
     }//GEN-LAST:event_Bottone_AggiornaSelezionatiActionPerformed
 
+    private void Binance_BottoneAggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Binance_BottoneAggiungiActionPerformed
+        String token = JOptionPane.showInputDialog(
+                this,
+                "Inserisci il nome del token:",
+                "Nuovo Token",
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (token != null && !token.trim().isEmpty()) {
+            DatabaseH2.Pers_ExchangeTokens_Scrivi("Binance", token.trim().toUpperCase());
+        }
+
+        Binance_CaricaTabella();
+    }//GEN-LAST:event_Binance_BottoneAggiungiActionPerformed
+
+    private void Binance_BottoneRimuoviActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Binance_BottoneRimuoviActionPerformed
+        // TODO add your handling code here:
+        if (Binance_Tabella.getSelectedRow() >= 0) {
+            int righeselezionate[] = Tabelle.Funzioni_getRigheSelezionate(Binance_Tabella);
+            for (int riga : righeselezionate) {
+                String Token = Binance_Tabella.getModel().getValueAt(riga, 0).toString();
+                DatabaseH2.Pers_ExchangeTokens_Cancella("Binance", Token);
+
+            }
+
+        }
+        
+        
+        Binance_CaricaTabella();
+    }//GEN-LAST:event_Binance_BottoneRimuoviActionPerformed
+
+     private void Binance_CaricaTabella(){
+         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) Binance_Tabella.getModel();
+         Tabelle.Funzioni_PulisciTabella(ModelloTabellaCrypto);
+         Tabelle.ColoraTabellaSemplice(Binance_Tabella);
+         List<String> lista=DatabaseH2.Pers_ExchangeTokens_LeggiTokensExchange("Binance");
+         for (String item : lista) {
+             System.out.println(item);
+            ModelloTabellaCrypto.addRow(new Object[]{item});
+            }
+    }
+    
+    
     /**
      * @param args the command line arguments
      */
@@ -702,6 +762,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Binance_BottoneAggiungi;
+    private javax.swing.JButton Binance_BottoneRimuovi;
     private javax.swing.JTable Binance_Tabella;
     private javax.swing.JButton Bottone_Aggiorna;
     private javax.swing.JButton Bottone_AggiornaSelezionati;
@@ -717,8 +779,6 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     private javax.swing.JTable TabellaWallets;
     private javax.swing.JTextField TextField_ApiKey;
     private javax.swing.JTextField TextField_ApiSecret;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;

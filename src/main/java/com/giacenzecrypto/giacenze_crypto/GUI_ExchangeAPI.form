@@ -302,9 +302,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="jButton1" max="32767" attributes="0"/>
+                              <Component id="Binance_BottoneAggiungi" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="jButton2" min="-2" pref="146" max="-2" attributes="0"/>
+                              <Component id="Binance_BottoneRimuovi" min="-2" pref="146" max="-2" attributes="0"/>
                           </Group>
                           <Component id="jScrollPane2" min="-2" pref="304" max="-2" attributes="0"/>
                       </Group>
@@ -322,8 +322,8 @@
                               <Component id="jScrollPane2" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="jButton1" alignment="3" min="-2" pref="48" max="-2" attributes="0"/>
-                                  <Component id="jButton2" alignment="3" min="-2" pref="48" max="-2" attributes="0"/>
+                                  <Component id="Binance_BottoneAggiungi" alignment="3" min="-2" pref="48" max="-2" attributes="0"/>
+                                  <Component id="Binance_BottoneRimuovi" alignment="3" min="-2" pref="48" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -362,6 +362,7 @@
               <SubComponents>
                 <Component class="javax.swing.JTable" name="Binance_Tabella">
                   <Properties>
+                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                       <Table columnCount="1" rowCount="0">
                         <Column editable="false" title="Crypto" type="java.lang.Object"/>
@@ -383,15 +384,21 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JButton" name="jButton1">
+            <Component class="javax.swing.JButton" name="Binance_BottoneAggiungi">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Aggiungi"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Binance_BottoneAggiungiActionPerformed"/>
+              </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="jButton2">
+            <Component class="javax.swing.JButton" name="Binance_BottoneRimuovi">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Rimuovi"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Binance_BottoneRimuoviActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

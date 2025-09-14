@@ -9,12 +9,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -646,76 +646,198 @@ public class DatabaseH2 {
     
         
         
-        public static void Pers_ExchangeTokens_Scrivi(String Exchange,String Token) {
-        try {
-            
-            String ExchangeToken=Exchange+"_"+Token;
-            
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM EXCHANGETOKENS WHERE Exchange_Token = ?";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            checkStatement.setString(1, ExchangeToken);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                //Questa non dovrebbe servire a nulla perchè non devo mai aggiornare i valori di questa tabella ma solo cancellare e ricreare
-                String updateSQL = "UPDATE EXCHANGETOKENS SET Exchange = ?,Token = ? WHERE Exchange_Token = ?";
-                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
-                updateStatement.setString(1, Exchange);
-                updateStatement.setString(2, Token);
-                updateStatement.setString(3, ExchangeToken);
-                updateStatement.executeUpdate();
+    public static void Pers_ExchangeTokens_Scrivi(String Exchange, String Token) {
 
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO EXCHANGETOKENS (Exchange_Token, Exchange, Token) VALUES (?, ?, ?)";
-                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
-                insertStatement.setString(1, ExchangeToken);
-                insertStatement.setString(2, Exchange);
-                insertStatement.setString(3, Token);
-                insertStatement.executeUpdate();
+        Map<String, Object> values = new HashMap<>();
+        values.put("Exchange_Token", Exchange + "_" + Token);
+        values.put("Exchange", Exchange);
+        values.put("Token", Token);
+        U_ScriviRecord("EXCHANGETOKENS", values, "Exchange_Token",connectionPersonale);
 
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }      
         
-        public static List<String> Pers_ExchangeTokens_LeggiTokensExchange(String Exchange) {
-            List<String> lista= new ArrayList<>();
-        try {
-            String checkIfExistsSQL = "SELECT Token FROM EXCHANGETOKENS WHERE Exchange = ?";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            checkStatement.setString(1, Exchange);
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        lista.add(resultSet.getString("Token"));
+    public static void U_ScriviRecord(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn,Connection con) {
+    try {
+        // Prendo il valore della chiave primaria
+        Object primaryKeyValue = fieldValues.get(primaryKeyColumn);
+        if (primaryKeyValue == null) {
+            throw new IllegalArgumentException("La mappa deve contenere il campo chiave: " + primaryKeyColumn);
+        }
+
+        // 1. Controllo se la riga esiste
+        String checkSQL = "SELECT COUNT(*) FROM " + tableName + " WHERE " + primaryKeyColumn + " = ?";
+        try (PreparedStatement checkStmt = con.prepareStatement(checkSQL)) {
+            checkStmt.setObject(1, primaryKeyValue);
+            ResultSet rs = checkStmt.executeQuery();
+            boolean exists = false;
+            if (rs.next()) {
+                exists = rs.getInt(1) > 0;
+            }
+
+            if (exists) {
+                // 2. UPDATE dinamico
+                StringBuilder updateSQL = new StringBuilder("UPDATE " + tableName + " SET ");
+                for (String col : fieldValues.keySet()) {
+                    if (!col.equals(primaryKeyColumn)) {
+                        updateSQL.append(col).append(" = ?, ");
                     }
                 }
-            
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+                updateSQL.setLength(updateSQL.length() - 2); // tolgo ultima virgola
+                updateSQL.append(" WHERE ").append(primaryKeyColumn).append(" = ?");
+
+                try (PreparedStatement updateStmt = con.prepareStatement(updateSQL.toString())) {
+                    int i = 1;
+                    for (Map.Entry<String, Object> entry : fieldValues.entrySet()) {
+                        if (!entry.getKey().equals(primaryKeyColumn)) {
+                            updateStmt.setObject(i++, entry.getValue());
+                        }
+                    }
+                    updateStmt.setObject(i, primaryKeyValue); // condizione WHERE
+                    updateStmt.executeUpdate();
+                }
+
+            } else {
+                // 3. INSERT dinamico
+                StringBuilder insertSQL = new StringBuilder("INSERT INTO " + tableName + " (");
+                StringBuilder valuesSQL = new StringBuilder("VALUES (");
+                for (String col : fieldValues.keySet()) {
+                    insertSQL.append(col).append(", ");
+                    valuesSQL.append("?, ");
+                }
+                insertSQL.setLength(insertSQL.length() - 2);
+                valuesSQL.setLength(valuesSQL.length() - 2);
+                insertSQL.append(") ").append(valuesSQL).append(")");
+
+                try (PreparedStatement insertStmt = con.prepareStatement(insertSQL.toString())) {
+                    int i = 1;
+                    for (Object value : fieldValues.values()) {
+                        insertStmt.setObject(i++, value);
+                    }
+                    insertStmt.executeUpdate();
+                }
+            }
         }
-        return lista;
+
+    } catch (SQLException ex) {
+        Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
     }
+}
+
         
-        public static void Pers_ExchangeTokens_Cancella(String Exchange) {
-               //completamente da gestire
+    public static List<Map<String, Object>> U_LeggiRecords(
+            String tableName,
+            List<String> columnsToRead,
+            Map<String, Object> filters,
+            Connection con) {
+
+        List<Map<String, Object>> results = new ArrayList<>();
+
         try {
-            String checkIfExistsSQL = "DELETE FROM EXCHANGETOKENS WHERE Exchange_Token = ?";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            checkStatement.setString(1, Exchange);
-            checkStatement.executeUpdate();
+            // 1. Costruisco la SELECT
+            String cols = (columnsToRead == null || columnsToRead.isEmpty())
+                    ? "*"
+                    : String.join(", ", columnsToRead);
+
+            StringBuilder sql = new StringBuilder("SELECT " + cols + " FROM " + tableName);
+
+            if (filters != null && !filters.isEmpty()) {
+                sql.append(" WHERE ");
+                for (String col : filters.keySet()) {
+                    sql.append(col).append(" = ? AND ");
+                }
+                sql.setLength(sql.length() - 5); // tolgo ultimo " AND "
+            }
+
+            try (PreparedStatement stmt = con.prepareStatement(sql.toString())) {
+                // 2. Aggiungo i parametri del filtro
+                if (filters != null) {
+                    int i = 1;
+                    for (Object value : filters.values()) {
+                        stmt.setObject(i++, value);
+                    }
+                }
+
+                // 3. Eseguo query e riempio la lista
+                try (ResultSet rs = stmt.executeQuery()) {
+                    ResultSetMetaData meta = rs.getMetaData();
+                    int colCount = meta.getColumnCount();
+
+                    while (rs.next()) {
+                        Map<String, Object> row = new HashMap<>();
+                        for (int i = 1; i <= colCount; i++) {
+                            row.put(meta.getColumnName(i), rs.getObject(i));
+                        }
+                        results.add(row);
+                    }
+                }
+            }
 
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+    return results;
+}
+      
+        
+        
+    public static List<String> Pers_ExchangeTokens_LeggiTokensExchange(String Exchange) {
+        Map<String, Object> filters = new HashMap<>();
+        filters.put("Exchange", Exchange);
+
+        //Questa la lista di tutti i token dell'exchange
+        List<Map<String, Object>> rows = U_LeggiRecords(
+                "EXCHANGETOKENS",
+                List.of("Token".toUpperCase()),
+                filters,
+                connectionPersonale
+        );
+
+        // Ritorno solo la lista di String relativa alla colonna Token
+        List<String> tokens = rows.stream()
+                .map(r -> (String) r.get("Token".toUpperCase()))
+                .toList();
+        
+        return tokens;
+    }
+        
+        public static void Pers_ExchangeTokens_Cancella(String Exchange,String Token) {
+        //completamente da gestire
+        Map<String, Object> filters = new HashMap<>();
+        filters.put("Exchange_Token", Exchange + "_" + Token);
+        U_CancellaRecords("EXCHANGETOKENS", filters);
+
     }    
         
-        
+     public static void U_CancellaRecords(String tableName, Map<String, Object> filters) {
+    try {
+        if (filters == null || filters.isEmpty()) {
+            throw new IllegalArgumentException("È necessario specificare almeno una condizione per cancellare i record.");
+        }
+
+        // 1. Costruisco la DELETE dinamica
+        StringBuilder sql = new StringBuilder("DELETE FROM " + tableName + " WHERE ");
+        for (String col : filters.keySet()) {
+            sql.append(col).append(" = ? AND ");
+        }
+        sql.setLength(sql.length() - 5); // rimuovo ultimo " AND "
+
+        try (PreparedStatement stmt = connectionPersonale.prepareStatement(sql.toString())) {
+            // 2. Setto i parametri
+            int i = 1;
+            for (Object value : filters.values()) {
+                stmt.setObject(i++, value);
+            }
+
+            // 3. Eseguo la DELETE
+            stmt.executeUpdate();
+        }
+
+    } catch (SQLException ex) {
+        Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+    }
+}
+   
     
             public static void Pers_ExchangeApi_Cancella(String Exchange) {
                //completamente da gestire

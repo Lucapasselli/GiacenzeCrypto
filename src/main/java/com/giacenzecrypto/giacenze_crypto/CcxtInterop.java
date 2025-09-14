@@ -279,6 +279,8 @@ private static Path getNodeExePath() {
                 }
             }
             
+            DatabaseH2.Pers_ExchangeTokens_LeggiTokensExchange("Binance");
+            
             //Recupero la lista dei token con le varie somme e prendo solo quelli che hanno una somma diversa da zero
             //solo su quelli vado a cercare i trades, infatti i token che vanno a zero molto probabilmente non sono stati scambiati oltre le varie conversions
             
@@ -412,10 +414,19 @@ private static Path getNodeExePath() {
                     //Tokens=Tokens+","+m.Moneta;
                 }
             }
+            //Come ultima cosa aggiungo i token Forzati manualmente alla lista
+            List<String> lis=DatabaseH2.Pers_ExchangeTokens_LeggiTokensExchange("Binance");
+            for (String l:lis){
+                setTokens.add(l);
+            }
+            
+            //Butto tutti i token nella stringa da passare allo script
             String tok="";
             for (String t:setTokens){
                 tok=tok+","+t;
             }
+            
+            //Come ultima cosa aggiungo i token Forzati manualmente alla lista
             
             //3 - RECUPERO I TRADES DEI TOKEN COINVOLTI + QUELLI RICHIESTI IN ORIGINE
             //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(

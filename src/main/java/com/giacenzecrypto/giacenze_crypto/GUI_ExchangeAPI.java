@@ -667,7 +667,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
          Tabelle.ColoraTabellaSemplice(Binance_Tabella);
          List<String> lista=DatabaseH2.Pers_ExchangeTokens_LeggiTokensExchange("Binance");
          for (String item : lista) {
-             System.out.println(item);
+            // System.out.println(item);
             ModelloTabellaCrypto.addRow(new Object[]{item});
             }
     }

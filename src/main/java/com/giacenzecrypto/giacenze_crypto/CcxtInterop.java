@@ -360,6 +360,12 @@ private static Path getNodeExePath() {
             int chiamate=estrazioni.length+1;
             int j=0;
             for (String script : estrazioni) {
+                //Interrompo la funzione se ho premuto interrompi o se ho degli errori bloccanti sulla funzione
+                if (CDC_Grafica.InterrompiCiclo||progress.ErroriNodeJS())
+                {
+                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    return;
+                }
                 j++;
                 progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
                 JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, "", script);
@@ -435,9 +441,15 @@ private static Path getNodeExePath() {
             progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
             JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, tok, "Binance_Trades");
             lista.addAll(getListaMovimento(json, exchangeId));
+            if (CDC_Grafica.InterrompiCiclo||progress.ErroriNodeJS())
+                {
+                    JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    return;
+                }
 
             //4 - IMPORTO TUTTO NEL DATABASE
             //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
+            //Se non è andato tutto a buon fine non porto a termine l'importazione
             Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
 
         }

@@ -1,0 +1,107 @@
+name: Windows
+
+env:
+  PROJECT_NAME: Giacenze_Crypto
+  JAVA_VERSION: 21
+  BUILD_DIR: build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup GraalVM on Windows
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'graalvm'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+          
+      - name: Estrai versione dal pom.xml
+        id: get-version
+        shell: bash
+        run: |
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "VERSIONE=$VERSION" >> $GITHUB_ENV
+
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests  
+
+      - name: Elenca file generati in target/
+        run: dir target
+
+      - name: Copy extra resources
+        run: |
+            mkdir build
+            mkdir build\Immagini
+            mkdir build\Scripts
+            copy Scripts\* build\Scripts\
+            copy Immagini\* build\Immagini\
+            copy logo.png build\
+            copy GestitiCoincap.csv build\
+            copy target\Giacenze_Crypto-${{ env.VERSIONE }}-jar-with-dependencies.jar build\Giacenze_Crypto.jar
+
+      - name: Build Windows app-image
+        run: |
+          jpackage ^
+            --type app-image ^
+            --input build ^
+            --dest out\windows ^
+            --name %PROJECT_NAME% ^
+            --main-jar Giacenze_Crypto.jar ^
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto ^
+            --icon logo.png ^
+            --app-version %VERSIONE% ^
+            --vendor Luca
+
+      - name: Build MSIX package
+        run: |
+          jpackage ^
+            --type msix ^
+            --input build ^
+            --dest out\msix ^
+            --name %PROJECT_NAME% ^
+            --main-jar Giacenze_Crypto.jar ^
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto ^
+            --icon logo.png ^
+            --app-version %VERSIONE% ^
+            --vendor Luca ^
+            --win-menu ^
+            --win-shortcut ^
+            --win-dir-chooser ^
+            --win-upgrade-uuid "123e4567-e89b-12d3-a456-426614174000"
+
+      - name: Import PFX certificate
+        shell: powershell
+        run: |
+          $pfxBytes = [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}")
+          Set-Content -Path cert.pfx -Value $pfxBytes -Encoding Byte
+          Import-PfxCertificate -FilePath cert.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ secrets.PFX_PASSWORD }}" -Force -AsPlainText)
+
+      - name: Sign MSIX package
+        shell: powershell
+        run: |
+          $cert = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -like "*GiacenzeCrypto*" } | Select-Object -First 1
+          $msixPath = Get-ChildItem out\msix\*.msix | Select-Object -First 1
+          & signtool sign /fd SHA256 /a /f cert.pfx /p "${{ secrets.PFX_PASSWORD }}" $msixPath.FullName
+
+      - name: Debug Windows output
+        run: |
+            echo "Contenuto cartella app-image:"
+            dir out\windows\%PROJECT_NAME%
+            echo "Contenuto cartella MSIX:"
+            dir out\msix
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
+          path: out/windows/${{ env.PROJECT_NAME }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_MSIX_Signed
+          path: out/msix

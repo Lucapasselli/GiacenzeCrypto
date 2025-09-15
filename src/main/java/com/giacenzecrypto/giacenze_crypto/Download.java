@@ -294,8 +294,11 @@ private Timer timer = new Timer(1000, new ActionListener() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        CDC_Grafica.InterrompiCiclo=true;       
+        Download.FineThread=true;
 
-        CDC_Grafica.InterrompiCiclo=false;
+               
+       // CDC_Grafica.InterrompiCiclo=false;
         LoggerGC.disableTextPaneOut();
         LoggerGC.disableTextPaneErr();
 
@@ -318,6 +321,8 @@ private Timer timer = new Timer(1000, new ActionListener() {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
      //   System.out.println("Finestra Attesa Aperta");
+     CDC_Grafica.InterrompiCiclo=false;
+     Download.FineThread=false;
      if (!nascondiLog) {
        /* PrintStream printStream = new PrintStream(new CustomOutputStream(textPane));
         System.setOut(printStream);
@@ -329,6 +334,11 @@ private Timer timer = new Timer(1000, new ActionListener() {
         //System.out.println("Finestra Attesa Aperta");
     }//GEN-LAST:event_formWindowOpened
 
+    
+    public boolean ErroriNodeJS(){
+         return textPaneErrori.getText().toLowerCase().contains("Node.js terminato con codice 1".toLowerCase());
+    }
+    
     /**
      * @param args the command line arguments
      */

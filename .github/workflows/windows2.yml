@@ -17,7 +17,7 @@ jobs:
       - name: Setup GraalVM on Windows
         uses: actions/setup-java@v4
         with:
-          distribution: 'graalvm'
+          distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
           

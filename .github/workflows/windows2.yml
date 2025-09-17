@@ -47,32 +47,32 @@ jobs:
 
       - name: Build Windows app-image
         run: |
-          jpackage ^
-            --type app-image ^
-            --input build ^
-            --dest out\windows ^
-            --name %PROJECT_NAME% ^
-            --main-jar Giacenze_Crypto.jar ^
-            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto ^
-            --icon logo.png ^
-            --app-version %VERSIONE% ^
+          jpackage `
+            --type app-image `
+            --input build `
+            --dest out\windows `
+            --name %PROJECT_NAME% `
+            --main-jar Giacenze_Crypto.jar `
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --icon logo.png `
+            --app-version %VERSIONE% `
             --vendor Luca
 
       - name: Build MSIX package
         run: |
-          jpackage ^
-            --type msix ^
-            --input build ^
-            --dest out\msix ^
-            --name %PROJECT_NAME% ^
-            --main-jar Giacenze_Crypto.jar ^
-            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto ^
-            --icon logo.png ^
-            --app-version %VERSIONE% ^
-            --vendor Luca ^
-            --win-menu ^
-            --win-shortcut ^
-            --win-dir-chooser ^
+          jpackage `
+            --type msix `
+            --input build `
+            --dest out\msix `
+            --name %PROJECT_NAME% `
+            --main-jar Giacenze_Crypto.jar `
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --icon logo.png `
+            --app-version %VERSIONE% `
+            --vendor Luca `
+            --win-menu `
+            --win-shortcut `
+            --win-dir-chooser `
             --win-upgrade-uuid "123e4567-e89b-12d3-a456-426614174000"
 
       - name: Import PFX certificate

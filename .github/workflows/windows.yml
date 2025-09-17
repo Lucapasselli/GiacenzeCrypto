@@ -1,13 +1,10 @@
 name: Windows
-
 env:
   PROJECT_NAME: Giacenze_Crypto
   JAVA_VERSION: 21
   BUILD_DIR: build
-
 on:
   workflow_dispatch:
-
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -16,7 +13,7 @@ jobs:
       - name: Setup GraalVM on Windows
         uses: actions/setup-java@v4
         with:
-          distribution: 'graalvm'
+          distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
           
@@ -60,15 +57,32 @@ jobs:
             --icon logo.ico `
             --app-version $env:VERSIONE `
             --vendor Luca
-          
-    #  - name: Move resources to root (Windows)
-    #    run: |
-    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/immagini" -Destination "out/windows/$env:PROJECT_NAME/immagini"
-    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/logo.png" -Destination "out/windows/$env:PROJECT_NAME/logo.png"
-    #        Move-Item -Path "out/windows/$env:PROJECT_NAME/app/GestitiCoincap.csv" -Destination "out/windows/$env:PROJECT_NAME/GestitiCoincap.csv"
+
+      - name: Build MSI installer package
+        shell: pwsh
+        run: |
+          jpackage `
+            --type msi `
+            --input build `
+            --dest out/msi `
+            --name $env:PROJECT_NAME `
+            --main-jar Giacenze_Crypto.jar `
+            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
+            --arguments "--risorse app/" `
+            --icon logo.ico `
+            --app-version $env:VERSIONE `
+            --vendor Luca `
+            --win-menu `
+            --win-shortcut `
+            --win-dir-chooser `
+            --win-upgrade-uuid "123e4567-e89b-12d3-a456-426614174000"
             
       - uses: actions/upload-artifact@v4
         with:
           name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_Portable_Windows
           path: out/windows/${{ env.PROJECT_NAME }}
           
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GiacenzeCrypto_${{ env.VERSIONE }}_Beta_MSI_Installer
+          path: out/msi

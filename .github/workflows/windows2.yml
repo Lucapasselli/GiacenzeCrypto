@@ -51,11 +51,11 @@ jobs:
             --type app-image `
             --input build `
             --dest out\windows `
-            --name %PROJECT_NAME% `
+            --name $env:PROJECT_NAME `
             --main-jar Giacenze_Crypto.jar `
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
             --icon logo.png `
-            --app-version %VERSIONE% `
+            --app-version $env:VERSIONE `
             --vendor Luca
 
       - name: Build MSIX package
@@ -64,11 +64,11 @@ jobs:
             --type msix `
             --input build `
             --dest out\msix `
-            --name %PROJECT_NAME% `
+            --name $env:PROJECT_NAME `
             --main-jar Giacenze_Crypto.jar `
             --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto `
             --icon logo.png `
-            --app-version %VERSIONE% `
+            --app-version $env:VERSIONE `
             --vendor Luca `
             --win-menu `
             --win-shortcut `

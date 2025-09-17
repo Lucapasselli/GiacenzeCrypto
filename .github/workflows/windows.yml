@@ -75,7 +75,8 @@ jobs:
             --win-menu `
             --win-shortcut `
             --win-dir-chooser `
-            --win-upgrade-uuid "123e4567-e89b-12d3-a456-426614174000"
+            --win-upgrade-uuid "08c50715-405a-4cff-9186-9a4b0062aff0" `
+            --win-per-user-install
             
       - uses: actions/upload-artifact@v4
         with:

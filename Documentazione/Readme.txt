@@ -25,6 +25,22 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.46
+Nuove Implementazioni : 
+ - Aggiunto possibilità di scegliere che le commissioni non generenino plusvalenze 
+    per attivare andare su "Opzioni" - "Opzioni di Calcolo" e biffare l'opzione "Le commissioni non generano plusvalenza"
+ - Nella classificazione dei prelievi aggiunto possibilità di classificare un movimento in uscita come "Burn", utile per gli NFT.
+    (Questo movimento non genererà plusvalenze)
+ - Nella funzione "Classificazione Depositi/Prelievi" ora è possibile classificare più movimenti utilizzando la selezione multipla.
+    (Per farlo selezionare più righi e quindi classifica movimenti, attenzione che i movimenti selezionati devono essere dello stesso tipo, es. solo depositi o solo prelievi)
+ - Aggiunto il pulsante "Exchange API" nella pagina principale dove si potranno inserire gli api in sola lettura degli exchange crypto (per ora solo Binance)
+    (dalla stessa funzione è poi possibile scaricare i movimenti)
+    Per Binance è consigliabile usare le Api Tasse
+    NB. E' preferibile non scaricare più di 6 mesi di storico per risultati più attendibili visto che molti exchange hanno questo limite
+    NB 2. Su binance non è gestito per ora lo staking di SOL ed ETH.   
+Correzione Bug : 
+ - Corretto problema che in alcuni casi impediva il corretto funzionamento dei filtri su colonna nella tabella principale.
+
 ver. 1.0.45
 Nuove Implementazioni : 
  - Aggiunto un nuovo filtro nella tabella principale che trova i movimenti a cui manca una parte delle stack del LiFo (tipicamente mancano acquisti per coprire la transazione)

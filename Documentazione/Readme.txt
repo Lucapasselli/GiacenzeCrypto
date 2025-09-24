@@ -37,7 +37,8 @@ Nuove Implementazioni :
     (dalla stessa funzione è poi possibile scaricare i movimenti)
     Per Binance è consigliabile usare le Api Tasse
     NB. E' preferibile non scaricare più di 6 mesi di storico per risultati più attendibili visto che molti exchange hanno questo limite
-    NB 2. Su binance non è gestito per ora lo staking di SOL ed ETH.   
+    NB 2. Su binance non è gestito per ora lo staking di SOL ed ETH.  
+ - Aggiunto file di log per la memorizzazione degli errori e delle operazioni fatte (il file si trova nella root del programma)	
 Correzione Bug : 
  - Corretto problema che in alcuni casi impediva il corretto funzionamento dei filtri su colonna nella tabella principale.
 

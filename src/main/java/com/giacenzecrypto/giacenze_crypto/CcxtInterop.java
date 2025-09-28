@@ -138,6 +138,53 @@ public class CcxtInterop {
     System.out.println("ccxt installato con successo");
 }
 
+ public static void installModuleNode(String Modulo) throws IOException, InterruptedException {
+    //Per il momento mi servono installati ccxt,express e cors    
+        
+        Path nodePath = getNodeExePath();
+        System.out.println("nodePath="+nodePath);
+        
+    Path nodeModulesDir = NODE_DIR.resolve("node_modules");
+    //Path nodeModulesDir = nodeBaseDir.resolve("node_modules").toAbsolutePath();
+    Path ModuloDir = nodeModulesDir.resolve(Modulo);
+
+    if (Files.exists(ModuloDir) && Files.isDirectory(ModuloDir)) {
+        System.out.println("express già installato in: " + ModuloDir);
+        return;
+    }    
+    
+    Path npmPath = getNpmPath();
+    System.out.println("npmPath="+npmPath);
+    
+
+    System.out.println("Installo "+Modulo+"...");
+    ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", Modulo);
+    System.out.println(Statiche.getWorkingDirectory() + "tools/node");
+    builder.directory(NODE_DIR.toFile());
+    //builder.directory(nodeModulesDir.toFile());
+    //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
+    System.out.println("Comando: " + String.join(" ", builder.command()));
+    System.out.println("Working directory: " + builder.directory().getAbsolutePath());
+    Map<String, String> env = builder.environment();
+
+    // Inserisci la directory che contiene node.exe nel PATH
+    String currentPath = env.get("PATH");
+    env.put("PATH", nodePath.getParent().toAbsolutePath().toString() + File.pathSeparator + currentPath);
+
+    Process process = builder.start();
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+        String line;
+        while ((line = reader.readLine()) != null) System.out.println("[npm] " + line);
+        while ((line = errReader.readLine()) != null) System.err.println("[npm-err] " + line);
+    }
+
+    int exitCode = process.waitFor();
+    if (exitCode != 0) throw new RuntimeException("npm install "+Modulo+" fallito");
+    System.out.println(Modulo+" installato con successo");
+}    
+    
+    
     private static Path getNpmPath() {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {

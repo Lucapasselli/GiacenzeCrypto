@@ -2008,7 +2008,8 @@ return MappaLista;
     }
 
     public static boolean isApiKeyValidaEtherscan(String ApiKey) {
-        String ETHERSCAN_URL = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=";
+       // return true;
+        String ETHERSCAN_URL = "https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_blockNumber&apikey=";
         OkHttpClient client = new OkHttpClient();
         String url = ETHERSCAN_URL + ApiKey;
         Request request = new Request.Builder().url(url).build();

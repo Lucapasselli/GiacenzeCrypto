@@ -25,6 +25,11 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.47
+Correzione Bug : 
+ - Eherscan ha deprecato le Api V1, il programma usava ancora quelle Api per verificare se la chiave era valida.
+   Questo causava l'impossibilità di scaricare nuove transazioni dalle chain, sistemata la problematica.
+
 ver. 1.0.46
 Nuove Implementazioni : 
  - Aggiunto possibilità di scegliere che le commissioni non generenino plusvalenze 

@@ -30,10 +30,12 @@ public class DatabaseH2 {
 
     static String jdbcUrl = Statiche.getDBPrincipale();
     static String jdbcUrl2 = Statiche.getDBPersonale();
+    static String jdbcPrezzi = Statiche.getDBPrezzi();
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;
     static Connection connectionPersonale;
+    static Connection connectionPrezzi;
     static Map<String, String> Mappa_Wallet_Gruppo = new TreeMap<>();//memorizzo anche qua l'associazione dei gruppi per rendere più veloce la ricerca
 
     //per compattare database comando -> SHUTDOWN COMPACT //da valutare quando farlo
@@ -42,11 +44,23 @@ public class DatabaseH2 {
         try {
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
             connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
+            connectionPrezzi = DriverManager.getConnection(jdbcPrezzi, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
         /*    String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
             PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();*/
+        
 
+            connectionPrezzi.createStatement().execute("CREATE TABLE IF NOT EXISTS PrezziNew (" +
+                        "timestamp BIGINT NOT NULL, " +
+                        "exchange VARCHAR(100) NOT NULL, " +
+                        "symbol VARCHAR(100) NOT NULL, " +
+                        "rete VARCHAR(100) NOT NULL, " +
+                        "address VARCHAR(255) NOT NULL, " +
+                        "prezzo DOUBLE, " +
+                        "PRIMARY KEY (timestamp, exchange, symbol, rete, address)" +
+                        ")");
+        
             String createTableSQL = "CREATE TABLE IF NOT EXISTS Prezzo_ora_Address_Chain  (ora_address_chain VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
             PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();

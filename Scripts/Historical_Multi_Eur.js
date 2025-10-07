@@ -1,5 +1,5 @@
-#!/usr/bin/env node
-import ccxt from "../test/test/tools/node/node_modules/ccxt/dist/ccxt.cjs";
+//#!/usr/bin/env node
+const ccxt = require('ccxt');
 
 // Trova il miglior simbolo disponibile per XXX/EUR
 async function findBestPair(ex, baseSymbol) {
@@ -139,6 +139,7 @@ async function main() {
                 combined[ts][ex_id] = o;
             }
         }
+
 
         const sorted_timestamps = Object.keys(combined).map(Number).sort((a, b) => a - b);
         const output = sorted_timestamps.map(ts => ({

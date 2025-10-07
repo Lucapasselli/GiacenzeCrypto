@@ -41,6 +41,11 @@ public class Statiche {
         return "jdbc:h2:"+getWorkingDirectory()+"personale";
     }
     
+    public static String getDBPrezzi(){
+        return "jdbc:h2:"+getWorkingDirectory()+"prezzi";
+    }
+    
+    
     public static String getFileUSDEUR() {
         return getWorkingDirectory() + "cambioUSDEUR.db";
     }

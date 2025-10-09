@@ -639,6 +639,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         );
 
         if (token != null && !token.trim().isEmpty()) {
+            //Questo è l'elenco dei token gestiti di Binance di cui devo cercare le coppie
             DatabaseH2.Pers_ExchangeTokens_Scrivi("Binance", token.trim().toUpperCase());
         }
 

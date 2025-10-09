@@ -107,6 +107,18 @@ public class LoggerGC {
     public static void logError(String message, Throwable t) {
         logger.log(Level.SEVERE, message, t);
     }
+    
+    public static String getCurrentClassAndMethod(int livello) {
+    StackTraceElement element = Thread.currentThread().getStackTrace()[livello];
+    return element.getClassName() + "." + element.getMethodName();
+}
+    public static void ScriviErrore(String ex) {
+        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+"\n"+ex);
+}
+    public static void ScriviErrore(Throwable ex) {
+        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+"\n"+ex.getMessage());
+}
+
 
     public static void close() {
         if (fileHandler != null) {

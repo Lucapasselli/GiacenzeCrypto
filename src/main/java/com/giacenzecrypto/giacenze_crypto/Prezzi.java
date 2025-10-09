@@ -1926,74 +1926,7 @@ for (int i=0;i<ArraydataIni.size();i++){
     }    
     
     
-    public static String Obsoleto_RecuperaTassidiCambiodaSimbolo(String Crypto,String DataIniziale) {          
-        String ok = null;
-        //https://cryptohistory.one/api/USDT/2022-08-12/2023-01-14
-        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("31536000000");
-        String DataFinale=OperazioniSuDate.ConvertiDatadaLong(dataFin);
-        String apiUrl = "https://cryptohistory.one/api/" + Crypto +"/"+DataIniziale+"/"+DataFinale;
-       // if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get("https://cryptohistory.one/api/" + Crypto +"/"+DataIniziale)==null){    
-            try {
-                URL url = new URI(apiUrl).toURL();
-                            //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-            if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
-                return null;
-            }
-            CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
-                URLConnection connection = url.openConnection();
-               // System.out.println(url);
-               System.out.println("Recupero prezzi "+Crypto+" da Cryptohistory da data "+DataIniziale);
-                try (BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
 
-                    while ((line = in.readLine()) != null) {
-                        response.append(line);
-
-                    }
-
-                    Gson gson = new Gson();
-                    JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
-                    
-                    //questa mappa permette di non rifare le stesse richieste api nella stessa sessione
-
-                    if (pricesArray != null || !pricesArray.isEmpty()) {
-                        for (JsonElement element : pricesArray) {
-                            JsonObject ogg = element.getAsJsonObject();
-                            String DataRichiesta=ogg.get("date").getAsString();
-                           // CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put("https://cryptohistory.one/api/" + Crypto+"/"+DataRichiesta, "ok");
-                            String Data =ogg.get("real_date").getAsString();
-                            String PrezzoEuro=ogg.get("price_usd").getAsString();
-                            if (!DataRichiesta.equals(Data))DatabaseH2.XXXEUR_Scrivi(DataRichiesta + " " + Crypto, "ND",false);
-                            PrezzoEuro=ConvertiUSDEUR(PrezzoEuro,Data);
-                            DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
-                           // System.out.println("Prezzi.RecuperaTassiCambiodaSimbolo "+Data + " " + Crypto+" - "+PrezzoEuro);
-                            
-                        }
-                    } else {
-                        ok = null;
-                    }
-                } catch (IOException ex) {
-                    ok = null;
-                }
-                TimeUnit.SECONDS.sleep(1);
-                
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-                ok = null;
-            } catch (IOException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-                ok = null;
-            } catch (InterruptedException ex) {
-                ok = null;
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-            }//}
-        return ok;
-    }
-    
 
  
     
@@ -2391,62 +2324,7 @@ for (int i=0;i<ArraydataIni.size();i++){
         return ok;
     }
         
-     public static String Obsoleto_RecuperaCoinsCryptoHistory() {
-        String ok = "ok";
-        //come prima cosa recupero l'ora atuale
-        //poi la verifico con quella dell'ultimo scarico da binance e se sono passate almeno 24h allora richiedo la nuova lista
-        //altrimenti tengo buona quella presente nel database
-        long adesso = System.currentTimeMillis();
-        String dataUltimoScaricoString = DatabaseH2.Opzioni_Leggi("Data_Lista_CryptoHistory");
-        long dataUltimoScarico = 0;
-        if (dataUltimoScaricoString != null) {
-            dataUltimoScarico = Long.parseLong(dataUltimoScaricoString);
-        }
-        if (adesso > (dataUltimoScarico + 86400000)) {
-            try {
-                String apiUrl = "https://cryptohistory.one/api/list";
-                URL url = new URI(apiUrl).toURL();
-                URLConnection connection = url.openConnection();
-                System.out.println("Recupero token gestiti da Cryptohistory");
-               // System.out.println(url);
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
-                    //System.out.println(line);
-                }
-                List<String[]> gestiti = new ArrayList<>();
-                String jsonString=response.toString();
-               JsonElement jsonElement = JsonParser.parseString(jsonString);
 
-                if (jsonElement.isJsonArray()) {
-                    JsonArray jsonArray = jsonElement.getAsJsonArray();
-                    for (JsonElement element : jsonArray) {
-                        JsonObject jsonObject = element.getAsJsonObject();
-                        String Gestito[]=new String[2];
-                        Gestito[0]=(jsonObject.get("ticker").getAsString());
-                        Gestito[1]=(jsonObject.get("name").getAsString());
-                       gestiti.add(Gestito);
-
-
-                    }
-                    DatabaseH2.Obsoleto_GestitiCryptohistory_ScriviNuovaTabella(gestiti);
-                    DatabaseH2.Opzioni_Scrivi("Data_Lista_CryptoHistory", String.valueOf(adesso));
-                } else {
-                    ok = null;
-                }
-
-                TimeUnit.SECONDS.sleep(1);
-            } catch (JsonSyntaxException | IOException | InterruptedException ex) {
-                ok = null;
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return ok;
-    }   
      
         public static String RecuperaCoinsCoinCap() {
         String ok = "ok";

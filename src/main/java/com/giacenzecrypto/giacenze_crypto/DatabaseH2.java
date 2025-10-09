@@ -165,7 +165,7 @@ public class DatabaseH2 {
                 preparedStatement.setString(2, "Pippo");
                 preparedStatement.executeUpdate();*/
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
             
         }
         return successo;
@@ -187,7 +187,7 @@ public class DatabaseH2 {
                 checkStatement.executeUpdate();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
     
@@ -247,7 +247,7 @@ public class DatabaseH2 {
             //Lavorare con le mappe risulta infatti + veloce del DB e uso quella come base per le ricerche
             CDC_Grafica.Mappa_EMoney.put(Moneta, Data);
         } catch (SQLException ex) {
-        Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        LoggerGC.ScriviErrore(ex);
         throw new RuntimeException("Errore durante l'accesso al database: " + ex.getMessage(), ex);
     }
     }
@@ -266,13 +266,15 @@ public class DatabaseH2 {
             statement.setString(1, Moneta);
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected == 0) {
-                Logger.getLogger(DatabaseH2.class.getName()).log(Level.WARNING, "Nessuna riga eliminata per Moneta: " + Moneta);
+                //Logger.getLogger(DatabaseH2.class.getName()).log(Level.WARNING, "Nessuna riga eliminata per Moneta: " + Moneta);
+                System.out.println("DatabaseH2.Pers_Emoney_Cancella - Nessuna riga eliminate per Moneta: "+Moneta);
             } else {
                 CDC_Grafica.Mappa_EMoney.remove(Moneta);
             }
             statement.close();
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, "Errore durante l'eliminazione di Moneta: " + Moneta, ex);
+            //Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, "Errore durante l'eliminazione di Moneta: " + Moneta, ex);
+            LoggerGC.ScriviErrore(ex);
             throw new RuntimeException("Errore durante l'accesso al database: " + ex.getMessage(), ex);
         }
     }
@@ -293,7 +295,7 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
@@ -319,45 +321,42 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Mappa_Wallet;
     }    
    
-        public static void Pers_Wallets_Scrivi(String Wallet,String Rete) {
-        try {
-            
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM WALLETS WHERE Wallet_Rete = ?";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            checkStatement.setString(1, Wallet+"_"+Rete);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                //Questa non dovrebbe servire a nulla perchè non devo mai aggiornare i valori di questa tabella ma solo cancellare e ricreare
-                String updateSQL = "UPDATE WALLETS SET Wallet = ? WHERE Wallet_Rete = ?";
-                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
-                updateStatement.setString(1, Wallet);
-                updateStatement.setString(2, Wallet+"_"+Rete);
-                updateStatement.executeUpdate();
-
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO WALLETS (Wallet_Rete, Wallet, Rete) VALUES (?, ?, ?)";
-                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
-                insertStatement.setString(1, Wallet+"_"+Rete);
-                insertStatement.setString(2, Wallet);
-                insertStatement.setString(3, Rete);
-                insertStatement.executeUpdate();
-
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+    
+        
+    public static void Pers_Wallets_Scrivi(String Wallet, String Rete) {
+      /*  if (Wallet == null || Wallet.isEmpty()) {
+            throw new IllegalArgumentException("Wallet non può essere nullo o vuoto.");
         }
-    }    
+        if (Rete == null || Rete.isEmpty()) {
+            throw new IllegalArgumentException("Rete non può essere nulla o vuota.");
+        }*/
+
+        String walletRete = Wallet + "_" + Rete;
+
+        String sql = """
+        MERGE INTO WALLETS (Wallet_Rete, Wallet, Rete)
+        KEY (Wallet_Rete)
+        VALUES (?, ?, ?)
+    """;
+
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, walletRete);
+            ps.setString(2, Wallet);
+            ps.setString(3, Rete);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+        
+        
+        
         
         public static void Pers_Wallets_Cancella(String IDWallet) {
                //completamente da gestire
@@ -368,7 +367,7 @@ public class DatabaseH2 {
             checkStatement.executeUpdate();
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
         
@@ -388,7 +387,7 @@ public class DatabaseH2 {
                 //System.out.println(Moneta);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
 
 
@@ -408,7 +407,7 @@ public class DatabaseH2 {
      * 
      * @throws IllegalArgumentException se il wallet o il Gruppo sono blank o null
      */
-    public static void Pers_GruppoWallet_Scrivi(String Wallet, String Gruppo) {
+    public static void Pers_GruppoWallet_Scrivi_OLD(String Wallet, String Gruppo) {
         if (Wallet == null || Wallet.isEmpty()) {
             throw new IllegalArgumentException("Wallet non pu\u00f2 essere nullo o vuoto.");
         }
@@ -441,10 +440,50 @@ public class DatabaseH2 {
             }
             Mappa_Wallet_Gruppo.put(Wallet, Gruppo);
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
         
+    /**
+     * Posiziona il Wallet in uno specifico gruppo
+     *
+     * @param Wallet Il Wallet di riferimento
+     * @param Gruppo Il Gruppo Wallet dove deve finire
+     *
+     * @throws IllegalArgumentException se il wallet o il Gruppo sono blank o
+     * null
+     */
+    public static void Pers_GruppoWallet_Scrivi(String Wallet, String Gruppo) {
+        if (Wallet == null || Wallet.isEmpty()) {
+            throw new IllegalArgumentException("Wallet non pu\u00f2 essere nullo o vuoto.");
+        }
+        if (Gruppo == null || Gruppo.isEmpty()) {
+            throw new IllegalArgumentException("Gruppo non pu\u00f2 essere nullo o vuoto.");
+        }
+
+        String sql = """
+        MERGE INTO WALLETGRUPPO (Wallet, Gruppo)
+        KEY (Wallet)
+        VALUES (?, ?)
+    """;
+
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, Wallet);
+            ps.setString(2, Gruppo);
+            ps.executeUpdate();
+
+            // Aggiorna la mappa in memoria
+            Mappa_Wallet_Gruppo.put(Wallet, Gruppo);
+
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
+    
+    
+    
+    
     /**
      *
      * @param Wallet
@@ -469,7 +508,7 @@ public class DatabaseH2 {
                     }
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         }
         if (Risultato == null) {
@@ -502,7 +541,7 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
@@ -526,11 +565,12 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Mappa_GruppiAlias;
     }
        
+ 
     /**
      *
      * @param Gruppo
@@ -538,39 +578,32 @@ public class DatabaseH2 {
      * @param PagaBollo
      */
     public static void Pers_GruppoAlias_Scrivi(String Gruppo, String Alias, boolean PagaBollo) {
-        String Pagabollo = PagaBollo ? "S" : "N";
-        try {
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM GRUPPO_ALIAS WHERE Gruppo = ?";
-            try (PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL)) {
-                checkStatement.setString(1, Gruppo);
-                int rowCount = 0;
-                try (ResultSet resultSet = checkStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        rowCount = resultSet.getInt(1);
-                    }
-                }
-                if (rowCount > 0) {
-                    String updateSQL = "UPDATE GRUPPO_ALIAS SET Alias = ?, Pagabollo = ? WHERE Gruppo = ?";
-                    try (PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL)) {
-                        updateStatement.setString(1, Alias);
-                        updateStatement.setString(2, Pagabollo);
-                        updateStatement.setString(3, Gruppo);
-                        updateStatement.executeUpdate();
-                    }
-                } else {
-                    String insertSQL = "INSERT INTO GRUPPO_ALIAS (Gruppo, Alias, Pagabollo) VALUES (?, ?, ?)";
-                    try (PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL)) {
-                        insertStatement.setString(1, Gruppo);
-                        insertStatement.setString(2, Alias);
-                        insertStatement.setString(3, Pagabollo);
-                        insertStatement.executeUpdate();
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+    String Pagabollo = PagaBollo ? "S" : "N";
+       
+    Map<String, Object> values = new HashMap<>();
+    values.put("Gruppo", Gruppo);
+    values.put("Alias", Alias);
+    values.put("Pagabollo", Pagabollo);
+    U_ScriviRecord("GRUPPO_ALIAS", values, "Gruppo",connectionPersonale);
+       
+   /* String sql = """
+        MERGE INTO GRUPPO_ALIAS (Gruppo, Alias, Pagabollo)
+        KEY (Gruppo)
+        VALUES (?, ?, ?)
+    """;
+
+    try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+        ps.setString(1, Gruppo);
+        ps.setString(2, Alias);
+        ps.setString(3, Pagabollo);
+        ps.executeUpdate();
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }*/
+}
+
+    
+    
     
         public static String[] Pers_ExchangeApi_Leggi(String Nome) {
                 String Risultato[] = new String[4];
@@ -587,7 +620,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
         //Con questa query ritorno sia il vecchio che il nuovo nome
@@ -614,7 +647,7 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Mappa_Wallet;
     }     
@@ -654,14 +687,13 @@ public class DatabaseH2 {
 
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }    
     
         
-        
+    //Serve per inserire nel database i token di cui devo trovare le coppie usando le api di binance per scaricare i movimenti di trade    
     public static void Pers_ExchangeTokens_Scrivi(String Exchange, String Token) {
-
         Map<String, Object> values = new HashMap<>();
         values.put("Exchange_Token", Exchange + "_" + Token);
         values.put("Exchange", Exchange);
@@ -670,7 +702,7 @@ public class DatabaseH2 {
 
     }      
         
-    public static void U_ScriviRecord(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn,Connection con) {
+    public static void U_ScriviRecord_OLD(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn,Connection con) {
     try {
         // Prendo il valore della chiave primaria
         Object primaryKeyValue = fieldValues.get(primaryKeyColumn);
@@ -733,9 +765,91 @@ public class DatabaseH2 {
         }
 
     } catch (SQLException ex) {
-        Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        LoggerGC.ScriviErrore(ex);
     }
 }
+    
+    
+    
+    /**
+ * Inserisce o aggiorna dinamicamente un record in una tabella del database utilizzando un'unica istruzione SQL {@code MERGE INTO}.
+ * <p>
+ * Il metodo analizza la mappa di campi {@code fieldValues}, individua la chiave primaria specificata da {@code primaryKeyColumn}
+ * e costruisce dinamicamente una query {@code MERGE INTO} che effettua un upsert (inserimento o aggiornamento) del record.
+ * <p>
+ * Esempio di query generata:
+ * <pre>
+ * MERGE INTO CLIENTI (ID, Nome, Saldo)
+ * KEY (ID)
+ * VALUES (?, ?, ?)
+ * </pre>
+ *
+ * <h3>Comportamento</h3>
+ * <ul>
+ *   <li>Se il record con la chiave primaria esiste → viene aggiornato con i nuovi valori.</li>
+ *   <li>Se il record non esiste → viene inserita una nuova riga.</li>
+ * </ul>
+ *
+ * <h3>Note</h3>
+ * <ul>
+ *   <li>È necessario che la tabella abbia una chiave primaria o un vincolo univoco sulla colonna specificata da {@code primaryKeyColumn}.</li>
+ *   <li>Tutte le colonne specificate nella mappa vengono incluse nella clausola {@code VALUES}.</li>
+ *   <li>Il metodo è compatibile con H2 e altri database che supportano la sintassi {@code MERGE INTO}.</li>
+ * </ul>
+ *
+ * @param tableName         nome della tabella in cui scrivere il record (es. {@code "CLIENTI"}).
+ * @param fieldValues       mappa contenente le coppie {@code nomeColonna → valore} del record da inserire o aggiornare.
+ *                          Deve includere anche la chiave primaria.
+ * @param primaryKeyColumn  nome della colonna che rappresenta la chiave primaria nella tabella.
+ * @param con               connessione JDBC aperta verso il database.
+ *
+ * @throws IllegalArgumentException se la mappa {@code fieldValues} non contiene la chiave primaria specificata.
+ * @throws SQLException se si verifica un errore SQL durante l'esecuzione della query.
+ *
+ * @see java.sql.Connection
+ * @see java.sql.PreparedStatement
+ * @see java.sql.SQLException
+ */
+
+    public static void U_ScriviRecord(String tableName, Map<String, Object> fieldValues, String primaryKeyColumn, Connection con) {
+    try {
+        //1 Validazione chiave primaria
+        Object primaryKeyValue = fieldValues.get(primaryKeyColumn);
+        if (primaryKeyValue == null) {
+            throw new IllegalArgumentException("La mappa deve contenere il campo chiave: " + primaryKeyColumn);
+        }
+
+        //2 Costruzione dinamica delle colonne
+        StringBuilder columnsSQL = new StringBuilder();
+        StringBuilder placeholdersSQL = new StringBuilder();
+        for (String col : fieldValues.keySet()) {
+            columnsSQL.append(col).append(", ");
+            placeholdersSQL.append("?, ");
+        }
+        columnsSQL.setLength(columnsSQL.length() - 2);       // rimuove ", "
+        placeholdersSQL.setLength(placeholdersSQL.length() - 2);
+
+       //3 Costruzione della query MERGE dinamica
+        String sql = String.format("""
+            MERGE INTO %s (%s)
+            KEY (%s)
+            VALUES (%s)
+        """, tableName, columnsSQL, primaryKeyColumn, placeholdersSQL);
+
+        //4 Esecuzione con PreparedStatement
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            int i = 1;
+            for (Object value : fieldValues.values()) {
+                ps.setObject(i++, value);
+            }
+            ps.executeUpdate();
+        }
+
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+
 
         
     public static List<Map<String, Object>> U_LeggiRecords(
@@ -787,7 +901,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
 
     return results;
@@ -848,7 +962,7 @@ public class DatabaseH2 {
         }
 
     } catch (SQLException ex) {
-        Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        LoggerGC.ScriviErrore(ex);
     }
 }
    
@@ -862,7 +976,7 @@ public class DatabaseH2 {
             checkStatement.executeUpdate();
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }    
         
@@ -907,7 +1021,7 @@ public class DatabaseH2 {
                 insertStatement.executeUpdate();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
         
@@ -924,7 +1038,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
         //Con questa query ritorno sia il vecchio che il nuovo nome
@@ -942,7 +1056,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Valore;
         //Con questa query ritorno sia il vecchio che il nuovo nome
@@ -971,7 +1085,7 @@ public class DatabaseH2 {
                 insertStatement.executeUpdate();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     } 
         
@@ -989,7 +1103,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Mappa_NomiToken;
         //Con questa query ritorno sia il vecchio che il nuovo nome
@@ -1003,60 +1117,11 @@ public class DatabaseH2 {
             checkStatement.executeUpdate();
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         //Con questa query ritorno sia il vecchio che il nuovo nome
     }
     
- /*   public static void AddressSenzaPrezzo_Scrivi(String address_chain, String data) {
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM Address_Senza_Prezzo WHERE address_chain = '" + address_chain + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE Address_Senza_Prezzo SET data = '" + data + "' WHERE address_chain = '" + address_chain + "'";
-                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
-                // updateStatement.setString(1, data);
-                //updateStatement.setString(2, address_chain);
-                updateStatement.executeUpdate();
-
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO Address_Senza_Prezzo (address_chain, data) VALUES ('" + address_chain + "','" + data + "')";
-                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
-                //insertStatement.setString(1, address_chain);
-                //insertStatement.setString(2, data);
-                insertStatement.executeUpdate();
-
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }*/
-
- /*   public static String AddressSenzaPrezzo_Leggi(String address_chain) {
-        String Risultato = null;
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT address_chain,data FROM Address_Senza_Prezzo WHERE address_chain = '" + address_chain + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("data");
-            }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return Risultato;
-    }*/
 
     public static String PrezzoAddressChain_Leggi(String ora_address_chain) {
         //System.out.println(ora_address_chain);
@@ -1087,12 +1152,12 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
 
-    public static void PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo,boolean personalizzato) {
+    public static void PrezzoAddressChain_Scrivi_OLD(String ora_address_chain, String prezzo,boolean personalizzato) {
         try {
             Connection connessione;
             if (personalizzato) connessione=connectionPersonale;
@@ -1136,53 +1201,42 @@ public class DatabaseH2 {
 
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
+    
+    public static void PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo, boolean personalizzato) {
+    try {
+        // Seleziona la connessione corretta
+        Connection connessione = personalizzato ? connectionPersonale : connection;
 
-    public static String Obsoleto_USDTEUR_Leggi(String data) {
-        String Risultato = null;
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT data,prezzo FROM USDTEUR WHERE data = '" + data + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("prezzo");
-            }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        // Suddivide e normalizza la chiave
+        //Se rete solana l'address è case sensitive per cui non posso gestirlo metterlo maiuscolo
+        String[] OAC = ora_address_chain.split("_");
+        if (OAC.length >= 3 && !OAC[2].equalsIgnoreCase("SOL")) {
+            ora_address_chain = ora_address_chain.toUpperCase();
         }
-        return Risultato;
-    }
 
-    public static void Obsoleto_USDTEUR_Scrivi(String data, String prezzo) {
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM USDTEUR WHERE data = '" + data + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE USDTEUR SET prezzo = '" + prezzo + "' WHERE data = '" + data + "'";
-                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
-                updateStatement.executeUpdate();
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO USDTEUR (data, prezzo) VALUES ('" + data + "','" + prezzo + "')";
-                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
-                insertStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        String sql = """
+            MERGE INTO Prezzo_ora_Address_Chain (ora_address_chain, prezzo)
+            KEY (ora_address_chain)
+            VALUES (?, ?)
+        """;
+
+        try (PreparedStatement ps = connessione.prepareStatement(sql)) {
+            ps.setString(1, ora_address_chain);
+            ps.setString(2, prezzo);
+            ps.executeUpdate();
         }
+
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
     }
+}
+
+
+
+  
     
        public static String XXXEUR_Leggi(String dataSimbolo) {
        
@@ -1206,7 +1260,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         if (Risultato!=null && Risultato.equalsIgnoreCase("null"))
             {
@@ -1215,98 +1269,30 @@ public class DatabaseH2 {
             }
         return Risultato;
     }
-
-     /*  /**
-        * Questa funzione ritorna il prezzo personalizzato di un token se c'è altrimenti ritorna null<br>
-        * Il Prezzo è rapportato al quantitativo non è unitario
-        * @param moneta
-        * Moneta di cui devo cercare il prezzo<br>
-        * Dati Obbligatori : NomeToken e la Qta<br>
-        * Dati Opzionali : Address e Rete<br>
-        * @param timestamp
-        * timestamp in formato long relativo all'ora esatta in cui devo cercare il prezzo
-        * @return 
-        * ritorna null in caso non vi siano prezzi personalizzati<br>
-        * ritorna il prezzo rapportato alle qta richieste in caso contrario
-        */
- /*      public static String LeggiPrezzoPersonalizzato(Moneta moneta,long timestamp) {
-        String dataora=OperazioniSuDate.ConvertiDatadaLongallOra(timestamp);
-        String dataSimbolo=dataora+"_"+moneta.Moneta;
-        
-        String Risultato = null;
-        
-        try {
-            String checkIfExistsSQL;
-            PreparedStatement checkStatement;
-            if (moneta.MonetaAddress!=null && moneta.Rete!=null){
-                //se è un movimento in defi allora cerco il prezzo nella defi
-                String ora_address_chain=dataora+"_"+moneta.MonetaAddress+"_"+moneta.Rete;
-                if (!moneta.Rete.equalsIgnoreCase("SOL"))ora_address_chain=ora_address_chain.toUpperCase();
-                // Connessione al database
-                checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
-                checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-                var resultSet = checkStatement.executeQuery();
-                if (resultSet.next()) {
-                    Risultato = resultSet.getString("prezzo");
-                }
-            }
-            else{
-                // altrimenti lo cerco per il solo nome
-                // Connessione al database
-                checkIfExistsSQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
-                checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-                var resultSet = checkStatement.executeQuery();
-                if (resultSet.next()) {
-                    Risultato = resultSet.getString("prezzo");
-                }          
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        if (Risultato!=null && Risultato.equalsIgnoreCase("null"))
-            {
-                System.out.println("DatabaseH2.XXXEUR_LEGGI prezzo Errato "+dataSimbolo);
-            return null;
-            }
-        if (Risultato!=null&&moneta.Qta!=null){
-            //Devo calcolare ora il prezzo rapportato alla Qta
-            Risultato=new BigDecimal(Risultato).multiply(new BigDecimal(moneta.Qta)).toPlainString();
-        }
-        else return null;
-        return Risultato;
-    }*/
-       
-    public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo,boolean personalizzato) {
-        try {
-            String SQL;
-            Connection connessione;
-            if (personalizzato) connessione=connectionPersonale;
-            else connessione=connection;
-            // Connessione al database
-            SQL = "SELECT COUNT(*) FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
-            PreparedStatement checkStatement = connessione.prepareStatement(SQL);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                SQL = "UPDATE XXXEUR SET prezzo = '" + prezzo + "' WHERE dataSimbolo = '" + dataSimbolo + "'";
-                PreparedStatement updateStatement = connessione.prepareStatement(SQL);
-                updateStatement.executeUpdate();
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                SQL = "INSERT INTO XXXEUR (dataSimbolo, prezzo) VALUES ('" + dataSimbolo + "','" + prezzo + "')";
-                PreparedStatement insertStatement = connessione.prepareStatement(SQL);
-                insertStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    } 
     
+    
+    public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo, boolean personalizzato) {
+        if (dataSimbolo == null || dataSimbolo.isEmpty()) {
+            throw new IllegalArgumentException("dataSimbolo non può essere nullo o vuoto.");
+        }
+
+        Connection connessione = personalizzato ? connectionPersonale : connection;
+
+        String sql = """
+        MERGE INTO XXXEUR (dataSimbolo, prezzo)
+        KEY (dataSimbolo)
+        VALUES (?, ?)
+    """;
+
+        try (PreparedStatement ps = connessione.prepareStatement(sql)) {
+            ps.setString(1, dataSimbolo);
+            ps.setString(2, prezzo);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
     /**
      *Questa funzione ritorna null se la coppia su binance non esiste altrimenti ritorna il nome della coppia
      * 
@@ -1326,7 +1312,7 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
@@ -1350,7 +1336,7 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
@@ -1375,7 +1361,7 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
@@ -1407,27 +1393,12 @@ public class DatabaseH2 {
             checkStatement.close();
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     } 
                         
-        public static String Obsoleto_GestitiCryptohistory_Leggi(String Gestito) {
-        String Risultato = null;
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Symbol FROM GESTITICRYPTOHISTORY WHERE Symbol = '" + Gestito + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato = resultSet.getString("Symbol");
-            }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return Risultato;
-    } 
+      
   
         
         
@@ -1441,29 +1412,13 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     } 
         
         
-    public static String[] Obsoleto_GestitiCryptohistory_LeggiInteraRiga(String Gestito) {
-        String Risultato[] = new String[2];
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT Symbol,Nome FROM GESTITICRYPTOHISTORY WHERE Symbol = '" + Gestito + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                Risultato[0] = resultSet.getString("Symbol");
-                Risultato[1] = resultSet.getString("Nome");
-            }
-
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return Risultato;
-    } 
+   
     
         public static String[] GestitiCoinCap_LeggiInteraRiga(String Gestito) {
         String Risultato[] = new String[2];
@@ -1478,7 +1433,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     } 
@@ -1499,7 +1454,7 @@ public class DatabaseH2 {
                 insertStatement.executeUpdate();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     } 
         
@@ -1520,7 +1475,7 @@ public class DatabaseH2 {
             }
             checkStatement.close();
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     } 
         
@@ -1544,7 +1499,7 @@ public class DatabaseH2 {
                 insertStatement.executeUpdate();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
         
@@ -1588,7 +1543,8 @@ public class DatabaseH2 {
             checkStatement.close();
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, "Errore durante l'inserimento/aggiornamento del token", ex);
+            LoggerGC.ScriviErrore(ex);
+            //Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, "Errore durante l'inserimento/aggiornamento del token", ex);
         }
     } 
      
@@ -1606,31 +1562,12 @@ public class DatabaseH2 {
             }else return null;
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }  
         
-        public static void Obsoleto_GestitiCryptohistory_ScriviNuovaTabella(List<String[]> Gestiti) {
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "DROP TABLE IF EXISTS GESTITICRYPTOHISTORY";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            checkStatement.execute();
-            checkIfExistsSQL = "CREATE TABLE IF NOT EXISTS GESTITICRYPTOHISTORY  (Symbol VARCHAR(255) PRIMARY KEY, Nome VARCHAR(255))";
-            checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            checkStatement.execute(); 
-            for (String gestito[]:Gestiti){
-                // La riga non esiste, esegui l'inserimento
-                gestito[1]=gestito[1].replace("'", "").replace("*", "");
-                String insertSQL = "INSERT INTO GESTITICRYPTOHISTORY (Symbol,Nome) VALUES ('" + gestito[0] + "','"+ gestito[1] + "')";
-                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
-                insertStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+      
         
                 public static void GestitiCoinCap_ScriviNuovaTabella(List<String[]> Gestiti) {
         try {
@@ -1653,7 +1590,7 @@ public class DatabaseH2 {
                 }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
         
@@ -1669,7 +1606,7 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
@@ -1686,77 +1623,79 @@ public class DatabaseH2 {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return Risultato;
     }
         
-        public static void Opzioni_Scrivi(String Opzione, String Valore) {
-        try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM OPZIONI WHERE Opzione = '" + Opzione + "'";
-            PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
-            }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE OPZIONI SET Valore = '" + Valore + "' WHERE Opzione = '" + Opzione + "'";
-                PreparedStatement updateStatement = connection.prepareStatement(updateSQL);
-                updateStatement.executeUpdate();
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO OPZIONI (Opzione, Valore) VALUES ('" + Opzione + "','" + Valore + "')";
-                PreparedStatement insertStatement = connection.prepareStatement(insertSQL);
-                insertStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+        
+    /**
+     * Inserisce o aggiorna un'opzione nella tabella OPZIONI generali
+     *
+     * @param Opzione Nome dell'opzione da salvare.
+     * @param Valore Valore associato all'opzione.
+     */
+    public static void Opzioni_Scrivi(String Opzione, String Valore) {
+        if (Opzione == null || Opzione.isEmpty()) {
+            throw new IllegalArgumentException("Opzione non può essere nulla o vuota.");
         }
-    } 
-    
-                public static void Pers_Opzioni_Scrivi(String Opzione, String Valore) {
+
         try {
-            // Connessione al database
-            String checkIfExistsSQL = "SELECT COUNT(*) FROM OPZIONI WHERE Opzione = '" + Opzione + "'";
-            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
-            int rowCount = 0;
-            // Esegui la query e controlla il risultato
-            var resultSet = checkStatement.executeQuery();
-            if (resultSet.next()) {
-                rowCount = resultSet.getInt(1);
+            String sql = """
+            MERGE INTO OPZIONI (Opzione, Valore)
+            KEY (Opzione)
+            VALUES (?, ?)
+        """;
+
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, Opzione);
+                ps.setString(2, Valore);
+                ps.executeUpdate();
             }
-            if (rowCount > 0) {
-                // La riga esiste, esegui l'aggiornamento
-                String updateSQL = "UPDATE OPZIONI SET Valore = '" + Valore + "' WHERE Opzione = '" + Opzione + "'";
-                PreparedStatement updateStatement = connectionPersonale.prepareStatement(updateSQL);
-                updateStatement.executeUpdate();
-            } else {
-                // La riga non esiste, esegui l'inserimento
-                String insertSQL = "INSERT INTO OPZIONI (Opzione, Valore) VALUES ('" + Opzione + "','" + Valore + "')";
-                PreparedStatement insertStatement = connectionPersonale.prepareStatement(insertSQL);
-                insertStatement.executeUpdate();
-            }
+
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
+
+    
+     /**
+     * Inserisce o aggiorna un'opzione nella tabella OPZIONI personali
+     *
+     * @param Opzione Nome dell'opzione da salvare.
+     * @param Valore Valore associato all'opzione.
+     */           
+    public static void Pers_Opzioni_Scrivi(String Opzione, String Valore) {
+        if (Opzione == null || Opzione.isEmpty()) {
+            throw new IllegalArgumentException("Opzione non può essere nulla o vuota.");
+        }
+
+        String sql = """
+        MERGE INTO OPZIONI (Opzione, Valore)
+        KEY (Opzione)
+        VALUES (?, ?)
+    """;
+
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql)) {
+            ps.setString(1, Opzione);
+            ps.setString(2, Valore);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }
+
                 
                 
     public static void Pers_Opzioni_CancellaOpzione(String Opzione) {
-               //completamente da gestire
         try {
             String checkIfExistsSQL = "DELETE FROM OPZIONI WHERE Opzione='"+Opzione+"'";
             PreparedStatement checkStatement = connection.prepareStatement(checkIfExistsSQL);
             checkStatement.executeUpdate();
 
         } catch (SQLException ex) {
-            Logger.getLogger(DatabaseH2.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
-        //Con questa query ritorno sia il vecchio che il nuovo nome
     }
                 
                 

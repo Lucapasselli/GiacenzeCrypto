@@ -805,9 +805,9 @@ public class Funzioni {
             desktop.open(f);
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }    
         
@@ -1070,9 +1070,9 @@ public class Funzioni {
             desktop.open(f);
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }
 
@@ -1436,7 +1436,7 @@ return MappaLista;
                 return true;
 
             } catch (URISyntaxException | IOException ex) {
-                Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         } else {
             String os = System.getProperty("os.name").toUpperCase();
@@ -1445,7 +1445,7 @@ return MappaLista;
                     Runtime.getRuntime().exec(new String[]{"xdg-open", Url});
 
                 } catch (IOException ex) {
-                    Logger.getLogger(Funzioni.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                     return true;
                 }
             }

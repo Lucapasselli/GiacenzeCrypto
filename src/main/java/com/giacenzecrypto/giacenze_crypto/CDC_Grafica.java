@@ -258,7 +258,7 @@ private static final long serialVersionUID = 3L;
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException ex) {
-                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                            LoggerGC.ScriviErrore(ex);
                         }
                     }
                     progress.ChiudiFinestra();
@@ -283,7 +283,7 @@ private static final long serialVersionUID = 3L;
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException ex) {
-                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                            LoggerGC.ScriviErrore(ex);
                         }
                     }
                 return null;
@@ -346,7 +346,7 @@ private static final long serialVersionUID = 3L;
         
 
 }  catch( Exception ex ) {
-             Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+             LoggerGC.ScriviErrore(ex);
             System.err.println( "Failed to initialize jFrame" );
         }
         
@@ -5112,7 +5112,7 @@ JPanel loadingBar = new JPanel() {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException ex) {
-                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                            LoggerGC.ScriviErrore(ex);
                         }
                     }  
         splash.setVisible(false);
@@ -5421,10 +5421,10 @@ JPanel loadingBar = new JPanel() {
         }
       
            }   catch (FileNotFoundException ex) {     
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         
    }catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } 
                 
         
@@ -5521,7 +5521,7 @@ JPanel loadingBar = new JPanel() {
                 this.GiacenzeaData_Data_DataChooser.setDate(d);
             }
         } catch (ParseException ex) {
-               Logger.getLogger("Erroe su funzione CDC_ScriviDatesuGUI() in CDC_Grafica - "+CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+               LoggerGC.ScriviErrore(ex);
         }
         //CDC_ScriviFileDatiDB();
     }
@@ -5545,7 +5545,7 @@ JPanel loadingBar = new JPanel() {
        w.close();
 
     }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+                 //  LoggerGC.ScriviErrore(ex);
                }
    
    }
@@ -5577,7 +5577,7 @@ JPanel loadingBar = new JPanel() {
             
             // return price;
         } catch (URISyntaxException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }*/
     
@@ -5621,9 +5621,9 @@ JPanel loadingBar = new JPanel() {
             //   bure.close();
             //  fire.close();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
 
         CDC_FiatWallet_MappaTipiMovimenti.clear();
@@ -5655,9 +5655,9 @@ JPanel loadingBar = new JPanel() {
             fires.close();
 
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
 
         CDC_FiatWallet_ListaSaldi = CDC_FiatWallet_Funzione_CalcolaListaSaldi();
@@ -5693,9 +5693,9 @@ JPanel loadingBar = new JPanel() {
      //  bure.close();
      //  fire.close();
     }   catch (FileNotFoundException ex) {     
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         
       CDC_CardWallet_ListaSaldi=CDC_CardWallet_Funzione_CalcolaListaSaldi();  
@@ -6176,7 +6176,7 @@ JPanel loadingBar = new JPanel() {
             //System.out.println("Calcolo plus filtrate");
             Thread.sleep(100);
         } catch (InterruptedException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         BigDecimal somma = BigDecimal.ZERO;
 
@@ -6321,7 +6321,7 @@ JPanel loadingBar = new JPanel() {
        b.close();
        w.close();
     }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+                 //  LoggerGC.ScriviErrore(ex);
                }
     }
     
@@ -6337,7 +6337,7 @@ JPanel loadingBar = new JPanel() {
        b.close();
        w.close();
     }catch (IOException ex) {
-                 //  Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+                 //  LoggerGC.ScriviErrore(ex);
                }
     }
     
@@ -6363,7 +6363,7 @@ JPanel loadingBar = new JPanel() {
                     JOptionPane.showConfirmDialog(this, "Attenzione, la data iniziale non può essere maggiore della data finale!",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
                 } catch (ParseException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
             }
         }
@@ -6392,7 +6392,7 @@ JPanel loadingBar = new JPanel() {
                     JOptionPane.showConfirmDialog(this, "Attenzione, la data finale non può essere minore della data iniziale!",
                             "Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,null);
                 } catch (ParseException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
             }
         }
@@ -6563,7 +6563,7 @@ JPanel loadingBar = new JPanel() {
             stampa.ScriviPDF();
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }//GEN-LAST:event_CDC_FiatWallet_Bottone_StampaRapportoActionPerformed
 
@@ -6608,7 +6608,7 @@ JPanel loadingBar = new JPanel() {
             stampa.ScriviPDF();
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
     }//GEN-LAST:event_CDC_CardWallet_Bottone_StampaRapportoActionPerformed
 
@@ -6914,7 +6914,7 @@ JPanel loadingBar = new JPanel() {
                 Emoney_ModelloTabella.addRow(rigaTabella);
                 // System.out.println(a);
             } catch (ParseException ex) {
-                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         }
     }
@@ -8351,17 +8351,17 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //    System.out.println("Request failed. Response Code: " + responseCode);
             }
         } catch (MalformedURLException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (ProtocolException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
             }
             if (connection != null) {
@@ -9451,7 +9451,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
                     
                 } catch (ParseException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
 
               
@@ -9538,7 +9538,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             GiacenzeaData_Tabella.requestFocus();
             //GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
         } catch (ParseException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
                     
         
@@ -9871,7 +9871,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         GiacenzeaData_Data_DataChooser.setDate(DataIeri);
                         
                     }   } catch (ParseException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
         }
     }//GEN-LAST:event_GiacenzeaData_Data_DataChooserPropertyChange
@@ -10318,7 +10318,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             stampa.ScriviPDF();
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -10638,7 +10638,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Tabelle.rosso=new Color(255, 40, 40);
                 
             } catch (UnsupportedLookAndFeelException ex) {
-                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         }else{ 
             try {
@@ -10656,7 +10656,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Tabelle.Verde="green";
                 Bottone_Errori.setForeground(Tabelle.rosso);
             } catch (UnsupportedLookAndFeelException ex) {
-                Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         }
         SwingUtilities.updateComponentTreeUI(this);
@@ -10814,7 +10814,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     GiacenzeaData_TabellaDettaglioMovimenti.requestFocus();
                     
                 } catch (ParseException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
     }//GEN-LAST:event_RT_Bottone_ModificaGiacenzaActionPerformed
 
@@ -11713,9 +11713,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
                     a.fetchMovimenti(chiavi[1].toLowerCase(), chiavi[2], chiavi[3],"2025-08-20","ETH,USDC");
                 } catch (IOException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
                 return null;
             }
@@ -11938,7 +11938,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaFile(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         //Metto gli avvisi sulle funzioni che probabilmente sono da ricalcolare
         if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
@@ -12032,8 +12032,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
         CcxtInterop.recuperPrezzi("BTC", Long.parseLong("1704067200000"), Long.parseLong("1704067260000"));
     } catch (SQLException ex) {
-        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-        System.err.println(ex);
+        LoggerGC.ScriviErrore(ex);
         
     }
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -12305,7 +12304,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             stampa.ScriviPDF();
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -12909,7 +12908,7 @@ try {
          //   desktop.open(export);
 } 
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         
 
@@ -13110,7 +13109,7 @@ try {
          //   desktop.open(export);
 } 
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         
 
@@ -13316,7 +13315,7 @@ try {
                         try {
                             this.join();
                         } catch (InterruptedException ex) {
-                            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                            LoggerGC.ScriviErrore(ex);
                         }
                     }
                     if (i <= progress.Massimo) {
@@ -13890,7 +13889,6 @@ try {
                             
                             if (Importazioni.ColonneTabella>splittata.length){
                                 System.out.println("Trovata riga con lunghezza errata : "+splittata[0]+ " - Lunghezza : "+splittata.length);
-                                //Logger.getLogger(CDC_Grafica.class.getName()).log(Level.WARNING, null, "Trovata riga con lunghezza errata : "+splittata[0]);
                                 String nuovoArray[]=new String[Importazioni.ColonneTabella];
                                 //splittata = java.util.Arrays.copyOf(splittata, Importazioni.ColonneTabella);
                                 System.arraycopy(splittata, 0, nuovoArray, 0, splittata.length);
@@ -13941,11 +13939,11 @@ try {
                         }
 
                     } catch (IOException ex) {
-                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                        LoggerGC.ScriviErrore(ex);
                     }
 
                 } catch (IOException ex) {
-                    Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
 
 
@@ -14442,7 +14440,7 @@ public static void ripristinaFiltri(JTable table) {
             //System.out.println (Data1+" - "+Data2+" - "+differenza+" - "+a);
             //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
         } catch (ParseException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return differenza;
     }
@@ -14460,7 +14458,7 @@ public static void ripristinaFiltri(JTable table) {
             //System.out.println (Data1+" - "+Data2+" - "+differenza+" - "+a);
             //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
         } catch (ParseException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         return differenza;
     }
@@ -14474,7 +14472,7 @@ public static void ripristinaFiltri(JTable table) {
             
             //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
         } catch (ParseException ex) {
-           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+           // LoggerGC.ScriviErrore(ex);
             //System.out.println(Data1+" non è una data");
         }
         return m1;

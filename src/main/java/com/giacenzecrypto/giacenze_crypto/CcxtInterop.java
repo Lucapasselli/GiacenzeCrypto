@@ -14,21 +14,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.io.*;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,15 +33,15 @@ import org.json.JSONObject;
 
 public class CcxtInterop {
     
-    private static final String NODE_VERSION = "v24.7.0";
-    private static final Path NODE_DIR = Paths.get(Statiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();;
+    public static final String NODE_VERSION = "v24.7.0";
+    public static final Path NODE_DIR = Paths.get(Statiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();;
     
 
     
     public static void ensureNodeInstalled() throws IOException {
         
 
-        System.out.println("⬇️ Scarico Node.js standalone...");
+        
         String os = System.getProperty("os.name").toLowerCase();
         String arch = System.getProperty("os.arch").contains("64") ? "x64" : "x86";
 
@@ -69,10 +63,11 @@ public class CcxtInterop {
         
         //Verifico se è presente una specifica versione di node, qualora non lo sia scarico la nuova
         if (Files.exists(Paths.get(NODE_DIR.toString()+"/node-" + NODE_VERSION + "-" + platform))) {
-            System.out.println("✅ Node.js già presente");
+           // System.out.println("✅ Node.js già presente");
             return;
         }
-
+        System.out.println("Node.js non presente.");
+        System.out.println("⬇️ Scarico Node.js standalone...");
         Path downloadPath = Paths.get(Statiche.getWorkingDirectory()+"tools", filename);
         Files.createDirectories(downloadPath.getParent());
 
@@ -96,7 +91,7 @@ public class CcxtInterop {
         
         
         Path nodePath = getNodeExePath();
-        System.out.println("nodePath="+nodePath);
+       // System.out.println("nodePath="+nodePath);
 
         // Non reindirizziamo stderr su stdout
         // builder.redirectErrorStream(true);
@@ -112,7 +107,7 @@ public class CcxtInterop {
     Path ccxtDir = nodeModulesDir.resolve("ccxt");
 
     if (Files.exists(ccxtDir) && Files.isDirectory(ccxtDir)) {
-        System.out.println("CCXT già installato in: " + ccxtDir);
+        //System.out.println("CCXT già installato in: " + ccxtDir);
         return;
     }    
     
@@ -128,6 +123,7 @@ public class CcxtInterop {
     //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
     System.out.println("Comando: " + String.join(" ", builder.command()));
     System.out.println("Working directory: " + builder.directory().getAbsolutePath());
+    System.out.println("Attendere, la prima installazione potrebbe durare diversi minuti");
     Map<String, String> env = builder.environment();
 
     // Inserisci la directory che contiene node.exe nel PATH
@@ -194,7 +190,7 @@ public class CcxtInterop {
 }    
     
     
-    private static Path getNpmPath() {
+    public static Path getNpmPath() {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
             return NODE_DIR.resolve("node-" + NODE_VERSION + "-win-x64").resolve("npm.cmd");
@@ -205,7 +201,7 @@ public class CcxtInterop {
     }
 
     
-private static Path getNodeExePath() {
+public static Path getNodeExePath() {
     String os = System.getProperty("os.name").toLowerCase();
     String nodeExecutable = os.contains("win") ? "node.exe" : "node";
 
@@ -707,9 +703,12 @@ private static Path getNodeExePath() {
     return null;
 }
 
-public static void recuperPrezzi(String Symbol,long Since,Long Until) throws SQLException {
+public static void recuperPrezzi(String Symbol,long timestamp) throws SQLException {
 
-        
+        //long timestampAttuale = System.currentTimeMillis();
+        //Voglio reperire sempre almeno 1h di dati per cui prendo la mezz'ora prima e la mezz'ora dopo il timestamp indicato
+        long Since=timestamp-1800000;
+        long Until=timestamp+1800000;
         //Lista degli exchange a cui richiedere il prezzo della cripto
         String exchanges="binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
         
@@ -787,13 +786,6 @@ public static void recuperPrezzi(String Symbol,long Since,Long Until) throws SQL
         }
         JsonArray rootArr = rootEl.getAsJsonArray();
 
-        // Connessione H2 (persistente su file nella home: jdbc:h2:~/pricesdb)
-        //String jdbc = "jdbc:h2:~/pricesdb;AUTO_SERVER=TRUE";
-        //try (Connection conn = DriverManager.getConnection(jdbc, "sa", "")) {
-
-
-            // MERGE (upsert) per evitare errori se la riga esiste già
-            // Nota: H2 supporta MERGE ... KEY (col1, col2, ...)
             String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo,rete,address) KEY (timestamp, exchange, symbol,rete,address) VALUES (?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
 
@@ -834,7 +826,7 @@ public static void recuperPrezzi(String Symbol,long Since,Long Until) throws SQL
                 ps.executeBatch();
             }
 
-            // Query di test: mostra i primi 50 record
+    /*        // Query di test: mostra i primi 50 record
             System.out.println("=== Sample from H2 (timestamp | exchange | symbol | prezzo) ===");
             try (Statement st = DatabaseH2.connectionPrezzi.createStatement();
                  ResultSet rs = st.executeQuery(
@@ -847,11 +839,11 @@ public static void recuperPrezzi(String Symbol,long Since,Long Until) throws SQL
                     double v = rs.getDouble("prezzo");
                     System.out.printf("%d | %s | %s = %.6f%n", ts, ex, sym, v);
                 }
-            }
+            }*/
         //}
 
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            LoggerGC.ScriviErrore(e);
         }
 
 

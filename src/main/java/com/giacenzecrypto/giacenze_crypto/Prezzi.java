@@ -25,6 +25,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -2471,7 +2478,296 @@ for (int i=0;i<ArraydataIni.size();i++){
    
    }
      
+
+     
+     
+     
+/**
+ * Recupera dal database il prezzo più vicino a un determinato timestamp per un dato token.
+ * <p>
+ * La funzione ricerca il valore nel database <b>PrezziNew</b> considerando le seguenti regole:
+ * <ul>
+ *   <li>Se viene specificato un exchange preferito, la ricerca viene effettuata prima su di esso.</li>
+ *   <li>Se non viene trovato alcun risultato sull’exchange preferito (o se non specificato),
+ *       la ricerca prosegue su tutti gli altri exchange.</li>
+ *   <li>Il timestamp trovato non può differire di oltre ±5 minuti (300 secondi) dal timestamp richiesto.</li>
+ *   <li>È possibile filtrare ulteriormente la ricerca per rete e address (facoltativi).</li>
+ * </ul>
+ *
+ * @param symbol              il simbolo del token (es. "BTC")
+ * @param timestampRiferimento il timestamp di riferimento (in millisecondi)
+ * @param exchangePreferito   l’exchange da cui preferibilmente recuperare il prezzo
+ *                            (può essere {@code null} o vuoto per cercare su tutti)
+ * @param rete                la rete blockchain associata al token (facoltativa, può essere vuota)
+ * @param address             l’indirizzo del token (facoltativo, può essere vuoto)
+ * @return un oggetto {@link PrezzoInfo} contenente il prezzo, l’exchange e il timestamp effettivo del prezzo,
+ *         oppure {@code null} se non è stato trovato alcun prezzo valido entro 5 minuti dal timestamp richiesto
+ * @throws SQLException se si verifica un errore durante la query sul database
+ *
+ * @see PrezzoInfo
+ * @implNote Il campo {@code timestamp} del database e del parametro di input devono essere espressi
+ *           nella stessa unità temporale (millisecondi). Se il database usa secondi UNIX,
+ *           adattare la logica di confronto di conseguenza.
+ */
+public static InfoPrezzo getPrezzoVicinoDaDatabase(
+        String symbol,
+        long timestampRiferimento,
+        String exchangePreferito,
+        String rete,
+        String address) throws SQLException {
+
+    
+    final long MAX_DIFF_MS = 5 * 60 * 1000; // 5 minuti in millisecondi
+    long tsMin = timestampRiferimento - MAX_DIFF_MS;
+    long tsMax = timestampRiferimento + MAX_DIFF_MS;
+
+    String baseQuery = """
+        SELECT prezzo, exchange, timestamp
+        FROM PrezziNew
+        WHERE symbol = ?
+          AND timestamp BETWEEN ? AND ?
+          AND (rete = ? OR ? = '')
+          AND (address = ? OR ? = '')
+        ORDER BY ABS(timestamp - ?) ASC
+        LIMIT 1
+    """;
+
+    // Se è specificato un exchange, prova prima con quello
+    if (exchangePreferito != null && !exchangePreferito.isEmpty()) {
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery + " /* preferito */")) {
+            ps.setString(1, symbol);
+            ps.setLong(2, tsMin);
+            ps.setLong(3, tsMax);
+            ps.setString(4, rete == null ? "" : rete);
+            ps.setString(5, rete == null ? "" : rete);
+            ps.setString(6, address == null ? "" : address);
+            ps.setString(7, address == null ? "" : address);
+            ps.setLong(8, timestampRiferimento);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal prezzo = rs.getBigDecimal("prezzo");
+                    String exch = rs.getString("exchange");
+                    long ts = rs.getLong("timestamp");
+                    return new InfoPrezzo(prezzo, exch, ts);
+                }
+            }
+        }
+    }
+
+    // Se non trovato o exchange non specificato → cerca in tutti gli exchange
+    String queryAll = """
+        SELECT prezzo, exchange, timestamp
+        FROM PrezziNew
+        WHERE symbol = ?
+          AND timestamp BETWEEN ? AND ?
+          AND (rete = ? OR ? = '')
+          AND (address = ? OR ? = '')
+        ORDER BY ABS(timestamp - ?) ASC
+        LIMIT 1
+    """;
+
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(queryAll)) {
+        ps.setString(1, symbol);
+        ps.setLong(2, tsMin);
+        ps.setLong(3, tsMax);
+        ps.setString(4, rete == null ? "" : rete);
+        ps.setString(5, rete == null ? "" : rete);
+        ps.setString(6, address == null ? "" : address);
+        ps.setString(7, address == null ? "" : address);
+        ps.setLong(8, timestampRiferimento);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                BigDecimal prezzo = rs.getBigDecimal("prezzo");
+                String exch = rs.getString("exchange");
+                long ts = rs.getLong("timestamp");
+                return new InfoPrezzo(prezzo, exch, ts);
+            }
+        }
+    }
+
+ // Nessun prezzo trovato entro 5 minuti
+    return null;
+}
+     
+ 
+
+public static void recuperoPrezziCCXT(String Symbol,long timestamp) throws SQLException, IOException, InterruptedException {
+
+        //long timestampAttuale = System.currentTimeMillis();
+        //Voglio reperire sempre almeno 1h di dati per cui prendo la mezz'ora prima e la mezz'ora dopo il timestamp indicato
+        long Since=timestamp-3800000;
+        long Until=timestamp+3800000;
+        //Lista degli exchange a cui richiedere il prezzo della cripto
+        String exchanges="binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
         
+        Path nodePath = CcxtInterop.getNodeExePath();
+        Path scriptPath = Paths.get(Statiche.getPathRisorse()
+                + "Scripts/"
+                + "Historical_Multi_Eur"
+                + ".js");
+
+        CcxtInterop.ensureNodeInstalled();
+        CcxtInterop.installCcxt();
+        if (!Files.exists(nodePath)) {
+            System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());           
+            return;
+        }
+        if (!Files.exists(scriptPath)) {
+            System.err.println("Errore: script JS non trovato a " + scriptPath.toAbsolutePath());
+            return;
+        }
+
+        System.out.println("Eseguo script : Historical_Multi_Eur.js");
+         // Parametri CLI da passare allo script
+        List<String> command = new ArrayList<>();
+        command.add(nodePath.toString());
+        command.add(scriptPath.toAbsolutePath().toString());
+        command.add("--since");
+        command.add(String.valueOf(Since));
+        command.add("--until");
+        command.add(String.valueOf(Until));
+        command.add("--exchanges");
+        command.add(exchanges);
+        command.add("--symbol");
+        command.add(Symbol);
+        command.add("--timeframe");
+        command.add("1m");
+        
+        
+        ProcessBuilder pb = new ProcessBuilder(command);
+      
+        pb.directory(scriptPath.getParent().toFile());
+        Path nodeModulesPath = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath();
+        Map<String, String> env = pb.environment();
+        // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
+        String existingNodePath = env.get("NODE_PATH");
+        String newNodePath = nodeModulesPath.toString();
+        if (existingNodePath != null && !existingNodePath.isEmpty()) {
+            newNodePath += File.pathSeparator + existingNodePath;
+        }
+        env.put("NODE_PATH", newNodePath);
+        pb.redirectErrorStream(true); // unisce stdout + stderr
+        
+         try {
+            pb.redirectErrorStream(false);
+            Process process = pb.start();
+          
+       /*     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+        String line;
+        while ((line = reader.readLine()) != null) System.out.println("[npm] " + line);
+        while ((line = errReader.readLine()) != null) System.err.println("[npm-err] " + line);
+    }*/
+
+            // Leggi l'output dello script (JSON stampato da console.log)
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+                while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
+            }
+
+            // Attendi che il processo finisca
+            int exitCode = process.waitFor();
+            //System.out.println("Exit code: " + exitCode);
+            if (exitCode != 0) {
+                System.err.println("Script Node fallito. Exit code: " + exitCode);
+                System.err.println(output);
+                return;
+            }
+            
+            // Parse JSON con Gson in modo sicuro (manteniamo precisione per i long)
+       // Gson gson = new Gson();
+       //System.out.println("---"+output.toString()+"---");
+        JsonElement rootEl = JsonParser.parseString(output.toString());
+        if (!rootEl.isJsonArray()) {
+            System.err.println("Output non è un array JSON valido.");
+            return;
+        }
+        JsonArray rootArr = rootEl.getAsJsonArray();
+
+            String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo,rete,address) KEY (timestamp, exchange, symbol,rete,address) VALUES (?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
+
+                for (JsonElement el : rootArr) {
+                    if (!el.isJsonObject()) continue;
+                    JsonObject obj = el.getAsJsonObject();
+
+                    if (!obj.has("timestamp")) continue;
+                    long ts = obj.get("timestamp").getAsLong();
+
+                    JsonObject pricesObj = obj.has("prices") && obj.get("prices").isJsonObject()
+                            ? obj.getAsJsonObject("prices")
+                            : null;
+                    if (pricesObj == null) continue;
+
+                    for (Map.Entry<String, JsonElement> entry : pricesObj.entrySet()) {
+                        String exchange = entry.getKey();
+                        JsonElement valEl = entry.getValue();
+                        if (valEl == null || valEl.isJsonNull()) continue;
+
+                        double value;
+                        try {
+                            value = valEl.getAsDouble();
+                        } catch (Exception ex) {
+                            // valore non numerico: skip
+                            continue;
+                        }
+
+                        ps.setLong(1, ts);
+                        ps.setString(2, exchange);
+                        ps.setString(3, Symbol);
+                        ps.setDouble(4, value);
+                        ps.setString(5, "");//Rete
+                        ps.setString(6, "");//Address
+                        ps.addBatch();
+                    }
+                }
+                ps.executeBatch();
+            }
+
+            // Query di test: mostra i primi 50 record
+        /*    System.out.println("=== Sample from H2 (timestamp | exchange | symbol | prezzo) ===");
+            try (Statement st = DatabaseH2.connectionPrezzi.createStatement();
+                 ResultSet rs = st.executeQuery(
+                         "SELECT timestamp, exchange, symbol, prezzo FROM PrezziNew ORDER BY timestamp LIMIT 50")) {
+
+                while (rs.next()) {
+                    long ts = rs.getLong("timestamp");
+                    String ex = rs.getString("exchange");
+                    String sym = rs.getString("symbol");
+                    double v = rs.getDouble("prezzo");
+                    System.out.printf("%d | %s | %s = %.6f%n", ts, ex, sym, v);
+                }
+            }*/
+        //}
+
+        } catch (IOException | InterruptedException e) {
+            LoggerGC.ScriviErrore(e);
+        }
+
+
+}
+
+
+     
+public static class InfoPrezzo {
+    public BigDecimal prezzo;
+    public String exchange;
+    public long timestamp;
+
+    public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp) {
+        this.prezzo = prezzo;
+        this.exchange = exchange;
+        this.timestamp = timestamp;
+    }
+}        
     
 }
+
 

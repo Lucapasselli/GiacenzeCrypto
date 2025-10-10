@@ -1,17 +1,39 @@
 //#!/usr/bin/env node
 const ccxt = require('ccxt');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+// Utility functions
+function logError(message) { console.error(`[ERROR] ${message}`); }
+function logInfo(message) { console.error(`[INFO] ${message}`); }
+function logDebug(message) { console.error(`[DEBUG] ${message}`); }
 
 // Trova il miglior simbolo disponibile per XXX/EUR
 async function findBestPair(ex, baseSymbol) {
-    const markets = await ex.loadMarkets();
-
+   // const markets = await ex.loadMarkets();
+    const markets = await getMarketsSymbols(ex);
+    
     // Se esiste direttamente la coppia con EUR
     if (`${baseSymbol}/EUR` in markets) {
+       // logInfo(`Trovato corrispondenza per EUR su ${ex.id}`);
         return { pair: `${baseSymbol}/EUR`, invert: false, needsConversion: false };
+    }
+
+    // Se esiste con USD
+    if (`${baseSymbol}/USD` in markets) {
+       // logInfo(`Trovato corrispondenza per USD su ${ex.id}`);
+        if ("EUR/USD" in markets) {
+            return { pair: `${baseSymbol}/USD`, invert: false, needsConversion: true, conversionPair: "EUR/USD" };
+        }
+        if ("USD/EUR" in markets) {
+            return { pair: `${baseSymbol}/USD`, invert: false, needsConversion: true, conversionPair: "USD/EUR" };
+        }
     }
 
     // Se esiste con USDT
     if (`${baseSymbol}/USDT` in markets) {
+       // logInfo(`Trovato corrispondenza per USDT su ${ex.id}`);
         if ("EUR/USDT" in markets) {
             return { pair: `${baseSymbol}/USDT`, invert: false, needsConversion: true, conversionPair: "EUR/USDT" };
         }
@@ -22,6 +44,7 @@ async function findBestPair(ex, baseSymbol) {
 
     // Se esiste con USDC
     if (`${baseSymbol}/USDC` in markets) {
+       // logInfo(`Trovato corrispondenza per USDC su ${ex.id}`);
         if ("EUR/USDC" in markets) {
             return { pair: `${baseSymbol}/USDC`, invert: false, needsConversion: true, conversionPair: "EUR/USDC" };
         }
@@ -33,12 +56,53 @@ async function findBestPair(ex, baseSymbol) {
     return null;
 }
 
+
+
+async function getMarketsSymbols(exchange) {
+    const tempDir = path.join(os.tmpdir(), 'GiacenzeCrypto');
+    if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const marketsFile = path.join(tempDir, `markets_${exchange.id}.json`);
+    const oneHourMs = 1 * 60 * 60 * 1000; // 1 ora
+    let markets;
+
+    const needReload = () => {
+        if (!fs.existsSync(marketsFile)) return true;
+        const age = Date.now() - fs.statSync(marketsFile).mtimeMs;
+        return age > oneHourMs;
+    };
+
+    if (needReload()) {
+        logInfo(`Ricarico markets da API per ${exchange.id}...`);
+        markets = await exchange.loadMarkets();
+
+        // Rimuove riferimenti circolari e valori non serializzabili
+        const cleanMarkets = JSON.parse(JSON.stringify(markets));
+        fs.writeFileSync(marketsFile, JSON.stringify(cleanMarkets, null, 2), "utf8");
+    } else {
+       // logInfo(`Carico markets da file locale ${marketsFile}`);
+        const raw = fs.readFileSync(marketsFile, "utf8");
+        markets = JSON.parse(raw);
+    }
+
+    return markets;
+}
+
+
+
+
+
+
 async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 1000) {
     const all_ohlcv = [];
     let current_since = since;
 
     while (current_since < until) {
+      //  logInfo(`scarico dati per ${ex.id} , ${symbol}`);
         const ohlcv = await ex.fetchOHLCV(symbol, timeframe, current_since, limit);
+       // logInfo(`i dati sono ${ohlcv}`);
         if (!ohlcv.length) break;
         all_ohlcv.push(...ohlcv);
         const last_ts = ohlcv[ohlcv.length - 1][0];
@@ -106,7 +170,9 @@ async function main() {
                         let factor = 1;
                         if (pairInfo.conversionPair.startsWith("EUR/")) {
                             factor = 1 / conv;
-                        } else if (pairInfo.conversionPair.startsWith("USDT/EUR") || pairInfo.conversionPair.startsWith("USDC/EUR")) {
+                        } else if (pairInfo.conversionPair.startsWith("USD/EUR") 
+                                || pairInfo.conversionPair.startsWith("USDT/EUR") 
+                                || pairInfo.conversionPair.startsWith("USDC/EUR")) {
                             factor = conv;
                         }
 

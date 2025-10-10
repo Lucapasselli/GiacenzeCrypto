@@ -12030,10 +12030,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
     try {
         // TODO add your handling code here:
-        CcxtInterop.recuperPrezzi("BTC", Long.parseLong("1704067200000"), Long.parseLong("1704067260000"));
-    } catch (SQLException ex) {
-        LoggerGC.ScriviErrore(ex);
-        
+        Prezzi.recuperoPrezziCCXT("CRO", Long.parseLong("1704067200000"));
+    } catch (SQLException | IOException | InterruptedException ex) {
+        LoggerGC.ScriviErrore(ex);       
     }
     }//GEN-LAST:event_jButton3ActionPerformed
 

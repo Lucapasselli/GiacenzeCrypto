@@ -12030,10 +12030,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
     try {
         // TODO add your handling code here:
-        Prezzi.recuperoPrezziCCXT("CRO", Long.parseLong("1704067200000"));
+        Prezzi.recuperoPrezziCCXT("BTC", Long.parseLong("1704067200000"));
+        Prezzi.InfoPrezzo ip=Prezzi.getPrezzoVicinoDaDatabase("BTC", Long.parseLong("1704067200000"), "cippo", "", "");
+        System.out.println(ip.exchange);
+        System.out.println(ip.prezzo);
+        System.out.println(ip.timestamp);
     } catch (SQLException | IOException | InterruptedException ex) {
         LoggerGC.ScriviErrore(ex);       
     }
+    
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){

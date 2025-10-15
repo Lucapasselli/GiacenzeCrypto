@@ -2528,6 +2528,7 @@ public static InfoPrezzo getPrezzoVicinoDaDatabase(
           AND timestamp BETWEEN ? AND ?
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
+          AND (exchange = ? OR ? = '')
         ORDER BY ABS(timestamp - ?) ASC
         LIMIT 1
     """;
@@ -2542,14 +2543,18 @@ public static InfoPrezzo getPrezzoVicinoDaDatabase(
             ps.setString(5, rete == null ? "" : rete);
             ps.setString(6, address == null ? "" : address);
             ps.setString(7, address == null ? "" : address);
-            ps.setLong(8, timestampRiferimento);
+            ps.setString(8, exchangePreferito);
+            ps.setString(9, exchangePreferito);
+            ps.setLong(10, timestampRiferimento);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     BigDecimal prezzo = rs.getBigDecimal("prezzo");
                     String exch = rs.getString("exchange");
                     long ts = rs.getLong("timestamp");
+                    //System.out.println("Trovato exchange richiesto "+exch);
                     return new InfoPrezzo(prezzo, exch, ts);
+                    
                 }
             }
         }

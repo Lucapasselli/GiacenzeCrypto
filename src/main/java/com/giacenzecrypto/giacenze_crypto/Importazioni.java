@@ -1386,6 +1386,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         Mappa_Conversione_Causali.put("RECEIVE.PAYMENT.PAY",                    "TRASFERIMENTO-CRYPTO");//
         Mappa_Conversione_Causali.put("RECEIVE..CRYPTO_DEPOSIT",                "TRASFERIMENTO-CRYPTO");//
         Mappa_Conversione_Causali.put("SEND..CRYPTO_WITHDRAWAL",                "TRASFERIMENTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("WITHDRAWAL..FIAT",                       "PRELIEVO FIAT");//
    
    
  AzzeraContatori();        
@@ -2898,6 +2899,53 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[12] = "FIAT";
                                 RT[13] = TotRicevuto.toPlainString();
                                 RT[14] = "€ "+movimentoSplittato[12];
+                                RT[15] = valoreEuro;
+                                RT[17] = valoreEuro;
+                                RT[22] = "A";
+                                RT[32] = "SI";
+                                RiempiVuotiArray(RT);
+                                lista.add(RT);
+                                
+                                
+                            }
+                             else if (movimentoConvertito.trim().equalsIgnoreCase("PRELIEVO FIAT"))
+                            {
+                                RT[0] = data.replaceAll(" |-|:", "") +"_Binance."+idBinance+ "_1_1_PF";
+                                RT[1] = dataa;
+                                RT[2] = 1 + " di " + 1;
+                                RT[3] = "Binance";
+                                RT[4] = "Principale";
+                                BigDecimal TotRicevuto=new BigDecimal(movimentoSplittato[6]);
+                                BigDecimal ValoreTot=new BigDecimal(movimentoSplittato[8]);
+                                
+                                //imposto il valore della transazione come da file con la differenza che se sono euro
+                                //il valore è il quantitativo in euro
+                                //se non sono euro prendo invece il controvalore che mi da binance
+                                String valoreEuro;                               
+                                //Se la moneta delle fee è uguale a quella ricevuta sommo i valori
+                                if(movimentoSplittato[7].equals(movimentoSplittato[15])){
+                                    //Se la moneta delle fee è uguale a quella ricevuta allora devo sommare le fee alla moneta ricevuta per trovare il totale
+                                  //  TotRicevuto=TotRicevuto.add(new BigDecimal(movimentoSplittato[14])); 
+                                  //  ValoreTot=ValoreTot.add(new BigDecimal(movimentoSplittato[16]));
+                                }
+                                if (movimentoSplittato[7].equalsIgnoreCase("EUR")){
+                                    valoreEuro=TotRicevuto.setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                    } 
+                                else {
+                                    valoreEuro=ValoreTot.setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                }
+                                RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
+                                RT[6] = movimentoSplittato[7]+" ->";                                
+                                RT[7] = TipoMovimento;
+                                if (!movimentoSplittato[7].equalsIgnoreCase("EUR")){
+                                    //QUESTO E' UN DOPPIONE DI QUELLO SOPRA BISOGNA CAPIRE SE LE FEE SONO GIA' SCALATE O MENO
+                                    valoreEuro=new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                }
+                                //String valoreEuro=new BigDecimal(TotRicevuto).setScale(2, RoundingMode.HALF_UP).abs().toString();
+                                RT[8] = movimentoSplittato[7];
+                                RT[9] = "FIAT";
+                                RT[10] = TotRicevuto.abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
+                                RT[14] = "€ "+movimentoSplittato[8];
                                 RT[15] = valoreEuro;
                                 RT[17] = valoreEuro;
                                 RT[22] = "A";

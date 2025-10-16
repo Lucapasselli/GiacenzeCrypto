@@ -455,7 +455,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             for (Moneta m : a.values()) {
                 if (!m.Tipo.equalsIgnoreCase("FIAT") && new BigDecimal(m.Qta).compareTo(new BigDecimal(0)) != 0) {
                     //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
-                    m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete);
+                    m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete,"");
                     //System.out.println(m.Moneta+" - "+m.Qta+" - "+inizio+" - "+m.Prezzo);
                     //System.out.println(m.Prezzo);
                     //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
@@ -913,7 +913,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                         //Dovrò anche verificare se per caso il token ha già prezzi che arrivano dal csv
                         if (Valore.equals("0.00")){
                             long DataRif=OperazioniSuDate.ConvertiDatainLongMinuto(Data);
-                            String Prezzo = Prezzi.DammiPrezzoTransazione(m, null, DataRif, null, true, 15, m.Rete);
+                            String Prezzo = Prezzi.DammiPrezzoTransazione(m, null, DataRif, null, true, 15, m.Rete,"");
                            //System.out.println("Funzione CalcoliRW TokenConPrezzo "+m.Moneta+" - "+Prezzo);
                             if (Prezzo.equals("0.00"))TokenConPrezzo=false;
                         }
@@ -1147,7 +1147,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                        // System.out.println("Monete coinvolte :"+Monete[0].Moneta+"/"+Monete[0].Tipo+" - "+Monete[1].Moneta+"/"+Monete[1].Tipo+"\n");
                         long d = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
                         if (IDTS[4].equals("RW") && Valore.equals("0.00")) {
-                            Valore = Prezzi.DammiPrezzoTransazione(Monete[0], null, d, null, true, 15, Monete[0].Rete);                            
+                            Valore = Prezzi.DammiPrezzoTransazione(Monete[0], null, d, null, true, 15, Monete[0].Rete,"");                            
                         }
                       //  System.out.println(Monete[0].Prezzo+" m "+Monete[0].Moneta + " v "+Valore);
                         ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, Causale, IDTransazione);
@@ -1633,7 +1633,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                            // long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnnoCalcoloPrezzi);
                           // m.Moneta="BTC";
                            //if (m.Moneta.equals("NEXO"))System.out.println(m.Qta);
-                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete);
+                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete,"");
                          //   if(m.Moneta.equalsIgnoreCase("USDT")) System.out.println(m.Moneta+" - "+m.Qta+" - "+fine+" - "+m.Prezzo+" - "+m.MonetaAddress+" - "+m.Rete);
                             
                            // System.out.println(m.Moneta+"-"+m.Prezzo);

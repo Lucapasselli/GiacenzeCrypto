@@ -48,7 +48,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -8015,7 +8014,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
+                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
@@ -8153,7 +8152,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete));
+                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
@@ -12028,16 +12027,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-    try {
+
         // TODO add your handling code here:
         Prezzi.recuperoPrezziCCXT("BTC", Long.parseLong("1704067200000"));
         Prezzi.InfoPrezzo ip=Prezzi.getPrezzoVicinoDaDatabase("BTC", Long.parseLong("1704067200000"), "cippo", "", "");
         System.out.println(ip.exchange);
         System.out.println(ip.prezzo);
         System.out.println(ip.timestamp);
-    } catch (SQLException | IOException | InterruptedException ex) {
-        LoggerGC.ScriviErrore(ex);       
-    }
+
     
     }//GEN-LAST:event_jButton3ActionPerformed
 
@@ -13341,7 +13338,7 @@ try {
                         if (M1.Qta.equals("0")) {
                             riga[5] = "0.00";
                         } else {
-                            riga[5] = Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, false, 2, Rete);
+                            riga[5] = Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, false, 2, Rete,"");
                            // System.out.println(M1.Moneta+" - "+M1.Tipo+" - "+M1.Qta+" - "+M1.Rete+" - "+M1.MonetaAddress);
                             if (riga[5]==null){
                                 riga[5]="0.00";

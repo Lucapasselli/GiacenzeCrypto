@@ -8,8 +8,6 @@ package com.giacenzecrypto.giacenze_crypto;
  *
  * @author luca.passelli
  */
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import okhttp3.*;
 import org.json.*;
 import java.io.IOException;

@@ -1844,7 +1844,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             M2.InserisciValori(MovimentoDeposito[11], MovimentoDeposito[13], MovimentoPrelievo[28], MovimentoPrelievo[12]);*/
             String Prezzo;
             String Rete=Funzioni.TrovaReteDaID(MovimentoPrelievo[0]);
-            Prezzo=Prezzi.DammiPrezzoTransazione(M1, null, DatalongDeposito, "0", true, 3, Rete);
+            Prezzo=Prezzi.DammiPrezzoTransazione(M1, null, DatalongDeposito, "0", true, 3, Rete,"");
             //Se la differenza è inferiore ai 5 minuti allora posso prendere sia il prezzo del token uscito che di quello entrato
             if (DiffDate<300000){
                 // Se il prezzo è uguale a zero allora prendo il prezzo di deposito se esiste                

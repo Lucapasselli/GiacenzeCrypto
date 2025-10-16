@@ -875,7 +875,7 @@ public class Calcoli_RT {
                            // MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Qta="100";
                             //Adesso devo trovare il Valore di Vendita della Moneta
                             //mon.MonetaAddress="";
-                            BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete));
+                            BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete,""));
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo=PrezzoV.toPlainString();
                           //  System.out.println(Anno+" - "+MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo);
                             
@@ -1248,7 +1248,7 @@ public class Calcoli_RT {
                 rigaTabella[4]=costoEstratta.setScale(2, RoundingMode.HALF_UP);
                 Moneta monCalcoli=PlusXMon.Mon.ClonaMoneta();
                 monCalcoli.Qta=qtaEstratta.stripTrailingZeros().toPlainString();
-                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete);
+                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete,"");
                 rigaTabella[5]=new BigDecimal(PrezzoEsatto).setScale(2, RoundingMode.HALF_UP).toPlainString();
                 BigDecimal PlusLatenteEsatta=new BigDecimal(PrezzoEsatto).subtract(costoEstratta);
                 rigaTabella[6]=new BigDecimal((String)rigaTabella[5]).subtract(costoEstratta).setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -1281,7 +1281,7 @@ public class Calcoli_RT {
                 Moneta monCalcoli=PlusXMon.Mon.ClonaMoneta();
                 monCalcoli.Qta=qtaEstratta.stripTrailingZeros().toPlainString();
                 //System.out.println(DecimaliCalcoli);
-                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete);
+                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete,"");
                 rigaTabella[5]=new BigDecimal(PrezzoEsatto).setScale(2, RoundingMode.HALF_UP).toPlainString();
                 BigDecimal PlusLatenteEsatta=new BigDecimal(PrezzoEsatto).subtract(costoEstratta);
                 rigaTabella[6]=new BigDecimal((String)rigaTabella[5]).subtract(costoEstratta).setScale(2, RoundingMode.HALF_UP).toPlainString();

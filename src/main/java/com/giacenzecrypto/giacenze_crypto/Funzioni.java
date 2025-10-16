@@ -967,7 +967,7 @@ public class Funzioni {
                         M1.Qta="1";
                         M1.Tipo=valori[3];
                         M1.Rete=Rete;
-                        valori[6]=Prezzi.DammiPrezzoTransazione(M1,null,lDataInizio, null,true,30,Rete);
+                        valori[6]=Prezzi.DammiPrezzoTransazione(M1,null,lDataInizio, null,true,30,Rete,"");
                     if (valori[0].contains(" **"))
                     {
                         valori[7]="Token SCAM";
@@ -989,7 +989,7 @@ public class Funzioni {
                         M1.Qta=new String("1");
                         M1.Tipo=valori[3];
                         M1.Rete=Rete;
-                        valori[6]=Prezzi.DammiPrezzoTransazione(M1,null,lDataFine, null,true,30,Rete);
+                        valori[6]=Prezzi.DammiPrezzoTransazione(M1,null,lDataFine, null,true,30,Rete,"");
                     if (valori[0].contains(" **"))
                     {
                         valori[7]="Token SCAM";
@@ -1180,7 +1180,7 @@ public class Funzioni {
             if (!M1.Qta.equals("0"))
             {
                 if (M1.Qta.equals("0"))riga[5]="0.00";
-                else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete);
+                else riga[5]=Prezzi.DammiPrezzoTransazione(M1,null,DataRiferimento, null,true,2,Rete,"");
                 if (riga[4].contains("-")&&!riga[5].equals("0.00"))riga[5]="-"+riga[5];
                 ListaSaldi.add(riga);                
             }
@@ -1331,9 +1331,9 @@ return ListaSaldi;
                         DicituraInizio = MappaDataPartenza.get(GWallet)[2];
                     }                   
                     if(m[0].Qta.equals("0"))m[0].Prezzo="0.0000";
-                    else m[0].Prezzo=Prezzi.DammiPrezzoTransazione(m[0], null, lDataInizio1, null, false, 15, m[0].Rete);
+                    else m[0].Prezzo=Prezzi.DammiPrezzoTransazione(m[0], null, lDataInizio1, null, false, 15, m[0].Rete,"");
                     if(m[1].Qta.equals("0"))m[1].Prezzo="0.0000";
-                    else m[1].Prezzo=Prezzi.DammiPrezzoTransazione(m[1], null, lDataFine, null, false, 15, m[1].Rete);
+                    else m[1].Prezzo=Prezzi.DammiPrezzoTransazione(m[1], null, lDataFine, null, false, 15, m[1].Rete,"");
                     String xlista[]=new String[17];
                     xlista[0]=Anno;                                             //Anno RW
                     xlista[1]=GWallet;                                          //Gruppo Wallet Inizio

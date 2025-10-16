@@ -251,7 +251,7 @@ public class Tabelle {
                     c.setBackground(table.getSelectionBackground());
 
                 }
-                else if (table.getModel().getColumnCount()>3 && table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 4).toString().contains("-")) {
+                else if (table.getModel().getColumnCount()>3 && table.getModel()!=null &&table.getModel().getValueAt(table.getRowSorter().convertRowIndexToModel(row), 4).toString().contains("-")) {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }

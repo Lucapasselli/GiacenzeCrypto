@@ -889,7 +889,7 @@ private static final long serialVersionUID = 9L;
         }
        
        
-       String Prezzo=Prezzi.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete);
+       String Prezzo=Prezzi.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete,"");
         ValoreTransazione_TextField.setText(Prezzo);
        EvidenziaProblemi();
      // System.out.println("Prezzo");
@@ -972,7 +972,7 @@ private static final long serialVersionUID = 9L;
                 ME.Tipo = this.MonetaETipo;
             }
             long dataLong = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
-            String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete);
+            String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete,"");
             if (Prezzo.equals("0.00")) {
                 String Messaggio = "Attenzione, il prezzo del movimento è valorizzato a '0.00'.\n"
                         + "E' corretto e si vuole Proseguire?";

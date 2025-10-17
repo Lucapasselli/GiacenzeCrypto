@@ -2023,7 +2023,8 @@ return MappaLista;
             JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
             return json.has("jsonrpc") && "2.0".equals(json.get("jsonrpc").getAsString());
         } catch (Exception e) {
-            e.printStackTrace();
+           // e.printStackTrace();
+            LoggerGC.ScriviErrore(e);
             return false;
         }
     }

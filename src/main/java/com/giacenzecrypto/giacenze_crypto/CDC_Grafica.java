@@ -12029,8 +12029,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
         // TODO add your handling code here:
-        Prezzi.recuperoPrezziCCXT("BTC", Long.parseLong("1704067200000"));
-        Prezzi.InfoPrezzo ip=Prezzi.getPrezzoVicinoDaDatabase("BTC", Long.parseLong("1704067200000"), "cippo", "", "");
+        Prezzi.RecuperaPrezziDaCCXT("BTC", Long.parseLong("1704067200000"));
+        Prezzi.InfoPrezzo ip=Prezzi.DammiPrezzoDaDatabase("BTC", Long.parseLong("1704067200000"), "cippo", "", "",5);
         System.out.println(ip.exchange);
         System.out.println(ip.prezzo);
         System.out.println(ip.timestamp);

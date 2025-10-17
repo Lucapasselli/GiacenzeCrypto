@@ -2163,7 +2163,13 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     }
                                 else
                                     {
-                                        valoreEuro=Prezzi.ConvertiXXXEUR(movimentoSplittato[6],movimentoSplittato[7], OperazioniSuDate.ConvertiDatainLongMinuto(data));
+                                        long Datalong=OperazioniSuDate.ConvertiDatainLongSecondo(data);
+                                        Moneta Mon=new Moneta();
+                                        Mon.Moneta=movimentoSplittato[6];
+                                        Mon.Tipo="Crypto";
+                                        Mon.Qta=movimentoSplittato[7];
+                                        valoreEuro=Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        //valoreEuro=Prezzi.ConvertiXXXEUR(movimentoSplittato[6],movimentoSplittato[7], OperazioniSuDate.ConvertiDatainLongMinuto(data),"","","");
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                                 RT[15]=valoreEuro;

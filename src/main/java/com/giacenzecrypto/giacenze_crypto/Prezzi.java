@@ -1417,7 +1417,7 @@ public class Prezzi {
 
                         ps.setLong(1, timestamp);
                         ps.setString(2, "Coingecko");
-                        ps.setString(3, Simbolo);
+                        ps.setString(3, "");
                         ps.setDouble(4, prezzo);
                         ps.setString(5, Rete);
                         ps.setString(6, Address);

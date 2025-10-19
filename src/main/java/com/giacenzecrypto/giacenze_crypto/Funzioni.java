@@ -427,6 +427,7 @@ public class Funzioni {
             //PARTE 2    
             c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
               String PrezzoAuto=Prezzi.DammiPrezzoDaTransazione(trans, 2);
+              if (PrezzoAuto==null)PrezzoAuto="0.00";
               c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 Testo = "<html>Indicare il prezzo in <b>"+MonRiferimento+"</b> relativo alla transazione del <br><b>"
                         + trans[1]+"</b> relativo a questa movimentazione : (<b>"+trans[6]+"</b>)<br><br>"+

@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -11395,6 +11393,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     String pr = "0.00";
                     if (trans[14].isBlank()) {
                         pr = Prezzi.DammiPrezzoDaTransazione(trans, 2);
+                        if (pr==null)pr="0.00";
                     }
                     if (!trans[15].equals(pr) && !pr.equals("0.00")) {
                         //System.out.println(trans[15]+" - "+pr);
@@ -12028,12 +12027,18 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
+        
+        //DammiPrezzoTransazione1(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) 
+        //DammiPrezzoTransazione1(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) 
+       // 20250222023538_BC.ARB.0xee66e91a5db49f07f4706eb9e20c3f520368dba9.0xf39e222dfc735e639d415cf5f3fa5a7d949704feed7c02e9f9fb8e926dd5298e_1_1_SC
+     /*  String mov[]=MappaCryptoWallet.get("20250222023538_BC.ARB.0xee66e91a5db49f07f4706eb9e20c3f520368dba9.0xf39e222dfc735e639d415cf5f3fa5a7d949704feed7c02e9f9fb8e926dd5298e_1_1_SC");
+       System.out.println(Prezzi.DammiPrezzoDaTransazione(mov, 2));*/
         // TODO add your handling code here:
-        Prezzi.RecuperaPrezziDaCCXT("BTC", Long.parseLong("1704067200000"));
+       /* Prezzi.RecuperaPrezziDaCCXT("BTC", Long.parseLong("1704067200000"));
         Prezzi.InfoPrezzo ip=Prezzi.DammiPrezzoDaDatabase("BTC", Long.parseLong("1704067200000"), "cippo", "", "",5);
         System.out.println(ip.exchange);
         System.out.println(ip.prezzo);
-        System.out.println(ip.timestamp);
+        System.out.println(ip.timestamp);*/
 
     
     }//GEN-LAST:event_jButton3ActionPerformed

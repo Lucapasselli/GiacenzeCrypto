@@ -60,6 +60,12 @@
 40 - Fonte prezzi così composta : Token | Timestamp | PrezzoUnitario | FontePrezzi
 */
 
+
+
+
+
+
+
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
@@ -1801,7 +1807,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon.Moneta=movimentoSplittato[2];
                                         Mon.Tipo="Crypto";
                                         Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
-                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
                                         System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (RW)");
                                     }
                                     valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -2115,7 +2128,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon.Moneta=movimentoSplittato[2];
                                         Mon.Tipo="Crypto";
                                         Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
-                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
+                                        //valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
                                         System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (VC)");
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
@@ -2168,7 +2189,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon.Moneta=movimentoSplittato[6];
                                         Mon.Tipo="Crypto";
                                         Mon.Qta=movimentoSplittato[7];
-                                        valoreEuro=Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
+                                       // valoreEuro=Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
                                         //valoreEuro=Prezzi.ConvertiXXXEUR(movimentoSplittato[6],movimentoSplittato[7], OperazioniSuDate.ConvertiDatainLongMinuto(data),"","","");
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
@@ -2219,7 +2248,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon.Moneta=movimentoSplittato[2];
                                         Mon.Tipo="Crypto";
                                         Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
-                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        //valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
                                         System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (VC)");
                                     }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
@@ -2340,7 +2377,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon2.Moneta=movimentoSplittato[4];
                                         Mon2.Tipo="Crypto";
                                         Mon2.Qta=new BigDecimal(movimentoSplittato[5]).toPlainString();
-                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, Mon2, Datalong, null, true, 10, null,"cryptocom");
+                                        //valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, Mon2, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
                                         System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (SC)");
                                 }
                                 valoreEuro=new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -2374,7 +2419,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon.Moneta=movimentoSplittato[2];
                                         Mon.Tipo="Crypto";
                                         Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
-                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
                                         System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (DUST CONVERSION)");
                                 }
                                 Moneta Mon=new Moneta();
@@ -2507,7 +2559,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon.Moneta=movimentoSplittato[2];
                                         Mon.Tipo="Crypto";
                                         Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
-                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
                                         System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (TI)");
                                 }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
@@ -2606,7 +2665,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         Mon.Moneta=movimentoSplittato[2];
                                         Mon.Tipo="Crypto";
                                         Mon.Qta=new BigDecimal(movimentoSplittato[3]).toPlainString();
-                                        valoreEuro = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"cryptocom");
+                                        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"cryptocom");
+                                        if (IP==null)
+                                            valoreEuro = "0.00";
+                                        else 
+                                        {
+                                            valoreEuro = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
                                         System.out.println("Importazioni.ConsolidaMovimenti_CDCAPP - Prezzo non fornito da CSV (TC)");
                                 }
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
@@ -2729,10 +2795,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     for (ValoriToken tokenE : MappaTokenEntrata.values()) {
                                         for (ValoriToken tokenU : MappaTokenUscita.values()) {
                                            // System.out.println(tokenU);
-                                          /*  if (new BigDecimal(tokenU.Peso).compareTo(new BigDecimal(1)) != 0 || new BigDecimal(tokenE.Peso).compareTo(new BigDecimal(1)) != 0) {
-                                              //  System.out.print(tokenU.Moneta + " - " + tokenU.Peso + " - " + tokenU.Qta + " _____ ");
-                                              //  System.out.println(tokenE.Moneta + " - " + tokenE.Peso + " - " + tokenE.Qta+ " - "+dataa);
-                                            }*/
                                             //peso transazione                  
                                             String QuantitaEntrata = new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
                                             String PrezzoEntrata = new BigDecimal(tokenE.Prezzo).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
@@ -2744,12 +2806,24 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
                                             BigDecimal PrezzoTransazione;
                                             PrezzoTransazione=new BigDecimal(PrezzoEntrata);
+                                            String RT[] = new String[ColonneTabella];
                                             if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione=new BigDecimal(PrezzoUscita);
-                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), "0", true, 2, null,"cryptocom"));
-                                            PrezzoTransazione=PrezzoTransazione.setScale(2,RoundingMode.HALF_UP);
+                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) 
+                                            {
+                                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "cryptocom");
+                                                if (IP == null)
+                                                    PrezzoTransazione = new BigDecimal("0.00");
+                                                else {
+                                                    PrezzoTransazione = IP.prezzoQta;
+                                                    RT[40]=IP.Ritorna40();
+
+                                                }
+                                               // PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), "0", true, 2, null,"cryptocom"));
+                                            }
+                                                PrezzoTransazione=PrezzoTransazione.setScale(2,RoundingMode.HALF_UP);
                                             String TipoTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 1);
                                             String CodiceTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 2);
-                                            String RT[] = new String[ColonneTabella];
+                                            
                                             RT[0] = data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+tokenE.IDTransazione+"_"+totMov+ "_"+i+"_"+CodiceTransazione;
                                             RT[1] = dataa;
                                             RT[2] = i + " di " + totMov;
@@ -2864,7 +2938,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[36] = movimentoSplittato[9];
                                 RT[37] = movimentoSplittato[13];
                                 RiempiVuotiArray(RT);
-                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);
                                 
                                 
@@ -2991,7 +3064,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[37] = movimentoSplittato[13];
                                 
                                 RiempiVuotiArray(RT);
-                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);    
 
                             }
@@ -3028,7 +3100,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[37] = movimentoSplittato[13];
                                 
                                 RiempiVuotiArray(RT);
-                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);    
 
                             }
@@ -3065,7 +3136,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[37] = movimentoSplittato[13];
                                 
                                 RiempiVuotiArray(RT);
-                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT);    
 
                             }
@@ -3103,7 +3173,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[36] = movimentoSplittato[9];
                                 RT[37] = movimentoSplittato[13];
                                 RiempiVuotiArray(RT);
-                                //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                 lista.add(RT); 
                                 
                                                                 
@@ -3139,7 +3208,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                RT[22] = "A";
                                RT[32] = "SI";
                                RiempiVuotiArray(RT);
-                               //Prezzi.DammiPrezzoDaTransazione(RT, 4);
                                lista.add(RT);
 
                            }
@@ -3240,7 +3308,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             else
                                 Mon.Tipo="Crypto";
                            
-                            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"binance");
+                            Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"binance");
+                                        if (IP==null)
+                                            Mon.Prezzo = "0.00";
+                                        else 
+                                        {
+                                            Mon.Prezzo = IP.prezzoQta.toPlainString();
+                                            RT[40]=IP.Ritorna40();
+                                        }
+                            //Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"binance");
                             String valoreEuro = new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                            // String WalletSecondario=movimentoSplittato[2];
                            // WalletSecondario="Principale";
@@ -3551,10 +3627,18 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             M1.InserisciValori(tokenU.Moneta, QuantitaUscita, tokenU.MonetaAddress, tokenU.Tipo);
                                             Moneta M2 = new Moneta();
                                             M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
-                                            BigDecimal PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null,"binance"));
+                                            
+                                            String RT[] = new String[ColonneTabella];
+                                            BigDecimal PrezzoTransazione=new BigDecimal("0.00");
+                                            Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(M1, M2, Datalong, null,"binance");
+                                            if (IP!=null){
+                                                PrezzoTransazione = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP);
+                                                RT[40]=IP.Ritorna40();
+                                            }
+                                            //BigDecimal PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null,"binance"));
                                             String TipoTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 1);
                                             String CodiceTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 2);
-                                            String RT[] = new String[ColonneTabella];
+                                            
                                             RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+totMov+ "_"+i+"_"+CodiceTransazione;
                                             RT[1] = dataa;
                                             RT[2] = i + " di " + totMov;
@@ -3580,14 +3664,23 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }
                                     }else if(TipoScambio.equalsIgnoreCase("Deposito")){
                                         for (ValoriToken tokenE : MappaTokenEntrata.values()) {
+                                            String RT[] = new String[ColonneTabella];
                                             Moneta M2 = new Moneta();
                                             M2.InserisciValori(tokenE.Moneta, tokenE.Qta, tokenE.MonetaAddress, tokenE.Tipo);
                                             BigDecimal PrezzoTransazione;
-                                            if (tokenE.Prezzo.isBlank())
-                                                PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M2,null, Datalong, "0", true, 2, null,"binance"));
-                                            else
+                                            if (tokenE.Prezzo.isBlank()){
+                                                //PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M2,null, Datalong, "0", true, 2, null,"binance"));
+                                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M2, null, Datalong, null, "binance");
+                                                if (IP == null)
+                                                    PrezzoTransazione = new BigDecimal("0.00");
+                                                else {
+                                                    PrezzoTransazione = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP);
+                                                    RT[40] = IP.Ritorna40();
+                                                }
+                                            }
+                                            else{
                                                 PrezzoTransazione=new BigDecimal(tokenE.Prezzo).setScale(2, RoundingMode.HALF_UP);
-                                            String RT[] = new String[ColonneTabella];
+                                            }
                                             RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+totMov+ "_"+i+"_DC";
                                             RT[1] = dataa;
                                             RT[2] = i + " di " + totMov;
@@ -3611,14 +3704,24 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     }
                                     else if(TipoScambio.equalsIgnoreCase("Prelievo")){                                       
                                         for (ValoriToken tokenU : MappaTokenUscita.values()) {
+                                            String RT[] = new String[ColonneTabella];
                                             Moneta M2 = new Moneta();
                                             M2.InserisciValori(tokenU.Moneta, tokenU.Qta, tokenU.MonetaAddress, tokenU.Tipo);
                                             BigDecimal PrezzoTransazione;
-                                            if (tokenU.Prezzo!=null&&tokenU.Prezzo.isBlank())
-                                                PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M2,null, Datalong, "0", true, 2, null,"binance"));
-                                            else
+                                            if (tokenU.Prezzo!=null&&tokenU.Prezzo.isBlank()){
+                                                //PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M2,null, Datalong, "0", true, 2, null,"binance"));
+                                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M2, null, Datalong, null, "binance");
+                                                if (IP == null)
+                                                    PrezzoTransazione = new BigDecimal("0.00");
+                                                else {
+                                                    PrezzoTransazione = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP);
+                                                    RT[40] = IP.Ritorna40();
+                                                }
+                                                
+                                            }
+                                            else{
                                                 PrezzoTransazione=new BigDecimal(tokenU.Prezzo).setScale(2, RoundingMode.HALF_UP);
-                                            String RT[] = new String[ColonneTabella];
+                                        }
                                             RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+totMov+ "_"+i+"_PC";
                                             RT[1] = dataa;
                                             RT[2] = i + " di " + totMov;

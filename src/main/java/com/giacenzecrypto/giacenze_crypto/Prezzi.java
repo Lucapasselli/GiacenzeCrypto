@@ -686,6 +686,9 @@ public class Prezzi {
     
     public static InfoPrezzo ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
 
+        
+        
+        BigDecimal qta=new BigDecimal(Qta);
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
         //Se l'address non è valido allora recupero il prezzo dagli exchange
         if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete) || Rete == null || Rete.isBlank()) {
@@ -714,14 +717,13 @@ public class Prezzi {
        
         //Se non ci riesco cerco nel nuovo database
         if (IPrezzo==null){
-            //Il nome della coin in questo caso non serve anzi non va messo proprio
-            IPrezzo=DammiPrezzoDaDatabase("",Datalong,"",Rete,Address,60);
+            //Il nome della coin in questo caso non serve anzi non va messo proprio           
+            IPrezzo=DammiPrezzoDaDatabase("",Datalong,"",Rete,Address,60,qta);
             if (IPrezzo!=null)
             {
                 //Integro i dati mancanti (quelli che non posso avere dal database)
-                IPrezzo.Qta=new BigDecimal(Qta);
                 IPrezzo.Moneta=Simbolo;
-                IPrezzo.exchange="coingecko";
+                //IPrezzo.exchange="coingecko";
                 return IPrezzo;
             }
         }
@@ -753,13 +755,12 @@ public class Prezzi {
                 }
                 //Se arrivo qua vuol dire che non è tra le coppie prioritarie e quindi vado a prendere il prezzo da coingecko
                 RecuperaTassidiCambiodaAddress_Coingecko(DataGiorno, Address, Rete, Simbolo);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
-                IPrezzo=DammiPrezzoDaDatabase("",Datalong,"",Rete,Address,60);
+                IPrezzo=DammiPrezzoDaDatabase("",Datalong,"",Rete,Address,60,qta);
                 if (IPrezzo!=null)
                 {
                     //Integro i dati mancanti (quelli che non posso avere dal database)
-                    IPrezzo.Qta=new BigDecimal(Qta);
                     IPrezzo.Moneta=Simbolo;
-                    IPrezzo.exchange="coingecko";
+                    //IPrezzo.exchange="coingecko";
                     return IPrezzo;
                 }
                 
@@ -930,7 +931,8 @@ public class Prezzi {
       public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Exchange) {
 
         //in questo metodo manca solo la parte che salva le richieste già effettuate sul token per evitare di farne tante analoghe
-        InfoPrezzo risultato;       
+        InfoPrezzo risultato;   
+        BigDecimal qta=new BigDecimal(Qta);
         
         //1 - NORMALIZZO I DATI IN INGRESSO
         
@@ -964,12 +966,8 @@ public class Prezzi {
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         
         //Verifico se ho i prezzi precisi
-        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Exchange,Rete,Address,5);
+        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Exchange,Rete,Address,5,qta);
         if (risultato!=null){
-            //LoggerGC.logInfo("Moneta:"+Crypto, "CambioXXXEUR()");
-            //LoggerGC.logInfo("Qta:"+Qta, "CambioXXXEUR()");
-            risultato.Qta=new BigDecimal(Qta);
-            risultato.Moneta=Crypto;
             return risultato;
         }
         
@@ -988,17 +986,9 @@ public class Prezzi {
           //Se non ho neanche i prezzi all'ora provo a scaricarli
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
           RecuperaPrezziDaCCXT(Crypto, Datalong);
-          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,5);
+          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,5,qta);
           //System.out.println(risultato);
-          if (risultato!=null){
-              //System.out.println("Qta:"+Qta);
-             // LoggerGC.logInfo("Moneta:"+Crypto, "CambioXXXEUR()");
-             // LoggerGC.logInfo("Qta:"+Qta, "CambioXXXEUR()");
-              //System.out.println("");
-              risultato.Qta=new BigDecimal(Qta);
-              risultato.Moneta=Crypto;
-          }
-          else {
+          if (risultato==null){
               System.out.println("Nessun prezzo trovato per "+Crypto);
           }
           return risultato;
@@ -1207,7 +1197,7 @@ public class Prezzi {
     public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte) {
 
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
-        if (IP!=null)return IP.RitornaPrezzoQta().setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
+        if (IP!=null)return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
         if (PrezzoZero) {
             return "0.00";
         } else {
@@ -1219,9 +1209,6 @@ public class Prezzi {
     public static InfoPrezzo DammiPrezzoInfoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) {
 
         InfoPrezzo IP;
-        /*   System.out.println("PREZZZZZZZOO a data : "+ Moneta1a.Moneta+" - "+OperazioniSuDate.ConvertiDatadaLongallOra(Data));
-       System.out.println(Rete);
-       System.out.println(Moneta1a.MonetaAddress);*/
 
  /*Questa funzione si divide in 4 punti fondamentali:
         1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
@@ -1608,6 +1595,7 @@ public class Prezzi {
  * @param rete                la rete blockchain associata al token (facoltativa, può essere vuota)
  * @param address             l’indirizzo del token (facoltativo, può essere vuoto)
  * @param minuti              Precisione minima in minuti
+     * @param Qta
  * @return un oggetto {@link PrezzoInfo} contenente il prezzo, l’exchange e il timestamp effettivo del prezzo,
  *         oppure {@code null} se non è stato trovato alcun prezzo valido entro 5 minuti dal timestamp richiesto
  *
@@ -1622,8 +1610,10 @@ public static InfoPrezzo DammiPrezzoDaDatabase(
         String exchangePreferito,
         String rete,
         String address,
-        long minuti) {
+        long minuti, 
+        BigDecimal Qta) {
 
+   // if (Qta==null)Qta="1";
     
     final long MAX_DIFF_MS = minuti * 60 * 1000; // 5 minuti in millisecondi
     long tsMin = timestampRiferimento - MAX_DIFF_MS;
@@ -1661,8 +1651,8 @@ public static InfoPrezzo DammiPrezzoDaDatabase(
                     BigDecimal prezzo = rs.getBigDecimal("prezzo");
                     String exch = rs.getString("exchange");
                     long ts = rs.getLong("timestamp");
-                    //System.out.println("Trovato exchange richiesto "+exch);
-                    return new InfoPrezzo(prezzo, exch, ts);
+                    BigDecimal prezzoQta = prezzo.multiply(Qta);
+                    return new InfoPrezzo(prezzo, exch, ts, prezzoQta,Qta,symbol);
                     
                 }
             }
@@ -1699,7 +1689,9 @@ public static InfoPrezzo DammiPrezzoDaDatabase(
                 BigDecimal prezzo = rs.getBigDecimal("prezzo");
                 String exch = rs.getString("exchange");
                 long ts = rs.getLong("timestamp");
-                return new InfoPrezzo(prezzo, exch, ts);
+                BigDecimal prezzoQta = prezzo.multiply(Qta);
+                return new InfoPrezzo(prezzo, exch, ts, prezzoQta,Qta,symbol);
+                //return new InfoPrezzo(prezzo, exch, ts);
             }
         }
     }   catch (SQLException ex) {
@@ -1896,23 +1888,36 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
      
 public static class InfoPrezzo {
     public BigDecimal prezzo;
+    public BigDecimal prezzoQta;
     public String exchange;
     public long timestamp;
     public BigDecimal Qta;
     public String Moneta;
 
-    public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp) {
+  /*  public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp) {
         this.prezzo = prezzo;
         this.exchange = exchange;
         this.timestamp = timestamp;
+    }*/
+    public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp, BigDecimal prezzoQta, BigDecimal Qta,String Moneta) {
+        this.prezzo = prezzo;
+        this.exchange = exchange;
+        this.timestamp = timestamp;
+        this.prezzoQta = prezzoQta;
+        this.Qta = Qta;
+        this.Moneta = Moneta;
     }
     public InfoPrezzo() {
 
     }
     
-    public BigDecimal RitornaPrezzoQta(){
+   /* public BigDecimal RitornaPrezzoQta(){
         //System.out.println(Moneta+"-"+prezzo+"-"+Qta+"-"+timestamp);
         return prezzo.multiply(Qta);
+    }*/
+    
+    public String Ritorna40(){
+        return this.Moneta+"|"+this.timestamp+"|"+this.prezzo+"|"+this.exchange;
     }
 }        
     

@@ -8013,6 +8013,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, M1.Rete, "");
+                                if (IP!=null)RT2[40] = IP.Ritorna40();
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
@@ -8151,6 +8153,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, M1.Rete, "");
+                                if (IP!=null)RT1[40] = IP.Ritorna40();
                                 if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
                                 }
@@ -13439,7 +13443,7 @@ try {
             VecchioValore=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
        else VecchioValore="";*/
         Map<String, String> MappaGruppiWalletUtilizzati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        boolean VecchioTrovato=false;
+        //boolean VecchioTrovato=false;
        // int Selezionata2=GiacenzeaData_Wallet2_ComboBox.getSelectedIndex();
         
         //TransazioniCrypto_ComboBox_FiltroWallet.removeAllItems();

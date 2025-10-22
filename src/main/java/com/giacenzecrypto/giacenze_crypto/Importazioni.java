@@ -3817,7 +3817,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             else
                                 Mon.Tipo="Crypto";
                            //Questa parte del prezzo va rivista se i prezzi li prendo dal csv
-                            Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"");
+                           // Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"");
+                            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null, "");
+                            if (IP == null)
+                                Mon.Prezzo = "0.00";
+                            else {
+                                Mon.Prezzo = IP.prezzoQta.toPlainString();
+                                //RT[40] = IP.Ritorna40();
+                            }
                             String valoreEuro = new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                             WalletPrincipale=movimentoSplittato[1];
                             String WalletSecondario=movimentoSplittato[2];
@@ -3839,7 +3846,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 m.Moneta=movimentoSplittato[11];
                                 m.Qta=movimentoSplittato[12];
                                 m.Tipo=Tipo;
-                                m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, Datalong, null, true, 10, null,"");
+                               // m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, Datalong, null, true, 10, null,"");
+                                Prezzi.InfoPrezzo IPr = Prezzi.DammiPrezzoInfoTransazione(m, null, Datalong, null, "");
+                                if (IPr == null)
+                                    m.Prezzo = "0.00";
+                                else {
+                                    m.Prezzo = IPr.prezzoQta.toPlainString();
+                                    RT[40] = IPr.Ritorna40();
+                                }
                                 //System.out.println(m.Moneta+"-"+m.Qta+"-"+m.Tipo+"-"+m.Prezzo);
                                 String val = new BigDecimal(m.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                                 RT[0]=data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+IDOriginale+"C_"+String.valueOf(k+1)+"_1_CM";
@@ -3913,6 +3927,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22] = "A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 
@@ -3940,6 +3955,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";   
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
@@ -3983,6 +3999,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";   
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
@@ -4005,6 +4022,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);     
                             }
@@ -4056,6 +4074,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);  
                                 
@@ -4088,6 +4107,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT); 
                                 }
@@ -4127,6 +4147,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
@@ -4185,17 +4206,27 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                               //  System.out.print(tokenU.Moneta + " - " + tokenU.Peso + " - " + tokenU.Qta + " _____ ");
                                               //  System.out.println(tokenE.Moneta + " - " + tokenE.Peso + " - " + tokenE.Qta+ " - "+dataa);
                                             }*/
-                                            //peso transazione                  
+                                            //peso transazione   
+                                            String RT[] = new String[ColonneTabella];
                                             String QuantitaEntrata = new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
                                             String QuantitaUscita = new BigDecimal(tokenU.Qta).multiply(new BigDecimal(tokenE.Peso)).stripTrailingZeros().toPlainString();
                                             Moneta M1 = new Moneta();
                                             M1.InserisciValori(tokenU.Moneta, QuantitaUscita, tokenU.MonetaAddress, tokenU.Tipo);
                                             Moneta M2 = new Moneta();
                                             M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
-                                            BigDecimal PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null,""));
+                                            BigDecimal PrezzoTransazione;
+                                            //BigDecimal PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null,""));
+                                            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, Datalong, null, "");
+                                            if (IP == null)
+                                                PrezzoTransazione = new BigDecimal("0.00");
+                                            else {
+                                                PrezzoTransazione = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP);
+                                                RT[40] = IP.Ritorna40();
+                                            }
+                                            
                                             String TipoTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 1);
                                             String CodiceTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 2);
-                                            String RT[] = new String[ColonneTabella];
+                                            
                                             RT[0] = data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+tokenE.IDTransazione+"_"+totMov+ "_"+i+"_"+CodiceTransazione;
                                             RT[1] = dataa;
                                             RT[2] = i + " di " + totMov;
@@ -4274,7 +4305,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
          long Datalong=0;
          String data="";
          String WalletPrincipale="";
-         String IDOriginale="";
+         String IDOriginale;
          TransazioneDefi Scambio=new TransazioneDefi();         
                         for (int k=0;k<numMovimenti;k++){
                             //System.out.println("sono qui");
@@ -4292,9 +4323,17 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             else
                                 Mon.Tipo="Crypto";
                             
+                            Prezzi.InfoPrezzo IP=null;
                            //Questa parte del prezzo va rivista se i prezzi li prendo dal csv
                             if (movimentoSplittato[8].isBlank()){
-                                Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"");
+                                //Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"");
+                                IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null, "");
+                                if (IP == null)
+                                    Mon.Prezzo = "0.00";
+                                else {
+                                    Mon.Prezzo = IP.prezzoQta.toPlainString();
+                                    //RT[40] = IP.Ritorna40();
+                                }
                             }
                             else{
                                 Mon.Prezzo = movimentoSplittato[8];
@@ -4364,12 +4403,13 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     }
                                     RT[17] = valoreEuro;
                                     RT[19] = new BigDecimal(plus).setScale(2, RoundingMode.HALF_UP).toString();
+                                    if (IP!=null)RT[40] = IP.Ritorna40();
                                 }
 
                                 RT[22] = "A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
-                                RT[28] = Mon.MonetaAddress;
+                                RT[28] = Mon.MonetaAddress;                                
                                 RiempiVuotiArray(RT);
                                 Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);
@@ -4419,6 +4459,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";   
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);
@@ -4444,6 +4485,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
                                 RT[26] = Mon.MonetaAddress;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);     
@@ -4499,6 +4541,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);  
@@ -4535,6 +4578,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT); 
@@ -4577,6 +4621,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
                                 RT[24] = IDOriginale;
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 Prezzi.isMovimentoPrezzato(RT);
                                 lista.add(RT);
@@ -4710,14 +4755,26 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             M1.InserisciValori(tokenU.Moneta, QuantitaUscita, tokenU.MonetaAddress, tokenU.Tipo);
                                             Moneta M2 = new Moneta();
                                             M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
+                                            String RT[] = new String[ColonneTabella];
                                             BigDecimal PrezzoTransazione;
                                             PrezzoTransazione=new BigDecimal(PrezzoEntrata);
                                             if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione=new BigDecimal(PrezzoUscita);
-                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null,""));
+                                            //Se non trovo prezzi già memorizzati li cerco e inserisco i dati di prezzo nella casella 40
+                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) 
+                                            {
+                                                //PrezzoTransazione = new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, M2, Datalong, "0", true, 2, null,""));
+                                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, Datalong, null, "");
+                                                if (IP == null)
+                                                    PrezzoTransazione = new BigDecimal("0.00");
+                                                else {
+                                                    PrezzoTransazione = IP.prezzoQta;
+                                                    RT[40] = IP.Ritorna40();
+                                                }
+                                            }
                                             PrezzoTransazione=PrezzoTransazione.setScale(2,RoundingMode.HALF_UP);
                                             String TipoTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 1);
                                             String CodiceTransazione=Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo, 2);
-                                            String RT[] = new String[ColonneTabella];
+                                            
                                             RT[0] = data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+tokenE.IDTransazione+"_"+totMov+ "_"+i+"_"+CodiceTransazione;
                                             RT[1] = dataa;
                                             RT[2] = i + " di " + totMov;
@@ -4829,6 +4886,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                 RT[16] = "";
                                 RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
@@ -4837,6 +4895,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 
@@ -4863,6 +4922,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                               //  RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
@@ -4900,6 +4961,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                // RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
@@ -4940,6 +5003,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                              //   M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(null, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(null,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
@@ -4976,6 +5041,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 //M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(null, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(null,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                 //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
@@ -5015,6 +5082,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 //Moneta M2=new Moneta();
                                 //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
@@ -5052,6 +5121,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 //Moneta M2=new Moneta();
                                 //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                 //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
@@ -5171,6 +5242,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                // M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
                                 M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(null, M2, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(null,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                        // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
@@ -5216,6 +5289,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                // Moneta M2=new Moneta();
                                // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                               Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, OperazioniSuDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                         //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
@@ -5233,7 +5308,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }else if (movimentoSplittato[0].trim().equalsIgnoreCase("Reddito (non imponibile)")||
                                     movimentoSplittato[0].trim().equalsIgnoreCase("Spese (non imponibili)"))
                             {
-                                System.out.println("Movimento di entrata e uscita da earn scartato dai movimenti");
+                                System.out.println("Movimento di entrata o uscita da earn scartato dai movimenti");
                             }
                                 
                                
@@ -5987,7 +6062,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              mon.Qta=differenzaQta.abs().toPlainString();
             // mon.Rete=Funzioni.TrovaReteDaID(IDrif);
              mon.Tipo="Crypto";
-             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, "CRO","cryptocom");
+             Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), "CRO", "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, "CRO","");
              RT[7]="Rettifica Automatica";
              RT[22]="A";
                 RT[27]="CRO";
@@ -6015,7 +6092,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              mon.Qta=differenzaQta.abs().toPlainString();
              //mon.Rete="CRO";
              mon.Tipo="Crypto";
-             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, "CRO","cryptocom");
+             Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), "CRO", "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+             RT[15]=Prezzi.DammiPrezzoTransazione(mon, null, OperazioniSuDate.ConvertiDatainLongMinuto(MV[1]), null, true, 2, "CRO","");
              RT[7]="Rettifica Automatica";
              RT[22]="A";
                 RT[25]="CRO";
@@ -6277,6 +6356,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.Qta = QtaNuovoMovimento;
                                 M1.Tipo = "Crypto";
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, M1.Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
                                 /*if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(QtaNuovoMovimento)).setScale(2,RoundingMode.HALF_UP).abs();
@@ -6325,6 +6406,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 M1.Qta = QtaNuovoMovimento;
                                 M1.Tipo = "Crypto";
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, M1.Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                                 BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
                                 /*if (Prezzo.compareTo(new BigDecimal(0))==0){
                                     Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();

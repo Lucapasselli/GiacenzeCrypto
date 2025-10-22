@@ -67,7 +67,8 @@ public class TransazioneDefi {
 //DA FARE!!!!!!infatti da un rapido controllo sembrerebbe che mi risultino in giacenza più bnb di quelli reali
 //DA FARE!!!!!!E' una cosa che posso gestire alla fine, una volta generato tutti gli algoritmi di calcolo
 //conviene forse verificare la cosa già prima di cercare di buttare i token qua dentro
-        String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
+        //String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
+        long DataSecondo=OperazioniSuDate.ConvertiDatainLongSecondo(DataOra);
         
         if (MappaToken.get(MonetaAddress)==null)
             {
@@ -87,7 +88,7 @@ public class TransazioneDefi {
             //System.out.println(dataAlMinuto+" - "+MonetaAddress);
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,Qta,MonetaAddress,Tipologia);
-            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,30,Rete,"");
+            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,30,Rete,"");
             //System.out.println("Import - "+Moneta+" - "+MonetaAddress+" - "+monete.Prezzo);
             //Se trovo l'indirizzo nella mappa significa che non è gestito da coingecko
             
@@ -114,7 +115,7 @@ public class TransazioneDefi {
             monete.Qta=new BigDecimal(Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,monete.Qta,MonetaAddress,Tipologia);
-            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,30,Rete,"");
+            monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,30,Rete,"");
             }
     }
     
@@ -436,6 +437,7 @@ public class TransazioneDefi {
       String RT[];
       List<String[]> righe=new ArrayList<>();
       String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
+      long DataSecondo=OperazioniSuDate.ConvertiDatainLongSecondo(DataOra);
       String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+Wallet+"."+HashTransazione;
       if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
      /*System.out.println(dataAlMinuto);
@@ -466,7 +468,9 @@ public class TransazioneDefi {
            //   if(RT[8].equalsIgnoreCase("CRO")){
                 M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
              // }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto
+             Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
               RT[18]="";
@@ -511,7 +515,9 @@ public class TransazioneDefi {
            //   if(RT[8].equalsIgnoreCase("CRO")){
                 M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
             //  }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto
              // System.out.println(M1.Moneta+" - "+M1.MonetaAddress+" - "+RT[15]);
              // RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
@@ -563,7 +569,9 @@ public class TransazioneDefi {
               M1.InserisciValori(RT[8], RT[10], RT[8], RT[9]);
               //   }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
 
-              RT[15] = Prezzi.DammiPrezzoTransazione(M1, null, OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0", true, 2, Rete,"");//calcolare con numero contratto              
+              Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15] = Prezzi.DammiPrezzoTransazione(M1, null, DataSecondo, "0", true, 2, Rete,"");//calcolare con numero contratto              
               //RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16] = "";//Da definire cosa mettere
               RT[17] = "Da calcolare";
@@ -608,7 +616,9 @@ public class TransazioneDefi {
              // M1.InserisciValori(RT[8],RT[10],null,RT[9]);
               Moneta M2=new Moneta();
               M2.InserisciValori(RT[11],RT[13],token.MonetaAddress,RT[12]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto
+              Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M2, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto
              // RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,token.MonetaAddress,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
@@ -653,8 +663,9 @@ public class TransazioneDefi {
  //             if(RT[8].equalsIgnoreCase("CRO")){
                 M1.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
            //   }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-
-              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto              
+Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto              
               //RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
@@ -704,7 +715,9 @@ public class TransazioneDefi {
               M2.InserisciValori(RT[8],RT[10],token.MonetaAddress,RT[9]);
              // Moneta M2=new Moneta();
              // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto              
+             Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M2, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto              
               //RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,token.MonetaAddress,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
@@ -747,7 +760,9 @@ public class TransazioneDefi {
               M2.InserisciValori(RT[8],RT[10],token.MonetaAddress,RT[9]);
              // Moneta M2=new Moneta();
              // M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto              
+             Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M2, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto              
               //RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,token.MonetaAddress,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
@@ -793,7 +808,9 @@ public class TransazioneDefi {
          //     if(RT[8].equalsIgnoreCase("CRO")){
                 MC.InserisciValori(RT[8],RT[10],RT[8],RT[9]);
           //    }else M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(MC,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto
+          Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(MC, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(MC,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto
              // RT[15]=Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,null,null,Rete);//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="Da calcolare";
@@ -835,8 +852,10 @@ public class TransazioneDefi {
               M1.InserisciValori(tokenU.Moneta,QuantitaUscita,tokenU.MonetaAddress,tokenU.Tipo);
               Moneta M2=new Moneta();
               M2.InserisciValori(tokenE.Moneta,QuantitaEntrata,tokenE.MonetaAddress,tokenE.Tipo);
-              BigDecimal PrezzoTransazione=new BigDecimal (Prezzi.DammiPrezzoTransazione(M1,M2,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,""));
+              BigDecimal PrezzoTransazione=new BigDecimal (Prezzi.DammiPrezzoTransazione(M1,M2,DataSecondo, "0",true,2,Rete,""));
               RT=new String[Importazioni.ColonneTabella];
+              Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
               RT[0]=PrimaParteID+"_"+i+"_1_"+Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo,0);
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+totMov;
@@ -909,7 +928,9 @@ public class TransazioneDefi {
             //  M1.InserisciValori(RT[8],RT[10],null,RT[9]);
               Moneta M2=new Moneta();
               M2.InserisciValori(RT[11],RT[13],token.MonetaAddress,RT[12]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto
+              Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M2, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M2,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere,""
               RT[17]="0.00";
               RT[18]="";
@@ -954,7 +975,9 @@ public class TransazioneDefi {
               M1.InserisciValori(RT[8],RT[10],token.MonetaAddress,RT[9]);
              // Moneta M2=new Moneta();
             //  M2.InserisciValori(RT[11],RT[13],token.MonetaAddress,RT[12]);
-              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,OperazioniSuDate.ConvertiDatainLongMinuto(dataAlMinuto), "0",true,2,Rete,"");//calcolare con numero contratto
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, Rete, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+              RT[15]=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,2,Rete,"");//calcolare con numero contratto
               RT[16]="";//Da definire cosa mettere
               RT[17]="0.00";
               RT[18]="";

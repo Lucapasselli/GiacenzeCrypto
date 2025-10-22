@@ -766,7 +766,8 @@ public class Prezzi {
                 
                 //Se ancora non trovo il prezzo allora provo a cercare per simbolo
                 //Tanto parto dal presupposto che è un token che coingecko gestisce quindi non scam
-                IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
+                //QUESTO MOMENTANEAMENTE LO DISABILITO, DA CAPIRE SE RIABILITARLO O MENO
+               // IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
                 if (IPrezzo!=null)return IPrezzo;
             }
         }
@@ -1051,7 +1052,10 @@ public class Prezzi {
         long UntilVerifica=OperazioniSuDate.ConvertiDatainLong(DataIniziale)+ 3600000;
         long dataAdesso1 = System.currentTimeMillis();
         if (dataAdesso1<UntilVerifica)UntilVerifica=dataAdesso1;
+        System.out.println("Cerco "+Address+"_"+Rete+" nel manager richieste ");
+        System.out.println("Since "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(SinceVerifica)+" - Until "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(UntilVerifica));
         if(managerRichieste.isAlreadyRequested(Address+"_"+Rete, SinceVerifica, UntilVerifica))return null;
+        else System.out.println("Non ho nulla nel manager proseguo con le richieste");
         //Se cerco di richiedere una data futura annullo
         if (dataAdesso1<SinceVerifica)return null;
         
@@ -1107,7 +1111,7 @@ public class Prezzi {
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");*/
             System.out.println("Recupero prezzi token " + Simbolo + " con Address " + Address + " da coingecko su rete " + CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]
-                    + " da data " + OperazioniSuDate.ConvertiDatadaLong(dataIni * 1000));
+                    + " da data " + OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataIni * 1000));
             OkHttpClient client = new OkHttpClient();
             Request request;
             if (ApiKey.isBlank()){ 
@@ -1169,9 +1173,11 @@ public class Prezzi {
                     
 
                 } catch (SQLException ex) {
-                    Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, "Errore durante inserimento prezzi CoinGecko", ex);
+                    LoggerGC.ScriviErrore(ex);
+                    //Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, "Errore durante inserimento prezzi CoinGecko", ex);
                 }
             } else {
+                managerRichieste.addRange(Address+"_"+Rete, dataIni*1000, dataFin*1000);
                 return null;
             }
 
@@ -1182,6 +1188,8 @@ public class Prezzi {
         }
         
         //Se arrivo qua inserisco nel manager delle richieste il fatto che ho già richiseto il prezzo
+        System.out.println("Inserisco "+Address+"_"+Rete+" nel manager richieste");
+        System.out.println("Since "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataIni*1000)+" - Until "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataFin*1000));
         managerRichieste.addRange(Address+"_"+Rete, dataIni*1000, dataFin*1000);
 
         return "ok";
@@ -1651,7 +1659,7 @@ public static InfoPrezzo DammiPrezzoDaDatabase(
                     BigDecimal prezzo = rs.getBigDecimal("prezzo");
                     String exch = rs.getString("exchange");
                     long ts = rs.getLong("timestamp");
-                    BigDecimal prezzoQta = prezzo.multiply(Qta);
+                    BigDecimal prezzoQta = prezzo.multiply(Qta.abs());
                     return new InfoPrezzo(prezzo, exch, ts, prezzoQta,Qta,symbol);
                     
                 }
@@ -1689,7 +1697,7 @@ public static InfoPrezzo DammiPrezzoDaDatabase(
                 BigDecimal prezzo = rs.getBigDecimal("prezzo");
                 String exch = rs.getString("exchange");
                 long ts = rs.getLong("timestamp");
-                BigDecimal prezzoQta = prezzo.multiply(Qta);
+                BigDecimal prezzoQta = prezzo.multiply(Qta.abs());
                 return new InfoPrezzo(prezzo, exch, ts, prezzoQta,Qta,symbol);
                 //return new InfoPrezzo(prezzo, exch, ts);
             }
@@ -1708,11 +1716,11 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 
         
          try {
-             
+             TimeUnit.SECONDS.sleep(1);
              //long timestampAttuale = System.currentTimeMillis();
              //Voglio reperire sempre almeno 1h di dati per cui prendo 1h prima e 1h dopo
-             long Since=timestamp-3600000;
-             long Until=timestamp+3600000;
+             long Since=timestamp-7200000;//2h prima
+             long Until=timestamp+36000000;//10h dopo
              long Adesso = System.currentTimeMillis();
              if (Until>Adesso)Until=Adesso;
              if (Since>Adesso)return;

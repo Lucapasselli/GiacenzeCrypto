@@ -922,8 +922,11 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             Mon.Qta=amount;
             // Calcolo prezzo transazione - qui lo lasciamo vuoto oppure 0
             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"");
-
             String[] RT = new String[Importazioni.ColonneTabella];
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+
+            
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
@@ -1069,6 +1072,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 if (direzione.equalsIgnoreCase("deposito")) {
                     Mon.Qta = amount;
                     Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
+                    Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                     RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_DF"; // TrasID
                     RT[5] = "DEPOSITO FIAT";
                     RT[6] = "-> " + Mon.Moneta;
@@ -1079,6 +1084,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 {
                     Mon.Qta = amountp;
                     Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
+                    Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                     RT[0] = dataForId + "_" + Exchange + "_" + totMov + "_1_PF"; // TrasID
                     RT[5] = "PRELIEVO FIAT";
                     RT[6] = Mon.Moneta + " ->";
@@ -1099,6 +1106,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 Mon.Qta = feeamount;
                 Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
                 RT = new String[Importazioni.ColonneTabella];
+                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                 RT[1] = dataa;                                               // Data e ora
                 RT[2] = "2 di 2";                                   // Numero movimenti
                 RT[3] = Exchange;                                            // Exchange
@@ -1203,6 +1212,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                     //FIAT.Qta = feeamount;
                     FIAT.Prezzo = Prezzi.DammiPrezzoTransazione(FIAT, null, time, null, true, 2, null,"binance");
                     RT = new String[Importazioni.ColonneTabella];
+                    Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(FIAT, null, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                     RT[1] = dataa;                                               // Data e ora
                     RT[2] = "1 di "+numMovimenti;                                   // Numero movimenti
                     RT[3] = Exchange;                                            // Exchange
@@ -1255,6 +1266,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                     RT[13] = FIAT.Qta;                                          // Quantità Acq.
                 }
                 FIAT.Prezzo = Prezzi.DammiPrezzoTransazione(FIAT, CRYPTO, time, null, true, 2, null,"binance");
+                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(FIAT, CRYPTO, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
                 RT[15] = FIAT.Prezzo;                                         // Valore in EURO (qui 0)
                 RT[22] = "A";                                               // Auto
                 RT[29] = insertTime;                                         // Timestamp
@@ -1267,6 +1280,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 if (inserisciFee) {
                     FEE.Prezzo = Prezzi.DammiPrezzoTransazione(FEE, null, time, null, true, 2, null,"binance");
                     RT = new String[Importazioni.ColonneTabella];
+                    Prezzi.InfoPrezzo IPr = Prezzi.DammiPrezzoInfoTransazione(FEE, null, time, null, "binance");
+                                if (IPr!=null)RT[40] = IPr.Ritorna40();
                     RT[1] = dataa;                                               // Data e ora
                     RT[2] = movCommissione+" di "+numMovimenti;                  // Numero movimenti
                     RT[3] = Exchange;                                            // Exchange
@@ -1376,6 +1391,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"");
 
             String[] RT = new String[Importazioni.ColonneTabella];
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[1] = dataa;                                               // Data e ora
             RT[2] = "1 di 2";                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
@@ -1430,6 +1447,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"");
             
             RT = new String[Importazioni.ColonneTabella];
+            IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
             RT[1] = dataa;                                               // Data e ora
             RT[2] = "2 di 2";                                 // Numero movimenti
@@ -1549,6 +1568,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String PrezzoT = Prezzi.DammiPrezzoTransazione(mu, me, time, null, true, 2, null,"");
 
             String[] RT = new String[Importazioni.ColonneTabella];
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mu, me, time, null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[1] = dataa;                                               // Data e ora
             RT[2] = "1 di 2";                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
@@ -1617,6 +1638,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String PrezzoC = Prezzi.DammiPrezzoTransazione(mc, null, time, null, true, 2, null,"");
             
             RT = new String[Importazioni.ColonneTabella];
+            IP = Prezzi.DammiPrezzoInfoTransazione(mc, null, time, null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
             RT[1] = dataa;                                               // Data e ora
             RT[2] = "2 di 2";                                 // Numero movimenti
@@ -1728,6 +1751,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String PrezzoT = Prezzi.DammiPrezzoTransazione(mu, me, time, null, true, 2, null,"binance");
 
             String[] RT = new String[Importazioni.ColonneTabella];
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mu, me, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
@@ -1782,6 +1807,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String PrezzoC = Prezzi.DammiPrezzoTransazione(mc, null, time, null, true, 2, null,"binance");
             
             RT = new String[Importazioni.ColonneTabella];
+            IP = Prezzi.DammiPrezzoInfoTransazione(mc, null, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[0] = dataForId + "_"+Exchange+"_" + totMov + "_" + "2" + "_CM"; // TrasID
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
@@ -1875,6 +1902,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String PrezzoT = Prezzi.DammiPrezzoTransazione(mu, me, time, null, true, 2, null,"binance");
 
             String[] RT = new String[Importazioni.ColonneTabella];
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(mu, me, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
@@ -2001,6 +2030,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
 
             String[] RT = new String[Importazioni.ColonneTabella];
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange
@@ -2128,6 +2159,8 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, time, null, true, 2, null,"binance");
 
             String[] RT = new String[Importazioni.ColonneTabella];
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, time, null, "binance");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
             RT[1] = dataa;                                               // Data e ora
             RT[2] = i + " di " + totMov;                                 // Numero movimenti
             RT[3] = Exchange;                                            // Exchange

@@ -888,8 +888,9 @@ private static final long serialVersionUID = 9L;
            }*/
         }
        
-       
-       String Prezzo=Prezzi.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete,"");
+       /*Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(MonetaEntrata, MonetaUscita, DataLong, null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();*/
+       String Prezzo=Prezzi.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete,"binance");
         ValoreTransazione_TextField.setText(Prezzo);
        EvidenziaProblemi();
      // System.out.println("Prezzo");
@@ -1226,8 +1227,8 @@ private static final long serialVersionUID = 9L;
             this.Data_Datachooser.setBackground(this.getBackground());
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String DataString=f.format(Data_Datachooser.getDate())+" "+Ora_ComboBox.getSelectedItem().toString()+":"+
-            Minuto_ComboBox.getSelectedItem().toString();
-            DataLong=OperazioniSuDate.ConvertiDatainLongMinuto(DataString);
+            Minuto_ComboBox.getSelectedItem().toString()+":"+Secondo_ComboBox.getSelectedItem().toString();
+            DataLong=OperazioniSuDate.ConvertiDatainLongSecondo(DataString);
         }
         
         

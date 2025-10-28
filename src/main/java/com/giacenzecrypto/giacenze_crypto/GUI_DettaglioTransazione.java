@@ -75,7 +75,20 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         String Valore;
         String Val[];
         
+        //Parte per la verifica dei prezzi dalle fonti e il recupero dei prezzi unitari precisi
+            BigDecimal PrzTotaleNonArrotondato = null;
+            if (!Transazione[40].isBlank()) {
+                String VSplit[] = Transazione[40].split("\\|");
+                String MonRif = VSplit[0];
+                String PrzUnitarioMonRif = VSplit[2];
 
+                if (!Transazione[8].isBlank() && Transazione[8].equalsIgnoreCase(MonRif)) {
+                    PrzTotaleNonArrotondato = new BigDecimal(PrzUnitarioMonRif).multiply(new BigDecimal(Transazione[10]));
+                }
+                if (!Transazione[11].isBlank() && Transazione[11].equalsIgnoreCase(MonRif)) {
+                    PrzTotaleNonArrotondato = new BigDecimal(PrzUnitarioMonRif).multiply(new BigDecimal(Transazione[13]));
+                }
+            }
         
         Valore=Transazione[1];
         if (!Valore.isBlank()){
@@ -161,7 +174,12 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                     ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
                 }
                 Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
-                Val=new String[]{"Valore Unitario "+Transazione[8],Valore};
+                Val=new String[]{"Valore Unitario "+Transazione[8]+" (Calcolato)",Valore};
+                if (PrzTotaleNonArrotondato!=null) {
+                        ValUnitario = PrzTotaleNonArrotondato.divide(new BigDecimal(Transazione[10]), 20, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                        Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
+                        Val = new String[]{"Valore Unitario " + Transazione[8], Valore};
+                    }
                 ModelloTabellaCrypto.addRow(Val);
             }
         }
@@ -198,12 +216,22 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             Val=new String[]{"Entrata: ",Testo};
             ModelloTabellaCrypto.addRow(Val);
             
-            if (!Transazione[15].isBlank()){
-                if (new BigDecimal(Transazione[15]).compareTo(BigDecimal.ZERO)!=0){
-                    BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
-                    Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
-                    Val=new String[]{"Valore Unitario "+Transazione[11],Valore};
-                    ModelloTabellaCrypto.addRow(Val);
+            if (!Transazione[15].isBlank()) {
+                if (new BigDecimal(Transazione[13]).compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal ValUnitario;
+                Val=null;
+                if (new BigDecimal(Transazione[15]).compareTo(BigDecimal.ZERO) != 0) {
+                    ValUnitario = new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]), 10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                    Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
+                    Val = new String[]{"Valore Unitario " + Transazione[11] + " (Calcolato)", Valore};
+
+                }
+                if (PrzTotaleNonArrotondato != null) {
+                    ValUnitario = PrzTotaleNonArrotondato.divide(new BigDecimal(Transazione[13]), 20, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                    Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
+                    Val = new String[]{"Valore Unitario " + Transazione[11], Valore};
+                }
+                if(Val!=null)ModelloTabellaCrypto.addRow(Val);
                 }
             }
         }
@@ -285,17 +313,30 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         }
         
         String Valori[]=Transazione[20].split(",");
-        for (int i=0;i<Valori.length;i++){
-            Valore=Valori[i];
-            if (!Valore.isBlank()){
-                Valore=("<html>"+Valore+"</html>");
-                Val=new String[]{"Movimenti Correlati ",Valore};
-                ModelloTabellaCrypto.addRow(Val);
-            }
-        }
+         for (String Valori1 : Valori) {
+             Valore = Valori1;
+             if (!Valore.isBlank()){
+                 Valore=("<html>"+Valore+"</html>");
+                 Val=new String[]{"Movimenti Correlati ",Valore};
+                 ModelloTabellaCrypto.addRow(Val);
+             }
+         }
         Valore=Transazione[0];
         if (!Valore.isBlank()){
             Val=new String[]{"ID ",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        }
+        
+                Valore=Transazione[40];
+        if (!Valore.isBlank()){
+            String VSplit[]=Valore.split("\\|");        
+            Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
+            ModelloTabellaCrypto.addRow(Val);
+            Val=new String[]{"Info Prezzo : Orario Fonte ",OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
+            ModelloTabellaCrypto.addRow(Val);           
+            Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
+            ModelloTabellaCrypto.addRow(Val);
+            Val=new String[]{"Info Prezzo : Prezzo unitario ","€ "+VSplit[2]};
             ModelloTabellaCrypto.addRow(Val);
         }
         

@@ -1106,7 +1106,6 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
-        TransazioniCrypto_Tabella_Dettagli.setColumnSelectionAllowed(true);
         TransazioniCrypto_Tabella_Dettagli.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 TransazioniCrypto_Tabella_DettagliMouseReleased(evt);
@@ -1114,9 +1113,9 @@ private static final long serialVersionUID = 3L;
         });
         jScrollPane4.setViewportView(TransazioniCrypto_Tabella_Dettagli);
         if (TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumnCount() > 0) {
-            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(160);
-            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(160);
-            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(160);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMinWidth(200);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setPreferredWidth(200);
+            TransazioniCrypto_Tabella_Dettagli.getColumnModel().getColumn(0).setMaxWidth(300);
         }
 
         TransazioniCrypto_TabbedPane.addTab("Dettagli Riga", jScrollPane4);
@@ -4949,7 +4948,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(CDC_Text_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(CDC_Label_Giorni, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC, javax.swing.GroupLayout.PREFERRED_SIZE, 853, Short.MAX_VALUE))
+                .addComponent(CDC))
         );
 
         pack();
@@ -13653,7 +13652,22 @@ try {
         String Valore;
         String Val[];
         String secondi=Transazione[0].split("_")[0].substring(12);
+        
+        
+        //Parte per la verifica dei prezzi dalle fonti e il recupero dei prezzi unitari precisi
+            BigDecimal PrzTotaleNonArrotondato = null;
+            if (!Transazione[40].isBlank()) {
+                String VSplit[] = Transazione[40].split("\\|");
+                String MonRif = VSplit[0];
+                String PrzUnitarioMonRif = VSplit[2];
 
+                if (!Transazione[8].isBlank() && Transazione[8].equalsIgnoreCase(MonRif)) {
+                    PrzTotaleNonArrotondato = new BigDecimal(PrzUnitarioMonRif).multiply(new BigDecimal(Transazione[10]));
+                }
+                if (!Transazione[11].isBlank() && Transazione[11].equalsIgnoreCase(MonRif)) {
+                    PrzTotaleNonArrotondato = new BigDecimal(PrzUnitarioMonRif).multiply(new BigDecimal(Transazione[13]));
+                }
+            }
         
         Valore=Transazione[1];
         if (!Valore.isBlank()){
@@ -13727,13 +13741,19 @@ try {
             
             ModelloTabellaCrypto.addRow(Val);
             
-                if (!Transazione[15].isBlank()){
-                    if(new BigDecimal(Transazione[10]).compareTo(BigDecimal.ZERO)!=0){
-                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
-                Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
-                Val=new String[]{"Valore Unitario "+Transazione[8],Valore};
-                ModelloTabellaCrypto.addRow(Val);
+            if (!Transazione[15].isBlank()) {
+                if (new BigDecimal(Transazione[10]).compareTo(BigDecimal.ZERO) != 0) {
+                    
+                    BigDecimal ValUnitario = new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[10]), 10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                    Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
+                    Val = new String[]{"Valore Unitario " + Transazione[8] + " (Calcolato)", Valore};
+                    if (PrzTotaleNonArrotondato!=null) {
+                        ValUnitario = PrzTotaleNonArrotondato.divide(new BigDecimal(Transazione[10]), 20, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                        Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
+                        Val = new String[]{"Valore Unitario " + Transazione[8], Valore};
                     }
+                    ModelloTabellaCrypto.addRow(Val);
+                }
             }
         }
         Valore=Transazione[9];
@@ -13769,11 +13789,23 @@ try {
             Val=new String[]{"Entrata: ",Testo};
             ModelloTabellaCrypto.addRow(Val);
             
-            if (!Transazione[15].isBlank()&&!Transazione[13].equals("0")){
-                BigDecimal ValUnitario=new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]),10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
-                Valore="<html>€ "+ValUnitario.toPlainString()+"</html>";
-                Val=new String[]{"Valore Unitario "+Transazione[11],Valore};
-                ModelloTabellaCrypto.addRow(Val);
+            if (!Transazione[15].isBlank()) {
+                if (new BigDecimal(Transazione[13]).compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal ValUnitario;
+                Val=null;
+                if (new BigDecimal(Transazione[15]).compareTo(BigDecimal.ZERO) != 0) {
+                    ValUnitario = new BigDecimal(Transazione[15]).divide(new BigDecimal(Transazione[13]), 10, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                    Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
+                    Val = new String[]{"Valore Unitario " + Transazione[11] + " (Calcolato)", Valore};
+
+                }
+                if (PrzTotaleNonArrotondato != null) {
+                    ValUnitario = PrzTotaleNonArrotondato.divide(new BigDecimal(Transazione[13]), 20, RoundingMode.HALF_UP).stripTrailingZeros().abs();
+                    Valore = "<html>€ " + ValUnitario.toPlainString() + "</html>";
+                    Val = new String[]{"Valore Unitario " + Transazione[11], Valore};
+                }
+                if(Val!=null)ModelloTabellaCrypto.addRow(Val);
+                }
             }
         }
         Valore=Transazione[12];
@@ -13850,6 +13882,19 @@ try {
         Valore=Transazione[0];
         if (!Valore.isBlank()){
             Val=new String[]{"ID ",Valore};
+            ModelloTabellaCrypto.addRow(Val);
+        }
+        
+        Valore=Transazione[40];
+        if (!Valore.isBlank()){
+            String VSplit[]=Valore.split("\\|");        
+            Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
+            ModelloTabellaCrypto.addRow(Val);
+            Val=new String[]{"Info Prezzo : Orario Fonte ",OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
+            ModelloTabellaCrypto.addRow(Val);           
+            Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
+            ModelloTabellaCrypto.addRow(Val);
+            Val=new String[]{"Info Prezzo : Prezzo unitario ","€ "+VSplit[2]};
             ModelloTabellaCrypto.addRow(Val);
         }
         

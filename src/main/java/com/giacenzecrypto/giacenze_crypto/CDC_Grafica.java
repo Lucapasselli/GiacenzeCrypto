@@ -12030,18 +12030,17 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
-        
-        //DammiPrezzoTransazione1(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) 
-        //DammiPrezzoTransazione1(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) 
-       // 20250222023538_BC.ARB.0xee66e91a5db49f07f4706eb9e20c3f520368dba9.0xf39e222dfc735e639d415cf5f3fa5a7d949704feed7c02e9f9fb8e926dd5298e_1_1_SC
-     /*  String mov[]=MappaCryptoWallet.get("20250222023538_BC.ARB.0xee66e91a5db49f07f4706eb9e20c3f520368dba9.0xf39e222dfc735e639d415cf5f3fa5a7d949704feed7c02e9f9fb8e926dd5298e_1_1_SC");
-       System.out.println(Prezzi.DammiPrezzoDaTransazione(mov, 2));*/
-        // TODO add your handling code here:
-       /* Prezzi.RecuperaPrezziDaCCXT("BTC", Long.parseLong("1704067200000"));
-        Prezzi.InfoPrezzo ip=Prezzi.DammiPrezzoDaDatabase("BTC", Long.parseLong("1704067200000"), "cippo", "", "",5);
-        System.out.println(ip.exchange);
-        System.out.println(ip.prezzo);
-        System.out.println(ip.timestamp);*/
+    //Terst modifica prezzo
+  if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
+            int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
+
+            String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
+
+            GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(ID);
+            t.setLocationRelativeTo(this);           
+            t.setVisible(true);
+        }
+            
 
     
     }//GEN-LAST:event_jButton3ActionPerformed

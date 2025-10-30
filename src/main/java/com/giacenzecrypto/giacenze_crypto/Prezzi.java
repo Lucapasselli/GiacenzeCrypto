@@ -1205,7 +1205,11 @@ public class Prezzi {
     public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte) {
 
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
-        if (IP!=null)return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
+        if (IP!=null)
+        {
+            if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzo);
+            return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
+        }
         if (PrezzoZero) {
             return "0.00";
         } else {
@@ -1306,7 +1310,7 @@ public class Prezzi {
                 for (int k = 0; k < 2; k++) {
                 if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
                     //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-                            IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,"");
+                            IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte);
                             if (IP!=null)return IP;
                     }
                 }
@@ -1321,7 +1325,7 @@ public class Prezzi {
             if (mon[k] != null) {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
 
-                        IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,"");
+                        IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte);
                         if (IP!=null)return IP;
             }
         }
@@ -1709,7 +1713,59 @@ public static InfoPrezzo DammiPrezzoDaDatabase(
  // Nessun prezzo trovato entro 5 minuti
     return null;
 }
-     
+
+public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
+        String symbol,
+        long timestampRiferimento,
+        String rete,
+        String address,
+        long minuti,
+        BigDecimal Qta) {
+
+    List<InfoPrezzo> listaPrezzi = new ArrayList<>();
+
+    final long MAX_DIFF_MS = minuti * 60 * 1000;
+    long tsMin = timestampRiferimento - MAX_DIFF_MS;
+    long tsMax = timestampRiferimento + MAX_DIFF_MS;
+
+    String query = """
+        SELECT prezzo, exchange, timestamp
+        FROM PrezziNew
+        WHERE (symbol = ? OR ? = '')
+          AND timestamp BETWEEN ? AND ?
+          AND (rete = ? OR ? = '')
+          AND (address = ? OR ? = '')
+        ORDER BY timestamp ASC
+    """;
+
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(query)) {
+        ps.setString(1, symbol == null ? "" : symbol);
+        ps.setString(2, symbol == null ? "" : symbol);
+        ps.setLong(3, tsMin);
+        ps.setLong(4, tsMax);
+        ps.setString(5, rete == null ? "" : rete);
+        ps.setString(6, rete == null ? "" : rete);
+        ps.setString(7, address == null ? "" : address);
+        ps.setString(8, address == null ? "" : address);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                BigDecimal prezzo = rs.getBigDecimal("prezzo");
+                String exchange = rs.getString("exchange");
+                long ts = rs.getLong("timestamp");
+
+                BigDecimal prezzoQta = prezzo.multiply(Qta == null ? BigDecimal.ONE : Qta.abs());
+
+                InfoPrezzo info = new InfoPrezzo(prezzo, exchange, ts, prezzoQta, Qta, symbol);
+                listaPrezzi.add(info);
+            }
+        }
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+
+    return listaPrezzi;
+}
  
 
 public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {

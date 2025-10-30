@@ -4,6 +4,9 @@
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" value="Gestione Prezzo"/>
+    <Property name="modalityType" type="java.awt.Dialog$ModalityType" editor="org.netbeans.modules.form.editors.EnumEditor">
+      <Value id="APPLICATION_MODAL"/>
+    </Property>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -35,13 +38,13 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_OK" min="-2" pref="92" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane2" alignment="1" pref="888" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="1" pref="975" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel2" min="-2" pref="135" max="-2" attributes="0"/>
                           <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" min="-2" pref="180" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
@@ -87,18 +90,24 @@
         <Component class="javax.swing.JTable" name="Tabella_PrezzoAttuale">
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="7" rowCount="0">
+              <Table columnCount="8" rowCount="0">
                 <Column editable="false" title="Moneta" type="java.lang.Object"/>
                 <Column editable="false" title="Orario" type="java.lang.Object"/>
                 <Column editable="false" title="Qta" type="java.lang.Object"/>
                 <Column editable="false" title="Fonte" type="java.lang.Object"/>
                 <Column editable="false" title="Orario Fonte" type="java.lang.Object"/>
+                <Column editable="false" title="Precisione" type="java.lang.Object"/>
                 <Column editable="false" title="Prezzo Unitario" type="java.lang.Object"/>
                 <Column editable="false" title="Prezzo Totale" type="java.lang.Object"/>
               </Table>
             </Property>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
               <TableColumnModel selectionModel="0">
+                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
                 <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                   <Title/>
                   <Editor/>
@@ -162,15 +171,18 @@
       <SubComponents>
         <Component class="javax.swing.JTable" name="Tabella_Prezzi">
           <Properties>
+            <Property name="autoCreateRowSorter" type="boolean" value="true"/>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="7" rowCount="0">
+              <Table columnCount="9" rowCount="0">
                 <Column editable="false" title="Moneta" type="java.lang.Object"/>
                 <Column editable="false" title="Orario" type="java.lang.Object"/>
                 <Column editable="false" title="Qta" type="java.lang.Object"/>
                 <Column editable="false" title="Fonte" type="java.lang.Object"/>
                 <Column editable="false" title="Orario Fonte" type="java.lang.Object"/>
+                <Column editable="false" title="Precisione" type="java.lang.Object"/>
                 <Column editable="false" title="Prezzo Unitario" type="java.lang.Object"/>
                 <Column editable="false" title="Prezzo Totale" type="java.lang.Object"/>
+                <Column editable="false" title="Diff.Prezzo" type="java.lang.Object"/>
               </Table>
             </Property>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -200,7 +212,17 @@
                   <Editor/>
                   <Renderer/>
                 </Column>
-                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                <Column maxWidth="80" minWidth="80" prefWidth="80" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
                   <Title/>
                   <Editor/>
                   <Renderer/>
@@ -226,7 +248,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Prezzi Disponibili"/>
+        <Property name="text" type="java.lang.String" value="Prezzi Disponibili piu&apos; vicini"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">

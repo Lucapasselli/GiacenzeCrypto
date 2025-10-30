@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -1728,6 +1729,7 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
     long tsMin = timestampRiferimento - MAX_DIFF_MS;
     long tsMax = timestampRiferimento + MAX_DIFF_MS;
 
+    // Recupera tutti i prezzi candidati entro la finestra
     String query = """
         SELECT prezzo, exchange, timestamp
         FROM PrezziNew
@@ -1735,8 +1737,11 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
           AND timestamp BETWEEN ? AND ?
           AND (rete = ? OR ? = '')
           AND (address = ? OR ? = '')
-        ORDER BY timestamp ASC
+        ORDER BY exchange ASC, ABS(timestamp - ?) ASC
     """;
+
+    // Mappa per tenere solo il record più vicino per exchange
+    Map<String, InfoPrezzo> miglioriPerExchange = new HashMap<>();
 
     try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(query)) {
         ps.setString(1, symbol == null ? "" : symbol);
@@ -1747,6 +1752,7 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
         ps.setString(6, rete == null ? "" : rete);
         ps.setString(7, address == null ? "" : address);
         ps.setString(8, address == null ? "" : address);
+        ps.setLong(9, timestampRiferimento);
 
         try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -1755,17 +1761,24 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
                 long ts = rs.getLong("timestamp");
 
                 BigDecimal prezzoQta = prezzo.multiply(Qta == null ? BigDecimal.ONE : Qta.abs());
-
                 InfoPrezzo info = new InfoPrezzo(prezzo, exchange, ts, prezzoQta, Qta, symbol);
-                listaPrezzi.add(info);
+
+                // Mantieni solo quello più vicino per ogni exchange
+                InfoPrezzo esistente = miglioriPerExchange.get(exchange);
+                if (esistente == null ||
+                    Math.abs(ts - timestampRiferimento) < Math.abs(esistente.timestamp - timestampRiferimento)) {
+                    miglioriPerExchange.put(exchange, info);
+                }
             }
         }
     } catch (SQLException ex) {
         LoggerGC.ScriviErrore(ex);
     }
 
+    listaPrezzi.addAll(miglioriPerExchange.values());
     return listaPrezzi;
 }
+
  
 
 public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {

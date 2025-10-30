@@ -12036,9 +12036,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
             String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
 
+            Component c=this;
+        Download progress=new Download();
+        progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
+        progress.setLocationRelativeTo(this);
+        
+        Thread thread;
+            thread = new Thread() {
+            public void run() {
             GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(ID);
-            t.setLocationRelativeTo(this);           
+            t.setLocationRelativeTo(c);           
             t.setVisible(true);
+            progress.ChiudiFinestra();
+        }
+            };
+        thread.start();  
+        progress.setVisible(true);
+            
         }
             
 

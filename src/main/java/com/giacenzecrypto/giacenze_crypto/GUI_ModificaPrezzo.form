@@ -38,7 +38,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_OK" min="-2" pref="92" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane2" alignment="1" pref="975" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="1" pref="988" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
@@ -181,8 +181,8 @@
                 <Column editable="false" title="Orario Fonte" type="java.lang.Object"/>
                 <Column editable="false" title="Precisione" type="java.lang.Object"/>
                 <Column editable="false" title="Prezzo Unitario" type="java.lang.Object"/>
-                <Column editable="false" title="Prezzo Totale" type="java.lang.Object"/>
                 <Column editable="false" title="Diff.Prezzo" type="java.lang.Object"/>
+                <Column editable="false" title="Prezzo Totale" type="java.lang.Object"/>
               </Table>
             </Property>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -222,12 +222,12 @@
                   <Editor/>
                   <Renderer/>
                 </Column>
-                <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
+                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                   <Title/>
                   <Editor/>
                   <Renderer/>
                 </Column>
-                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
                   <Title/>
                   <Editor/>
                   <Renderer/>

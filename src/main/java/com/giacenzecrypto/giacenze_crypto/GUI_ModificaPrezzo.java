@@ -138,19 +138,66 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         //Forzo lo scaricamento dei prezzi di entrambe le monete
         for(int i=0;i<2;i++){
         if (M[i].Moneta!=null&&!M[i].Moneta.isBlank()){
-            Prezzi.CambioXXXEUR(M[i].Moneta, M[i].Qta, data,M[i].MonetaAddress,M[i].Rete,"");
+            Prezzi.CambioXXXEUR(M[i].Moneta, M[i].Qta, data,M[i].MonetaAddress,M[i].Rete,"",false);
             
-            if (!M[i].MonetaAddress.isBlank() && !M[i].Rete.isBlank()) {
-                    List<Prezzi.InfoPrezzo> ListaIP = Prezzi.DammiListaPrezziDaDatabase("", data, M[i].Rete, M[i].MonetaAddress, 60, new BigDecimal(M[i].Qta));
-                    for (Prezzi.InfoPrezzo IP : ListaIP) {
+            
+            //A - Vedo se è una fiat e in quel caso la tratto come tale
+            if (M[i].Tipo.equalsIgnoreCase("FIAT")) {
+                Prezzi.InfoPrezzo IPF;
+                String DataDollaro = OperazioniSuDate.ConvertiDatadaLong(data);
+                if (M[i].Moneta.equalsIgnoreCase("EUR")) {
+                    String rigo[] = new String[9];
+                    rigo[0] = M[i].Moneta;
+                    rigo[1] = ora;
+                    rigo[2] = M[i].Qta;
+                    rigo[3] = "";
+                    rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                    rigo[5] = "0 sec";
+                    rigo[6] = "1";
+                    rigo[8] = new BigDecimal(M[i].Qta).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    rigo[7] = new BigDecimal(M[i].Qta).abs().subtract(new BigDecimal(Movimento[15])).toPlainString();
+                    ModTabPrezzi.addRow(rigo);
+                } 
+                else if (M[i].Moneta.equalsIgnoreCase("USD")) {
+                    String PT = Prezzi.ConvertiUSDEUR("1", DataDollaro);
+                    if (PT != null) {
+                        BigDecimal PrezzoTransazione = new BigDecimal(PT).abs().stripTrailingZeros();
+                        IPF = new Prezzi.InfoPrezzo();
+                        IPF.Moneta = M[i].Moneta;
+                        IPF.Qta = new BigDecimal(M[i].Qta);
+                        IPF.exchange = "bancaditalia";
+                        IPF.prezzo = PrezzoTransazione;
+                        IPF.timestamp = data;
+                        IPF.prezzoQta=IPF.prezzo.multiply(IPF.Qta);
                         String rigo[] = new String[9];
                         rigo[0] = M[i].Moneta;
                         rigo[1] = ora;
                         rigo[2] = M[i].Qta;
-                        rigo[3] = IP.exchange;
-                        rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IP.timestamp);
+                        rigo[3] = IPF.exchange;
+                        rigo[4] = OperazioniSuDate.ConvertiDatadaLong(IPF.timestamp);
+                        rigo[5] = "1 giorno";
+                        rigo[6] = IPF.prezzo.toPlainString();
+                        rigo[8] = IPF.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        rigo[7] = IPF.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(Movimento[15])).toPlainString();
+                        ModTabPrezzi.addRow(rigo);
+                    }
+                }
+                //Non vado a cercare le FIAT oltre, mi fermo qua dando solo questa possibilità
+                continue;
+            }
+            
+            
+            if (!M[i].MonetaAddress.isBlank() && !M[i].Rete.isBlank()) {
+                    List<Prezzi.InfoPrezzo> ListaIP = Prezzi.DammiListaPrezziDaDatabase("", data, M[i].Rete, M[i].MonetaAddress, 60, new BigDecimal(M[i].Qta));
+                    for (Prezzi.InfoPrezzo IPl : ListaIP) {
+                        String rigo[] = new String[9];
+                        rigo[0] = M[i].Moneta;
+                        rigo[1] = ora;
+                        rigo[2] = M[i].Qta;
+                        rigo[3] = IPl.exchange;
+                        rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                         //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
-                        long DiffOrario=Math.abs(data-IP.timestamp)/1000;
+                        long DiffOrario=Math.abs(data-IPl.timestamp)/1000;
                         String unitaTempo;
                         if (DiffOrario >= 60) {
                             DiffOrario = DiffOrario / 60;  // converto in minuti
@@ -159,24 +206,24 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                             unitaTempo = " sec";
                         }
                         rigo[5] = String.valueOf(DiffOrario)+unitaTempo;
-                        rigo[6] = IP.prezzo.toPlainString();
-                        rigo[7] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
-                        rigo[8] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(Movimento[15])).toPlainString();
+                        rigo[6] = IPl.prezzo.toPlainString();
+                        rigo[8] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        rigo[7] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(Movimento[15])).toPlainString();
                         ModTabPrezzi.addRow(rigo);
                     }
                 }
             //Prezzi.DammiPrezzoInfoTransazione(M1, null, data, Rete,"");
              List<Prezzi.InfoPrezzo> ListaIP=Prezzi.DammiListaPrezziDaDatabase(M[i].Moneta,data,"","",60,new BigDecimal(M[i].Qta));
             //Riempio la tabella con i prezzi
-            for(Prezzi.InfoPrezzo IP:ListaIP){
+            for(Prezzi.InfoPrezzo IPl:ListaIP){
                 String rigo[]=new String[9];
                     rigo[0] = M[i].Moneta;
                     rigo[1] = ora;
-                    rigo[2] = M[i].Qta;
-                    rigo[3] = IP.exchange;
-                    rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IP.timestamp);
+                    rigo[2] = M[i].Qta;                  
+                    rigo[3] = IPl.exchange;
+                    rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                     //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
-                    long DiffOrario=Math.abs(data-IP.timestamp)/1000;
+                    long DiffOrario=Math.abs(data-IPl.timestamp)/1000;
                     String unitaTempo;
                         if (DiffOrario >= 60) {
                             DiffOrario = DiffOrario / 60;  // converto in minuti
@@ -186,10 +233,45 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         }                       
                     rigo[5] = String.valueOf(DiffOrario)+unitaTempo;
                     
-                    rigo[6] = IP.prezzo.toPlainString();
-                    rigo[7] = IP.prezzoQta.setScale(2,RoundingMode.HALF_UP).toPlainString();
-                    rigo[8] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(Movimento[15])).toPlainString();
+                    rigo[6] = IPl.prezzo.toPlainString();
+                    rigo[8] = IPl.prezzoQta.setScale(2,RoundingMode.HALF_UP).toPlainString();
+                    rigo[7] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(Movimento[15])).toPlainString();
                     ModTabPrezzi.addRow(rigo);                
+            }
+            
+            //Adesso cerco i prezzi nel vecchio database
+            String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(data);
+            String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + M[i].Moneta);
+            Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
+            System.out.println(PrezzoUnitario);
+            if (PrezzoUnitario != null) {
+                IP.exchange = "DB Interno (Old)";
+                IP.timestamp = OperazioniSuDate.ConvertiDatainLongMinuto(DataOra + ":00");
+                IP.prezzo = new BigDecimal(PrezzoUnitario);
+                IP.Qta = new BigDecimal(M[i].Qta);
+                IP.Moneta = M[i].Moneta;
+                String rigo[] = new String[9];
+                rigo[0] = M[i].Moneta;
+                rigo[1] = ora;
+                rigo[2] = M[i].Qta;
+                rigo[3] = IP.exchange;
+                rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IP.timestamp);
+                //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
+                long DiffOrario = Math.abs(data - IP.timestamp) / 1000;
+                String unitaTempo;
+                if (DiffOrario >= 60) {
+                    DiffOrario = DiffOrario / 60;  // converto in minuti
+                    unitaTempo = " min";
+                } else {
+                    unitaTempo = " sec";
+                }
+                rigo[5] = String.valueOf(DiffOrario) + unitaTempo;
+
+                rigo[6] = IP.prezzo.toPlainString();
+                if (IP.prezzoQta==null)IP.prezzoQta=IP.prezzo.multiply(IP.Qta).abs();
+                rigo[8] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
+                rigo[7] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(Movimento[15])).toPlainString();
+                ModTabPrezzi.addRow(rigo);
             }
                 
             }
@@ -256,7 +338,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
 
             },
             new String [] {
-                "Moneta", "Orario", "Qta", "Fonte", "Orario Fonte", "Precisione", "Prezzo Unitario", "Prezzo Totale", "Diff.Prezzo"
+                "Moneta", "Orario", "Qta", "Fonte", "Orario Fonte", "Precisione", "Prezzo Unitario", "Diff.Prezzo", "Prezzo Totale"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -275,9 +357,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             Tabella_Prezzi.getColumnModel().getColumn(6).setMinWidth(100);
             Tabella_Prezzi.getColumnModel().getColumn(6).setPreferredWidth(100);
             Tabella_Prezzi.getColumnModel().getColumn(6).setMaxWidth(100);
-            Tabella_Prezzi.getColumnModel().getColumn(7).setMinWidth(100);
-            Tabella_Prezzi.getColumnModel().getColumn(7).setPreferredWidth(100);
-            Tabella_Prezzi.getColumnModel().getColumn(7).setMaxWidth(100);
+            Tabella_Prezzi.getColumnModel().getColumn(8).setMinWidth(100);
+            Tabella_Prezzi.getColumnModel().getColumn(8).setPreferredWidth(100);
+            Tabella_Prezzi.getColumnModel().getColumn(8).setMaxWidth(100);
         }
 
         jLabel1.setText("Prezzo Attuale");
@@ -304,7 +386,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 975, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 988, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)

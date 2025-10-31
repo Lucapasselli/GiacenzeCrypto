@@ -693,7 +693,7 @@ public class Prezzi {
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
         //Se l'address non è valido allora recupero il prezzo dagli exchange
         if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete) || Rete == null || Rete.isBlank()) {
-            InfoPrezzo IP=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
+            InfoPrezzo IP=CambioXXXEUR(Simbolo, Qta, Datalong,"","","",true);
             if (IP==null)return null;
             return IP;
         }
@@ -741,7 +741,7 @@ public class Prezzi {
                 //Prendo il suo prezzo dagli exchange per risparmiare tempo e richieste.
                 for (String SimboloP : SimboliPrioritari) {
                     if ((Simbolo).toUpperCase().equals(SimboloP)) {
-                        IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
+                        IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","",true);
                         if (IPrezzo!=null)return IPrezzo;
                     }
                 }
@@ -749,7 +749,7 @@ public class Prezzi {
                 if ((adesso - Datalong) > Long.parseLong("31536000000")) {
                     //Se arrivo qua il prezzo non è in memoria e 
                     //se cerco di recuperare prezzi più vecchi di 365gg li vado a cercare dagli exchange visto che coingecko non li fornisce
-                    IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
+                    IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","",true);
                     if (IPrezzo!=null)return IPrezzo;
                     //Se il prezzo non lo trovo neanche dall'exchange ritorno null
                     return null;
@@ -930,7 +930,7 @@ public class Prezzi {
         return risultato;
     }*/
     
-      public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Exchange) {
+      public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Exchange,boolean includiVecchi) {
 
         //in questo metodo manca solo la parte che salva le richieste già effettuate sul token per evitare di farne tante analoghe
         InfoPrezzo risultato;   
@@ -967,13 +967,9 @@ public class Prezzi {
         }
         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
         
-        //Verifico se ho i prezzi precisi
-        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Exchange,Rete,Address,5,qta);
-        if (risultato!=null){
-            return risultato;
-        }
         
-        //Senon ho i prezzi precisi verifico se ho quelli all'ora
+        //Vedo se ho i prezzi all'ora (ormai tenuti solo per valorizzare anche il pregresso allo stesso modo)
+        if (includiVecchi){
         risultato=new InfoPrezzo();
         String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
         if (PrezzoUnitario != null){
@@ -984,6 +980,15 @@ public class Prezzi {
             risultato.Moneta=Crypto;
             return risultato;
         }
+        }
+        
+        //Se non ho i prezzi all'ora (mantenuti per non variare i prezzi delle vecchie valorizzazioni, verifico se ho prezzi precisi
+        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Exchange,Rete,Address,5,qta);
+        if (risultato!=null){
+            return risultato;
+        }
+        
+        
 
           //Se non ho neanche i prezzi all'ora provo a scaricarli
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
@@ -1311,7 +1316,7 @@ public class Prezzi {
                 for (int k = 0; k < 2; k++) {
                 if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
                     //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
-                            IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte);
+                            IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
                             if (IP!=null)return IP;
                     }
                 }
@@ -1326,7 +1331,7 @@ public class Prezzi {
             if (mon[k] != null) {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
 
-                        IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte);
+                        IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
                         if (IP!=null)return IP;
             }
         }

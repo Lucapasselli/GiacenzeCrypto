@@ -32,9 +32,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +142,7 @@ public class Prezzi {
             Monete[1].Qta = v[13];
             Monete[1].Rete = Rete;
             String Prezzo=DammiPrezzoTransazione(Monete[0],Monete[1],data,null, false, decimali, Rete,"");
+            //System.out.println(Prezzo);
             return Prezzo;
             
     }
@@ -983,7 +986,7 @@ public class Prezzi {
         }
         
         //Se non ho i prezzi all'ora (mantenuti per non variare i prezzi delle vecchie valorizzazioni, verifico se ho prezzi precisi
-        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Exchange,Rete,Address,5,qta);
+        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Exchange,Rete,Address,60,qta);
         if (risultato!=null){
             return risultato;
         }
@@ -993,7 +996,7 @@ public class Prezzi {
           //Se non ho neanche i prezzi all'ora provo a scaricarli
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
           RecuperaPrezziDaCCXT(Crypto, Datalong);
-          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,5,qta);
+          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,60,qta);
           //System.out.println(risultato);
           if (risultato==null){
               System.out.println("Nessun prezzo trovato per "+Crypto);
@@ -1001,8 +1004,475 @@ public class Prezzi {
           return risultato;
 
     } 
+      
+      
+      
+          public static String ZZZ_RecuperaTassidiCambioUSDTEUR_Binance(String DataIniziale, String DataFinale) {
+                      
+        String ok = null;
+        String CoppiaCrypto="EURUSDT";
+        long dataIni = OperazioniSuDate.ConvertiDatainLong(DataIniziale) ;
+        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataFinale) + 86400000;
+        
+        //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
+        long difData=dataFin-dataIni;
+        ArrayList<Long> ArraydataIni = new ArrayList<>();
+        ArrayList<Long> ArraydataFin = new ArrayList<>();
+        //dataFin=dataIni+7776000 ;//questa fa si che mi dia i prezzi orari
+        //binance ha la seguente peculiarità:
+        //riesco ad avere i prezzi orari fino a 1000 righe quindi fino a circa 40gg
+        //per cui per ogni richiesta devo gestire la cosa
+        //quindi, se ho meno di 40gg porto il range a 40gg e prendo il primo valore di ogni giorno per quanto riaguarda il giornaliero
+        //e tutti gli altri valori per gli orari.
+        //se ho più di 40 giorni devo dividere le richieste in multipli di 40 giorni fino ad arrivare alla data iniziale che desidero.
+        //i multipli devono partire dalla data finale e andare indietro.
+        //3456000 secondi equivalgono a 40gg (40giorni per la precisione).
+        //inoltre tra una richiesta e l'altra devo aspettare almeno 2 secondi per evitare problemidi blocco ip da parte di coingecko
+      // System.out.println(dataIni+" - "+dataFin);
+        while (difData>0){
+            ArraydataIni.add(dataIni);
+            ArraydataFin.add(dataIni+Long.parseLong("3456000000"));
+            dataIni=dataIni+Long.parseLong("3456000000");
+            difData=dataFin-dataIni;    
+           // i++;
+        }
+        
+        
+        
+        
 
+        for (int i = 0; i < ArraydataIni.size(); i++) {
 
+            try {
+                String apiUrl = "https://api.binance.com/api/v3/klines?symbol=EURUSDT&interval=1h&startTime=" + ArraydataIni.get(i) + "&endTime=" + ArraydataFin.get(i) + "&limit=1000";
+                URL url = new URI(apiUrl).toURL();
+                //System.out.println(url);
+                            //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
+            if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
+                return null;
+            }
+            CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+                URLConnection connection = url.openConnection();
+                //System.out.println(url);
+                System.out.println("Recupero prezzi "+CoppiaCrypto+" da Binance da data "+DataIniziale);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+
+                    }
+
+                    Gson gson = new Gson();
+                    JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
+                    if (pricesArray != null) {
+                        for (JsonElement element : pricesArray) {
+                            JsonArray priceArray = element.getAsJsonArray();
+                            //System.out.println(priceArray);
+
+                            if (priceArray.size() == 12) {
+                                long timestamp = priceArray.get(0).getAsLong();
+                                String price = priceArray.get(4).getAsString();
+                                Date date = new java.util.Date(timestamp);
+                                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                                String DataconOra = sdf.format(date);
+                                //  System.out.println("DataAttuale : "+DataAttualeLong);
+                                //  System.out.println("timestamp : "+timestamp);
+                                //  System.out.println(CercaPrezziDataAttuale);
+                                //Questo if server per evitare di cercare i dati della data odierna se non sono proprio strettamente necessari
+                                //perchè i dati della data odierna non vengono salvati nel file di conversione dei valori di usdt
+                                //e questo genererebbe una richiesta inutile su coingecko
+                                String Prezzo;
+                                    Prezzo = new BigDecimal(1).divide(new BigDecimal(price), 30, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+                                
+                                String Data=DataconOra.split(" ")[0];
+                                if (DatabaseH2.XXXEUR_Leggi(Data + " USDT")==null||DatabaseH2.XXXEUR_Leggi(Data + " USDT").equals("ND")) 
+                                    DatabaseH2.XXXEUR_Scrivi(Data + " USDT", Prezzo,false);
+                                if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT")==null||DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT").equals("ND")) 
+                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", Prezzo,false);
+
+                                
+                                ok = "ok";
+                                //il prezzo ovviamente indica quanti euro ci vogliono per acquistare 1 usdt ovvero usdt/euro
+                                //In questo modo metto nella mappa l'ultimo valore della giornata per ogni data + il valore per ogni ora
+                                //System.out.println(MappaConversioneUSDTEUR.get(DataconOra) + " - " + DataconOra);
+                                //ora devo gestire l'inserimento nella mappa
+                            }
+
+                        }
+                    } else {
+                        ok = null;
+                    }
+                } catch (IOException ex) {
+                    ok = null;
+                }
+                TimeUnit.SECONDS.sleep(1);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (IOException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (InterruptedException ex) {
+                ok = null;
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return ok;
+    }   
+
+      
+          public static String ZZZ_ConvertiUSDTEUR(String Qta, long Datalong) {
+        //come prima cosa verifizo se ho caricato il file di conversione e in caso lo faccio
+        /*      if (MappaConversioneUSDTEUR.isEmpty())
+            {
+                GeneraMappaCambioUSDTEUR();
+            }*/
+        boolean mettereND=false;
+        String risultato;// = null;
+        //come prima cosa devo decidere il formato data
+        long adesso = System.currentTimeMillis();
+        if (Datalong > adesso) {
+            return null;//se la data è maggiore di quella attuale non recupero nessun prezzo
+        }
+        if (Datalong < 1483225200) {
+            return null;//se la data è inferioe al 2017 non recupero nessun prezzo
+        }
+        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
+
+        //cerco il valore di USDT da Binance
+        risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+        if (risultato == null) {
+            //RecuperaCoppieBinance();
+            ZZZ_RecuperaTassidiCambioUSDTEUR_Binance(DataGiorno, DataGiorno);
+            risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+        }
+        
+        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero Coinbase
+        if (risultato == null) {
+                ZZZ_RecuperaTassidiCambiodaSimbolo_Coinbase("USDT", DataGiorno);
+                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+        }
+        
+        //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CryptoCompare       
+        if (risultato == null) {
+                ZZZ_RecuperaTassidiCambiodaSimbolo_CryptoCompare("USDT", DataGiorno);
+                risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+        }
+        //Cerco su Coingecko
+        //Escludo momentaneamente coingecko visto che ho tanti altri provider a cui chiedere in modo da diminuirne le richieste
+      /*  if (risultato == null) {
+            RecuperaTassidiCambioUSDT_Coingecko(DataGiorno, DataGiorno);//in automatico questa routine da i dati di 90gg a partire dalla data iniziale
+            risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+        }*/
+        //Cerco su  CoinCap
+        if (risultato == null) {
+            ZZZ_RecuperaTassidiCambiodaSimbolo_CoinCap("USDT",DataGiorno);
+            risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
+            //solo se arrivo fino a qua metto gli ND sulle ore che non sono riuscito a recuperare e per 30gg
+            //che sono i giorni per cui di solito recupero i prezzi
+            //Questo perchè questo è l'ultimo providfer da cui posso recuperare i dati quindi tutti i buchi di prezzo sono 
+            //sicuro che non potrò farci nulla
+            mettereND=true;
+        }
+        //se arrivo qua cerco il prezzo del giorno invece che quello orario
+        if (risultato == null) {
+            risultato = DatabaseH2.XXXEUR_Leggi(DataGiorno + " " + "USDT");
+        } 
+        
+        if (mettereND) {
+            //Adesso metto ad ND tutte le ore per cui non sono riuscito a recuperare il prezzo di USDT per evitare mille richieste prima di arrivare al prezzo
+            long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataGiorno);
+            System.out.println(timestampIniziale);
+            long timestampFinale = timestampIniziale + Long.parseLong("2592000000");
+            if (adesso < timestampFinale) {
+                timestampFinale = adesso;
+            }
+            while (timestampIniziale < timestampFinale) {
+                Date date = new java.util.Date(timestampIniziale);
+                SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
+                sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
+                String DataconOra = sdf.format(date);
+                //Metto ND su tutte le ore senza valore
+                if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT") == null) {
+                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", "ND",false);
+                }
+
+                timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
+            }
+        }    
+        
+        //se il risultato è ancora recupero il prezzo dai dollari reali
+        if (risultato == null || risultato.equalsIgnoreCase("ND")||risultato.equalsIgnoreCase("null")) {
+            //questo risultato è già ponderato in base al valore
+            risultato = ConvertiUSDEUR(Qta, DataGiorno);
+        } //altrimenti calcolo il risultato in base alle qta
+        else {
+            //   System.out.println(Qta+" - "+risultato+" - "+DataGiorno);
+
+            risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
+        }
+        return risultato;
+    }
+          
+             public static String ZZZ_RecuperaTassidiCambiodaSimbolo_Coinbase(String Crypto, String DataIniziale) {
+        String ok = null;
+        //Aggiungo 10 giorni alla data iniziale per trovare la data di fine
+        //non posso superarare infatti i 300 risultati in una singola query
+        //il limite sarebbe quindi di 12,5 gg. mi fermo a 10 per sicurezza.
+        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
+        long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+
+            String apiUrl = "https://api.exchange.coinbase.com/products/" + Crypto + "-USD/candles?granularity=3600&start=" + timestampIniziale + "&end=" + dataFin;
+            //System.out.println(apiUrl);
+            
+            try {
+                URL url = new URI(apiUrl).toURL();
+                //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
+                if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
+                    return null;
+                }
+                CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+                URLConnection connection = url.openConnection();
+                // System.out.println(url);
+                System.out.println("Recupero prezzi " + Crypto + " da Coinbase da data " + DataIniziale);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+
+                    }
+                    //System.out.println(response);
+                    Gson gson = new Gson();
+                    JsonArray pricesArray = gson.fromJson(response.toString(), JsonArray.class);
+                     // Creazione di un nuovo JSONArray per contenere gli elementi in ordine inverso
+                     //Lo faccio perchè Coinbase restituisce i prezzi in ordine cronologico inverso (dal più recente)
+                     //ho bisogno che invece il dato sia in ordine cronologico per via che poi salvo il primo prezzo disponibile della giornata
+                    JsonArray inverso = new JsonArray();
+                    for (int i = pricesArray.size() - 1; i >= 0; i--) {
+                        inverso.add(pricesArray.get(i));
+                    }
+                    if (!inverso.isEmpty()) {
+                        for (JsonElement element : inverso) {
+                            JsonArray dettagliArray=element.getAsJsonArray();
+                            long Unixtime = dettagliArray.get(0).getAsLong()*1000;
+                            String Data = OperazioniSuDate.ConvertiDatadaLong(Unixtime);
+                            String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Unixtime);
+                            String prezzoUSD = dettagliArray.get(3).getAsString();
+                            String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
+                            //System.out.println(DataOra);
+                            //Controllo ora se non ha il prezzo e in quel caso lo scrivo
+                            if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) 
+                            {
+                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro,false);
+                            }
+                            if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) 
+                            {
+                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
+                            }
+                        
+                        }
+
+                    } else {
+                        ok = null;
+                    }
+
+                } catch (IOException ex) {
+                    ok = null;
+                }
+                TimeUnit.SECONDS.sleep(1);
+
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (IOException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (InterruptedException ex) {
+                ok = null;
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        
+        return ok;
+    }     
+          
+              public static String ZZZ_RecuperaTassidiCambiodaSimbolo_CryptoCompare(String Crypto, String DataIniziale) {
+        String ok = null;
+        //Aggiungo 30 giorni alla data iniziale per trovare la data di fine
+        long dataFin = (OperazioniSuDate.ConvertiDatainLong(DataIniziale)/1000 + Long.parseLong("2592000"));
+
+            String apiUrl = "https://min-api.cryptocompare.com/data/v2/histohour?fsym=" + Crypto + "&tsym=USD&limit=720&toTs=" + dataFin;
+           // System.out.println(apiUrl);
+            
+            try {
+                URL url = new URI(apiUrl).toURL();
+                //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
+                if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
+                    return null;
+                }
+                CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+                URLConnection connection = url.openConnection();
+                // System.out.println(url);
+                System.out.println("Recupero prezzi " + Crypto + " da CryptoCompare da data " + DataIniziale);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+
+                    }
+                    //System.out.println(response);
+                    Gson gson = new Gson();
+                    JsonObject JsonObj = gson.fromJson(response.toString(), JsonObject.class);
+                    String Risposta=JsonObj.get("Response").getAsString();
+                    if (Risposta.equalsIgnoreCase("Success")) {
+                        //Se la richiesta ha successo vado a leggere i dati delle crypto
+                        JsonArray pricesArray = JsonObj.getAsJsonObject("Data").getAsJsonArray("Data");
+
+                        if (!pricesArray.isEmpty()) {
+                            for (JsonElement element : pricesArray) {
+                                String prezzoUSD=element.getAsJsonObject().get("open").getAsString();
+                                long UnixTime=element.getAsJsonObject().get("time").getAsLong() * 1000;
+                                String Data = OperazioniSuDate.ConvertiDatadaLong(UnixTime);
+                                String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(UnixTime);
+                                String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
+                                if (!PrezzoEuro.equalsIgnoreCase("0")) {
+                                    //System.out.println(Crypto+" - "+DataOra+" - "+PrezzoEuro);
+                                    //Controllo ora se non ha il prezzo e in quel caso lo scrivo
+                                    if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
+                                        DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
+                                    }
+                                    if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) {
+                                        DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
+                                    }
+                                }
+                            }
+
+                        } else {
+                            ok = null;
+                        }
+                    }
+                } catch (IOException ex) {
+                    ok = null;
+                }
+                TimeUnit.SECONDS.sleep(1);
+
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (IOException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (InterruptedException ex) {
+                ok = null;
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        
+        return ok;
+    }    
+
+        public static String ZZZ_RecuperaTassidiCambiodaSimbolo_CoinCap(String Crypto, String DataIniziale) {
+        String ApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
+        if (!ApiKey.isBlank()) {
+            String ok = null;
+            long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
+            long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+            String ID = DatabaseH2.GestitiCoinCap_Leggi(Crypto);
+
+            //String DataFinale = OperazioniSuDate.ConvertiDatadaLong(dataFin);
+
+            String apiUrl = "https://rest.coincap.io/v3/assets/" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;
+            apiUrl=apiUrl+"&apiKey="+ApiKey;
+            //System.out.println(apiUrl);
+
+            try {
+                URL url = new URI(apiUrl).toURL();
+                //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
+                if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
+                    return null;
+                }
+                CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+                URLConnection connection = url.openConnection();
+                // System.out.println(url);
+                System.out.println("Recupero prezzi " + Crypto + " da Coincap da data " + DataIniziale);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+
+                    }
+                    //System.out.println(response);
+                    Gson gson = new Gson();
+                    JsonObject jsonObject = gson.fromJson(response.toString(), JsonObject.class);
+                    JsonArray pricesArray = jsonObject.getAsJsonArray("data");
+                    //List<String> simboli = new ArrayList<>();
+                    if (pricesArray != null || !pricesArray.isEmpty()) {
+                        for (JsonElement element : pricesArray) {
+
+                            JsonObject Coppie = element.getAsJsonObject();
+                            String prezzoUSD = Coppie.get("priceUsd").getAsString();
+                            long Unixtime = Coppie.get("time").getAsLong();
+                            //System.out.println(prezzoUSD+" - "+Unixtime);
+                            String Data = OperazioniSuDate.ConvertiDatadaLong(Unixtime);
+                            String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Unixtime);
+                            String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
+                            //Controllo ora se non ha il prezzo e in quel caso lo scrivo
+                            if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
+                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
+                            }
+                            if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) {
+                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
+                            }
+
+                        }
+
+                    } else {
+                        ok = null;
+                    }
+
+                } catch (IOException ex) {
+                    ok = null;
+                }
+                TimeUnit.SECONDS.sleep(1);
+
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (IOException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                ok = null;
+            } catch (InterruptedException ex) {
+                ok = null;
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            return ok;
+        } else {
+            return null;
+        }
+    }  
+      
+      
     
     public static String RecuperaTassidiCambio(String DataIniziale,String DataFinale)  {      
         String ok="ok";
@@ -1213,6 +1683,8 @@ public class Prezzi {
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
         if (IP!=null)
         {
+          /*  System.out.println(IP.prezzo);
+            System.out.println(IP.prezzoQta);*/
             if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzo);
             return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
         }
@@ -1279,7 +1751,8 @@ public class Prezzi {
                     IP.Moneta=mon[k].Moneta;
                     IP.Qta=PrezzoTransazione;
                     IP.exchange="";
-                    IP.prezzo=PrezzoTransazione;
+                    IP.prezzo=new BigDecimal("1");
+                    IP.prezzoQta=PrezzoTransazione;
                     IP.timestamp=Data;                            
                     return IP;
                 }
@@ -1292,14 +1765,15 @@ public class Prezzi {
                 //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
                 //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
                 String DataDollaro=OperazioniSuDate.ConvertiDatadaLong(Data);
-                String PT = ConvertiUSDEUR(mon[k].Qta, DataDollaro);                
+                String PT = ConvertiUSDEUR("1", DataDollaro);                
                 if (PT != null) {
-                    BigDecimal PrezzoTransazione = new BigDecimal(PT).abs().stripTrailingZeros();
+                    BigDecimal PrezzoUnitario = new BigDecimal(PT).abs().stripTrailingZeros();
                     IP=new InfoPrezzo();
                     IP.Moneta=mon[k].Moneta;
                     IP.Qta=new BigDecimal(mon[k].Qta);
                     IP.exchange="bancaditalia";
-                    IP.prezzo=PrezzoTransazione;
+                    IP.prezzo=PrezzoUnitario;
+                    IP.prezzoQta=PrezzoUnitario.multiply(new BigDecimal(mon[k].Qta).abs());
                     IP.timestamp=Data;                            
                     return IP;
                 }
@@ -1630,7 +2104,7 @@ public static InfoPrezzo DammiPrezzoDaDatabase(
         String address,
         long minuti, 
         BigDecimal Qta) {
-
+symbol=symbol.toUpperCase();
    // if (Qta==null)Qta="1";
     
     final long MAX_DIFF_MS = minuti * 60 * 1000; // 5 minuti in millisecondi
@@ -1727,6 +2201,7 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
         String address,
         long minuti,
         BigDecimal Qta) {
+    symbol=symbol.toUpperCase();
 
     List<InfoPrezzo> listaPrezzi = new ArrayList<>();
 
@@ -1790,6 +2265,7 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 
         
          try {
+             Symbol=Symbol.toUpperCase();
              TimeUnit.SECONDS.sleep(1);
              //long timestampAttuale = System.currentTimeMillis();
              //Voglio reperire sempre almeno 1h di dati per cui prendo 1h prima e 1h dopo
@@ -1800,9 +2276,9 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
              if (Since>Adesso)return;
              
              //se ho già fatto questa richiesta in questa sessione termino immediatamente il ciclo
-             //per questa richiesta visto che la precisione è di 5 minuti mi basta che vi siano i 5 minuti prima e quelli dopo quindi
-             long SinceVerifica=timestamp-300000;
-             long UntilVerifica=timestamp+300000;
+             //per questa richiesta visto che la precisione è di 60 minuti mi basta che vi siano i 60 minuti prima e quelli dopo quindi
+             long SinceVerifica=timestamp-3600000;
+             long UntilVerifica=timestamp+3600000;
              if (UntilVerifica>Adesso)UntilVerifica=Adesso;
              if (SinceVerifica>Adesso)SinceVerifica=Adesso-3600000;
              if(managerRichieste.isAlreadyRequested(Symbol, SinceVerifica, UntilVerifica))return;

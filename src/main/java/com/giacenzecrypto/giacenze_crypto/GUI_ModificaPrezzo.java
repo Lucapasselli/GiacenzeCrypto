@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -42,6 +43,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
         Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
+        this.ID=ID;
                 
         
         String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
@@ -56,10 +58,16 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeU[1]=ora;
             PrezzoAttualeU[2]=Movimento[10];
             if(!Movimento[40].isBlank()){
-                String VSplit[]=Movimento[40].split("\\|"); 
+                String VSplit[]=Movimento[40].split("\\|",-1); 
                 if(VSplit[0].equalsIgnoreCase(Movimento[8])){
                     PrezzoAttualeU[3]=VSplit[3];
-                    PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]));
+                    if (PrezzoAttualeU[3].toLowerCase().contains("db interno"))
+                    {
+                        PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongallOra(data)+":XX:XX";
+                        PrezzoAttualeU[5]="1 ora";
+                    }
+                    if (!VSplit[1].isBlank()){
+                        PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]));
                     long DiffOrario=Math.abs(data-Long.parseLong(VSplit[1]))/1000;
                     String unitaTempo;
                         if (DiffOrario >= 60) {
@@ -69,6 +77,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                             unitaTempo = " sec";
                         }    
                     PrezzoAttualeU[5]=String.valueOf(DiffOrario)+unitaTempo;
+                    }
                     PrezzoAttualeU[6]=VSplit[2];
                 }
             }
@@ -80,10 +89,16 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeE[1]=ora;
             PrezzoAttualeE[2]=Movimento[13];
             if(!Movimento[40].isBlank()){
-                String VSplit[]=Movimento[40].split("\\|"); 
+                String VSplit[]=Movimento[40].split("\\|",-1); 
                 if(VSplit[0].equalsIgnoreCase(Movimento[11])){
                     PrezzoAttualeE[3]=VSplit[3];
-                    PrezzoAttualeE[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]));
+                    if (PrezzoAttualeE[3].toLowerCase().contains("db interno"))
+                        {
+                        PrezzoAttualeE[4]=OperazioniSuDate.ConvertiDatadaLongallOra(data)+":XX:XX";
+                        PrezzoAttualeE[5]="1 ora";
+                    }
+                    if (!VSplit[1].isBlank()){
+                        PrezzoAttualeE[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]));
                     long DiffOrario=Math.abs(data-Long.parseLong(VSplit[1]))/1000;
                     String unitaTempo;
                         if (DiffOrario >= 60) {
@@ -93,6 +108,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                             unitaTempo = " sec";
                         } 
                     PrezzoAttualeE[5]=String.valueOf(DiffOrario)+unitaTempo;
+                    }
                     PrezzoAttualeE[6]=VSplit[2];
                 }
             }
@@ -255,17 +271,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 rigo[1] = ora;
                 rigo[2] = M[i].Qta;
                 rigo[3] = IP.exchange;
-                rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IP.timestamp);
-                //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
-                long DiffOrario = Math.abs(data - IP.timestamp) / 1000;
-                String unitaTempo;
-                if (DiffOrario >= 60) {
-                    DiffOrario = DiffOrario / 60;  // converto in minuti
-                    unitaTempo = " min";
-                } else {
-                    unitaTempo = " sec";
-                }
-                rigo[5] = String.valueOf(DiffOrario) + unitaTempo;
+                rigo[4] = DataOra + ":XX:XX";
+                rigo[5] = "1 ora";
 
                 rigo[6] = IP.prezzo.toPlainString();
                 if (IP.prezzoQta==null)IP.prezzoQta=IP.prezzo.multiply(IP.Qta).abs();
@@ -326,11 +333,24 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        Tabella_PrezzoAttuale.setEnabled(false);
         jScrollPane1.setViewportView(Tabella_PrezzoAttuale);
 
-        Bottone_OK.setText("OK");
+        Bottone_OK.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        Bottone_OK.setText("Applica prezzo selezionato");
+        Bottone_OK.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_OKActionPerformed(evt);
+            }
+        });
 
+        Bottone_Annulla.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Annulla.png"))); // NOI18N
         Bottone_Annulla.setText("Annulla");
+        Bottone_Annulla.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_AnnullaActionPerformed(evt);
+            }
+        });
 
         Tabella_Prezzi.setAutoCreateRowSorter(true);
         Tabella_Prezzi.setModel(new javax.swing.table.DefaultTableModel(
@@ -366,11 +386,17 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
 
         jLabel2.setText("Prezzi Disponibili piu' vicini");
 
-        jLabel3.setText("Fare doppio click sulla riga corrispndente al prezzo scelto o singolo click e conferma con il tasto ok per cambiare il prezzo alla transazione.");
+        jLabel3.setText("Fai click sulla riga corrispndente al prezzo voluto e conferma con il tasto \"Applica prezzo selezionato\" per cambiare il prezzo alla transazione.");
 
         jLabel4.setText("In alternativa premere sul tasto \"Prezzo Personalizzato\" per inserire un prezzo personalizzato per il token/transazione.");
 
+        Bottone_Personalizzato.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
         Bottone_Personalizzato.setText("Prezzo Personalizzato");
+        Bottone_Personalizzato.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_PersonalizzatoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -380,20 +406,19 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(Bottone_Personalizzato)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 988, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Bottone_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
-                            .addComponent(jLabel3)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(Bottone_Personalizzato, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -408,19 +433,83 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Bottone_OK)
-                    .addComponent(Bottone_Annulla)
-                    .addComponent(Bottone_Personalizzato))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Bottone_Annulla)
+                            .addComponent(Bottone_Personalizzato)))
+                    .addComponent(Bottone_OK))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Bottone_OKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OKActionPerformed
+        // TODO add your handling code here:
+          if (Tabella_Prezzi.getSelectedRow() >= 0) {
+            int rigaselezionata = Tabella_Prezzi.getRowSorter().convertRowIndexToModel(Tabella_Prezzi.getSelectedRow());
+            
+            String Fonte=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 3).toString();
+            String Prezzo=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 8).toString();
+            String PrezzoU=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 6).toString();
+            String TimeStamp=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 4).toString();
+            String Token=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 0).toString();
+            String PrezzoPrecedente=Tabella_PrezzoAttuale.getModel().getValueAt(0, 7).toString();
+            long timestamp=OperazioniSuDate.ConvertiDatainLongSecondo(TimeStamp);
+            if (timestamp!=0){
+                TimeStamp=String.valueOf(timestamp);
+            }else TimeStamp="";
+            /*String domanda="<html>Sicuro di voler applicare il prezzo di <b>€"+Prezzo+"</b> alla transazione?<br>";
+            if (!Fonte.isBlank()){
+                domanda=domanda+"Il prezzo è preso dalla seguente fonte : <b>"+Fonte+"</b><br>";
+            }
+            domanda=domanda+"<br>Il prezzo attualmente memorizzato e' di <b>€"+PrezzoPrecedente+"</b><br></html>";*/
+              String domanda = """
+<html>
+  <body style='font-family: Segoe UI, sans-serif; font-size: 13pt;'>
+    <div style='text-align: left;'>
+      <p>Vuoi applicare il prezzo di <b>€%s</b> a questa transazione?</p>
+      <div style='text-align: center;'>                         
+        %s
+      </div>                         
+      <p><br>Il prezzo attualmente memorizzato è di <b>€%s</b></p>
+    </div>
+  </body>
+</html>
+""".formatted(Prezzo,
+                      Fonte.isBlank() ? "" : "<p>(Prezzo ottenuto da: <b>" + Fonte + "</b>)</p>",
+                      PrezzoPrecedente);
+            int risposta=JOptionPane.showOptionDialog(this,domanda, "Cambio Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
+            if (risposta==0){
+            
+                CDC_Grafica.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStamp+"|"+PrezzoU+"|"+Fonte;
+                CDC_Grafica.MappaCryptoWallet.get(ID)[15]=Prezzo;
+                CDC_Grafica.TabellaCryptodaAggiornare=true;
+                this.dispose();
+            }
+          }
+    }//GEN-LAST:event_Bottone_OKActionPerformed
+
+    private void Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AnnullaActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_Bottone_AnnullaActionPerformed
+
+    private void Bottone_PersonalizzatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_PersonalizzatoActionPerformed
+        // TODO add your handling code here:
+       // System.out.println(ID);
+        if(Funzioni.GUIModificaPrezzo(this,ID))
+        {
+            CDC_Grafica.MappaCryptoWallet.get(ID)[40]="|||Manuale";
+            CDC_Grafica.TabellaCryptodaAggiornare=true;
+            this.dispose();
+        }
+    }//GEN-LAST:event_Bottone_PersonalizzatoActionPerformed
 
     /**
      * @param args the command line arguments

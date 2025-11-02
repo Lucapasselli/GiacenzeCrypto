@@ -11541,7 +11541,25 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void MenuItem_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoActionPerformed
         // TODO add your handling code here:
-        if(Funzioni.GUIModificaPrezzo(PopUp_Component,PopUp_IDTrans))Funzioni_AggiornaTutto();
+     //   if(Funzioni.GUIModificaPrezzo(PopUp_Component,PopUp_IDTrans))Funzioni_AggiornaTutto();
+           Component c=this;
+        Download progress=new Download();
+        progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
+        progress.setLocationRelativeTo(PopUp_Component);
+        
+        Thread thread;
+            thread = new Thread() {
+            public void run() {
+            GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(PopUp_IDTrans);
+            t.setLocationRelativeTo(c);           
+            t.setVisible(true);
+            progress.ChiudiFinestra();
+        }
+            };
+        thread.start();  
+        progress.setVisible(true);
+            
+        
     }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
 
     private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
@@ -13900,15 +13918,23 @@ try {
         
         Valore=Transazione[40];
         if (!Valore.isBlank()){
-            String VSplit[]=Valore.split("\\|");        
-            Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
-            ModelloTabellaCrypto.addRow(Val);
-            Val=new String[]{"Info Prezzo : Orario Fonte ",OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
-            ModelloTabellaCrypto.addRow(Val);           
-            Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
-            ModelloTabellaCrypto.addRow(Val);
-            Val=new String[]{"Info Prezzo : Prezzo unitario ","€ "+VSplit[2]};
-            ModelloTabellaCrypto.addRow(Val);
+            String VSplit[]=Valore.split("\\|",-1); 
+            if (!VSplit[3].isBlank()){
+                Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
+                ModelloTabellaCrypto.addRow(Val);
+            }
+            if (!VSplit[1].isBlank()){
+                Val=new String[]{"Info Prezzo : Orario Fonte ",OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
+                ModelloTabellaCrypto.addRow(Val);    
+            }
+            if (!VSplit[0].isBlank()){
+                Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
+                ModelloTabellaCrypto.addRow(Val);           
+            }
+            if (!VSplit[2].isBlank()){
+                Val=new String[]{"Info Prezzo : Prezzo unitario ","€ "+VSplit[2]};
+                ModelloTabellaCrypto.addRow(Val);
+            }
         }
         
         

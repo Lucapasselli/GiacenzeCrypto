@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -67,9 +65,9 @@ public class DatabaseH2 {
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
             preparedStatement.execute();
 
-            createTableSQL = "CREATE TABLE IF NOT EXISTS USDTEUR  (data VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
+         /*   createTableSQL = "CREATE TABLE IF NOT EXISTS USDTEUR  (data VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);
-            preparedStatement.execute();
+            preparedStatement.execute();*/
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS XXXEUR  (dataSimbolo VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
             preparedStatement = connection.prepareStatement(createTableSQL);           

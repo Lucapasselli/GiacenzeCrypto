@@ -153,6 +153,8 @@ public class OperazioniSuDate {
         } catch (ParseException ex) {
            // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             //System.out.println(Data1+" non è una data");
+            LoggerGC.ScriviErrore(Data1+" non è una data valida");
+           // return 0;
         }
         return m1;
     } 

@@ -52,7 +52,11 @@ public class Funzioni_WalletDeFi {
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56_BSC", "BUSD");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0xF2001B145b43032AAF5Ee2884e456CCd805F677D_CRO", "DAI");
             CDC_Grafica.Mappa_AddressRete_Nome.put("0x4200000000000000000000000000000000000006_BASE", "ETH");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0x6969696969696969696969696969696969696969_BERA", "BERA");
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0x6969696969696969696969696969696969696969_BERA", "BERA");//Sarebbe WBERA
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0x549943e04f40284185054145c6E4e9568C1D3241_BERA", "USDC");//Sarebbe USDC.e
+            CDC_Grafica.Mappa_AddressRete_Nome.put("0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9_ARB", "USDT");//Sarebbe USDT0
+            //0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9
+            //0x549943e04f40284185054145c6E4e9568C1D3241
             //0x6969696969696969696969696969696969696969
             CDC_Grafica.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
             

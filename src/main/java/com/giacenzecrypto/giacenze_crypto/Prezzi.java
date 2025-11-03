@@ -996,8 +996,15 @@ public class Prezzi {
           //Se non ho neanche i prezzi all'ora provo a scaricarli
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
           RecuperaPrezziDaCCXT(Crypto, Datalong);
+          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,5,qta);
+          if (risultato!=null){
+            return risultato;
+          }
+          
+          //Se non trovo i prezzi scaricandoli dagli exchange allora tiro in balo cryptocompare, lo tiro in ballo per ultimo prchè i prezzi hanno una precisione oraria          
+          RecuperaPrezziDaCryptoCompare(Crypto, Datalong);
+          //Cerco il risultato nei 60 minuti in questo caso
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,60,qta);
-          //System.out.println(risultato);
           if (risultato==null){
               System.out.println("Nessun prezzo trovato per "+Crypto);
           }
@@ -1162,7 +1169,7 @@ public class Prezzi {
         
         //se ancora non ho il prezzo recupero il prezzo dall'altro provider ovvero CryptoCompare       
         if (risultato == null) {
-                ZZZ_RecuperaTassidiCambiodaSimbolo_CryptoCompare("USDT", DataGiorno);
+              //  RecuperaPrezzidaCryptoCompare("USDT", DataGiorno);
                 risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
         }
         //Cerco su Coingecko
@@ -1307,84 +1314,112 @@ public class Prezzi {
         return ok;
     }     
           
-              public static String ZZZ_RecuperaTassidiCambiodaSimbolo_CryptoCompare(String Crypto, String DataIniziale) {
-        String ok = null;
-        //Aggiungo 30 giorni alla data iniziale per trovare la data di fine
-        long dataFin = (OperazioniSuDate.ConvertiDatainLong(DataIniziale)/1000 + Long.parseLong("2592000"));
+    public static void RecuperaPrezziDaCryptoCompare(String Crypto, long timestamp) {
 
-            String apiUrl = "https://min-api.cryptocompare.com/data/v2/histohour?fsym=" + Crypto + "&tsym=USD&limit=720&toTs=" + dataFin;
-           // System.out.println(apiUrl);
-            
-            try {
-                URL url = new URI(apiUrl).toURL();
-                //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-                if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
-                    return null;
+        try {
+
+            Crypto = Crypto.toUpperCase();
+            TimeUnit.SECONDS.sleep(1);
+            //Siccome timestamp nelle api di cryptocompare corrisponde alla data dell'ultimo dato che voglio ricevere
+            //e ricevo 30 gg di dati aggiungo sempre 20gg al timestamp in modo da avere i dati 10gg prima e 20 dopo la richiesta fatta.
+            long Until = timestamp + Long.parseLong("1728000000");           
+            long Adesso = System.currentTimeMillis();
+            if (Until > Adesso) {
+                //return;
+                Until = Adesso;
+            }
+            long Since = Until - Long.parseLong("2592000000");
+            //se ho già fatto questa richiesta in questa sessione termino immediatamente il ciclo
+            //per questa richiesta visto che la precisione è di 1 ora voglio avere almeno 1 ora di dati avanti e indietro di intervallo e controllo quelli
+            long SinceVerifica = timestamp - 3600000;
+            long UntilVerifica = timestamp + 3600000;
+            if (UntilVerifica > Adesso) {
+                UntilVerifica = Adesso;
+            }
+            if (SinceVerifica > Adesso) {
+                SinceVerifica = Adesso - 3600000;
+            }
+            //Se ho già effettuato la richiesta esco dal ciclo
+            if (managerRichieste.isAlreadyRequested("CryptoCompare_" + Crypto, SinceVerifica, UntilVerifica)) {
+                return;
+            }
+
+            long Fine = Until / 1000;
+
+            String apiUrl = "https://min-api.cryptocompare.com/data/v2/histohour?fsym=" + Crypto + "&tsym=EUR&limit=720&toTs=" + Fine;
+            // System.out.println(apiUrl);
+
+            URL url = new URI(apiUrl).toURL();
+            managerRichieste.addRange("CryptoCompare_" + Crypto, Since, Until);
+            //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
+            URLConnection connection = url.openConnection();
+            // System.out.println(url);
+            System.out.println("Recupero prezzi " + Crypto + " da CryptoCompare per la data " + OperazioniSuDate.ConvertiDatadaLong(timestamp));
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = in.readLine()) != null) {
+                    response.append(line);
+
                 }
-                CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
-                URLConnection connection = url.openConnection();
-                // System.out.println(url);
-                System.out.println("Recupero prezzi " + Crypto + " da CryptoCompare da data " + DataIniziale);
-                try (BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
+                //System.out.println(response);
+                Gson gson = new Gson();
+                JsonObject JsonObj = gson.fromJson(response.toString(), JsonObject.class);
+                String Risposta = JsonObj.get("Response").getAsString();
+                if (Risposta.equalsIgnoreCase("Success")) {
+                    //Se la richiesta ha successo vado a leggere i dati delle crypto
+                    JsonArray pricesArray = JsonObj.getAsJsonObject("Data").getAsJsonArray("Data");
 
-                    while ((line = in.readLine()) != null) {
-                        response.append(line);
+                    //  List<PrezzoData> prezzoDataList = new ArrayList<>();
+                    if (pricesArray != null && pricesArray.size() > 0) {
+                        String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address) "
+                                + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, ?, ?)";
 
-                    }
-                    //System.out.println(response);
-                    Gson gson = new Gson();
-                    JsonObject JsonObj = gson.fromJson(response.toString(), JsonObject.class);
-                    String Risposta=JsonObj.get("Response").getAsString();
-                    if (Risposta.equalsIgnoreCase("Success")) {
-                        //Se la richiesta ha successo vado a leggere i dati delle crypto
-                        JsonArray pricesArray = JsonObj.getAsJsonObject("Data").getAsJsonArray("Data");
+                        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
 
-                        if (!pricesArray.isEmpty()) {
                             for (JsonElement element : pricesArray) {
-                                String prezzoUSD=element.getAsJsonObject().get("open").getAsString();
-                                long UnixTime=element.getAsJsonObject().get("time").getAsLong() * 1000;
-                                String Data = OperazioniSuDate.ConvertiDatadaLong(UnixTime);
-                                String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(UnixTime);
-                                String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
-                                if (!PrezzoEuro.equalsIgnoreCase("0")) {
-                                    //System.out.println(Crypto+" - "+DataOra+" - "+PrezzoEuro);
-                                    //Controllo ora se non ha il prezzo e in quel caso lo scrivo
-                                    if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
-                                        DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
-                                    }
-                                    if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) {
-                                        DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
-                                    }
+                               // JsonObject priceArray = element.getAsJsonObject();
+                               /* if (priceArray.size() != 2) {
+                                    continue;
+                                }*/
+
+                                long UnixTime = element.getAsJsonObject().get("time").getAsLong() * 1000;
+                                double prezzo;
+                                try {
+                                    prezzo = element.getAsJsonObject().get("open").getAsDouble();
+                                    if (prezzo==0)continue;//se il prezzo non è valorizzato non lo salvo
+                                } catch (Exception ex) {
+                                    continue; // skip valori non numerici
                                 }
+
+                                ps.setLong(1, UnixTime);
+                                ps.setString(2, "CryptoCompare");
+                                ps.setString(3, Crypto);
+                                ps.setDouble(4, prezzo);
+                                ps.setString(5, "");
+                                ps.setString(6, "");
+                                ps.addBatch();
                             }
 
-                        } else {
-                            ok = null;
+                            ps.executeBatch();
+
+                        } catch (SQLException ex) {
+                            LoggerGC.ScriviErrore(ex);
                         }
                     }
-                } catch (IOException ex) {
-                    ok = null;
                 }
-                TimeUnit.SECONDS.sleep(1);
-
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-                ok = null;
             } catch (IOException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-                ok = null;
-            } catch (InterruptedException ex) {
-                ok = null;
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
-        
-        return ok;
-    }    
+
+        } catch (InterruptedException | URISyntaxException | MalformedURLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+    }  
 
         public static String ZZZ_RecuperaTassidiCambiodaSimbolo_CoinCap(String Crypto, String DataIniziale) {
         String ApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
@@ -1510,10 +1545,9 @@ public class Prezzi {
         } catch (IOException ex) {
           //  Logger.getLogger(Calcoli.class.getName()).log(Level.SEVERE, null, ex);
             ok=null;
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException | InterruptedException ex) {
+            LoggerGC.ScriviErrore(ex);
+            //Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return ok;
@@ -1522,16 +1556,23 @@ public class Prezzi {
     
     public static String RecuperaTassidiCambiodaAddress_Coingecko(String DataIniziale, String Address, String Rete, String Simbolo) {
 
+        RecuperaCoinsCoingecko();
+        String AddressNoPrezzo = DatabaseH2.GestitiCoingecko_Leggi(Address + "_" + Rete);
+            if (AddressNoPrezzo == null) {
+                return null;
+            }
+        //Se la moneta non è nelle liste coingecko annullo la richiesta
+        
         //se ho già fatto questa richiesta in questa sessione termino immediatamente il ciclo
         //per questa richiesta volgio aver già fatto la richiesta almeno per 1h prima e 1h dopo
         long SinceVerifica=OperazioniSuDate.ConvertiDatainLong(DataIniziale)- 3600000;
         long UntilVerifica=OperazioniSuDate.ConvertiDatainLong(DataIniziale)+ 3600000;
         long dataAdesso1 = System.currentTimeMillis();
         if (dataAdesso1<UntilVerifica)UntilVerifica=dataAdesso1;
-        System.out.println("Cerco "+Address+"_"+Rete+" nel manager richieste ");
-        System.out.println("Since "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(SinceVerifica)+" - Until "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(UntilVerifica));
+        //System.out.println("Cerco "+Address+"_"+Rete+" nel manager richieste ");
+        //System.out.println("Since "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(SinceVerifica)+" - Until "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(UntilVerifica));
         if(managerRichieste.isAlreadyRequested(Address+"_"+Rete, SinceVerifica, UntilVerifica))return null;
-        else System.out.println("Non ho nulla nel manager proseguo con le richieste");
+        //else System.out.println("Non ho nulla nel manager proseguo con le richieste");
         //Se cerco di richiedere una data futura annullo
         if (dataAdesso1<SinceVerifica)return null;
         
@@ -1710,7 +1751,7 @@ public class Prezzi {
 
         Moneta MonOri[] = new Moneta[]{Moneta1a, Moneta2a};
 
-        //PARTE 1 - ANALISI PRELIMIONARE DATI
+        //PARTE 1 - ANALISI PRELIMINARE DATI
         
         //A - Clono le monete in quanto altrimenti potrei andare ad alterarle nel corso del ciclo per la richiesta dei prezzi
         Moneta mon[] = new Moneta[2];
@@ -2277,10 +2318,10 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
              
              //se ho già fatto questa richiesta in questa sessione termino immediatamente il ciclo
              //per questa richiesta visto che la precisione è di 60 minuti mi basta che vi siano i 60 minuti prima e quelli dopo quindi
-             long SinceVerifica=timestamp-3600000;
-             long UntilVerifica=timestamp+3600000;
+             long SinceVerifica=timestamp-300000;
+             long UntilVerifica=timestamp+300000;
              if (UntilVerifica>Adesso)UntilVerifica=Adesso;
-             if (SinceVerifica>Adesso)SinceVerifica=Adesso-3600000;
+             if (SinceVerifica>Adesso)SinceVerifica=Adesso-300000;
              if(managerRichieste.isAlreadyRequested(Symbol, SinceVerifica, UntilVerifica))return;
              
              //Lista degli exchange a cui richiedere il prezzo della cripto

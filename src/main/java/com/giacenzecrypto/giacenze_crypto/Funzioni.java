@@ -1932,6 +1932,7 @@ return MappaLista;
             MappaRetiSupportate.put("ARB", "");
             MappaRetiSupportate.put("AVAX", "");
             MappaRetiSupportate.put("BASE", "");
+            MappaRetiSupportate.put("BERA", "");
             MappaRetiSupportate.put("ADA", "");
             MappaRetiSupportate.put("BNB", "");
             MappaRetiSupportate.put("BSC", "");

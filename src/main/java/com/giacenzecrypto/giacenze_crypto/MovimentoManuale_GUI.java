@@ -151,6 +151,10 @@ private static final long serialVersionUID = 9L;
         MonetaEntrataAddress_Label = new javax.swing.JLabel();
         MonetaEntrataAddress_TextField = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
+        P_LabelFonte = new javax.swing.JLabel();
+        P_LabelMoneta = new javax.swing.JLabel();
+        P_LabelPU = new javax.swing.JLabel();
+        P_TimestampFonte = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -254,6 +258,7 @@ private static final long serialVersionUID = 9L;
 
         ValoreTransazione_Label.setText("Valore Transazione in EURO : ");
 
+        ValoreTransazione_TextField.setEditable(false);
         ValoreTransazione_TextField.setForeground(new java.awt.Color(51, 51, 51));
         ValoreTransazione_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -262,7 +267,7 @@ private static final long serialVersionUID = 9L;
         });
 
         Bottone_CalcolaAutomaticamente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        Bottone_CalcolaAutomaticamente.setText("Cerca di recuperare automaticamente il Valore della Transazione");
+        Bottone_CalcolaAutomaticamente.setText("Modifica Prezzo");
         Bottone_CalcolaAutomaticamente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_CalcolaAutomaticamenteActionPerformed(evt);
@@ -340,6 +345,14 @@ private static final long serialVersionUID = 9L;
             }
         });
 
+        P_LabelFonte.setText("Fonte Prezzo :");
+
+        P_LabelMoneta.setText("Moneta di riferimento :");
+
+        P_LabelPU.setText("Prezzo Unitario :");
+
+        P_TimestampFonte.setText("Timestamp Fonte :");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -364,8 +377,9 @@ private static final long serialVersionUID = 9L;
                                 .addGap(21, 21, 21)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
+                                        .addGap(6, 6, 6)
                                         .addComponent(MonetaUscita_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(MonetaUscita_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(MonetaUscitaQuantita_Label)
@@ -384,7 +398,7 @@ private static final long serialVersionUID = 9L;
                                 .addComponent(Minuto_Label)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(Freccia3_Label)
                                     .addComponent(Freccia2_Label)
@@ -426,21 +440,31 @@ private static final long serialVersionUID = 9L;
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(Wallet_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(WalletDettaglio_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(ValoreTransazione_Label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Bottone_CalcolaAutomaticamente, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(Note_Label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Note_ScrollPane))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(Note_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Note_ScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 825, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(P_LabelFonte)
+                            .addComponent(ValoreTransazione_Label)
+                            .addComponent(P_LabelMoneta))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Bottone_CalcolaAutomaticamente, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(P_TimestampFonte)
+                            .addComponent(P_LabelPU))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -481,20 +505,22 @@ private static final long serialVersionUID = 9L;
                     .addComponent(MonetaUscitaTipo_Label)
                     .addComponent(MonetaEntrataTipo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(MonetaEntrataTipo_Label))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Freccia2_Label)
-                    .addComponent(MonetaUscita_Label)
                     .addComponent(MonetaEntrata_Label)
                     .addComponent(MonetaUscita_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(MonetaEntrata_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(MonetaEntrataQuantita_Label)
-                    .addComponent(Freccia3_Label)
-                    .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(MonetaUscitaQuantita_Label))
+                    .addComponent(MonetaEntrata_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MonetaUscita_Label))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(MonetaEntrataQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(MonetaEntrataQuantita_Label)
+                        .addComponent(Freccia3_Label))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(MonetaUscitaQuantita_Label)
+                        .addComponent(MonetaUscitaQuantita_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -513,15 +539,22 @@ private static final long serialVersionUID = 9L;
                     .addComponent(ValoreTransazione_Label)
                     .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Bottone_CalcolaAutomaticamente))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(P_LabelFonte)
+                    .addComponent(P_LabelPU))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(P_LabelMoneta)
+                    .addComponent(P_TimestampFonte))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Note_ScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Note_Label))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(12, Short.MAX_VALUE))
+                    .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         pack();
@@ -783,7 +816,7 @@ private static final long serialVersionUID = 9L;
 
     private void ValoreTransazione_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_ValoreTransazione_TextFieldKeyReleased
         // TODO add your handling code here:
-        EvidenziaProblemi();
+       // EvidenziaProblemi();
     }//GEN-LAST:event_ValoreTransazione_TextFieldKeyReleased
 
     private void MonetaUscitaTipo_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_MonetaUscitaTipo_ComboBoxItemStateChanged
@@ -1412,6 +1445,10 @@ private static final long serialVersionUID = 9L;
     private javax.swing.JTextArea Note_TextArea;
     private javax.swing.JComboBox<String> Ora_ComboBox;
     private javax.swing.JLabel Ora_Label;
+    private javax.swing.JLabel P_LabelFonte;
+    private javax.swing.JLabel P_LabelMoneta;
+    private javax.swing.JLabel P_LabelPU;
+    private javax.swing.JLabel P_TimestampFonte;
     private javax.swing.JComboBox<String> Secondo_ComboBox;
     private javax.swing.JLabel Secondo_Label;
     private javax.swing.JLabel ValoreTransazione_Label;

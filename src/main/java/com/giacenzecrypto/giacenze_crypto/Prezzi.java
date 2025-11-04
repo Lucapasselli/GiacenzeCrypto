@@ -2510,6 +2510,8 @@ public static class InfoPrezzo {
 
     }
     
+    //public ImpostaDataString(String Data)
+    
    /* public BigDecimal RitornaPrezzoQta(){
         //System.out.println(Moneta+"-"+prezzo+"-"+Qta+"-"+timestamp);
         return prezzo.multiply(Qta);

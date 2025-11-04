@@ -39,6 +39,86 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
     }
     
+    public GUI_ModificaPrezzo(Moneta MU,Moneta ME, String PrezzoAttuale, long TimeStamp) {
+        initComponents();
+        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        this.setIconImage(icon.getImage());  
+        
+      /*  CaricaTabellaPrezzoAttualedaID(ID); 
+        CaricaTabellaPrezzi(ID);*/
+        
+    }
+    
+    private void CaricaTabellaPrezzoAttualedaID(Moneta MU,Moneta ME, String PrezzoAttuale, long TimeStamp,Prezzi.InfoPrezzo IPr){
+        DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
+        Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
+        Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
+                
+        
+
+        //Compilo la tabella del prezzo attuale
+        String PrezzoAttualeE[]=new String[8];
+        String PrezzoAttualeU[]=new String[8];
+        String ora=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
+        if(MU!=null&&MU.Moneta!=null&&!MU.Moneta.isBlank()){
+            PrezzoAttualeU[0]=MU.Moneta;
+            PrezzoAttualeU[1]=ora;
+            PrezzoAttualeU[2]=MU.Qta;
+            if(IPr.Moneta.equalsIgnoreCase(MU.Moneta)){
+                PrezzoAttualeU[3]=IPr.exchange;
+                if (PrezzoAttualeU[3].toLowerCase().contains("db interno"))
+                    {
+                        PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongallOra(IPr.timestamp)+":XX:XX";
+                        PrezzoAttualeU[5]="1 ora";
+                    }
+                else {
+                    PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
+                    long DiffOrario=Math.abs(IPr.timestamp-TimeStamp)/1000;
+                    String unitaTempo;
+                        if (DiffOrario >= 60) {
+                            DiffOrario = DiffOrario / 60;  // converto in minuti
+                            unitaTempo = " min";
+                        } else {
+                            unitaTempo = " sec";
+                        }    
+                    PrezzoAttualeU[5]=String.valueOf(DiffOrario)+unitaTempo;
+                }
+                PrezzoAttualeU[6]=IPr.prezzo.toPlainString();
+            }
+            PrezzoAttualeU[7]=IPr.prezzoQta.toPlainString();
+            ModTabPrezzoAttuale.addRow(PrezzoAttualeU);
+        }
+        if(ME!=null&&ME.Moneta!=null&&!ME.Moneta.isBlank()){
+            PrezzoAttualeE[0]=ME.Moneta;
+            PrezzoAttualeE[1]=ora;
+            PrezzoAttualeE[2]=ME.Qta;
+            if(IPr.Moneta.equalsIgnoreCase(ME.Moneta)){
+                PrezzoAttualeE[3]=IPr.exchange;
+                if (PrezzoAttualeE[3].toLowerCase().contains("db interno"))
+                    {
+                        PrezzoAttualeE[4]=OperazioniSuDate.ConvertiDatadaLongallOra(IPr.timestamp)+":XX:XX";
+                        PrezzoAttualeE[5]="1 ora";
+                    }
+                else {
+                    PrezzoAttualeE[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
+                    long DiffOrario=Math.abs(IPr.timestamp-TimeStamp)/1000;
+                    String unitaTempo;
+                        if (DiffOrario >= 60) {
+                            DiffOrario = DiffOrario / 60;  // converto in minuti
+                            unitaTempo = " min";
+                        } else {
+                            unitaTempo = " sec";
+                        }    
+                    PrezzoAttualeE[5]=String.valueOf(DiffOrario)+unitaTempo;
+                }
+                PrezzoAttualeE[6]=IPr.prezzo.toPlainString();
+            }
+            PrezzoAttualeE[7]=IPr.prezzoQta.toPlainString();
+            ModTabPrezzoAttuale.addRow(PrezzoAttualeE);
+            
+        }
+    }
+    
     private void CaricaTabellaPrezzoAttualedaID(String ID){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);

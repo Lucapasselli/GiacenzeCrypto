@@ -2510,12 +2510,30 @@ public static class InfoPrezzo {
 
     }
     
-    //public ImpostaDataString(String Data)
+    public String RitornaStringData(){
+        if (this.exchange.contains("db interno"))
+                    {
+                        return OperazioniSuDate.ConvertiDatadaLongallOra(this.timestamp)+":XX:XX";
+                    }
+        else return OperazioniSuDate.ConvertiDatadaLongAlSecondo(this.timestamp);
+    }
     
-   /* public BigDecimal RitornaPrezzoQta(){
-        //System.out.println(Moneta+"-"+prezzo+"-"+Qta+"-"+timestamp);
-        return prezzo.multiply(Qta);
-    }*/
+    public String RitornaStringDiffData(long datalong) {
+
+        if (this.exchange.contains("db interno")) {
+            return "1 ora";
+        } else {
+            long DiffOrario = Math.abs(this.timestamp - datalong) / 1000;
+            String unitaTempo;
+            if (DiffOrario >= 60) {
+                DiffOrario = DiffOrario / 60;  // converto in minuti
+                unitaTempo = " min";
+            } else {
+                unitaTempo = " sec";
+            }
+            return String.valueOf(DiffOrario) + unitaTempo;
+        }
+    }
     
     public String Ritorna40(){
         return this.Moneta+"|"+this.timestamp+"|"+this.prezzo+"|"+this.exchange;

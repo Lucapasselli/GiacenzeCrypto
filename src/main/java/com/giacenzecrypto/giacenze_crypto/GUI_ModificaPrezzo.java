@@ -49,7 +49,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
     }
     
-    private void CaricaTabellaPrezzoAttualedaID(Moneta MU,Moneta ME, String PrezzoAttuale, long TimeStamp,Prezzi.InfoPrezzo IPr){
+    private void CaricaTabellaPrezzoAttualedaID(Moneta MU,Moneta ME,long TimeStamp,Prezzi.InfoPrezzo IPr){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
         Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
@@ -66,23 +66,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeU[2]=MU.Qta;
             if(IPr.Moneta.equalsIgnoreCase(MU.Moneta)){
                 PrezzoAttualeU[3]=IPr.exchange;
-                if (PrezzoAttualeU[3].toLowerCase().contains("db interno"))
-                    {
-                        PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongallOra(IPr.timestamp)+":XX:XX";
-                        PrezzoAttualeU[5]="1 ora";
-                    }
-                else {
-                    PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
-                    long DiffOrario=Math.abs(IPr.timestamp-TimeStamp)/1000;
-                    String unitaTempo;
-                        if (DiffOrario >= 60) {
-                            DiffOrario = DiffOrario / 60;  // converto in minuti
-                            unitaTempo = " min";
-                        } else {
-                            unitaTempo = " sec";
-                        }    
-                    PrezzoAttualeU[5]=String.valueOf(DiffOrario)+unitaTempo;
-                }
+                PrezzoAttualeU[4]=IPr.RitornaStringData();
+                PrezzoAttualeU[5]=IPr.RitornaStringDiffData(TimeStamp);
                 PrezzoAttualeU[6]=IPr.prezzo.toPlainString();
             }
             PrezzoAttualeU[7]=IPr.prezzoQta.toPlainString();
@@ -94,23 +79,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeE[2]=ME.Qta;
             if(IPr.Moneta.equalsIgnoreCase(ME.Moneta)){
                 PrezzoAttualeE[3]=IPr.exchange;
-                if (PrezzoAttualeE[3].toLowerCase().contains("db interno"))
-                    {
-                        PrezzoAttualeE[4]=OperazioniSuDate.ConvertiDatadaLongallOra(IPr.timestamp)+":XX:XX";
-                        PrezzoAttualeE[5]="1 ora";
-                    }
-                else {
-                    PrezzoAttualeE[4]=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
-                    long DiffOrario=Math.abs(IPr.timestamp-TimeStamp)/1000;
-                    String unitaTempo;
-                        if (DiffOrario >= 60) {
-                            DiffOrario = DiffOrario / 60;  // converto in minuti
-                            unitaTempo = " min";
-                        } else {
-                            unitaTempo = " sec";
-                        }    
-                    PrezzoAttualeE[5]=String.valueOf(DiffOrario)+unitaTempo;
-                }
+                PrezzoAttualeE[4]=IPr.RitornaStringData();
+                PrezzoAttualeE[5]=IPr.RitornaStringDiffData(TimeStamp);
                 PrezzoAttualeE[6]=IPr.prezzo.toPlainString();
             }
             PrezzoAttualeE[7]=IPr.prezzoQta.toPlainString();
@@ -133,6 +103,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         //Compilo la tabella del prezzo attuale
         String PrezzoAttualeE[]=new String[8];
         String PrezzoAttualeU[]=new String[8];
+        //Prezzi.InfoPrezzo IPr=new Prezzi.InfoPrezzo(BigDecimal.ZERO, ora, data, BigDecimal.ZERO, BigDecimal.ONE, ora);
         if(!Movimento[8].isBlank()){
             PrezzoAttualeU[0]=Movimento[8];
             PrezzoAttualeU[1]=ora;
@@ -141,6 +112,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 String VSplit[]=Movimento[40].split("\\|",-1); 
                 if(VSplit[0].equalsIgnoreCase(Movimento[8])){
                     PrezzoAttualeU[3]=VSplit[3];
+                    //PrezzoAttualeU[4]=VSplit[3];
                     if (PrezzoAttualeU[3].toLowerCase().contains("db interno"))
                     {
                         PrezzoAttualeU[4]=OperazioniSuDate.ConvertiDatadaLongallOra(data)+":XX:XX";

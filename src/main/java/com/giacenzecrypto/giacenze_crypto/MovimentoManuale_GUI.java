@@ -26,6 +26,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Mappa_Wallets_e_Dettagli;
+import java.awt.Component;
 
 /**
  *
@@ -927,15 +928,41 @@ private static final long serialVersionUID = 9L;
 
     private void Bottone_CalcolaAutomaticamenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CalcolaAutomaticamenteActionPerformed
         // TODO add your handling code here:
-       // String ID=CalcolaID();
-        //String RT[]=null;
-        String Rete=null;
+        
+        if(!EvidenziaProblemi()){
+        Moneta MU=new Moneta();
+        Moneta ME=new Moneta();
+        MU.Moneta=this.MonetaU;
+        MU.MonetaAddress=this.MonetaUAddress;
+        MU.Qta=this.MonetaUQta;
+        MU.Tipo=this.MonetaUTipo;
+        ME.Moneta=this.MonetaE;
+        ME.MonetaAddress=this.MonetaUAddress;
+        ME.Qta=this.MonetaEQta;
+        ME.Tipo=this.MonetaETipo;
+        
+        
+        
+        Component c=this;
+        Download progress=new Download();
+        progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
+        progress.setLocationRelativeTo(this);
+        
+        Thread thread;
+            thread = new Thread() {
+            public void run() {
+            GUI_ModificaPrezzo t =new GUI_ModificaPrezzo("aaa");
+            t.setLocationRelativeTo(c);           
+            t.setVisible(true);
+            progress.ChiudiFinestra();
+        }
+            };
+        thread.start();  
+        progress.setVisible(true);
+        }
+   /*     String Rete=null;
         if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
-        //System.out.println(Rete);
-        //per trovare la rete devo scindere l'ID in più parti e verificarne alcune caratteristiche
-     /*   if (ModificaMovimento) {
-            RT=MappaCryptoWallet.get(MovimentoRiportato[0]);
-        }*/
+
        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
        Moneta MonetaUscita=null;
        Moneta MonetaEntrata=null;
@@ -945,10 +972,7 @@ private static final long serialVersionUID = 9L;
        MonetaUscita.Qta=MonetaUQta;
        MonetaUscita.Tipo=MonetaUTipo;
        MonetaUscita.MonetaAddress=this.MonetaUAddress;
-      /* if(RT!=null&&RT.length>23&&!RT[26].equals("")){
-           MonetaUscita.MonetaAddress=RT[26];
-         //  System.out.println(MonetaUscita.MonetaAddress);
-          } */
+
         }
        if(!MonetaE.equalsIgnoreCase("")&&!MonetaEQta.equalsIgnoreCase("")&&MonetaETipo!=null){
        MonetaEntrata=new Moneta();
@@ -956,19 +980,13 @@ private static final long serialVersionUID = 9L;
        MonetaEntrata.Qta=MonetaEQta;
        MonetaEntrata.Tipo=MonetaETipo;
        MonetaEntrata.MonetaAddress=this.MonetaEAddress;
-     /*  if(RT!=null&&RT.length>23&&!RT[28].equals("")){
-           MonetaEntrata.MonetaAddress=RT[28];
-          // System.out.println(MonetaEntrata.MonetaAddress);
-           }*/
+
         }
-       
-       /*Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(MonetaEntrata, MonetaUscita, DataLong, null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();*/
+
        String Prezzo=Prezzi.DammiPrezzoTransazione(MonetaEntrata, MonetaUscita, DataLong, "0", true, 2, Rete,"binance");
         ValoreTransazione_TextField.setText(Prezzo);
        EvidenziaProblemi();
-     // System.out.println("Prezzo");
-       setCursor(Cursor.getDefaultCursor());
+       setCursor(Cursor.getDefaultCursor());*/
  
     }//GEN-LAST:event_Bottone_CalcolaAutomaticamenteActionPerformed
 

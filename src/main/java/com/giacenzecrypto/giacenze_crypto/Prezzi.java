@@ -714,7 +714,7 @@ public class Prezzi {
             IPrezzo.Qta=new BigDecimal(Qta);
             IPrezzo.exchange="coingecko";
             IPrezzo.timestamp=Datalong;
-            IPrezzo.prezzo=new BigDecimal(risultato);
+            IPrezzo.prezzoUnitario=new BigDecimal(risultato);
             return IPrezzo;
         }
 
@@ -978,7 +978,7 @@ public class Prezzi {
         if (PrezzoUnitario != null){
             risultato.exchange="";
             risultato.timestamp=OperazioniSuDate.ConvertiDatainLongMinuto(DataOra+":00");
-            risultato.prezzo=new BigDecimal(PrezzoUnitario);
+            risultato.prezzoUnitario=new BigDecimal(PrezzoUnitario);
             risultato.Qta=new BigDecimal(Qta);
             risultato.Moneta=Crypto;
             return risultato;
@@ -1726,7 +1726,7 @@ public class Prezzi {
         {
           /*  System.out.println(IP.prezzo);
             System.out.println(IP.prezzoQta);*/
-            if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzo);
+            if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
             return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
         }
         if (PrezzoZero) {
@@ -1792,7 +1792,7 @@ public class Prezzi {
                     IP.Moneta=mon[k].Moneta;
                     IP.Qta=PrezzoTransazione;
                     IP.exchange="";
-                    IP.prezzo=new BigDecimal("1");
+                    IP.prezzoUnitario=new BigDecimal("1");
                     IP.prezzoQta=PrezzoTransazione;
                     IP.timestamp=Data;                            
                     return IP;
@@ -1813,7 +1813,7 @@ public class Prezzi {
                     IP.Moneta=mon[k].Moneta;
                     IP.Qta=new BigDecimal(mon[k].Qta);
                     IP.exchange="bancaditalia";
-                    IP.prezzo=PrezzoUnitario;
+                    IP.prezzoUnitario=PrezzoUnitario;
                     IP.prezzoQta=PrezzoUnitario.multiply(new BigDecimal(mon[k].Qta).abs());
                     IP.timestamp=Data;                            
                     return IP;
@@ -2486,20 +2486,55 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 
      
 public static class InfoPrezzo {
-    public BigDecimal prezzo;
+    public BigDecimal prezzoUnitario;
     public BigDecimal prezzoQta;
     public String exchange;
     public long timestamp;
     public BigDecimal Qta;
     public String Moneta;
 
-  /*  public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp) {
-        this.prezzo = prezzo;
-        this.exchange = exchange;
-        this.timestamp = timestamp;
+
+   /* public InfoPrezzo(String Info40,BigDecimal Qta) {
+        if (!Info40.isBlank()){
+            String iPr[]=Info40.split("\\|",-1);
+            if (iPr.length==4){
+                this.prezzoUnitario = new BigDecimal(iPr[3]);
+                this.exchange = iPr[4];
+                this.timestamp = Long.parseLong(iPr[1]);
+                this.prezzoQta = this.prezzoUnitario.multiply(Qta);
+                this.Qta = Qta;
+                this.Moneta = iPr[0];
+            }
+        }
+        
     }*/
+    
+    public InfoPrezzo(String Info40) {
+        if (!Info40.isBlank()){
+            String iPr[]=Info40.split("\\|",-1);
+            if (iPr.length==4){
+                if (CDC_Grafica.Funzioni_isNumeric(iPr[2], false))
+                    this.prezzoUnitario = new BigDecimal(iPr[2]);
+                this.exchange = iPr[3];
+                if (CDC_Grafica.Funzioni_isNumeric(iPr[1], false))
+                    this.timestamp = Long.parseLong(iPr[1]);
+                this.Moneta = iPr[0];
+            }
+        }
+        
+    }
+    
+   /* private void InizializzaABlank(){
+                this.prezzoUnitario = new BigDecimal(0);
+                this.exchange = "";
+                this.timestamp = 0;
+                this.prezzoQta = new BigDecimal(0);
+                this.Qta = new BigDecimal(0);
+                this.Moneta = "";   
+    }*/
+    
     public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp, BigDecimal prezzoQta, BigDecimal Qta,String Moneta) {
-        this.prezzo = prezzo;
+        this.prezzoUnitario = prezzo;
         this.exchange = exchange;
         this.timestamp = timestamp;
         this.prezzoQta = prezzoQta;
@@ -2536,9 +2571,9 @@ public static class InfoPrezzo {
     }
     
     public String Ritorna40(){
-        return this.Moneta+"|"+this.timestamp+"|"+this.prezzo+"|"+this.exchange;
+        return this.Moneta+"|"+this.timestamp+"|"+this.prezzoUnitario+"|"+this.exchange;
     }
-}        
+    }        
     
 
 

@@ -19,8 +19,13 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     
     //private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GUI_ModificaPrezzo.class.getName());
     public String ID;
+    public Moneta MU;
+    public Moneta ME;
+    String PrezzoT;
+    String Rete;
+    public long TimeStamp;
     public boolean ModalitaRitorno=false;
-    public String Ritorno[];
+    public Object Ritorno[];
 
     /**
      * Creates new form GUI_ModificaPrezzo
@@ -33,6 +38,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     }
     public GUI_ModificaPrezzo(String ID) {
         initComponents();
+        PrezzoT=null;
+        MU=null;
+        ME=null;
         ModalitaRitorno=false;
         ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());  
@@ -42,19 +50,25 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
     }
     
-    public GUI_ModificaPrezzo(Moneta MU,Moneta ME, Prezzi.InfoPrezzo IPr, long TimeStamp,String Rete,String[] Ritorno) {
+    public GUI_ModificaPrezzo(Moneta MU,Moneta ME, Prezzi.InfoPrezzo IPr, long TimeStamp,String Rete,Object[] Ritorno) {
+        this.MU=MU;
+        this.ME=ME;
+        this. TimeStamp=TimeStamp;
+        this.Rete=Rete;
+        PrezzoT=IPr.prezzoQta.toPlainString();
+        
         initComponents();
         ModalitaRitorno=true;
         ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());  
         
-        CaricaTabellaPrezzoAttualedaID(MU,ME,TimeStamp,IPr); 
-        CaricaTabellaPrezzi(MU,ME,TimeStamp,IPr.prezzoQta.toPlainString(),Rete);
+        CaricaTabellaPrezzoAttualedaID(IPr); 
+        CaricaTabellaPrezzi();
         this.Ritorno=Ritorno;
         
     }
     
-    private void CaricaTabellaPrezzoAttualedaID(Moneta MU,Moneta ME,long TimeStamp,Prezzi.InfoPrezzo IPr){
+    private void CaricaTabellaPrezzoAttualedaID(Prezzi.InfoPrezzo IPr){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
         Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
@@ -162,7 +176,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         //PARTE 1 - Come prima cosa recupero i prezzi di entrambe le monete
         Moneta M[]=new Moneta[2];
         long data=OperazioniSuDate.ConvertiDatainLongSecondo(ora);
-        String Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
+        Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
 
         M[0] = new Moneta();
         M[1] = new Moneta();
@@ -220,14 +234,14 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     }
     
     
-        private void CaricaTabellaPrezzi(Moneta MU,Moneta ME,long Time,String Prezzo,String Rete){
+        private void CaricaTabellaPrezzi(){
         DefaultTableModel ModTabPrezzi = (DefaultTableModel) Tabella_Prezzi.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzi);
         Tabelle.ColoraTabellaSemplice(Tabella_Prezzi);
                 
         
         //String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
-        String ora=OperazioniSuDate.ConvertiDatadaLongAlSecondo(Time);
+        String ora=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
         
         //PARTE 1 - Come prima cosa recupero i prezzi di entrambe le monete
         Moneta M[]=new Moneta[2];
@@ -259,21 +273,21 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             
             //A - Vedo se è una fiat e in quel caso la tratto come tale
             if (M[i].Tipo.equalsIgnoreCase("FIAT")) {
-                listaPrezziFIAT(M[i],Prezzo,data,ModTabPrezzi);
+                listaPrezziFIAT(M[i],PrezzoT,data,ModTabPrezzi);
                 //Non vado a cercare le FIAT oltre, mi fermo qua dando solo questa possibilità
                 continue;
             }
             
             
             //Cerco i prezzi da Coingecko
-            listaPrezziCoingecko(M[i],Prezzo,data,NomeOriginale,ModTabPrezzi);
+            listaPrezziCoingecko(M[i],PrezzoT,data,NomeOriginale,ModTabPrezzi);
             
             //Cerco i prezzi da ccxt ma solo se non ho address o comunque se è un address riconosciuto da coingecko
             //Il tutto gestito dalla funzione
-            listaPrezziCCXT(M[i],Prezzo,data,ModTabPrezzi);
+            listaPrezziCCXT(M[i],PrezzoT,data,ModTabPrezzi);
             
             //Cerco i prezzi nel vecchio database
-            listaPrezziVecchiDB(M[i],Prezzo,data,NomeOriginale,ModTabPrezzi);
+            listaPrezziVecchiDB(M[i],PrezzoT,data,NomeOriginale,ModTabPrezzi);
                 
             }
         }
@@ -625,13 +639,13 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             String Fonte=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 3).toString();
             String Prezzo=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 8).toString();
             String PrezzoU=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 6).toString();
-            String TimeStamp=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 4).toString();
+            String TimeStampa=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 4).toString();
             String Token=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 0).toString();
             String PrezzoPrecedente=Tabella_PrezzoAttuale.getModel().getValueAt(0, 7).toString();
-            long timestamp=OperazioniSuDate.ConvertiDatainLongSecondo(TimeStamp);
+            long timestamp=OperazioniSuDate.ConvertiDatainLongSecondo(TimeStampa);
             if (timestamp!=0){
-                TimeStamp=String.valueOf(timestamp);
-            }else TimeStamp="";
+                TimeStampa=String.valueOf(timestamp);
+            }else TimeStampa="";
             /*String domanda="<html>Sicuro di voler applicare il prezzo di <b>€"+Prezzo+"</b> alla transazione?<br>";
             if (!Fonte.isBlank()){
                 domanda=domanda+"Il prezzo è preso dalla seguente fonte : <b>"+Fonte+"</b><br>";
@@ -654,13 +668,14 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                       PrezzoPrecedente);
             int risposta=JOptionPane.showOptionDialog(this,domanda, "Cambio Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
             if (risposta==0){
-                if (!ModalitaRitorno){
-                    CDC_Grafica.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStamp+"|"+PrezzoU+"|"+Fonte;
+                    CDC_Grafica.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte;
                     CDC_Grafica.MappaCryptoWallet.get(ID)[15]=Prezzo;
                     CDC_Grafica.TabellaCryptodaAggiornare=true;
-                }else{
+                    
+                    //Questo sarà il dato da leggere una volta chiusa la finestra con i dati
                     Ritorno[0]=Prezzo;
-                }
+                    Ritorno[1]=Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte;
+                
                 this.dispose();
             }
           }
@@ -674,14 +689,18 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     private void Bottone_PersonalizzatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_PersonalizzatoActionPerformed
         // TODO add your handling code here:
        // System.out.println(ID);
-       if (!ModalitaRitorno){
+       if (ID!=null){
         if(Funzioni.GUIModificaPrezzo(this,ID))
         {
             CDC_Grafica.MappaCryptoWallet.get(ID)[40]="|||Manuale";
             CDC_Grafica.TabellaCryptodaAggiornare=true;
             this.dispose();
         }
-        }
+        }else if(Funzioni.GUIModificaPrezzo(this,MU,ME,PrezzoT,TimeStamp,Rete)!=null){
+            Ritorno[0]=Funzioni.GUIModificaPrezzo(this,MU,ME,PrezzoT,TimeStamp,Rete);
+            Ritorno[1]="|||Manuale";
+            this.dispose();
+       }
     }//GEN-LAST:event_Bottone_PersonalizzatoActionPerformed
 
     /**

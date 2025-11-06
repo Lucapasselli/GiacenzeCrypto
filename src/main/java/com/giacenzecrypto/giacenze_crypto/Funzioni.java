@@ -486,6 +486,99 @@ public class Funzioni {
         }
         
         
+                public static String GUIModificaPrezzo (Component c,Moneta MU,Moneta ME,String Prezzo,long DataPrezzo,String Rete){
+            
+            //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
+            //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
+            //PARTE 3 -> Chiedo di inserire l'importo e poi controllo che questo sia un numero 
+           // String trans[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+           // String Prezzo=trans[15];
+            //long DataPrezzo=OperazioniSuDate.ConvertiDatainLongMinuto(trans[1]);
+            String DataString=OperazioniSuDate.ConvertiDatadaLongAlSecondo(DataPrezzo);
+            
+            
+            //PARTE 1
+            int scelta=0;
+            String MonRiferimento="EURO";
+            String Testo;
+            if (DataPrezzo!=0){
+                Testo = "<html>Indica se vuoi imputare il prezzo in Euro o Dollari.<br><br>"
+                            + "(Se scegli dollari il prezzo verrà poi convertito in Euro seguendo il tasso di cambio della giornata di bancha d'Italia)<br><br>"
+                            + "</html>";
+                    Object[] Bottoni = {"Annulla", "EURO", "DOLLARI"};
+                    scelta = JOptionPane.showOptionDialog(c, Testo,
+                            "Moneta di riferimento",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            Bottoni,
+                            null);
+                    //Adesso genero il movimento a seconda della scelta
+                    //0 o 1 significa che non bisogna fare nulla
+                    if (scelta != 0 && scelta != -1) {
+
+                        switch (scelta) {
+                            case 1 -> {
+                                //EURO                           
+                            }
+                            case 2 -> {
+                                //DOLLARO 
+                                MonRiferimento="DOLLARI";
+                                //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
+                                if (Prezzo!=null){
+                                    String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                                    String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
+                                    Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
+                                }
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                    else{
+                        return null;
+                    }
+            }
+            
+                    
+            //PARTE 2    
+            c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+              String PrezzoAuto=Prezzi.DammiPrezzoInfoTransazione(ME, ME, DataPrezzo, Rete, "").prezzoQta.toPlainString();
+              if (PrezzoAuto==null)PrezzoAuto="0.00";
+              c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                Testo = "<html>Indicare il prezzo in <b>"+MonRiferimento+"</b> relativo alla transazione del <br><b>"
+                        + DataString+"</b> contenente movimentazioni delle seguenti crypto : (<b>"+MU.Moneta+" "+ME.Moneta+"</b>)<br><br>"+
+                        "Il prezzo recuperato in automatico dal programma è pari a <b>€"+PrezzoAuto+"</b><br>"+
+                        "NB. Il prezzo recuperato in automatico potrebbe non essere uguale a quello del CSV memorizzato sul programma"
+                            + "<br><br>"
+                            + "</html>";
+            
+            
+        String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
+        if (Prezz != null) {
+            Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
+            if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+                //Se dollari devo fare la conversione in euro
+                if (!MonRiferimento.equals("EURO")) {
+                    //devo fare la conversione da dollari a euro
+                    String Giorno = OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                    Prezz = Prezzi.ConvertiUSDEUR(Prezz, Giorno);
+                    //devo fare la conversione in dollari
+                }
+                Prezz = new BigDecimal(Prezz).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                return Prezz;
+                //return true;
+
+            } else {
+                JOptionPane.showConfirmDialog(c, "Attenzione, " + Prezz + " non è un numero valido!",
+                        "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+            }
+        }
+        return null;
+    }
+        
+        
+        
        public static boolean GUIModificaNote(Component c,String ID) {
         // Crea una JTextArea
         String trans[]=CDC_Grafica.MappaCryptoWallet.get(ID);

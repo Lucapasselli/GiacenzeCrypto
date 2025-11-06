@@ -963,7 +963,9 @@ private static final long serialVersionUID = 9L;
             Download progress = new Download();
             progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
             progress.setLocationRelativeTo(this);
-            String Ritorno[]=new String[2];
+            Object Ritorno[]=new Object[2];
+            //Oggetto 0 -> Prezzo
+            //Oggetto 1 -> Token+"|"+TimeStamp+"|"+PrezzoU+"|"+Fonte;
 
             Thread thread;
             thread = new Thread() {

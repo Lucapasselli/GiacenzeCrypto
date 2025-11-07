@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  *
  * @author luca.passelli
  */
-public class OperazioniSuDate {
+public class FunzioniDate {
         public static String ConvertiDatadaLong(long Data1) {
 
   
@@ -104,7 +104,7 @@ public class OperazioniSuDate {
             Date d1 = new Date(giornomenouno);
             giorno=f2.format(d1);
         } catch (ParseException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
         }
         return giorno;
     }

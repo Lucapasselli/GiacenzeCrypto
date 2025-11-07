@@ -5,7 +5,7 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.DecimaliCalcoli;
+import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -42,7 +42,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     
     private void InizializzaOggetti(String IDtr){
         ID=IDtr;
-        String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(IDtr);
+        String Movimento[]=Principale.MappaCryptoWallet.get(IDtr);
         setTitle("LiFo Transazione : "+IDtr);
         LabelMovimento.setText("<html><center><b><span style=\"font-size: 18px;\">"+Movimento[5]+" ("+Movimento[6]+")</span></b></html>");
          //Inizializza Label e Bottoni
@@ -151,7 +151,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         while (!stack.isEmpty()) {
           //  String ordine=String.valueOf(i);           
             String[] ultimoRecupero = stack.pop();
-            String mov[]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3]);
+            String mov[]=Principale.MappaCryptoWallet.get(ultimoRecupero[3]);
             Object[] riga = new Object[9];
             riga[0]=i;
             riga[1]=ultimoRecupero[3];
@@ -203,7 +203,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         String IDCiclo = IDtr;
         Map.Entry<String, String[]> suc;
         while (true) {
-            suc = CDC_Grafica.MappaCryptoWallet.higherEntry(IDCiclo);
+            suc = Principale.MappaCryptoWallet.higherEntry(IDCiclo);
             if (suc != null) {
                 IDCiclo = suc.getKey();
                 if (suc.getValue()[8].equals(Moneta) || suc.getValue()[11].equals(Moneta)) {
@@ -222,7 +222,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
             String IDCiclo = IDtr;
         Map.Entry<String, String[]> suc;
         while (true) {
-            suc = CDC_Grafica.MappaCryptoWallet.lowerEntry(IDCiclo);
+            suc = Principale.MappaCryptoWallet.lowerEntry(IDCiclo);
             if (suc != null) {
                 IDCiclo = suc.getKey();
                 if (suc.getValue()[8].equals(Moneta) || suc.getValue()[11].equals(Moneta)) {
@@ -464,25 +464,25 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
 
     private void Bottone_MU_FrecciaDestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_MU_FrecciaDestraActionPerformed
         // TODO add your handling code here:
-        String MU=CDC_Grafica.MappaCryptoWallet.get(ID)[8];
+        String MU=Principale.MappaCryptoWallet.get(ID)[8];
         CaricaMovimentoSuccessivo(ID, MU);
     }//GEN-LAST:event_Bottone_MU_FrecciaDestraActionPerformed
 
     private void Bottone_ME_FrecciaDestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ME_FrecciaDestraActionPerformed
         // TODO add your handling code here:
-        String ME=CDC_Grafica.MappaCryptoWallet.get(ID)[11];
+        String ME=Principale.MappaCryptoWallet.get(ID)[11];
         CaricaMovimentoSuccessivo(ID, ME);
     }//GEN-LAST:event_Bottone_ME_FrecciaDestraActionPerformed
 
     private void Bottone_ME_FrecciaSinistraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ME_FrecciaSinistraActionPerformed
         // TODO add your handling code here:
-        String ME=CDC_Grafica.MappaCryptoWallet.get(ID)[11];
+        String ME=Principale.MappaCryptoWallet.get(ID)[11];
         CaricaMovimentoPrecedente(ID, ME);
     }//GEN-LAST:event_Bottone_ME_FrecciaSinistraActionPerformed
 
     private void Bottone_MU_FrecciaSinistraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_MU_FrecciaSinistraActionPerformed
         // TODO add your handling code here:
-        String MU=CDC_Grafica.MappaCryptoWallet.get(ID)[8];
+        String MU=Principale.MappaCryptoWallet.get(ID)[8];
         CaricaMovimentoPrecedente(ID, MU);
     }//GEN-LAST:event_Bottone_MU_FrecciaSinistraActionPerformed
 

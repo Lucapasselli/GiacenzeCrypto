@@ -125,7 +125,7 @@ private static final long serialVersionUID = 5L;
                 { 
                     FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
                     BufferedWriter b=new BufferedWriter (w);
-                    for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
+                    for (String value : Principale.CDC_FiatWallet_MappaTipiMovimenti.values()) 
                     {
                         b.write(value+"\n");
                     }
@@ -149,7 +149,7 @@ private static final long serialVersionUID = 5L;
                 { 
                     FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
                     BufferedWriter b=new BufferedWriter (w);
-                    for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values()) 
+                    for (String value : Principale.CDC_FiatWallet_MappaTipiMovimenti.values()) 
                     {
                         b.write(value+"\n");
                     }

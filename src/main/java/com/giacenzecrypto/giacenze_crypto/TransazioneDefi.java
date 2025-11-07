@@ -68,7 +68,7 @@ public class TransazioneDefi {
 //DA FARE!!!!!!E' una cosa che posso gestire alla fine, una volta generato tutti gli algoritmi di calcolo
 //conviene forse verificare la cosa già prima di cercare di buttare i token qua dentro
         //String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
-        long DataSecondo=OperazioniSuDate.ConvertiDatainLongSecondo(DataOra);
+        long DataSecondo=FunzioniDate.ConvertiDatainLongSecondo(DataOra);
         
         if (MappaToken.get(MonetaAddress)==null)
             {
@@ -437,7 +437,7 @@ public class TransazioneDefi {
       String RT[];
       List<String[]> righe=new ArrayList<>();
       String dataAlMinuto=DataOra.trim().substring(0, DataOra.length()-3);
-      long DataSecondo=OperazioniSuDate.ConvertiDatainLongSecondo(DataOra);
+      long DataSecondo=FunzioniDate.ConvertiDatainLongSecondo(DataOra);
       String PrimaParteID=DataOra.replaceAll(" |-|:", "")+"_BC."+Rete+"."+Wallet+"."+HashTransazione;
       if (TipoTransazione!=null) TipoTransazione=TipoTransazione.split("\\(")[0].trim();
      /*System.out.println(dataAlMinuto);

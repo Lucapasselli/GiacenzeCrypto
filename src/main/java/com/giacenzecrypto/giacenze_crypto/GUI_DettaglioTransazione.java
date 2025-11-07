@@ -47,7 +47,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         //per controllare verifico di avere il transaction hash e il nome della rete quindi
       //  System.out.println(IDTransazione);
       //  System.out.println(CDC_Grafica.MappaCryptoWallet.size());
-        String Transazione[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+        String Transazione[]=Principale.MappaCryptoWallet.get(IDTransazione);
         
         //System.out.println(IDTransazione);
         //System.out.println(CDC_Grafica.MappaCryptoWallet.get(IDTransazione));
@@ -119,7 +119,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                     if (Movimenti.length < 3)//Sono in presenza di uno scambio differito
                     {
                         for (String IdM : Movimenti) {
-                            String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
+                            String Mov[] = Principale.MappaCryptoWallet.get(IdM);
                             if (Mov[18].contains("PTW")) {
                                 WalletPrelievo = Mov[3];
                             }
@@ -332,7 +332,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             String VSplit[]=Valore.split("\\|");        
             Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
             ModelloTabellaCrypto.addRow(Val);
-            Val=new String[]{"Info Prezzo : Orario Fonte ",OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
+            Val=new String[]{"Info Prezzo : Orario Fonte ",FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
             ModelloTabellaCrypto.addRow(Val);           
             Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
             ModelloTabellaCrypto.addRow(Val);
@@ -479,7 +479,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         //Metto in questa mappa tutti i movimenti ordinati per ID
         //Poi salvo anche il numero del movimento visualizzato
         if (mappa_ID.isEmpty())
-            for (String[] movimento: CDC_Grafica.MappaCryptoWallet.values()){
+            for (String[] movimento: Principale.MappaCryptoWallet.values()){
                 mappa_ID.put(i, movimento[0]);
                 if (movimento[0].equals(IDTransazione))Riferimento=i;
                 i++;
@@ -515,8 +515,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     }//GEN-LAST:event_Bottone_ModificaActionPerformed
 
       public void Funzione_ModificaMovimento(String ID,Component c){
-            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
-            String riga[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
+            String riga[]=Principale.MappaCryptoWallet.get(ID);
 
             String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
             if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo

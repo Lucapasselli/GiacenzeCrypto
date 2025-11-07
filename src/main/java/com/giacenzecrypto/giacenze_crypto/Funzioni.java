@@ -4,8 +4,8 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaRetiSupportate;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaRetiSupportate;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.awt.AWTException;
@@ -86,9 +86,9 @@ public class Funzioni {
         List<String> Cancellare=new ArrayList<>();
         
 
-            for (String v : CDC_Grafica.MappaCryptoWallet.keySet()) {
-                String WalletRiga = CDC_Grafica.MappaCryptoWallet.get(v)[3].trim();
-                long DataMovimento=OperazioniSuDate.ConvertiDatainLong(CDC_Grafica.MappaCryptoWallet.get(v)[1].split(" ")[0]);
+            for (String v : Principale.MappaCryptoWallet.keySet()) {
+                String WalletRiga = Principale.MappaCryptoWallet.get(v)[3].trim();
+                long DataMovimento=FunzioniDate.ConvertiDatainLong(Principale.MappaCryptoWallet.get(v)[1].split(" ")[0]);
                 if (Wallet==null || WalletRiga.equalsIgnoreCase(Wallet.trim())) {
                     if ((DataMovimento >= DataIniziale
                             && DataMovimento < DataFinale) ||
@@ -116,14 +116,14 @@ public class Funzioni {
         //prima di rimuovere il prelievo vado a torgliere dal deposito i riferimenti al prelievo che devo eliminare
          public static void RimuoviMovimentazioneXID(String ID){
              
-            String Annessi[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            String Annessi[]=Principale.MappaCryptoWallet.get(ID);
             if (Annessi!=null){
             String PartiCoinvolte[]=(ID+","+Annessi[20]).split(",");
             if (Annessi[20]!=null && !Annessi[20].equalsIgnoreCase("")){
                 //L'ID può infatti cambiare in fase di ripristino dei movimenti
                 ID=ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID);
             }
-            CDC_Grafica.MappaCryptoWallet.remove(ID);
+            Principale.MappaCryptoWallet.remove(ID);
             } 
          }
         
@@ -151,7 +151,7 @@ public class Funzioni {
             LocalDateTime dateTime = LocalDateTime.parse(input, inputFormatter);
             return dateTime.format(outputFormatter);
         } catch (DateTimeParseException e) {
-            return CDC_Grafica.MappaCryptoWallet.get(ID)[1]+":00";
+            return Principale.MappaCryptoWallet.get(ID)[1]+":00";
         }
     }
     
@@ -232,7 +232,7 @@ public class Funzioni {
         //il movimento inoltre non deve contemplare token scam
         if (ID==null)ID=v[0];
         String TipoMovimento=ID.split("_")[4].trim();
-        if(v==null) v=CDC_Grafica.MappaCryptoWallet.get(ID);
+        if(v==null) v=Principale.MappaCryptoWallet.get(ID);
           //AU sono equiparati a dei trasferimenti interni, da verifixcare accuratamente perchè così rischio di fare casino nelle esportazioni
           if ((TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))&&v[22]!=null&&!v[22].equalsIgnoreCase("AU"))
           {
@@ -253,8 +253,8 @@ public class Funzioni {
             if (e.getButton() == MouseEvent.BUTTON3) {
             //Component focusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
             //salvo l'ID passato dalla funzione, servirà nel caso in cui prema su alcune funzioni
-            CDC_Grafica.PopUp_IDTrans=ID;
-            CDC_Grafica.PopUp_Component=c;
+            Principale.PopUp_IDTrans=ID;
+            Principale.PopUp_Component=c;
             //System.out.println(CDC_Grafica.PopUp_Component);
             Component C_chiamante=e.getComponent();
             //C_chiamante
@@ -286,7 +286,7 @@ public class Funzioni {
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
                 }else PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");
                 
-                if(ID.split("_")[4].equals("RW")||CDC_Grafica.MappaCryptoWallet.get(ID)[18].contains("DAI -"))                    
+                if(ID.split("_")[4].equals("RW")||Principale.MappaCryptoWallet.get(ID)[18].contains("DAI -"))                    
                     PopUp_abilitaMenuDaTesto(pop,"Cambia Tipologia Reward");
                 else PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
             }
@@ -298,7 +298,7 @@ public class Funzioni {
                 if (row == -1) return;
                 PopUp_disabilitaMenuDatesto(pop,"Incolla");
                 PopUp_abilitaMenuDaTesto(pop,"Esporta Tabella in Excel");
-                CDC_Grafica.PopUp_Tabella=table;
+                Principale.PopUp_Tabella=table;
                 pop.show(c, Coordinata.x, Coordinata.y);
             }            
             else if (C_chiamante instanceof JTextField)
@@ -306,7 +306,7 @@ public class Funzioni {
                 PopUp_abilitaMenuDaTesto(pop,"Incolla");
                 PopUp_disabilitaMenuDatesto(pop,"Esporta Tabella in Excel");
                 pop.show(c, Coordinata.x, Coordinata.y);
-                CDC_Grafica.PopUp_Tabella=null;
+                Principale.PopUp_Tabella=null;
             }
             //Se è un campo di testo in quest'altro
             
@@ -374,9 +374,9 @@ public class Funzioni {
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro
             //PARTE 2 -> Se specificato moneta e qta chiedo se voglio inserire il prezzo unitario o quello riferito al numero di token
             //PARTE 3 -> Chiedo di inserire l'importo e poi controllo che questo sia un numero 
-            String trans[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            String trans[]=Principale.MappaCryptoWallet.get(ID);
             String Prezzo=trans[15];
-            long DataPrezzo=OperazioniSuDate.ConvertiDatainLongMinuto(trans[1]);
+            long DataPrezzo=FunzioniDate.ConvertiDatainLongMinuto(trans[1]);
             
             
             
@@ -409,7 +409,7 @@ public class Funzioni {
                                 MonRiferimento="DOLLARI";
                                 //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
                                 if (Prezzo!=null){
-                                    String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                                    String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
                                     String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
                                     Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
                                 }
@@ -440,11 +440,11 @@ public class Funzioni {
             String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
                 if (Prezz != null) {
                     Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+                    if (Principale.Funzioni_isNumeric(Prezz, false)) {
                         //Se dollari devo fare la conversione in euro
                         if (!MonRiferimento.equals("EURO")){
                             //devo fare la conversione da dollari a euro
-                            String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                            String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
                             Prezz=Prezzi.ConvertiUSDEUR(Prezz, Giorno);                           
                             //devo fare la conversione in dollari
                         }
@@ -494,7 +494,7 @@ public class Funzioni {
            // String trans[]=CDC_Grafica.MappaCryptoWallet.get(ID);
            // String Prezzo=trans[15];
             //long DataPrezzo=OperazioniSuDate.ConvertiDatainLongMinuto(trans[1]);
-            String DataString=OperazioniSuDate.ConvertiDatadaLongAlSecondo(DataPrezzo);
+            String DataString=FunzioniDate.ConvertiDatadaLongAlSecondo(DataPrezzo);
             
             
             //PARTE 1
@@ -526,7 +526,7 @@ public class Funzioni {
                                 MonRiferimento="DOLLARI";
                                 //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
                                 if (Prezzo!=null){
-                                    String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                                    String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
                                     String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
                                     Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
                                 }
@@ -540,7 +540,7 @@ public class Funzioni {
                     }
             }
             
-                    
+                  
             //PARTE 2    
             c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Prezzi.InfoPrezzo IPT=Prezzi.DammiPrezzoInfoTransazione(ME, MU, DataPrezzo, Rete, "");
@@ -560,11 +560,11 @@ public class Funzioni {
         String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
         if (Prezz != null) {
             Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-            if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+            if (Principale.Funzioni_isNumeric(Prezz, false)) {
                 //Se dollari devo fare la conversione in euro
                 if (!MonRiferimento.equals("EURO")) {
                     //devo fare la conversione da dollari a euro
-                    String Giorno = OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                    String Giorno = FunzioniDate.ConvertiDatadaLong(DataPrezzo);
                     Prezz = Prezzi.ConvertiUSDEUR(Prezz, Giorno);
                     //devo fare la conversione in dollari
                 }
@@ -584,7 +584,7 @@ public class Funzioni {
         
        public static boolean GUIModificaNote(Component c,String ID) {
         // Crea una JTextArea
-        String trans[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+        String trans[]=Principale.MappaCryptoWallet.get(ID);
         String TestoArea=trans[21].replace("<br>", "\n");
         JTextArea textArea = new JTextArea(10, 30);  // 10 righe, 30 colonne
         textArea.setLineWrap(true);
@@ -659,7 +659,7 @@ public class Funzioni {
                                 MonRiferimento="DOLLARI";
                                 //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
                                 if (Prezzo!=null){
-                                    String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                                    String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
                                     String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
                                     Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
                                 }
@@ -729,11 +729,11 @@ public class Funzioni {
             String Prezz = JOptionPane.showInputDialog(c, Testo, Prezzo);
                 if (Prezz != null) {
                     Prezz = Prezz.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                    if (CDC_Grafica.Funzioni_isNumeric(Prezz, false)) {
+                    if (Principale.Funzioni_isNumeric(Prezz, false)) {
                         //Se dollari devo fare la conversione in euro
                         if (!MonRiferimento.equals("EURO")){
                             //devo fare la conversione da dollari a euro
-                            String Giorno=OperazioniSuDate.ConvertiDatadaLong(DataPrezzo);
+                            String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
                             Prezz=Prezzi.ConvertiUSDEUR(Prezz, Giorno);
                             //devo fare la conversione in dollari
                         }
@@ -799,7 +799,7 @@ public class Funzioni {
          }
         
     public static boolean DuplicaMovimento(String ID){
-        String riga[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+        String riga[]=Principale.MappaCryptoWallet.get(ID);
         String nuovariga[]=riga.clone();
         String IDori=nuovariga[0];
         String idSplit[]=IDori.split("_");
@@ -812,11 +812,11 @@ public class Funzioni {
                 }
                 else {split3=idSplit[3]+k;}
                 String newID=idSplit[0]+"_"+idSplit[1]+"_"+idSplit[2]+"_"+split3+"_"+idSplit[4];
-                if (CDC_Grafica.MappaCryptoWallet.get(newID)==null){
+                if (Principale.MappaCryptoWallet.get(newID)==null){
                     //ho trovato un id libero, creo il nuovo movimento
                     nuovariga[0]=newID;//imposto il nuovo ID
                     nuovariga[22]="M";//Dico che il movimento è stato aggiunto manualmente
-                    CDC_Grafica.MappaCryptoWallet.put(newID, nuovariga);
+                    Principale.MappaCryptoWallet.put(newID, nuovariga);
                     return true;
                 }
             }
@@ -1009,7 +1009,7 @@ public class Funzioni {
                 int colonna = 0;
                 ScriviRigaExcel(Intestazioni,ws,0);
                 int riga=1;
-                for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
+                for (String[] lista : Principale.Mappa_RW_ListeXGruppoWallet.get(Gruppo)) {
                     //Sistemo i nomi dei gruppi Wallet
                     if (Mappa_Gruppo_Alias.get(lista[1]) != null) {
                         lista[1] = lista[1].split(" ")[1].trim() + " ( " + Mappa_Gruppo_Alias.get(lista[1])[1] + " )";
@@ -1043,8 +1043,8 @@ public class Funzioni {
                 //long DataRiferimento=0;
                 String DataInizio=Anno+"-01-01";
                 String DataFine=Anno+"-12-31";
-                long lDataFine=OperazioniSuDate.ConvertiDatainLong(DataFine)+86400000;
-                long lDataInizio=OperazioniSuDate.ConvertiDatainLong(DataInizio);
+                long lDataFine=FunzioniDate.ConvertiDatainLong(DataFine)+86400000;
+                long lDataInizio=FunzioniDate.ConvertiDatainLong(DataInizio);
                 String GruppoWNormalizzato="Wallet "+GruppoW.split(" ")[0];
                 List<String[]> ListaSaldiIniziali=RW_GiacenzeaData(lDataInizio,GruppoWNormalizzato,"");
                 List<String[]> ListaSaldiFinali=RW_GiacenzeaData(lDataFine,GruppoWNormalizzato,"");
@@ -1213,7 +1213,7 @@ public class Funzioni {
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
                     String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
-                    long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+                    long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
@@ -1297,8 +1297,8 @@ return ListaSaldi;
         String DataFine=Anno+"-12-31";
         
         Map<String, String[]> MappaDataPartenza= new TreeMap<>();
-        long lDataFine=OperazioniSuDate.ConvertiDatainLong(DataFine)+86400000;
-        long lDataInizio=OperazioniSuDate.ConvertiDatainLong(DataInizio);
+        long lDataFine=FunzioniDate.ConvertiDatainLong(DataFine)+86400000;
+        long lDataInizio=FunzioniDate.ConvertiDatainLong(DataInizio);
           
         //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
         //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
@@ -1332,7 +1332,7 @@ return ListaSaldi;
                     //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
                     //altrimenti non vado avanti
                     String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
-                    long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+                    long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
 
 
                             // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
@@ -1397,7 +1397,7 @@ return ListaSaldi;
         
         
         for(String GWallet:MappaCoinsWallet.keySet()){
-            int DiffDate=OperazioniSuDate.DifferenzaDate(DataInizio, DataFine)+1;
+            int DiffDate=FunzioniDate.DifferenzaDate(DataInizio, DataFine)+1;
            // LoggerGC.logInfo("DiffDate1 - "+DataInizio+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
             Map<String, Moneta[]> QtaCrypt=MappaCoinsWallet.get(GWallet);
             lista=RW_RitornaListaDaMappa(MappaLista,GWallet);
@@ -1407,15 +1407,15 @@ return ListaSaldi;
             }else lista=MappaLista.get(GWallet);*/
             
             String DataInizioWallet=MappaDataPartenza.get(GWallet)[0];
-            long lDataInizioWallet=OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioWallet);
+            long lDataInizioWallet=FunzioniDate.ConvertiDatainLongMinuto(DataInizioWallet);
             long lDataInizio1=lDataInizio;
             String DataInizio1=DataInizio+" 00:00";
             if (lDataInizioWallet > lDataInizio) {
-                DiffDate = OperazioniSuDate.DifferenzaDate(OperazioniSuDate.ConvertiDatadaLong(lDataInizioWallet), DataFine) + 1;
+                DiffDate = FunzioniDate.DifferenzaDate(FunzioniDate.ConvertiDatadaLong(lDataInizioWallet), DataFine) + 1;
                 //LoggerGC.logInfo("DiffDate2 - "+GWallet+" - "+lDataInizioWallet+" - "+DataFine+" - "+DiffDate,"Funzioni.RW_GiacenzeInizioFineAnno");
                 //LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
                 DataInizio1 = DataInizioWallet;
-                lDataInizio1 = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizio1);
+                lDataInizio1 = FunzioniDate.ConvertiDatainLongMinuto(DataInizio1);
             }           
             //LoggerGC.logInfo("Wallet - "+GWallet+" - Data Inizio --- "+DataInizio1,"Funzioni.RW_GiacenzeInizioFineAnno");
             for(Moneta m[]:QtaCrypt.values()){
@@ -1715,8 +1715,8 @@ return MappaLista;
         String Data = Mov[1];
         boolean Pre2023EarnCostoZero = false;
         boolean Pre2023ScambiRilevanti = false;
-        long long2023 = OperazioniSuDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
-        long dataLong = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+        long long2023 = FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
+        long dataLong = FunzioniDate.ConvertiDatainLongMinuto(Data);
         boolean DataSuperiore2023 = true;
         if (dataLong < long2023) {
             DataSuperiore2023 = false;
@@ -1837,10 +1837,10 @@ return MappaLista;
     
     public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
-       String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
+       String DataEmoney=Principale.Mappa_EMoney.get(Token);
        if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
-           long dataemoney=OperazioniSuDate.ConvertiDatainLong(DataEmoney);
-           long datascambio=OperazioniSuDate.ConvertiDatainLong(Data);
+           long dataemoney=FunzioniDate.ConvertiDatainLong(DataEmoney);
+           long datascambio=FunzioniDate.ConvertiDatainLong(Data);
            if (datascambio>=dataemoney) Tipo="EMoney";
        }
        return Tipo;
@@ -1950,7 +1950,7 @@ return MappaLista;
         
         public static String TrovaReteDaID(String ID) {
         if (MappaCryptoWallet.get(ID) != null) {
-            return TrovaReteDaIMovimento(CDC_Grafica.MappaCryptoWallet.get(ID));
+            return TrovaReteDaIMovimento(Principale.MappaCryptoWallet.get(ID));
         } else {
             String Rete = null;
             //System.out.println(ID);

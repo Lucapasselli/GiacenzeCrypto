@@ -80,7 +80,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         //Compilo la tabella del prezzo attuale
         String PrezzoAttualeE[]=new String[8];
         String PrezzoAttualeU[]=new String[8];
-        String ora=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
+        String ora=FunzioniDate.ConvertiDatadaLongAlSecondo(TimeStamp);
         if(MU!=null&&MU.Moneta!=null&&!MU.Moneta.isBlank()){
             PrezzoAttualeU[0]=MU.Moneta;
             PrezzoAttualeU[1]=ora;
@@ -123,10 +123,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         this.ID=ID;
                 
         
-        String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+        String Movimento[]=Principale.MappaCryptoWallet.get(ID);
         String ora=Movimento[0].split("_")[0].substring(12);
         ora=Movimento[1]+":"+ora;
-        long data=OperazioniSuDate.ConvertiDatainLongSecondo(ora);
+        long data=FunzioniDate.ConvertiDatainLongSecondo(ora);
         Prezzi.InfoPrezzo IPID=new Prezzi.InfoPrezzo(Movimento[40]);
         //Compilo la tabella del prezzo attuale
         String PrezzoAttualeE[]=new String[8];
@@ -171,18 +171,18 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         Tabelle.ColoraTabellaSemplice(Tabella_Prezzi);
                 
         
-        String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+        String Movimento[]=Principale.MappaCryptoWallet.get(ID);
         String ora=Movimento[0].split("_")[0].substring(12);
         ora=Movimento[1]+":"+ora;
         
         //PARTE 1 - Come prima cosa recupero i prezzi di entrambe le monete
         Moneta M[]=new Moneta[2];
-        long data=OperazioniSuDate.ConvertiDatainLongSecondo(ora);
+        long data=FunzioniDate.ConvertiDatainLongSecondo(ora);
         Rete = Funzioni.TrovaReteDaIMovimento(Movimento);
 
         M[0] = new Moneta();
         M[1] = new Moneta();
-        if(Rete==null||CDC_Grafica.MappaRetiSupportate.get(Rete)==null){
+        if(Rete==null||Principale.MappaRetiSupportate.get(Rete)==null){
                 Rete="";
                 M[0].MonetaAddress="";
                 M[1].MonetaAddress="";
@@ -205,8 +205,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             //Prima di iniziare vedo se è una moneta codificata con address per cui devo cercare il prezzo da altre parti piuttosto che coingecko
             //in quel caso cambio anche il nome per trovare i prezzi es WBNB in BNB u USDT0 in USDT
             //ovviamente bisogna che si tratti di monete con lo stesso prezzo.
-             if (M[i] != null && CDC_Grafica.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete) != null) {
-                M[i].Moneta = CDC_Grafica.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete);
+             if (M[i] != null && Principale.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete) != null) {
+                M[i].Moneta = Principale.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete);
             }
             
             Prezzi.CambioXXXEUR(M[i].Moneta, M[i].Qta, data,M[i].MonetaAddress,M[i].Rete,"",false);
@@ -243,15 +243,15 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 
         
         //String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
-        String ora=OperazioniSuDate.ConvertiDatadaLongAlSecondo(TimeStamp);
+        String ora=FunzioniDate.ConvertiDatadaLongAlSecondo(TimeStamp);
         
         //PARTE 1 - Come prima cosa recupero i prezzi di entrambe le monete
         Moneta M[]=new Moneta[2];
-        long data=OperazioniSuDate.ConvertiDatainLongSecondo(ora);
+        long data=FunzioniDate.ConvertiDatainLongSecondo(ora);
 
         M[0] = MU;
         M[1] = ME;
-        if(Rete==null||CDC_Grafica.MappaRetiSupportate.get(Rete)==null){
+        if(Rete==null||Principale.MappaRetiSupportate.get(Rete)==null){
                 Rete="";
                 M[0].MonetaAddress="";
                 M[1].MonetaAddress="";
@@ -266,8 +266,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             //Prima di iniziare vedo se è una moneta codificata con address per cui devo cercare il prezzo da altre parti piuttosto che coingecko
             //in quel caso cambio anche il nome per trovare i prezzi es WBNB in BNB u USDT0 in USDT
             //ovviamente bisogna che si tratti di monete con lo stesso prezzo.
-             if (M[i] != null && CDC_Grafica.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete) != null) {
-                M[i].Moneta = CDC_Grafica.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete);
+             if (M[i] != null && Principale.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete) != null) {
+                M[i].Moneta = Principale.Mappa_AddressRete_Nome.get(M[i].MonetaAddress + "_" + M[i].Rete);
             }
             
             Prezzi.CambioXXXEUR(M[i].Moneta, M[i].Qta, data,M[i].MonetaAddress,M[i].Rete,"",false);
@@ -302,18 +302,18 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                     List<Prezzi.InfoPrezzo> ListaIP = Prezzi.DammiListaPrezziDaDatabase("", data, M.Rete, M.MonetaAddress, 60, new BigDecimal(M.Qta));
                     if (ListaIP.isEmpty()){
                         //Se non ho niente nel database preso da coingecko effettuo lo scaricamento
-                        String DataIniziale=OperazioniSuDate.ConvertiDatadaLong(data);
+                        String DataIniziale=FunzioniDate.ConvertiDatadaLong(data);
                         Prezzi.RecuperaTassidiCambiodaAddress_Coingecko(DataIniziale, M.MonetaAddress, M.Rete, M.Moneta);
                         ListaIP = Prezzi.DammiListaPrezziDaDatabase("", data, M.Rete, M.MonetaAddress, 60, new BigDecimal(M.Qta));
                     }
                     for (Prezzi.InfoPrezzo IPl : ListaIP) {
                         String rigo[] = new String[9];
                         rigo[0] = NomeOriginale;
-                        rigo[1] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                        rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                         rigo[2] = M.Qta;
                         rigo[3] = IPl.exchange;
                         
-                        rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
+                        rigo[4] = FunzioniDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                         //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
                        /* long DiffOrario=Math.abs(data-IPl.timestamp)/1000;
                         String unitaTempo;
@@ -337,14 +337,14 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
 
     private void listaPrezziFIAT(Moneta M,String PrezzoRif,long data,DefaultTableModel ModTabPrezzi){
         Prezzi.InfoPrezzo IPF;
-                String DataDollaro = OperazioniSuDate.ConvertiDatadaLong(data);
+                String DataDollaro = FunzioniDate.ConvertiDatadaLong(data);
                 if (M.Moneta.equalsIgnoreCase("EUR")) {
                     String rigo[] = new String[9];
                     rigo[0] = M.Moneta;
-                    rigo[1] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                    rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[2] = M.Qta;
                     rigo[3] = "";
-                    rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                    rigo[4] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[5] = "0 sec";
                     rigo[6] = "1";
                     rigo[8] = new BigDecimal(M.Qta).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -364,10 +364,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         IPF.prezzoQta=IPF.prezzoUnitario.multiply(IPF.Qta);
                         String rigo[] = new String[9];
                         rigo[0] = M.Moneta;
-                        rigo[1] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                        rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                         rigo[2] = M.Qta;
                         rigo[3] = IPF.exchange;
-                        rigo[4] = OperazioniSuDate.ConvertiDatadaLong(IPF.timestamp);
+                        rigo[4] = FunzioniDate.ConvertiDatadaLong(IPF.timestamp);
                         rigo[5] = "1 giorno";
                         rigo[6] = IPF.prezzoUnitario.toPlainString();
                         rigo[8] = IPF.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -392,10 +392,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 for (Prezzi.InfoPrezzo IPl : ListaIP) {
                     String rigo[] = new String[9];
                     rigo[0] = M.Moneta;
-                    rigo[1] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                    rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[2] = M.Qta;
                     rigo[3] = IPl.exchange;
-                    rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
+                    rigo[4] = FunzioniDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                     //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
                  /*   long DiffOrario = Math.abs(data - IPl.timestamp) / 1000;
                     String unitaTempo;
@@ -418,19 +418,19 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     
     
      private void listaPrezziVecchiDB(Moneta M,String PrezzoRif,long data,String NomeOriginale,DefaultTableModel ModTabPrezzi){
-         String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(data);
+         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(data);
             String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + M.Moneta);
             Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
             //System.out.println(PrezzoUnitario);
             if (PrezzoUnitario != null) {
                 IP.exchange = "DB Interno (Old)";
-                IP.timestamp = OperazioniSuDate.ConvertiDatainLongMinuto(DataOra + ":00");
+                IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
                 IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
                 IP.Qta = new BigDecimal(M.Qta);
                 IP.Moneta = M.Moneta;
                 String rigo[] = new String[9];
                 rigo[0] = M.Moneta;
-                rigo[1] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                 rigo[2] = M.Qta;
                 rigo[3] = IP.exchange;
                 rigo[4] = DataOra + ":XX:XX";
@@ -451,13 +451,13 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 //System.out.println(PrezzoUnitario);
                 if (PrezzoUnitario != null) {
                     IP.exchange = "DB Interno (Coingecko)";
-                    IP.timestamp = OperazioniSuDate.ConvertiDatainLongMinuto(DataOra + ":00");
+                    IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
                     IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
                     IP.Qta = new BigDecimal(M.Qta);
                     IP.Moneta = M.Moneta;
                     String rigo[] = new String[9];
                     rigo[0] = NomeOriginale;
-                    rigo[1] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
+                    rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[2] = M.Qta;
                     rigo[3] = IP.exchange;
                     rigo[4] = DataOra + ":XX:XX";
@@ -648,10 +648,18 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             String TimeStampa=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 4).toString();
             String Token=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 0).toString();
             String PrezzoPrecedente=Tabella_PrezzoAttuale.getModel().getValueAt(0, 7).toString();
-            long timestamp=OperazioniSuDate.ConvertiDatainLongSecondo(TimeStampa);
+            long timestamp;
+            if(TimeStampa.contains("XX"))
+            {
+                TimeStampa=TimeStampa.substring(0, 13);
+                timestamp=FunzioniDate.ConvertiDatainLongMinuto(TimeStampa+":00");
+            }
+            else timestamp=FunzioniDate.ConvertiDatainLongSecondo(TimeStampa);
             if (timestamp!=0){
                 TimeStampa=String.valueOf(timestamp);
             }else TimeStampa="";
+            
+           // System.out.println("aaaa"+TimeStampa);
             /*String domanda="<html>Sicuro di voler applicare il prezzo di <b>€"+Prezzo+"</b> alla transazione?<br>";
             if (!Fonte.isBlank()){
                 domanda=domanda+"Il prezzo è preso dalla seguente fonte : <b>"+Fonte+"</b><br>";
@@ -675,9 +683,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             int risposta=JOptionPane.showOptionDialog(this,domanda, "Cambio Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
             if (risposta==0){
                     if (ID!=null){
-                        CDC_Grafica.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte;
-                        CDC_Grafica.MappaCryptoWallet.get(ID)[15]=Prezzo;
-                        CDC_Grafica.TabellaCryptodaAggiornare=true;
+                        Principale.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte;
+                        Principale.MappaCryptoWallet.get(ID)[15]=Prezzo;
+                        Principale.TabellaCryptodaAggiornare=true;
                     }
                     
                     //Questo sarà il dato da leggere una volta chiusa la finestra con i dati
@@ -700,8 +708,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
        if (ID!=null){
         if(Funzioni.GUIModificaPrezzo(this,ID))
         {
-            CDC_Grafica.MappaCryptoWallet.get(ID)[40]="|||Manuale";
-            CDC_Grafica.TabellaCryptodaAggiornare=true;
+            Principale.MappaCryptoWallet.get(ID)[40]="|||Manuale";
+            Principale.TabellaCryptodaAggiornare=true;
             this.dispose();
         }
         }else if(Funzioni.GUIModificaPrezzo(this,MU,ME,PrezzoT,TimeStamp,Rete)!=null){

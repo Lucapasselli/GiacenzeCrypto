@@ -283,7 +283,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
             if (NomeWallet.equalsIgnoreCase("*Nome Personalizzato*")) {
                 NomeWallet="";
-                Object[] options = CDC_Grafica.Mappa_Wallet.keySet().toArray();
+                Object[] options = Principale.Mappa_Wallet.keySet().toArray();
                 JLabel label = new JLabel("<html>Indica o scegli il Nome che vuoi dare al Wallet<br>"
                         + "</html>");
                 JComboBox<Object> comboBox = new JComboBox<>(options);
@@ -386,7 +386,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
             }
             if (NomeWallet.equalsIgnoreCase("*Nome Personalizzato*")) {
                 NomeWallet="";
-                Object[] options = CDC_Grafica.Mappa_Wallet.keySet().toArray();
+                Object[] options = Principale.Mappa_Wallet.keySet().toArray();
                 JLabel label = new JLabel("<html>Indica o scegli il Nome che vuoi dare al Wallet<br>"
                         + "</html>");
                 JComboBox<Object> comboBox = new JComboBox<>(options);

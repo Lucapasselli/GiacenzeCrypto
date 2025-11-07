@@ -4,7 +4,7 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -532,7 +532,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             long data=Long.parseLong("1483228800000");//   01/01/2017 data di default
             if (!DataUltimoMovimento.equals("0"))
             {
-                data = OperazioniSuDate.ConvertiDatainLongSecondo(DataUltimoMovimento)+1000; // 1 = seconda colonna
+                data = FunzioniDate.ConvertiDatainLongSecondo(DataUltimoMovimento)+1000; // 1 = seconda colonna
             }
            CcxtInterop.fetchMovimentiConBar(Exchange, ApiKey, ApiSecret, data,"",this);
         

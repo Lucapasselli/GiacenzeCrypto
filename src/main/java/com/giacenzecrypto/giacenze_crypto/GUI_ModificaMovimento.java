@@ -7,7 +7,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 
 import com.toedter.calendar.JTextFieldDateEditor;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.KeyAdapter;
@@ -25,14 +25,14 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Mappa_Wallets_e_Dettagli;
+import static com.giacenzecrypto.giacenze_crypto.Principale.Mappa_Wallets_e_Dettagli;
 import java.awt.Component;
 
 /**
  *
  * @author luca.passelli
  */
-public class MovimentoManuale_GUI extends javax.swing.JDialog {
+public class GUI_ModificaMovimento extends javax.swing.JDialog {
 private static final long serialVersionUID = 9L;
     /**
      * Creates new form MovimentoManuale_GUI
@@ -60,7 +60,7 @@ private static final long serialVersionUID = 9L;
     
     long DataLong=0;
     
-    public MovimentoManuale_GUI() {
+    public GUI_ModificaMovimento() {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         Bottone_Ok.setIcon(Icone.Salva);
@@ -721,7 +721,7 @@ private static final long serialVersionUID = 9L;
             }else{
               //se invece arrivo qua posso inserire il movimento nella mappa  
               if (ScriviMovimento(ID)){
-                CDC_Grafica.TabellaCryptodaAggiornare=true;
+                Principale.TabellaCryptodaAggiornare=true;
                 this.dispose(); 
               }
             }
@@ -735,7 +735,7 @@ private static final long serialVersionUID = 9L;
 
     public void CompilaCampidaID(String IDTransazione){
         try {
-            String riga[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+            String riga[]=Principale.MappaCryptoWallet.get(IDTransazione);
             MovimentoRiportato=riga;
             String DataOraMinutiSecondo=riga[0].split("_")[0];
             SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
@@ -785,13 +785,13 @@ private static final long serialVersionUID = 9L;
             
             EvidenziaProblemi();
         } catch (ParseException ex) {
-            Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
         public void CompilaCampiPrincipalidaID(String IDTransazione){
         try {
-            String riga[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+            String riga[]=Principale.MappaCryptoWallet.get(IDTransazione);
             MovimentoRiportato=riga;
             String DataOraMinutiSecondo=riga[0].split("_")[0];
             SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
@@ -804,13 +804,13 @@ private static final long serialVersionUID = 9L;
             this.WalletDettaglio_ComboBox.setSelectedItem(riga[4]);           
            // EvidenziaProblemi();
         } catch (ParseException ex) {
-            Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
         
             public void CompilaMovimentoOppostoID(String IDTransazione){
         try {
-            String riga[]=CDC_Grafica.MappaCryptoWallet.get(IDTransazione);
+            String riga[]=Principale.MappaCryptoWallet.get(IDTransazione);
             MovimentoRiportato=riga;
             String DataOraMinutiSecondo=riga[0].split("_")[0];
             SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
@@ -832,7 +832,7 @@ private static final long serialVersionUID = 9L;
             this.ValoreTransazione_TextField.setText(riga[15]);
            // EvidenziaProblemi();
         } catch (ParseException ex) {
-            Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
         
@@ -939,7 +939,7 @@ private static final long serialVersionUID = 9L;
 
             //Creo l'oggetto Infoprezzo
             BigDecimal PrezzoTot=BigDecimal.ZERO;
-            if (CDC_Grafica.Funzioni_isNumeric(this.ValoreTransazione, false)) {
+            if (Principale.Funzioni_isNumeric(this.ValoreTransazione, false)) {
                PrezzoTot=new BigDecimal(this.ValoreTransazione) ;
             }
             String Fonte = P_TextFonte.getText();
@@ -947,11 +947,11 @@ private static final long serialVersionUID = 9L;
             String PUnitario = P_TextPU.getText();
             String TimeSFonte = P_TextTimeFonte.getText();
             BigDecimal BD_PUnitario = null;
-            if (CDC_Grafica.Funzioni_isNumeric(PUnitario, false)) {
+            if (Principale.Funzioni_isNumeric(PUnitario, false)) {
                 BD_PUnitario = new BigDecimal(PUnitario);
             }
             long l_TimeStampFonte = 0;
-            if (CDC_Grafica.Funzioni_isNumeric(TimeSFonte, false)) {
+            if (Principale.Funzioni_isNumeric(TimeSFonte, false)) {
                 l_TimeStampFonte = Long.parseLong(TimeSFonte);
             }
             Prezzi.InfoPrezzo IPr = new Prezzi.InfoPrezzo(BD_PUnitario, Fonte, l_TimeStampFonte, PrezzoTot, null, MonetaFonte);
@@ -982,21 +982,21 @@ private static final long serialVersionUID = 9L;
             //Ora elaboro i dati in ritorno
             if (Ritorno[0]!=null){
                 //Ho il prezzo di ritorno
-                if (CDC_Grafica.Funzioni_isNumeric(Ritorno[0], false)){
+                if (Principale.Funzioni_isNumeric(Ritorno[0], false)){
                     ValoreTransazione_TextField.setText(Ritorno[0]);
                 }else ValoreTransazione_TextField.setText("0.00");
             }
             if (Ritorno[1]!=null&&Ritorno[1].split("\\|",-1).length==4){
                 //Ho i dettagli in ritorno
                 Prezzi.InfoPrezzo IP=new Prezzi.InfoPrezzo(Ritorno[1]);
-                if (IP.exchange!=null) P_TextFonte.setText(IP.exchange);
-                if (IP.Moneta!=null)P_TextMoneta.setText(IP.Moneta);
-                if (IP.prezzoUnitario!=null)P_TextPU.setText(IP.prezzoUnitario.toPlainString());
-                if (IP.timestamp!=0)P_TextTimeFonte.setText(OperazioniSuDate.ConvertiDatadaLongAlSecondo(IP.timestamp));
+                if (IP.exchange!=null) P_TextFonte.setText(IP.exchange);else P_TextFonte.setText("");
+                if (IP.Moneta!=null)P_TextMoneta.setText(IP.Moneta);else P_TextMoneta.setText("");
+                if (IP.prezzoUnitario!=null)P_TextPU.setText(IP.prezzoUnitario.toPlainString());else P_TextPU.setText("");
+                if (!IP.RitornaStringData().equals("0"))P_TextTimeFonte.setText(IP.RitornaStringData());else P_TextTimeFonte.setText("");
                 
             }
             
-            System.out.println(Ritorno[0]);
+            //System.out.println(Ritorno[0]);
             
         }
    /*     String Rete=null;
@@ -1067,7 +1067,7 @@ private static final long serialVersionUID = 9L;
         String Note = this.Note_TextArea.getText().replace(";", " ").replace("\n", "<br>");
         ValoreTransazione = new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
         MonetaUQta = MonetaUQta.replace("-", "");
-        if (CDC_Grafica.Funzioni_isNumeric(MonetaUQta, false) && !MonetaUQta.equalsIgnoreCase("0")) {
+        if (Principale.Funzioni_isNumeric(MonetaUQta, false) && !MonetaUQta.equalsIgnoreCase("0")) {
             MonetaUQta = "-" + MonetaUQta;
         }
         MonetaEQta = MonetaEQta.replace("-", "");
@@ -1103,7 +1103,7 @@ private static final long serialVersionUID = 9L;
                 ME.Qta = this.MonetaEQta;
                 ME.Tipo = this.MonetaETipo;
             }
-            long dataLong = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+            long dataLong = FunzioniDate.ConvertiDatainLongMinuto(Data);
             String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete,"");
             if (Prezzo.equals("0.00")) {
                 String Messaggio = "Attenzione, il prezzo del movimento è valorizzato a '0.00'.\n"
@@ -1344,7 +1344,7 @@ private static final long serialVersionUID = 9L;
             this.WalletDettaglio_ComboBox.setBackground(Color.white);
         }
        
-        if (/*ValoreTransazione.equalsIgnoreCase("")||*/!CDC_Grafica.Funzioni_isNumeric(ValoreTransazione,false)){
+        if (/*ValoreTransazione.equalsIgnoreCase("")||*/!Principale.Funzioni_isNumeric(ValoreTransazione,false)){
             nonCompleto=true;
             this.ValoreTransazione_TextField.setBackground(Color.getHSBColor(20, 20, 20));
         }else {
@@ -1359,7 +1359,7 @@ private static final long serialVersionUID = 9L;
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             String DataString=f.format(Data_Datachooser.getDate())+" "+Ora_ComboBox.getSelectedItem().toString()+":"+
             Minuto_ComboBox.getSelectedItem().toString()+":"+Secondo_ComboBox.getSelectedItem().toString();
-            DataLong=OperazioniSuDate.ConvertiDatainLongSecondo(DataString);
+            DataLong=FunzioniDate.ConvertiDatainLongSecondo(DataString);
         }
         
         
@@ -1408,13 +1408,13 @@ private static final long serialVersionUID = 9L;
        // System.out.println(CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false));
         if (((tuttoVuotoE==false&&tuttoCompilatoE==false)||(tuttoVuotoU==false&&tuttoCompilatoU==false))||
                 (tuttoVuotoE==true&&tuttoVuotoU==true)||
-                (!CDC_Grafica.Funzioni_isNumeric(MonetaUQta,true)||!CDC_Grafica.Funzioni_isNumeric(MonetaEQta,true))){
+                (!Principale.Funzioni_isNumeric(MonetaUQta,true)||!Principale.Funzioni_isNumeric(MonetaEQta,true))){
             nonCompleto=true;
             if (MonetaU.equalsIgnoreCase(""))MonetaUscita_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscita_ComboBox.setBackground(Color.white);
-            if (/*MonetaUQta.equalsIgnoreCase("")||*/!CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
+            if (/*MonetaUQta.equalsIgnoreCase("")||*/!Principale.Funzioni_isNumeric(MonetaUQta,false))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
             if (MonetaUTipo==null)MonetaUscitaTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaTipo_ComboBox.setBackground(Color.white);
             if (MonetaE.equalsIgnoreCase(""))MonetaEntrata_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrata_ComboBox.setBackground(Color.white);
-            if (/*MonetaEQta.equalsIgnoreCase("")||*/!CDC_Grafica.Funzioni_isNumeric(MonetaEQta,false))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
+            if (/*MonetaEQta.equalsIgnoreCase("")||*/!Principale.Funzioni_isNumeric(MonetaEQta,false))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
             if (MonetaETipo==null)MonetaEntrataTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataTipo_ComboBox.setBackground(Color.white);
         } 
         //se invece le 2 situazioni di prima non sono vere vuol dire che va tutto bene
@@ -1491,20 +1491,21 @@ private static final long serialVersionUID = 9L;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MovimentoManuale_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ModificaMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MovimentoManuale_GUI().setVisible(true);
+                new GUI_ModificaMovimento().setVisible(true);
             }
         });
     }

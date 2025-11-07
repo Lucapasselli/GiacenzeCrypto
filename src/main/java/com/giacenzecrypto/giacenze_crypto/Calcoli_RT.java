@@ -4,9 +4,9 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.DecimaliCalcoli;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Funzioni_isNumeric;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
+import static com.giacenzecrypto.giacenze_crypto.Principale.Funzioni_isNumeric;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Year;
@@ -577,7 +577,7 @@ public class Calcoli_RT {
                                 if (IDControparte != null) {
                                     StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
                                     Map<String, PlusXMoneta> CryptoStack2 = MappaGrWallet_MappaMoneta_PlusXMoneta.get(WalletControparte);
-                                    String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
+                                    String Mov[] = Principale.MappaCryptoWallet.get(IDControparte);
                                     StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true);
                                 }
 
@@ -847,13 +847,13 @@ public class Calcoli_RT {
                 long d=System.currentTimeMillis();
                 //i prezzi attuali saranno quelli di inizio giornata
                 
-                String DataAttualeAllOra=OperazioniSuDate.ConvertiDatadaLong(d)+" 00:00";
+                String DataAttualeAllOra=FunzioniDate.ConvertiDatadaLong(d)+" 00:00";
                String AnnoAttuale=DataAttualeAllOra.split("-")[0];
-               d=OperazioniSuDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
+               d=FunzioniDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
                 if (!AnnoAttuale.equals(Anno)){
                     String Data=String.valueOf(Integer.parseInt(Anno)+1)+"-01-01 00:00";
                     //System.out.println(Data);
-                    d= OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+                    d= FunzioniDate.ConvertiDatainLongMinuto(Data);
                 }
                 Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
                 for (String Wallet : MappaGrWallet_MappaMoneta_PlusXMoneta.keySet()){
@@ -1210,12 +1210,12 @@ public class Calcoli_RT {
             long d = System.currentTimeMillis();
             //i prezzi attuali saranno quelli di inizio giornata
 
-            String DataAttualeAllOra = OperazioniSuDate.ConvertiDatadaLong(d) + " 00:00";
+            String DataAttualeAllOra = FunzioniDate.ConvertiDatadaLong(d) + " 00:00";
             String AnnoAttuale = DataAttualeAllOra.split("-")[0];
-            d = OperazioniSuDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
+            d = FunzioniDate.ConvertiDatainLongMinuto(DataAttualeAllOra);
             if (!AnnoAttuale.equals(Anno)) {
                 String Data1 = String.valueOf(Integer.parseInt(Anno) + 1) + "-01-01 00:00";
-                d = OperazioniSuDate.ConvertiDatainLongMinuto(Data1);
+                d = FunzioniDate.ConvertiDatainLongMinuto(Data1);
             }
 
         while (qtaRimanente.compareTo(new BigDecimal ("0"))>0 && !stack.isEmpty()){ //in sostanza fino a che la qta rimanente è maggiore di zero oppure ho finito lo stack

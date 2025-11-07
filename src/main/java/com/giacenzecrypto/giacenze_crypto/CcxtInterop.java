@@ -277,9 +277,9 @@ public static Path getNodeExePath() {
         
         fetchMovimenti(exchangeId, apiKey, secret,startDate,Tokens,progress,c);
         } catch (IOException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
-            Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
         }
@@ -345,7 +345,7 @@ public static Path getNodeExePath() {
 
             //4 - IMPORTO TUTTO NEL DATABASE
             //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
-            if(!CDC_Grafica.InterrompiCiclo)
+            if(!Principale.InterrompiCiclo)
                 Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
             //Solo se non ho premutol il tasto annulla, in quel caso non faccio nulla
             else{
@@ -367,7 +367,7 @@ public static Path getNodeExePath() {
             //Recupero la lista dei token con le varie somme e prendo solo quelli che hanno una somma diversa da zero
             //solo su quelli vado a cercare i trades, infatti i token che vanno a zero molto probabilmente non sono stati scambiati oltre le varie conversions
             Map<String, Moneta> QtaCrypto = new TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto la moneta con tutti i dati
-            for (String[] movimento : CDC_Grafica.MappaCryptoWallet.values()) {
+            for (String[] movimento : Principale.MappaCryptoWallet.values()) {
                 if (movimento[3].trim().equalsIgnoreCase("Binance")) {
                     Moneta Monete[] = new Moneta[2];//in questo array metto la moneta in entrata e quellain uscita
                     //in paricolare la moneta in uscita nella posizione 0 e quella in entrata nella posizione 1
@@ -413,7 +413,7 @@ public static Path getNodeExePath() {
             int j=0;
             for (String script : estrazioni) {
                 //Interrompo la funzione se ho premuto interrompi o se ho degli errori bloccanti sulla funzione
-                if (CDC_Grafica.InterrompiCiclo||progress.ErroriNodeJS())
+                if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
                 {
                     JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return;
@@ -493,7 +493,7 @@ public static Path getNodeExePath() {
             progress.SetMessaggioAvanzamento("Comunicazione con endpoint "+j+" di "+chiamate+" in corso...");
             JsonObject json = fetchMovimento(exchangeId, apiKey, secret, startDate, tok, "Binance_Trades");
             lista.addAll(getListaMovimento(json, exchangeId));
-            if (CDC_Grafica.InterrompiCiclo||progress.ErroriNodeJS())
+            if (Principale.InterrompiCiclo||progress.ErroriNodeJS())
                 {
                     JOptionPane.showConfirmDialog(null, "Impot terminato prematuramente!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                     return;
@@ -656,7 +656,7 @@ public static Path getNodeExePath() {
                     new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
                 String logLine;
                 while ((logLine = logReader.readLine()) != null) {
-                    if(CDC_Grafica.InterrompiCiclo)
+                    if(Principale.InterrompiCiclo)
                     {
                         System.out.println("Premuto tasto INTERROMPI, blocco l'esecuzione dello script");
                         process.destroy();
@@ -727,7 +727,7 @@ public static void recuperPrezzi_OLD(String Symbol,long timestamp) throws SQLExc
             return;
         }
 
-        System.out.println("Scarico Prezzi di "+Symbol+" in data "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(timestamp));
+        System.out.println("Scarico Prezzi di "+Symbol+" in data "+FunzioniDate.ConvertiDatadaLongAlSecondo(timestamp));
          // Parametri CLI da passare allo script
         List<String> command = new ArrayList<>();
         command.add(nodePath.toString());
@@ -877,7 +877,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
         String OldData="0";
 
         for (JsonElement el : objects) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("coin", "");
@@ -889,7 +889,7 @@ public static List<String[]> convertDepositi(JsonArray jsonList,String Exchange)
             //String completeTime = obj.optString("completeTime", insertTime);
 
             long time = Long.parseLong(insertTime);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;
@@ -1029,7 +1029,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : ordersOBJ) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("fiatCurrency", "");
@@ -1043,7 +1043,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
 
 
             long time = Long.parseLong(insertTime);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;
@@ -1138,7 +1138,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         OldData="0";
 
         for (JsonElement el : paymentsOBJ) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
             
             boolean inserisciFee=false;
@@ -1182,7 +1182,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
 
 
             long time = Long.parseLong(insertTime);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             int numMovimenti=1;
@@ -1342,7 +1342,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("coin", "");
@@ -1356,7 +1356,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             //String completeTime = obj.optString("completeTime", insertTime);
 
             long time = Long.parseLong(insertTime);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;
@@ -1515,7 +1515,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
             Moneta mu=new Moneta();
             Moneta me=new Moneta();
@@ -1552,7 +1552,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             //String completeTime = obj.optString("completeTime", insertTime);
 
             long time = Long.parseLong(Time);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;
@@ -1706,7 +1706,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             //System.out.println("Conversioni!!! : "+el);
             JSONObject obj = new JSONObject(el.toString());
             Moneta mu=new Moneta();
@@ -1735,7 +1735,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             //String completeTime = obj.optString("completeTime", insertTime);
 
             long time = Long.parseLong(Time);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;
@@ -1861,7 +1861,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             //System.out.println("Conversioni!!! : "+el);
             JSONObject obj = new JSONObject(el.toString());
             Moneta mu=new Moneta();
@@ -1886,7 +1886,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             //String completeTime = obj.optString("completeTime", insertTime);
 
             long time = Long.parseLong(Time);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;
@@ -1985,7 +1985,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("asset", "");
@@ -1996,7 +1996,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
 
 
             long time = Long.parseLong(insertTime);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;
@@ -2113,7 +2113,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
         String OldData="0";
 
         for (JsonElement el : objects) {
-            if(CDC_Grafica.InterrompiCiclo)return null;
+            if(Principale.InterrompiCiclo)return null;
             JSONObject obj = new JSONObject(el.toString());
 
             String coin = obj.optString("asset", "");
@@ -2127,7 +2127,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             //System.out.println("Inserito " +amount+" "+coin+" - tipologia:"+tipo);
 
             long time = Long.parseLong(insertTime);
-            String data = OperazioniSuDate.ConvertiDatadaLongAlSecondo(time);
+            String data = FunzioniDate.ConvertiDatadaLongAlSecondo(time);
             //Questo serve per incrementae il numero sull'id in caso di movimenti contemporanei
             //Altrimenti andrei a sovrascrivere il movimento precedente
             if (OldData.equals(data))totMov++;

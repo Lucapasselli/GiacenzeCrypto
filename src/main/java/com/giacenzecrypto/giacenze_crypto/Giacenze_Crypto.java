@@ -72,9 +72,9 @@ public class Giacenze_Crypto {
         };
         System.setErr(new PrintStream(new OutputStreamLog(consoleErr, logStream), true));*/
         
-        CDC_Grafica.tema=DatabaseH2.Opzioni_Leggi("Tema");
-        if (CDC_Grafica.tema==null)CDC_Grafica.tema="Chiaro";
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro"))
+        Principale.tema=DatabaseH2.Opzioni_Leggi("Tema");
+        if (Principale.tema==null)Principale.tema="Chiaro";
+        if (Principale.tema.equalsIgnoreCase("Scuro"))
         {
             UIManager.setLookAndFeel( new FlatDarkLaf() );
             Tabelle.verdeScuro=new Color (145, 255, 143);
@@ -91,7 +91,7 @@ public class Giacenze_Crypto {
        }
 
        // UIManager.setLookAndFeel( new FlatDarkLaf() );
-        CDC_Grafica g=new CDC_Grafica();
+        Principale g=new Principale();
         //SwingUtilities.updateComponentTreeUI(g);   //Questo è molto utile per aggiornare il look and feel al volo 
         g.setVisible(true);
     }

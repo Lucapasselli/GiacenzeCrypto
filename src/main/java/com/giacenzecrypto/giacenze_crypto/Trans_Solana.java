@@ -74,7 +74,7 @@ public class Trans_Solana {
                 if (verbose) {
                     System.out.println(jsonString);
                 }
-                if (Funzioni.isValidJSONArray(jsonString)&&!CDC_Grafica.InterrompiCiclo) {
+                if (Funzioni.isValidJSONArray(jsonString)&&!Principale.InterrompiCiclo) {
                     JSONArray transactions = new JSONArray(jsonString);
 
                     if (transactions.length() > 0) {
@@ -100,7 +100,7 @@ public class Trans_Solana {
                 }else{
                     //Se trovo un errore devo pulire tutte le transazioni e interrompere il ciclo
                     //Siccome le transazioni vengono prese a ritroso poi si rischierebbe di non importare quelle vecchie
-                    CDC_Grafica.InterrompiCiclo=false;
+                    Principale.InterrompiCiclo=false;
                     allTransactions.clear();
                     hasMore = false;
                     break;
@@ -184,7 +184,7 @@ private static JSONArray sortTransactionsByTimestamp(JSONArray transactions) {
             String signature = tx.optString("signature", "N/A");
             String block = tx.optString("slot", "N/A");
             long timestamp = tx.optLong("timestamp", 0);
-            String formattedTimestamp = OperazioniSuDate.ConvertiDatadaLongAlSecondo(timestamp * 1000);
+            String formattedTimestamp = FunzioniDate.ConvertiDatadaLongAlSecondo(timestamp * 1000);
             BigDecimal fee = BigDecimal.ZERO;
 
             String feePayer = tx.optString("feePayer", "N/A");

@@ -100,7 +100,7 @@ public class Tabelle {
         }
         Color bg; 
         Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             fore=Color.lightGray;
         }
@@ -236,7 +236,7 @@ public class Tabelle {
 
                     Color bg; 
         Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             fore=Color.lightGray;
         }
@@ -302,7 +302,7 @@ public class Tabelle {
         Color fore;
         Color fore2;
         
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             bg2= (row % 2 == 0  ? rossoChiaro : rosso);
             fore=Color.lightGray;
@@ -457,7 +457,7 @@ public class Tabelle {
 
                     Color bg; 
         Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             fore=Color.lightGray;
         }
@@ -507,7 +507,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
                     Color bg; 
        // Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             //fore=Color.lightGray;
         }
@@ -567,7 +567,7 @@ public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
                     bgEntrata= (row % 2 == 0  ? verde1 : verde1);
        // Riconversione riga se usa RowSorter
     int modelRow = table.getRowSorter().convertRowIndexToModel(row);
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             //fore=Color.lightGray;
         }
@@ -662,7 +662,7 @@ public static JTable ColoraTabellaSempliceVerdeRosso(final JTable table,int[] Co
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
                     Color bg; 
         Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             fore=Color.lightGray;
         }
@@ -729,7 +729,7 @@ public static JTable ColoraTabellaRTDettaglio(final JTable table) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
                     Color bg; 
         Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             fore=Color.lightGray;
         }
@@ -784,7 +784,7 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
                     Color bg; 
         Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             fore=Color.lightGray;
         }
@@ -862,7 +862,7 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
 
                     Color bg; 
         Color fore;
-        if (CDC_Grafica.tema.equalsIgnoreCase("Scuro")){
+        if (Principale.tema.equalsIgnoreCase("Scuro")){
             bg= (row % 2 == 0  ? grigio : Color.DARK_GRAY);
             fore=Color.lightGray;
         }
@@ -1181,7 +1181,7 @@ private static void processNode(Node node, StringBuilder sb) {
 
  
  public static void Tabelle_InizializzaHeader(JTable table) { 
-    ImageIcon originalIco = new javax.swing.ImageIcon(CDC_Grafica.class.getResource("/Images/24_Imbuto.png"));
+    ImageIcon originalIco = new javax.swing.ImageIcon(Principale.class.getResource("/Images/24_Imbuto.png"));
     //Image image = Icone.svgImbuto.getImage();  // Ottiene l'immagine interna
    // ImageIcon originalIco = new ImageIcon(image);  // Converte in ImageIcon
    //  ImageIcon originalIco = Icone.Imbuto;

@@ -39,7 +39,7 @@ public class JTableConTooltipIcone extends JTable {
                 Rectangle cellRect = getCellRect(viewRow, viewCol, false);
                 Insets insets = label.getInsets();
                 String ID = this.getModel().getValueAt(viewRow, 0).toString();
-                String mov[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+                String mov[]=Principale.MappaCryptoWallet.get(ID);
                 String MonetaU = mov[8];
                 String QtaMancanteLiFo="";
                 String ValRimanenze="";
@@ -105,7 +105,7 @@ public class JTableConTooltipIcone extends JTable {
         //System.out.println(stack.size());
         while (!stack.isEmpty()) {
             String[] ultimoRecupero = stack.pop();
-            String mov[]=CDC_Grafica.MappaCryptoWallet.get(ultimoRecupero[3]);
+            String mov[]=Principale.MappaCryptoWallet.get(ultimoRecupero[3]);
             if (mov==null){
                 return ultimoRecupero[1];
             }

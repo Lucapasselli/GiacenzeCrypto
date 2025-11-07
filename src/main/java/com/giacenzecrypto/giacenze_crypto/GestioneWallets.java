@@ -4,8 +4,8 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.Mappa_Wallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.Mappa_Wallet;
 //import static com.giacenzecrypto.giacenze_crypto.Prezzi.MappaWallets;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -354,7 +354,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                         blocco = "0";
                     }
                     //boolean retecompatibile=false;
-                    for(String rete : CDC_Grafica.Mappa_ChainExplorer.keySet()){
+                    for(String rete : Principale.Mappa_ChainExplorer.keySet()){
                         if (rete.equalsIgnoreCase(splittata[1]))
                         {
                            if (selezionati==null)  {
@@ -391,7 +391,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                     //Scrivo tutte le nuove transazioni nella mappa principale
                     for (TransazioneDefi v : MappaTransazioniDefi.values()) {
                         for (String[] st : v.RitornaRigheTabella()) {
-                            CDC_Grafica.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
+                            Principale.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
                             //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
                             Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
                          //   MappaCryptoWallet.put(st[0], st);
@@ -428,7 +428,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                  //   Prezzi.ScriviFileConversioneXXXEUR();
                     Importazioni.TransazioniAggiunte = i;
                     if (Importazioni.TransazioniAggiunte != 0) {
-                        CDC_Grafica.TabellaCryptodaAggiornare = true;
+                        Principale.TabellaCryptodaAggiornare = true;
                     }
                     
                 }
@@ -506,7 +506,7 @@ public class GestioneWallets extends javax.swing.JDialog {
              //  long Data2100=Long.parseLong("4105615230000");
              int movEliminati=Funzioni.CancellaMovimentazioniXWallet(IDWallet.split("_")[0].trim()+" ("+IDWallet.split("_")[1].trim()+")",0,0);
              if (movEliminati>0){
-                 CDC_Grafica.TabellaCryptodaAggiornare=true;
+                 Principale.TabellaCryptodaAggiornare=true;
                  Messaggio="Numero movimenti cancellati : "+movEliminati+ "\n Ricordarsi di Salvare per non perdere le modifiche fatte sui movimenti.";
                 JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"OK"}, "OK");
                 //Calcoli_Plusvalenze.AggiornaPlusvalenze();

@@ -63,7 +63,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
          this.setIconImage(icon.getImage());
          initComponents();
          Download.FineThread=false;
-         CDC_Grafica.InterrompiCiclo=false;
+         Principale.InterrompiCiclo=false;
      
         
 //RipristinaStdout();
@@ -125,7 +125,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
         if (thread!=null&&!thread.isAlive()){
             this.dispose();
         }
-        CDC_Grafica.InterrompiCiclo=false;
+        Principale.InterrompiCiclo=false;
         return Download.FineThread;
     }
     
@@ -294,7 +294,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        CDC_Grafica.InterrompiCiclo=true;       
+        Principale.InterrompiCiclo=true;       
         Download.FineThread=true;
 
                
@@ -308,7 +308,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     private void Bottone_InterrompiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_InterrompiActionPerformed
         // TODO add your handling code here:
         //this.dispose();
-        CDC_Grafica.InterrompiCiclo=true;       
+        Principale.InterrompiCiclo=true;       
         Download.FineThread=true;
         Bottone_Interrompi.setBackground(Color.red);
         Bottone_Interrompi.setText("Interruzione in corso ...");
@@ -321,7 +321,7 @@ private Timer timer = new Timer(1000, new ActionListener() {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
      //   System.out.println("Finestra Attesa Aperta");
-     CDC_Grafica.InterrompiCiclo=false;
+     Principale.InterrompiCiclo=false;
      Download.FineThread=false;
      if (!nascondiLog) {
        /* PrintStream printStream = new PrintStream(new CustomOutputStream(textPane));

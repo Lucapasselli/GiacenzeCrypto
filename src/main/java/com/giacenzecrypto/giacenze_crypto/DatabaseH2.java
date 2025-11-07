@@ -243,7 +243,7 @@ public class DatabaseH2 {
             }
             //Se aggiungo una riga al DB la aggiungo anche alla mappa di riferimento
             //Lavorare con le mappe risulta infatti + veloce del DB e uso quella come base per le ricerche
-            CDC_Grafica.Mappa_EMoney.put(Moneta, Data);
+            Principale.Mappa_EMoney.put(Moneta, Data);
         } catch (SQLException ex) {
         LoggerGC.ScriviErrore(ex);
         throw new RuntimeException("Errore durante l'accesso al database: " + ex.getMessage(), ex);
@@ -267,7 +267,7 @@ public class DatabaseH2 {
                 //Logger.getLogger(DatabaseH2.class.getName()).log(Level.WARNING, "Nessuna riga eliminata per Moneta: " + Moneta);
                 System.out.println("DatabaseH2.Pers_Emoney_Cancella - Nessuna riga eliminate per Moneta: "+Moneta);
             } else {
-                CDC_Grafica.Mappa_EMoney.remove(Moneta);
+                Principale.Mappa_EMoney.remove(Moneta);
             }
             statement.close();
         } catch (SQLException ex) {
@@ -371,7 +371,7 @@ public class DatabaseH2 {
         
         public static void Pers_Emoney_PopolaMappaEmoney() {
 
-        CDC_Grafica.Mappa_EMoney.clear();
+        Principale.Mappa_EMoney.clear();
         try {
             // Connessione al database
             String checkIfExistsSQL = "SELECT * FROM EMONEY";
@@ -381,7 +381,7 @@ public class DatabaseH2 {
             while (resultSet.next()) {
                 String Moneta = resultSet.getString("Moneta"); 
                 String Data = resultSet.getString("Data");
-                CDC_Grafica.Mappa_EMoney.put(Moneta, Data);
+                Principale.Mappa_EMoney.put(Moneta, Data);
                 //System.out.println(Moneta);
             }
         } catch (SQLException ex) {

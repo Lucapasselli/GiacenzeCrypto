@@ -8,8 +8,8 @@ package com.giacenzecrypto.giacenze_crypto;
 
 
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.DecimaliCalcoli;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
@@ -34,10 +34,10 @@ public class Calcoli_RW {
        
        public static String RitornaTipoCrypto(String Token,String Data,String Tipologia) {
        String Tipo=Tipologia;
-       String DataEmoney=CDC_Grafica.Mappa_EMoney.get(Token);
+       String DataEmoney=Principale.Mappa_EMoney.get(Token);
        if(Tipologia.equalsIgnoreCase("Crypto")&&DataEmoney!=null){
-           long dataemoney=OperazioniSuDate.ConvertiDatainLong(DataEmoney);
-           long datascambio=OperazioniSuDate.ConvertiDatainLong(Data);
+           long dataemoney=FunzioniDate.ConvertiDatainLong(DataEmoney);
+           long datascambio=FunzioniDate.ConvertiDatainLong(Data);
            if (datascambio>=dataemoney) Tipo="EMoney";
        }
        return Tipo;
@@ -108,7 +108,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
 
                 
                 List<String[]> ListaRW;
-                ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
+                ListaRW=Principale.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                 ListaRW.add(xlista);
                 //Verifico Ora se esistono i prezzi unitari del token con data iniziale e del token con data finale.
                 //Se esistono li scrivo nella lista come campo 13 e 14
@@ -397,11 +397,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
       
         public static boolean StessoGruppoWalletContropate(String ID){
             boolean stessoGruppo=true;
-            String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            String Movimento[]=Principale.MappaCryptoWallet.get(ID);
             String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
             String MovimentiCorrelati[] = Movimento[20].split(",");
             for (String IdM : MovimentiCorrelati) {
-                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(CDC_Grafica.MappaCryptoWallet.get(IdM)[3]);
+                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Principale.MappaCryptoWallet.get(IdM)[3]);
                 //per ogni movimento verifico se fa parte di un gruppo diverso e nel qual caso significa che la transazione riguarda wallet di gruppi diversi
                 //per cui metto a false il boolean stessoGruppo
                 if (!gruppo.equals(GruppoWalletOrigine))stessoGruppo=false;
@@ -411,12 +411,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         
         public static String RitornaGruppoWalletControparte(String ID){
             String Gruppo;
-            String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            String Movimento[]=Principale.MappaCryptoWallet.get(ID);
             String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
             Gruppo = GruppoWalletOrigine;
             String MovimentiCorrelati[] = Movimento[20].split(",");
             for (String IdM : MovimentiCorrelati) {
-                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(CDC_Grafica.MappaCryptoWallet.get(IdM)[3]);
+                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Principale.MappaCryptoWallet.get(IdM)[3]);
                 //per ogni movimento verifico se fa parte di un gruppo diverso e nel qual caso significa che la transazione riguarda wallet di gruppi diversi
                 //per cui metto a false il boolean stessoGruppo
                 if (!gruppo.equals(GruppoWalletOrigine)){
@@ -430,16 +430,16 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             //Ritorna l'id della controparte se fa parte di gruppi wallet diversi
             //In futuro sarà da sistemare per farla funzionare anche se i gruppi 
             String IDC=ID;
-            String Movimento[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            String Movimento[]=Principale.MappaCryptoWallet.get(ID);
            // String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
             String MovimentiCorrelati[] = Movimento[20].split(",");
             for (String IdM : MovimentiCorrelati) {
-                String MovimentoControparte[]=CDC_Grafica.MappaCryptoWallet.get(IdM);
+                String MovimentoControparte[]=Principale.MappaCryptoWallet.get(IdM);
                 //per ogni movimento verifico se fa parte di un gruppo diverso e nel qual caso significa che la transazione riguarda wallet di gruppi diversi
                 //per cui metto a false il boolean stessoGruppo
                 if (!Movimento[3].equals(MovimentoControparte[3])&&
                         (MovimentoControparte[22].equals("A")||MovimentoControparte[22].equals("M"))){
-                    IDC=CDC_Grafica.MappaCryptoWallet.get(IdM)[0];
+                    IDC=Principale.MappaCryptoWallet.get(IdM)[0];
                 }
             }
             return IDC;
@@ -486,13 +486,13 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     //System.out.println(DataInizioAnno);
                     //if (el.QtaOri.isBlank())System.out.println("Errore in Crea Primi movimenti");
                     StackLIFO_InserisciValoreFR(CryptoStackTemp, key, el);
-                    if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key) == null) {
+                    if (Principale.Mappa_RW_GiacenzeInizioPeriodo.get(key) == null) {
                         List<Moneta> li = new ArrayList<>();
                         Moneta mo = m.ClonaMoneta();
                         li.add(mo);
-                        CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.put(key, li);
+                        Principale.Mappa_RW_GiacenzeInizioPeriodo.put(key, li);
                     } else {
-                        List<Moneta> li = CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(key);
+                        List<Moneta> li = Principale.Mappa_RW_GiacenzeInizioPeriodo.get(key);
                         Moneta mo = m.ClonaMoneta();
                         li.add(mo);
                     }
@@ -541,7 +541,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 xlista[14]=IDt;                                                 //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
                 xlista[15]="Errore (Giacenza Negativa)";                        //Tipo Errore
                 xlista[16]="";                                                  //Lista ID coinvolti separati da virgola
-                ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
+                ListaRW=Principale.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                 ListaRW.add(xlista);
             }
             while (!StackRitorno.isEmpty()) {
@@ -551,7 +551,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             //    if (Causale.contains("Fine Anno")) GruppoWallet=el.GruppoWalletOri; 
                 //Elementi è così composta Qta;Prezzo;Data  
                 //Se la data del movimento è uguale a quella di creazione (al minuto) metto GG di detenzione zero altrimenti anche se posseggo la moneta per un solo minuto metto 1
-                long DiffData = OperazioniSuDate.ConvertiDatainLongMinuto(Data)-OperazioniSuDate.ConvertiDatainLongMinuto(el.DataOri);
+                long DiffData = FunzioniDate.ConvertiDatainLongMinuto(Data)-FunzioniDate.ConvertiDatainLongMinuto(el.DataOri);
                 if (DiffData!=0){
   
                    // DiffData = (OperazioniSuDate.ConvertiDatainLong(Data.split(" ")[0]) - OperazioniSuDate.ConvertiDatainLong(Elementi[2].split(" ")[0]) + 86400000) / 86400000;
@@ -559,7 +559,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                   //  if (RWgiorno1 != null && RWgiorno1.equalsIgnoreCase("SI")) {
                   //      DiffData = OperazioniSuDate.DifferenzaDate(el.DataOri, Data);
                   //  } else {
-                        DiffData = OperazioniSuDate.DifferenzaDate(el.DataOri, Data) + 1;
+                        DiffData = FunzioniDate.DifferenzaDate(el.DataOri, Data) + 1;
                   //  }
                 }
                 
@@ -606,12 +606,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     xlista[15] = el.IDOri;
                 }
                 if (!xlista[11].equals("0")){//Solo se i giorni di detenzione sono diversi da zero compilo la lista altrimenti resta tutto così com'è.
-                    if(CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet)==null)
+                    if(Principale.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet)==null)
                         {
                             ListaRW=new ArrayList<>();
-                            CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
+                            Principale.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
                         } 
-                    ListaRW=CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
+                    ListaRW=Principale.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                     ListaRW.add(xlista);
                    /* if (GruppoWallet.equalsIgnoreCase("Wallet 05")){
                     for (String[] lista : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get("Wallet 05")) {
@@ -629,7 +629,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         //System.out.println(Data+ " - "+Monete.Moneta+" - "+Monete.Qta+" - "+Monete.Prezzo+" - "+Valore+" - "+Monete.Rete+" - "+Monete.MonetaAddress);
         //pulizia vecchia lista, tanto devo ricrearla da capo in questo caso perchè devo prendere solo i valori iniziali e finali
         List<String[]> ListaRW=new ArrayList<>();
-        CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
+        Principale.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
         
         String GGDetenzione=GiorniAnno;
         String MotivoInizio="Giacenza Inizio Anno";
@@ -646,17 +646,17 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         {
             DataInizioAnno=DataPrimoMovimento;
             MotivoInizio="Primo Movimento del Wallet";
-            long DiffData = OperazioniSuDate.DifferenzaDate(DataInizioAnno.split(" ")[0], DataFineAnno.split(" ")[0]) + 1;
+            long DiffData = FunzioniDate.DifferenzaDate(DataInizioAnno.split(" ")[0], DataFineAnno.split(" ")[0]) + 1;
             GGDetenzione=String.valueOf(DiffData);
             Moneta PrimaMoneta[] = Moneta.RitornaMoneteDaMov(PrimoMovimento);
             PrimaMoneta[1].Prezzo = PrimoMovimento[15];
             if (!PrimaMoneta[1].Moneta.isBlank()) {//la moneta che sta entrando deve contenere qualcosa altrimenti non può essere il primo movimento e c'è un errore
-                if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet) != null) {
-                    CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet).add(PrimaMoneta[1]);
+                if (Principale.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet) != null) {
+                    Principale.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet).add(PrimaMoneta[1]);
                 }else{
                     List<Moneta> lf=new ArrayList<Moneta>();
                     lf.add(PrimaMoneta[1]);
-                    CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.put(GruppoWallet, lf);
+                    Principale.Mappa_RW_GiacenzeInizioPeriodo.put(GruppoWallet, lf);
                 }
             }
             //Mappa_RW_GiacenzeInizioPeriodo
@@ -667,8 +667,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         //System.out.println(MappaGruppo_IDPrimoMovimento.get(GruppoWallet));
         //Moneta Miniziale = null;
         Map<String, Moneta[]> MappaDoppia = new TreeMap<>();//Moneta[0]=monetaIniziale, Moneta[1]=monetaFinale
-        if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet) != null) {
-            List<Moneta> lf = CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet);
+        if (Principale.Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet) != null) {
+            List<Moneta> lf = Principale.Mappa_RW_GiacenzeFinePeriodo.get(GruppoWallet);
             Iterator<Moneta> it = lf.iterator();
             while (it.hasNext()) {
                 Moneta Mfinale = it.next();
@@ -687,8 +687,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 MappaDoppia.put(Mfinale.Moneta, Mdoppia);
             }
         }
-        if (CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet) != null) {
-            List<Moneta> li = CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet);
+        if (Principale.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet) != null) {
+            List<Moneta> li = Principale.Mappa_RW_GiacenzeInizioPeriodo.get(GruppoWallet);
             Iterator<Moneta> iti = li.iterator();
             while (iti.hasNext()) {
                 Moneta Miniziale = iti.next();
@@ -740,7 +740,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                     ListaRW = new ArrayList<>();
                                     CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
                                 }*/
-                                ListaRW = CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
+                                ListaRW = Principale.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet);
                                 ListaRW.add(xlista);
                             }
                   
@@ -912,7 +912,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                         //Altrimenti lo valorizzo a 0.000 che significa che il suo valore è zero ma il token ha un valore intrinseco
                         //Dovrò anche verificare se per caso il token ha già prezzi che arrivano dal csv
                         if (Valore.equals("0.00")){
-                            long DataRif=OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+                            long DataRif=FunzioniDate.ConvertiDatainLongMinuto(Data);
                             String Prezzo = Prezzi.DammiPrezzoTransazione(m, null, DataRif, null, true, 15, m.Rete,"");
                            //System.out.println("Funzione CalcoliRW TokenConPrezzo "+m.Moneta+" - "+Prezzo);
                             if (Prezzo.equals("0.00"))TokenConPrezzo=false;
@@ -940,11 +940,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         boolean LiFoComplessivo = false;
         if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) LiFoComplessivo=true;
         
-        CDC_Grafica.Mappa_RW_ListeXGruppoWallet.clear();
-        CDC_Grafica.Mappa_RW_GiacenzeInizioPeriodo.clear();
-        CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.clear();
+        Principale.Mappa_RW_ListeXGruppoWallet.clear();
+        Principale.Mappa_RW_GiacenzeInizioPeriodo.clear();
+        Principale.Mappa_RW_GiacenzeFinePeriodo.clear();
         AnnoR=AnnoRif;
-        GiorniAnno=Integer.toString(OperazioniSuDate.DifferenzaDate(AnnoR+"-01-01", AnnoR+"-12-31")+1);
+        GiorniAnno=Integer.toString(FunzioniDate.DifferenzaDate(AnnoR+"-01-01", AnnoR+"-12-31")+1);
         String AnnoSuccessivo=String.valueOf(Integer.parseInt(AnnoRif)+1);
 
         //PARTE 1 : Calcolo delle Giacenze iniziali e inserimento nello stack
@@ -955,10 +955,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
       //  if (RWgiorno1 != null && RWgiorno1.equalsIgnoreCase("SI")) {
       //      DataFineAnno=AnnoSuccessivo+"-01-01 00:00";      
       //  }
-        long fine = OperazioniSuDate.ConvertiDatainLongMinuto(AnnoSuccessivo+"-01-01 00:00");//Data Fine anno in long per calcolo prezzi
+        long fine = FunzioniDate.ConvertiDatainLongMinuto(AnnoSuccessivo+"-01-01 00:00");//Data Fine anno in long per calcolo prezzi
         
        // long inizio = OperazioniSuDate.ConvertiDatainLongSecondo(AnnoPrecendente+"-12-31 23:59:59");//Data Fine anno in long per calcolo prezzi
-        long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);//Data inizio anno in long per calcolo prezzi
+        long inizio = FunzioniDate.ConvertiDatainLongMinuto(DataInizioAnno);//Data inizio anno in long per calcolo prezzi
         boolean PrimoMovimentoAnno = true;
 
 ////////    Deque<String[]> stack = new ArrayDeque<String[]>(); Forse questo è da mettere
@@ -978,7 +978,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             String GW = GruppoWallet;
             //if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) GW = "Unico 01";
             if (LiFoComplessivo)GW = "Unico 01";
-            if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
+            if (Principale.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
                 //se non esiste ancora lo stack lo creo e lo associo alla mappa
                 //stessa cosa faccio per la lista per l'rw
                 //stessa cosa faccio per il gruppo delle qta
@@ -986,7 +986,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 MappaGrWallet_QtaCryptoInizio.put(GruppoWallet, QtaCryptoInizio);
                 ListaRW=new ArrayList<>();
                 
-                CDC_Grafica.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
+                Principale.Mappa_RW_ListeXGruppoWallet.put(GruppoWallet, ListaRW);
             }
              else {
                 //altrimenti lo recupero per i calcoli
@@ -1145,7 +1145,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                         //Se è un movimento RW() quindi un rimborso di un RW se è qua e il prezzo è zero lo ricalcolo perchè viene messo a zero dal sistema per il calcolo delle plusvalenze
                         //ma non è corretto per il calcolo del quadro RW
                        // System.out.println("Monete coinvolte :"+Monete[0].Moneta+"/"+Monete[0].Tipo+" - "+Monete[1].Moneta+"/"+Monete[1].Tipo+"\n");
-                        long d = OperazioniSuDate.ConvertiDatainLongMinuto(Data);
+                        long d = FunzioniDate.ConvertiDatainLongMinuto(Data);
                         if (IDTS[4].equals("RW") && Valore.equals("0.00")) {
                             Valore = Prezzi.DammiPrezzoTransazione(Monete[0], null, d, null, true, 15, Monete[0].Rete,"");                            
                         }
@@ -1677,12 +1677,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                     Moneta m2=listaDaConsolidare.get(GRWAL);
                                     ChiudiRWFR(m2, CryptoStackTemp, GRWAL, DataFineAnno, m2.Prezzo, "Fine Anno", "Giacenza Fine Anno");
                                     if (m2.Qta.contains("-"))System.out.println(m2.Qta);
-                                    if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(m2.GruppoRW) == null) {
+                                    if (Principale.Mappa_RW_GiacenzeFinePeriodo.get(m2.GruppoRW) == null) {
                                         List<Moneta> li = new ArrayList<>();
                                         li.add(m2);
-                                        CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.put(m2.GruppoRW, li);
+                                        Principale.Mappa_RW_GiacenzeFinePeriodo.put(m2.GruppoRW, li);
                                     } else {
-                                        List<Moneta> li = CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(m2.GruppoRW);
+                                        List<Moneta> li = Principale.Mappa_RW_GiacenzeFinePeriodo.get(m2.GruppoRW);
                                         li.add(m2);
                                     }
                                 }
@@ -1702,12 +1702,12 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                 
                             //Questo qua sotto popola una lista per ogni gruppo wallet contenente la giacenza di ciascuna moneta ad inizio anno
                           // System.out.println(key);
-                            if (CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key)==null){
+                            if (Principale.Mappa_RW_GiacenzeFinePeriodo.get(key)==null){
                                     List<Moneta> li=new ArrayList<>();
                                     li.add(m);
-                                    CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.put(key, li);
+                                    Principale.Mappa_RW_GiacenzeFinePeriodo.put(key, li);
                                 }else{
-                                    List<Moneta> li=CDC_Grafica.Mappa_RW_GiacenzeFinePeriodo.get(key);
+                                    List<Moneta> li=Principale.Mappa_RW_GiacenzeFinePeriodo.get(key);
                                     li.add(m);
                                 }
                          }
@@ -1720,7 +1720,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     }
                 }
         
-        SistemaErroriInListe(CDC_Grafica.Mappa_RW_ListeXGruppoWallet);
+        SistemaErroriInListe(Principale.Mappa_RW_ListeXGruppoWallet);
         
     }
     

@@ -4,8 +4,8 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.DecimaliCalcoli;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
@@ -407,8 +407,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             String NuovoPrezzoCarico="0.00";
             String Plusvalenza="0.00";
             String CalcoloPlusvalenza="N";
-            long long2023=OperazioniSuDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
-            long dataLong=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+            long long2023=FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
+            long dataLong=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
             boolean DataSuperiore2023=true;
             if (dataLong<long2023){DataSuperiore2023=false;}
             boolean Pre2023EarnCostoZero = false;
@@ -585,7 +585,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                         VecchioPrezzoCarico = "";
                         
                         //DA VEDERE PERCHE' IL CRYPTO STACK E' DIVERSO
-                    String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IDControparte);
+                    String Mov[] = Principale.MappaCryptoWallet.get(IDControparte);
                     Map<String, ArrayDeque<String[]>> CryptoStack2=MappaGrWallet_CryptoStack.get(GruppoWalletControparte);// = new TreeMap<>();
                     Mov[31]=v[1];
                         if (CryptoStack2 == null) {
@@ -840,7 +840,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             if (Movimenti.length > 3)//Sono in presenza di uno scambio differito
             {
                 for (String IdM : Movimenti) {
-                    String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
+                    String Mov[] = Principale.MappaCryptoWallet.get(IdM);
                     //devo trovare la controparte che in questo caso è il movimento di prelievo creato automaticamente dal sistema
                     //inoltre devo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
                     //perchè se fanno parte dello stesso gruppo non devo fare nulla
@@ -856,7 +856,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             } else {//Scambio tra wallet
 
                 for (String IdM : Movimenti) {
-                    String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
+                    String Mov[] = Principale.MappaCryptoWallet.get(IdM);
                     //devo trovare la controparte che in questo caso è l'unico movimento di prelievo
                     //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
                     //perchè se fanno parte dello stesso gruppo non devo fare nulla

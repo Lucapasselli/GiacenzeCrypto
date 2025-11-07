@@ -17,7 +17,7 @@ public class GUI_ScegliData extends javax.swing.JDialog {
      * Creates new form GUI_ScegliData
      */
     public GUI_ScegliData() {
-        CDC_Grafica.JDialog_Ritorno=null;
+        Principale.JDialog_Ritorno=null;
         initComponents();
     }
 
@@ -90,7 +90,7 @@ public class GUI_ScegliData extends javax.swing.JDialog {
 
     private void Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_SalvaActionPerformed
         // TODO add your handling code here:
-        CDC_Grafica.JDialog_Ritorno=Calendario.getDate();
+        Principale.JDialog_Ritorno=Calendario.getDate();
         this.dispose();
     }//GEN-LAST:event_Bottone_SalvaActionPerformed
 

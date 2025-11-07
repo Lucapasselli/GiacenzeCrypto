@@ -113,7 +113,7 @@ public class Prezzi {
         //Questa funzione ritorna null in caso di mancanza di prezzo
         //Da sistemare recuperando la fonte corretta per i prezzi
 
-            long data=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+            long data=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
             String Rete = Funzioni.TrovaReteDaIMovimento(v);
             
             
@@ -124,7 +124,7 @@ public class Prezzi {
             
             //Se la rete non è tra quelle supportate non la metto nella ricerca del prezzo e azzero anche gli address
             //Sono dati che non mi interessa avere infatti in questo caso perchè non posso recuperare i prezzi da coingecko
-            if(Rete==null||CDC_Grafica.MappaRetiSupportate.get(Rete)==null){
+            if(Rete==null||Principale.MappaRetiSupportate.get(Rete)==null){
                 Rete="";
                 Monete[0].MonetaAddress="";
                 Monete[1].MonetaAddress="";
@@ -589,14 +589,14 @@ public class Prezzi {
         // se il file ha dei dati recupero prima e ultima data      
             PrimaData = (String) dateDisponibili[0];
             UltimaData = (String) dateDisponibili[dateDisponibili.length - 1];
-            long DataOggiLong = OperazioniSuDate.ConvertiDatainLong(DatadiOggi);
-            long DataUltimaLong = OperazioniSuDate.ConvertiDatainLong(UltimaData);
+            long DataOggiLong = FunzioniDate.ConvertiDatainLong(DatadiOggi);
+            long DataUltimaLong = FunzioniDate.ConvertiDatainLong(UltimaData);
             long diffDate = DataOggiLong - DataUltimaLong;//86400000 di differenza significa 1 giorno
             //a questo punto siccome non posso ottenere i dati della giornata odierna
             //se sto cercando di ottenere quelli e l'ultimo dato che ho è inferiore a 10gg prendo quello come dato valido per la giornata
             //metto 10gg invece che 1 perchè potrebbero esserci delle feste e banchitalia non restituisce valori in quel caso
-            if (OperazioniSuDate.ConvertiDatainLong(Data) >= OperazioniSuDate.ConvertiDatainLong("2015-01-01") && 
-                    OperazioniSuDate.ConvertiDatainLong(Data) <= OperazioniSuDate.ConvertiDatainLong(DatadiOggi)) {
+            if (FunzioniDate.ConvertiDatainLong(Data) >= FunzioniDate.ConvertiDatainLong("2015-01-01") && 
+                    FunzioniDate.ConvertiDatainLong(Data) <= FunzioniDate.ConvertiDatainLong(DatadiOggi)) {
             risultato = MappaConversioneUSDEUR.get(Data);
             if (risultato == null) {
                 //Se non trovo il tasso di cambio e comunque so che è compreso nel range che drovrebbe avere provo a trovarlo a ritroso
@@ -605,7 +605,7 @@ public class Prezzi {
                     for (int i = 0; i < 10; i++) {
                         risultato = MappaConversioneUSDEUR.get(Data);
                         if (risultato == null) {
-                            Data = OperazioniSuDate.GiornoMenoUno(Data);//questo appunto serve per andare a prendere i sabati e le domeniche dove non ho dati
+                            Data = FunzioniDate.GiornoMenoUno(Data);//questo appunto serve per andare a prendere i sabati e le domeniche dove non ho dati
                         } else {
                             break;
                         }
@@ -705,8 +705,8 @@ public class Prezzi {
         InfoPrezzo IPrezzo=null;
         
         //Vedo se riesco a recuperare il prezzo dal vecchio database
-        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
+        String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno = FunzioniDate.ConvertiDatadaLong(Datalong);
         String risultato = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + Address + "_" + Rete);//Prezzo unitario
         if (risultato!=null && !risultato.equalsIgnoreCase("ND")){
             IPrezzo=new InfoPrezzo();
@@ -782,8 +782,8 @@ public class Prezzi {
     
     
     public static void CompilaMoneteStessoPrezzo(){
-     CDC_Grafica.Mappa_MoneteStessoPrezzo.put("WCRO", "CRO");
-     CDC_Grafica.Mappa_MoneteStessoPrezzo.put("WETH", "ETH");
+     Principale.Mappa_MoneteStessoPrezzo.put("WCRO", "CRO");
+     Principale.Mappa_MoneteStessoPrezzo.put("WETH", "ETH");
     }
     
     
@@ -958,7 +958,7 @@ public class Prezzi {
         
 
         //2 - INTERROGO I DATI MEMORIZZATI NEL DATABASE INTERNO
-        Crypto = CDC_Grafica.Mappa_MoneteStessoPrezzo.getOrDefault(Crypto, Crypto);
+        Crypto = Principale.Mappa_MoneteStessoPrezzo.getOrDefault(Crypto, Crypto);
         long Anno2017 = Long.parseLong("1483225200000");
 
         long adesso = System.currentTimeMillis();
@@ -968,7 +968,7 @@ public class Prezzi {
         if (Datalong < Anno2017) {
             return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         }
-        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
+        String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
         
         
         //Vedo se ho i prezzi all'ora (ormai tenuti solo per valorizzare anche il pregresso allo stesso modo)
@@ -977,7 +977,7 @@ public class Prezzi {
         String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
         if (PrezzoUnitario != null){
             risultato.exchange="";
-            risultato.timestamp=OperazioniSuDate.ConvertiDatainLongMinuto(DataOra+":00");
+            risultato.timestamp=FunzioniDate.ConvertiDatainLongMinuto(DataOra+":00");
             risultato.prezzoUnitario=new BigDecimal(PrezzoUnitario);
             risultato.Qta=new BigDecimal(Qta);
             risultato.Moneta=Crypto;
@@ -1018,8 +1018,8 @@ public class Prezzi {
                       
         String ok = null;
         String CoppiaCrypto="EURUSDT";
-        long dataIni = OperazioniSuDate.ConvertiDatainLong(DataIniziale) ;
-        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataFinale) + 86400000;
+        long dataIni = FunzioniDate.ConvertiDatainLong(DataIniziale) ;
+        long dataFin = FunzioniDate.ConvertiDatainLong(DataFinale) + 86400000;
         
         //come prima cosa invididuo i vari intervalli di date da interrogare per riempire tutto l'intervallo
         long difData=dataFin-dataIni;
@@ -1055,10 +1055,10 @@ public class Prezzi {
                 URL url = new URI(apiUrl).toURL();
                 //System.out.println(url);
                             //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-            if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
+            if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
                 return null;
             }
-            CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+            Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
                 URLConnection connection = url.openConnection();
                 //System.out.println(url);
                 System.out.println("Recupero prezzi "+CoppiaCrypto+" da Binance da data "+DataIniziale);
@@ -1150,8 +1150,8 @@ public class Prezzi {
         if (Datalong < 1483225200) {
             return null;//se la data è inferioe al 2017 non recupero nessun prezzo
         }
-        String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Datalong);
-        String DataGiorno = OperazioniSuDate.ConvertiDatadaLong(Datalong);
+        String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
+        String DataGiorno = FunzioniDate.ConvertiDatadaLong(Datalong);
 
         //cerco il valore di USDT da Binance
         risultato = DatabaseH2.XXXEUR_Leggi(DataOra + " " + "USDT");
@@ -1195,7 +1195,7 @@ public class Prezzi {
         
         if (mettereND) {
             //Adesso metto ad ND tutte le ore per cui non sono riuscito a recuperare il prezzo di USDT per evitare mille richieste prima di arrivare al prezzo
-            long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataGiorno);
+            long timestampIniziale = FunzioniDate.ConvertiDatainLong(DataGiorno);
             System.out.println(timestampIniziale);
             long timestampFinale = timestampIniziale + Long.parseLong("2592000000");
             if (adesso < timestampFinale) {
@@ -1233,8 +1233,8 @@ public class Prezzi {
         //Aggiungo 10 giorni alla data iniziale per trovare la data di fine
         //non posso superarare infatti i 300 risultati in una singola query
         //il limite sarebbe quindi di 12,5 gg. mi fermo a 10 per sicurezza.
-        long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
-        long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+        long dataFin = FunzioniDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
+        long timestampIniziale = FunzioniDate.ConvertiDatainLong(DataIniziale);
 
             String apiUrl = "https://api.exchange.coinbase.com/products/" + Crypto + "-USD/candles?granularity=3600&start=" + timestampIniziale + "&end=" + dataFin;
             //System.out.println(apiUrl);
@@ -1242,10 +1242,10 @@ public class Prezzi {
             try {
                 URL url = new URI(apiUrl).toURL();
                 //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-                if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
+                if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
                     return null;
                 }
-                CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+                Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
                 URLConnection connection = url.openConnection();
                 // System.out.println(url);
                 System.out.println("Recupero prezzi " + Crypto + " da Coinbase da data " + DataIniziale);
@@ -1272,8 +1272,8 @@ public class Prezzi {
                         for (JsonElement element : inverso) {
                             JsonArray dettagliArray=element.getAsJsonArray();
                             long Unixtime = dettagliArray.get(0).getAsLong()*1000;
-                            String Data = OperazioniSuDate.ConvertiDatadaLong(Unixtime);
-                            String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Unixtime);
+                            String Data = FunzioniDate.ConvertiDatadaLong(Unixtime);
+                            String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Unixtime);
                             String prezzoUSD = dettagliArray.get(3).getAsString();
                             String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
                             //System.out.println(DataOra);
@@ -1354,7 +1354,7 @@ public class Prezzi {
             //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
             URLConnection connection = url.openConnection();
             // System.out.println(url);
-            System.out.println("Recupero prezzi " + Crypto + " da CryptoCompare per la data " + OperazioniSuDate.ConvertiDatadaLong(timestamp));
+            System.out.println("Recupero prezzi " + Crypto + " da CryptoCompare per la data " + FunzioniDate.ConvertiDatadaLong(timestamp));
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
@@ -1425,8 +1425,8 @@ public class Prezzi {
         String ApiKey = Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
         if (!ApiKey.isBlank()) {
             String ok = null;
-            long dataFin = OperazioniSuDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
-            long timestampIniziale = OperazioniSuDate.ConvertiDatainLong(DataIniziale);
+            long dataFin = FunzioniDate.ConvertiDatainLong(DataIniziale) + Long.parseLong("864000000");
+            long timestampIniziale = FunzioniDate.ConvertiDatainLong(DataIniziale);
             String ID = DatabaseH2.GestitiCoinCap_Leggi(Crypto);
 
             //String DataFinale = OperazioniSuDate.ConvertiDatadaLong(dataFin);
@@ -1438,10 +1438,10 @@ public class Prezzi {
             try {
                 URL url = new URI(apiUrl).toURL();
                 //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-                if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
+                if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
                     return null;
                 }
-                CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+                Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
                 URLConnection connection = url.openConnection();
                 // System.out.println(url);
                 System.out.println("Recupero prezzi " + Crypto + " da Coincap da data " + DataIniziale);
@@ -1466,8 +1466,8 @@ public class Prezzi {
                             String prezzoUSD = Coppie.get("priceUsd").getAsString();
                             long Unixtime = Coppie.get("time").getAsLong();
                             //System.out.println(prezzoUSD+" - "+Unixtime);
-                            String Data = OperazioniSuDate.ConvertiDatadaLong(Unixtime);
-                            String DataOra = OperazioniSuDate.ConvertiDatadaLongallOra(Unixtime);
+                            String Data = FunzioniDate.ConvertiDatadaLong(Unixtime);
+                            String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Unixtime);
                             String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
                             //Controllo ora se non ha il prezzo e in quel caso lo scrivo
                             if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
@@ -1515,10 +1515,10 @@ public class Prezzi {
             TimeUnit.SECONDS.sleep(1);
             URL url = new URI("https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/dailyTimeSeries?startDate="+DataIniziale+"&endDate="+DataFinale+"&baseCurrencyIsoCode=EUR&currencyIsoCode=USD").toURL();
                         //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
-            if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
+            if (Principale.Mappa_RichiesteAPIGiaEffettuate.get(url.toString())!=null){
                 return null;
             }
-            CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
+            Principale.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");
             URLConnection connection = url.openConnection();
            // System.out.println(url);
             System.out.println("Recupero tassi di cambio Euro-Dollaro da Bancaditalia da data "+DataIniziale);
@@ -1565,8 +1565,8 @@ public class Prezzi {
         
         //se ho già fatto questa richiesta in questa sessione termino immediatamente il ciclo
         //per questa richiesta volgio aver già fatto la richiesta almeno per 1h prima e 1h dopo
-        long SinceVerifica=OperazioniSuDate.ConvertiDatainLong(DataIniziale)- 3600000;
-        long UntilVerifica=OperazioniSuDate.ConvertiDatainLong(DataIniziale)+ 3600000;
+        long SinceVerifica=FunzioniDate.ConvertiDatainLong(DataIniziale)- 3600000;
+        long UntilVerifica=FunzioniDate.ConvertiDatainLong(DataIniziale)+ 3600000;
         long dataAdesso1 = System.currentTimeMillis();
         if (dataAdesso1<UntilVerifica)UntilVerifica=dataAdesso1;
         //System.out.println("Cerco "+Address+"_"+Rete+" nel manager richieste ");
@@ -1576,7 +1576,7 @@ public class Prezzi {
         //Se cerco di richiedere una data futura annullo
         if (dataAdesso1<SinceVerifica)return null;
         
-        if (CDC_Grafica.Mappa_ChainExplorer.get(Rete) == null) {
+        if (Principale.Mappa_ChainExplorer.get(Rete) == null) {
             return null;
         }
         //Verifico se ho le Api di coingecko
@@ -1584,7 +1584,7 @@ public class Prezzi {
 
         long dataAdesso = System.currentTimeMillis() / 1000;
 
-        long dataIni = (OperazioniSuDate.ConvertiDatainLong(DataIniziale) / 1000) - 86400;
+        long dataIni = (FunzioniDate.ConvertiDatainLong(DataIniziale) / 1000) - 86400;
         //Controllo la data di oggi e la confronto con la data iniziale, se la data iniziale è superiore a quella di oggi meno 90 gg allora la porto
         //a data di oggi meno 90gg, così sfrutto meglio le chiamate api e riesco a prendere i prezzi vecchi con la chiamata di una data recente
         //90gg sono 7776000 secondi
@@ -1621,14 +1621,14 @@ public class Prezzi {
                 TimeUnit.SECONDS.sleep(3);
             }//Se ho le apikey posso fare molte più richieste quindi metto a 3 secondi il timeout
 
-            URL url = new URI("https://api.coingecko.com/api/v3/coins/" + CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3] + "/contract/" + Address + "/market_chart/range?vs_currency=EUR&from=" + dataIni + "&to=" + dataFin).toURL();
+            URL url = new URI("https://api.coingecko.com/api/v3/coins/" + Principale.Mappa_ChainExplorer.get(Rete)[3] + "/contract/" + Address + "/market_chart/range?vs_currency=EUR&from=" + dataIni + "&to=" + dataFin).toURL();
 
            /* if (CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.get(url.toString()) != null) {
                 return null;
             }
             CDC_Grafica.Mappa_RichiesteAPIGiaEffettuate.put(url.toString(), "ok");*/
-            System.out.println("Recupero prezzi token " + Simbolo + " con Address " + Address + " da coingecko su rete " + CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]
-                    + " da data " + OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataIni * 1000));
+            System.out.println("Recupero prezzi token " + Simbolo + " con Address " + Address + " da coingecko su rete " + Principale.Mappa_ChainExplorer.get(Rete)[3]
+                    + " da data " + FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni * 1000));
             OkHttpClient client = new OkHttpClient();
             Request request;
             if (ApiKey.isBlank()){ 
@@ -1646,7 +1646,7 @@ public class Prezzi {
             }
             try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.out.println("Errore nel recupero dei prezzi del token "+Simbolo+" con Address "+Address+" su rete "+CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3]);
+                System.out.println("Errore nel recupero dei prezzi del token "+Simbolo+" con Address "+Address+" su rete "+Principale.Mappa_ChainExplorer.get(Rete)[3]);
                 return null; // Errore di connessione o di altro genere
             }
            
@@ -1706,7 +1706,7 @@ public class Prezzi {
         
         //Se arrivo qua inserisco nel manager delle richieste il fatto che ho già richiseto il prezzo
         System.out.println("Inserisco "+Address+"_"+Rete+" nel manager richieste");
-        System.out.println("Since "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataIni*1000)+" - Until "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(dataFin*1000));
+        System.out.println("Since "+FunzioniDate.ConvertiDatadaLongAlSecondo(dataIni*1000)+" - Until "+FunzioniDate.ConvertiDatadaLongAlSecondo(dataFin*1000));
         managerRichieste.addRange(Address+"_"+Rete, dataIni*1000, dataFin*1000);
 
         return "ok";
@@ -1768,8 +1768,8 @@ public class Prezzi {
         //questo rende più veloce la ricerca e più affiabile
         //es. USDT su rete BSC o su rete CRO li cerco in ogni caso su Binance rendendo anche univoco il prezzo tra le varie chain
         for (int k = 0; k < 2; k++) {
-            if (mon[k] != null && CDC_Grafica.Mappa_AddressRete_Nome.get(mon[k].MonetaAddress + "_" + Rete) != null) {
-                mon[k].Moneta = CDC_Grafica.Mappa_AddressRete_Nome.get(mon[k].MonetaAddress + "_" + Rete);
+            if (mon[k] != null && Principale.Mappa_AddressRete_Nome.get(mon[k].MonetaAddress + "_" + Rete) != null) {
+                mon[k].Moneta = Principale.Mappa_AddressRete_Nome.get(mon[k].MonetaAddress + "_" + Rete);
                 mon[k].MonetaAddress=null;
 
             }
@@ -1805,7 +1805,7 @@ public class Prezzi {
             if (mon[k] != null && mon[k].Moneta.equalsIgnoreCase("USD") && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")&&mon[k].MonetaAddress == null) {
                 //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
                 //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
-                String DataDollaro=OperazioniSuDate.ConvertiDatadaLong(Data);
+                String DataDollaro=FunzioniDate.ConvertiDatadaLong(Data);
                 String PT = ConvertiUSDEUR("1", DataDollaro);                
                 if (PT != null) {
                     BigDecimal PrezzoUnitario = new BigDecimal(PT).abs().stripTrailingZeros();
@@ -1948,9 +1948,9 @@ public class Prezzi {
         }
         if (adesso > (dataUltimoScarico + 86400000)) {
             String DataIniziale=UltimaData;
-            String DataFinale=OperazioniSuDate.ConvertiDatadaLong(adesso);
+            String DataFinale=FunzioniDate.ConvertiDatadaLong(adesso);
             if (!PrimaData.equals("2015-01-02"))DataIniziale="2015-01-02";
-            ok=RecuperaTassidiCambio(DataIniziale,OperazioniSuDate.ConvertiDatadaLong(adesso));
+            ok=RecuperaTassidiCambio(DataIniziale,FunzioniDate.ConvertiDatadaLong(adesso));
             if (ok!=null){
                 DatabaseH2.Opzioni_Scrivi("Data_TassiCambio_USDEUR", String.valueOf(adesso));
                 }
@@ -2039,11 +2039,11 @@ public class Prezzi {
                         String Simbolo = jsonObject.get("symbol").getAsString();
                         String Nome = jsonObject.get("name").getAsString();
                         JsonObject platformsObject = jsonObject.getAsJsonObject("platforms");
-                        String IndirizziCoins[]=new String[CDC_Grafica.Mappa_ChainExplorer.size()];
+                        String IndirizziCoins[]=new String[Principale.Mappa_ChainExplorer.size()];
                         int i=0;
-                        for(String Rete : CDC_Grafica.Mappa_ChainExplorer.keySet())
+                        for(String Rete : Principale.Mappa_ChainExplorer.keySet())
                         {
-                            String nomeReteCoingecko=CDC_Grafica.Mappa_ChainExplorer.get(Rete)[3];
+                            String nomeReteCoingecko=Principale.Mappa_ChainExplorer.get(Rete)[3];
                             IndirizziCoins[i]=platformsObject.has(nomeReteCoingecko) ? platformsObject.get(nomeReteCoingecko).getAsString() : null;
                             if (IndirizziCoins[i]!=null&&!IndirizziCoins[i].isEmpty()){
                                 String Gestito[]=new String[3];
@@ -2344,7 +2344,7 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
                  return;
              }
              
-             System.out.println("Scarico Prezzi di "+Symbol+" in data "+OperazioniSuDate.ConvertiDatadaLongAlSecondo(timestamp));
+             System.out.println("Scarico Prezzi di "+Symbol+" in data "+FunzioniDate.ConvertiDatadaLongAlSecondo(timestamp));
              // Parametri CLI da passare allo script
              List<String> command = new ArrayList<>();
              command.add(nodePath.toString());
@@ -2513,10 +2513,10 @@ public static class InfoPrezzo {
         if (!Info40.isBlank()){
             String iPr[]=Info40.split("\\|",-1);
             if (iPr.length==4){
-                if (CDC_Grafica.Funzioni_isNumeric(iPr[2], false))
+                if (Principale.Funzioni_isNumeric(iPr[2], false))
                     this.prezzoUnitario = new BigDecimal(iPr[2]);
                 this.exchange = iPr[3];
-                if (CDC_Grafica.Funzioni_isNumeric(iPr[1], false))
+                if (Principale.Funzioni_isNumeric(iPr[1], false))
                     this.timestamp = Long.parseLong(iPr[1]);
                 this.Moneta = iPr[0];
             }
@@ -2546,11 +2546,11 @@ public static class InfoPrezzo {
     }
     
     public String RitornaStringData(){
-        if (this.exchange.contains("db interno"))
+        if (this.exchange.toLowerCase().contains("db interno"))
                     {
-                        return OperazioniSuDate.ConvertiDatadaLongallOra(this.timestamp)+":XX:XX";
+                        return FunzioniDate.ConvertiDatadaLongallOra(this.timestamp)+":XX:XX";
                     }
-        else return OperazioniSuDate.ConvertiDatadaLongAlSecondo(this.timestamp);
+        else return FunzioniDate.ConvertiDatadaLongAlSecondo(this.timestamp);
     }
     
     public String RitornaStringDiffData(long datalong) {

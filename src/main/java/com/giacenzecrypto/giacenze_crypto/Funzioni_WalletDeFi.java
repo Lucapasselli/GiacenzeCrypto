@@ -35,41 +35,41 @@ public class Funzioni_WalletDeFi {
             
             String SOL[]=new String[]{"https://solscan.io/","","SOL","solana"};
     
-            CDC_Grafica.Mappa_ChainExplorer.put("CRO", CRO);
-            CDC_Grafica.Mappa_ChainExplorer.put("BSC", BSC);  
-            CDC_Grafica.Mappa_ChainExplorer.put("ETH", ETH);
-            CDC_Grafica.Mappa_ChainExplorer.put("BASE", BASE);
-            CDC_Grafica.Mappa_ChainExplorer.put("ARB", ARB);
-            CDC_Grafica.Mappa_ChainExplorer.put("SOL", SOL);
-            CDC_Grafica.Mappa_ChainExplorer.put("BERA", BERA);
-            CDC_Grafica.Mappa_ChainExplorer.put("AVAX", AVAX);
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0xC74D59A548ecf7fc1754bb7810D716E9Ac3e3AE5_CRO", "BUSD");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0x062E66477Faf219F25D27dCED647BF57C3107d52_CRO", "BTC");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0xe44Fd7fCb2b1581822D0c862B68222998a0c299a_CRO", "ETH");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56_BSC", "BUSD");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0xF2001B145b43032AAF5Ee2884e456CCd805F677D_CRO", "DAI");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0x4200000000000000000000000000000000000006_BASE", "ETH");
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0x6969696969696969696969696969696969696969_BERA", "BERA");//Sarebbe WBERA
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0x549943e04f40284185054145c6E4e9568C1D3241_BERA", "USDC");//Sarebbe USDC.e
-            CDC_Grafica.Mappa_AddressRete_Nome.put("0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9_ARB", "USDT");//Sarebbe USDT0
+            Principale.Mappa_ChainExplorer.put("CRO", CRO);
+            Principale.Mappa_ChainExplorer.put("BSC", BSC);  
+            Principale.Mappa_ChainExplorer.put("ETH", ETH);
+            Principale.Mappa_ChainExplorer.put("BASE", BASE);
+            Principale.Mappa_ChainExplorer.put("ARB", ARB);
+            Principale.Mappa_ChainExplorer.put("SOL", SOL);
+            Principale.Mappa_ChainExplorer.put("BERA", BERA);
+            Principale.Mappa_ChainExplorer.put("AVAX", AVAX);
+            Principale.Mappa_AddressRete_Nome.put("0x66e428c3f67a68878562e79A0234c1F83c208770_CRO", "USDT");
+            Principale.Mappa_AddressRete_Nome.put("0x55d398326f99059fF775485246999027B3197955_BSC", "USDT");
+            Principale.Mappa_AddressRete_Nome.put("0xc21223249CA28397B4B6541dfFaEcC539BfF0c59_CRO", "USDC");
+            Principale.Mappa_AddressRete_Nome.put("0xC74D59A548ecf7fc1754bb7810D716E9Ac3e3AE5_CRO", "BUSD");
+            Principale.Mappa_AddressRete_Nome.put("0x062E66477Faf219F25D27dCED647BF57C3107d52_CRO", "BTC");
+            Principale.Mappa_AddressRete_Nome.put("0xe44Fd7fCb2b1581822D0c862B68222998a0c299a_CRO", "ETH");
+            Principale.Mappa_AddressRete_Nome.put("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56_BSC", "BUSD");
+            Principale.Mappa_AddressRete_Nome.put("0xF2001B145b43032AAF5Ee2884e456CCd805F677D_CRO", "DAI");
+            Principale.Mappa_AddressRete_Nome.put("0x4200000000000000000000000000000000000006_BASE", "ETH");
+            Principale.Mappa_AddressRete_Nome.put("0x6969696969696969696969696969696969696969_BERA", "BERA");//Sarebbe WBERA
+            Principale.Mappa_AddressRete_Nome.put("0x549943e04f40284185054145c6E4e9568C1D3241_BERA", "USDC");//Sarebbe USDC.e
+            Principale.Mappa_AddressRete_Nome.put("0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9_ARB", "USDT");//Sarebbe USDT0
             //0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9
             //0x549943e04f40284185054145c6E4e9568C1D3241
             //0x6969696969696969696969696969696969696969
-            CDC_Grafica.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
+            Principale.Mappa_AddressRete_Nome.put("BNB_BSC", "BNB");
             
         }
      
      public static boolean ApriExplorer (String ID){
             
 
-        if (CDC_Grafica.MappaCryptoWallet.get(ID).length < 24) {
+        if (Principale.MappaCryptoWallet.get(ID).length < 24) {
             return false;
         }
         
-        String IDTransazione = CDC_Grafica.MappaCryptoWallet.get(ID)[24];
+        String IDTransazione = Principale.MappaCryptoWallet.get(ID)[24];
         // String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
         String Rete = Funzioni.TrovaReteDaID(ID);
         //System.out.println(IDTransazione+"-"+Rete);
@@ -129,7 +129,7 @@ public class Funzioni_WalletDeFi {
                         }
                         
                     } catch (URISyntaxException | IOException ex) {
-                        Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
         

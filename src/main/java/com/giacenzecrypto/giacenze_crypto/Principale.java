@@ -85,7 +85,7 @@ import javax.swing.table.TableColumn;
  *
  * @author luca.passelli
  */
-public class CDC_Grafica extends javax.swing.JFrame {
+public class Principale extends javax.swing.JFrame {
 private static final long serialVersionUID = 3L;
 
 
@@ -167,7 +167,7 @@ private static final long serialVersionUID = 3L;
     
     
     
-    public CDC_Grafica() {
+    public Principale() {
     //Salvo la versione nei log
     System.out.println("Versione attuale : "+Versione);
         
@@ -6799,7 +6799,7 @@ JPanel loadingBar = new JPanel() {
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
                 SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                 String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
-                DataRiferimento = OperazioniSuDate.ConvertiDatainLong(Data) + 86400000;
+                DataRiferimento = FunzioniDate.ConvertiDatainLong(Data) + 86400000;
                 long DatadiOggi = System.currentTimeMillis();
                 if (DatadiOggi < DataRiferimento) {
                     DataRiferimento = DatadiOggi;
@@ -6813,7 +6813,7 @@ JPanel loadingBar = new JPanel() {
             for (String[] movimento : MappaCryptoWallet.values()) {
                 String ReteMov=Funzioni.TrovaReteDaIMovimento(movimento);
                 if (ReteMov==null)ReteMov="";
-                long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+                long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
                 if (DataMovimento < DataRiferimento) {
                         String gruppoWallet="";
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
@@ -7282,7 +7282,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
         
         //FASE 2 : Adesso gestisco tutta la parte delle reward da Defi
-        for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+        for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
             String Movimento[]=MappaCryptoWallet.get(IDnc);
             String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             if(Movimento[18].equalsIgnoreCase("")&&
@@ -7299,7 +7299,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //FASE 3 : Cerco di Classificare i movimenti che entrano ed escono dalle piattaforme DEFI e le categorizzo
         
         //Se è un prelievo di un token LP lo classifico come mandato in un vault e poi di conseguenza vado a classificare anche tutti i rientri, calcolo le reward etc...
-        for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+        for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
             //ad uno ad uno controllo tutti i movimenti non ancora categorizzati
             String Movimento[]=MappaCryptoWallet.get(IDnc);
             String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
@@ -7322,7 +7322,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //-Movimento eseguito nello stesso secondo
             //-almeno uno dei due movimenti contine swap nella sua causale
             //-movimento non ancora categorizzato
-        for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+        for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
 
             String Movimento[] = MappaCryptoWallet.get(IDnc);
             String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
@@ -7330,7 +7330,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             if (Rete!=null && Movimento[18].equalsIgnoreCase("")) {
 
                 String DataConfronto1 = IDnc.split("_")[0];
-                for (String IDnc2 : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+                for (String IDnc2 : Principale.DepositiPrelieviDaCategorizzare) {
 
                     String Movimento2[] = MappaCryptoWallet.get(IDnc2);
                     String Rete2=Funzioni.TrovaReteDaIMovimento(Movimento2);
@@ -7353,7 +7353,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         
         //FASE 6: Trasforma i movimenti di deposito di CRO che arrivano da un certo indirizzo in scambio tra WCRO e CRO
         
-            for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+            for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
 
             String Movimento[] = MappaCryptoWallet.get(IDnc);
             
@@ -7476,7 +7476,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
                 SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                 String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
-                DataRiferimento = OperazioniSuDate.ConvertiDatainLong(Data) + 86400000;
+                DataRiferimento = FunzioniDate.ConvertiDatainLong(Data) + 86400000;
                 long DatadiOggi = System.currentTimeMillis();
                 if (DatadiOggi < DataRiferimento) {
                     DataRiferimento = DatadiOggi;
@@ -7495,7 +7495,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
                // String m = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " : ", Prezzo);
-                long data=OperazioniSuDate.ConvertiDatainLong(Data);
+                long data=FunzioniDate.ConvertiDatainLong(Data);
                 String m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
                 if (m != null) {
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
@@ -7557,15 +7557,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Se è fine anno devo invece aggiungere 60 secondi
                 //System.out.println("modfffff");
                 long DataCalcoli = 0;
-                if (DataPrezzo.contains("00:00")) DataCalcoli=OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo);
-                if (DataPrezzo.contains("23:59")) DataCalcoli=OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo)+60000;
-                String DataconOra=OperazioniSuDate.ConvertiDatadaLongallOra(DataCalcoli);
+                if (DataPrezzo.contains("00:00")) DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo);
+                if (DataPrezzo.contains("23:59")) DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo)+60000;
+                String DataconOra=FunzioniDate.ConvertiDatadaLongallOra(DataCalcoli);
             //long DataRiferimento = 0;
                 
                 
                // BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
                 //System.out.println(DataPrezzo+" - "+mon+"..");
-                String Prezz = Funzioni.GUIDammiPrezzo(this, mon, OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
+                String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
                 //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
                 if (Prezz != null) {
                         //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
@@ -7587,7 +7587,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
                             //E se il wallet fa parte del gruppo wallet di riferimento
                             String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                           
-                            long dataTransazione=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                            long dataTransazione=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
                             if (dataTransazione<=DataCalcoli&&GruppoWallet.equals(GruppoWalletMovimento)){
                             //A questo punto controllo se la moneta è quella che sto cercando
                             for (Moneta MonTransazione : a){
@@ -7624,7 +7624,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         + "Siccome il valore è legato ad un movimento specifico verra' proposto la modifica dello stesso.<br>"
                         + "Questo potrebbe inficiare anche sul valore di altri righi che fanno riferimento allo stesso movimento.</html>",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
-                MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+                GUI_ModificaMovimento a = new GUI_ModificaMovimento();
                             a.CompilaCampidaID(ID);
             a.setLocationRelativeTo(this);
             a.setVisible(true);
@@ -7679,7 +7679,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     Prezzo = RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 8).toString();
 
                 long DataCalcoli = 0;
-                DataCalcoli=OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo);
+                DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo);
                 String DataconOra=String.valueOf(Integer.parseInt(Anno)+1)+"-01-01 00";
             //long DataRiferimento = 0;
                 
@@ -7688,7 +7688,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 
 
                 //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
-                String Prezz = Funzioni.GUIDammiPrezzo(this, mon, OperazioniSuDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
+                String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
                 if (Prezz != null) {       
                         //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
                         //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
@@ -7708,7 +7708,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             Moneta a[]=Funzioni.RitornaMoneteDaID(v[0]);
                             //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
                             //E se il wallet fa parte del gruppo wallet di riferimento                          
-                            long dataTransazione=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                            long dataTransazione=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
                             //System.out.println(GruppoWallet+" - "+GruppoWalletMovimento);
                             if (dataTransazione<=DataCalcoli){
                             //A questo punto controllo se la moneta è quella che sto cercando
@@ -7882,7 +7882,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String Moneta = TabMovimenti.getModel().getValueAt(rigaselezionata, 2).toString();
             String IDTrans = TabMovimenti.getModel().getValueAt(rigaselezionata, 8).toString();
             //Adesso recupero tipo moneta e address dalla transazione
-            String mov[]=CDC_Grafica.MappaCryptoWallet.get(IDTrans);
+            String mov[]=Principale.MappaCryptoWallet.get(IDTrans);
             String TipoMoneta;
             String AddressMoneta;
             if(Moneta.equals(mov[8]))
@@ -7925,7 +7925,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //  completato = m!=null; //se premo annulla nel messaggio non devo poi chiudere la finestra, quindi metto completato=false
             if (m != null) {
                 m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
+                if (Principale.Funzioni_isNumeric(m, false)) {
                     GiacenzaVoluta = new BigDecimal(m);
                     if (GiacNegativaPrecedente.equals("S")){
                 //Se arrivo qua vuol dire che sto cercando di modificare la giacenza di un token che ha saldi negativi precedenti
@@ -7990,7 +7990,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 //adesso compilo la parte comune del movimento
                                 String RTOri[] = MappaCryptoWallet.get(IDTrans);
-                                DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
+                                DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
                                // String NuovoOrario=Funzioni.DataIDaggiungiUnSecondo(RTOri[0].split("_")[0]);
@@ -8123,7 +8123,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                                 //adesso compilo la parte comune del movimento
                                 String RTOri[] = MappaCryptoWallet.get(IDTrans);
                                 String IDOriSplittato[] = RTOri[0].split("_");
-                                DataRiferimento = OperazioniSuDate.ConvertiDatainLongMinuto(RTOri[1]);
+                                DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi tolgo 1 secondo al tempo del movimento originale per trovare quello da mettere
                                 //String NuovoOrario=Funzioni.DataIDtogliUnSecondo(RTOri[0].split("_")[0]);
@@ -8406,8 +8406,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     public void Funzione_ModificaMovimento(String ID,Component c){
-            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
-            String riga[]=CDC_Grafica.MappaCryptoWallet.get(ID);
+            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
+            String riga[]=Principale.MappaCryptoWallet.get(ID);
 
             String PartiCoinvolte[] = (riga[0] + "," + riga[20]).split(",");
             if (PartiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {//devo permettere di modificare i movimenti automatici generati dagli scambi per poter cambiare eventualmente il prezzo
@@ -8423,7 +8423,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             a.CompilaCampidaID(ID);
                             a.setLocationRelativeTo(c);
                             a.setVisible(true);
-                            CDC_Grafica.TabellaCryptodaAggiornare=true;
+                            Principale.TabellaCryptodaAggiornare=true;
                         
                     }
                     case 1 -> {
@@ -8470,7 +8470,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             {
                 
                 IDTransazione = tabella.getModel().getValueAt(rigaselezionata, posizioneID).toString();
-                if(CDC_Grafica.MappaCryptoWallet.get(IDTransazione)==null){
+                if(Principale.MappaCryptoWallet.get(IDTransazione)==null){
                     IDTransazione=null;
                 }
             }
@@ -8633,8 +8633,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
         String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
             String Messaggio="Sicuro di voler cancellare tutti i dati delle Transazioni Crypto del Wallet "+Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString()+"dal "+DataIniziale+" al "+DataFinale+" compreso?";
             int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
             if (risposta==0)
@@ -8659,8 +8659,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
         String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
         String Messaggio = "Sicuro di voler cancellare tutti i dati delle Transazioni Crypto dal "+DataIniziale+" al "+DataFinale+" compreso?";
         int risposta = JOptionPane.showOptionDialog(this, Messaggio, "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta == 0) {
@@ -8685,7 +8685,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             {
                 FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
                 BufferedWriter b=new BufferedWriter (w);
-                for (String value : CDC_Grafica.CDC_FiatWallet_MappaTipiMovimenti.values())
+                for (String value : Principale.CDC_FiatWallet_MappaTipiMovimenti.values())
                 {
                     if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase()))
                     {
@@ -8707,8 +8707,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
         String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
         String Messaggio="Sicuro di voler cancellare tutti i dati del Fiat Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
         int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione FiatWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta==0){
@@ -8722,7 +8722,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         
                         List<String> DaMantenere = new ArrayList<>();
                         while ((rigas = bure.readLine()) != null) {
-                            long timeStampMovimento=OperazioniSuDate.ConvertiDatainLong(rigas.split(" ")[0]);
+                            long timeStampMovimento=FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
                             if (timeStampMovimento<timeStampIniziale ||
                                   timeStampMovimento>=timeStampFinale  ){
                                     DaMantenere.add(rigas);
@@ -8754,8 +8754,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         String DataIniziale=f.format(Opzioni_Pulizie_DataChooser_Iniziale.getDate());
         String DataFinale=f.format(Opzioni_Pulizie_DataChooser_Finale.getDate());
-        long timeStampIniziale=OperazioniSuDate.ConvertiDatainLong(DataIniziale);
-        long timeStampFinale=OperazioniSuDate.ConvertiDatainLong(DataFinale)+86400000;
+        long timeStampIniziale=FunzioniDate.ConvertiDatainLong(DataIniziale);
+        long timeStampFinale=FunzioniDate.ConvertiDatainLong(DataFinale)+86400000;
         String Messaggio="Sicuro di voler cancellare tutti i dati del Card Wallet dal "+DataIniziale+" al "+DataFinale+" compreso?";
         int risposta=JOptionPane.showOptionDialog(this,Messaggio, "Cancellazione CardWallet", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
         if (risposta==0){
@@ -8769,7 +8769,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         
                         List<String> DaMantenere = new ArrayList<>();
                         while ((rigas = bure.readLine()) != null) {
-                            long timeStampMovimento=OperazioniSuDate.ConvertiDatainLong(rigas.split(" ")[0]);
+                            long timeStampMovimento=FunzioniDate.ConvertiDatainLong(rigas.split(" ")[0]);
                             if (timeStampMovimento<timeStampIniziale ||
                                   timeStampMovimento>=timeStampFinale  ){
                                     DaMantenere.add(rigas);
@@ -8864,7 +8864,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
                 Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
 
-                for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+                for (String key : Principale.Mappa_RW_ListeXGruppoWallet.keySet()) {
                     // System.out.println(key);
                     String Errore = "";
                     String RW1[];
@@ -8992,7 +8992,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
                 Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
 
-                for (String key : CDC_Grafica.Mappa_RW_ListeXGruppoWallet.keySet()) {
+                for (String key : Principale.Mappa_RW_ListeXGruppoWallet.keySet()) {
                     String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(key);
                     String RW_MostraGiacenzeSePagaBollo=DatabaseH2.Pers_Opzioni_Leggi("RW_MostraGiacenzeSePagaBollo");
                     boolean MostraGiacenzeSePagaBollo=false;
@@ -9602,7 +9602,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
         // TODO add your handling code here:
         if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
-            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
         int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
         String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             a.CompilaMovimentoOppostoID(IDTransazione);
@@ -9610,7 +9610,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             a.setVisible(true);
         }else
         {
-        MovimentoManuale_GUI a= new MovimentoManuale_GUI();
+        GUI_ModificaMovimento a= new GUI_ModificaMovimento();
         a.setLocationRelativeTo(this);
         a.setVisible(true);
         }
@@ -9854,7 +9854,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     LocalDate current_date = LocalDate.now();
                     
                     long dataIeri=Funzioni_Date_ConvertiDatainLong(current_date.toString())-86400000;
-                    Date DataIeri=f.parse(OperazioniSuDate.ConvertiDatadaLong(dataIeri));
+                    Date DataIeri=f.parse(FunzioniDate.ConvertiDatadaLong(dataIeri));
                     
                     long dataInserita=Funzioni_Date_ConvertiDatainLong(Data);
                     //adesso devo mettere un blocco ovvero impedire che venga selezionata una data maggiore di quella di ieri
@@ -10773,7 +10773,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     String DataFineRW=Anno+"-12-31";
                     String AnnoAttuale = Year.now().toString();
                     long attuale=System.currentTimeMillis();
-                    if (Anno.equals(AnnoAttuale))DataFineRW=OperazioniSuDate.ConvertiDatadaLong(attuale-86400000);
+                    if (Anno.equals(AnnoAttuale))DataFineRW=FunzioniDate.ConvertiDatadaLong(attuale-86400000);
                     
                     SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                     Date d = f.parse(DataFineRW);                    
@@ -11909,7 +11909,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         // TODO add your handling code here:
 
         if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
-            MovimentoManuale_GUI a = new MovimentoManuale_GUI();
+            GUI_ModificaMovimento a = new GUI_ModificaMovimento();
             int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
             String IDTransazione = TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
             a.CompilaCampiPrincipalidaID(IDTransazione);
@@ -11917,7 +11917,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             a.setVisible(true);
         }else
         {
-            MovimentoManuale_GUI a= new MovimentoManuale_GUI();
+            GUI_ModificaMovimento a= new GUI_ModificaMovimento();
             a.setLocationRelativeTo(this);
             a.setVisible(true);
         }
@@ -12091,7 +12091,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String ID = DepositiPrelievi_Tabella.getModel().getValueAt(modelRow, 0).toString();
             //String ID=DepositiPrelievi_Tabella.getModel().getValueAt(DepositiPrelievi_Tabella.getSelectedRow(), 0).toString();
             //System.out.println(ID);
-            String IDCorrelati[]=CDC_Grafica.MappaCryptoWallet.get(ID)[20].split(",");
+            String IDCorrelati[]=Principale.MappaCryptoWallet.get(ID)[20].split(",");
             List<String> lista;
             boolean hasValidContent = Arrays.stream(IDCorrelati)
                                         .anyMatch(s -> s != null && !s.isBlank());
@@ -13241,7 +13241,7 @@ try {
                     //DA FARE : IMPEDIRE DI METTERE DATE FUTURE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                     String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
-                    DataRiferimento = OperazioniSuDate.ConvertiDatainLong(Data) + 86400000;
+                    DataRiferimento = FunzioniDate.ConvertiDatainLong(Data) + 86400000;
                     // System.out.println("DataRiferimento"+DataRiferimento);
                     // DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86399000;
                     //DataRiferimento=OperazioniSuDate.ConvertiDatainLong(Data)+86340000;//Riferito alle 23:59 del giorno
@@ -13261,7 +13261,7 @@ try {
                     String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
                   //  System.out.println(movimento[0]+" - "+Rete);
                     //System.out.println(Rete);
-                    long DataMovimento = OperazioniSuDate.ConvertiDatainLong(movimento[1]);
+                    long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
                     if (DataMovimento < DataRiferimento) {
                         // adesso verifico il wallet
                         String gruppoWallet = "";
@@ -13724,7 +13724,7 @@ try {
                     if (Movimenti.length < 3)//Sono in presenza di uno scambio differito
                     {
                         for (String IdM : Movimenti) {
-                            String Mov[] = CDC_Grafica.MappaCryptoWallet.get(IdM);
+                            String Mov[] = Principale.MappaCryptoWallet.get(IdM);
                             if (Mov[18].contains("PTW")) {
                                 WalletPrelievo = Mov[3];
                             }
@@ -13924,7 +13924,7 @@ try {
                 ModelloTabellaCrypto.addRow(Val);
             }
             if (!VSplit[1].isBlank()){
-                Val=new String[]{"Info Prezzo : Orario Fonte ",OperazioniSuDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
+                Val=new String[]{"Info Prezzo : Orario Fonte ",FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
                 ModelloTabellaCrypto.addRow(Val);    
             }
             if (!VSplit[0].isBlank()){
@@ -14464,7 +14464,7 @@ public static void ripristinaFiltri(JTable table) {
             if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
                 //diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
                 
-                diffdate = OperazioniSuDate.DifferenzaDate(DataIniziale, splittata[0]);
+                diffdate = FunzioniDate.DifferenzaDate(DataIniziale, splittata[0]);
                 //System.out.println(diffdate);
                 contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
                 SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
@@ -14492,7 +14492,7 @@ public static void ripristinaFiltri(JTable table) {
                 }
                 if (longDatainiziale <= Funzioni_Date_ConvertiDatainLong(splittata[0]) && longDataFinale >= Funzioni_Date_ConvertiDatainLong(splittata[0])) {
                     //diffdate = Funzioni_Date_DifferenzaDate(splittata[0], DataIniziale);
-                    diffdate = OperazioniSuDate.DifferenzaDate(DataIniziale, splittata[0]);
+                    diffdate = FunzioniDate.DifferenzaDate(DataIniziale, splittata[0]);
                     contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
                     SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
                     DataIniziale = splittata[0];
@@ -14503,7 +14503,7 @@ public static void ripristinaFiltri(JTable table) {
         }
 
         //diffdate = Funzioni_Date_DifferenzaDate(DataFinale, DataIniziale) + 1;
-        diffdate = OperazioniSuDate.DifferenzaDate(DataIniziale, DataFinale)+1;
+        diffdate = FunzioniDate.DifferenzaDate(DataIniziale, DataFinale)+1;
         contatore = contatore + Integer.parseInt(String.valueOf(diffdate));
         SaldoIniziale = UltimoValore.multiply(new BigDecimal(diffdate)).add(SaldoIniziale);
         BigDecimal GiacenzaMedia = SaldoIniziale.divide(new BigDecimal(contatore), 2, RoundingMode.HALF_UP).add(new BigDecimal(SaldoInizioPeriodo));
@@ -14603,13 +14603,13 @@ public static void ripristinaFiltri(JTable table) {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CDC_Grafica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Principale.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -14618,7 +14618,7 @@ public static void ripristinaFiltri(JTable table) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             
             public void run() {
-                new CDC_Grafica().setVisible(true);
+                new Principale().setVisible(true);
             }
         });
     }

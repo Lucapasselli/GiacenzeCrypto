@@ -4,8 +4,8 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.DecimaliCalcoli;
-import static com.giacenzecrypto.giacenze_crypto.CDC_Grafica.MappaCryptoWallet;
+import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
+import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import javax.swing.ComboBoxModel;
@@ -769,7 +769,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         }
                         ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
                         //for (String[] v : MappaCryptoWallet.values()) {
-                        for (String IDnc : CDC_Grafica.DepositiPrelieviDaCategorizzare) {
+                        for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
                             String v[] = MappaCryptoWallet.get(IDnc);
                             //considero solo i movimenti che hanno l'address del contratto in memoria
                             //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
@@ -1046,7 +1046,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         
                        if (m != null) {
                             m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
-                            if (CDC_Grafica.Funzioni_isNumeric(m, false)) {
+                            if (Principale.Funzioni_isNumeric(m, false)) {
                                 //Se trovo un prezzo vecchio in 35 significa che sto ricodificando lo stesso movimento
                                 //A questo punto prima di andare avanti ripristino la situazione orginale
                            /*     if (attuale[35]!=null&&!attuale[35].isBlank()){
@@ -1237,7 +1237,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             if (Movimento.length>30)AddressContratto=Movimento[30];
             ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
             //for (String[] v : MappaCryptoWallet.values()) {
-            for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+            for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
                 String v[]=MappaCryptoWallet.get(IDnc);
                 //considero solo i movimenti che hanno l'address del contratto in memoria
                 //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
@@ -1308,7 +1308,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             {
                 //Verifico se trovo movimenti di rientro e eventualmente avviso se si vuole classificarli in automatico
                // for (String[] v : MappaCryptoWallet.values()) {
-                for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+                for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
                 String v[]=MappaCryptoWallet.get(IDnc);
 
                         String AddContratto = v[30];
@@ -1378,7 +1378,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             String AddressContratto=null;
             if (Movimento.length>30)AddressContratto=Movimento[30];
             ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
-            for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+            for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
             String v[]=MappaCryptoWallet.get(IDnc);
             //for (String[] v : MappaCryptoWallet.values()) {
            // String v[]=MappaCryptoWallet.get(IDnc);
@@ -1422,7 +1422,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
                 //Verifico se trovo movimenti di rientro e eventualmente avviso se si vuole classificarli in automatico
                // for (String[] v : MappaCryptoWallet.values()) {
-                for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+                for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
                     String v[]=MappaCryptoWallet.get(IDnc);
                     if (v.length > 30) {
                         String AddContratto = v[30];
@@ -1511,7 +1511,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             
             //FASE 1: recupero tutti i movimenti con la stessa moneta e stesso contratto
             String Movimento[]=MappaCryptoWallet.get(ID);
-            long DataOraMovimento=OperazioniSuDate.ConvertiDatainLongMinuto(Movimento[1]);
+            long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
             String Moneta=Movimento[11];
             String AddressContratto=null;
             long DataOra;
@@ -1519,7 +1519,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
             boolean MovimentoOppostoNonClassificato=false;
             for (String[] v : MappaCryptoWallet.values()) {
-                DataOra=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                DataOra=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
                 if (v[0].split("_")[4].equalsIgnoreCase("PC")&&
                             v[8].equals(Moneta)&&
                             v[18].isBlank()&&
@@ -1630,7 +1630,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
          //4 - Verifico che non si tratti lo stesso id del movimento che sto analizzando
          //Se soddisfa questi requisiti allora dovrò gestire il movimento come reward
          
-       for (String IDnc:CDC_Grafica.DepositiPrelieviDaCategorizzare){
+       for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
            String Mov[]=MappaCryptoWallet.get(IDnc);
            if (Mov.length>29){//Verifico che il movimento sia in defi
                String HashTnc=Mov[24];
@@ -1683,7 +1683,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
         
         
-         long DataOraMovimento=OperazioniSuDate.ConvertiDatainLongMinuto(Movimento[1]);
+         long DataOraMovimento=FunzioniDate.ConvertiDatainLongMinuto(Movimento[1]);
          long DataOra;
          BigDecimal QtaMovimentata=new BigDecimal(Movimento[13]);
          BigDecimal Somma=new BigDecimal(0);
@@ -1692,7 +1692,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //qualora vada sotto zero devo creare un movimento che compensi la cosa
         String CoppiaWalletVault=Movimento[3]+"Piattaforma/DeFi";   
         for (String[] v : MappaCryptoWallet.values()) {
-            DataOra=OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+            DataOra=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
             String MonetaUscita=v[8];
             String QtaUscita=v[10];
             String MonetaEntrata=v[11];
@@ -1832,8 +1832,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             
             //Se è passato poco tempo invece significa che è semplicemente uno scambio che magari ci ha messo qualche minuto per arrivare,
             //in quel caso posso prendere il prezzo della transazione
-            long DatalongDeposito=OperazioniSuDate.ConvertiDatainLongMinuto(MovimentoDeposito[1]);
-            long DatalongPrelievo=OperazioniSuDate.ConvertiDatainLongMinuto(MovimentoPrelievo[1]);
+            long DatalongDeposito=FunzioniDate.ConvertiDatainLongMinuto(MovimentoDeposito[1]);
+            long DatalongPrelievo=FunzioniDate.ConvertiDatainLongMinuto(MovimentoPrelievo[1]);
             long DiffDate=DatalongDeposito-DatalongPrelievo;
             //System.out.println(DiffDate);
             //Moneta Uscita
@@ -2101,7 +2101,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         String attuale[] = MappaCryptoWallet.get(ID);
-        long DataOraAttuale = OperazioniSuDate.ConvertiDatainLongMinuto(attuale[1]);
+        long DataOraAttuale = FunzioniDate.ConvertiDatainLongMinuto(attuale[1]);
         String TipoMovimentoAttuale = attuale[0].split("_")[4].trim();
         String WalletAttuale=attuale[3]+attuale[4];
         String TipoMovimentoRichiesto;
@@ -2151,7 +2151,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                     BigDecimal QtanoABS;
                     //BigDecimal DiffPrec;
                     String Moneta;
-                    long DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1]);
+                    long DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1]);
                     long DataMinima=DataOraAttuale- 86400000;
                     long DataMassima=DataOraAttuale+ 86400000;
                     if (TipoMovimento.equalsIgnoreCase("DC"))
@@ -2240,12 +2240,12 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                     {
                         QtanoABS = new BigDecimal(v[13]);
                         Moneta = v[11].trim();
-                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1])-Giorni;
+                        DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1])-Giorni;
 
                     } else if (TipoMovimento.equalsIgnoreCase("PC"))
                     {
                         QtanoABS = new BigDecimal(v[10]);
-                        DataOra = OperazioniSuDate.ConvertiDatainLongMinuto(v[1])+Giorni;
+                        DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1])+Giorni;
                         Moneta = v[8].trim();
                     }
                     if (Moneta != null && QtanoABS!=null

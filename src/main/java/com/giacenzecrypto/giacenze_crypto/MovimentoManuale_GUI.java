@@ -472,28 +472,25 @@ private static final long serialVersionUID = 9L;
                             .addComponent(ValoreTransazione_Label)
                             .addComponent(P_LabelMoneta))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(161, 161, 161))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(P_TextFonte)
                                     .addComponent(P_TextMoneta, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(P_LabelPU, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(P_LabelTimeFonte, javax.swing.GroupLayout.Alignment.TRAILING))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
+                                    .addComponent(P_LabelTimeFonte, javax.swing.GroupLayout.Alignment.TRAILING))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(P_TextPU)
                                     .addComponent(P_TextTimeFonte, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(Bottone_CalcolaAutomaticamente, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Bottone_CalcolaAutomaticamente, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(341, 341, 341))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(Note_Label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -963,7 +960,7 @@ private static final long serialVersionUID = 9L;
             Download progress = new Download();
             progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
             progress.setLocationRelativeTo(this);
-            Object Ritorno[]=new Object[2];
+            String Ritorno[]=new String[2];
             //Oggetto 0 -> Prezzo
             //Oggetto 1 -> Token+"|"+TimeStamp+"|"+PrezzoU+"|"+Fonte;
 
@@ -981,6 +978,24 @@ private static final long serialVersionUID = 9L;
             };
             thread.start();
             progress.setVisible(true);
+            
+            //Ora elaboro i dati in ritorno
+            if (Ritorno[0]!=null){
+                //Ho il prezzo di ritorno
+                if (CDC_Grafica.Funzioni_isNumeric(Ritorno[0], false)){
+                    ValoreTransazione_TextField.setText(Ritorno[0]);
+                }else ValoreTransazione_TextField.setText("0.00");
+            }
+            if (Ritorno[1]!=null&&Ritorno[1].split("\\|",-1).length==4){
+                //Ho i dettagli in ritorno
+                Prezzi.InfoPrezzo IP=new Prezzi.InfoPrezzo(Ritorno[1]);
+                if (IP.exchange!=null) P_TextFonte.setText(IP.exchange);
+                if (IP.Moneta!=null)P_TextMoneta.setText(IP.Moneta);
+                if (IP.prezzoUnitario!=null)P_TextPU.setText(IP.prezzoUnitario.toPlainString());
+                if (IP.timestamp!=0)P_TextTimeFonte.setText(OperazioniSuDate.ConvertiDatadaLongAlSecondo(IP.timestamp));
+                
+            }
+            
             System.out.println(Ritorno[0]);
             
         }

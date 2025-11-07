@@ -25,7 +25,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     String Rete;
     public long TimeStamp;
     public boolean ModalitaRitorno=false;
-    public Object Ritorno[];
+    public String Ritorno[];
 
     /**
      * Creates new form GUI_ModificaPrezzo
@@ -50,7 +50,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
     }
     
-    public GUI_ModificaPrezzo(Moneta MU,Moneta ME, Prezzi.InfoPrezzo IPr, long TimeStamp,String Rete,Object[] Ritorno) {
+    public GUI_ModificaPrezzo(Moneta MU,Moneta ME, Prezzi.InfoPrezzo IPr, long TimeStamp,String Rete,String[] Ritorno) {
         this.MU=MU;
         this.ME=ME;
         this. TimeStamp=TimeStamp;
@@ -72,6 +72,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
         Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
+        
+        System.out.println(PrezzoT);
                 
         
 
@@ -89,10 +91,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 PrezzoAttualeU[5]=IPr.RitornaStringDiffData(TimeStamp);
                 PrezzoAttualeU[6]=IPr.prezzoUnitario.toPlainString();
             }
-            if (IPr.prezzoQta!=null)
-                PrezzoAttualeU[7]=IPr.prezzoQta.toPlainString();
+            if (PrezzoT!=null)
+                PrezzoAttualeU[7]=PrezzoT;
             else
-                PrezzoAttualeU[7]="";
+                PrezzoAttualeU[7]="0.00";
             ModTabPrezzoAttuale.addRow(PrezzoAttualeU);
         }
         if(ME!=null&&ME.Moneta!=null&&!ME.Moneta.isBlank()){
@@ -105,10 +107,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 PrezzoAttualeE[5]=IPr.RitornaStringDiffData(TimeStamp);
                 PrezzoAttualeE[6]=IPr.prezzoUnitario.toPlainString();
             }
-            if (IPr.prezzoQta!=null)
-                PrezzoAttualeU[7]=IPr.prezzoQta.toPlainString();
+            if (PrezzoT!=null)
+                PrezzoAttualeE[7]=PrezzoT;
             else
-                PrezzoAttualeU[7]="";
+                PrezzoAttualeE[7]="0.00";
             ModTabPrezzoAttuale.addRow(PrezzoAttualeE);
             
         }
@@ -310,9 +312,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         rigo[1] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(data);
                         rigo[2] = M.Qta;
                         rigo[3] = IPl.exchange;
+                        
                         rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                         //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
-                        long DiffOrario=Math.abs(data-IPl.timestamp)/1000;
+                       /* long DiffOrario=Math.abs(data-IPl.timestamp)/1000;
                         String unitaTempo;
                         if (DiffOrario >= 60) {
                             DiffOrario = DiffOrario / 60;  // converto in minuti
@@ -320,7 +323,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         } else {
                             unitaTempo = " sec";
                         }
-                        rigo[5] = String.valueOf(DiffOrario)+unitaTempo;
+                        
+                        rigo[5] = String.valueOf(DiffOrario)+unitaTempo;*/
+                        rigo[5] = IPl.RitornaStringDiffData(data);
                         rigo[6] = IPl.prezzoUnitario.toPlainString();
                         rigo[8] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
                         rigo[7] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(PrezzoRif)).toPlainString();
@@ -392,7 +397,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                     rigo[3] = IPl.exchange;
                     rigo[4] = OperazioniSuDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                     //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
-                    long DiffOrario = Math.abs(data - IPl.timestamp) / 1000;
+                 /*   long DiffOrario = Math.abs(data - IPl.timestamp) / 1000;
                     String unitaTempo;
                     if (DiffOrario >= 60) {
                         DiffOrario = DiffOrario / 60;  // converto in minuti
@@ -400,8 +405,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                     } else {
                         unitaTempo = " sec";
                     }
-                    rigo[5] = String.valueOf(DiffOrario) + unitaTempo;
+                    rigo[5] = String.valueOf(DiffOrario) + unitaTempo;*/
 
+                    rigo[5] = IPl.RitornaStringDiffData(data);
                     rigo[6] = IPl.prezzoUnitario.toPlainString();
                     rigo[8] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
                     rigo[7] = IPl.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(PrezzoRif)).toPlainString();
@@ -668,9 +674,11 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                       PrezzoPrecedente);
             int risposta=JOptionPane.showOptionDialog(this,domanda, "Cambio Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
             if (risposta==0){
-                    CDC_Grafica.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte;
-                    CDC_Grafica.MappaCryptoWallet.get(ID)[15]=Prezzo;
-                    CDC_Grafica.TabellaCryptodaAggiornare=true;
+                    if (ID!=null){
+                        CDC_Grafica.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte;
+                        CDC_Grafica.MappaCryptoWallet.get(ID)[15]=Prezzo;
+                        CDC_Grafica.TabellaCryptodaAggiornare=true;
+                    }
                     
                     //Questo sarà il dato da leggere una volta chiusa la finestra con i dati
                     Ritorno[0]=Prezzo;

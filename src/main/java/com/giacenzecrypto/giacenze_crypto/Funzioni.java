@@ -543,7 +543,10 @@ public class Funzioni {
                     
             //PARTE 2    
             c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-              String PrezzoAuto=Prezzi.DammiPrezzoInfoTransazione(ME, ME, DataPrezzo, Rete, "").prezzoQta.toPlainString();
+            Prezzi.InfoPrezzo IPT=Prezzi.DammiPrezzoInfoTransazione(ME, MU, DataPrezzo, Rete, "");
+            BigDecimal BGPrezzoTot=IPT.prezzoQta;
+            String PrezzoAuto=("0.00");
+            if (BGPrezzoTot!=null)PrezzoAuto=BGPrezzoTot.toPlainString();
               if (PrezzoAuto==null)PrezzoAuto="0.00";
               c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 Testo = "<html>Indicare il prezzo in <b>"+MonRiferimento+"</b> relativo alla transazione del <br><b>"

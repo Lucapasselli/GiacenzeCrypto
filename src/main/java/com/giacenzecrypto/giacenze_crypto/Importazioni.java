@@ -273,7 +273,7 @@ public class Importazioni {
                     String splittata[] = riga.split(",");
                     boolean SoloTesto=true;
                     for (String a :splittata){
-                        if (Funzioni.Funzioni_isNumeric(a, false))SoloTesto=false;
+                        if (Funzioni.isNumeric(a, false))SoloTesto=false;
                         
                     }
                     if (SoloTesto){
@@ -383,7 +383,7 @@ public class Importazioni {
                     DatoRiga[10]="";
                     if (ColMonFee!=99) DatoRiga[11]=splittata[ColMonFee];//Moneta fee
                     if (ColFee!=99) DatoRiga[12]=new BigDecimal(splittata[ColFee]).stripTrailingZeros().toPlainString();//Qta fee
-                    if (Funzioni.Funzioni_isNumeric(DatoRiga[12], false)&&
+                    if (Funzioni.isNumeric(DatoRiga[12], false)&&
                             new BigDecimal(DatoRiga[12]).compareTo(new BigDecimal(0))==0){
                         //al posto di lasciare il campo vuoto mette 0-E8 ogni tanto per cui devo individuarlo e valorizzare il campo a vuoto dovessi individuarlo
                         DatoRiga[12]="";
@@ -1528,7 +1528,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     String riga2=riga;
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
                     String splittata[] = riga.split(",",-1);                     
-                    if (splittata.length==11&&Funzioni.Funzioni_isNumeric(splittata[4], false)){
+                    if (splittata.length==11&&Funzioni.isNumeric(splittata[4], false)){
                         // Definisci il formato della data
                        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         String utcDateStr = splittata[2];
@@ -1551,7 +1551,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             if (Movimento[5].contains(".LENDING@"))Movimento[5]=Movimento[5].split(".LENDING@")[0];
                             Movimento[6]=splittata[4];//Qta
                             Movimento[7]=splittata[1];//Address Moneta
-                            if (Funzioni.Funzioni_isNumeric(splittata[5], false)&&!splittata[5].equals("0")) {
+                            if (Funzioni.isNumeric(splittata[5], false)&&!splittata[5].equals("0")) {
                                 Movimento[8]=new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
                             }
                             else Movimento[8]="";
@@ -6016,7 +6016,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             in.close();
             JSONObject jsonObjectTxlist = new JSONObject(responseTxlist.toString());
             Valore = jsonObjectTxlist.getString("result");
-            if (!Funzioni.Funzioni_isNumeric(Valore, false))
+            if (!Funzioni.isNumeric(Valore, false))
                 {
                     System.out.println("Controllo giacenze non riuscito per il token "+MonetaRete+" sul Wallet "+walletAddress+ ". Riprovare in un secondo momento");
                     System.out.println("Errore : '"+Valore+"'");

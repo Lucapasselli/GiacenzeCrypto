@@ -712,11 +712,14 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             Principale.TabellaCryptodaAggiornare=true;
             this.dispose();
         }
-        }else if(Funzioni.GUIModificaPrezzo(this,MU,ME,PrezzoT,TimeStamp,Rete)!=null){
-            Ritorno[0]=Funzioni.GUIModificaPrezzo(this,MU,ME,PrezzoT,TimeStamp,Rete);
-            Ritorno[1]="|||Manuale";
-            this.dispose();
-       }
+        } else {
+            String ritPrz = Funzioni.GUIModificaPrezzo(this, MU, ME, PrezzoT, TimeStamp, Rete);
+            if (ritPrz != null) {
+                Ritorno[0] = ritPrz;
+                Ritorno[1] = "|||Manuale";
+                this.dispose();
+            }
+        }
     }//GEN-LAST:event_Bottone_PersonalizzatoActionPerformed
 
     /**

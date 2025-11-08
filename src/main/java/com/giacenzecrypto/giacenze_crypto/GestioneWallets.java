@@ -292,7 +292,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         Mappa_Wallet.clear();
         for (String[] v : MappaCryptoWallet.values()) {
-            if (Funzioni.Funzioni_isNumeric(v[23], false)){
+            if (Funzioni.isNumeric(v[23], false)){
                 if (Mappa_Wallet.get(v[3])!=null && Mappa_Wallet.get(v[3]).split(";").length>1){
                         int bloccoMaggiore=Integer.parseInt(Mappa_Wallet.get(v[3]).split(";")[1]);
                         int bloccoUltimaTransazione=Integer.parseInt(v[23]);

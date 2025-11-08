@@ -2524,14 +2524,21 @@ public static class InfoPrezzo {
         
     }
     
-   /* private void InizializzaABlank(){
-                this.prezzoUnitario = new BigDecimal(0);
-                this.exchange = "";
-                this.timestamp = 0;
-                this.prezzoQta = new BigDecimal(0);
-                this.Qta = new BigDecimal(0);
-                this.Moneta = "";   
-    }*/
+        /**
+         * Converte la data da formato leggibile a timestamp ma restituisce una stringa e non un long
+         * Restituisce null in caso di errori
+         * @param Time
+         * @return
+         */
+        public static String ConvertiDataATimestamp(String Time){       
+        String ritorno=null;
+        if (!Time.isBlank()){
+            Time = Time.toUpperCase().replace("X", "0"); 
+            ritorno=String.valueOf(FunzioniDate.ConvertiDatainLongSecondo(Time));
+            }
+        if(ritorno!=null&&!ritorno.equals("0"))return ritorno;
+        return null;
+    }
     
     public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp, BigDecimal prezzoQta, BigDecimal Qta,String Moneta) {
         this.prezzoUnitario = prezzo;

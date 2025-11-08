@@ -202,7 +202,7 @@ private static final long serialVersionUID = 3L;
             //Cancello i file temporanei, tipicamente esportazioni o stampe più vecchi di 24h
             Funzioni.Files_CancellaOltreTOTh(Statiche.getCartella_Temporanei(), 24);
 
-            Funzioni.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
+            VarCondivise.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
  
 
             
@@ -300,7 +300,7 @@ private static final long serialVersionUID = 3L;
             
         }
         
-        Funzioni_WalletDeFi.CompilaMappaChain();
+        VarCondivise.CompilaMappaChain();
         this.CDC_FiatWallet_Label_Errore1.setVisible(false);
         this.CDC_FiatWallet_Label_Errore2.setVisible(false);
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);

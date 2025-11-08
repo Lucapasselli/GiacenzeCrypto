@@ -9,7 +9,6 @@ package com.giacenzecrypto.giacenze_crypto;
 import com.toedter.calendar.JTextFieldDateEditor;
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
@@ -55,7 +54,7 @@ private static final long serialVersionUID = 9L;
     String ValoreTransazione="";
     String Wallet="";
     String WalletDettaglio="";
-    String TipoMovimentoAM="M";//M se è un movimento inserito a mano, A se deriva da importazioni
+   // String TipoMovimentoAM="M";//M se è un movimento inserito a mano, A se deriva da importazioni
    // String IDOriginale="";
     
     long DataLong=0;
@@ -65,7 +64,7 @@ private static final long serialVersionUID = 9L;
         initComponents();
         Bottone_Ok.setIcon(Icone.Salva);
         Bottone_Annulla.setIcon(Icone.Annulla);
-        Bottone_CalcolaAutomaticamente.setIcon(Icone.Euro);
+        Bottone_ModificaPrezzo.setIcon(Icone.Euro);
         jButton1.setIcon(Icone.Unlock);
         ((JTextFieldDateEditor)Data_Datachooser.getDateEditor()).setBackground(Color.lightGray.brighter());
         
@@ -134,7 +133,7 @@ private static final long serialVersionUID = 9L;
         jSeparator2 = new javax.swing.JSeparator();
         ValoreTransazione_Label = new javax.swing.JLabel();
         ValoreTransazione_TextField = new javax.swing.JTextField();
-        Bottone_CalcolaAutomaticamente = new javax.swing.JButton();
+        Bottone_ModificaPrezzo = new javax.swing.JButton();
         Bottone_Ok = new javax.swing.JButton();
         Bottone_Annulla = new javax.swing.JButton();
         ID_TextField = new javax.swing.JTextField();
@@ -264,6 +263,7 @@ private static final long serialVersionUID = 9L;
         ValoreTransazione_Label.setText("Valore Transazione in EURO : ");
 
         ValoreTransazione_TextField.setEditable(false);
+        ValoreTransazione_TextField.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         ValoreTransazione_TextField.setForeground(new java.awt.Color(51, 51, 51));
         ValoreTransazione_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -271,11 +271,11 @@ private static final long serialVersionUID = 9L;
             }
         });
 
-        Bottone_CalcolaAutomaticamente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        Bottone_CalcolaAutomaticamente.setText("Modifica Prezzo");
-        Bottone_CalcolaAutomaticamente.addActionListener(new java.awt.event.ActionListener() {
+        Bottone_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        Bottone_ModificaPrezzo.setText("Modifica Prezzo");
+        Bottone_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Bottone_CalcolaAutomaticamenteActionPerformed(evt);
+                Bottone_ModificaPrezzoActionPerformed(evt);
             }
         });
 
@@ -472,12 +472,13 @@ private static final long serialVersionUID = 9L;
                             .addComponent(ValoreTransazione_Label)
                             .addComponent(P_LabelMoneta))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(ValoreTransazione_TextField)
+                            .addComponent(P_TextFonte, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(P_TextMoneta, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(P_TextFonte)
-                                    .addComponent(P_TextMoneta, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(0, 0, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(P_LabelPU, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(P_LabelTimeFonte, javax.swing.GroupLayout.Alignment.TRAILING))
@@ -486,14 +487,12 @@ private static final long serialVersionUID = 9L;
                                     .addComponent(P_TextPU)
                                     .addComponent(P_TextTimeFonte, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(Bottone_CalcolaAutomaticamente, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(341, 341, 341))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 548, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(Note_Label)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
                         .addComponent(Note_ScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 825, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -564,7 +563,7 @@ private static final long serialVersionUID = 9L;
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ValoreTransazione_Label)
                     .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Bottone_CalcolaAutomaticamente))
+                    .addComponent(Bottone_ModificaPrezzo))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(P_LabelFonte)
@@ -584,10 +583,11 @@ private static final long serialVersionUID = 9L;
                     .addGroup(layout.createSequentialGroup()
                         .addGap(44, 44, 44)
                         .addComponent(Note_Label)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(Bottone_Ok, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 9, Short.MAX_VALUE))
         );
 
         pack();
@@ -700,23 +700,42 @@ private static final long serialVersionUID = 9L;
 
     private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
         // TODO add your handling code here:
+        String ID=CalcolaID();
+        ScritturaDati(ID);
         
-        if(!EvidenziaProblemi()){
+        
+    }//GEN-LAST:event_Bottone_OkActionPerformed
+
+    public void ScritturaDati(String ID){
+    if(!EvidenziaProblemi()){
             //se non trovo problemi nella compilazione allora procedo con l'inserimento del movimento
             
             //prima cosa genero l'id della transazione
-            String ID=CalcolaID();
+           // String ID=CalcolaID();
             System.out.println(ID);
             
             //verifico che non esista già una transazione non lo stesso id in quel caso chiedo se sovrascriverla o aggiungerla
             //per trovare l'id ovviamente devo cercarla nella mappa delle transazioni
             if(MappaCryptoWallet.get(ID)!=null && !ModificaMovimento){
               //se entro qua significa che ho già un movimento con lo stesso id 
+              
+              //provo a generare un nuovo ID aggiungendo 1 al penultimo campo
+              String IDsplit[]=ID.split("_");
+              if (Funzioni.isNumeric(IDsplit[IDsplit.length-2], false)){
+                  //il nuovo valore sarà quello vecchio incrementato di 1
+                  IDsplit[IDsplit.length-2]=String.valueOf(Long.parseLong(IDsplit[IDsplit.length-2])+1);
+                  ID="";
+                  for(String II:IDsplit){
+                      ID=ID+II+"_";
+                  }
+                  ID=ID.substring(0, ID.length()-1);
+                  ScritturaDati(ID);
+              }
               //adesso devo far scegliere che fare
               //la cosa più semplice per ora è inserire un messaggio in cui si chiede di cambiare l'orario
               //o qualcosa del genere
              // System.out.println("ma va la");
-              JOptionPane.showConfirmDialog(this, "Attenzione!\nEsiste un movimento con lo stesso ID Transsazione\nProvare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema",
+              else JOptionPane.showConfirmDialog(this, "Attenzione!\nEsiste un movimento con lo stesso ID Transazione\nProvare a modificare l'ora della transazione anche di un solo secondo per risolvere il problema",
                     "Movimento con Stesso ID",JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,null);
             }else{
               //se invece arrivo qua posso inserire il movimento nella mappa  
@@ -729,10 +748,9 @@ private static final long serialVersionUID = 9L;
             
             
         }
-        
-        
-    }//GEN-LAST:event_Bottone_OkActionPerformed
-
+    }
+    
+    
     public void CompilaCampidaID(String IDTransazione){
         try {
             String riga[]=Principale.MappaCryptoWallet.get(IDTransazione);
@@ -757,7 +775,7 @@ private static final long serialVersionUID = 9L;
             this.MonetaEntrataAddress_TextField.setText(riga[28]);
             this.ValoreTransazione_TextField.setText(riga[15]);
             this.Note_TextArea.setText(riga[21].replace("<br>", "\n"));
-            TipoMovimentoAM=riga[22];
+//            TipoMovimentoAM=riga[22];
             //System.out.println(riga[22]);
             ModificaMovimento=true;
             //Adesso se è un movimento automatico do la possibilità di variarne solo il valore in euro
@@ -917,7 +935,7 @@ private static final long serialVersionUID = 9L;
         EvidenziaProblemi();
     }//GEN-LAST:event_Minuto_ComboBoxItemStateChanged
 
-    private void Bottone_CalcolaAutomaticamenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_CalcolaAutomaticamenteActionPerformed
+    private void Bottone_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ModificaPrezzoActionPerformed
         // TODO add your handling code here:
 
         if (!EvidenziaProblemi()) {
@@ -939,7 +957,7 @@ private static final long serialVersionUID = 9L;
 
             //Creo l'oggetto Infoprezzo
             BigDecimal PrezzoTot=BigDecimal.ZERO;
-            if (Principale.Funzioni_isNumeric(this.ValoreTransazione, false)) {
+            if (Funzioni.isNumeric(this.ValoreTransazione, false)) {
                PrezzoTot=new BigDecimal(this.ValoreTransazione) ;
             }
             String Fonte = P_TextFonte.getText();
@@ -947,11 +965,11 @@ private static final long serialVersionUID = 9L;
             String PUnitario = P_TextPU.getText();
             String TimeSFonte = P_TextTimeFonte.getText();
             BigDecimal BD_PUnitario = null;
-            if (Principale.Funzioni_isNumeric(PUnitario, false)) {
+            if (Funzioni.isNumeric(PUnitario, false)) {
                 BD_PUnitario = new BigDecimal(PUnitario);
             }
             long l_TimeStampFonte = 0;
-            if (Principale.Funzioni_isNumeric(TimeSFonte, false)) {
+            if (Funzioni.isNumeric(TimeSFonte, false)) {
                 l_TimeStampFonte = Long.parseLong(TimeSFonte);
             }
             Prezzi.InfoPrezzo IPr = new Prezzi.InfoPrezzo(BD_PUnitario, Fonte, l_TimeStampFonte, PrezzoTot, null, MonetaFonte);
@@ -982,7 +1000,7 @@ private static final long serialVersionUID = 9L;
             //Ora elaboro i dati in ritorno
             if (Ritorno[0]!=null){
                 //Ho il prezzo di ritorno
-                if (Principale.Funzioni_isNumeric(Ritorno[0], false)){
+                if (Funzioni.isNumeric(Ritorno[0], false)){
                     ValoreTransazione_TextField.setText(Ritorno[0]);
                 }else ValoreTransazione_TextField.setText("0.00");
             }
@@ -992,7 +1010,7 @@ private static final long serialVersionUID = 9L;
                 if (IP.exchange!=null) P_TextFonte.setText(IP.exchange);else P_TextFonte.setText("");
                 if (IP.Moneta!=null)P_TextMoneta.setText(IP.Moneta);else P_TextMoneta.setText("");
                 if (IP.prezzoUnitario!=null)P_TextPU.setText(IP.prezzoUnitario.toPlainString());else P_TextPU.setText("");
-                if (!IP.RitornaStringData().equals("0"))P_TextTimeFonte.setText(IP.RitornaStringData());else P_TextTimeFonte.setText("");
+                if (IP.timestamp!=0)P_TextTimeFonte.setText(IP.RitornaStringData());else P_TextTimeFonte.setText("");
                 
             }
             
@@ -1027,11 +1045,11 @@ private static final long serialVersionUID = 9L;
        EvidenziaProblemi();
        setCursor(Cursor.getDefaultCursor());*/
  
-    }//GEN-LAST:event_Bottone_CalcolaAutomaticamenteActionPerformed
+    }//GEN-LAST:event_Bottone_ModificaPrezzoActionPerformed
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
-        ValoreTransazione_TextField.requestFocus();
+        Bottone_ModificaPrezzo.requestFocus();
         //Verifico se se è un movimento che è associato ad un altro movimento nel qual cosa avverto che per poter modificare il movimento bisogna 
         //prima eliminare le eventuali associazioni
 
@@ -1060,14 +1078,29 @@ private static final long serialVersionUID = 9L;
               this.Wallet_ComboBox.addItem(v);
           }
     }
+    
+    private String CompilaRiga40(){
+    String TimeFonte=Prezzi.InfoPrezzo.ConvertiDataATimestamp(P_TextTimeFonte.getText());
+        if (TimeFonte==null)TimeFonte="";  
+        String Riga40="";
+        if (!(P_TextMoneta.getText()+TimeFonte+P_TextPU.getText()+P_TextFonte.getText()).isBlank())
+        {
+            Riga40=(P_TextMoneta.getText()+"|"+TimeFonte+"|"+P_TextPU.getText()+"|"+P_TextFonte.getText());
+        }
+        return Riga40;
+        
+    }
 
     private boolean ScriviMovimento(String ID) {
 
         //questa è la funzione che si occuperà nello specifico di scrivere il movimento in ogni sua parte nella tabella
+        
+        String Riga40=CompilaRiga40();
+        
         String Note = this.Note_TextArea.getText().replace(";", " ").replace("\n", "<br>");
         ValoreTransazione = new BigDecimal(ValoreTransazione).setScale(2, RoundingMode.HALF_UP).toString();
         MonetaUQta = MonetaUQta.replace("-", "");
-        if (Principale.Funzioni_isNumeric(MonetaUQta, false) && !MonetaUQta.equalsIgnoreCase("0")) {
+        if (Funzioni.isNumeric(MonetaUQta, false) && !MonetaUQta.equalsIgnoreCase("0")) {
             MonetaUQta = "-" + MonetaUQta;
         }
         MonetaEQta = MonetaEQta.replace("-", "");
@@ -1103,8 +1136,9 @@ private static final long serialVersionUID = 9L;
                 ME.Qta = this.MonetaEQta;
                 ME.Tipo = this.MonetaETipo;
             }
-            long dataLong = FunzioniDate.ConvertiDatainLongMinuto(Data);
-            String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete,"");
+           // long dataLong = FunzioniDate.ConvertiDatainLongMinuto(Data);
+           // String Prezzo = Prezzi.DammiPrezzoTransazione(MU, ME, dataLong, null, true, 15, Rete,"");
+            String Prezzo=ValoreTransazione_TextField.getText();
             if (Prezzo.equals("0.00")) {
                 String Messaggio = "Attenzione, il prezzo del movimento è valorizzato a '0.00'.\n"
                         + "E' corretto e si vuole Proseguire?";
@@ -1159,7 +1193,7 @@ private static final long serialVersionUID = 9L;
             if (MovimentoRiportato[0].equals(ID)) {//Qui finiscono solo i movimenti che hanno anche la stessa data
                             MovimentoRiportato[15] = ValoreTransazione;
                             MovimentoRiportato[21] = Note;
-                            MovimentoRiportato[6] = (MonetaU + " -> " + MonetaE).trim();
+                            //MovimentoRiportato[6] = (MonetaU + " -> " + MonetaE).trim();
                             MovimentoRiportato[8] = MonetaU;
                             MovimentoRiportato[9] = MonetaUTipo;
                             MovimentoRiportato[10] = MonetaUQta;
@@ -1171,6 +1205,7 @@ private static final long serialVersionUID = 9L;
                             if (MovimentoValorizzato) {
                                 MovimentoRiportato[32] = "SI";
                             }
+                            MovimentoRiportato[40] = Riga40;
              }              
              
             else{
@@ -1240,6 +1275,7 @@ private static final long serialVersionUID = 9L;
                             if (MovimentoValorizzato) {
                                 RT[32] = "SI";
                             }
+                            RT[40] = Riga40;
                             Importazioni.RiempiVuotiArray(RT);
                             MappaCryptoWallet.put(RT[0], RT);
                             IDNuovo=RT[0];
@@ -1288,6 +1324,7 @@ private static final long serialVersionUID = 9L;
                             if (MovimentoValorizzato) {
                                 RT[32] = "SI";
                             }
+                            RT[40] = Riga40;
                             Importazioni.RiempiVuotiArray(RT);
                             MappaCryptoWallet.put(RT[0], RT); 
                             IDNuovo=RT[0];
@@ -1300,6 +1337,9 @@ private static final long serialVersionUID = 9L;
         // TODO add your handling code here:
        // System.out.println(Data_Datachooser.getDate());
 
+       //Se non è compilato il campo prezzo lo valorizzo a zero
+       
+       if (ValoreTransazione_TextField.getText().isBlank())ValoreTransazione_TextField.setText("0.00");
         //per prima cosa sostituisco le virgole con i punti nei campi numerici
         MonetaUscitaQuantita_TextField.setText(MonetaUscitaQuantita_TextField.getText().replace(",", "."));
         //MonetaUscita_TextField.setText(MonetaUscita_TextField.getText().toUpperCase().replace(";", ""));
@@ -1344,7 +1384,7 @@ private static final long serialVersionUID = 9L;
             this.WalletDettaglio_ComboBox.setBackground(Color.white);
         }
        
-        if (/*ValoreTransazione.equalsIgnoreCase("")||*/!Principale.Funzioni_isNumeric(ValoreTransazione,false)){
+        if (/*ValoreTransazione.equalsIgnoreCase("")||*/!Funzioni.isNumeric(ValoreTransazione,false)){
             nonCompleto=true;
             this.ValoreTransazione_TextField.setBackground(Color.getHSBColor(20, 20, 20));
         }else {
@@ -1408,13 +1448,13 @@ private static final long serialVersionUID = 9L;
        // System.out.println(CDC_Grafica.Funzioni_isNumeric(MonetaUQta,false));
         if (((tuttoVuotoE==false&&tuttoCompilatoE==false)||(tuttoVuotoU==false&&tuttoCompilatoU==false))||
                 (tuttoVuotoE==true&&tuttoVuotoU==true)||
-                (!Principale.Funzioni_isNumeric(MonetaUQta,true)||!Principale.Funzioni_isNumeric(MonetaEQta,true))){
+                (!Funzioni.isNumeric(MonetaUQta,true)||!Funzioni.isNumeric(MonetaEQta,true))){
             nonCompleto=true;
             if (MonetaU.equalsIgnoreCase(""))MonetaUscita_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscita_ComboBox.setBackground(Color.white);
-            if (/*MonetaUQta.equalsIgnoreCase("")||*/!Principale.Funzioni_isNumeric(MonetaUQta,false))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
+            if (/*MonetaUQta.equalsIgnoreCase("")||*/!Funzioni.isNumeric(MonetaUQta,false))MonetaUscitaQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaQuantita_TextField.setBackground(Color.white);
             if (MonetaUTipo==null)MonetaUscitaTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaUscitaTipo_ComboBox.setBackground(Color.white);
             if (MonetaE.equalsIgnoreCase(""))MonetaEntrata_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrata_ComboBox.setBackground(Color.white);
-            if (/*MonetaEQta.equalsIgnoreCase("")||*/!Principale.Funzioni_isNumeric(MonetaEQta,false))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
+            if (/*MonetaEQta.equalsIgnoreCase("")||*/!Funzioni.isNumeric(MonetaEQta,false))MonetaEntrataQuantita_TextField.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataQuantita_TextField.setBackground(Color.white);
             if (MonetaETipo==null)MonetaEntrataTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));else MonetaEntrataTipo_ComboBox.setBackground(Color.white);
         } 
         //se invece le 2 situazioni di prima non sono vere vuol dire che va tutto bene
@@ -1512,7 +1552,7 @@ private static final long serialVersionUID = 9L;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;
-    private javax.swing.JButton Bottone_CalcolaAutomaticamente;
+    private javax.swing.JButton Bottone_ModificaPrezzo;
     private javax.swing.JButton Bottone_Ok;
     private com.toedter.calendar.JDateChooser Data_Datachooser;
     private javax.swing.JLabel Data_Label;

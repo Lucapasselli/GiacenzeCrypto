@@ -974,7 +974,7 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
                         Object val = model.getValueAt(modelRow, col);
                         if (val != null) {
                             String strVal = val.toString();
-                            if (Funzioni.Funzioni_isNumeric(strVal, false)) {
+                            if (Funzioni.isNumeric(strVal, false)) {
                                 somma = somma.add(new BigDecimal(strVal));
                             }
                         }

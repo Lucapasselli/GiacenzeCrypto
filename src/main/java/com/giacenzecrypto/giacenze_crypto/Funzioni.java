@@ -569,6 +569,7 @@ public class Funzioni {
                     //devo fare la conversione in dollari
                 }
                 Prezz = new BigDecimal(Prezz).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                //System.out.println("Fine operazione");
                 return Prezz;
                 //return true;
 
@@ -577,6 +578,7 @@ public class Funzioni {
                         "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
             }
         }
+        
         return null;
     }
         
@@ -806,7 +808,7 @@ public class Funzioni {
         if (idSplit.length>4){
             for(int k=1;k<10;k++){
                 String split3;
-                if (Funzioni.Funzioni_isNumeric(idSplit[3], false)){
+                if (Funzioni.isNumeric(idSplit[3], false)){
                     split3=String.valueOf((int)Double.parseDouble(idSplit[3])+k);
                     
                 }
@@ -1022,7 +1024,7 @@ public class Funzioni {
                     
                     for (String Valore : lista) {
                         if (colonna>0&&colonna<13){//Scrivo solo le colonne con idati che mi interessano
-                        if (Funzioni_isNumeric(Valore,false)) {
+                        if (isNumeric(Valore,false)) {
                             double val = Double.parseDouble(Valore);
                             ws.value(riga, colonna-1, val);
                         }else{
@@ -1184,7 +1186,7 @@ public class Funzioni {
     public static void ScriviRigaExcel(String Valori[], Worksheet ws, int riga) {
         int colonna = 0;
         for (String Valore : Valori) {
-            if (Funzioni_isNumeric(Valore, false)) {
+            if (isNumeric(Valore, false)) {
                 double val = Double.parseDouble(Valore);
                 ws.value(riga, colonna, val);
             } else {
@@ -2023,34 +2025,6 @@ return MappaLista;
        
         
         
-        public static void CompilaMappaRetiSupportate(){
-            
-            MappaRetiSupportate.put("ARB", "");
-            MappaRetiSupportate.put("AVAX", "");
-            MappaRetiSupportate.put("BASE", "");
-            MappaRetiSupportate.put("BERA", "");
-            MappaRetiSupportate.put("ADA", "");
-            MappaRetiSupportate.put("BNB", "");
-            MappaRetiSupportate.put("BSC", "");
-            MappaRetiSupportate.put("BTC", "");
-            MappaRetiSupportate.put("CRO", "");
-            MappaRetiSupportate.put("DASH", "");
-            MappaRetiSupportate.put("DOGE", "");
-            MappaRetiSupportate.put("DOT", "");
-            MappaRetiSupportate.put("EOS", "");
-            MappaRetiSupportate.put("ETH", "");
-            MappaRetiSupportate.put("FTM", "");
-            MappaRetiSupportate.put("LTC", "");
-            MappaRetiSupportate.put("LUNA", "");
-            MappaRetiSupportate.put("MATIC", "");
-            MappaRetiSupportate.put("TRX", "");
-            MappaRetiSupportate.put("SOL", "");
-            MappaRetiSupportate.put("XLM", "");
-            MappaRetiSupportate.put("XRP", "");
-            MappaRetiSupportate.put("ZEC", "");
-            
-            //Funzione da scrivere
-        }
      
         
        public static String[] RiempiVuotiArray(String[] array){
@@ -2064,7 +2038,7 @@ return MappaLista;
      
        
     
-    public static boolean Funzioni_isNumeric(String str, boolean CampoVuotoContacomeNumero) {
+    public static boolean isNumeric(String str, boolean CampoVuotoContacomeNumero) {
         
         if (str==null)return false;
         //ritorna vero se il campo è vuoto oppure è un numero

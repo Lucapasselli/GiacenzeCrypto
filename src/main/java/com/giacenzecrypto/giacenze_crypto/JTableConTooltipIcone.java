@@ -43,12 +43,12 @@ public class JTableConTooltipIcone extends JTable {
                 String MonetaU = mov[8];
                 String QtaMancanteLiFo="";
                 String ValRimanenze="";
-                if (Funzioni.Funzioni_isNumeric(mov[10], false))
+                if (Funzioni.isNumeric(mov[10], false))
                 {
                     BigDecimal QtaU = new BigDecimal(mov[10]);
                     BigDecimal ValTrans=new BigDecimal(mov[15]);
                     QtaMancanteLiFo=RecuperaQtaMancante(ID);
-                    if(QtaMancanteLiFo!=null&&Funzioni.Funzioni_isNumeric(QtaMancanteLiFo, false)&&QtaU.compareTo(BigDecimal.ZERO)!=0)
+                    if(QtaMancanteLiFo!=null&&Funzioni.isNumeric(QtaMancanteLiFo, false)&&QtaU.compareTo(BigDecimal.ZERO)!=0)
                     {
                         ValRimanenze=ValTrans.divide(QtaU, 10, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaMancanteLiFo)).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                     }

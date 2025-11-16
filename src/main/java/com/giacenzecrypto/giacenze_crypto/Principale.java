@@ -2091,14 +2091,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "Errori"
+                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "Errori", "InfoPrezzo"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -7491,19 +7491,59 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
                     Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
                 }
-                String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();                                 
+                //System.out.println(Rete);
+                String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();  
+                String Tipo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(); 
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
                // String m = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " : ", Prezzo);
-                long data=FunzioniDate.ConvertiDatainLong(Data);
-                String m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
+                //long data=FunzioniDate.ConvertiDatainLong(Data);
+                if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete))Address=null;
+                //System.out.println(Rete);
+                Moneta MU=new Moneta();
+                MU.Moneta=mon;
+                MU.Qta=Qta.toPlainString();
+                MU.Rete=Rete;
+                MU.MonetaAddress=Address;
+                MU.Prezzo=Prezzo;
+                MU.Tipo=Tipo;
+                
+                Prezzi.InfoPrezzo IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(Prezzo), null, mon);
+                long df=DataRiferimento;
+                Component c = this;
+                Download progress = new Download();
+                progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
+                progress.setLocationRelativeTo(this);
+                String Ritorno[]=new String[2];
+                Thread thread;
+                thread = new Thread() {
+                    public void run() {
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, null,IPr,df,MU.Rete,Ritorno);                   
+                        t.setLocationRelativeTo(c);
+                        t.setVisible(true);
+                        progress.ChiudiFinestra();
+                    }
+                };
+                thread.start();
+                progress.setVisible(true);
+                
+                
+                String m=Ritorno[0];
+                //if (!Ritorno[1].split("\\|",-1)[3].isBlank())
+                //System.out.println("Ritorno "+Ritorno[0]);
+               // m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
                 if (m != null) {
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
-                        BigDecimal PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
+                        BigDecimal PrezzoUnitario;
+                        if (!Ritorno[1].split("\\|",-1)[2].isBlank())PrezzoUnitario=new BigDecimal(Ritorno[1].split("\\|",-1)[2]);
+                        else PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
+                       
+                        //Questa è la versione vecchia dei prezzi personalizzati, da modificare per mettere la versione nuova
                         if (Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()) {
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
+                            System.out.println("Unitario "+PrezzoUnitario.toPlainString());
                         }
                     
                 }
@@ -13364,7 +13404,7 @@ try {
                     Moneta M1 = QtaCrypto.get(moneta);
                     String Rete = M1.Rete;
                     String Address = M1.MonetaAddress;
-                    Object riga[] = new Object[7];
+                    Object riga[] = new Object[8];
                     riga[0] = M1.Moneta;
                     riga[2] = Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
                     riga[3] = M1.Tipo;
@@ -13377,11 +13417,16 @@ try {
                         if (M1.Qta.equals("0")) {
                             riga[5] = "0.00";
                         } else {
-                            riga[5] = Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, false, 2, Rete,"");
+                            Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, Rete,"personale");
+                            //riga[5] = Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, false, 2, Rete,"");
                            // System.out.println(M1.Moneta+" - "+M1.Tipo+" - "+M1.Qta+" - "+M1.Rete+" - "+M1.MonetaAddress);
-                            if (riga[5]==null){
+                            if (IP==null||IP.prezzoUnitario==null){
                                 riga[5]="0.00";
                                 riga[6]="Token senza prezzo";
+                            }else{
+                                IP.prezzoQta=IP.prezzoUnitario.multiply(new BigDecimal(M1.Qta));
+                                riga[5]=IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
+                                riga[7]=IP.Ritorna40();
                             }
                         }
                         if (riga[4].toString().contains("-") && !riga[5].equals("0.00")) {

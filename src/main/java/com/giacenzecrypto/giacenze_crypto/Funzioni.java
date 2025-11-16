@@ -544,7 +544,18 @@ public class Funzioni {
             //PARTE 2    
             c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             Prezzi.InfoPrezzo IPT=Prezzi.DammiPrezzoInfoTransazione(ME, MU, DataPrezzo, Rete, "");
-            BigDecimal BGPrezzoTot=IPT.prezzoQta;
+            if (ME==null) 
+            {
+                ME=new Moneta();
+                ME.Moneta="";
+            }
+            if (MU==null) 
+            {
+                MU=new Moneta();
+                MU.Moneta="";
+            }
+            BigDecimal BGPrezzoTot=new BigDecimal("0.00");
+            if (IPT!=null) BGPrezzoTot=IPT.prezzoQta;
             String PrezzoAuto=("0.00");
             if (BGPrezzoTot!=null)PrezzoAuto=BGPrezzoTot.toPlainString();
               if (PrezzoAuto==null)PrezzoAuto="0.00";
@@ -660,11 +671,11 @@ public class Funzioni {
                                 //DOLLARO 
                                 MonRiferimento="DOLLARI";
                                 //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
-                                if (Prezzo!=null){
+                              //  if (Prezzo!=null){
                                     String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
                                     String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
                                     Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
-                                }
+                              //  }
                             }
                             default -> {
                             }

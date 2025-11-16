@@ -87,9 +87,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeU[2]=MU.Qta;
             if(IPr.Moneta.equalsIgnoreCase(MU.Moneta)){
                 PrezzoAttualeU[3]=IPr.exchange;
-                PrezzoAttualeU[4]=IPr.RitornaStringData();
-                PrezzoAttualeU[5]=IPr.RitornaStringDiffData(TimeStamp);
-                PrezzoAttualeU[6]=IPr.prezzoUnitario.toPlainString();
+                if (IPr.timestamp!=0)PrezzoAttualeU[4]=IPr.RitornaStringData();
+                if (IPr.timestamp!=0)PrezzoAttualeU[5]=IPr.RitornaStringDiffData(TimeStamp);
+                if (IPr.prezzoUnitario!=null)PrezzoAttualeU[6]=IPr.prezzoUnitario.toPlainString();
             }
             if (PrezzoT!=null)
                 PrezzoAttualeU[7]=PrezzoT;
@@ -103,9 +103,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeE[2]=ME.Qta;
             if(IPr.Moneta.equalsIgnoreCase(ME.Moneta)){
                 PrezzoAttualeE[3]=IPr.exchange;
-                PrezzoAttualeE[4]=IPr.RitornaStringData();
-                PrezzoAttualeE[5]=IPr.RitornaStringDiffData(TimeStamp);
-                PrezzoAttualeE[6]=IPr.prezzoUnitario.toPlainString();
+                if (IPr.timestamp!=0)PrezzoAttualeE[4]=IPr.RitornaStringData();
+                if (IPr.timestamp!=0)PrezzoAttualeE[5]=IPr.RitornaStringDiffData(TimeStamp);
+                if (IPr.prezzoUnitario!=null)PrezzoAttualeE[6]=IPr.prezzoUnitario.toPlainString();
             }
             if (PrezzoT!=null)
                 PrezzoAttualeE[7]=PrezzoT;
@@ -249,8 +249,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         Moneta M[]=new Moneta[2];
         long data=FunzioniDate.ConvertiDatainLongSecondo(ora);
 
-        M[0] = MU;
-        M[1] = ME;
+        if (MU!=null) M[0] = MU; else M[0]=new Moneta();
+        if (ME!=null) M[1] = ME; else M[1]=new Moneta();
         if(Rete==null||Principale.MappaRetiSupportate.get(Rete)==null){
                 Rete="";
                 M[0].MonetaAddress="";
@@ -418,6 +418,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     
     
      private void listaPrezziVecchiDB(Moneta M,String PrezzoRif,long data,String NomeOriginale,DefaultTableModel ModTabPrezzi){
+         
          String DataOra = FunzioniDate.ConvertiDatadaLongallOra(data);
             String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + M.Moneta);
             Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
@@ -445,7 +446,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             
 
             //Adesso cerco i prezzi nel vecchio database coingecko
+            System.out.println(M.MonetaAddress+"--"+M.Rete);
             if (Funzioni_WalletDeFi.isValidAddress(M.MonetaAddress, M.Rete)) {
+                System.out.println("Sono qui");
                 PrezzoUnitario = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + M.MonetaAddress + "_" + M.Rete);
                 IP = new Prezzi.InfoPrezzo();
                 //System.out.println(PrezzoUnitario);
@@ -473,7 +476,63 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 }
             }
      }
-    
+   
+      private void listaPrezziVecchiDBPers(Moneta M,String PrezzoRif,long data,String NomeOriginale,DefaultTableModel ModTabPrezzi){
+         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(data);
+            String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + M.Moneta);
+            Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
+            //System.out.println(PrezzoUnitario);
+            if (PrezzoUnitario != null) {
+                IP.exchange = "Personalizzato (Old)";
+                IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
+                IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
+                IP.Qta = new BigDecimal(M.Qta);
+                IP.Moneta = M.Moneta;
+                String rigo[] = new String[9];
+                rigo[0] = M.Moneta;
+                rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
+                rigo[2] = M.Qta;
+                rigo[3] = IP.exchange;
+                rigo[4] = DataOra + ":XX:XX";
+                rigo[5] = "1 ora";
+
+                rigo[6] = IP.prezzoUnitario.toPlainString();
+                if (IP.prezzoQta==null)IP.prezzoQta=IP.prezzoUnitario.multiply(IP.Qta).abs();
+                rigo[8] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
+                rigo[7] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(PrezzoRif)).toPlainString();
+                ModTabPrezzi.addRow(rigo);
+            }
+            
+
+            //Adesso cerco i prezzi nel vecchio database coingecko
+            if (Funzioni_WalletDeFi.isValidAddress(M.MonetaAddress, M.Rete)) {
+                PrezzoUnitario = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + M.MonetaAddress + "_" + M.Rete);
+                IP = new Prezzi.InfoPrezzo();
+                //System.out.println(PrezzoUnitario);
+                if (PrezzoUnitario != null) {
+                    IP.exchange = "Personalizzato (Old)";
+                    IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
+                    IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
+                    IP.Qta = new BigDecimal(M.Qta);
+                    IP.Moneta = M.Moneta;
+                    String rigo[] = new String[9];
+                    rigo[0] = NomeOriginale;
+                    rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
+                    rigo[2] = M.Qta;
+                    rigo[3] = IP.exchange;
+                    rigo[4] = DataOra + ":XX:XX";
+                    rigo[5] = "1 ora";
+
+                    rigo[6] = IP.prezzoUnitario.toPlainString();
+                    if (IP.prezzoQta == null) {
+                        IP.prezzoQta = IP.prezzoUnitario.multiply(IP.Qta).abs();
+                    }
+                    rigo[8] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    rigo[7] = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).subtract(new BigDecimal(PrezzoRif)).toPlainString();
+                    ModTabPrezzi.addRow(rigo);
+                }
+            }
+     }
     
     public void GUI_SetID(String ID){
         this.ID=ID;
@@ -713,7 +772,15 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             this.dispose();
         }
         } else {
-            String ritPrz = Funzioni.GUIModificaPrezzo(this, MU, ME, PrezzoT, TimeStamp, Rete);
+           String ritPrz;
+           if(MU==null){
+               ritPrz = Funzioni.GUIDammiPrezzo(this, ME.Moneta, TimeStamp, ME.Qta, PrezzoT);
+           }else if(ME==null){
+               ritPrz = Funzioni.GUIDammiPrezzo(this, MU.Moneta, TimeStamp, MU.Qta, PrezzoT);
+           }
+           else{//String m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
+                ritPrz = Funzioni.GUIModificaPrezzo(this, MU, ME, PrezzoT, TimeStamp, Rete);
+           }
             if (ritPrz != null) {
                 Ritorno[0] = ritPrz;
                 Ritorno[1] = "|||Manuale";

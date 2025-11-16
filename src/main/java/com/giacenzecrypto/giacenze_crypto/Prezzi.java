@@ -1348,9 +1348,9 @@ public class Prezzi {
 
             String apiUrl = "https://min-api.cryptocompare.com/data/v2/histohour?fsym=" + Crypto + "&tsym=EUR&limit=720&toTs=" + Fine;
             // System.out.println(apiUrl);
-
-            URL url = new URI(apiUrl).toURL();
             managerRichieste.addRange("CryptoCompare_" + Crypto, Since, Until);
+            URL url = new URI(apiUrl).toURL();
+            
             //questo serve per non fare chiamate api doppie, se non va è inutile riprovare
             URLConnection connection = url.openConnection();
             // System.out.println(url);

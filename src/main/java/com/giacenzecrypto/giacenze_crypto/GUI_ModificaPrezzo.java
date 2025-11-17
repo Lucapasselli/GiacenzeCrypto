@@ -446,7 +446,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             
 
             //Adesso cerco i prezzi nel vecchio database coingecko
-            System.out.println(M.MonetaAddress+"--"+M.Rete);
+           // System.out.println(M.MonetaAddress+"--"+M.Rete);
             if (Funzioni_WalletDeFi.isValidAddress(M.MonetaAddress, M.Rete)) {
                 System.out.println("Sono qui");
                 PrezzoUnitario = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + M.MonetaAddress + "_" + M.Rete);

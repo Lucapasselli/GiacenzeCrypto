@@ -58,6 +58,16 @@ public class DatabaseH2 {
                         "prezzo DOUBLE, " +
                         "PRIMARY KEY (timestamp, exchange, symbol, rete, address)" +
                         ")");
+            
+            connectionPersonale.createStatement().execute("CREATE TABLE IF NOT EXISTS PrezziNew (" +
+                        "timestamp BIGINT NOT NULL, " +
+                        "exchange VARCHAR(100) NOT NULL, " +
+                        "symbol VARCHAR(100) NOT NULL, " +
+                        "rete VARCHAR(100) NOT NULL, " +
+                        "address VARCHAR(255) NOT NULL, " +
+                        "prezzo DOUBLE, " +
+                        "PRIMARY KEY (timestamp, exchange, symbol, rete, address)" +
+                        ")");
         
             String createTableSQL = "CREATE TABLE IF NOT EXISTS Prezzo_ora_Address_Chain  (ora_address_chain VARCHAR(255) PRIMARY KEY, prezzo VARCHAR(255))";
             PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL);
@@ -189,9 +199,114 @@ public class DatabaseH2 {
         }
     }
     
+public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, String Moneta, String VU, String Rete, String Address, String Gruppo) {
+    try {
+        Double ValoreUnitario = Double.valueOf(VU);
 
+        // Controllo validity address
+        if (!isEmpty(Address) && !Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
+            Address = "";
+        }
 
-    
+        if (Principale.Mappa_ChainExplorer.get(Rete) == null) Rete = "";
+
+        // Fonte -> rimuovo parte dopo "("
+        if (Fonte.contains("(")) Fonte = Fonte.split("\\(")[0].trim();
+        if (isEmpty(Gruppo)) Gruppo = "ALL";
+        Fonte = Fonte + " (" + Gruppo + ")";
+
+        // --- Determino modalità ---
+        boolean perNome = (isEmpty(Address) || isEmpty(Rete)) && !isEmpty(Moneta);
+        boolean perAddress = (!isEmpty(Address) || !isEmpty(Rete));
+        
+        //CANCELLO i vecchi valori se esistono nel vecchio database XXXEUR sia personale che old database      
+        String cancellaXXXEUR = """
+            DELETE FROM XXXEUR
+            WHERE dataSimbolo = ?
+        """;
+        String Datasimbolo=FunzioniDate.ConvertiDatadaLongallOra(Timestamp) + " " + Moneta;
+        try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(cancellaXXXEUR)) {
+            del.setString(1, Datasimbolo);
+            del.executeUpdate();
+        }
+        try (PreparedStatement del = DatabaseH2.connection.prepareStatement(cancellaXXXEUR)) {
+            del.setString(1, Datasimbolo);
+            del.executeUpdate();
+        }
+
+        // --- 1) DELETE esistente ---
+        String deleteSql;
+        if (perNome) {
+            deleteSql = """
+                DELETE FROM PrezziNew 
+                WHERE timestamp = ?
+                  AND exchange ILIKE ?
+                  AND symbol = ?
+                  AND rete = ''
+                  AND address = ''
+                """;
+        } else if (perAddress) {
+            deleteSql = """
+                DELETE FROM PrezziNew
+                WHERE timestamp = ?
+                  AND exchange ILIKE ?
+                  AND symbol = ''
+                  AND rete = ?
+                  AND address = ?
+                """;
+        } else {
+            return;
+        }
+
+        try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(deleteSql)) {
+            del.setLong(1, Timestamp);
+            del.setString(2, "%" + Gruppo + "%");
+            if (perNome) {
+                del.setString(3, Moneta);
+            } else {
+                del.setString(3, Rete);
+                del.setString(4, Address);
+            }
+            del.executeUpdate();
+        }
+
+        // --- 2) MERGE nuovo valore ---
+        String mergeSql = """
+            MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo, rete, address)
+            KEY (timestamp, exchange, symbol, rete, address)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """;
+
+        try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(mergeSql)) {
+
+            if (perNome) {
+                ps.setLong(1, Timestamp);
+                ps.setString(2, Fonte);
+                ps.setString(3, Moneta);
+                ps.setDouble(4, ValoreUnitario);
+                ps.setString(5, "");
+                ps.setString(6, "");
+            } else {
+                ps.setLong(1, Timestamp);
+                ps.setString(2, Fonte);
+                ps.setString(3, "");
+                ps.setDouble(4, ValoreUnitario);
+                ps.setString(5, Rete);
+                ps.setString(6, Address);
+            }
+
+            ps.executeUpdate();
+        }
+
+    } catch (NumberFormatException | SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+}
+
+    private static boolean isEmpty(String s) {
+    return s == null || s.isBlank();
+}
+
     
     /**
  * Gestisce l'inserimento o l'aggiornamento di dati nella tabella EMONEY.
@@ -1154,6 +1269,31 @@ public class DatabaseH2 {
         }
         return Risultato;
     }
+    
+    public static String PrezzoAddressChainPers_Leggi(String ora_address_chain) {
+        //System.out.println(ora_address_chain);
+        String Risultato = null;
+        String OAC[]=ora_address_chain.split("_");
+        if (OAC.length<3)
+        {
+            System.out.println("Errore nella funzione DatabaseH2.PrezzoAddressChain_Leggi, stringa con errore : "+ora_address_chain);
+            return null;
+        }
+        if (!OAC[2].equals("SOL")) ora_address_chain=ora_address_chain.toUpperCase();
+        try {
+            // Connessione al database
+            String checkIfExistsSQL = "SELECT ora_address_chain,prezzo FROM Prezzo_ora_Address_Chain WHERE ora_address_chain = '" + ora_address_chain + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(checkIfExistsSQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("prezzo");
+            }
+
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Risultato;
+    }
 
     public static void PrezzoAddressChain_Scrivi_OLD(String ora_address_chain, String prezzo,boolean personalizzato) {
         try {
@@ -1267,7 +1407,29 @@ public class DatabaseH2 {
             }
         return Risultato;
     }
-    
+   
+           public static String XXXEUR_LeggiPers(String dataSimbolo) {
+       
+        String Risultato = null;
+        try {
+            // Connessione al database
+            String SQL = "SELECT dataSimbolo,prezzo FROM XXXEUR WHERE dataSimbolo = '" + dataSimbolo + "'";
+            PreparedStatement checkStatement = connectionPersonale.prepareStatement(SQL);
+            var resultSet = checkStatement.executeQuery();
+            if (resultSet.next()) {
+                Risultato = resultSet.getString("prezzo");
+            }
+
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        if (Risultato!=null && Risultato.equalsIgnoreCase("null"))
+            {
+                System.out.println("DatabaseH2.XXXEUR_LEGGI prezzo Errato "+dataSimbolo);
+            return null;
+            }
+        return Risultato;
+    }
     
     public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo, boolean personalizzato) {
         if (dataSimbolo == null || dataSimbolo.isEmpty()) {

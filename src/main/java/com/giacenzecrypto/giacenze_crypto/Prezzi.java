@@ -712,7 +712,8 @@ public class Prezzi {
             IPrezzo=new InfoPrezzo();
             IPrezzo.Moneta=Simbolo;
             IPrezzo.Qta=new BigDecimal(Qta);
-            IPrezzo.exchange="coingecko";
+            if(DatabaseH2.PrezzoAddressChainPers_Leggi(DataOra + "_" + Address + "_" + Rete)==null)IPrezzo.exchange="coingecko (Old)";
+            else IPrezzo.exchange="Personalizzato (Old)";
             IPrezzo.timestamp=Datalong;
             IPrezzo.prezzoUnitario=new BigDecimal(risultato);
             return IPrezzo;
@@ -976,7 +977,8 @@ public class Prezzi {
         risultato=new InfoPrezzo();
         String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
         if (PrezzoUnitario != null){
-            risultato.exchange="";
+            risultato.exchange="DB Interno (Old)";
+            if (DatabaseH2.XXXEUR_LeggiPers(DataOra + " " + Crypto)!=null)risultato.exchange="Personalizzato (Old)";
             risultato.timestamp=FunzioniDate.ConvertiDatainLongMinuto(DataOra+":00");
             risultato.prezzoUnitario=new BigDecimal(PrezzoUnitario);
             risultato.Qta=new BigDecimal(Qta);
@@ -1221,7 +1223,6 @@ public class Prezzi {
             risultato = ConvertiUSDEUR(Qta, DataGiorno);
         } //altrimenti calcolo il risultato in base alle qta
         else {
-            //   System.out.println(Qta+" - "+risultato+" - "+DataGiorno);
 
             risultato = (new BigDecimal(Qta).multiply(new BigDecimal(risultato))).setScale(10, RoundingMode.HALF_UP).stripTrailingZeros().toString();
         }
@@ -2152,7 +2153,61 @@ symbol=symbol.toUpperCase();
     long tsMin = timestampRiferimento - MAX_DIFF_MS;
     long tsMax = timestampRiferimento + MAX_DIFF_MS;
 
-    String baseQuery = """
+    
+    
+    
+
+    // Se è specificato un exchange, prova prima con quello
+    if (exchangePreferito != null && !exchangePreferito.isEmpty()) {
+        //try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery + " /* preferito */")) {
+        //A1 - Prezzo da personalizzati
+        
+        //metto like nella fonte perchè nei personalizzati vado a cercare il gruppo wallet non la fonte in se
+        //Quando creo i personalizzati infatti inserisco anche il gruppo wakllet nella fonte per individuarli
+        //Nel caso non specifichi un grupo metto ALL quindi ad esempio la fonte sarà "personalizzato (ALL)" piuttosto che 
+        //binance (Wallet 01) piuttosto che personalizzato (Wallet 02) etc....
+        //nel caso sia messo binance, starà ad indicare che quello è il prezzo di binance che si è scelto che per quel gruppo
+        //deve essere il predefinito.
+        String baseQuery = """
+        SELECT prezzo, exchange, timestamp
+        FROM PrezziNew
+        WHERE (symbol = ? OR ? = '')
+          AND timestamp BETWEEN ? AND ?
+          AND (rete = ? OR ? = '')
+          AND (address = ? OR ? = '')
+          AND (exchange ILIKE ? OR ? = '')
+        ORDER BY ABS(timestamp - ?) ASC
+        LIMIT 1
+    """;
+        try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(baseQuery)) {
+            ps.setString(1, symbol == null ? "" : symbol);
+            ps.setString(2, symbol == null ? "" : symbol);
+            ps.setLong(3, tsMin);
+            ps.setLong(4, tsMax);
+            ps.setString(5, rete == null ? "" : rete);
+            ps.setString(6, rete == null ? "" : rete);
+            ps.setString(7, address == null ? "" : address);
+            ps.setString(8, address == null ? "" : address);
+            ps.setString(9, "%" +exchangePreferito+"%");
+            ps.setString(10, exchangePreferito);
+            ps.setLong(11, timestampRiferimento);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal prezzo = rs.getBigDecimal("prezzo");
+                    String exch = rs.getString("exchange");
+                    long ts = rs.getLong("timestamp");
+                    BigDecimal prezzoQta = prezzo.multiply(Qta.abs());
+                    return new InfoPrezzo(prezzo, exch, ts, prezzoQta,Qta,symbol);
+                    
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        
+        //A2 - Prezzo da database prezzi
+        baseQuery = """
         SELECT prezzo, exchange, timestamp
         FROM PrezziNew
         WHERE (symbol = ? OR ? = '')
@@ -2163,10 +2218,7 @@ symbol=symbol.toUpperCase();
         ORDER BY ABS(timestamp - ?) ASC
         LIMIT 1
     """;
-
-    // Se è specificato un exchange, prova prima con quello
-    if (exchangePreferito != null && !exchangePreferito.isEmpty()) {
-        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery + " /* preferito */")) {
+        try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery)) {
             ps.setString(1, symbol == null ? "" : symbol);
             ps.setString(2, symbol == null ? "" : symbol);
             ps.setLong(3, tsMin);
@@ -2192,6 +2244,13 @@ symbol=symbol.toUpperCase();
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
         }
+        
+        
+    }
+    
+    if (exchangePreferito != null && !exchangePreferito.isEmpty()) {
+        //try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery + " /* preferito */")) {
+        
     }
 
     // Se non trovato o exchange non specificato → cerca in tutti gli exchange
@@ -2205,7 +2264,7 @@ symbol=symbol.toUpperCase();
         ORDER BY ABS(timestamp - ?) ASC
         LIMIT 1
     """;
-
+    
     try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(queryAll)) {
         ps.setString(1, symbol == null ? "" : symbol);
         ps.setString(2, symbol == null ? "" : symbol);
@@ -2264,6 +2323,40 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
     // Mappa per tenere solo il record più vicino per exchange
     Map<String, InfoPrezzo> miglioriPerExchange = new HashMap<>();
 
+    //Interrogo i prezzi salvati nei personalizzati
+    try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(query)) {
+        ps.setString(1, symbol == null ? "" : symbol);
+        ps.setString(2, symbol == null ? "" : symbol);
+        ps.setLong(3, tsMin);
+        ps.setLong(4, tsMax);
+        ps.setString(5, rete == null ? "" : rete);
+        ps.setString(6, rete == null ? "" : rete);
+        ps.setString(7, address == null ? "" : address);
+        ps.setString(8, address == null ? "" : address);
+        ps.setLong(9, timestampRiferimento);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                BigDecimal prezzo = rs.getBigDecimal("prezzo");
+                String exchange = rs.getString("exchange");
+                long ts = rs.getLong("timestamp");
+
+                BigDecimal prezzoQta = prezzo.multiply(Qta == null ? BigDecimal.ONE : Qta.abs());
+                InfoPrezzo info = new InfoPrezzo(prezzo, exchange, ts, prezzoQta, Qta, symbol);
+
+                // Mantieni solo quello più vicino per ogni exchange
+                InfoPrezzo esistente = miglioriPerExchange.get(exchange);
+                if (esistente == null ||
+                    Math.abs(ts - timestampRiferimento) < Math.abs(esistente.timestamp - timestampRiferimento)) {
+                    miglioriPerExchange.put(exchange, info);
+                }
+            }
+        }
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+    }
+    
+    //Interrogo i prezzi nel database princiaple
     try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(query)) {
         ps.setString(1, symbol == null ? "" : symbol);
         ps.setString(2, symbol == null ? "" : symbol);
@@ -2448,7 +2541,8 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
                      }
                      ps.executeBatch();
                  } catch (SQLException ex) {
-                     Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                     //Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                     LoggerGC.ScriviErrore(ex);
                  }
                  
                  //Se arrivo qua lo script è andato a buon fine quindi aggiungo il range richiesto alla lista di quelli già utilizzati pr la moneta

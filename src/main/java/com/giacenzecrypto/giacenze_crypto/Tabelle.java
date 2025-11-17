@@ -408,7 +408,24 @@ public class Tabelle {
             tabella.scrollRectToVisible(new Rectangle(tabella.getCellRect(riga, 0, true))); 
        }
    }   */ 
-   
+   /**
+ * Posiziona la selezione della JTable sulla riga indicata e, opzionalmente,
+ * effettua lo scroll della tabella per rendere visibile la riga selezionata.
+ *
+ * <p>La funzione esegue due operazioni:
+ * <ul>
+ *     <li>Se la riga è valida (compresa tra 0 e rowCount-1), imposta la selezione della JTable su quella riga.</li>
+ *     <li>Se {@code misposto} è true, effettua lo scroll automatico per portare la riga selezionata in vista.
+ *         L’operazione di scroll viene eseguita sulla Event Dispatch Thread tramite {@code SwingUtilities.invokeLater}.</li>
+ * </ul>
+ *
+ * @param tabella  la JTable su cui effettuare la selezione e lo scroll.  
+ *                 Non deve essere {@code null}.
+ * @param riga     indice della riga da selezionare e/o rendere visibile.  
+ *                 Deve essere compreso tra 0 e {@code tabella.getRowCount() - 1}.
+ * @param misposto se true, la tabella effettuerà lo scroll fino alla riga indicata;  
+ *                 se false, la riga verrà solo selezionata senza alcun movimento della viewport.
+ */
    public static void Funzioni_PosizionaTabellasuRiga(JTable tabella, int riga, boolean misposto) {
     if (riga >= 0 && riga < tabella.getRowCount()) {
         tabella.setRowSelectionInterval(riga, riga);

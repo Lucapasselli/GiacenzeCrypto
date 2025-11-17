@@ -7474,6 +7474,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             long DataRiferimento;// = 0;
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
+                
+                //Recupero il Wallet di riferimento
+                //Mi servirà poi per trovare il gruppo Wallet
+                
+                String Wallet=Giacenzeadata_Walleta_Label.getText();
+                String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Wallet);
+                System.out.println("Gruppo:"+Gruppo);
                 SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                 String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
                 DataRiferimento = FunzioniDate.ConvertiDatainLong(Data) + 86400000;
@@ -7483,23 +7490,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
                 SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH");
                 sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
-                String DataconOra = sdf.format(DataRiferimento);
+               // String DataconOra = sdf.format(DataRiferimento);
 
-                int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
+               
+                int rigaselezionata = GiacenzeaData_Tabella.getSelectedRow();
                 String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
                 String Rete = null;
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
                     Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
                 }
-                //System.out.println(Rete);
+
                 String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();  
                 String Tipo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(); 
                 BigDecimal Qta = new BigDecimal(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString());
                 String Prezzo = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 5).toString();
-               // String m = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " : ", Prezzo);
-                //long data=FunzioniDate.ConvertiDatainLong(Data);
+                String InfoPR="";
+                if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 7)!=null)
+                    InfoPR = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 7).toString();
+
                 if (!Funzioni_WalletDeFi.isValidAddress(Address, Rete))Address=null;
-                //System.out.println(Rete);
+
                 Moneta MU=new Moneta();
                 MU.Moneta=mon;
                 MU.Qta=Qta.toPlainString();
@@ -7507,8 +7517,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 MU.MonetaAddress=Address;
                 MU.Prezzo=Prezzo;
                 MU.Tipo=Tipo;
-                
-                Prezzi.InfoPrezzo IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(Prezzo), null, mon);
+                Prezzi.InfoPrezzo IPr;
+                if (!InfoPR.isBlank())
+                {
+                    IPr=new Prezzi.InfoPrezzo(InfoPR);
+                    IPr.prezzoQta=new BigDecimal(Prezzo);
+                }
+                else IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(Prezzo), null, mon);
                 long df=DataRiferimento;
                 Component c = this;
                 Download progress = new Download();
@@ -7529,28 +7544,38 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 
                 
                 String m=Ritorno[0];
+                Prezzi.InfoPrezzo InfoRitorno=new Prezzi.InfoPrezzo();
+                if (Ritorno[1]!=null) InfoRitorno=new Prezzi.InfoPrezzo(Ritorno[1]);
                 //if (!Ritorno[1].split("\\|",-1)[3].isBlank())
                 //System.out.println("Ritorno "+Ritorno[0]);
                // m = Funzioni.GUIDammiPrezzo(this, mon, data, Qta.toString(), Prezzo);
                 if (m != null) {
-                        //Se è un numero inserisco il prezzo e lo salvo a sistema
-                        BigDecimal PrezzoUnitario;
-                        if (!Ritorno[1].split("\\|",-1)[2].isBlank())PrezzoUnitario=new BigDecimal(Ritorno[1].split("\\|",-1)[2]);
-                        else PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
-                       
-                        //Questa è la versione vecchia dei prezzi personalizzati, da modificare per mettere la versione nuova
-                        if (Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()) {
+                    //Se è un numero inserisco il prezzo e lo salvo a sistema
+                    // BigDecimal PrezzoUnitario;
+                    if (InfoRitorno.prezzoUnitario == null) {
+                        InfoRitorno.prezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+                        InfoRitorno.timestamp=DataRiferimento;
+                    }
+                    if (InfoRitorno.exchange == null) {
+                        InfoRitorno.exchange = "";
+                    }
+                    // if (!Ritorno[1].split("\\|",-1)[2].isBlank())PrezzoUnitario=new BigDecimal(Ritorno[1].split("\\|",-1)[2]);
+                    // else PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
+
+                    //Questa è la versione vecchia dei prezzi personalizzati, da modificare per mettere la versione nuova
+                    /*  if (Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()) {
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
                         } else {
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                             System.out.println("Unitario "+PrezzoUnitario.toPlainString());
-                        }
-                    
+                        }*/
+                    DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, Gruppo);
+
                 }
                 //Una volta cambiato il prezzo aggiorno la tabella
                 int PosizioneScrol = GiacenzeaData_ScrollPane.getVerticalScrollBar().getValue();
                 GiacenzeaData_CompilaTabellaToken(true);
-                Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, rigaselezionata,false);
+                Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, rigaselezionata,true);
                 GiacenzeaData_ScrollPane.getVerticalScrollBar().setValue(PosizioneScrol);
             }
         }
@@ -13255,7 +13280,7 @@ try {
         //Fase 2 Preparazione thead
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
-
+//SwingUtilities.invokeLater(() -> {
         Thread thread;
         thread = new Thread() {
             public void run() {
@@ -13436,7 +13461,11 @@ try {
                         riga[5] = Double.valueOf((String) riga[5]);
 
                         if (CompiloTabella) {
-                            GiacenzeaData_ModelloTabella.addRow(riga);
+                            Object[] r = riga;
+                            SwingUtilities.invokeLater(() -> {
+                                GiacenzeaData_ModelloTabella.addRow(r);
+                            });
+                            //GiacenzeaData_ModelloTabella.addRow(riga);
                         }
                         TotEuro = TotEuro.add(new BigDecimal((Double) riga[5]));
                         GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());
@@ -13457,6 +13486,7 @@ try {
         };
 
         thread.start();
+//});
         progress.setVisible(true);
         
                          //SEZIONE RIPRISTINO SELEZIONI SU TABELLE

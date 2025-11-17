@@ -688,7 +688,7 @@ public class Prezzi {
     
     
     
-    public static InfoPrezzo ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo) {
+    public static InfoPrezzo ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo,String Fonte) {
 
         
         
@@ -702,7 +702,17 @@ public class Prezzi {
         }
         //Se non l'ho ancora fatto recupero la lista dei token gestiti
         
-        InfoPrezzo IPrezzo=null;
+        InfoPrezzo IPrezzo;
+        
+        
+        //Come prima cosacontrollo se ho dei personalizzati nuovi, se non li ho allora cerco tra i prezzi vecchi e poi torno a cercare tra i nuovi
+        //Come prima cosa cerco nei nuovi personalizzati        
+        IPrezzo=DammiPrezzoDaDatabasePersonale("",Datalong,Fonte,Rete,Address,60,qta);
+        if (IPrezzo!=null){
+            IPrezzo.Moneta=Simbolo;
+            return IPrezzo;
+        }
+        
         
         //Vedo se riesco a recuperare il prezzo dal vecchio database
         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
@@ -934,7 +944,7 @@ public class Prezzi {
         return risultato;
     }*/
     
-      public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Exchange,boolean includiVecchi) {
+      public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Fonte,boolean includiVecchi) {
 
         //in questo metodo manca solo la parte che salva le richieste già effettuate sul token per evitare di farne tante analoghe
         InfoPrezzo risultato;   
@@ -954,7 +964,7 @@ public class Prezzi {
         else{
             //Se gli address sono validi mando la richiesta su coingecko
             //Sarà poi la funzione stessa a richiamare questa non dovesse trovare il prezzo
-            return ConvertiAddressEUR(Qta,Datalong,Address,Rete,Crypto);           
+            return ConvertiAddressEUR(Qta,Datalong,Address,Rete,Crypto,Fonte);           
         }
         
 
@@ -971,6 +981,11 @@ public class Prezzi {
         }
         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
         
+        //Come prima cosa cerco nei nuovi personalizzati        
+        risultato=DammiPrezzoDaDatabasePersonale(Crypto,Datalong,Fonte,Rete,Address,60,qta);
+        if (risultato!=null){
+            return risultato;
+        }
         
         //Vedo se ho i prezzi all'ora (ormai tenuti solo per valorizzare anche il pregresso allo stesso modo)
         if (includiVecchi){
@@ -988,7 +1003,7 @@ public class Prezzi {
         }
         
         //Se non ho i prezzi all'ora (mantenuti per non variare i prezzi delle vecchie valorizzazioni, verifico se ho prezzi precisi
-        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Exchange,Rete,Address,60,qta);
+        risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Fonte,Rete,Address,60,qta);
         if (risultato!=null){
             return risultato;
         }
@@ -998,7 +1013,7 @@ public class Prezzi {
           //Se non ho neanche i prezzi all'ora provo a scaricarli
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
           RecuperaPrezziDaCCXT(Crypto, Datalong);
-          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,5,qta);
+          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,5,qta);
           if (risultato!=null){
             return risultato;
           }
@@ -1006,7 +1021,7 @@ public class Prezzi {
           //Se non trovo i prezzi scaricandoli dagli exchange allora tiro in balo cryptocompare, lo tiro in ballo per ultimo prchè i prezzi hanno una precisione oraria          
           RecuperaPrezziDaCryptoCompare(Crypto, Datalong);
           //Cerco il risultato nei 60 minuti in questo caso
-          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Exchange, Rete, Address,60,qta);
+          risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,60,qta);
           if (risultato==null){
               System.out.println("Nessun prezzo trovato per "+Crypto);
           }
@@ -2248,10 +2263,6 @@ symbol=symbol.toUpperCase();
         
     }
     
-    if (exchangePreferito != null && !exchangePreferito.isEmpty()) {
-        //try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery + " /* preferito */")) {
-        
-    }
 
     // Se non trovato o exchange non specificato → cerca in tutti gli exchange
     String queryAll = """
@@ -2293,6 +2304,149 @@ symbol=symbol.toUpperCase();
  // Nessun prezzo trovato entro 5 minuti
     return null;
 }
+
+
+/**
+ * Recupera dal database il prezzo più vicino a un determinato timestamp per un dato token.
+ * <p>
+ * La funzione ricerca il valore nel database <b>PrezziNew</b> considerando le seguenti regole:
+ * <ul>
+ *   <li>Se viene specificato un exchange preferito, la ricerca viene effettuata prima su di esso.</li>
+ *   <li>Se non viene trovato alcun risultato sull’exchange preferito (o se non specificato),
+ *       la ricerca prosegue su tutti gli altri exchange.</li>
+ *   <li>Il timestamp trovato non può differire di oltre ±5 minuti (300 secondi) dal timestamp richiesto.</li>
+ *   <li>È possibile filtrare ulteriormente la ricerca per rete e address (facoltativi).</li>
+ * </ul>
+ *
+ * @param symbol              il simbolo del token (es. "BTC")
+ * @param timestampRiferimento il timestamp di riferimento (in millisecondi)
+ * @param exchangePreferito   l’exchange da cui preferibilmente recuperare il prezzo
+ *                            (può essere {@code null} o vuoto per cercare su tutti)
+ * @param rete                la rete blockchain associata al token (facoltativa, può essere vuota)
+ * @param address             l’indirizzo del token (facoltativo, può essere vuoto)
+ * @param minuti              Precisione minima in minuti
+     * @param Qta
+ * @return un oggetto {@link PrezzoInfo} contenente il prezzo, l’exchange e il timestamp effettivo del prezzo,
+ *         oppure {@code null} se non è stato trovato alcun prezzo valido entro 5 minuti dal timestamp richiesto
+ *
+ * @see PrezzoInfo
+ * @implNote Il campo {@code timestamp} del database e del parametro di input devono essere espressi
+ *           nella stessa unità temporale (millisecondi). Se il database usa secondi UNIX,
+ *           adattare la logica di confronto di conseguenza.
+ */
+public static InfoPrezzo DammiPrezzoDaDatabasePersonale(
+        String symbol,
+        long timestampRiferimento,
+        String exchangePreferito,
+        String rete,
+        String address,
+        long minuti, 
+        BigDecimal Qta) {
+symbol=symbol.toUpperCase();
+   // if (Qta==null)Qta="1";
+    
+    final long MAX_DIFF_MS = minuti * 60 * 1000; // 5 minuti in millisecondi
+    long tsMin = timestampRiferimento - MAX_DIFF_MS;
+    long tsMax = timestampRiferimento + MAX_DIFF_MS;
+
+   // System.out.println(symbol+"-"+timestampRiferimento+"-"+rete+"-"+address+"-"+Qta+"-"+exchangePreferito);
+    
+    
+
+    // Se è specificato un exchange, prova prima con quello
+    if (exchangePreferito != null && !exchangePreferito.isEmpty()) {
+        //try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(baseQuery + " /* preferito */")) {
+        //A1 - Prezzo da personalizzati
+        
+        //metto like nella fonte perchè nei personalizzati vado a cercare il gruppo wallet non la fonte in se
+        //Quando creo i personalizzati infatti inserisco anche il gruppo wakllet nella fonte per individuarli
+        //Nel caso non specifichi un grupo metto ALL quindi ad esempio la fonte sarà "personalizzato (ALL)" piuttosto che 
+        //binance (Wallet 01) piuttosto che personalizzato (Wallet 02) etc....
+        //nel caso sia messo binance, starà ad indicare che quello è il prezzo di binance che si è scelto che per quel gruppo
+        //deve essere il predefinito.
+        String baseQuery = """
+        SELECT prezzo, exchange, timestamp
+        FROM PrezziNew
+        WHERE (symbol = ? OR ? = '')
+          AND timestamp BETWEEN ? AND ?
+          AND (rete = ? OR ? = '')
+          AND (address = ? OR ? = '')
+          AND (exchange ILIKE ? OR ? = '')
+        ORDER BY ABS(timestamp - ?) ASC
+        LIMIT 1
+    """;
+        try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(baseQuery)) {
+            ps.setString(1, symbol == null ? "" : symbol);
+            ps.setString(2, symbol == null ? "" : symbol);
+            ps.setLong(3, tsMin);
+            ps.setLong(4, tsMax);
+            ps.setString(5, rete == null ? "" : rete);
+            ps.setString(6, rete == null ? "" : rete);
+            ps.setString(7, address == null ? "" : address);
+            ps.setString(8, address == null ? "" : address);
+            ps.setString(9, "%" +exchangePreferito+"%");
+            ps.setString(10, exchangePreferito);
+            ps.setLong(11, timestampRiferimento);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal prezzo = rs.getBigDecimal("prezzo");
+                    String exch = rs.getString("exchange");
+                    long ts = rs.getLong("timestamp");
+                    BigDecimal prezzoQta = prezzo.multiply(Qta.abs());
+                    return new InfoPrezzo(prezzo, exch, ts, prezzoQta,Qta,symbol);
+                    
+                }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        
+    // Se non trovato o exchange non specificato → cerca in tutti gli exchange
+    String queryAll = """
+        SELECT prezzo, exchange, timestamp
+        FROM PrezziNew
+        WHERE (symbol = ? OR ? = '')
+          AND timestamp BETWEEN ? AND ?
+          AND (rete = ? OR ? = '')
+          AND (address = ? OR ? = '')
+        ORDER BY ABS(timestamp - ?) ASC
+        LIMIT 1
+    """;
+    
+    try (PreparedStatement ps = DatabaseH2.connectionPersonale.prepareStatement(queryAll)) {
+        ps.setString(1, symbol == null ? "" : symbol);
+        ps.setString(2, symbol == null ? "" : symbol);
+        ps.setLong(3, tsMin);
+        ps.setLong(4, tsMax);
+        ps.setString(5, rete == null ? "" : rete);
+        ps.setString(6, rete == null ? "" : rete);
+        ps.setString(7, address == null ? "" : address);
+        ps.setString(8, address == null ? "" : address);
+        ps.setLong(9, timestampRiferimento);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                BigDecimal prezzo = rs.getBigDecimal("prezzo");
+                String exch = rs.getString("exchange");
+                long ts = rs.getLong("timestamp");
+                BigDecimal prezzoQta = prezzo.multiply(Qta.abs());
+                return new InfoPrezzo(prezzo, exch, ts, prezzoQta,Qta,symbol);
+                //return new InfoPrezzo(prezzo, exch, ts);
+            }
+        }
+    }   catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        
+    }
+    
+   
+
+ // Nessun prezzo trovato entro 5 minuti
+    return null;
+}
+
 
 public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
         String symbol,

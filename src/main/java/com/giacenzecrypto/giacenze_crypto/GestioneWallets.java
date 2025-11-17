@@ -308,7 +308,7 @@ public class GestioneWallets extends javax.swing.JDialog {
                 String splittata[] = riga.split(";");
                 String rigaTabella[]=new String[5];
                 String w=splittata[0]+" ("+splittata[1]+")";
-                rigaTabella[0]=DatabaseH2.Pers_GruppoWallet_Leggi(w);
+                rigaTabella[0]=DatabaseH2.Pers_GruppoWallet_Leggi(w,true);
                 rigaTabella[0]=DatabaseH2.Pers_GruppoAlias_Leggi(rigaTabella[0])[1];
                 rigaTabella[1]=splittata[0];
                 rigaTabella[2]=splittata[1];

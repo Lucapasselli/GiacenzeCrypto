@@ -73,7 +73,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
         Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
         
-        System.out.println(PrezzoT);
+       // System.out.println(PrezzoT);
                 
         
 
@@ -89,6 +89,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 PrezzoAttualeU[3]=IPr.exchange;
                 if (IPr.timestamp!=0)PrezzoAttualeU[4]=IPr.RitornaStringData();
                 if (IPr.timestamp!=0)PrezzoAttualeU[5]=IPr.RitornaStringDiffData(TimeStamp);
+                if (PrezzoAttualeU[4]!=null&&PrezzoAttualeU[4].contains("XX"))PrezzoAttualeU[5]="1 ora";
                 if (IPr.prezzoUnitario!=null)PrezzoAttualeU[6]=IPr.prezzoUnitario.toPlainString();
             }
             if (PrezzoT!=null)
@@ -105,6 +106,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 PrezzoAttualeE[3]=IPr.exchange;
                 if (IPr.timestamp!=0)PrezzoAttualeE[4]=IPr.RitornaStringData();
                 if (IPr.timestamp!=0)PrezzoAttualeE[5]=IPr.RitornaStringDiffData(TimeStamp);
+                if (PrezzoAttualeU[4]!=null&&PrezzoAttualeU[4].contains("XX"))PrezzoAttualeU[5]="1 ora";
                 if (IPr.prezzoUnitario!=null)PrezzoAttualeE[6]=IPr.prezzoUnitario.toPlainString();
             }
             if (PrezzoT!=null)
@@ -767,7 +769,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
        if (ID!=null){
         if(Funzioni.GUIModificaPrezzo(this,ID))
         {
-            Principale.MappaCryptoWallet.get(ID)[40]="|||Manuale";
+            Principale.MappaCryptoWallet.get(ID)[40]="|||Personalizzato";
             Principale.TabellaCryptodaAggiornare=true;
             this.dispose();
         }
@@ -783,7 +785,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
            }
             if (ritPrz != null) {
                 Ritorno[0] = ritPrz;
-                Ritorno[1] = "|||Manuale";
+                Ritorno[1] = "|||Personalizzato";
                 this.dispose();
             }
         }

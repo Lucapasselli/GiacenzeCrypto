@@ -2130,6 +2130,9 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMinWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
             GiacenzeaData_Tabella.getColumnModel().getColumn(5).setMaxWidth(100);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(7).setMaxWidth(0);
         }
         GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
@@ -6660,7 +6663,7 @@ JPanel loadingBar = new JPanel() {
                         TotaleQtaWallet = TotaleQtaWallet.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                     }
                     //Rimanenze relative al Gruppo Wallet
-                    if (DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equalsIgnoreCase(DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3].trim()))) {
+                    if (DatabaseH2.Pers_GruppoWallet_Leggi(Wallet,true).equalsIgnoreCase(DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3].trim(),true))) {
                         TotaleQtaGruppo = TotaleQtaGruppo.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                     }
                     
@@ -6703,7 +6706,7 @@ JPanel loadingBar = new JPanel() {
                     }
                     
                     //Rimanenze relative al Gruppo Wallet
-                    if (DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equalsIgnoreCase(DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3].trim()))) {
+                    if (DatabaseH2.Pers_GruppoWallet_Leggi(Wallet,true).equalsIgnoreCase(DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3].trim(),true))) {
                         TotaleQtaGruppo = TotaleQtaGruppo.add(new BigDecimal(movimento[13])).stripTrailingZeros();
                     }
                     
@@ -6832,7 +6835,7 @@ JPanel loadingBar = new JPanel() {
                     if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
                                 ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
-                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) { 
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
@@ -6934,7 +6937,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         for (String a: Mappa_Wallet.keySet()){
             Object rigaTabella[]=new Object[4];
             rigaTabella[0]=a;
-            String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(a);
+            String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(a,true);
             String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
             rigaTabella[1]=Gruppo+" ( "+Valori[1]+" )";
             rigaTabella[2]=Valori[1];
@@ -7088,7 +7091,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //if (this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected())
                 if (v[18].trim().equalsIgnoreCase("") || this.DepositiPrelievi_CheckBox_movimentiClassificati.isSelected()) {
                 //Filtro Wallet
-                    String gwallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+                    String gwallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
 
                     if (WalletVoluto.equalsIgnoreCase("Tutti") || v[3].equalsIgnoreCase(WalletVoluto) || gwallet.equalsIgnoreCase(GruppoWalletVoluto)) {
                         //Filtro Token
@@ -7479,8 +7482,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Mi servirà poi per trovare il gruppo Wallet
                 
                 String Wallet=Giacenzeadata_Walleta_Label.getText();
-                String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Wallet);
-                System.out.println("Gruppo:"+Gruppo);
+                String Gruppo=Funzioni.getGruppoWalletXPrezzi(Wallet);
+                //System.out.println("Gruppo:"+Gruppo);
                 SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                 String Data = f.format(GiacenzeaData_Data_DataChooser.getDate());
                 DataRiferimento = FunzioniDate.ConvertiDatainLong(Data) + 86400000;
@@ -7493,7 +7496,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                // String DataconOra = sdf.format(DataRiferimento);
 
                
-                int rigaselezionata = GiacenzeaData_Tabella.getSelectedRow();
+                int rigaXRipristino = GiacenzeaData_Tabella.getSelectedRow();
+                int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
                 String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
                 String Rete = null;
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
@@ -7518,10 +7522,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 MU.Prezzo=Prezzo;
                 MU.Tipo=Tipo;
                 Prezzi.InfoPrezzo IPr;
+                long timestampDaCancellare=0;
                 if (!InfoPR.isBlank())
                 {
                     IPr=new Prezzi.InfoPrezzo(InfoPR);
                     IPr.prezzoQta=new BigDecimal(Prezzo);
+                    timestampDaCancellare=IPr.timestamp;
                 }
                 else IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(Prezzo), null, mon);
                 long df=DataRiferimento;
@@ -7569,13 +7575,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                             System.out.println("Unitario "+PrezzoUnitario.toPlainString());
                         }*/
-                    DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, Gruppo);
+                    //Timestamp da cancellare è il timestamp del prezzo attualmente salvato che potrebbe essere un personalizzato
+                    //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
+                    DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, Gruppo,timestampDaCancellare);
 
                 }
                 //Una volta cambiato il prezzo aggiorno la tabella
                 int PosizioneScrol = GiacenzeaData_ScrollPane.getVerticalScrollBar().getValue();
                 GiacenzeaData_CompilaTabellaToken(true);
-                Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, rigaselezionata,true);
+                Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, rigaXRipristino,true);
                 GiacenzeaData_ScrollPane.getVerticalScrollBar().setValue(PosizioneScrol);
             }
         }
@@ -7651,7 +7659,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             Moneta a[]=Funzioni.RitornaMoneteDaID(v[0]);
                             //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
                             //E se il wallet fa parte del gruppo wallet di riferimento
-                            String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);                           
+                            String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);                           
                             long dataTransazione=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
                             if (dataTransazione<=DataCalcoli&&GruppoWallet.equals(GruppoWalletMovimento)){
                             //A questo punto controllo se la moneta è quella che sto cercando
@@ -8663,7 +8671,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //2 - Ricalcolo i dati dell'RW se presenti
             //3 - Aggiorno le plusvalenze
             //4 - Ricarico la tabella crypto
-            if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet).equals(Gruppo)){
+            if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet,true).equals(Gruppo)){
                // System.out.println(Wallet);
                 String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
                 boolean PagaBollo=false;
@@ -9346,7 +9354,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             for (String id : IDMovimentati) {
                 Movimento = MappaCryptoWallet.get(id);
                 if (Movimento != null) {
-                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]); 
+                    String gwallet=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3],true); 
                     String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(gwallet);
                     gwallet=gwallet.split(" ")[1];
                     String Mov[] = new String[7];
@@ -12677,7 +12685,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
                                 ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
-                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) { 
                         if (movimento[8].equals(Moneta) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             setUnivoco.add(movimento[0]);
@@ -12869,7 +12877,7 @@ try {
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 ||Wallet.equalsIgnoreCase(movimento[3].trim())//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
-                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) 
                         {
                             
@@ -13070,7 +13078,7 @@ try {
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 ||Wallet.equalsIgnoreCase(movimento[3].trim())//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
-                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) 
                         {
                             
@@ -13229,6 +13237,8 @@ try {
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
         Tabelle.Tabelle_FiltroColonne(GiacenzeaData_Tabella,null,popup);
         GiacenzeaData_Label_Aggiornare.setVisible(false);
+        
+       
          
                 
                 
@@ -13336,7 +13346,7 @@ try {
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim()) && SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
-                                || DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                || DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) {
                             // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
                             //Faccio la somma dei movimenti in usicta
@@ -13436,13 +13446,17 @@ try {
                     riga[4] = M1.Qta;
                     riga[1] = M1.Rete;
                     riga[6] = "";
+
+                    String Gruppo=Funzioni.getGruppoWalletXPrezzi(Wallet);
+                    //System.out.println(Gruppo);
+                    
                     TabellaToken.put(riga[0].toString(), riga);
                     if ((GiacenzeaData_CheckBox_MostraQtaZero.isSelected() || !M1.Qta.equals("0"))
                             && (!GiacenzeaData_CheckBox_NascondiScam.isSelected() || !Funzioni.isSCAM(M1.Moneta))) {
                         if (M1.Qta.equals("0")) {
                             riga[5] = "0.00";
                         } else {
-                            Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, Rete,"personale");
+                            Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, Rete,Gruppo);
                             //riga[5] = Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, false, 2, Rete,"");
                            // System.out.println(M1.Moneta+" - "+M1.Tipo+" - "+M1.Qta+" - "+M1.Rete+" - "+M1.MonetaAddress);
                             if (IP==null||IP.prezzoUnitario==null){
@@ -13564,7 +13578,7 @@ try {
         }*/
         for (String v : Mappa_Wallet.keySet()) {
             setUnivocoWallets.add(v);
-            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v);
+            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v,true);
             MappaGruppiWalletUtilizzati.put(GruppoWallet, GruppoWallet);
            /* if (v.equals(VecchioValore)) {
                 VecchioTrovato=true;
@@ -14318,7 +14332,7 @@ try {
             long dataMovLong = Funzioni_Date_ConvertiDatainLong(v[1]);
 
             String wallet = v[3];
-            String gruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(wallet);
+            String gruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(wallet,true);
             String tokenOut = v[8];
             String tokenIn = v[11];
             String valorePlusvalenza = v[19];

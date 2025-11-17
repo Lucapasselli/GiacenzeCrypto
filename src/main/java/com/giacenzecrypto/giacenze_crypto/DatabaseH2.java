@@ -199,10 +199,11 @@ public class DatabaseH2 {
         }
     }
     
-public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, String Moneta, String VU, String Rete, String Address, String Gruppo) {
+public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, String Moneta, String VU, String Rete, String Address, String Gruppo,long timestampDaCancellare) {
     try {
         Double ValoreUnitario = Double.valueOf(VU);
-
+        //System.out.println(Timestamp);
+        //System.out.println(timestampDaCancellare);
         // Controllo validity address
         if (!isEmpty(Address) && !Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
             Address = "";
@@ -219,7 +220,7 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         boolean perNome = (isEmpty(Address) || isEmpty(Rete)) && !isEmpty(Moneta);
         boolean perAddress = (!isEmpty(Address) || !isEmpty(Rete));
         
-        //CANCELLO i vecchi valori se esistono nel vecchio database XXXEUR sia personale che old database      
+        //CANCELLO i vecchi valori se esistono nel vecchio database XXXEUR     
         String cancellaXXXEUR = """
             DELETE FROM XXXEUR
             WHERE dataSimbolo = ?
@@ -229,10 +230,22 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
             del.setString(1, Datasimbolo);
             del.executeUpdate();
         }
-        try (PreparedStatement del = DatabaseH2.connection.prepareStatement(cancellaXXXEUR)) {
+        //Adesso cancello i vecchi valori personalizzati per address
+        String cancellaAddressEUR = """
+            DELETE FROM Prezzo_ora_Address_Chain
+            WHERE ora_address_chain = ?
+        """;
+        Datasimbolo=FunzioniDate.ConvertiDatadaLongallOra(Timestamp) + "_" + Address+"_"+Rete;
+        try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(cancellaAddressEUR)) {
             del.setString(1, Datasimbolo);
             del.executeUpdate();
         }
+
+        //timestampDaCancellare
+       /* try (PreparedStatement del = DatabaseH2.connection.prepareStatement(cancellaXXXEUR)) {
+            del.setString(1, Datasimbolo);
+            del.executeUpdate();
+        }*/
 
         // --- 1) DELETE esistente ---
         String deleteSql;
@@ -260,6 +273,17 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
 
         try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(deleteSql)) {
             del.setLong(1, Timestamp);
+            del.setString(2, "%" + Gruppo + "%");
+            if (perNome) {
+                del.setString(3, Moneta);
+            } else {
+                del.setString(3, Rete);
+                del.setString(4, Address);
+            }
+            del.executeUpdate();
+        }
+        try (PreparedStatement del = DatabaseH2.connectionPersonale.prepareStatement(deleteSql)) {
+            del.setLong(1, timestampDaCancellare);
             del.setString(2, "%" + Gruppo + "%");
             if (perNome) {
                 del.setString(3, Moneta);
@@ -600,10 +624,12 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
     /**
      *
      * @param Wallet
+     * @param ritornaWallet1seNull
      * @return
      */
-    public static String Pers_GruppoWallet_Leggi(String Wallet) {
+    public static String Pers_GruppoWallet_Leggi(String Wallet,boolean ritornaWallet1seNull) {
         if (Wallet == null || Wallet.isEmpty()) {
+            //return null;
             throw new IllegalArgumentException("Wallet non può essere nullo o vuoto.");
         }
         String Risultato = Mappa_Wallet_Gruppo.get(Wallet);
@@ -624,7 +650,8 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
                 LoggerGC.ScriviErrore(ex);
             }
         }
-        if (Risultato == null) {
+        
+        if (Risultato == null&&ritornaWallet1seNull) {
             Pers_GruppoWallet_Scrivi(Wallet, "Wallet 01");
             Risultato = "Wallet 01";
         }

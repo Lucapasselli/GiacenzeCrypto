@@ -387,7 +387,7 @@ public class Calcoli_PlusvalenzeOLD {
             PlusXWallet=true;
         }
         for (String[] v : MappaCryptoWallet.values()) {
-            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
                // System.out.println(GruppoWallet);
                 if(!PlusXWallet)GruppoWallet="Wallet 01";
                 if (MappaGrWallet_CryptoStack.get(GruppoWallet) == null) {
@@ -1257,7 +1257,7 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
         
         //il compito è trovare la controparte del movimento qualora questa si riferisse ad un diverso gruppo wallet
         //e da li spostare il costo di carico
-        String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+        String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
         String IDControparte = null;
         String GruppoWalletControparte = null;
         //comincio impostando le prime condizioni
@@ -1280,9 +1280,9 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                     //se fanno parte dello stesso gruppo infatti è lo stesso movimento di scambio a spostare il costo di carico
 
                     if (v[18].contains("DTW") && Mov[18].contains("PTW") && Mov[22].contains("AU")
-                            && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
+                            && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true))) {
                         IDControparte = IdM;
-                        GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
+                        GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true);
                     }
                     //non faccio niente in caso di prelievo PTW perchè quello non è mai rilevante essendo un mero trasferimento interno
                 }
@@ -1294,13 +1294,13 @@ public void TransazioniCrypto_Funzioni_CategorizzaTransazionixPlusOld(){
                     //inoltre vedo verificare che il gruppo wallet del deposito sia differente dal gruppo wallet del prelievo
                     //perchè se fanno parte dello stesso gruppo non devo fare nulla
                     if (v[18].contains("DTW") && Mov[18].contains("PTW")
-                            && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
+                            && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true))) {
                         IDControparte = IdM;
-                        GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
+                        GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true);
                     } else if (v[18].contains("PTW") && Mov[18].contains("DTW")
-                            && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]))) {
+                            && !GruppoWallet.equals(DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true))) {
                         IDControparte = IdM;
-                        GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3]);
+                        GruppoWalletControparte = DatabaseH2.Pers_GruppoWallet_Leggi(Mov[3],true);
                     }
 
                 }

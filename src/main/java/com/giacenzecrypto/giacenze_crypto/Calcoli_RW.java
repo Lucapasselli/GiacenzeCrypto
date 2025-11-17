@@ -398,10 +398,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         public static boolean StessoGruppoWalletContropate(String ID){
             boolean stessoGruppo=true;
             String Movimento[]=Principale.MappaCryptoWallet.get(ID);
-            String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
+            String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3],true);
             String MovimentiCorrelati[] = Movimento[20].split(",");
             for (String IdM : MovimentiCorrelati) {
-                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Principale.MappaCryptoWallet.get(IdM)[3]);
+                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Principale.MappaCryptoWallet.get(IdM)[3],true);
                 //per ogni movimento verifico se fa parte di un gruppo diverso e nel qual caso significa che la transazione riguarda wallet di gruppi diversi
                 //per cui metto a false il boolean stessoGruppo
                 if (!gruppo.equals(GruppoWalletOrigine))stessoGruppo=false;
@@ -412,11 +412,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         public static String RitornaGruppoWalletControparte(String ID){
             String Gruppo;
             String Movimento[]=Principale.MappaCryptoWallet.get(ID);
-            String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3]);
+            String GruppoWalletOrigine=DatabaseH2.Pers_GruppoWallet_Leggi(Movimento[3],true);
             Gruppo = GruppoWalletOrigine;
             String MovimentiCorrelati[] = Movimento[20].split(",");
             for (String IdM : MovimentiCorrelati) {
-                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Principale.MappaCryptoWallet.get(IdM)[3]);
+                String gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Principale.MappaCryptoWallet.get(IdM)[3],true);
                 //per ogni movimento verifico se fa parte di un gruppo diverso e nel qual caso significa che la transazione riguarda wallet di gruppi diversi
                 //per cui metto a false il boolean stessoGruppo
                 if (!gruppo.equals(GruppoWalletOrigine)){
@@ -974,7 +974,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         List<String[]> ListaRW;
 
         for (String[] v : MappaCryptoWallet.values()) {
-            String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+            String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
             String GW = GruppoWallet;
             //if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) GW = "Unico 01";
             if (LiFoComplessivo)GW = "Unico 01";

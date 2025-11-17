@@ -455,7 +455,7 @@ public class Calcoli_RT {
             
 
             
-            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+            String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
                 if(!PlusXWallet)GruppoWallet="Globale";
 
             //A - INIZIALIZZA MAPPE PER ANNO

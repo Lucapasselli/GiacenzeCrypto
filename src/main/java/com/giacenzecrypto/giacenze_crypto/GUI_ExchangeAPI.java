@@ -5,8 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,11 +24,7 @@ import java.util.logging.Logger;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -508,7 +502,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         {
                 String rigaTabella[]=new String[5];
                 String w=splittata[0];
-                rigaTabella[0]=DatabaseH2.Pers_GruppoWallet_Leggi(w);
+                rigaTabella[0]=DatabaseH2.Pers_GruppoWallet_Leggi(w,true);
                 rigaTabella[0]=DatabaseH2.Pers_GruppoAlias_Leggi(rigaTabella[0])[1];
                 rigaTabella[1]=splittata[1];
                 rigaTabella[2]=splittata[2];

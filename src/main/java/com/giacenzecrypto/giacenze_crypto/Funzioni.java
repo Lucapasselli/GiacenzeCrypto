@@ -142,6 +142,34 @@ public class Funzioni {
         }
     } 
        
+        
+    public static String getGruppoWalletXPrezzi(String Wallet){
+        return "TUTTI";
+        //Questa funzione servirà in futuro se vorro differenziare i prezi personalizzati per Wallet
+        //per ora li metto tutti uguali, credo che altrimenti la cosa generi troppa confusione
+        //
+        
+        
+      /*  //Questa funzione è utile solo per i prezzi, torno ALL come nome Gruppo wallet nel caso in cui non trovo
+        //il gruppo del wallet riferito al nome del wallet
+        if (Wallet==null||Wallet.isBlank()||Wallet.toLowerCase().equals("tutti"))return "TUTTI";
+        String Gruppo=DatabaseH2.Pers_GruppoWallet_Leggi(Wallet,false);
+        if (Gruppo==null){
+            //Se non trovo il gruppo verifico di non averlo già compreso nel nome
+            //in sostanza è stato passato il nome del gruppo invece che il nome del wallet
+            //il nome del gruppo è codì di solito Gruppo : Wallet 01 (Binance group)
+            if (Wallet.toLowerCase().contains("gruppo :")){
+                int start = Wallet.indexOf(':') + 1;
+                int end = Wallet.indexOf('(');
+                Gruppo = Wallet.substring(start, end).trim();
+                return Gruppo;
+            }
+        }else return Gruppo;
+        return "TUTTI";*/
+    
+    }    
+        
+        
     public static String getOradaID(String ID) {
         String input = ID.split("_")[0];
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -1133,7 +1161,7 @@ public class Funzioni {
                 int rli=1;
                 for (String[] v : MappaCryptoWallet.values()) {
                     String AnnoRiga=v[1].split("-")[0];
-                    String GruppoRiga=DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+                    String GruppoRiga=DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
                     //se l'anno è quello di riferimento e il gruppo walle è quello analizzato allora scrivo i movimenti sull'excel
                     if(AnnoRiga.equals(Anno)&&
                             GruppoRiga.split(" ")[1].equals(GruppoW.split(" ")[0])){
@@ -1187,7 +1215,7 @@ public class Funzioni {
     public static Map<String, String>  MappaPrimoMovimentoXGruppoWallet() {
         Map<String, String> Mappa_Gruppi = new TreeMap<>();//la mappa è così composta, (Gruppo,ID Primo Movimento)
         for (String[] v : MappaCryptoWallet.values()) {
-            String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3]);
+            String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
             if (Mappa_Gruppi.get(GruppoWallet)==null)Mappa_Gruppi.put(GruppoWallet, v[0]);
         }
         return Mappa_Gruppi;
@@ -1231,7 +1259,7 @@ public class Funzioni {
                         if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
                                 || (Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase("tutti"))//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
                                 ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowallet corrispondono a quelli analizzati proseguo
-                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]).equals(Wallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
+                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(Wallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) {
                             // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
                             //Faccio la somma dei movimenti in usicta
@@ -1325,7 +1353,7 @@ return ListaSaldi;
                         // LoggerGC.logInfo("ID diverso da data --- "+movimento[0]+ " --- "+movimento[1],"Funzioni.RW_GiacenzeInizioFineAnno");
                     }
                     
-                    String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3]);
+                    String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true);
                     //1 - Inizializzo le Mappe
                     if (MappaCoinsWallet.get(GruppoWallet)==null)
                     {

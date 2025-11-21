@@ -875,7 +875,10 @@ public class Calcoli_RT {
                            // MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Qta="100";
                             //Adesso devo trovare il Valore di Vendita della Moneta
                             //mon.MonetaAddress="";
+                            
+                            //System.out.println(mon.Moneta+"-"+mon.MonetaAddress+"-"+mon.Qta+"-"+mon.Rete+"-"+d);
                             BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete,""));
+                            
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo=PrezzoV.toPlainString();
                           //  System.out.println(Anno+" - "+MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo);
                             

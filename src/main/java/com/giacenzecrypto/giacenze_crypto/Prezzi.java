@@ -10,6 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -1334,8 +1335,8 @@ public class Prezzi {
 
         try {
 
-            Crypto = Crypto.toUpperCase();
-            TimeUnit.SECONDS.sleep(1);
+            Crypto = Crypto.toUpperCase().replaceAll("\\*", "").trim();
+            
             //Siccome timestamp nelle api di cryptocompare corrisponde alla data dell'ultimo dato che voglio ricevere
             //e ricevo 30 gg di dati aggiungo sempre 20gg al timestamp in modo da avere i dati 10gg prima e 20 dopo la richiesta fatta.
             long Until = timestamp + Long.parseLong("1728000000");           
@@ -1359,7 +1360,7 @@ public class Prezzi {
             if (managerRichieste.isAlreadyRequested("CryptoCompare_" + Crypto, SinceVerifica, UntilVerifica)) {
                 return;
             }
-
+            TimeUnit.SECONDS.sleep(1);
             long Fine = Until / 1000;
 
             String apiUrl = "https://min-api.cryptocompare.com/data/v2/histohour?fsym=" + Crypto + "&tsym=EUR&limit=720&toTs=" + Fine;
@@ -2402,7 +2403,10 @@ symbol=symbol.toUpperCase();
             LoggerGC.ScriviErrore(ex);
         }
         
-    // Se non trovato o exchange non specificato → cerca in tutti gli exchange
+
+        
+    }else{
+        // Se non trovato o exchange non specificato → cerca in tutti gli exchange
     String queryAll = """
         SELECT prezzo, exchange, timestamp
         FROM PrezziNew
@@ -2438,11 +2442,8 @@ symbol=symbol.toUpperCase();
     }   catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);
         }
-        
-    }
-    
    
-
+    }
  // Nessun prezzo trovato entro 5 minuti
     return null;
 }
@@ -2548,6 +2549,32 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
 }
 
  
+public static void GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Component c,long dataL,String InfoPR,String VecchioPrezzo){
+
+                Prezzi.InfoPrezzo IPr;
+                if (!InfoPR.isBlank())
+                {
+                    IPr=new Prezzi.InfoPrezzo(InfoPR);
+                    IPr.prezzoQta=new BigDecimal(VecchioPrezzo);
+                }
+                else IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
+                Download progress = new Download();
+                progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
+                progress.setLocationRelativeTo(c);
+                Thread thread;
+                thread = new Thread() {
+                    public void run() {
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPr,dataL,M.Rete,Ritorno);                   
+                        t.setLocationRelativeTo(c);
+                        t.setVisible(true);
+                        progress.ChiudiFinestra();
+                    }
+                };
+                thread.start();
+                progress.setVisible(true);
+}
+
+
 
 public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 

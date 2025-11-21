@@ -319,6 +319,7 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
                 ps.setString(6, Address);
             }
 
+            //System.out.println("InserisciPrezzoPresonalizzato : "+ps.toString());
             ps.executeUpdate();
         }
 

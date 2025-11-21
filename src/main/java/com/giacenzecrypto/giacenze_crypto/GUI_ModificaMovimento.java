@@ -700,8 +700,35 @@ private static final long serialVersionUID = 9L;
 
     private void Bottone_OkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OkActionPerformed
         // TODO add your handling code here:
-        String ID=CalcolaID();
-        ScritturaDati(ID);
+        //Come prima cosa controllo che il prezzo sia congruo con quello in memoria
+        //Quindi il prezzo della transazione deve essere uguale a quella calcolata partendo dal prezzo unitario preso dalla fonte.
+        //Potrebbe infatti essere diverso nel momento in cui ambio un quantitativo dopo aver assegnato il prezzo.
+        String PrezzoUnitario = P_TextPU.getText();
+        String MonetaFonte = P_TextMoneta.getText();
+        String ValoreTrans = ValoreTransazione_TextField.getText();
+        String ValoreTransCalcolato = "";
+        if (!MonetaFonte.isBlank() && !PrezzoUnitario.isBlank()) {
+            if (MonetaFonte.equals(MonetaU)) {
+                ValoreTransCalcolato = new BigDecimal(MonetaUQta).multiply(new BigDecimal(PrezzoUnitario)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+            }
+            if (MonetaFonte.equals(MonetaE)) {
+                ValoreTransCalcolato = new BigDecimal(MonetaEQta).multiply(new BigDecimal(PrezzoUnitario)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+            }
+
+        }
+        //Se il valore transcalcolato=blanc significa che non ho prezzi presi da una fonte quindi vado avanti
+        if (!ValoreTransCalcolato.equals(ValoreTrans)&&!ValoreTransCalcolato.isBlank()) {
+            //segnalo che il prezzo non è congruo e torno alla schermata del prezzo
+            JOptionPane.showConfirmDialog(this, "Attenzione!\n"
+                    + "Il prezzo imputato alla transazione non è corretto e congruo con la fonte scelta\n"
+                    + "Modificare il prezzo della transazione.",
+                    "Prezzo imputato non corretto", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+        } else {
+            
+            //Se arrivo qua vuol dire che il prezzo è congruo e finalizzo la transazione
+            String ID = CalcolaID();
+            ScritturaDati(ID);
+        }
         
         
     }//GEN-LAST:event_Bottone_OkActionPerformed
@@ -775,6 +802,13 @@ private static final long serialVersionUID = 9L;
             this.MonetaEntrataAddress_TextField.setText(riga[28]);
             this.ValoreTransazione_TextField.setText(riga[15]);
             this.Note_TextArea.setText(riga[21].replace("<br>", "\n"));
+            if(!riga[40].isBlank()){
+                Prezzi.InfoPrezzo IP=new Prezzi.InfoPrezzo(riga[40]);
+                if (IP.Moneta!=null)P_TextMoneta.setText(IP.Moneta);
+                if (IP.exchange!=null)P_TextFonte.setText(IP.exchange);
+                if (IP.prezzoUnitario!=null)this.P_TextPU.setText(IP.prezzoUnitario.toPlainString());
+                if (IP.timestamp!=0)P_TextTimeFonte.setText(IP.RitornaStringData());
+            }
 //            TipoMovimentoAM=riga[22];
             //System.out.println(riga[22]);
             ModificaMovimento=true;

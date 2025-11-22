@@ -1736,20 +1736,39 @@ public class Prezzi {
     
     }
  
-    public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte) {
+
+
+    public static String DammiPrezzoTransazioneSalvaInfoPrezzo(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte,Map<String,InfoPrezzo> Mappa,String ChiaveMappa) {
 
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
+        Mappa.put(ChiaveMappa, IP);
         if (IP!=null)
         {
-          /*  System.out.println(IP.prezzo);
-            System.out.println(IP.prezzoQta);*/
             if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
             return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
         }
         if (PrezzoZero) {
             return "0.00";
         } else {
-           // System.out.println(Prezzo);
+            return Prezzo;
+        }
+    }
+
+
+
+
+
+    public static String DammiPrezzoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte) {
+
+        InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
+        if (IP!=null)
+        {
+            if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
+            return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
+        }
+        if (PrezzoZero) {
+            return "0.00";
+        } else {
             return Prezzo;
         }
     }

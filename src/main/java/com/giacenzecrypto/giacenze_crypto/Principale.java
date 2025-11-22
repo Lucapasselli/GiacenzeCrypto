@@ -91,6 +91,12 @@ private static final long serialVersionUID = 3L;
 
 
     static int DecimaliCalcoli=30;
+    
+    
+    //In questa mappa verranno memorizzati le info sui prezzi relative alle crypto del quadro RW
+    //La chiave sarà Gruppo_Moneta_Timestamp
+    static Map<String, Prezzi.InfoPrezzo> RW_MappaInfoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    
     static Map<String, String> CDC_FiatWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -151,7 +157,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.47";
+    public String Versione="1.0.47.02";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
@@ -7648,7 +7654,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if (M.Moneta.equalsIgnoreCase(mon)){
                     MU=M;
                 }
-            }     */                   
+            }     */           
+         //System.out.println(Funzioni.getParolaTra2Simboli(GruppoWallet, "(", ")"));
+                if (!Funzioni.getParolaTra2Simboli(GruppoWallet, "(", ")").isBlank())GruppoWallet=Funzioni.getParolaTra2Simboli(GruppoWallet, "(", ")");
+                String chiaver=GruppoWallet+"_"+mon+"_"+DataCalcoli;
+                Prezzi.InfoPrezzo Ipr=Principale.RW_MappaInfoPrezzo.get(chiaver);
                 MU.Moneta=mon;
                 MU.Qta=Qta.toPlainString();
                 MU.Prezzo=Prezzo;

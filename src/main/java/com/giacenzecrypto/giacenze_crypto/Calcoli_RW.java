@@ -455,7 +455,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             for (Moneta m : a.values()) {
                 if (!m.Tipo.equalsIgnoreCase("FIAT") && new BigDecimal(m.Qta).compareTo(new BigDecimal(0)) != 0) {
                     //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
-                    m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, inizio, null, true, 15, m.Rete,"");
+                    String chiaver=key+"_"+m.Moneta+"_"+inizio;
+                    //System.out.println("Inizio:"+chiaver);
+                    m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, inizio, null, true, 15, m.Rete,"",Principale.RW_MappaInfoPrezzo,chiaver);
                     //System.out.println(m.Moneta+" - "+m.Qta+" - "+inizio+" - "+m.Prezzo);
                     //System.out.println(m.Prezzo);
                     //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
@@ -691,6 +693,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             Iterator<Moneta> iti = li.iterator();
             while (iti.hasNext()) {
                 Moneta Miniziale = iti.next();
+                //Se nella mappa non trovo la moneta significa che nel ciclo precedente non è stata trovata
+                //Quindi inizializzo a zero MonetaFinale(Appunto quella del ciclo precedente)
+                //Altrimenti aggiungo solo i dati della moneta iniziale alla coppia.
                 if (MappaDoppia.get(Miniziale.Moneta) == null) {
                     Moneta Mfinale = new Moneta();
                     Mfinale.Moneta = Miniziale.Moneta;
@@ -945,6 +950,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         Principale.Mappa_RW_ListeXGruppoWallet.clear();
         Principale.Mappa_RW_GiacenzeInizioPeriodo.clear();
         Principale.Mappa_RW_GiacenzeFinePeriodo.clear();
+        Principale.RW_MappaInfoPrezzo.clear();
         AnnoR=AnnoRif;
         GiorniAnno=Integer.toString(FunzioniDate.DifferenzaDate(AnnoR+"-01-01", AnnoR+"-12-31")+1);
         String AnnoSuccessivo=String.valueOf(Integer.parseInt(AnnoRif)+1);
@@ -1635,7 +1641,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                            // long fine = OperazioniSuDate.ConvertiDatainLongMinuto(DataFineAnnoCalcoloPrezzi);
                           // m.Moneta="BTC";
                            //if (m.Moneta.equals("NEXO"))System.out.println(m.Qta);
-                            m.Prezzo = Prezzi.DammiPrezzoTransazione(m, null, fine, null, true, 15, m.Rete,"");
+                           String chiaver=key+"_"+m.Moneta+"_"+fine;
+                            //System.out.println("fine:"+chiaver);
+                            m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, fine, null, true, 15, m.Rete,"",Principale.RW_MappaInfoPrezzo,chiaver);
                          //   if(m.Moneta.equalsIgnoreCase("USDT")) System.out.println(m.Moneta+" - "+m.Qta+" - "+fine+" - "+m.Prezzo+" - "+m.MonetaAddress+" - "+m.Rete);
                             
                            // System.out.println(m.Moneta+"-"+m.Prezzo);

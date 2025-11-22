@@ -397,6 +397,19 @@ public class Funzioni {
     }
    
         
+        
+public static String getParolaTra2Simboli(String parola, String simboloIniziale, String simboloFinale) {
+
+    int posIni = parola.indexOf(simboloIniziale);
+    int posFin = parola.indexOf(simboloFinale);
+
+    if (posIni == -1 || posFin == -1) return "";       // uno dei due simboli non esiste
+    if (posFin <= posIni) return "";                  // simboli invertiti o malformati
+
+    int start = posIni + simboloIniziale.length();
+    return parola.substring(start, posFin).trim();
+}
+        
         public static boolean GUIModificaPrezzo (Component c,String ID){
             
             //PARTE 1 -> Se conosco la data del movimento chiedo se voglio inserire il prezzo in dollari o in Euro

@@ -7601,14 +7601,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         }
     }
     
-        private void RW_Funzione_ModificaValore(int InizioFine) {
-            //InizioFine=0 -> Prezzo Iniziale
-            //InizioFine=1 -> Prezzo Finale
-            //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
-            //Altrimenti cambio il prezzo sulla transazione
-            String ID;
-            int rigaOrdinamento=RW_Tabella_Dettagli.getSelectedRow();
-            int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(RW_Tabella_Dettagli);
+    private void RW_Funzione_ModificaValore(int InizioFine) {
+        //InizioFine=0 -> Prezzo Iniziale
+        //InizioFine=1 -> Prezzo Finale
+        //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
+        //Altrimenti cambio il prezzo sulla transazione
+        String ID;
+        int rigaOrdinamento = RW_Tabella_Dettagli.getSelectedRow();
+        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(RW_Tabella_Dettagli);
         if (rigaselezionata >= 0) {
 
             //String GruppoWalletInizio=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
@@ -7618,163 +7618,140 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             String Prezzo;
             String mon;
             BigDecimal Qta;
-            if (InizioFine==0){
-                    //Prezzo Iniziale
-                    GruppoWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
-                    mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
-                    Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
-                    DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
-                    Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString();
-                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 13).toString();
-            }else{
-                    //Prezzo Finale
-                    GruppoWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
-                    mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString();
-                    Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString());
-                    DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 9).toString();
-                    Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
-                    ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 14).toString();
+            if (InizioFine == 0) {
+                //Prezzo Iniziale
+                GruppoWallet = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
+                mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 2).toString();
+                Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
+                DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 4).toString();
+                Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 5).toString();
+                ID = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 13).toString();
+            } else {
+                //Prezzo Finale
+                GruppoWallet = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 6).toString();
+                mon = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 7).toString();
+                Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 8).toString());
+                DataPrezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 9).toString();
+                Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
+                ID = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 14).toString();
             }
-            int rigaTabellaPrincipale=RW_Tabella.getSelectedRow();
-            if (MappaCryptoWallet.get(ID)==null){
+            int rigaTabellaPrincipale = RW_Tabella.getSelectedRow();
+            if (MappaCryptoWallet.get(ID) == null) {
                 //Se entro qua dentro significa che il valore che voglio modificare è quello di inizio o fine anno
                 //Adesso verifico se è una data iniziale o finale che voglio modificare
                 //Se è fine anno devo invece aggiungere 60 secondi
 
                 long DataCalcoli = 0;
-                if (DataPrezzo.contains("00:00")) DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo);
-                if (DataPrezzo.contains("23:59")) DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo)+60000;
+                if (DataPrezzo.contains("00:00")) {
+                    DataCalcoli = FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo);
+                }
+                if (DataPrezzo.contains("23:59")) {
+                    DataCalcoli = FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo) + 60000;
+                }
                 //String DataconOra=FunzioniDate.ConvertiDatadaLongallOra(DataCalcoli);
 
-         //   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));   
-            //Recupero i dati di Rete e Address dal movimento prendendolo dall'ID
-        //    Moneta monete[]=Funzioni.RitornaMoneteDaID(ID);
-            Moneta MU=new Moneta();
-         /*   for(Moneta M:monete){
-                if (M.Moneta.equalsIgnoreCase(mon)){
-                    MU=M;
+                //   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));   
+                //Recupero i dati di Rete e Address dal movimento prendendolo dall'ID
+                //    Moneta monete[]=Funzioni.RitornaMoneteDaID(ID);
+                Moneta MU = new Moneta();
+                GruppoWallet = "Wallet " + GruppoWallet.split("\\(")[0].trim();
+                String chiaver = GruppoWallet + "_" + mon + "_" + DataCalcoli;
+                //System.out.println(chiaver);
+                Prezzi.InfoPrezzo Ipr = Principale.RW_MappaInfoPrezzo.get(chiaver);
+                MU.Moneta = mon;
+                MU.Qta = Qta.toPlainString();
+                MU.Prezzo = Prezzo;
+                MU.Tipo = "Crypto";
+                MU.MonetaAddress = "";
+                MU.Rete = "";
+                if (Ipr != null && Ipr.OggettoMoneta != null) {
+                    MU.MonetaAddress = Ipr.OggettoMoneta.MonetaAddress;
+                    MU.Rete = Ipr.OggettoMoneta.Rete;
                 }
-            }     */           
-         //System.out.println(Funzioni.getParolaTra2Simboli(GruppoWallet, "(", ")"));
-                if (!Funzioni.getParolaTra2Simboli(GruppoWallet, "(", ")").isBlank())GruppoWallet=Funzioni.getParolaTra2Simboli(GruppoWallet, "(", ")");
-                String chiaver=GruppoWallet+"_"+mon+"_"+DataCalcoli;
-                Prezzi.InfoPrezzo Ipr=Principale.RW_MappaInfoPrezzo.get(chiaver);
-                MU.Moneta=mon;
-                MU.Qta=Qta.toPlainString();
-                MU.Prezzo=Prezzo;
-                MU.Tipo="Crypto";
-                MU.MonetaAddress="";
-                MU.Rete="";
-                
-                String Ritorno[]=new String[2];
-                //Recupero il prezzo attuale del token a quella data
-                
-                //Questa parte mi serve per recuperare il timestamp del prezzo memorizzato e cancellarlo dai personalizzati prima
-                //di scrivere il nuovo
-              //  Prezzi.InfoPrezzo IPr=Prezzi.DammiPrezzoInfoTransazione(MU, null, DataCalcoli,"","" );
-            //    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            //long timestampDaCancellare=0;
-              /*  String InfoPrz="";
-                if (IPr!=null)
-                {
-                    timestampDaCancellare=IPr.timestamp;
-                    InfoPrz=IPr.Ritorna40();
-                }  */             
-                long timestampDaCancellare=Prezzi.GUI_ModificaPrezzoConAttesa(MU,Ritorno,this,DataCalcoli,Prezzo);
-                String Prezz=Ritorno[0];
-                Prezzi.InfoPrezzo InfoRitorno=new Prezzi.InfoPrezzo();
-                if (Ritorno[1]!=null) InfoRitorno=new Prezzi.InfoPrezzo(Ritorno[1]);
-            
-                
 
-               // String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
+                String Ritorno[] = new String[2];
+
+                long timestampDaCancellare = Prezzi.GUI_ModificaPrezzoConAttesa(MU, Ritorno, this, DataCalcoli, Prezzo);
+                String Prezz = Ritorno[0];
+                Prezzi.InfoPrezzo InfoRitorno = new Prezzi.InfoPrezzo();
+                if (Ritorno[1] != null) {
+                    InfoRitorno = new Prezzi.InfoPrezzo(Ritorno[1]);
+                }
+
+                // String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
                 //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
                 if (Prezz != null) {
-                        //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
-                        //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
-                        //Scansiono la tabella della movimentazioni e salvo in una mappa Monete tutte le monete che trovo con Address_Nome come key
-                        //ovvimente solo quelle facente parti del Gruppo wallet analizzato
-                        //Devo scansionare tutto perchè potrei trovarmi con monete con lo stesso nome ma address diversi
-                        //Siccome l'RW tiene conto solo del NomeToken, per essere sicuro che quel prezzo sia associato a quel nome token in tutte le sue derivazioni
-                        //e poi per scrivere il prezzo ho bisogno dell'address
-                        String Address;
-                        String Rete;
-                        
-                        //Questo serve per tradurre  es. 04 (wallet defi) in Wallet 04;
-                        GruppoWallet="Wallet "+GruppoWallet.split("\\(")[0].trim();
-                        //cd
-                        Map<String, Moneta> MappaAddressNomeMoneta = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);        
-                        for (String[] v : MappaCryptoWallet.values()) {
-                            Moneta a[]=Funzioni.RitornaMoneteDaID(v[0]);
-                            //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
-                            //E se il wallet fa parte del gruppo wallet di riferimento
-                            String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);                           
-                            long dataTransazione=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
-                            if (dataTransazione<=DataCalcoli&&GruppoWallet.equals(GruppoWalletMovimento)){
+                    //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
+                    //recuperare tutti gli address, poi dovrò modificare il prezzo su tutti questi.(per la defi sono obbligato ad usare gli address)
+                    //Scansiono la tabella della movimentazioni e salvo in una mappa Monete tutte le monete che trovo con Address_Nome come key
+                    //ovvimente solo quelle facente parti del Gruppo wallet analizzato
+                    //Devo scansionare tutto perchè potrei trovarmi con monete con lo stesso nome ma address diversi
+                    //Siccome l'RW tiene conto solo del NomeToken, per essere sicuro che quel prezzo sia associato a quel nome token in tutte le sue derivazioni
+                    //e poi per scrivere il prezzo ho bisogno dell'address
+                    String Address;
+                    String Rete;
+
+                    //Questo serve per tradurre  es. 04 (wallet defi) in Wallet 04;
+                    //cd
+                    Map<String, Moneta> MappaAddressNomeMoneta = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                    for (String[] v : MappaCryptoWallet.values()) {
+                        Moneta a[] = Funzioni.RitornaMoneteDaID(v[0]);
+                        //Controllo se la data della transazione è inferiore o uguale a quella a cui devo arrivare
+                        //E se il wallet fa parte del gruppo wallet di riferimento
+                        String GruppoWalletMovimento = DatabaseH2.Pers_GruppoWallet_Leggi(v[3], true);
+                        long dataTransazione = FunzioniDate.ConvertiDatainLongMinuto(v[1]);
+                        if (dataTransazione <= DataCalcoli && GruppoWallet.equals(GruppoWalletMovimento)) {
                             //A questo punto controllo se la moneta è quella che sto cercando
-                            for (Moneta MonTransazione : a){
+                            for (Moneta MonTransazione : a) {
                                 //controllo sia la moneta in uscita che quella in ingresso, nel caso trovi una corrispondenza inserisco la moneta nella mappa                               
-                                if (MonTransazione.Moneta.equals(mon)){
-                                    MappaAddressNomeMoneta.put(MonTransazione.MonetaAddress+"_"+MonTransazione.Moneta, MonTransazione);
+                                if (MonTransazione.Moneta.equals(mon)) {
+                                    MappaAddressNomeMoneta.put(MonTransazione.MonetaAddress + "_" + MonTransazione.Moneta, MonTransazione);
                                 }
                             }
-                            }else  {
-                                //in caso devo mettere un break se la funzione risulta troppo lenta
-                            }
+                        } else {
+                            //in caso devo mettere un break se la funzione risulta troppo lenta
                         }
-                        
-                        for (Moneta Mone : MappaAddressNomeMoneta.values()){                           
-                            Rete=Mone.Rete;
-                            Address=Mone.MonetaAddress;
-                            if (InfoRitorno.prezzoUnitario == null) {
-                        InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
-                        InfoRitorno.timestamp=DataCalcoli;
                     }
-                    if (InfoRitorno.exchange == null) {
-                        InfoRitorno.exchange = "";
-                    }
-                    
-                    
+
+                    for (Moneta Mone : MappaAddressNomeMoneta.values()) {
+                        Rete = Mone.Rete;
+                        Address = Mone.MonetaAddress;
+                        if (InfoRitorno.prezzoUnitario == null) {
+                            InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+                            InfoRitorno.timestamp = DataCalcoli;
+                        }
+                        if (InfoRitorno.exchange == null) {
+                            InfoRitorno.exchange = "";
+                        }
 
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
-           DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI",timestampDaCancellare);
-        
-                        //Se è un numero inserisco il prezzo e lo salvo a sistema
-                      /*  BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
-                        if (Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()) {
-                                DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
-                                //System.out.println(DataconOra + "_" + Address + "_" + Rete);
-                        } else {
-                                DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
-                               // System.out.println(DataconOra + " " + mon);
-                        }*/
-                        } 
-                        
-                //Una volta cambiato il prezzo aggiorno la tabella
-                SwingUtilities.invokeLater(() -> {
-                    RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaOrdinamento);
-                });
+                        DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI", timestampDaCancellare);
+
+                    }
+
+                    //Una volta cambiato il prezzo aggiorno la tabella
+                    SwingUtilities.invokeLater(() -> {
+                        RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale, rigaOrdinamento);
+                    });
                 }
 
-         }else{
+            } else {
                 JOptionPane.showConfirmDialog(this, "<html>Attenzione<br>"
                         + "Siccome il valore è legato ad un movimento specifico verra' proposto la modifica dello stesso.<br>"
                         + "Questo potrebbe inficiare anche sul valore di altri righi che fanno riferimento allo stesso movimento.</html>",
-                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
                 GUI_ModificaMovimento a = new GUI_ModificaMovimento();
-                            a.CompilaCampidaID(ID);
-            a.setLocationRelativeTo(this);
-            a.setVisible(true);
-            
+                a.CompilaCampidaID(ID);
+                a.setLocationRelativeTo(this);
+                a.setVisible(true);
+
                 //Una volta cambiato il prezzo aggiorno la tabella
                 SwingUtilities.invokeLater(() -> {
-                    RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaOrdinamento);
+                    RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale, rigaOrdinamento);
                 });
                 //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima 
             }
-            
-  
-            
+
         }
     }
         

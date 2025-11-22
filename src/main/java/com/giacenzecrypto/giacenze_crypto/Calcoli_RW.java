@@ -456,7 +456,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 if (!m.Tipo.equalsIgnoreCase("FIAT") && new BigDecimal(m.Qta).compareTo(new BigDecimal(0)) != 0) {
                     //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
                     String chiaver=key+"_"+m.Moneta+"_"+inizio;
-                    //System.out.println("Inizio:"+chiaver);
+                   // System.out.println("Inizio:"+chiaver);
                     m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, inizio, null, true, 15, m.Rete,"",Principale.RW_MappaInfoPrezzo,chiaver);
                     //System.out.println(m.Moneta+" - "+m.Qta+" - "+inizio+" - "+m.Prezzo);
                     //System.out.println(m.Prezzo);
@@ -1642,7 +1642,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                           // m.Moneta="BTC";
                            //if (m.Moneta.equals("NEXO"))System.out.println(m.Qta);
                            String chiaver=key+"_"+m.Moneta+"_"+fine;
-                            //System.out.println("fine:"+chiaver);
+                           // System.out.println("fine:"+chiaver);
                             m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, fine, null, true, 15, m.Rete,"",Principale.RW_MappaInfoPrezzo,chiaver);
                          //   if(m.Moneta.equalsIgnoreCase("USDT")) System.out.println(m.Moneta+" - "+m.Qta+" - "+fine+" - "+m.Prezzo+" - "+m.MonetaAddress+" - "+m.Rete);
                             

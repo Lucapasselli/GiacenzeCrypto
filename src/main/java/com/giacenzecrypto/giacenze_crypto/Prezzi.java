@@ -951,6 +951,8 @@ public class Prezzi {
         InfoPrezzo risultato;   
         BigDecimal qta=new BigDecimal(Qta);
         
+        long tempoOperazione=System.currentTimeMillis();
+        
         //1 - NORMALIZZO I DATI IN INGRESSO
         
         //Se i dati non sono completi ritorno null
@@ -1023,8 +1025,9 @@ public class Prezzi {
           RecuperaPrezziDaCryptoCompare(Crypto, Datalong);
           //Cerco il risultato nei 60 minuti in questo caso
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,60,qta);
+          tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
           if (risultato==null){
-              System.out.println("Nessun prezzo trovato per "+Crypto);
+              System.out.println("Nessun prezzo trovato per "+Crypto+" in data "+FunzioniDate.ConvertiDatadaLongAlSecondo(Datalong)+"-"+tempoOperazione);
           }
           return risultato;
 
@@ -1741,7 +1744,18 @@ public class Prezzi {
     public static String DammiPrezzoTransazioneSalvaInfoPrezzo(Moneta Moneta1a, Moneta Moneta2a, long Data, String Prezzo, boolean PrezzoZero, int Decimali, String Rete,String fonte,Map<String,InfoPrezzo> Mappa,String ChiaveMappa) {
 
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
-        Mappa.put(ChiaveMappa, IP);
+        if (IP!=null){
+            if (Moneta1a!=null&&Moneta1a.Moneta.equals(IP.Moneta)){
+                IP.OggettoMoneta=Moneta1a;
+            }else if (Moneta2a!=null&&Moneta2a.Moneta.equals(IP.Moneta)){
+                IP.OggettoMoneta=Moneta2a;
+            }
+            Mappa.put(ChiaveMappa, IP);
+           // if(IP.OggettoMoneta!=null) System.out.println(ChiaveMappa+IP.OggettoMoneta.Moneta);
+            
+        }
+        
+        
         if (IP!=null)
         {
             if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
@@ -1750,7 +1764,7 @@ public class Prezzi {
         if (PrezzoZero) {
             return "0.00";
         } else {
-            return Prezzo;
+            return Prezzo;   
         }
     }
 
@@ -2802,6 +2816,7 @@ public static class InfoPrezzo {
     public long timestamp;
     public BigDecimal Qta;
     public String Moneta;
+    public Moneta OggettoMoneta;//Usato solo per salvasi i dati  dei valori delle monete di fine e inizio anno in RW (per la modifica prezzi)
 
 
    /* public InfoPrezzo(String Info40,BigDecimal Qta) {

@@ -596,7 +596,6 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 xlista[14]=IDt;                     //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
                 xlista[15]="";                      //Tipo Errore
                 xlista[16]=el.ListaIDcoinvolti;     //Lista ID coinvolti separati da virgola
-                
                 //Verifico Ora se esistono i prezzi unitari del token con data iniziale e del token con data finale.
                 //Se esistono li scrivo nella lista come campo 13 e 14
                                             
@@ -734,7 +733,10 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                 xlista[14] = "Giacenza Fine Anno";                                                 //ID Movimento Chiusura (o segnalazione fine anno o segnalazione errore)
                                 xlista[15] = "";                                                  //Tipo Errore
                                 xlista[16] = "";                                                  //Lista ID coinvolti separati da virgola
-
+                               /* xlista[17] = m[0].MonetaAddress;//Address MonetaInizio
+                                xlista[18] = m[0].Rete;//Rete MonetaInizio
+                                xlista[19] = m[1].MonetaAddress;//Address MonetaFine
+                                xlista[20] = m[1].Rete;//Rete MonetaFine*/
                                 
                               /*  if (CDC_Grafica.Mappa_RW_ListeXGruppoWallet.get(GruppoWallet) == null) {
                                     ListaRW = new ArrayList<>();

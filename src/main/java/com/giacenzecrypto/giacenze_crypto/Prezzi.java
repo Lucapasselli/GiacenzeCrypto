@@ -1115,9 +1115,9 @@ public class Prezzi {
                                 
                                 String Data=DataconOra.split(" ")[0];
                                 if (DatabaseH2.XXXEUR_Leggi(Data + " USDT")==null||DatabaseH2.XXXEUR_Leggi(Data + " USDT").equals("ND")) 
-                                    DatabaseH2.XXXEUR_Scrivi(Data + " USDT", Prezzo,false);
+                                    DatabaseH2.OLD_XXXEUR_Scrivi(Data + " USDT", Prezzo,false);
                                 if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT")==null||DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT").equals("ND")) 
-                                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", Prezzo,false);
+                                    DatabaseH2.OLD_XXXEUR_Scrivi(DataconOra + " USDT", Prezzo,false);
 
                                 
                                 ok = "ok";
@@ -1226,7 +1226,7 @@ public class Prezzi {
                 String DataconOra = sdf.format(date);
                 //Metto ND su tutte le ore senza valore
                 if (DatabaseH2.XXXEUR_Leggi(DataconOra + " USDT") == null) {
-                    DatabaseH2.XXXEUR_Scrivi(DataconOra + " USDT", "ND",false);
+                    DatabaseH2.OLD_XXXEUR_Scrivi(DataconOra + " USDT", "ND",false);
                 }
 
                 timestampIniziale = timestampIniziale + 3600000;//aggiungo 1 ora
@@ -1297,11 +1297,11 @@ public class Prezzi {
                             //Controllo ora se non ha il prezzo e in quel caso lo scrivo
                             if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) 
                             {
-                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro,false);
+                                DatabaseH2.OLD_XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro,false);
                             }
                             if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) 
                             {
-                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
+                                DatabaseH2.OLD_XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro,false);
                             }
                         
                         }
@@ -1488,10 +1488,10 @@ public class Prezzi {
                             String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
                             //Controllo ora se non ha il prezzo e in quel caso lo scrivo
                             if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
-                                DatabaseH2.XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
+                                DatabaseH2.OLD_XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
                             }
                             if (DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(Data + " " + Crypto).equals("ND")) {
-                                DatabaseH2.XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
+                                DatabaseH2.OLD_XXXEUR_Scrivi(Data + " " + Crypto, PrezzoEuro, false);
                             }
 
                         }
@@ -2549,22 +2549,37 @@ public static List<InfoPrezzo> DammiListaPrezziDaDatabase(
 }
 
  
-public static void GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Component c,long dataL,String InfoPR,String VecchioPrezzo){
-
+public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Component c,long dataL,String VecchioPrezzo){
+                //In ritorno a questa funzione ricevo il timestamp del prezzo originale del token
+                //Questo mi servirà per cancellare l'eventuale prezzo personalizzato.
+    
                 Prezzi.InfoPrezzo IPr;
-                if (!InfoPR.isBlank())
+                IPr=Prezzi.DammiPrezzoInfoTransazione(M, null, dataL,M.Rete,"" );
+                long timestampDaCancellare=0;
+                if(IPr!=null)
                 {
-                    IPr=new Prezzi.InfoPrezzo(InfoPR);
-                    IPr.prezzoQta=new BigDecimal(VecchioPrezzo);
+                   if (IPr.prezzoQta==null) IPr.prezzoQta=new BigDecimal(M.Qta).multiply(IPr.prezzoUnitario).setScale(2,RoundingMode.HALF_UP).abs();
+                   else IPr.prezzoQta=IPr.prezzoQta.setScale(2,RoundingMode.HALF_UP).abs();
+                   if (IPr.prezzoQta.compareTo(new BigDecimal(VecchioPrezzo))!=0){
+                       //Se arrivo qua significa che il prezzo calcolato è diverso dal prezzo mostrato
+                       //Questo succede quando non vengono forniti tutti i dati alla funzione
+                       //tipicamente non viene passato address o rete come fa la funzione dell'RW ad esempio
+                       //In questo caso mostro solo i dati essenziali
+                       IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
+                   }
+                   //IPr.prezzoQta=new BigDecimal(VecchioPrezzo);
+                    timestampDaCancellare=IPr.timestamp;
+                  //  System.out.println(IPr.exchange);
                 }
                 else IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
                 Download progress = new Download();
                 progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
                 progress.setLocationRelativeTo(c);
+                Prezzi.InfoPrezzo IPt=IPr;//creo una nuova variabile da passare al thread perchè questa deve essere final
                 Thread thread;
                 thread = new Thread() {
                     public void run() {
-                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPr,dataL,M.Rete,Ritorno);                   
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPt,dataL,M.Rete,Ritorno);                   
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
                         progress.ChiudiFinestra();
@@ -2572,6 +2587,7 @@ public static void GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 };
                 thread.start();
                 progress.setVisible(true);
+                return timestampDaCancellare;
 }
 
 

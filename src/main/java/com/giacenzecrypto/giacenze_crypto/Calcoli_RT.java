@@ -1170,7 +1170,7 @@ public class Calcoli_RT {
                   //System.out.println(Moneta+" - "+plus.movimentatoAnno+" - "+plus.Mon.Qta);
                 if (plus.movimentatoAnno||!(new BigDecimal(plus.Mon.Qta).compareTo(BigDecimal.ZERO)==0)){ 
                     String Errori="<html>";
-                    rigaTabella=new Object[11];
+                    rigaTabella=new Object[13];
                     rigaTabella[0]=Wallet;
                     rigaTabella[1]=Moneta;
                     rigaTabella[2]=plus.Mon.Tipo;
@@ -1186,6 +1186,10 @@ public class Calcoli_RT {
                     rigaTabella[9]=Double.valueOf(plus.PMC);
                     Errori=Errori+"</html>";
                     rigaTabella[10]=Errori;
+                    rigaTabella[11]="";
+                    rigaTabella[12]="";
+                    if (plus.Mon.MonetaAddress!=null)rigaTabella[11]=plus.Mon.MonetaAddress;
+                    if (plus.Mon.Rete!=null)rigaTabella[12]=plus.Mon.Rete;
                     Tabella.add(rigaTabella);                   
                 }
               }

@@ -204,16 +204,17 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         Double ValoreUnitario = Double.valueOf(VU);
         //System.out.println(Timestamp);
         //System.out.println(timestampDaCancellare);
+        //System.out.println(Moneta+"-"+Timestamp+"-"+Rete+"-"+Address+"-"+Rete+"-"+Gruppo);
         // Controllo validity address
         if (!isEmpty(Address) && !Funzioni_WalletDeFi.isValidAddress(Address, Rete)) {
             Address = "";
         }
 
-        if (Principale.Mappa_ChainExplorer.get(Rete) == null) Rete = "";
+        if (Rete==null||Principale.Mappa_ChainExplorer.get(Rete) == null) Rete = "";
 
         // Fonte -> rimuovo parte dopo "("
         if (Fonte.contains("(")) Fonte = Fonte.split("\\(")[0].trim();
-        if (isEmpty(Gruppo)) Gruppo = "ALL";
+        if (isEmpty(Gruppo)) Gruppo = "TUTTI";
         Fonte = Fonte + " (" + Gruppo + ")";
 
         // --- Determino modalità ---
@@ -1371,7 +1372,7 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         }
     }
     
-    public static void PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo, boolean personalizzato) {
+    public static void OLD_PrezzoAddressChain_Scrivi(String ora_address_chain, String prezzo, boolean personalizzato) {
     try {
         // Seleziona la connessione corretta
         Connection connessione = personalizzato ? connectionPersonale : connection;
@@ -1459,7 +1460,7 @@ public static void InserisciPrezzoPresonalizzato(long Timestamp, String Fonte, S
         return Risultato;
     }
     
-    public static void XXXEUR_Scrivi(String dataSimbolo, String prezzo, boolean personalizzato) {
+    public static void OLD_XXXEUR_Scrivi(String dataSimbolo, String prezzo, boolean personalizzato) {
         if (dataSimbolo == null || dataSimbolo.isEmpty()) {
             throw new IllegalArgumentException("dataSimbolo non può essere nullo o vuoto.");
         }

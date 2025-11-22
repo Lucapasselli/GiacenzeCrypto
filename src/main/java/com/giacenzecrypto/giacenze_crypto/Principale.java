@@ -2830,14 +2830,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Rilevanti</html>", "<html>Costo Carico<br>Movimenti Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "PMC", "Errori"
+                "Wallet", "Moneta", "Tipo", "<html>Valore Movimenti<br>Rilevanti</html>", "<html>Costo Carico<br>Movimenti Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Giacenze Rimanenti", "Valore Rimanenze", "PMC", "Errori", "AddressMoneta", "ReteMoneta"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -2863,6 +2863,12 @@ private static final long serialVersionUID = 3L;
             RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMinWidth(100);
             RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setPreferredWidth(100);
             RT_Tabella_DettaglioMonete.getColumnModel().getColumn(2).setMaxWidth(100);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setMinWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setPreferredWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(11).setMaxWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setMinWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setPreferredWidth(0);
+            RT_Tabella_DettaglioMonete.getColumnModel().getColumn(12).setMaxWidth(0);
         }
         RT_Tabella_DettaglioMonete.getTableHeader().setPreferredSize(new Dimension(RT_Tabella_DettaglioMonete.getColumnModel().getTotalColumnWidth(), 64));
 
@@ -7595,6 +7601,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //se ID è nullo significa che è un prezzo di inizio io fine anno e mi comporto di conseguenza
             //Altrimenti cambio il prezzo sulla transazione
             String ID;
+            int rigaOrdinamento=RW_Tabella_Dettagli.getSelectedRow();
             int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(RW_Tabella_Dettagli);
         if (rigaselezionata >= 0) {
 
@@ -7622,23 +7629,55 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     Prezzo = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 10).toString();
                     ID= RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 14).toString();
             }
-           // System.out.println("RW_Funzione_ModificaValore  - ID : "+ID);
             int rigaTabellaPrincipale=RW_Tabella.getSelectedRow();
             if (MappaCryptoWallet.get(ID)==null){
                 //Se entro qua dentro significa che il valore che voglio modificare è quello di inizio o fine anno
                 //Adesso verifico se è una data iniziale o finale che voglio modificare
                 //Se è fine anno devo invece aggiungere 60 secondi
-                //System.out.println("modfffff");
+
                 long DataCalcoli = 0;
                 if (DataPrezzo.contains("00:00")) DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo);
                 if (DataPrezzo.contains("23:59")) DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo)+60000;
-                String DataconOra=FunzioniDate.ConvertiDatadaLongallOra(DataCalcoli);
-            //long DataRiferimento = 0;
+                //String DataconOra=FunzioniDate.ConvertiDatadaLongallOra(DataCalcoli);
+
+         //   this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));   
+            //Recupero i dati di Rete e Address dal movimento prendendolo dall'ID
+        //    Moneta monete[]=Funzioni.RitornaMoneteDaID(ID);
+            Moneta MU=new Moneta();
+         /*   for(Moneta M:monete){
+                if (M.Moneta.equalsIgnoreCase(mon)){
+                    MU=M;
+                }
+            }     */                   
+                MU.Moneta=mon;
+                MU.Qta=Qta.toPlainString();
+                MU.Prezzo=Prezzo;
+                MU.Tipo="Crypto";
+                MU.MonetaAddress="";
+                MU.Rete="";
                 
+                String Ritorno[]=new String[2];
+                //Recupero il prezzo attuale del token a quella data
                 
-               // BigDecimal Qta = new BigDecimal(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 3).toString());
-                //System.out.println(DataPrezzo+" - "+mon+"..");
-                String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
+                //Questa parte mi serve per recuperare il timestamp del prezzo memorizzato e cancellarlo dai personalizzati prima
+                //di scrivere il nuovo
+              //  Prezzi.InfoPrezzo IPr=Prezzi.DammiPrezzoInfoTransazione(MU, null, DataCalcoli,"","" );
+            //    this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            //long timestampDaCancellare=0;
+              /*  String InfoPrz="";
+                if (IPr!=null)
+                {
+                    timestampDaCancellare=IPr.timestamp;
+                    InfoPrz=IPr.Ritorna40();
+                }  */             
+                long timestampDaCancellare=Prezzi.GUI_ModificaPrezzoConAttesa(MU,Ritorno,this,DataCalcoli,Prezzo);
+                String Prezz=Ritorno[0];
+                Prezzi.InfoPrezzo InfoRitorno=new Prezzi.InfoPrezzo();
+                if (Ritorno[1]!=null) InfoRitorno=new Prezzi.InfoPrezzo(Ritorno[1]);
+            
+                
+
+               // String Prezz = Funzioni.GUIDammiPrezzo(this, mon, FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo), Qta.toString(), Prezzo);
                 //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
                 if (Prezz != null) {
                         //Adesso devo cercare tutte le movimentazioni di questa moneta e visto che non ho l'id della transazione
@@ -7677,19 +7716,34 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         for (Moneta Mone : MappaAddressNomeMoneta.values()){                           
                             Rete=Mone.Rete;
                             Address=Mone.MonetaAddress;
+                            if (InfoRitorno.prezzoUnitario == null) {
+                        InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+                        InfoRitorno.timestamp=DataCalcoli;
+                    }
+                    if (InfoRitorno.exchange == null) {
+                        InfoRitorno.exchange = "";
+                    }
+                    
+                    
+
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
-                        BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
+           DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI",timestampDaCancellare);
+        
+                        //Se è un numero inserisco il prezzo e lo salvo a sistema
+                      /*  BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
                         if (Address != null && !Address.isBlank() && Rete != null && !Rete.isBlank()) {
                                 DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(),true);
                                 //System.out.println(DataconOra + "_" + Address + "_" + Rete);
                         } else {
                                 DatabaseH2.XXXEUR_Scrivi(DataconOra + " " + mon, PrezzoUnitario.toPlainString(),true);
                                // System.out.println(DataconOra + " " + mon);
-                        }
+                        }*/
                         } 
                         
                 //Una volta cambiato il prezzo aggiorno la tabella
-                RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaselezionata);
+                SwingUtilities.invokeLater(() -> {
+                    RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaOrdinamento);
+                });
                 }
 
          }else{
@@ -7703,7 +7757,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             a.setVisible(true);
             
                 //Una volta cambiato il prezzo aggiorno la tabella
-                RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaselezionata);
+                SwingUtilities.invokeLater(() -> {
+                    RW_RicalcolaEriposizionaRW(rigaTabellaPrincipale,rigaOrdinamento);
+                });
                 //Una volta aggiornata la tabella ricreao la tabella dettagli e mi posiziono sulla riga di prima 
             }
             
@@ -7735,7 +7791,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //se ID è nullo significa che è un prezzo di inizio o fine anno e mi comporto di conseguenza
             //Altrimenti cambio il prezzo sulla transazione
             //String ID;
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+           // this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(RT_Tabella_DettaglioMonete);
             int rigaTabellaPrincipale=Tabelle.Funzioni_getRigaSelezionata(RT_Tabella_Principale);
         if (rigaselezionata>=0 && rigaTabellaPrincipale >= 0) {
@@ -7748,6 +7804,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     mon = RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 1).toString();
                     Qta = new BigDecimal(RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 7).toString());
                     Prezzo = RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 8).toString();
+                    
 
                 long DataCalcoli;
                 DataCalcoli=FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo);
@@ -7755,18 +7812,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             
                 Moneta MU=new Moneta();
                 MU.Moneta=mon;
-                MU.Qta=Qta.toPlainString();
-                MU.Rete="";
-                MU.MonetaAddress="";
+                MU.Qta=Qta.toPlainString();                
+                MU.Rete=RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 12).toString();
+                MU.MonetaAddress=RT_Tabella_DettaglioMonete.getModel().getValueAt(rigaselezionata, 11).toString();
                 MU.Prezzo=Prezzo;
                 MU.Tipo="Crypto";
+                
+                System.out.println(MU.Rete+"-"+MU.MonetaAddress);
                 
                 String Ritorno[]=new String[2];
                 //Recupero il prezzo attuale del token a quella data
                 
                 //Questa parte mi serve per recuperare il timestamp del prezzo memorizzato e cancellarlo dai personalizzati prima
                 //di scrivere il nuovo
-                Prezzi.InfoPrezzo IPr=Prezzi.DammiPrezzoInfoTransazione(MU, null, DataCalcoli,"","" );
+              /*  Prezzi.InfoPrezzo IPr=Prezzi.DammiPrezzoInfoTransazione(MU, null, DataCalcoli,"","" );
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 long timestampDaCancellare=0;
                 String InfoPrz="";
@@ -7774,9 +7833,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 {
                     timestampDaCancellare=IPr.timestamp;
                     InfoPrz=IPr.Ritorna40();
-                }
+                }*/
                 //String Prezz = JOptionPane.showInputDialog(this, "Indica il valore in Euro per " + Qta + " " + mon + " in data "+DataPrezzo+" : ", Prezzo);
-                Prezzi.GUI_ModificaPrezzoConAttesa(MU,Ritorno,this,FunzioniDate.ConvertiDatainLongSecondo(DataPrezzo),InfoPrz,Prezzo);
+                long timestampDaCancellare=Prezzi.GUI_ModificaPrezzoConAttesa(MU,Ritorno,this,FunzioniDate.ConvertiDatainLongSecondo(DataPrezzo),Prezzo);
                 String Prezz=Ritorno[0];
                 Prezzi.InfoPrezzo InfoRitorno=new Prezzi.InfoPrezzo();
                 if (Ritorno[1]!=null) InfoRitorno=new Prezzi.InfoPrezzo(Ritorno[1]);

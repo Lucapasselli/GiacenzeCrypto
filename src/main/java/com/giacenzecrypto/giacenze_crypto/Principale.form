@@ -3644,7 +3644,7 @@
                                   <Properties>
                                     <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                      <Table columnCount="11" rowCount="0">
+                                      <Table columnCount="13" rowCount="0">
                                         <Column editable="false" title="Wallet" type="java.lang.Object"/>
                                         <Column editable="false" title="Moneta" type="java.lang.Object"/>
                                         <Column editable="false" title="Tipo" type="java.lang.Object"/>
@@ -3656,6 +3656,8 @@
                                         <Column editable="false" title="Valore Rimanenze" type="java.lang.Double"/>
                                         <Column editable="false" title="PMC" type="java.lang.Double"/>
                                         <Column editable="false" title="Errori" type="java.lang.Object"/>
+                                        <Column editable="false" title="AddressMoneta" type="java.lang.Object"/>
+                                        <Column editable="false" title="ReteMoneta" type="java.lang.Object"/>
                                       </Table>
                                     </Property>
                                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -3711,6 +3713,16 @@
                                           <Renderer/>
                                         </Column>
                                         <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                          <Title/>
+                                          <Editor/>
+                                          <Renderer/>
+                                        </Column>
+                                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                          <Title/>
+                                          <Editor/>
+                                          <Renderer/>
+                                        </Column>
+                                        <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                                           <Title/>
                                           <Editor/>
                                           <Renderer/>

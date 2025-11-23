@@ -7574,8 +7574,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         InfoRitorno.prezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
                         InfoRitorno.timestamp=DataRiferimento;
                     }
-                    if (InfoRitorno.exchange == null) {
-                        InfoRitorno.exchange = "";
+                    if (InfoRitorno.Fonte == null) {
+                        InfoRitorno.Fonte = "";
                     }
                     // if (!Ritorno[1].split("\\|",-1)[2].isBlank())PrezzoUnitario=new BigDecimal(Ritorno[1].split("\\|",-1)[2]);
                     // else PrezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli+10, RoundingMode.HALF_UP).stripTrailingZeros();
@@ -7589,7 +7589,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         }*/
                     //Timestamp da cancellare è il timestamp del prezzo attualmente salvato che potrebbe essere un personalizzato
                     //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
-                    DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, Gruppo,timestampDaCancellare);
+                    DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, Gruppo,timestampDaCancellare);
 
                 }
                 //Una volta cambiato il prezzo aggiorno la tabella
@@ -7720,12 +7720,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
                             InfoRitorno.timestamp = DataCalcoli;
                         }
-                        if (InfoRitorno.exchange == null) {
-                            InfoRitorno.exchange = "";
+                        if (InfoRitorno.Fonte == null) {
+                            InfoRitorno.Fonte = "";
                         }
 
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
-                        DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI", timestampDaCancellare);
+                        DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI", timestampDaCancellare);
 
                     }
 
@@ -7869,14 +7869,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
                         InfoRitorno.timestamp=FunzioniDate.ConvertiDatainLongSecondo(DataPrezzo);
                     }
-                    if (InfoRitorno.exchange == null) {
-                        InfoRitorno.exchange = "";
+                    if (InfoRitorno.Fonte == null) {
+                        InfoRitorno.Fonte = "";
                     }
 
                         //Se è un numero inserisco il prezzo e lo salvo a sistema
                         //BigDecimal PrezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP).stripTrailingZeros();
                         //  System.out.println(InfoRitorno.timestamp+"-"+mon+"-"+InfoRitorno.prezzoUnitario);
-           DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.exchange, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI",timestampDaCancellare);
+           DatabaseH2.InserisciPrezzoPresonalizzato(InfoRitorno.timestamp, InfoRitorno.Fonte, mon, InfoRitorno.prezzoUnitario.toPlainString(), Rete, Address, "TUTTI",timestampDaCancellare);
                       /*  if (Address != null && Rete != null) {
 
                             DatabaseH2.PrezzoAddressChain_Scrivi(DataconOra + "_" + Address + "_" + Rete, PrezzoUnitario.toPlainString(), true);

@@ -22,6 +22,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.jsoup.Jsoup;
@@ -64,9 +66,9 @@ public class Tabelle {
     static Color bianco=new Color(255, 255, 255);
     static Color grigioChiaro=new Color(245, 245, 245);
     static Color grigio=new Color(70, 70, 70);
-    static Color arancione=new Color(255, 216, 166);
     static String Rosso="red";
     static String Verde="green";
+    static Color gialloChiaro = new Color(255, 250, 180);
 
     //Questo serve per la funzione get SommeColonne e per fare in modo che il risultato dato sia l'ultimo eseguito
     private static final Map<JTable, AtomicInteger> versioniSomma = new ConcurrentHashMap<>();
@@ -222,6 +224,45 @@ public class Tabelle {
     }
     
 
+    
+    public static void Funzioni_EliminaRigheDuplicate(JTable table) {
+    DefaultTableModel model = (DefaultTableModel) table.getModel();
+    int colCount = model.getColumnCount();
+    int rowCount = model.getRowCount();
+   // System.out.println("aaaaaaaaaaaaaaaa"+rowCount);
+
+    // Set per memorizzare righe uniche
+    Set<String> righeUniche = new LinkedHashSet<>();
+
+    for (int r = 0; r < rowCount; r++) {
+        StringBuilder sb = new StringBuilder();
+        for (int c = 0; c < colCount; c++) {
+            sb.append(String.valueOf(model.getValueAt(r, c))).append("||"); // separatore
+        }
+        righeUniche.add(sb.toString());
+        //System.out.println(sb.toString()+"bbb");
+    }
+
+    // Crea nuovo modello
+    DefaultTableModel nuovoModel = new DefaultTableModel();
+    // aggiungi colonne
+    for (int c = 0; c < colCount; c++) {
+        nuovoModel.addColumn(model.getColumnName(c));
+    }
+
+    // aggiungi righe uniche
+    for (String riga : righeUniche) {
+        //System.out.println(riga);
+        String[] valori = riga.split("\\|\\|", -1); // -1 per preservare stringhe vuote
+        nuovoModel.addRow(valori);
+    }
+
+    table.setModel(nuovoModel);
+}
+    
+    
+    
+    
         public static JTable ColoraRigheTabella0GiacenzeaData(final JTable table) {
 
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
@@ -555,6 +596,146 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
     // Restituisci la tabella
     return table;
 }
+
+
+
+public static void GUI_ModificaPrezzo_ColoraTabelle(
+        JTable table1, JTable table2) {
+    
+ 
+    //Funzioni_EliminaRigheDuplicate(table2);
+
+    int colonneDaControllare = Math.min(6, table1.getColumnCount());
+    Object[] valoriRiga0 = new Object[colonneDaControllare];
+    for (int col = 0; col < colonneDaControllare; col++) {
+        valoriRiga0[col] = table1.getValueAt(0, col);
+    }
+
+   // boolean giallo[]=new boolean[2];
+   // giallo[0]=false;
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int col) {
+
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+            // ---------------------------
+            // 1. LOGICA DEL TUO RENDERER
+            // ---------------------------
+            Color bg;
+            if (Principale.tema.equalsIgnoreCase("Scuro")) {
+                bg = (row % 2 == 0 ? grigio : Color.DARK_GRAY);
+                c.setForeground(Color.LIGHT_GRAY);   // testo standard tema scuro
+            } else {
+                bg = (row % 2 == 0 ? grigioChiaro : bianco);
+                c.setForeground(Color.BLACK);        // testo standard tema chiaro
+            }
+
+            if (isSelected) {
+                c.setBackground(table.getSelectionBackground());
+                c.setForeground(table.getSelectionForeground());
+            } else {
+                c.setBackground(bg);
+            }
+
+            // ---------------------------
+            // 2. LOGICA EVIDENZIAZIONE
+            // ---------------------------
+            boolean match = true;
+            for (int i = 0; i < colonneDaControllare; i++) {
+                Object v1 = valoriRiga0[i];
+                Object v2 = table2.getValueAt(row, i);
+
+                if (v1 == null && v2 == null) continue;
+                if (v1 == null || v2 == null || !v1.equals(v2)) {
+                    match = false;
+                    break;
+                }
+            }
+
+            // Se la riga matcha E NON è selezionata → giallo
+            if (match && !isSelected) {
+                c.setBackground(gialloChiaro);
+                //giallo[0]=true;
+                //giallo=true;
+               // giallo[0]=true;
+                GUI_ModificaPrezzo_ColoraTabellaGialla(table1);
+                // TEMA SCURO → testo nero sul giallo
+                if (Principale.tema.equalsIgnoreCase("Scuro")) {
+                    c.setForeground(Color.BLACK);
+                } else {
+                    // TEMA CHIARO → testo normale
+                  //  c.setForeground(Color.BLACK);
+                }
+            }
+
+            return c;
+        }
+    };
+
+    // Applica il renderer a tutte le colonne
+    TableColumnModel tcm = table2.getColumnModel();
+    for (int i = 0; i < tcm.getColumnCount(); i++) {
+        tcm.getColumn(i).setCellRenderer(renderer);
+    }
+
+    table2.repaint();
+   // if(giallo[0])GUI_ModificaPrezzo_ColoraTabellaGialla(table1);
+    
+}
+
+public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1) {
+
+    
+    // -------------------------
+    // RENDERER TABLE1
+    // -------------------------
+    DefaultTableCellRenderer renderer1 = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
+
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            // colore base
+            if (!isSelected) {
+                if (Principale.tema.equalsIgnoreCase("Scuro")) {
+                    c.setBackground(row % 2 == 0 ? grigio : Color.DARK_GRAY);
+                    c.setForeground(Color.LIGHT_GRAY);
+                } else {
+                    c.setBackground(row % 2 == 0 ? grigioChiaro : Color.WHITE);
+                    c.setForeground(Color.BLACK);
+                }
+            }
+
+            // giallo solo sulla riga 0
+            if (row == 0) {
+                c.setBackground(gialloChiaro);
+
+                if (Principale.tema.equalsIgnoreCase("Scuro"))
+                    c.setForeground(Color.BLACK);
+            }
+
+            return c;
+        }
+    };
+
+    for (int i = 0; i < table1.getColumnCount(); i++) {
+        table1.getColumnModel().getColumn(i).setCellRenderer(renderer1);
+    }
+
+    table1.repaint();
+
+}
+
+
+
 
 public static JTable ColoraTabellaLiFoTransazione(final JTable table) {
     // Definizione dei colori

@@ -723,8 +723,8 @@ public class Prezzi {
             IPrezzo=new InfoPrezzo();
             IPrezzo.Moneta=Simbolo;
             IPrezzo.Qta=new BigDecimal(Qta);
-            if(DatabaseH2.PrezzoAddressChainPers_Leggi(DataOra + "_" + Address + "_" + Rete)==null)IPrezzo.exchange="coingecko (Old)";
-            else IPrezzo.exchange="Personalizzato (Old)";
+            if(DatabaseH2.PrezzoAddressChainPers_Leggi(DataOra + "_" + Address + "_" + Rete)==null)IPrezzo.Fonte="coingecko (Old)";
+            else IPrezzo.Fonte="Personalizzato (Old)";
             IPrezzo.timestamp=Datalong;
             IPrezzo.prezzoUnitario=new BigDecimal(risultato);
             return IPrezzo;
@@ -950,8 +950,7 @@ public class Prezzi {
         //in questo metodo manca solo la parte che salva le richieste già effettuate sul token per evitare di farne tante analoghe
         InfoPrezzo risultato;   
         BigDecimal qta=new BigDecimal(Qta);
-        
-        long tempoOperazione=System.currentTimeMillis();
+       
         
         //1 - NORMALIZZO I DATI IN INGRESSO
         
@@ -969,7 +968,7 @@ public class Prezzi {
             //Sarà poi la funzione stessa a richiamare questa non dovesse trovare il prezzo
             return ConvertiAddressEUR(Qta,Datalong,Address,Rete,Crypto,Fonte);           
         }
-        
+
 
         //2 - INTERROGO I DATI MEMORIZZATI NEL DATABASE INTERNO
         Crypto = Principale.Mappa_MoneteStessoPrezzo.getOrDefault(Crypto, Crypto);
@@ -995,8 +994,8 @@ public class Prezzi {
         risultato=new InfoPrezzo();
         String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto);
         if (PrezzoUnitario != null){
-            risultato.exchange="DB Interno (Old)";
-            if (DatabaseH2.XXXEUR_LeggiPers(DataOra + " " + Crypto)!=null)risultato.exchange="Personalizzato (Old)";
+            risultato.Fonte="DB Interno (Old)";
+            if (DatabaseH2.XXXEUR_LeggiPers(DataOra + " " + Crypto)!=null)risultato.Fonte="Personalizzato (Old)";
             risultato.timestamp=FunzioniDate.ConvertiDatainLongMinuto(DataOra+":00");
             risultato.prezzoUnitario=new BigDecimal(PrezzoUnitario);
             risultato.Qta=new BigDecimal(Qta);
@@ -1004,7 +1003,6 @@ public class Prezzi {
             return risultato;
         }
         }
-        
         //Se non ho i prezzi all'ora (mantenuti per non variare i prezzi delle vecchie valorizzazioni, verifico se ho prezzi precisi
         risultato=DammiPrezzoDaDatabase(Crypto,Datalong,Fonte,Rete,Address,60,qta);
         if (risultato!=null){
@@ -1012,7 +1010,6 @@ public class Prezzi {
         }
         
         
-
           //Se non ho neanche i prezzi all'ora provo a scaricarli
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
           RecuperaPrezziDaCCXT(Crypto, Datalong);
@@ -1025,9 +1022,8 @@ public class Prezzi {
           RecuperaPrezziDaCryptoCompare(Crypto, Datalong);
           //Cerco il risultato nei 60 minuti in questo caso
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,60,qta);
-          tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
           if (risultato==null){
-              System.out.println("Nessun prezzo trovato per "+Crypto+" in data "+FunzioniDate.ConvertiDatadaLongAlSecondo(Datalong)+"-"+tempoOperazione);
+              System.out.println("Nessun prezzo trovato per "+Crypto+" in data "+FunzioniDate.ConvertiDatadaLongAlSecondo(Datalong));
           }
           return risultato;
 
@@ -1841,7 +1837,7 @@ public class Prezzi {
                     IP=new InfoPrezzo();
                     IP.Moneta=mon[k].Moneta;
                     IP.Qta=PrezzoTransazione;
-                    IP.exchange="";
+                    IP.Fonte="";
                     IP.prezzoUnitario=new BigDecimal("1");
                     IP.prezzoQta=PrezzoTransazione;
                     IP.timestamp=Data;                            
@@ -1862,7 +1858,7 @@ public class Prezzi {
                     IP=new InfoPrezzo();
                     IP.Moneta=mon[k].Moneta;
                     IP.Qta=new BigDecimal(mon[k].Qta);
-                    IP.exchange="bancaditalia";
+                    IP.Fonte="bancaditalia";
                     IP.prezzoUnitario=PrezzoUnitario;
                     IP.prezzoQta=PrezzoUnitario.multiply(new BigDecimal(mon[k].Qta).abs());
                     IP.timestamp=Data;                            
@@ -2630,7 +2626,7 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
         
          try {
              Symbol=Symbol.toUpperCase();
-             TimeUnit.SECONDS.sleep(1);
+             
              //long timestampAttuale = System.currentTimeMillis();
              //Voglio reperire sempre almeno 1h di dati per cui prendo 1h prima e 1h dopo
              long Since=timestamp-7200000;//2h prima
@@ -2646,7 +2642,7 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
              if (UntilVerifica>Adesso)UntilVerifica=Adesso;
              if (SinceVerifica>Adesso)SinceVerifica=Adesso-300000;
              if(managerRichieste.isAlreadyRequested(Symbol, SinceVerifica, UntilVerifica))return;
-             
+             TimeUnit.SECONDS.sleep(1);
              //Lista degli exchange a cui richiedere il prezzo della cripto
              String exchanges="binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
              
@@ -2812,7 +2808,7 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 public static class InfoPrezzo {
     public BigDecimal prezzoUnitario;
     public BigDecimal prezzoQta;
-    public String exchange;
+    public String Fonte;
     public long timestamp;
     public BigDecimal Qta;
     public String Moneta;
@@ -2840,7 +2836,7 @@ public static class InfoPrezzo {
             if (iPr.length==4){
                 if (Principale.Funzioni_isNumeric(iPr[2], false))
                     this.prezzoUnitario = new BigDecimal(iPr[2]);
-                this.exchange = iPr[3];
+                this.Fonte = iPr[3];
                 if (Principale.Funzioni_isNumeric(iPr[1], false))
                     this.timestamp = Long.parseLong(iPr[1]);
                 this.Moneta = iPr[0];
@@ -2867,7 +2863,7 @@ public static class InfoPrezzo {
     
     public InfoPrezzo(BigDecimal prezzo, String exchange, long timestamp, BigDecimal prezzoQta, BigDecimal Qta,String Moneta) {
         this.prezzoUnitario = prezzo;
-        this.exchange = exchange;
+        this.Fonte = exchange;
         this.timestamp = timestamp;
         this.prezzoQta = prezzoQta;
         this.Qta = Qta;
@@ -2878,7 +2874,7 @@ public static class InfoPrezzo {
     }
     
     public String RitornaStringData(){
-        if (this.exchange.toLowerCase().contains("db interno"))
+        if (this.Fonte.toLowerCase().contains("db interno"))
                     {
                         return FunzioniDate.ConvertiDatadaLongallOra(this.timestamp)+":XX:XX";
                     }
@@ -2887,7 +2883,7 @@ public static class InfoPrezzo {
     
     public String RitornaStringDiffData(long datalong) {
 
-        if (this.exchange.contains("db interno")) {
+        if (this.Fonte.contains("db interno")) {
             return "1 ora";
         } else {
             long DiffOrario = Math.abs(this.timestamp - datalong) / 1000;
@@ -2903,7 +2899,7 @@ public static class InfoPrezzo {
     }
     
     public String Ritorna40(){
-        return this.Moneta+"|"+this.timestamp+"|"+this.prezzoUnitario+"|"+this.exchange;
+        return this.Moneta+"|"+this.timestamp+"|"+this.prezzoUnitario+"|"+this.Fonte;
     }
     }        
     

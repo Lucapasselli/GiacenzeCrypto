@@ -805,7 +805,7 @@ private static final long serialVersionUID = 9L;
             if(!riga[40].isBlank()){
                 Prezzi.InfoPrezzo IP=new Prezzi.InfoPrezzo(riga[40]);
                 if (IP.Moneta!=null)P_TextMoneta.setText(IP.Moneta);
-                if (IP.exchange!=null)P_TextFonte.setText(IP.exchange);
+                if (IP.Fonte!=null)P_TextFonte.setText(IP.Fonte);
                 if (IP.prezzoUnitario!=null)this.P_TextPU.setText(IP.prezzoUnitario.toPlainString());
                 if (IP.timestamp!=0)P_TextTimeFonte.setText(IP.RitornaStringData());
             }
@@ -1003,8 +1003,8 @@ private static final long serialVersionUID = 9L;
                 BD_PUnitario = new BigDecimal(PUnitario);
             }
             long l_TimeStampFonte = 0;
-            if (Funzioni.isNumeric(TimeSFonte, false)) {
-                l_TimeStampFonte = Long.parseLong(TimeSFonte);
+            if (TimeSFonte!=null&&!TimeSFonte.isBlank()) {
+                l_TimeStampFonte = FunzioniDate.ConvertiDatainLongSecondo(TimeSFonte);
             }
             Prezzi.InfoPrezzo IPr = new Prezzi.InfoPrezzo(BD_PUnitario, Fonte, l_TimeStampFonte, PrezzoTot, null, MonetaFonte);
 
@@ -1022,7 +1022,7 @@ private static final long serialVersionUID = 9L;
                     String Rete=null;
                     if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
                     GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, ME,IPr,DataLong,Rete,Ritorno);
-                    
+                    //GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, ME,IPr,DataLong,Rete,Ritorno);
                     t.setLocationRelativeTo(c);
                     t.setVisible(true);
                     progress.ChiudiFinestra();
@@ -1041,7 +1041,7 @@ private static final long serialVersionUID = 9L;
             if (Ritorno[1]!=null&&Ritorno[1].split("\\|",-1).length==4){
                 //Ho i dettagli in ritorno
                 Prezzi.InfoPrezzo IP=new Prezzi.InfoPrezzo(Ritorno[1]);
-                if (IP.exchange!=null) P_TextFonte.setText(IP.exchange);else P_TextFonte.setText("");
+                if (IP.Fonte!=null) P_TextFonte.setText(IP.Fonte);else P_TextFonte.setText("");
                 if (IP.Moneta!=null)P_TextMoneta.setText(IP.Moneta);else P_TextMoneta.setText("");
                 if (IP.prezzoUnitario!=null)P_TextPU.setText(IP.prezzoUnitario.toPlainString());else P_TextPU.setText("");
                 if (IP.timestamp!=0)P_TextTimeFonte.setText(IP.RitornaStringData());else P_TextTimeFonte.setText("");

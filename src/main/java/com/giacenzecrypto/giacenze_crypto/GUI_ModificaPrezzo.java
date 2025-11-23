@@ -4,12 +4,21 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -71,11 +80,12 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     private void CaricaTabellaPrezzoAttualedaID(Prezzi.InfoPrezzo IPr){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
-        Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
+       // Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
+        //Tabelle.evidenziaRiga(Tabella_PrezzoAttuale, 0);
         
        // System.out.println(PrezzoT);
                 
-        
+        //Set<String> righeAggiunte = new HashSet<>();
 
         //Compilo la tabella del prezzo attuale
         String PrezzoAttualeE[]=new String[8];
@@ -86,7 +96,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeU[1]=ora;
             PrezzoAttualeU[2]=MU.Qta;
             if(IPr.Moneta.equalsIgnoreCase(MU.Moneta)){
-                PrezzoAttualeU[3]=IPr.exchange;
+                PrezzoAttualeU[3]=IPr.Fonte;
+                if (IPr.Fonte.contains("TUTTI"))PrezzoAttualeU[3]=PrezzoAttualeU[3].split("\\(")[0].trim();
                 if (IPr.timestamp!=0)PrezzoAttualeU[4]=IPr.RitornaStringData();
                 if (IPr.timestamp!=0)PrezzoAttualeU[5]=IPr.RitornaStringDiffData(TimeStamp);
                 if (PrezzoAttualeU[4]!=null&&PrezzoAttualeU[4].contains("XX"))PrezzoAttualeU[5]="1 ora";
@@ -96,6 +107,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 PrezzoAttualeU[7]=PrezzoT;
             else
                 PrezzoAttualeU[7]="0.00";
+            
+            //AggiungiATabellaseNuova(righeAggiunte,PrezzoAttualeU,ModTabPrezzoAttuale);
             ModTabPrezzoAttuale.addRow(PrezzoAttualeU);
         }
         if(ME!=null&&ME.Moneta!=null&&!ME.Moneta.isBlank()){
@@ -103,7 +116,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeE[1]=ora;
             PrezzoAttualeE[2]=ME.Qta;
             if(IPr.Moneta.equalsIgnoreCase(ME.Moneta)){
-                PrezzoAttualeE[3]=IPr.exchange;
+                PrezzoAttualeE[3]=IPr.Fonte;
+                if (IPr.Fonte.contains("TUTTI"))PrezzoAttualeE[3]=PrezzoAttualeE[3].split("\\(")[0].trim();
                 if (IPr.timestamp!=0)PrezzoAttualeE[4]=IPr.RitornaStringData();
                 if (IPr.timestamp!=0)PrezzoAttualeE[5]=IPr.RitornaStringDiffData(TimeStamp);
                 if (PrezzoAttualeU[4]!=null&&PrezzoAttualeU[4].contains("XX"))PrezzoAttualeU[5]="1 ora";
@@ -113,15 +127,42 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 PrezzoAttualeE[7]=PrezzoT;
             else
                 PrezzoAttualeE[7]="0.00";
+            
+            //AggiungiATabellaseNuova(righeAggiunte,PrezzoAttualeE,ModTabPrezzoAttuale);
             ModTabPrezzoAttuale.addRow(PrezzoAttualeE);
             
         }
+
+        
+
+    }
+    
+    
+    private void AggiungiATabellaseNuova(Set<String> righeAggiunte,String riga[],DefaultTableModel ModTabPrezzoAttuale){
+     // Costruisci una stringa che rappresenta la riga
+     System.out.println("righeaggiunte"+righeAggiunte.size());
+    StringBuilder sb = new StringBuilder();
+    for (Object cella : riga) {
+        sb.append(String.valueOf(cella)).append("||"); // separatore
+    }
+    String chiaveRiga = sb.toString();
+
+    // Controlla se esiste già
+    if (!righeAggiunte.contains(chiaveRiga)) {
+        ModTabPrezzoAttuale.addRow(riga);
+        righeAggiunte.add(chiaveRiga);
+    } else {
+        System.out.println("Riga duplicata ignorata: " + chiaveRiga);
+    }
     }
     
     private void CaricaTabellaPrezzoAttualedaID(String ID){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModTabPrezzoAttuale);
-        Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
+       // Tabelle.ColoraTabellaSemplice(Tabella_PrezzoAttuale);
+       // Tabelle.evidenziaRiga(Tabella_PrezzoAttuale, 0);
+      // Set<String> righeAggiunte = new HashSet<>();
+       
         this.ID=ID;
                 
         
@@ -138,8 +179,9 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeU[0]=Movimento[8];
             PrezzoAttualeU[1]=ora;
             PrezzoAttualeU[2]=Movimento[10];
-            if(IPID.exchange!=null&&!IPID.exchange.isBlank()){
-                PrezzoAttualeU[3]=IPID.exchange;
+            if(IPID.Fonte!=null&&!IPID.Fonte.isBlank()){
+                PrezzoAttualeU[3]=IPID.Fonte;
+                if (IPID.Fonte.contains("TUTTI"))PrezzoAttualeU[3]=PrezzoAttualeU[3].split("\\(")[0].trim();
                 if(IPID.Moneta.equalsIgnoreCase(Movimento[8])){                    
                     PrezzoAttualeU[4]=IPID.RitornaStringData();
                     PrezzoAttualeU[5]=IPID.RitornaStringDiffData(data);
@@ -147,14 +189,17 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 }
             }
             PrezzoAttualeU[7]=Movimento[15];
+            
+            //AggiungiATabellaseNuova(righeAggiunte,PrezzoAttualeU,ModTabPrezzoAttuale);
             ModTabPrezzoAttuale.addRow(PrezzoAttualeU);
         }
         if(!Movimento[11].isBlank()){
             PrezzoAttualeE[0]=Movimento[11];
             PrezzoAttualeE[1]=ora;
             PrezzoAttualeE[2]=Movimento[13];
-            if(IPID.exchange!=null&&!IPID.exchange.isBlank()){
-                PrezzoAttualeE[3]=IPID.exchange;
+            if(IPID.Fonte!=null&&!IPID.Fonte.isBlank()){
+                PrezzoAttualeE[3]=IPID.Fonte;
+                if (IPID.Fonte.contains("TUTTI"))PrezzoAttualeE[3]=PrezzoAttualeE[3].split("\\(")[0].trim();
                 if(IPID.Moneta.equalsIgnoreCase(Movimento[11])){                    
                     PrezzoAttualeE[4]=IPID.RitornaStringData();
                     PrezzoAttualeE[5]=IPID.RitornaStringDiffData(data);
@@ -162,10 +207,69 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 }
             }            
             PrezzoAttualeE[7]=Movimento[15];
+            
+            //AggiungiATabellaseNuova(righeAggiunte,PrezzoAttualeE,ModTabPrezzoAttuale);
             ModTabPrezzoAttuale.addRow(PrezzoAttualeE);
             
         }
+        
+        
     }
+    
+    
+    
+
+public static void evidenziaRigheCorrispondenti(JTable table1, JTable table2) {
+
+    int colonneDaControllare = Math.min(6, table1.getColumnCount());
+    Object[] valoriRiga0 = new Object[colonneDaControllare];
+
+    for (int col = 0; col < colonneDaControllare; col++) {
+        valoriRiga0[col] = table1.getValueAt(0, col);
+    }
+
+    DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
+
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            System.out.println("RENDER CHIAMATO"); // <-- DEVE apparire SEMPRE
+
+            boolean match = true;
+
+            for (int col = 0; col < colonneDaControllare; col++) {
+                Object val1 = valoriRiga0[col];
+                Object val2 = table2.getValueAt(row, col);
+
+                if (val1 == null && val2 == null) continue;
+                if (val1 == null || val2 == null || !val1.equals(val2)) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) c.setBackground(Color.YELLOW);
+            else if (isSelected) c.setBackground(table.getSelectionBackground());
+            else c.setBackground(Color.WHITE);
+
+            return c;
+        }
+    };
+
+    // IMPOSTA IL RENDERER DIRETTAMENTE SULLE COLONNE
+    TableColumnModel tcm = table2.getColumnModel();
+    for (int i = 0; i < tcm.getColumnCount(); i++) {
+        tcm.getColumn(i).setCellRenderer(renderer);
+    }
+
+    table2.repaint();
+}
+
+
+
     
     private void CaricaTabellaPrezzi(String ID){
         DefaultTableModel ModTabPrezzi = (DefaultTableModel) Tabella_Prezzi.getModel();
@@ -234,8 +338,14 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 
             }
         }
-        
+        Tabelle.Funzioni_EliminaRigheDuplicate(Tabella_Prezzi);
+        Tabelle.GUI_ModificaPrezzo_ColoraTabelle(Tabella_PrezzoAttuale, Tabella_Prezzi);
     }
+    
+    
+
+    
+
     
     
         private void CaricaTabellaPrezzi(){
@@ -295,6 +405,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 
             }
         }
+        Tabelle.Funzioni_EliminaRigheDuplicate(Tabella_Prezzi);
+        Tabelle.GUI_ModificaPrezzo_ColoraTabelle(Tabella_PrezzoAttuale, Tabella_Prezzi);
         
     }
     
@@ -313,7 +425,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         rigo[0] = NomeOriginale;
                         rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                         rigo[2] = M.Qta;
-                        rigo[3] = IPl.exchange;
+                        rigo[3] = IPl.Fonte;
+                        if (IPl.Fonte.contains("TUTTI"))rigo[3]=rigo[3].split("\\(")[0].trim();
                         
                         rigo[4] = FunzioniDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                         //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
@@ -360,7 +473,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         IPF = new Prezzi.InfoPrezzo();
                         IPF.Moneta = M.Moneta;
                         IPF.Qta = new BigDecimal(M.Qta);
-                        IPF.exchange = "bancaditalia";
+                        IPF.Fonte = "bancaditalia";
                         IPF.prezzoUnitario = PrezzoTransazione;
                         IPF.timestamp = data;
                         IPF.prezzoQta=IPF.prezzoUnitario.multiply(IPF.Qta);
@@ -368,7 +481,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                         rigo[0] = M.Moneta;
                         rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                         rigo[2] = M.Qta;
-                        rigo[3] = IPF.exchange;
+                        rigo[3] = IPF.Fonte;
                         rigo[4] = FunzioniDate.ConvertiDatadaLong(IPF.timestamp);
                         rigo[5] = "1 giorno";
                         rigo[6] = IPF.prezzoUnitario.toPlainString();
@@ -396,7 +509,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                     rigo[0] = M.Moneta;
                     rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[2] = M.Qta;
-                    rigo[3] = IPl.exchange;
+                    rigo[3] = IPl.Fonte;
+                    if (IPl.Fonte.contains("TUTTI"))rigo[3]=rigo[3].split("\\(")[0].trim();
                     rigo[4] = FunzioniDate.ConvertiDatadaLongAlSecondo(IPl.timestamp);
                     //Questa parte si occupa di calcolare la differenza tra il timestamp del movimento e quello del prezzo
                  /*   long DiffOrario = Math.abs(data - IPl.timestamp) / 1000;
@@ -426,7 +540,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
             //System.out.println(PrezzoUnitario);
             if (PrezzoUnitario != null) {
-                IP.exchange = "DB Interno (Old)";
+                if (DatabaseH2.XXXEUR_LeggiPers(DataOra + " " + M.Moneta)!=null)IP.Fonte="Personalizzato (Old)";
+                else IP.Fonte = "DB Interno (Old)";
                 IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
                 IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
                 IP.Qta = new BigDecimal(M.Qta);
@@ -435,7 +550,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 rigo[0] = M.Moneta;
                 rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                 rigo[2] = M.Qta;
-                rigo[3] = IP.exchange;
+                rigo[3] = IP.Fonte;
                 rigo[4] = DataOra + ":XX:XX";
                 rigo[5] = "1 ora";
 
@@ -455,7 +570,8 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 IP = new Prezzi.InfoPrezzo();
                 //System.out.println(PrezzoUnitario);
                 if (PrezzoUnitario != null) {
-                    IP.exchange = "DB Interno (Coingecko)";
+                    if(DatabaseH2.PrezzoAddressChainPers_Leggi(DataOra + "_" + M.MonetaAddress + "_" + M.Rete)==null)IP.Fonte="coingecko (Old)";
+                    IP.Fonte = "Personalizzato (Old)";
                     IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
                     IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
                     IP.Qta = new BigDecimal(M.Qta);
@@ -464,7 +580,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                     rigo[0] = NomeOriginale;
                     rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[2] = M.Qta;
-                    rigo[3] = IP.exchange;
+                    rigo[3] = IP.Fonte;
                     rigo[4] = DataOra + ":XX:XX";
                     rigo[5] = "1 ora";
 
@@ -485,7 +601,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
             //System.out.println(PrezzoUnitario);
             if (PrezzoUnitario != null) {
-                IP.exchange = "Personalizzato (Old)";
+                IP.Fonte = "Personalizzato (Old)";
                 IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
                 IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
                 IP.Qta = new BigDecimal(M.Qta);
@@ -494,7 +610,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 rigo[0] = M.Moneta;
                 rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                 rigo[2] = M.Qta;
-                rigo[3] = IP.exchange;
+                rigo[3] = IP.Fonte;
                 rigo[4] = DataOra + ":XX:XX";
                 rigo[5] = "1 ora";
 
@@ -512,7 +628,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                 IP = new Prezzi.InfoPrezzo();
                 //System.out.println(PrezzoUnitario);
                 if (PrezzoUnitario != null) {
-                    IP.exchange = "Personalizzato (Old)";
+                    IP.Fonte = "Personalizzato (Old)";
                     IP.timestamp = FunzioniDate.ConvertiDatainLongMinuto(DataOra + ":00");
                     IP.prezzoUnitario = new BigDecimal(PrezzoUnitario);
                     IP.Qta = new BigDecimal(M.Qta);
@@ -521,7 +637,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
                     rigo[0] = NomeOriginale;
                     rigo[1] = FunzioniDate.ConvertiDatadaLongAlSecondo(data);
                     rigo[2] = M.Qta;
-                    rigo[3] = IP.exchange;
+                    rigo[3] = IP.Fonte;
                     rigo[4] = DataOra + ":XX:XX";
                     rigo[5] = "1 ora";
 
@@ -625,7 +741,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             Tabella_Prezzi.getColumnModel().getColumn(5).setMaxWidth(80);
             Tabella_Prezzi.getColumnModel().getColumn(6).setMinWidth(100);
             Tabella_Prezzi.getColumnModel().getColumn(6).setPreferredWidth(100);
-            Tabella_Prezzi.getColumnModel().getColumn(6).setMaxWidth(100);
+            Tabella_Prezzi.getColumnModel().getColumn(6).setMaxWidth(150);
             Tabella_Prezzi.getColumnModel().getColumn(8).setMinWidth(100);
             Tabella_Prezzi.getColumnModel().getColumn(8).setPreferredWidth(100);
             Tabella_Prezzi.getColumnModel().getColumn(8).setMaxWidth(100);
@@ -701,6 +817,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     private void Bottone_OKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OKActionPerformed
         // TODO add your handling code here:
           if (Tabella_Prezzi.getSelectedRow() >= 0) {
+            if (Ritorno==null)Ritorno=new String[2];
             int rigaselezionata = Tabella_Prezzi.getRowSorter().convertRowIndexToModel(Tabella_Prezzi.getSelectedRow());
             
             String Fonte=Tabella_Prezzi.getModel().getValueAt(rigaselezionata, 3).toString();

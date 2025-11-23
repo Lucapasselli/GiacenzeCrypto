@@ -2582,9 +2582,18 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 //In ritorno a questa funzione ricevo il timestamp del prezzo originale del token
                 //Questo mi servirà per cancellare l'eventuale prezzo personalizzato.
     
-                Prezzi.InfoPrezzo IPr;
+                long timestampDaCancellare[]=new long[1];
+                timestampDaCancellare[0]=0;
+                Download progress = new Download();
+                progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
+                progress.setLocationRelativeTo(c);
+                //Prezzi.InfoPrezzo IPt=IPr;//creo una nuova variabile da passare al thread perchè questa deve essere final
+                Thread thread;
+                thread = new Thread() {
+                    public void run() {
+                        Prezzi.InfoPrezzo IPr;
                 IPr=Prezzi.DammiPrezzoInfoTransazione(M, null, dataL,M.Rete,"" );
-                long timestampDaCancellare=0;
+                
                 if(IPr!=null)
                 {
                    if (IPr.prezzoQta==null) IPr.prezzoQta=new BigDecimal(M.Qta).multiply(IPr.prezzoUnitario).setScale(2,RoundingMode.HALF_UP).abs();
@@ -2597,12 +2606,32 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                        IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
                    }
                    //IPr.prezzoQta=new BigDecimal(VecchioPrezzo);
-                    timestampDaCancellare=IPr.timestamp;
+                    timestampDaCancellare[0]=IPr.timestamp;
                   //  System.out.println(IPr.exchange);
                 }
                 else IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
+                        
+                        
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPr,dataL,M.Rete,Ritorno);                   
+                        t.setLocationRelativeTo(c);
+                        t.setVisible(true);
+                        progress.ChiudiFinestra();
+                    }
+                };
+                thread.start();
+                progress.setVisible(true);
+                //System.out.println("xxxxxxx"+timestampDaCancellare[0]);
+                return timestampDaCancellare[0];
+}
+
+public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Component c,long dataL,String VecchioPrezzo){
+                //In ritorno a questa funzione ricevo il timestamp del prezzo originale del token
+                //Questo mi servirà per cancellare l'eventuale prezzo personalizzato.
+    
+                Prezzi.InfoPrezzo IPr;
+                IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
                 Download progress = new Download();
-                progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
+                //progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
                 progress.setLocationRelativeTo(c);
                 Prezzi.InfoPrezzo IPt=IPr;//creo una nuova variabile da passare al thread perchè questa deve essere final
                 Thread thread;
@@ -2616,9 +2645,8 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 };
                 thread.start();
                 progress.setVisible(true);
-                return timestampDaCancellare;
+                return 0;
 }
-
 
 
 public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {

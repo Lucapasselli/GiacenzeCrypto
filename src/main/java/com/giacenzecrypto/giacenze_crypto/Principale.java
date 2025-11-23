@@ -1245,7 +1245,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jButton3.setText("jButton3");
+        jButton3.setText("Test Prezzi");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
@@ -12200,17 +12200,19 @@ SwingUtilities.invokeLater(() -> {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
         Moneta mon=new Moneta();
-        mon.Moneta="SPORN";
-        mon.MonetaAddress="0xce69350a696ab93eb9c1a5a9f5c3f2d3106cc1a6";
-        mon.Rete="BSC";
-        mon.Qta="29914";
+        mon.Moneta="XLM";
+        //mon.MonetaAddress="0xce69350a696ab93eb9c1a5a9f5c3f2d3106cc1a6";
+        mon.Rete="";
+        mon.Qta="1";
         mon.Tipo="Crypto";
         long d=Long.valueOf("1735686000000");
         
-        BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete,""));
+        
+        Prezzi.GUI_ModificaPrezzoConAttesaTest(mon, null, this, d, "0.00");
+       /* BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete,""));
         Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(mon, null, d, mon.Rete,"");
         System.out.println(PrezzoV);
-        System.out.println(IP.prezzoUnitario);
+        System.out.println(IP.prezzoUnitario);*/
         
         
     //Terst modifica prezzo

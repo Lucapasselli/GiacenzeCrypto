@@ -61,6 +61,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -12199,6 +12201,15 @@ SwingUtilities.invokeLater(() -> {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
+    /*    ERC20MetadataReader a=new ERC20MetadataReader("https://bsc-dataseed.binance.org/");
+    try {
+        a.printTokenMetadata("0xe9e7cea3dedca5984780bafc599bd69add087d56");
+    } catch (Exception ex) {
+        //Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+        LoggerGC.ScriviErrore(ex);
+    }*/
+        
+        
         Moneta mon=new Moneta();
         mon.Moneta="XLM";
         //mon.MonetaAddress="0xce69350a696ab93eb9c1a5a9f5c3f2d3106cc1a6";

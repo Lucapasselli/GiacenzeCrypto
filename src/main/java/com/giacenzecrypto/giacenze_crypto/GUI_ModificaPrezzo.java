@@ -8,14 +8,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
@@ -180,9 +177,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeU[1]=ora;
             PrezzoAttualeU[2]=Movimento[10];
             if(IPID.Fonte!=null&&!IPID.Fonte.isBlank()){
-                PrezzoAttualeU[3]=IPID.Fonte;
-                if (IPID.Fonte.contains("TUTTI"))PrezzoAttualeU[3]=PrezzoAttualeU[3].split("\\(")[0].trim();
-                if(IPID.Moneta.equalsIgnoreCase(Movimento[8])){                    
+                
+                if(IPID.Moneta.equalsIgnoreCase(Movimento[8])){ 
+                    PrezzoAttualeU[3]=IPID.Fonte;
+                    if (IPID.Fonte.contains("TUTTI"))PrezzoAttualeU[3]=PrezzoAttualeU[3].split("\\(")[0].trim();
                     PrezzoAttualeU[4]=IPID.RitornaStringData();
                     PrezzoAttualeU[5]=IPID.RitornaStringDiffData(data);
                     PrezzoAttualeU[6]=IPID.prezzoUnitario.toPlainString();
@@ -198,9 +196,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             PrezzoAttualeE[1]=ora;
             PrezzoAttualeE[2]=Movimento[13];
             if(IPID.Fonte!=null&&!IPID.Fonte.isBlank()){
-                PrezzoAttualeE[3]=IPID.Fonte;
-                if (IPID.Fonte.contains("TUTTI"))PrezzoAttualeE[3]=PrezzoAttualeE[3].split("\\(")[0].trim();
-                if(IPID.Moneta.equalsIgnoreCase(Movimento[11])){                    
+                
+                if(IPID.Moneta.equalsIgnoreCase(Movimento[11])){ 
+                    PrezzoAttualeE[3]=IPID.Fonte;
+                    if (IPID.Fonte.contains("TUTTI"))PrezzoAttualeE[3]=PrezzoAttualeE[3].split("\\(")[0].trim();
                     PrezzoAttualeE[4]=IPID.RitornaStringData();
                     PrezzoAttualeE[5]=IPID.RitornaStringDiffData(data);
                     PrezzoAttualeE[6]=IPID.prezzoUnitario.toPlainString();
@@ -219,36 +218,43 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
     
     
 
-public static void evidenziaRigheCorrispondenti(JTable table1, JTable table2) {
-
+public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2) {
     int colonneDaControllare = Math.min(6, table1.getColumnCount());
-    Object[] valoriRiga0 = new Object[colonneDaControllare];
+    int righeDaControllare = Math.min(table1.getRowCount(), table2.getRowCount());
 
-    for (int col = 0; col < colonneDaControllare; col++) {
-        valoriRiga0[col] = table1.getValueAt(0, col);
+    // Memorizza i valori di tutte le righe di table1 da confrontare
+    Object[][] valoriTable1 = new Object[righeDaControllare][colonneDaControllare];
+    for (int row = 0; row < righeDaControllare; row++) {
+        for (int col = 0; col < colonneDaControllare; col++) {
+            valoriTable1[row][col] = table1.getValueAt(row, col);
+        }
     }
 
     DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
+                                                      boolean isSelected, boolean hasFocus,
+                                                      int row, int column) {
 
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            System.out.println("RENDER CHIAMATO"); // <-- DEVE apparire SEMPRE
+            System.out.println("RENDER CHIAMATO"); // <-- Deve apparire SEMPRE
 
             boolean match = true;
+            // Solo se la riga è presente anche in table1
+            if (row < righeDaControllare) {
+                for (int col = 0; col < colonneDaControllare; col++) {
+                    Object val1 = valoriTable1[row][col];
+                    Object val2 = table2.getValueAt(row, col);
 
-            for (int col = 0; col < colonneDaControllare; col++) {
-                Object val1 = valoriRiga0[col];
-                Object val2 = table2.getValueAt(row, col);
-
-                if (val1 == null && val2 == null) continue;
-                if (val1 == null || val2 == null || !val1.equals(val2)) {
-                    match = false;
-                    break;
+                    if (val1 == null && val2 == null) continue;
+                    if (val1 == null || val2 == null || !val1.equals(val2)) {
+                        match = false;
+                        break;
+                    }
                 }
+            } else {
+                match = false;
             }
 
             if (match) c.setBackground(Color.YELLOW);
@@ -259,7 +265,7 @@ public static void evidenziaRigheCorrispondenti(JTable table1, JTable table2) {
         }
     };
 
-    // IMPOSTA IL RENDERER DIRETTAMENTE SULLE COLONNE
+    // Imposta il renderer direttamente sulle colonne
     TableColumnModel tcm = table2.getColumnModel();
     for (int i = 0; i < tcm.getColumnCount(); i++) {
         tcm.getColumn(i).setCellRenderer(renderer);

@@ -603,12 +603,17 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
         JTable table1, JTable table2) {
     
  
-    //Funzioni_EliminaRigheDuplicate(table2);
-
+    int rigaTab1[]=new int[1];
+    rigaTab1[0]=0;
     int colonneDaControllare = Math.min(6, table1.getColumnCount());
-    Object[] valoriRiga0 = new Object[colonneDaControllare];
-    for (int col = 0; col < colonneDaControllare; col++) {
-        valoriRiga0[col] = table1.getValueAt(0, col);
+    int righeDaControllare = Math.min(table1.getRowCount(), table2.getRowCount());
+
+    // Memorizza i valori di tutte le righe di table1 da confrontare
+    Object[][] valoriTable1 = new Object[righeDaControllare][colonneDaControllare];
+    for (int row = 0; row < righeDaControllare; row++) {
+        for (int col = 0; col < colonneDaControllare; col++) {
+            valoriTable1[row][col] = table1.getValueAt(row, col);
+        }
     }
 
    // boolean giallo[]=new boolean[2];
@@ -625,7 +630,7 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
             // ---------------------------
-            // 1. LOGICA DEL TUO RENDERER
+            // 1. LOGICA DEL RENDERER
             // ---------------------------
             Color bg;
             if (Principale.tema.equalsIgnoreCase("Scuro")) {
@@ -646,14 +651,22 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
             // ---------------------------
             // 2. LOGICA EVIDENZIAZIONE
             // ---------------------------
-            boolean match = true;
-            for (int i = 0; i < colonneDaControllare; i++) {
-                Object v1 = valoriRiga0[i];
-                Object v2 = table2.getValueAt(row, i);
+            boolean match = false;
+            for (int rigaT1 = 0; rigaT1 < righeDaControllare; rigaT1++) {
+                boolean corrisponde = true;
+                for (int colo = 0; colo < colonneDaControllare; colo++) {
+                    Object val1 = valoriTable1[rigaT1][colo];
+                    Object val2 = table2.getValueAt(row, colo);
 
-                if (v1 == null && v2 == null) continue;
-                if (v1 == null || v2 == null || !v1.equals(v2)) {
-                    match = false;
+                    if (val1 == null && val2 == null) continue;
+                    if (val1 == null || val2 == null || !val1.equals(val2)) {
+                        corrisponde = false;
+                        break;
+                    }
+                }
+                if (corrisponde) {
+                    rigaTab1[0]=rigaT1;
+                    match = true;
                     break;
                 }
             }
@@ -664,7 +677,7 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
                 //giallo[0]=true;
                 //giallo=true;
                // giallo[0]=true;
-                GUI_ModificaPrezzo_ColoraTabellaGialla(table1);
+                GUI_ModificaPrezzo_ColoraTabellaGialla(table1,rigaTab1[0]);
                 // TEMA SCURO → testo nero sul giallo
                 if (Principale.tema.equalsIgnoreCase("Scuro")) {
                     c.setForeground(Color.BLACK);
@@ -689,7 +702,7 @@ public static void GUI_ModificaPrezzo_ColoraTabelle(
     
 }
 
-public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1) {
+public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1,int riga) {
 
     
     // -------------------------
@@ -715,7 +728,7 @@ public static void GUI_ModificaPrezzo_ColoraTabellaGialla(JTable table1) {
             }
 
             // giallo solo sulla riga 0
-            if (row == 0) {
+            if (row == riga) {
                 c.setBackground(gialloChiaro);
 
                 if (Principale.tema.equalsIgnoreCase("Scuro"))

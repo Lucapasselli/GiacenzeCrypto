@@ -1840,7 +1840,8 @@ public class Prezzi {
                     IP.Fonte="";
                     IP.prezzoUnitario=new BigDecimal("1");
                     IP.prezzoQta=PrezzoTransazione;
-                    IP.timestamp=Data;                            
+                    IP.timestamp=Data;   
+                    IP.OggettoMoneta=mon[k];
                     return IP;
                 }
             }
@@ -1861,7 +1862,8 @@ public class Prezzi {
                     IP.Fonte="bancaditalia";
                     IP.prezzoUnitario=PrezzoUnitario;
                     IP.prezzoQta=PrezzoUnitario.multiply(new BigDecimal(mon[k].Qta).abs());
-                    IP.timestamp=Data;                            
+                    IP.timestamp=Data;  
+                    IP.OggettoMoneta=mon[k];
                     return IP;
                 }
             } 
@@ -1878,7 +1880,11 @@ public class Prezzi {
                 if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
                     //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
                             IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
-                            if (IP!=null)return IP;
+                            if (IP!=null)
+                            {
+                                IP.OggettoMoneta=mon[k];
+                                return IP;
+                            }
                     }
                 }
             }
@@ -1893,7 +1899,11 @@ public class Prezzi {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
 
                         IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
-                        if (IP!=null)return IP;
+                        if (IP!=null)
+                        {
+                            IP.OggettoMoneta=mon[k];
+                            return IP;
+                        }
             }
         }
 
@@ -2911,7 +2921,7 @@ public static class InfoPrezzo {
     
     public String RitornaStringDiffData(long datalong) {
 
-        if (this.Fonte.contains("db interno")) {
+        if (this.Fonte.toLowerCase().contains("db interno")) {
             return "1 ora";
         } else {
             long DiffOrario = Math.abs(this.timestamp - datalong) / 1000;

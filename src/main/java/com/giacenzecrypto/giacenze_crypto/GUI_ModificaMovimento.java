@@ -1004,6 +1004,7 @@ private static final long serialVersionUID = 9L;
             }
             long l_TimeStampFonte = 0;
             if (TimeSFonte!=null&&!TimeSFonte.isBlank()) {
+                TimeSFonte=TimeSFonte.replaceAll("XX", "00");
                 l_TimeStampFonte = FunzioniDate.ConvertiDatainLongSecondo(TimeSFonte);
             }
             Prezzi.InfoPrezzo IPr = new Prezzi.InfoPrezzo(BD_PUnitario, Fonte, l_TimeStampFonte, PrezzoTot, null, MonetaFonte);
@@ -1147,15 +1148,15 @@ private static final long serialVersionUID = 9L;
 
         String TipoTransazione = Importazioni.RitornaTipologiaTransazione(MonetaUTipo, MonetaETipo, 1);
 
-        String Rete = Funzioni.TrovaReteDaID(ID);
-        if (ModificaMovimento&&Rete==null) Rete=Funzioni.TrovaReteDaIMovimento(MovimentoRiportato);
+      /*  String Rete = Funzioni.TrovaReteDaID(ID);
+        if (ModificaMovimento&&Rete==null) Rete=Funzioni.TrovaReteDaIMovimento(MovimentoRiportato);*/
 
         //Se il prezzo scritto è zero controllo se i token hanno un valore, così non fosse chiedo all'utente se vuole confermare che il prezzo sia zero
         if (ValoreTransazione.equals("0.00")) {
             //Adesso prima di scrivere il movimento devo verificare se il movimento è valorizzato, se non lo è e non trovo prezzo per il token
             //chiedo all'utente se vuole confermare che il prezzo è zero e se conferma metto a SI la colonnina che dice se il prezzo è valorizzato
-            Moneta MU = null;
-            Moneta ME = null;
+            Moneta MU ;
+            Moneta ME ;
             if (!MonetaU.isEmpty()) {
                 MU = new Moneta();
                 MU.Moneta = this.MonetaU;
@@ -1286,7 +1287,17 @@ private static final long serialVersionUID = 9L;
                             RT[3] = Wallet;
                             RT[4] = WalletDettaglio;
                             RT[5] = TipoTransazione;
-                            RT[6] = (MonetaU + " -> " + MonetaE).trim();
+                            String NomeUscita;
+                            String NomeEntrata;
+                            
+                            //Questa parte serve per mettere il nome della moneta al posto del symbol qualora vi fosse
+                            if (MovimentoRiportato[25]!=null&&!MovimentoRiportato[25].isBlank()&&!MonetaU.isBlank())NomeUscita=MovimentoRiportato[25];
+                            else NomeUscita=MonetaU;
+                            if (MovimentoRiportato[27]!=null&&!MovimentoRiportato[27].isBlank()&&!MonetaE.isBlank())NomeEntrata=MovimentoRiportato[27];
+                            else NomeEntrata=MonetaE;
+                            
+                            
+                            RT[6] = (NomeUscita + " -> " + NomeEntrata).trim();
                             RT[8] = MonetaU;
                             RT[9] = MonetaUTipo;
                             RT[10] = MonetaUQta;

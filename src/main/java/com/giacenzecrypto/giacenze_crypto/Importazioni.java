@@ -6426,13 +6426,160 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         return "Ok";
 
     }
-      
+    
+    
+    public static Map<String, TransazioneDefi> DeFi_RitornaTransazioniMoralis(List<String> Portafogli, Component ccc, Download progressb) {
+        Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        progressb.setDefaultCloseOperation(0);
+        progressb.Titolo("Importazione dati da Moralis getWalletHistory");
+        //Tramite Moralis voglio scaricare solo BSC, BASE e Avalanche
+
+        int avaTot = 0;
+        try {
+            for (String walletInfo : Portafogli) {
+                String Rete = walletInfo.split(";")[2];
+                String MonetaRete = Principale.Mappa_ChainExplorer.get(Rete)[2];
+                avaTot++;
+                progressb.Titolo(avaTot + " di " + Portafogli.size() + " Importazione di " + walletInfo.split(";")[0] + " da Moralis");
+                String walletAddress = walletInfo.split(";")[0];
+                String chain = walletInfo.split(";")[2].toLowerCase(); // Esempio: "bsc", "eth"
+
+                String cursor = null;
+                boolean continueFetching = true;
+                int ava = 0;
+
+                while (continueFetching && !progressb.FineThread()) {
+                    String url = "https://deep-index.moralis.io/api/v2/" + walletAddress + "/history?chain=" + chain + "&limit=100";
+                    if (cursor != null && !cursor.isEmpty()) {
+                        url += "&cursor=" + cursor;
+                    }
+
+                    // Chiamata GET a Moralis
+                    URL obj = new URL(url);
+                    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+                    con.setRequestMethod("GET");
+                    con.setRequestProperty("accept", "application/json");
+                    con.setRequestProperty("X-API-Key", DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
+
+                    int responseCode = con.getResponseCode();
+                    if (responseCode != 200) {
+                        System.err.println("Errore nella richiesta API Moralis, codice: " + responseCode);
+                        return null;
+                    }
+
+                    BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    JSONObject jsonResponse = new JSONObject(response.toString());
+                    JSONArray results = jsonResponse.getJSONArray("result");
+                    cursor = jsonResponse.optString("cursor", "");  // aggiornamento cursor
+
+                    // Elaboro ogni transazione
+                    for (int i = 0; i < results.length(); i++) {
+                        if (progressb.FineThread())
+                            return null;
+
+                        JSONObject tx = results.getJSONObject(i);
+
+                        String hash = tx.getString("transaction_hash");
+                        TransazioneDefi trans;
+                        if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                            trans = new TransazioneDefi();
+                            MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                        } else {
+                            trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                        }
+
+                        trans.Wallet = walletAddress;
+                        trans.HashTransazione = hash;
+                        trans.Rete = chain;
+                        trans.Blocco = tx.optString("block_number", null);
+                        String timeStamp = tx.optString("block_timestamp", null);
+                        trans.TimeStamp = timeStamp;
+                        trans.DataOra = timeStamp; // Puoi convertire in data leggibile se vuoi
+
+                        trans.TransazioneOK = tx.optInt("receipt_status", 0) == 1;
+
+                        // Gestione valore e indirizzi per trasfer
+                        // Valori, indirizzi, e categorie
+                        String fromAddress = tx.getString("from_address");
+                        String toAddress = tx.getString("to_address");
+                        String valueStr = tx.getString("value");
+                        String category = tx.optString("category", ""); // Categoria può essere nulla
+                        String type = "Crypto"; // Default
+
+                        // Inserisco o aggiorno la transazione
+                        if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                            trans = new TransazioneDefi();
+                            MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
+                        } else {
+                            trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                        }
+
+                        trans.Wallet = walletAddress;
+                        trans.HashTransazione = hash;
+                        trans.Rete = chain;
+                        trans.Blocco = tx.optString("block_number");
+                        trans.TimeStamp = tx.optString("block_timestamp");
+                        trans.DataOra = tx.optString("block_timestamp");
+                        trans.TransazioneOK = tx.optInt("receipt_status", 0) == 1;
+                        trans.MonetaCommissioni = MonetaRete;  // Se vuoi, puoi aggiungere anche le fee
+
+                        // Gestione trasferimenti
+                        if (fromAddress.equalsIgnoreCase(walletAddress)) {
+                            // Usuale: il mio wallet come mittente, saldo diminuisce
+                            String qta = valueStr;
+                            trans.InserisciMonete("Token", "Token", "Address Token", toAddress, "-" + qta, category);
+                        } else if (toAddress.equalsIgnoreCase(walletAddress)) {
+                            // saldo aumenta
+                            String qta = valueStr;
+                            trans.InserisciMonete("Token", "Token", "Address Token", fromAddress, qta, category);
+                        }
+
+                        // Gestione NFT, NFT1155
+                        if (tx.has("nft_transfers")) {
+                            JSONArray nftTransfers = tx.getJSONArray("nft_transfers");
+                            for (int j = 0; j < nftTransfers.length(); j++) {
+                                JSONObject nftTx = nftTransfers.getJSONObject(j);
+                                String tokenId = nftTx.getString("token_id");
+                                String addressNFT = nftTx.getString("token_address");
+                                String fromNFT = nftTx.getString("from");
+                                String toNFT = nftTx.getString("to");
+                                String amountNFT = nftTx.optString("amount", "1");
+                                String nftCategory = "NFT";
+
+                                trans.InserisciMonete(nftTx.optString("token_symbol", "NFT"),
+                                                      "NFT",
+                                                      addressNFT,
+                                                      (fromNFT.equalsIgnoreCase(walletAddress) ? toNFT : fromNFT),
+                                                      (fromNFT.equalsIgnoreCase(walletAddress) ? "-" : "") + amountNFT,
+                                                      nftCategory);
+                            }
+                        }
+
+                        ava++;
+                        progressb.SetAvanzamento(ava);
+                    }
+                }
+                //Fine ciclo
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return MappaTransazioniDefi;
+    }
+
+    
       
     public static Map<String, TransazioneDefi> DeFi_RitornaTransazioni(List<String> Portafogli, Component ccc, Download progressb) {
         //Portafigli contiene la lista dei portafogli da analizzare e comprende indirizzo,ultimoblocco e rete
         //la mappa seguente va popolata per ogni chain explorer che viene implementato a programma 
 
-        // String apiKey="6qoE9xw4fDYlEx4DSjgFN0+B5Bk8LCJ9/R+vNblrgiyVyJsMyAhhjPn8BWAi4LM6";
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Importazione dati da explorer");
 //  progressb.RipristinaStdout();

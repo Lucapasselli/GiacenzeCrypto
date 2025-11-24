@@ -686,6 +686,9 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Coingecko_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Coingecko_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Coingecko_LabelSito = new javax.swing.JLabel();
+        Opzioni_ApiKey_Moralis_TextField = new javax.swing.JTextField();
+        Opzioni_ApiKey_Moralis_Label = new javax.swing.JLabel();
+        Opzioni_ApiKey_Moralis_LabelSito = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel22 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
@@ -4675,6 +4678,32 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_ApiKey_Moralis_TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Moralis_TextFieldMouseReleased(evt);
+            }
+        });
+        Opzioni_ApiKey_Moralis_TextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Opzioni_ApiKey_Moralis_TextFieldKeyReleased(evt);
+            }
+        });
+
+        Opzioni_ApiKey_Moralis_Label.setText("ApiKey Moralis :");
+
+        Opzioni_ApiKey_Moralis_LabelSito.setText("https://admin.moralis.com/login");
+        Opzioni_ApiKey_Moralis_LabelSito.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Moralis_LabelSitoMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Moralis_LabelSitoMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Opzioni_ApiKey_Moralis_LabelSitoMouseExited(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
         Opzioni_ApiKeyLayout.setHorizontalGroup(
@@ -4700,18 +4729,26 @@ private static final long serialVersionUID = 3L;
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Coincap_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(Opzioni_ApiKey_Coincap_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Opzioni_ApiKey_Moralis_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                                 .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
-                        .addComponent(Opzioni_ApiKey_Coingecko_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(225, Short.MAX_VALUE))
+                                .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Coingecko_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
+                                .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(Opzioni_ApiKey_Moralis_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(227, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
             Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4736,11 +4773,16 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Coingecko_Label)
                     .addComponent(Opzioni_ApiKey_Coingecko_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Coingecko_LabelSito))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Opzioni_ApiKey_Moralis_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_ApiKey_Moralis_LabelSito)
+                    .addComponent(Opzioni_ApiKey_Moralis_Label))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_ApiKey_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(598, Short.MAX_VALUE))
+                .addContainerGap(576, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("ApiKey", Opzioni_ApiKey);
@@ -11101,6 +11143,7 @@ SwingUtilities.invokeLater(() -> {
         boolean EtherscanDiversa=true;
         boolean CoincapDiversa=true;
         boolean CoingeckoDiversa=true;
+        boolean MoralisDiversa=true;
         
         if (Opzioni_ApiKey_Helius_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))))HeliusDiversa=false;
@@ -11110,6 +11153,8 @@ SwingUtilities.invokeLater(() -> {
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))))CoincapDiversa=false;
         if (Opzioni_ApiKey_Coingecko_TextField.getText().trim()
                 .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))))CoingeckoDiversa=false;
+        if (Opzioni_ApiKey_Moralis_TextField.getText().trim()
+                .equals(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))))MoralisDiversa=false;
         
         //Controllo ed eventualmente salvo le api Helius
         if (HeliusDiversa&&Trans_Solana.isApiKeyValida(Opzioni_ApiKey_Helius_TextField.getText().trim())||
@@ -11150,6 +11195,17 @@ SwingUtilities.invokeLater(() -> {
             DatabaseH2.Opzioni_Scrivi("ApiKey_Coingecko", Opzioni_ApiKey_Coingecko_TextField.getText().trim());
         }else if (CoingeckoDiversa){
             JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Coingecko inserita non è valida o manca la connessione internet<br>"
+                                        + "L'operazione verrà annullata!<br></html>",
+                            "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        
+        //Controllo ed eventualmente salvo le api Moralis
+        if (CoingeckoDiversa&&Funzioni.isApiKeyValidaMoralis(Opzioni_ApiKey_Moralis_TextField.getText().trim())||
+                Opzioni_ApiKey_Moralis_TextField.getText().isBlank()){
+            //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Coingecko", Opzioni_ApiKey_Moralis_TextField.getText().trim());
+        }else if (CoingeckoDiversa){
+            JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Moralis inserita non è valida o manca la connessione internet<br>"
                                         + "L'operazione verrà annullata!<br></html>",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
         }
@@ -12255,6 +12311,30 @@ SwingUtilities.invokeLater(() -> {
     
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    private void Opzioni_ApiKey_Moralis_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
+
+    private void Opzioni_ApiKey_Moralis_TextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_TextFieldKeyReleased
+        // TODO add your handling code here:
+        Opzioni_ApiKey_ControllaPulsanti();
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_TextFieldKeyReleased
+
+    private void Opzioni_ApiKey_Moralis_LabelSitoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseClicked
+        // TODO add your handling code here:
+        Funzioni.ApriWeb("https://admin.moralis.com/login");
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseClicked
+
+    private void Opzioni_ApiKey_Moralis_LabelSitoMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseEntered
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseEntered
+
+    private void Opzioni_ApiKey_Moralis_LabelSitoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseExited
+        // TODO add your handling code here:
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Opzioni_ApiKey_Moralis_LabelSitoMouseExited
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -12533,13 +12613,15 @@ SwingUtilities.invokeLater(() -> {
                 Opzioni_ApiKey_Helius_TextField.getText()+
                 Opzioni_ApiKey_Etherscan_TextField.getText()+
                 Opzioni_ApiKey_Coincap_TextField.getText()+
-                Opzioni_ApiKey_Coingecko_TextField.getText();
+                Opzioni_ApiKey_Coingecko_TextField.getText()+
+                Opzioni_ApiKey_Moralis_TextField.getText();
         //String NuovoValore=Opzioni_ApiKey_Helius_TextField.getText();
         String ValoreSalvato=
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Helius"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))+
                 Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"))+
-                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"))+
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
        // System.out.println(ValoreSalvato);
         //String ValoreSalvato=DatabaseH2.Opzioni_Leggi("ApiKey_Helius");
         if (!NuovoValore.equals(ValoreSalvato)){
@@ -15015,6 +15097,9 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Opzioni_ApiKey_Helius_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Helius_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Helius_TextField;
+    private javax.swing.JLabel Opzioni_ApiKey_Moralis_Label;
+    private javax.swing.JLabel Opzioni_ApiKey_Moralis_LabelSito;
+    private javax.swing.JTextField Opzioni_ApiKey_Moralis_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCryptoXwallet;
     private javax.swing.JPanel Opzioni_Calcolo_Pannello;

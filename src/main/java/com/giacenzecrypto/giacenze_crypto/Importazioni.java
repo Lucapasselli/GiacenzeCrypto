@@ -6427,39 +6427,45 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
     }
     
-    
-    public static Map<String, TransazioneDefi> DeFi_RitornaTransazioniMoralis(List<String> Portafogli, Component ccc, Download progressb) {
+    public static Map<String, TransazioneDefi> DeFi_RitornaTransazioniMoralis(String walletAddress, String Rete, String Blocco,Download progressb) {
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        progressb.setDefaultCloseOperation(0);
-        progressb.Titolo("Importazione dati da Moralis getWalletHistory");
+       // progressb.setDefaultCloseOperation(0);
+       // progressb.Titolo("Importazione dati da Moralis getWalletHistory");
         //Tramite Moralis voglio scaricare solo BSC, BASE e Avalanche
+        String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Moralis");
+        String Block=String.valueOf(Long.parseLong(Blocco)+1);//Aggiungo 1 al blocco per evitare di richiedere lo stesso blocco una seconda volta
 
         int avaTot = 0;
         try {
-            for (String walletInfo : Portafogli) {
-                String Rete = walletInfo.split(";")[2];
                 String MonetaRete = Principale.Mappa_ChainExplorer.get(Rete)[2];
                 avaTot++;
-                progressb.Titolo(avaTot + " di " + Portafogli.size() + " Importazione di " + walletInfo.split(";")[0] + " da Moralis");
-                String walletAddress = walletInfo.split(";")[0];
-                String chain = walletInfo.split(";")[2].toLowerCase(); // Esempio: "bsc", "eth"
+                //progressb.Titolo(avaTot + " di " + Portafogli.size() + " Importazione di " + walletAddress + " da Moralis");
+                String chain = Rete.toLowerCase(); // Esempio: "bsc", "eth"
+               // String Blocco = walletInfo.split(";")[1];
 
                 String cursor = null;
                 boolean continueFetching = true;
                 int ava = 0;
 
                 while (continueFetching && !progressb.FineThread()) {
-                    String url = "https://deep-index.moralis.io/api/v2/" + walletAddress + "/history?chain=" + chain + "&limit=100";
+                    String url = "https://deep-index.moralis.io/api/v2.2/wallets/" + walletAddress + "/history?chain=" + chain + "&limit=100&from_block=" + Block;
                     if (cursor != null && !cursor.isEmpty()) {
                         url += "&cursor=" + cursor;
                     }
 
                     // Chiamata GET a Moralis
+                    System.out.println(url);
                     URL obj = new URL(url);
                     HttpURLConnection con = (HttpURLConnection) obj.openConnection();
                     con.setRequestMethod("GET");
                     con.setRequestProperty("accept", "application/json");
-                    con.setRequestProperty("X-API-Key", DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
+                    //con.setRequestProperty("X-API-Key", DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
+                    
+                    
+System.out.println("API Key length: " + (apiKey != null ? apiKey.length() : "NULL") + 
+                   " | First chars: " + (apiKey != null && apiKey.length() > 5 ? apiKey.substring(0, 5) + "..." : "vuota"));
+
+con.setRequestProperty("X-API-Key", apiKey);
 
                     int responseCode = con.getResponseCode();
                     if (responseCode != 200) {
@@ -6474,6 +6480,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         response.append(inputLine);
                     }
                     in.close();
+                    
+                    System.out.println("Risposta: "+response);
 
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     JSONArray results = jsonResponse.getJSONArray("result");
@@ -6501,7 +6509,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         trans.Blocco = tx.optString("block_number", null);
                         String timeStamp = tx.optString("block_timestamp", null);
                         trans.TimeStamp = timeStamp;
-                        trans.DataOra = timeStamp; // Puoi convertire in data leggibile se vuoi
+                        String DataO= FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(timeStamp) * 1000);
+                        trans.DataOra = DataO; // Puoi convertire in data leggibile se vuoi
 
                         trans.TransazioneOK = tx.optInt("receipt_status", 0) == 1;
 
@@ -6526,7 +6535,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         trans.Rete = chain;
                         trans.Blocco = tx.optString("block_number");
                         trans.TimeStamp = tx.optString("block_timestamp");
-                        trans.DataOra = tx.optString("block_timestamp");
+                        DataO= FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(trans.TimeStamp) * 1000);
+                        trans.DataOra = DataO;
                         trans.TransazioneOK = tx.optInt("receipt_status", 0) == 1;
                         trans.MonetaCommissioni = MonetaRete;  // Se vuoi, puoi aggiungere anche le fee
 
@@ -6567,9 +6577,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     }
                 }
                 //Fine ciclo
-            }
+            
         } catch (Exception e) {
-            e.printStackTrace();
+           LoggerGC.ScriviErrore(e);
+           
         }
         return MappaTransazioniDefi;
     }
@@ -6580,6 +6591,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         //Portafigli contiene la lista dei portafogli da analizzare e comprende indirizzo,ultimoblocco e rete
         //la mappa seguente va popolata per ogni chain explorer che viene implementato a programma 
 
+        //List<String> Portafogli2 = new ArrayList<>();
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Importazione dati da explorer");
 //  progressb.RipristinaStdout();
@@ -6589,10 +6601,13 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         for (String wallets : Portafogli) {
             avaTot++;
             int ava = 0;
-            String walletAddress = wallets.split(";")[0];
-            progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
+            
+            String walletAddress = wallets.split(";")[0];           
             String Blocco = wallets.split(";")[1];
             String Rete = wallets.split(";")[2];
+            //System.out.println(Rete);
+            //Se trovo delle reti non supportate da etherscan le aggiungo ad un'altra lista e le passo alla funzione successiva
+            progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
             //In caso di SOL devo passargli l'ultimo blocco disponibile, non il blocco+1
             if (!Rete.equalsIgnoreCase("SOL")) Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);            
             if (Rete.equalsIgnoreCase("SOL")) {
@@ -6612,10 +6627,38 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         TimeUnit.SECONDS.sleep(5);
                     }
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
                 }
 
-            } else {
+            } 
+            else if (Rete.equalsIgnoreCase("BSC")) {
+
+                    //Se ho dei portafogli non gestiti da etherscan li passo alla funzione che si occupa di cercare i dati su Moralis
+System.out.println("Leggo da Moralissssssss");
+            if (Funzioni.isApiKeyValidaMoralis(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))) {
+                //A questo punto aggiungo alla mappa anche i wallet presi da moralis
+               // Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,progressb);
+               System.out.println("Leggo da Moralis");
+                Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,"0",progressb);
+                for (String k : MappaTransazioniDefi2.keySet()) {
+                    MappaTransazioniDefi.put(k, MappaTransazioniDefi2.get(k));
+                }
+            }
+            else {
+                        System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
+                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Moralis");
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException ex) {
+                    //Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                    LoggerGC.ScriviErrore(ex);
+                }
+                    }
+        
+
+            }
+            
+            else {
                 
                 //Inizio
                 if (Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
@@ -7011,6 +7054,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             }
         }
 //        Prezzi.ScriviFileConversioneXXXEUR();
+
+
+
         return MappaTransazioniDefi;
     }
 

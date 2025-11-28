@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,9 +107,10 @@ public class DatabaseH2 {
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();
                        
-            createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
+            createTableSQL = "CREATE TABLE IF NOT EXISTS OPZIONI (Opzione VARCHAR(255) PRIMARY KEY, Valore VARCHAR(1000))";
             preparedStatement = connection.prepareStatement(createTableSQL);
             preparedStatement.execute();  
+            aggiornaDimensioneColonnaValoreH2Opzioni(connection);
             
             createTableSQL = "CREATE TABLE IF NOT EXISTS GIACENZEBLOCKCHAIN (Wallet_Blocco VARCHAR(255) PRIMARY KEY, Valore VARCHAR(255))";
             preparedStatement = connectionPersonale.prepareStatement(createTableSQL);
@@ -178,6 +180,39 @@ public class DatabaseH2 {
         }
         return successo;
     }
+    
+    
+    
+    
+    public static void aggiornaDimensioneColonnaValoreH2Opzioni(Connection connection) {
+    try (Statement stmt = connection.createStatement()) {
+        // 1. Controlla la dimensione corrente della colonna
+        ResultSet rs = stmt.executeQuery(
+            "SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH " +
+            "FROM INFORMATION_SCHEMA.COLUMNS " +
+            "WHERE TABLE_NAME = 'OPZIONI' AND COLUMN_NAME = 'VALORE'"
+        );
+        
+        if (rs.next()) {
+            int lunghezzaCorrente = rs.getInt("CHARACTER_MAXIMUM_LENGTH");
+            //System.out.println("Dimensione corrente colonna VALORE: " + lunghezzaCorrente);
+            
+            if (lunghezzaCorrente < 1000) {
+                // 2. Aggiorna a 1000
+                stmt.execute("ALTER TABLE OPZIONI ALTER COLUMN VALORE VARCHAR(1000)");
+                System.out.println("Colonna VALORE aggiornata a 1000 caratteri");
+            } else {
+               // System.out.println("Valore colonna già aggiornata");
+            }
+        } else {
+            System.out.println("Tabella OPZIONI non trovata o colonna VALORE mancante");
+        }
+    } catch (SQLException e) {
+        System.err.println("Errore aggiornamento dimensione colonna: " + e.getMessage());
+        LoggerGC.ScriviErrore(e);
+    }
+}
+
     
     
     /**

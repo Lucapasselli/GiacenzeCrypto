@@ -5434,6 +5434,7 @@ JPanel loadingBar = new JPanel() {
         Opzioni_ApiKey_Etherscan_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"));
         Opzioni_ApiKey_Coincap_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap"));
         Opzioni_ApiKey_Coingecko_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko"));
+        Opzioni_ApiKey_Moralis_TextField.setText(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
         
       //  System.out.println(RW_Opzioni_RilenvanteScambiFIAT.isSelected());
     }
@@ -11200,11 +11201,11 @@ SwingUtilities.invokeLater(() -> {
         }
         
         //Controllo ed eventualmente salvo le api Moralis
-        if (CoingeckoDiversa&&Funzioni.isApiKeyValidaMoralis(Opzioni_ApiKey_Moralis_TextField.getText().trim())||
+        if (MoralisDiversa&&Funzioni.isApiKeyValidaMoralis(Opzioni_ApiKey_Moralis_TextField.getText().trim())||
                 Opzioni_ApiKey_Moralis_TextField.getText().isBlank()){
             //anche se non metto nulla scrivo la chiave ovvero svuoto il campo
-            DatabaseH2.Opzioni_Scrivi("ApiKey_Coingecko", Opzioni_ApiKey_Moralis_TextField.getText().trim());
-        }else if (CoingeckoDiversa){
+            DatabaseH2.Opzioni_Scrivi("ApiKey_Moralis", Opzioni_ApiKey_Moralis_TextField.getText().trim());
+        }else if (MoralisDiversa){
             JOptionPane.showConfirmDialog(this, "<html>Attenzione! la ApiKey di Moralis inserita non è valida o manca la connessione internet<br>"
                                         + "L'operazione verrà annullata!<br></html>",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
@@ -11220,6 +11221,7 @@ SwingUtilities.invokeLater(() -> {
         Opzioni_ApiKey_Etherscan_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan")));
         Opzioni_ApiKey_Coincap_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coincap")));
         Opzioni_ApiKey_Coingecko_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Coingecko")));
+        Opzioni_ApiKey_Moralis_TextField.setText(Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis")));
         Opzioni_ApiKey_ControllaPulsanti();
     }//GEN-LAST:event_Opzioni_ApiKey_Bottone_AnnullaActionPerformed
 

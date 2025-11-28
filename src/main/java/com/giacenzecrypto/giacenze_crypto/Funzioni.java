@@ -2107,24 +2107,25 @@ return MappaLista;
 
     }
 
-    public static boolean isApiKeyValidaMoralis(String apiKey) {
-        try {
-            // Endpoint esempio che richiede autenticazione API key
-            URL url = new URL("https://deep-index.moralis.io/api/v2/block/latest?chain=eth");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("X-API-Key", apiKey);
-
-            int status = con.getResponseCode();
-            // 200 = OK quindi API key valida
-            return status == 200; // Puoi leggere il corpo risposta se serve, qui basta il codice
-            // Qualsiasi altro codice indica problema di autenticazione o errore
-        } catch (IOException e) {
-            LoggerGC.ScriviErrore(e);
-           // e.printStackTrace();
-            return false;
-        }
+public static boolean isApiKeyValidaMoralis(String apiKey) {
+    try {
+        // SUPEREFFICIENTE - solo numero blocco!
+        URL url = new URL("https://deep-index.moralis.io/api/v2.2/latestBlockNumber/eth");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("X-API-Key", apiKey);
+        
+        int status = con.getResponseCode();
+        System.out.println("Stato Moralis (latestBlock): " + status);
+        return status == 200;
+    } catch (IOException e) {
+        LoggerGC.ScriviErrore(e);
+        return false;
     }
+}
+
+
+
     
     public static boolean isApiKeyValidaCoincap(String ApiKey) {
         //String apiUrl = "rest.coincap.io/v3/assets?apiKey=YourApiKey (New Api)" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;

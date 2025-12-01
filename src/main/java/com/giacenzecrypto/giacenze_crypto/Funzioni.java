@@ -2126,6 +2126,10 @@ public static boolean isApiKeyValidaMoralis(String apiKey) {
 
 
 
+
+
+
+
     
     public static boolean isApiKeyValidaCoincap(String ApiKey) {
         //String apiUrl = "rest.coincap.io/v3/assets?apiKey=YourApiKey (New Api)" + ID + "/history?interval=h1&start=" + timestampIniziale + "&end=" + dataFin;

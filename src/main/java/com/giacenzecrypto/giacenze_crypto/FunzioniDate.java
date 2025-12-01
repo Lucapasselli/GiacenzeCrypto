@@ -159,6 +159,25 @@ public class FunzioniDate {
         return m1;
     } 
         
+        
+        
+        
+        public static long ConvertiISO8601toMillis(String isoDate) {
+    if (isoDate == null || isoDate.isEmpty()) {
+        return 0L;
+    }
+
+    try {
+        // Parsing ISO 8601 (es: "2024-07-22T01:53:29.000Z")
+        Instant instant = Instant.parse(isoDate);
+        return instant.toEpochMilli();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return 0L;
+    }
+}
+        
         public static String Formatta_Data_UTC(String Data) {
 
             //come prima cosa controllo che l'ora abbia effettivamente 2 caratteri per quanto riguarda le ore

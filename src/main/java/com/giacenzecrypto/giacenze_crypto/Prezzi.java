@@ -1773,8 +1773,8 @@ public class Prezzi {
         InfoPrezzo IP=DammiPrezzoInfoTransazione(Moneta1a, Moneta2a, Data, Rete,fonte);
         if (IP!=null)
         {
-            if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
-            return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).toPlainString();
+            if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
+            return IP.prezzoQta.setScale(Decimali,RoundingMode.HALF_UP).abs().toPlainString();
         }
         if (PrezzoZero) {
             return "0.00";

@@ -120,6 +120,9 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
@@ -6448,11 +6451,11 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 int ava = 0;
 
                 while (continueFetching && !progressb.FineThread()) {
-                    String url = "https://deep-index.moralis.io/api/v2.2/wallets/" + walletAddress + "/history?chain=" + chain + "&limit=100&from_block=" + Block;
-                    if (cursor != null && !cursor.isEmpty()) {
+                    String url = "https://deep-index.moralis.io/api/v2.2/wallets/" + walletAddress + "/history?chain=" + chain + "&limit=100&from_block=" + Block + "&order=asc";
+                    if (cursor != null && !cursor.isEmpty() &&!cursor.equalsIgnoreCase("null")) {
                         url += "&cursor=" + cursor;
                     }
-
+//continueFetching=false;
                     // Chiamata GET a Moralis
                     System.out.println(url);
                     URL obj = new URL(url);
@@ -6462,10 +6465,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     //con.setRequestProperty("X-API-Key", DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"));
                     
                     
-System.out.println("API Key length: " + (apiKey != null ? apiKey.length() : "NULL") + 
-                   " | First chars: " + (apiKey != null && apiKey.length() > 5 ? apiKey.substring(0, 5) + "..." : "vuota"));
+/*System.out.println("API Key length: " + (apiKey != null ? apiKey.length() : "NULL") + 
+                   " | First chars: " + (apiKey != null && apiKey.length() > 5 ? apiKey.substring(0, 5) + "..." : "vuota"));*/
 
-con.setRequestProperty("X-API-Key", apiKey);
+                    con.setRequestProperty("X-API-Key", apiKey);
 
                     int responseCode = con.getResponseCode();
                     if (responseCode != 200) {
@@ -6481,99 +6484,168 @@ con.setRequestProperty("X-API-Key", apiKey);
                     }
                     in.close();
                     
+                 
+                 //Parte per i test così non devo interrogare morali ogni volta visto che il json ce l'ho
+              /*      Path path = Paths.get("c:/java/json.json");
+                    StringBuilder response = new StringBuilder();
+                    try {
+                        Files.lines(path).forEach(line -> response.append(line).append(System.lineSeparator()));
+                    } catch (IOException e) {
+                    e.printStackTrace();
+                    }*/
+                    
                     System.out.println("Risposta: "+response);
 
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     JSONArray results = jsonResponse.getJSONArray("result");
                     cursor = jsonResponse.optString("cursor", "");  // aggiornamento cursor
+                    if (cursor==null||cursor.isEmpty()||cursor.equalsIgnoreCase("null")){
+                        continueFetching=false;
+                    }
 
                     // Elaboro ogni transazione
                     for (int i = 0; i < results.length(); i++) {
-                        if (progressb.FineThread())
+                        if (progressb.FineThread()) {
                             return null;
-
+                        }
                         JSONObject tx = results.getJSONObject(i);
 
-                        String hash = tx.getString("transaction_hash");
-                        TransazioneDefi trans;
-                        if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
+                        String hash = tx.getString("hash");
+
+                        // Recupera o crea transazione
+                        TransazioneDefi trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
+                        if (trans == null) {
                             trans = new TransazioneDefi();
                             MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
-                        } else {
-                            trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
                         }
 
+                        // --------------------------
+                        //   CAMPI BASE DELLA TX (Qua valorizzo solo le eventuali commissioni)
+                        // --------------------------
+                        // Timestamp ISO 8601
+                        // Esempio: "2024-07-22T01:53:29.000Z"
+                        String timeStampISO = tx.optString("block_timestamp", null);
+                        trans.TimeStamp = timeStampISO;
+
+                        // Converto in long
+                        long epochMs = FunzioniDate.ConvertiISO8601toMillis(timeStampISO);
+                        trans.DataOra = FunzioniDate.ConvertiDatadaLongAlSecondo(epochMs);
+                        
                         trans.Wallet = walletAddress;
                         trans.HashTransazione = hash;
-                        trans.Rete = chain;
+                        trans.Rete = Rete;
                         trans.Blocco = tx.optString("block_number", null);
-                        String timeStamp = tx.optString("block_timestamp", null);
-                        trans.TimeStamp = timeStamp;
-                        String DataO= FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(timeStamp) * 1000);
-                        trans.DataOra = DataO; // Puoi convertire in data leggibile se vuoi
-
+                        trans.MonetaCommissioni=MonetaRete;
+                        trans.QtaCommissioni=null;
+                        
+                        String from1 = tx.optString("from_address", null);
+                        //String to1 = tx.optString("to_address", null);
+                        String fee = tx.optString("transaction_fee", null);
+                        //String value = new BigDecimal(transaction.getString("value")).multiply(new BigDecimal("1e-" + tokenDecimal)).stripTrailingZeros().toPlainString();
+                        if (fee!=null&&Funzioni.isNumeric(fee, false)&&!fee.equalsIgnoreCase("0")){
+                             if (from1.equalsIgnoreCase(walletAddress)) {
+                                //le commissioni le ho solo quando è il mio wallet che chiama la transazione
+                                trans.QtaCommissioni = "-" + fee;
+                            }
+                        }
+                        trans.TipoTransazione = tx.optString("category", null);
                         trans.TransazioneOK = tx.optInt("receipt_status", 0) == 1;
 
-                        // Gestione valore e indirizzi per trasfer
-                        // Valori, indirizzi, e categorie
-                        String fromAddress = tx.getString("from_address");
-                        String toAddress = tx.getString("to_address");
-                        String valueStr = tx.getString("value");
-                        String category = tx.optString("category", ""); // Categoria può essere nulla
-                        String type = "Crypto"; // Default
+                      //  String category = tx.optString("category", "");
 
-                        // Inserisco o aggiorno la transazione
-                        if (MappaTransazioniDefi.get(walletAddress + "." + hash) == null) {
-                            trans = new TransazioneDefi();
-                            MappaTransazioniDefi.put(walletAddress + "." + hash, trans);
-                        } else {
-                            trans = MappaTransazioniDefi.get(walletAddress + "." + hash);
-                        }
+                        // ------------------------------------------------
+                        //          TRASFERIMENTI ERC20
+                        // ------------------------------------------------
+                        if (tx.has("erc20_transfers")) {
+                            JSONArray erc20 = tx.getJSONArray("erc20_transfers");
 
-                        trans.Wallet = walletAddress;
-                        trans.HashTransazione = hash;
-                        trans.Rete = chain;
-                        trans.Blocco = tx.optString("block_number");
-                        trans.TimeStamp = tx.optString("block_timestamp");
-                        DataO= FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(trans.TimeStamp) * 1000);
-                        trans.DataOra = DataO;
-                        trans.TransazioneOK = tx.optInt("receipt_status", 0) == 1;
-                        trans.MonetaCommissioni = MonetaRete;  // Se vuoi, puoi aggiungere anche le fee
+                            for (int j = 0; j < erc20.length(); j++) {
+                                JSONObject tok = erc20.getJSONObject(j);
 
-                        // Gestione trasferimenti
-                        if (fromAddress.equalsIgnoreCase(walletAddress)) {
-                            // Usuale: il mio wallet come mittente, saldo diminuisce
-                            String qta = valueStr;
-                            trans.InserisciMonete("Token", "Token", "Address Token", toAddress, "-" + qta, category);
-                        } else if (toAddress.equalsIgnoreCase(walletAddress)) {
-                            // saldo aumenta
-                            String qta = valueStr;
-                            trans.InserisciMonete("Token", "Token", "Address Token", fromAddress, qta, category);
-                        }
+                                String tokenSymbol = tok.optString("token_symbol");
+                                String tokenName = tok.optString("token_name","");
+                                String tokenAddress = tok.optString("address");
+                                String from = tok.optString("from_address");
+                                String to = tok.optString("to_address");
+                                String valueFormatted = tok.optString("value_formatted", "0");
 
-                        // Gestione NFT, NFT1155
-                        if (tx.has("nft_transfers")) {
-                            JSONArray nftTransfers = tx.getJSONArray("nft_transfers");
-                            for (int j = 0; j < nftTransfers.length(); j++) {
-                                JSONObject nftTx = nftTransfers.getJSONObject(j);
-                                String tokenId = nftTx.getString("token_id");
-                                String addressNFT = nftTx.getString("token_address");
-                                String fromNFT = nftTx.getString("from");
-                                String toNFT = nftTx.getString("to");
-                                String amountNFT = nftTx.optString("amount", "1");
-                                String nftCategory = "NFT";
+                                boolean outgoing = from.equalsIgnoreCase(walletAddress);
 
-                                trans.InserisciMonete(nftTx.optString("token_symbol", "NFT"),
-                                                      "NFT",
-                                                      addressNFT,
-                                                      (fromNFT.equalsIgnoreCase(walletAddress) ? toNFT : fromNFT),
-                                                      (fromNFT.equalsIgnoreCase(walletAddress) ? "-" : "") + amountNFT,
-                                                      nftCategory);
+                                String qta = outgoing ? "-" + valueFormatted : valueFormatted;
+                                String addr = outgoing ? to : from;
+
+                                trans.InserisciMonete(
+                                        tokenSymbol,
+                                        tokenName,
+                                        tokenAddress,
+                                        addr,
+                                        qta,
+                                        "Crypto"
+                                );
                             }
                         }
 
-                        ava++;
-                        progressb.SetAvanzamento(ava);
+                        // ------------------------------------------------
+                        //          TRASFERIMENTI NATIVI (BNB/ETH/MATIC)
+                        // ------------------------------------------------
+                        if (tx.has("native_transfers")) {
+                            JSONArray nat = tx.getJSONArray("native_transfers");
+
+                            for (int j = 0; j < nat.length(); j++) {
+                                JSONObject nt = nat.getJSONObject(j);
+
+                                String from = nt.optString("from_address");
+                                String to = nt.optString("to_address");
+                                String symbol = nt.optString("token_symbol", MonetaRete);
+                                String valueFormatted = nt.optString("value_formatted", "0");
+                                //String direction = nt.optString("direction", "");
+
+                                boolean outgoing = from.equalsIgnoreCase(walletAddress);
+
+                                String qta = outgoing ? "-" + valueFormatted : valueFormatted;
+                                String addr = outgoing ? to : from;
+
+                                trans.InserisciMonete(
+                                        symbol,
+                                        symbol,
+                                        symbol,
+                                        addr,
+                                        qta,
+                                        "Crypto"
+                                );
+                            }
+                        }
+
+                        // ------------------------------------------------
+                        //                  NFT
+                        // ------------------------------------------------
+                        if (tx.has("nft_transfers")) {
+                            JSONArray nft = tx.getJSONArray("nft_transfers");
+
+                            for (int j = 0; j < nft.length(); j++) {
+                                JSONObject nt = nft.getJSONObject(j);
+
+                                String tokenId = nt.optString("token_id");
+                                String addressNFT = nt.optString("token_address");
+                                String fromNFT = nt.optString("from");
+                                String toNFT = nt.optString("to");
+                                String amountNFT = nt.optString("amount", "1");
+
+                                boolean outgoing = fromNFT.equalsIgnoreCase(walletAddress);
+
+                                String qta = outgoing ? "-" + amountNFT : amountNFT;
+                                String addr = outgoing ? toNFT : fromNFT;
+
+                                trans.InserisciMonete(
+                                        nt.optString("token_symbol", "NFT"),
+                                        "NFT",
+                                        addressNFT,
+                                        addr,
+                                        qta,
+                                        "NFT"
+                                );
+                            }
+                        }
                     }
                 }
                 //Fine ciclo
@@ -6631,17 +6703,19 @@ con.setRequestProperty("X-API-Key", apiKey);
                 }
 
             } 
-            else if (Rete.equalsIgnoreCase("BSC")) {
+            else if (Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVA")) {
 
                     //Se ho dei portafogli non gestiti da etherscan li passo alla funzione che si occupa di cercare i dati su Moralis
-System.out.println("Leggo da Moralissssssss");
+//System.out.println("Leggo da Moralissssssss");
             if (Funzioni.isApiKeyValidaMoralis(DatabaseH2.Opzioni_Leggi("ApiKey_Moralis"))) {
                 //A questo punto aggiungo alla mappa anche i wallet presi da moralis
                // Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,progressb);
-               System.out.println("Leggo da Moralis");
-                Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,"0",progressb);
-                for (String k : MappaTransazioniDefi2.keySet()) {
-                    MappaTransazioniDefi.put(k, MappaTransazioniDefi2.get(k));
+               //System.out.println("Leggo da Moralis");
+                Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,progressb);
+                if (MappaTransazioniDefi2!=null){
+                    for (String k : MappaTransazioniDefi2.keySet()) {
+                        MappaTransazioniDefi.put(k, MappaTransazioniDefi2.get(k));
+                    }
                 }
             }
             else {

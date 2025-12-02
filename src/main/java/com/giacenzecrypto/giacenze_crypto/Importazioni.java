@@ -1711,7 +1711,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
            String riga="";
                 for (String v1 : v) {
                     if(v1==null)v1="";
-                    riga = riga + v1 + ";";
+                    riga = riga + v1.replace(";", "") + ";";//Ovviamente il punto e virgola non può comparire altrimenti rompe il file
                 }
            //Questa serve per togliere l'ultimo ";" dalla stringa in quanto superfluo
            riga=riga.substring(0,riga.length()-1);
@@ -5876,7 +5876,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         }    
     */
 
-     public static Object[] DeFi_RitornaArrayJson(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
+     public static Object[] DeFi_RitornaTransazioniEtherscan(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
          //L'oogetto in ritorno è un array di 2 oggetti
          //il primo è un int che indica il numero di transazioni
          //il secondo è un JsonArray con tutte le transazioni
@@ -5892,10 +5892,16 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 return null;
             }
             //String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
-            String urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            String urls;
+            if (Dominio.contains("cronos.org"))
+            {
+                vespa="ztmdcxF6XnS7LGRkxPOoLGD9W7gWJfDT";
+                urls=Dominio+"?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            }
+            else urls=Dominio+"&module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
 
             //if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
-            //System.out.println(urls);
+            System.out.println(urls);
             System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
             System.out.println("da Blocco : "+BloccoTemp+" relativi a tipologia : "+Tipo);
             URL url = new URI(urls).toURL();
@@ -6279,7 +6285,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         
     public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
         //sistemo le giacenze sulle rete ethereum compatibili
-        if (!Rete.equals("SOL")){
+        
+        if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVA")&&!Rete.equals("CRO")){
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Sistemazione Giacenze moneta di Scambio su Wallet " + Wallet);
         progressb.SetLabel("Sistemazione Giacenze");
@@ -6430,11 +6437,13 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
     }
     
-    public static Map<String, TransazioneDefi> DeFi_RitornaTransazioniMoralis(String walletAddress, String Rete, String Blocco,Download progressb) {
+    public static Map<String, TransazioneDefi> DeFi_RitornaTransazioniMoralis(String walletAddress, String Rete, String Blocco,Component ccc,Download progressb) {
         Map<String, TransazioneDefi> MappaTransazioniDefi = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
        // progressb.setDefaultCloseOperation(0);
        // progressb.Titolo("Importazione dati da Moralis getWalletHistory");
         //Tramite Moralis voglio scaricare solo BSC, BASE e Avalanche
+        progressb.SetLabel("Scaricamento da " + walletAddress + " ("+Rete+") in corso...");
+        progressb.setIndeterminate(true);
         String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Moralis");
         String Block=String.valueOf(Long.parseLong(Blocco)+1);//Aggiungo 1 al blocco per evitare di richiedere lo stesso blocco una seconda volta
 
@@ -6448,7 +6457,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 String cursor = null;
                 boolean continueFetching = true;
-                int ava = 0;
+                //int ava = 0;
 
                 while (continueFetching && !progressb.FineThread()) {
                     String url = "https://deep-index.moralis.io/api/v2.2/wallets/" + walletAddress + "/history?chain=" + chain + "&limit=100&from_block=" + Block + "&order=asc";
@@ -6469,10 +6478,16 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                    " | First chars: " + (apiKey != null && apiKey.length() > 5 ? apiKey.substring(0, 5) + "..." : "vuota"));*/
 
                     con.setRequestProperty("X-API-Key", apiKey);
+                    
+                    
 
                     int responseCode = con.getResponseCode();
                     if (responseCode != 200) {
-                        System.err.println("Errore nella richiesta API Moralis, codice: " + responseCode);
+                        String Errore="Errore nella richiesta API Moralis, codice: " + responseCode;
+                        LoggerGC.ScriviErrore(Errore);
+                        JOptionPane.showConfirmDialog(ccc, Errore+
+                            "\nRiprovare in un secondo momento.",
+                            "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
                         return null;
                     }
 
@@ -6485,8 +6500,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     in.close();
                     
                  
-                 //Parte per i test così non devo interrogare morali ogni volta visto che il json ce l'ho
-              /*      Path path = Paths.get("c:/java/json.json");
+              /*   //Parte per i test così non devo interrogare morali ogni volta visto che il json ce l'ho
+                    Path path = Paths.get("c:/java/json.json");
                     StringBuilder response = new StringBuilder();
                     try {
                         Files.lines(path).forEach(line -> response.append(line).append(System.lineSeparator()));
@@ -6537,6 +6552,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         trans.Blocco = tx.optString("block_number", null);
                         trans.MonetaCommissioni=MonetaRete;
                         trans.QtaCommissioni=null;
+                        boolean SPAM = tx.optBoolean("possible_spam",false);
                         
                         String from1 = tx.optString("from_address", null);
                         //String to1 = tx.optString("to_address", null);
@@ -6548,7 +6564,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 trans.QtaCommissioni = "-" + fee;
                             }
                         }
-                        trans.TipoTransazione = tx.optString("category", null);
+                        if (SPAM)trans.TipoTransazione=tx.optString("category", "")+" - Possibile SPAM";
+                        else trans.TipoTransazione = tx.optString("category", "");
                         trans.TransazioneOK = tx.optInt("receipt_status", 0) == 1;
 
                       //  String category = tx.optString("category", "");
@@ -6556,6 +6573,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         // ------------------------------------------------
                         //          TRASFERIMENTI ERC20
                         // ------------------------------------------------
+                        //Questa stringa serve per compararla con quella degli NFT nella parte sotto
+                        //Se corrisponde vuol dire che quello non è un NFT ma una riga doppia mal interpretata da moralis
+                        //ovvero interpreta il movimento sia come NFT che come Token
+                        String TokenAddressERC20="";
                         if (tx.has("erc20_transfers")) {
                             JSONArray erc20 = tx.getJSONArray("erc20_transfers");
 
@@ -6564,7 +6585,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                                 String tokenSymbol = tok.optString("token_symbol");
                                 String tokenName = tok.optString("token_name","");
-                                String tokenAddress = tok.optString("address");
+                                TokenAddressERC20 = tok.optString("address");
                                 String from = tok.optString("from_address");
                                 String to = tok.optString("to_address");
                                 String valueFormatted = tok.optString("value_formatted", "0");
@@ -6577,7 +6598,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 trans.InserisciMonete(
                                         tokenSymbol,
                                         tokenName,
-                                        tokenAddress,
+                                        TokenAddressERC20,
                                         addr,
                                         qta,
                                         "Crypto"
@@ -6604,7 +6625,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                                 String qta = outgoing ? "-" + valueFormatted : valueFormatted;
                                 String addr = outgoing ? to : from;
-
+                               
                                 trans.InserisciMonete(
                                         symbol,
                                         symbol,
@@ -6636,14 +6657,18 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 String qta = outgoing ? "-" + amountNFT : amountNFT;
                                 String addr = outgoing ? toNFT : fromNFT;
 
-                                trans.InserisciMonete(
-                                        nt.optString("token_symbol", "NFT"),
-                                        "NFT",
-                                        addressNFT,
-                                        addr,
-                                        qta,
-                                        "NFT"
-                                );
+                                if (!TokenAddressERC20.equalsIgnoreCase(addressNFT))
+                                {
+                                    //Se entroqua vuol dire che è un NFT vero e proprio e non un doppione mal interpretato di un token
+                                    trans.InserisciMonete(
+                                            nt.optString("token_symbol", tokenId),
+                                            nt.optString("token_symbol", tokenId),
+                                            addressNFT,
+                                            addr,
+                                            qta,
+                                            "NFT"
+                                    );
+                                }
                             }
                         }
                     }
@@ -6711,7 +6736,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 //A questo punto aggiungo alla mappa anche i wallet presi da moralis
                // Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,progressb);
                //System.out.println("Leggo da Moralis");
-                Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,progressb);
+                Map<String, TransazioneDefi> MappaTransazioniDefi2 = DeFi_RitornaTransazioniMoralis(walletAddress,Rete,Blocco,ccc,progressb);
+                progressb.setIndeterminate(false);
                 if (MappaTransazioniDefi2!=null){
                     for (String k : MappaTransazioniDefi2.keySet()) {
                         MappaTransazioniDefi.put(k, MappaTransazioniDefi2.get(k));
@@ -6752,7 +6778,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 1 : Recupero la lista delle transazioni
                 progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 5");
-                Object Risposta[] = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
+                Object Risposta[] = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -6761,7 +6787,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 2  : Recupero la lista delle transazioni dei token bsc20 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 5");
-                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
+                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -6770,7 +6796,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT) 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 5");
-                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
+                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -6779,7 +6805,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 
                 //PARTE 4: Recupero la lista delle transazioni dei token erc1155 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 5");
-                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
+                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -6788,7 +6814,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 5: Recupero delle transazioni interne
                 progressb.SetMessaggioAvanzamento("Preparazione fase 5 di 5");
-                Risposta = DeFi_RitornaArrayJson(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
+                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }

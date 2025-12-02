@@ -414,7 +414,8 @@ public class GestioneWallets extends javax.swing.JDialog {
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte
                     int r= JOptionPane.showConfirmDialog(c, "Vuoi che venga controllata la giacenza del token di riferimento delle chain \n"
-                         + "e in caso di differenze creato un movimento di rettifica ?",
+                         + "e in caso di differenze creato un movimento di rettifica ?\n"
+                            + "Valida solo per reti gestite da etherscan (No BSC,AVA,BASE,CRO,SOL)",
                             "Rettifiche movimenti",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                  
               //  System.out.println(r);

@@ -14,7 +14,7 @@ public class VarCondivise {
         //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko
         //System.out.println("Compilo Mappe integrate nel codice");
         String[] BSC = new String[]{"https://api.etherscan.io/v2/api?chainid=56", "", "BNB", "binance-smart-chain"};
-        String[] CRO = new String[]{"https://api.etherscan.io/v2/api?chainid=25", "", "CRO", "cronos"};
+        String[] CRO = new String[]{"https://explorer-api.cronos.org/mainnet/api/v2", "", "CRO", "cronos"};
         String[] ETH = new String[]{"https://api.etherscan.io/v2/api?chainid=1", "", "ETH", "ethereum"};
         String[] BASE = new String[]{"https://api.etherscan.io/v2/api?chainid=8453", "", "ETH", "base"};
         String[] ARB = new String[]{"https://api.etherscan.io/v2/api?chainid=42161", "", "ETH", "arbitrum-one"};

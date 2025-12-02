@@ -13655,7 +13655,7 @@ try {
                                 riga[5]="0.00";
                                 riga[6]="Token senza prezzo";
                             }else{
-                                IP.prezzoQta=IP.prezzoUnitario.multiply(new BigDecimal(M1.Qta));
+                                IP.prezzoQta=IP.prezzoUnitario.multiply(new BigDecimal(M1.Qta)).abs();
                                 riga[5]=IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).toPlainString();
                                 riga[7]=IP.Ritorna40();
                             }

@@ -65,7 +65,7 @@ async function getMarketsSymbols(exchange) {
     }
 
     const marketsFile = path.join(tempDir, `markets_${exchange.id}.json`);
-    const oneHourMs = 1 * 60 * 60 * 1000; // 1 ora
+    const oneHourMs = 1 * 60 * 60 * 6000; // 6 ore
     let markets;
 
     const needReload = () => {

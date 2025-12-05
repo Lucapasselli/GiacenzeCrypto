@@ -61,8 +61,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -159,7 +157,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.47.02";
+    public String Versione="1.0.47.03";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
@@ -7636,10 +7634,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 Thread thread;
                 thread = new Thread() {
                     public void run() {
-                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, null,IPr,df,MU.Rete,Ritorno);                   
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, null,IPr,df,MU.Rete,Ritorno,progress);                   
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
-                        progress.ChiudiFinestra();
+                        //progress.ChiudiFinestra();
                     }
                 };
                 thread.start();
@@ -11816,10 +11814,10 @@ SwingUtilities.invokeLater(() -> {
         Thread thread;
             thread = new Thread() {
             public void run() {
-            GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(PopUp_IDTrans);
+            GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(PopUp_IDTrans,progress);
             t.setLocationRelativeTo(c);           
             t.setVisible(true);
-            progress.ChiudiFinestra();
+            //progress.ChiudiFinestra();
         }
             };
         thread.start();  

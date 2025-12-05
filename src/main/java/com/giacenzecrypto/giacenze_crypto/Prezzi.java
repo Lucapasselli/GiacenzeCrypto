@@ -169,13 +169,13 @@ public class Prezzi {
             //     bure.close();
             //     fire.close();        
              } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                 LoggerGC.ScriviErrore(ex);
              } catch (IOException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                 LoggerGC.ScriviErrore(ex);
              }
              
          } catch (IOException ex) {        
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
 
     }   
@@ -203,13 +203,13 @@ public class Prezzi {
              //    bure.close();
              //    fire.close();        
              } catch (FileNotFoundException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                 LoggerGC.ScriviErrore(ex);
              } catch (IOException ex) {
-                 Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
              }
              
          } catch (IOException ex) {        
-            Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
 
     }  
@@ -1135,16 +1135,16 @@ public class Prezzi {
                 }
                 TimeUnit.SECONDS.sleep(1);
             } catch (MalformedURLException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
                 ok = null;
             } catch (IOException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
                 ok = null;
             } catch (InterruptedException ex) {
                 ok = null;
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         }
         return ok;
@@ -1315,16 +1315,16 @@ public class Prezzi {
                 TimeUnit.SECONDS.sleep(1);
 
             } catch (MalformedURLException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
                 ok = null;
             } catch (IOException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
                 ok = null;
             } catch (InterruptedException ex) {
                 ok = null;
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         
         return ok;
@@ -1505,16 +1505,16 @@ public class Prezzi {
                 TimeUnit.SECONDS.sleep(1);
 
             } catch (MalformedURLException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
                 ok = null;
             } catch (IOException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
                 ok = null;
             } catch (InterruptedException ex) {
                 ok = null;
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
 
             return ok;
@@ -1967,7 +1967,7 @@ public class Prezzi {
             } catch (JsonSyntaxException | IOException | InterruptedException ex) {
                 ok = null;
             } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         }
         return ok;
@@ -2048,9 +2048,9 @@ public class Prezzi {
                 DatabaseH2.Opzioni_Scrivi("Data_Lista_CoinCap", String.valueOf(adesso));
             
         }   catch (FileNotFoundException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             } catch (IOException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
            
         }
@@ -2127,10 +2127,10 @@ public class Prezzi {
                         }
                 TimeUnit.SECONDS.sleep(5);
             } catch (JsonSyntaxException | IOException | InterruptedException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
                 ok = null;
             } catch (URISyntaxException ex) {
-                Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
         }
         return ok;
@@ -2622,10 +2622,10 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 else IPr = new Prezzi.InfoPrezzo(null, "", 0, new BigDecimal(VecchioPrezzo), null, M.Moneta);
                         
                         
-                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPr,dataL,M.Rete,Ritorno);                   
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPr,dataL,M.Rete,Ritorno,progress);                   
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
-                        progress.ChiudiFinestra();
+                        //progress.ChiudiFinestra();
                     }
                 };
                 thread.start();
@@ -2647,10 +2647,10 @@ public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Com
                 Thread thread;
                 thread = new Thread() {
                     public void run() {
-                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPt,dataL,M.Rete,Ritorno);                   
+                        GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPt,dataL,M.Rete,Ritorno,progress);                   
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
-                        progress.ChiudiFinestra();
+                       // progress.ChiudiFinestra();
                     }
                 };
                 thread.start();

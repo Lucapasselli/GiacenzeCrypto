@@ -311,9 +311,10 @@ public class Importazioni {
              //   bure.close();
               //  fire.close();
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+                
+                LoggerGC.ScriviErrore(ex);
             } catch (IOException ex) {
-                Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
             Collections.sort(righeFile);
             progressb.SetMassimo(righeFile.size());
@@ -550,7 +551,8 @@ System.out.println(response.body().string());
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+           
+        LoggerGC.ScriviErrore(ex);
         }
     
         }
@@ -723,9 +725,9 @@ System.out.println(response.body().string());
               //  bure.close();
               //  fire.close();
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             } catch (IOException ex) {
-                Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+                LoggerGC.ScriviErrore(ex);
             }
             progressb.SetMassimo(righeFile.size());
             progressb.SetAvanzamento(0);
@@ -1088,9 +1090,9 @@ System.out.println(response.body().string());
          //   bure.close();
           //  fire.close();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }     
 
         
@@ -1191,9 +1193,9 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
              //   bure.close();
              //   fire.close();
               } catch (FileNotFoundException ex) {  
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         
         
@@ -1410,9 +1412,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     file.add(riga);
                 }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         int NumeroRighe = file.size();
         progressb.SetMassimo(NumeroRighe);
@@ -1578,9 +1580,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             //    bure.close();
             //    fire.close();
               } catch (FileNotFoundException ex) {  
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         } catch (IOException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
         
     
@@ -1720,7 +1722,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
        b.close();
        w.close();
     }catch (IOException ex) {
-              //     Logger.getLogger(AWS.class.getName()).log(Level.SEVERE, null, ex);
+              //     LoggerGC.ScriviErrore(ex);
                }
     }
         
@@ -5952,7 +5954,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             if (numeroTransTemp<100)finito=true;
           }   
         } catch (InterruptedException | URISyntaxException | IOException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
            //Adesso pulisco l'array json dai doppioni
            transactionsArray=DeFi_PulisciJSONCronos(transactionsArray,blocco);
@@ -6100,7 +6102,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             if (numeroTransTemp<10000)finito=true;
           }   
         } catch (InterruptedException | URISyntaxException | IOException ex) {
-            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerGC.ScriviErrore(ex);
         }
            ritorno[0]=numeroTrans;
            System.out.println(numeroTrans);
@@ -6137,7 +6139,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             TimeUnit.SECONDS.sleep(2);
 
         } catch (InterruptedException | URISyntaxException | IOException ex) {
-            // Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            // LoggerGC.ScriviErrore(ex);
             return null;
         }
 
@@ -6184,7 +6186,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              }
 
         } catch (InterruptedException | URISyntaxException | IOException ex) {
-            // Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+            //LoggerGC.ScriviErrore(ex);
             return null;
         }
 
@@ -6896,7 +6898,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 try {
                     TimeUnit.SECONDS.sleep(5);
                 } catch (InterruptedException ex) {
-                    //Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                    //LoggerGC.ScriviErrore(ex);
                     LoggerGC.ScriviErrore(ex);
                 }
                     }
@@ -6910,7 +6912,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     try {
                         TimeUnit.SECONDS.sleep(5);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                        //LoggerGC.ScriviErrore(ex);
+                        LoggerGC.ScriviErrore(ex);
                     }
             
             }
@@ -6921,7 +6924,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     try {
                         TimeUnit.SECONDS.sleep(5);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+
+                        LoggerGC.ScriviErrore(ex);
                     }
             
             }

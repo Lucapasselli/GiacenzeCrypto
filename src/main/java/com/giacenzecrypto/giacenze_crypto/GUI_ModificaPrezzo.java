@@ -42,7 +42,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         this.setIconImage(icon.getImage());
         
     }
-    public GUI_ModificaPrezzo(String ID) {
+    public GUI_ModificaPrezzo(String ID,Download dow) {
         initComponents();
         PrezzoT=null;
         MU=null;
@@ -53,15 +53,17 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
         CaricaTabellaPrezzoAttualedaID(ID); 
         CaricaTabellaPrezzi(ID);
+        if (dow!=null)dow.ChiudiFinestra();
         
     }
     
-    public GUI_ModificaPrezzo(Moneta MU,Moneta ME, Prezzi.InfoPrezzo IPr, long TimeStamp,String Rete,String[] Ritorno) {
+    public GUI_ModificaPrezzo(Moneta MU,Moneta ME, Prezzi.InfoPrezzo IPr, long TimeStamp,String Rete,String[] Ritorno,Download dow) {
         this.MU=MU;
         this.ME=ME;
         this. TimeStamp=TimeStamp;
         this.Rete=Rete;
         PrezzoT=IPr.prezzoQta.toPlainString();
+        
         
         initComponents();
         ModalitaRitorno=true;
@@ -70,7 +72,11 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
         CaricaTabellaPrezzoAttualedaID(IPr); 
         CaricaTabellaPrezzi();
+        
+        
         this.Ritorno=Ritorno;
+        if (dow!=null)dow.ChiudiFinestra();
+        this.requestFocus();
         
     }
     

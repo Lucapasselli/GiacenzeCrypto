@@ -1022,11 +1022,11 @@ private static final long serialVersionUID = 9L;
                 public void run() {
                     String Rete=null;
                     if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
-                    GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, ME,IPr,DataLong,Rete,Ritorno);
+                    GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, ME,IPr,DataLong,Rete,Ritorno,progress);
                     //GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, ME,IPr,DataLong,Rete,Ritorno);
                     t.setLocationRelativeTo(c);
                     t.setVisible(true);
-                    progress.ChiudiFinestra();
+                    //progress.ChiudiFinestra();
                 }
             };
             thread.start();

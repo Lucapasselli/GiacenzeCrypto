@@ -120,9 +120,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
@@ -134,6 +131,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.List;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -5876,6 +5874,154 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         }    
     */
 
+     public static Object[] DeFi_RitornaTransazioniCronoscan(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
+         //L'oogetto in ritorno è un array di 2 oggetti
+         //il primo è un int che indica il numero di transazioni
+         //il secondo è un JsonArray con tutte le transazioni
+        JSONArray transactionsArray=new JSONArray();
+        Object ritorno[]=new Object[2];
+        int numeroTrans;
+        int pagina=1;
+        boolean finito=false;
+        long blocco=0;
+        
+        if (Funzioni.isNumeric(BloccoIniziale, false)){
+            blocco=Long.parseLong(BloccoIniziale);
+        }
+
+         try {
+             while (!finito){//Siccome il limite è di 10000 movimenti se supero quel limite continuo le richieste dall'ultima arrivata
+            if (progressb!=null&&progressb.FineThread()) {
+                return null;
+            }
+            //String urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc" + "&apikey=" + vespa;
+            String urls;
+            urls=Dominio+"?module=account&action="+Tipo+"&address=" + walletAddress + "&page="+pagina+"&offset=100&sort=asc" + "&apikey=" + vespa;
+            
+
+
+            //if (Dominio.contains("cronos.org"))urls=Dominio+"/api?module=account&action="+Tipo+"&address=" + walletAddress + "&startblock=" + BloccoTemp + "&sort=asc";
+            System.out.println(urls);
+            System.out.println("Recupero informazioni da Explorer "+Dominio+" relativamente a wallet "+ walletAddress);
+            System.out.println("pagina : "+pagina+" relativi a tipologia : "+Tipo);
+            URL url = new URI(urls).toURL();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            StringBuilder responseTxlist = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                responseTxlist.append(inputLine);
+            }
+            in.close();
+            String Risposta=responseTxlist.toString();
+            //System.out.println(Risposta);
+            //Se Risposta contiene "Query Timeout occurred." e la richiesta è per un erc1155
+            //significa che l'explorer non lo supporta quindi ritorno il campo vuoto
+            if (Tipo.equalsIgnoreCase("token1155tx") && Risposta.contains("Query Timeout occured.")){
+                ritorno[0]=0;
+                return ritorno;
+            }
+            //System.out.println(Risposta);
+            JSONObject jsonObjectTxlist = new JSONObject(Risposta);
+            int status = Integer.parseInt(jsonObjectTxlist.getString("status"));
+            //verifico che questa non sia andata in errore, in caso contratrio interrompo l'importazione
+            if (status == 0) {
+                //in questo caso la richiesta è anda in errore
+                //scrivo il messaggio, e chiudo la progress bar
+                if (!jsonObjectTxlist.getString("message").trim().equalsIgnoreCase("No transactions found")) {
+                    if (progressb!=null)progressb.ChiudiFinestra();
+                    JOptionPane.showConfirmDialog(ccc, "Errore durante l'importazione dei dati\n" + jsonObjectTxlist.getString("message")+
+                            "\n"+Risposta+"\n"+"Riprovare in un secondo momento, le API dell'Explorer non rispondono correttamente.",
+                            "Errore", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null);
+                    return null;
+                }
+            }
+            //conto le transazioni
+            int numeroTransTemp=0;
+            JSONArray transactionsArrayTemp = jsonObjectTxlist.getJSONArray("result");           
+            for (int i = 0; i < transactionsArrayTemp.length(); i++) {
+                   numeroTransTemp++;
+            }
+            transactionsArray.putAll(transactionsArrayTemp);           
+            TimeUnit.SECONDS.sleep(2);
+            if (progressb!=null&&progressb.FineThread()) {
+                return null;
+            }
+            pagina++;
+            if (numeroTransTemp<100)finito=true;
+          }   
+        } catch (InterruptedException | URISyntaxException | IOException ex) {
+            Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+        }
+           //Adesso pulisco l'array json dai doppioni
+           transactionsArray=DeFi_PulisciJSONCronos(transactionsArray,blocco);
+           // conto le transazioni importate
+           numeroTrans=0;
+           for (int i = 0; i < transactionsArray.length(); i++) {
+                   numeroTrans++;
+            }
+           ritorno[0]=numeroTrans;
+           System.out.println("Numero nuove transazioni per la tipologia:"+Tipo+" -> "+numeroTrans);
+           ritorno[1]=transactionsArray;
+           return ritorno; 
+     }        
+         
+
+    public static JSONArray DeFi_PulisciJSONCronos(JSONArray txList,long blocco) {
+        //questa funzione fà 2 cose:
+        //1 - Elimina i doppioni, cronos.org infatti manda diversi doppioni di transazioni
+        //2 - Elimina tutte le transazioni che hanno un blocco inferiore o uguale a quello passato
+        
+
+        //"blockNumber": "549333",
+        JSONArray cleaned = new JSONArray();
+        Set<String> seen = new HashSet<>();
+
+        for (int i = 0; i < txList.length(); i++) {
+            JSONObject tx = txList.getJSONObject(i);
+            
+            int block=tx.optInt("blockNumber", 0);
+
+            // Cloniamo l'oggetto
+            JSONObject clone = new JSONObject(tx.toString());
+
+            // Rimuoviamo il campo che NON deve essere considerato nel check
+            clone.remove("confirmations");
+
+            // Serializzazione per confronto
+            String key = clone.toString();
+
+            if (!seen.contains(key)&&block>blocco) {
+                seen.add(key);
+                cleaned.put(tx);  // aggiungiamo l'originale con confirmations
+            }
+        }
+
+        return cleaned;
+    }
+
+
+   /*      
+          public static JSONArray removeExactDuplicates(JSONArray txList) {
+        JSONArray cleaned = new JSONArray();
+        Set<String> seen = new HashSet<>();
+
+        for (int i = 0; i < txList.length(); i++) {
+            JSONObject tx = txList.getJSONObject(i);
+
+            // Serializzazione completa per confronto 1:1
+            String serialized = tx.toString();
+
+            if (!seen.contains(serialized)) {
+                seen.add(serialized);
+                cleaned.put(tx);
+            }
+        }
+
+        return cleaned;
+    }*/
+     
      public static Object[] DeFi_RitornaTransazioniEtherscan(String Dominio,String walletAddress,String Tipo,String BloccoIniziale,String vespa,Component ccc,Download progressb){
          //L'oogetto in ritorno è un array di 2 oggetti
          //il primo è un int che indica il numero di transazioni
@@ -6758,13 +6904,33 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
             }
             
-            else {
+            else if (!Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))){
+                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
+                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+            
+            }
+            //Qui da sostituire con cronoscan
+            else if (Rete.equalsIgnoreCase("CRO")&&!Funzioni.isApiKeyValidaCronos(DatabaseH2.Opzioni_Leggi("ApiKey_Cronos"))){
+                System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
+                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa a Cronos.org");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+            
+            }
+            else{
                 
-                //Inizio
-                if (Funzioni.isApiKeyValidaEtherscan(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan"))) {
-                
-                
-                String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
+                //Se arrivo qua leggo i risultati nella modalità etherscan
+                String apiKey;
+                if (Rete.equalsIgnoreCase("CRO"))apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Cronos");
+                else apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan");
                 String Indirizzo = Principale.Mappa_ChainExplorer.get(Rete)[0];
                 String MonetaRete = Principale.Mappa_ChainExplorer.get(Rete)[2];
                 //String vespa = vespa(apiKey, "paperino");
@@ -6778,7 +6944,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 1 : Recupero la lista delle transazioni
                 progressb.SetMessaggioAvanzamento("Preparazione fase 1 di 5");
-                Object Risposta[] = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
+                Object Risposta[];
+                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
+                else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlist", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -6787,8 +6955,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 2  : Recupero la lista delle transazioni dei token bsc20 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 2 di 5");
-                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
-                if (Risposta == null) {
+                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
+                else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokentx", Blocco, apiKey, ccc, progressb);
+                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
                 JSONArray transactionsTokentx = (JSONArray) Risposta[1];
@@ -6796,7 +6965,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 3: Recupero la lista delle transazioni dei token erc721 (NFT) 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 3 di 5");
-                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
+                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
+                else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "tokennfttx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -6805,7 +6975,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 
                 //PARTE 4: Recupero la lista delle transazioni dei token erc1155 
                 progressb.SetMessaggioAvanzamento("Preparazione fase 4 di 5");
-                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
+                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
+                else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "token1155tx", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -6814,7 +6985,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                 //PARTE 5: Recupero delle transazioni interne
                 progressb.SetMessaggioAvanzamento("Preparazione fase 5 di 5");
-                Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
+                if (Rete.equalsIgnoreCase("CRO"))Risposta = DeFi_RitornaTransazioniCronoscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
+                else Risposta = DeFi_RitornaTransazioniEtherscan(Indirizzo, walletAddress, "txlistinternal", Blocco, apiKey, ccc, progressb);
                 if (Risposta == null) {
                     return null;//se in errore termino il ciclo
                 }
@@ -7140,17 +7312,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     progressb.SetAvanzamento(ava);
                 }
 
-                //   TimeUnit.SECONDS.sleep(1);
-                //Fine
-                } else {
-                        System.out.println("Non possono essere scaricate le transazioni del Wallet " + walletAddress + " per mancaza di ApiKey");
-                        System.out.println("Andare nella sezione 'Opzioni' - 'ApiKey' per inserire l'apiKey relativa ad Etherscan");
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(Importazioni.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    }
             }
         }
 //        Prezzi.ScriviFileConversioneXXXEUR();

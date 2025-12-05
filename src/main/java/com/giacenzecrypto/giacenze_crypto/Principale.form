@@ -6206,14 +6206,10 @@
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="Opzioni_ApiKey_Coingecko_Label" min="-2" pref="129" max="-2" attributes="0"/>
                                           <Component id="Opzioni_ApiKey_Moralis_Label" alignment="0" min="-2" pref="129" max="-2" attributes="0"/>
+                                          <Component id="Opzioni_ApiKey_Cronos_Label" alignment="0" min="-2" pref="129" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="Opzioni_ApiKey_Bottone_Salva" min="-2" pref="100" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="Opzioni_ApiKey_Bottone_Annulla" min="-2" pref="100" max="-2" attributes="0"/>
-                                          </Group>
                                           <Group type="102" attributes="0">
                                               <Component id="Opzioni_ApiKey_Coingecko_TextField" min="-2" pref="658" max="-2" attributes="0"/>
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -6223,6 +6219,16 @@
                                               <Component id="Opzioni_ApiKey_Moralis_TextField" min="-2" pref="658" max="-2" attributes="0"/>
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Component id="Opzioni_ApiKey_Moralis_LabelSito" min="-2" pref="300" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="Opzioni_ApiKey_Bottone_Salva" min="-2" pref="100" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_Bottone_Annulla" min="-2" pref="100" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="Opzioni_ApiKey_Cronos_TextField" min="-2" pref="658" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="Opzioni_ApiKey_Cronos_LabelSito" min="-2" pref="300" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                   </Group>
@@ -6264,12 +6270,18 @@
                                   <Component id="Opzioni_ApiKey_Moralis_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Moralis_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="Opzioni_ApiKey_Cronos_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_Cronos_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_ApiKey_Cronos_LabelSito" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="62" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ApiKey_Bottone_Salva" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                                   <Component id="Opzioni_ApiKey_Bottone_Annulla" alignment="3" min="-2" pref="60" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="576" max="32767" attributes="0"/>
+                              <EmptySpace pref="482" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -6402,6 +6414,27 @@
                         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Moralis_LabelSitoMouseClicked"/>
                         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Moralis_LabelSitoMouseEntered"/>
                         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Moralis_LabelSitoMouseExited"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="Opzioni_ApiKey_Cronos_TextField">
+                      <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Cronos_TextFieldMouseReleased"/>
+                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="Opzioni_ApiKey_Cronos_TextFieldKeyReleased"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Cronos_Label">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="ApiKey Cronos :"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Cronos_LabelSito">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="https://explorer.cronos.org/login"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Cronos_LabelSitoMouseClicked"/>
+                        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Cronos_LabelSitoMouseEntered"/>
+                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Cronos_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
                   </SubComponents>

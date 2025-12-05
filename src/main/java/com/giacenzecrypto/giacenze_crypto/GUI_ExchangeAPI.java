@@ -693,7 +693,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            new GestioneWallets().setVisible(true);
+            new GUI_GestioneWallets().setVisible(true);
         });
     }
 
@@ -722,9 +722,9 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
                         }
                     }     
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger(GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GUI_GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GUI_GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 //A questo punto devo cancellare il file, ho salvato tutto nel database
                 file.delete();

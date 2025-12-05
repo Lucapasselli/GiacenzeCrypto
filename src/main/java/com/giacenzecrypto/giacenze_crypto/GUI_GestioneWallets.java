@@ -39,7 +39,7 @@ Funzioni da sistemare per aggiungere nuova rete
 -> GestioneWallets
 
 */
-public class GestioneWallets extends javax.swing.JDialog {
+public class GUI_GestioneWallets extends javax.swing.JDialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -49,7 +49,7 @@ public class GestioneWallets extends javax.swing.JDialog {
 
     
     public boolean TabellaDaAggiornare=false;
-    public GestioneWallets() {
+    public GUI_GestioneWallets() {
         ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
@@ -332,7 +332,7 @@ public class GestioneWallets extends javax.swing.JDialog {
     
     
     public void AggiornaWallets(List<String> selezionati) {
-        Component c = com.giacenzecrypto.giacenze_crypto.GestioneWallets.this;
+        Component c = com.giacenzecrypto.giacenze_crypto.GUI_GestioneWallets.this;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
         Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
@@ -586,7 +586,7 @@ public class GestioneWallets extends javax.swing.JDialog {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new GestioneWallets().setVisible(true);
+                new GUI_GestioneWallets().setVisible(true);
             }
         });
     }
@@ -616,9 +616,9 @@ public class GestioneWallets extends javax.swing.JDialog {
                         }
                     }     
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger(GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GUI_GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GUI_GestioneWallets.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 //A questo punto devo cancellare il file, ho salvato tutto nel database
                 file.delete();

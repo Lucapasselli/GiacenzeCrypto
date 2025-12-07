@@ -157,7 +157,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.47.03";
+    public String Versione="1.0.47.04";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
@@ -429,7 +429,6 @@ private static final long serialVersionUID = 3L;
         jSeparator10 = new javax.swing.JSeparator();
         TransazioniCrypto_CheckBox_VediLiFoMancante = new javax.swing.JCheckBox();
         TransazioniCrypto_Bottone_ExchangeAPI = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -1251,13 +1250,6 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        jButton3.setText("Test Prezzi");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -1276,8 +1268,6 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(68, 68, 68)
-                                        .addComponent(jButton3)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(TransazioniCrypto_TabbedPane))
@@ -1389,8 +1379,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton3)))
+                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -7637,7 +7626,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, null,IPr,df,MU.Rete,Ritorno,progress);                   
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
-                        //progress.ChiudiFinestra();
+                        progress.ChiudiFinestra();
                     }
                 };
                 thread.start();
@@ -12310,62 +12299,6 @@ SwingUtilities.invokeLater(() -> {
         //Adesso dovrei ricalcolare le plusvalenze ed aggiornare la tabella crypto
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioniActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-
-    /*    ERC20MetadataReader a=new ERC20MetadataReader("https://bsc-dataseed.binance.org/");
-    try {
-        a.printTokenMetadata("0xe9e7cea3dedca5984780bafc599bd69add087d56");
-    } catch (Exception ex) {
-        //Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
-        LoggerGC.ScriviErrore(ex);
-    }*/
-        
-        
-        Moneta mon=new Moneta();
-        mon.Moneta="XLM";
-        //mon.MonetaAddress="0xce69350a696ab93eb9c1a5a9f5c3f2d3106cc1a6";
-        mon.Rete="";
-        mon.Qta="1";
-        mon.Tipo="Crypto";
-        long d=Long.valueOf("1735686000000");
-        
-        
-        Prezzi.GUI_ModificaPrezzoConAttesaTest(mon, null, this, d, "0.00");
-       /* BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete,""));
-        Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(mon, null, d, mon.Rete,"");
-        System.out.println(PrezzoV);
-        System.out.println(IP.prezzoUnitario);*/
-        
-        
-    //Terst modifica prezzo
- /* if (TransazioniCryptoTabella.getSelectedRow() >= 0) {
-            int rigaselezionata = TransazioniCryptoTabella.getRowSorter().convertRowIndexToModel(TransazioniCryptoTabella.getSelectedRow());
-
-            String ID=TransazioniCryptoTabella.getModel().getValueAt(rigaselezionata, 0).toString();
-
-            Component c=this;
-        Download progress=new Download();
-        progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
-        progress.setLocationRelativeTo(this);
-        
-        Thread thread;
-            thread = new Thread() {
-            public void run() {
-            GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(ID);
-            t.setLocationRelativeTo(c);           
-            t.setVisible(true);
-            progress.ChiudiFinestra();
-        }
-            };
-        thread.start();  
-        progress.setVisible(true);
-            
-        }*/
-            
-
-    
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void Opzioni_ApiKey_Moralis_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
         // TODO add your handling code here:
     }//GEN-LAST:event_Opzioni_ApiKey_Moralis_TextFieldMouseReleased
@@ -15307,7 +15240,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

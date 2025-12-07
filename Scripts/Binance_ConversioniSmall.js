@@ -354,6 +354,8 @@ async function fetchConversionsForInterval(exchange, startTime, endTime, assetAr
                     // Calcola il rapporto di conversione
                     const conversionRatio = toAmount / fromAmount;
                     
+                    //Vecchio
+                    /*
                     // Trova il token di destinazione
                     let toAsset = null;
                     let bestMatchDiff = Infinity;
@@ -375,12 +377,18 @@ async function fetchConversionsForInterval(exchange, startTime, endTime, assetAr
                         } catch (error) {
                             logDebug(`Errore nel confronto con ${targetAsset}: ${error.message}`);
                         }
-                    }
+                    }*/
+                    // NUOVO: usa direttamente il valore fornito da Binance
+                    const toAsset = detail.targetAsset || detail.toAsset || 'UNKNOWN';
+
                     
                     records.push({
-                        ...detail,
+                        /*...detail,
                         toAsset: toAsset || 'UNKNOWN',
-                        conversionMatchConfidence: toAsset ? (1 - bestMatchDiff).toFixed(2) : 0,
+                        conversionMatchConfidence: toAsset ? (1 - bestMatchDiff).toFixed(2) : 0,*/
+                        ...detail,
+                        toAsset,
+                        conversionMatchConfidence: "1.00", // valore affidabile, fornito da Binance
                         totalServiceChargeAmount: dribblet.totalServiceChargeAmount,
                         totalTransferedAmount: dribblet.totalTransferedAmount,
                         transId: dribblet.transId

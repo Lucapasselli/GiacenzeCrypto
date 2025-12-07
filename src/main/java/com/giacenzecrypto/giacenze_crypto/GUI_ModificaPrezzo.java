@@ -13,6 +13,8 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
@@ -53,7 +55,16 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
         CaricaTabellaPrezzoAttualedaID(ID); 
         CaricaTabellaPrezzi(ID);
+        //Qui sono io a chiudere la finestra di attesa tanto non devo ritornare nulla, il cambiamento viene fatto direttamente sul movimento
         if (dow!=null)dow.ChiudiFinestra();
+        //Questa parteserve per forzare la finestra in primo piano
+        SwingUtilities.invokeLater(() -> {
+            this.toFront();
+            this.requestFocus();
+            this.requestFocusInWindow();
+            this.setAlwaysOnTop(true);
+            this.setAlwaysOnTop(false);
+        });
         
     }
     
@@ -62,6 +73,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         this.ME=ME;
         this. TimeStamp=TimeStamp;
         this.Rete=Rete;
+        this.Ritorno=Ritorno;
         PrezzoT=IPr.prezzoQta.toPlainString();
         
         
@@ -72,13 +84,48 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
         CaricaTabellaPrezzoAttualedaID(IPr); 
         CaricaTabellaPrezzi();
+       // avviaCaricamento(IPr,this.Ritorno,dow);
         
         
-        this.Ritorno=Ritorno;
-        if (dow!=null)dow.ChiudiFinestra();
-        this.requestFocus();
+        
+        //System.out.println(Ritorno[0]);
+       // if (dow!=null)dow.ChiudiFinestra();
+       //Questa parteserve per forzare la finestra in primo piano
+       SwingUtilities.invokeLater(() -> {
+            this.toFront();
+            this.requestFocus();
+            this.requestFocusInWindow();
+            this.setAlwaysOnTop(true);
+            this.setAlwaysOnTop(false);
+        });
         
     }
+    
+    private void avviaCaricamento(Prezzi.InfoPrezzo IPr,String[] Ritorno,Download dow) {
+
+    SwingWorker<Void, Void> worker = new SwingWorker<>() {
+        @Override
+        protected Void doInBackground() throws Exception {
+            // QUI fai i calcoli pesanti
+            CaricaTabellaPrezzoAttualedaID(IPr);
+            CaricaTabellaPrezzi();
+            if (dow!=null)dow.ChiudiFinestra();
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            // Aggiorna la UI quando i calcoli sono finiti
+           // aggiornaUIConRisultati();
+           //Ritorno=Ritorno;
+        System.out.println(Ritorno[0]);
+        if (dow!=null)dow.ChiudiFinestra();
+        //this.requestFocus();
+        }
+    };
+
+    worker.execute();
+}
     
     private void CaricaTabellaPrezzoAttualedaID(Prezzi.InfoPrezzo IPr){
         DefaultTableModel ModTabPrezzoAttuale = (DefaultTableModel) Tabella_PrezzoAttuale.getModel();

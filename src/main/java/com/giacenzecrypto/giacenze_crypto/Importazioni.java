@@ -6876,7 +6876,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 }
 
             } 
-            else if (Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVA")) {
+            else if (Rete.equalsIgnoreCase("BSC")||Rete.equalsIgnoreCase("BASE")||Rete.equalsIgnoreCase("AVAX")) {
 
                     //Se ho dei portafogli non gestiti da etherscan li passo alla funzione che si occupa di cercare i dati su Moralis
 //System.out.println("Leggo da Moralissssssss");

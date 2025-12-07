@@ -26,6 +26,7 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import static com.giacenzecrypto.giacenze_crypto.Principale.Mappa_Wallets_e_Dettagli;
 import java.awt.Component;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -1026,13 +1027,52 @@ private static final long serialVersionUID = 9L;
                     //GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, ME,IPr,DataLong,Rete,Ritorno);
                     t.setLocationRelativeTo(c);
                     t.setVisible(true);
-                    //progress.ChiudiFinestra();
+                    progress.ChiudiFinestra();
                 }
             };
             thread.start();
             progress.setVisible(true);
+           // progress.ChiudiFinestra();
+           /* progress.setVisible(true);
+
+SwingWorker<Void, Void> worker = new SwingWorker<>() {
+    String rete;
+
+    @Override
+    protected Void doInBackground() throws Exception {
+        if (ModificaMovimento) rete = Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
+        return null;
+    }
+
+    @Override
+    protected void done() {
+        progress.ChiudiFinestra();
+
+        GUI_ModificaPrezzo dialog =
+            new GUI_ModificaPrezzo(MU, ME, IPr, DataLong, rete, Ritorno, null);
+
+        dialog.setLocationRelativeTo(c);
+
+        // MODAL: qui si ferma finché non chiudi la finestra
+        dialog.setVisible(true);
+
+        System.out.println("Ritorno = " + Ritorno[0]);
+    }
+};
+
+worker.execute();*/
+
+            
+            
+            
+            
+            
+            
+            
+            
             
             //Ora elaboro i dati in ritorno
+            System.out.println(Ritorno[0]);
             if (Ritorno[0]!=null){
                 //Ho il prezzo di ritorno
                 if (Funzioni.isNumeric(Ritorno[0], false)){

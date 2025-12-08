@@ -1203,8 +1203,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoReward[22] = "AU"; //AU -> Significa che è un movimento di commissione automaticamente generato da una condizione successiva
                     //quindi se decadono le condizioni che lo hanno generato va eliminato
                     //ad esempio se uno dei movimenti padri cambiano tipo o vengono eliminati va eliminato anche il suddetto movimento
-                    MovimentoReward[25] = MovimentoPrelievo[25];
-                    MovimentoReward[26] = MovimentoPrelievo[26];
+                    MovimentoReward[27] = MovimentoPrelievo[25];
+                    MovimentoReward[28] = MovimentoPrelievo[26];
                     MovimentoReward[32] = MovimentoPrelievo[32];
 
                     Importazioni.RiempiVuotiArray(MovimentoReward);

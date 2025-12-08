@@ -26,7 +26,6 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import static com.giacenzecrypto.giacenze_crypto.Principale.Mappa_Wallets_e_Dettagli;
 import java.awt.Component;
-import javax.swing.SwingWorker;
 
 /**
  *
@@ -740,7 +739,7 @@ private static final long serialVersionUID = 9L;
             
             //prima cosa genero l'id della transazione
            // String ID=CalcolaID();
-            System.out.println(ID);
+            //System.out.println(ID);
             
             //verifico che non esista già una transazione non lo stesso id in quel caso chiedo se sovrascriverla o aggiungerla
             //per trovare l'id ovviamente devo cercarla nella mappa delle transazioni
@@ -1317,6 +1316,10 @@ worker.execute();*/
 
                             if (splitID[4].equalsIgnoreCase("CM")) {
                                 TipoTransazione = MovimentoRiportato[5];
+                            }
+                            
+                            if (splitID[4].equalsIgnoreCase("TI")) {
+                                TipoTransazione = "TRASFERIMENTO INTERNO";
                             }
                             //Creo il nuovo
                             String RT[];

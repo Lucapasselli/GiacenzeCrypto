@@ -157,7 +157,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.47.04";
+    public String Versione="1.0.47.05";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     

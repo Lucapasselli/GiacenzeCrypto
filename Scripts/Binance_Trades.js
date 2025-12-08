@@ -7,7 +7,7 @@ const ccxt = require('ccxt');
 
 // Configurazione
 const BINANCE_CONFIG = {
-    minDelayMs: 10000,
+    minDelayMs: 15000,
     maxRetries: 5,
     baseBackoffMs: 5000,
     maxBackoffMs: 60000,

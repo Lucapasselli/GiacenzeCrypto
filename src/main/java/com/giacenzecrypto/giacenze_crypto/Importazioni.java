@@ -6405,8 +6405,26 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 PrimaTransBlocco=movimento[0];
                             }
                             //Finite le varie verifiche procedo con la somma e incremento la voce ultimo blocco
-                            if (AddressU.equalsIgnoreCase("CRO"))TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                            if (AddressE.equalsIgnoreCase("CRO")) TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                            if (AddressU.equalsIgnoreCase("CRO"))
+                            {
+                                //se non è un campo numerico vuol dire che c'è un errore nel campo quindi esco
+                                if (!Funzioni.isNumeric(movimento[10], false))
+                                {
+                                    LoggerGC.ScriviErrore("Errore su id:"+movimento[0]+" qta(campo 10):"+movimento[10]+" non è numerico");
+                                    return null;
+                                }
+                                TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
+                            }
+                            if (AddressE.equalsIgnoreCase("CRO"))
+                            {
+                                //se non è un campo numerico vuol dire che c'è un errore nel campo quindi esco
+                                if (!Funzioni.isNumeric(movimento[13], false))
+                                    {
+                                        LoggerGC.ScriviErrore("Errore su id:"+movimento[0]+" qta(campo 13):"+movimento[13]+" non è numerico");
+                                        return null;
+                                    }
+                                TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
+                            }
                             UltimoBlocco=movimento[23];
                         }
                     }

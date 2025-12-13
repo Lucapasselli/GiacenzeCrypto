@@ -92,6 +92,10 @@ private static final long serialVersionUID = 3L;
 
     static int DecimaliCalcoli=30;
     
+    //Parametro che utilizzerò per calcolare le plusvalenze a richiesta nel caso in cui ci siano tantissimi movimenti
+    //Questo serve per velocizzare le operazioni visto che questi calcoli potrebbero portare via diversi secondi
+    static public boolean AggiornaPulsvalenzeAutomatico=true;
+    
     
     //In questa mappa verranno memorizzati le info sui prezzi relative alle crypto del quadro RW
     //La chiave sarà Gruppo_Moneta_Timestamp
@@ -141,7 +145,7 @@ private static final long serialVersionUID = 3L;
     public static JTable PopUp_Tabella=null;
     
     //Quasta rappresenta la lista delle crypto/FIAT/NFT trattati
-    public static List<String> Lista_Cryptovalute = new ArrayList<>();
+    public static Set<String> setCryptovalute = new HashSet<>();
     
     
     static public Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -157,7 +161,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.47.07";
+    public String Versione="1.0.47.08";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
@@ -7049,14 +7053,16 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }
     
     public void Funzione_AggiornaListaCrypto(String[] v){
-              if(!Lista_Cryptovalute.contains(v[8])){
+             /* if(!Lista_Cryptovalute.contains(v[8])){
                //   TransazioniCrypto_ComboBox_FiltroToken.addItem(v[8]);
                   Lista_Cryptovalute.add(v[8]);
               }
               if(!Lista_Cryptovalute.contains(v[11])){
                //   TransazioniCrypto_ComboBox_FiltroToken.addItem(v[11]);
                   Lista_Cryptovalute.add(v[11]);
-              }             
+              } */
+              setCryptovalute.add(v[8]);
+            setCryptovalute.add(v[11]);
     }
     
     public void Opzioni_RicreaListaWalletDisponibili(){ 
@@ -13744,6 +13750,7 @@ try {
         SwingUtilities.invokeLater(() -> {
         //1 - Aggiorno i combobox releativi ai token
         String VecchioValore;
+        List<String> Lista_Cryptovalute = new ArrayList<>(setCryptovalute);
         Collections.sort(Lista_Cryptovalute);
         Lista_Cryptovalute.remove("");
         Lista_Cryptovalute.remove("Tutti");
@@ -14425,7 +14432,7 @@ try {
             //Solo in caso di defi
             String Rete = Funzioni.TrovaReteDaIMovimento(v);
             
-            String AddressU = v[26];
+      /*      String AddressU = v[26];
             String AddressE = v[28];
             //if (!Funzioni.noData(Rete)) {
                 if (!Funzioni.noData(AddressU)) {
@@ -14441,10 +14448,30 @@ try {
                     if (Rete==null)Rete="";
                     String valore = Mappa_NomiTokenPersonalizzati.get(AddressE + "_" + Rete);
                     if (valore != null) {
-                        v[11] = valore;
-                    }
-
+                    v[11] = valore;
                 }
+
+            }*/
+
+            String addressU = v[26];
+            String addressE = v[28];           
+
+            if (Rete!=null && addressU != null && !addressU.isBlank()) {
+               // Rete = (Rete == null) ? "" : Rete;
+                String valore = Mappa_NomiTokenPersonalizzati.get(addressU + "_" + Rete);
+                if (valore != null) {
+                    v[8] = valore;
+                }
+            }
+
+            if (Rete!=null && addressE != null && !addressE.isBlank()) {
+               // Rete = (Rete == null) ? "" : Rete;
+                String valore = Mappa_NomiTokenPersonalizzati.get(addressE + "_" + Rete);
+                if (valore != null) {
+                    v[11] = valore;
+                }
+            }
+
            // }
            
            

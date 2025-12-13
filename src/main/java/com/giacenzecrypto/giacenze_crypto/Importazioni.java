@@ -1834,9 +1834,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     RT[15] = "0.00";
                                     RT[16] = "";
-                                    RT[17] = "Da Calcolare";//verrà calcolato con il metodo lifo
+                                    RT[17] = "";//verrà calcolato con il metodo lifo
                                     RT[18] = "";//verrà calcolato con il metodo lifo
-                                    RT[19] = "Da Calcolare";//verrà calcolato con il metodo lifo sarà (0 - prezzo di carico)
+                                    RT[19] = "";//verrà calcolato con il metodo lifo sarà (0 - prezzo di carico)
                                 } 
                                 else 
                                 {
@@ -2049,7 +2049,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
                                 RT[19]="0.00";
                                 RT[20]="";
@@ -2079,7 +2079,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
                                 RT[19]="0.00";
                                 RT[20]="";
@@ -2145,9 +2145,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
-                                RT[19]="Da calcolare";
+                                RT[19]="";
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
@@ -2206,9 +2206,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
-                                RT[19]="Da calcolare";
+                                RT[19]="";
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
@@ -2265,9 +2265,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
-                                RT[19]="Da calcolare";
+                                RT[19]="";
                                 RT[20]="";
                                 RT[21]="";
                                 RT[22]="A";
@@ -2394,7 +2394,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 valoreEuro=new BigDecimal(valoreEuro).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
                                 RT[19]="0.00";
                                 RT[20]="";
@@ -2575,7 +2575,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
                                 RT[19]="0.00";
                                 RT[20]="";
@@ -2605,7 +2605,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[14]=movimentoSplittato[6]+" "+movimentoSplittato[7];
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
                                 RT[19]="0.00";
                                 RT[20]="";
@@ -2681,9 +2681,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 valoreEuro=new BigDecimal(valoreEuro).setScale(2, RoundingMode.HALF_UP).abs().toString();
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
-                                RT[19]="Da calcolare";
+                                RT[19]="";
                                 RT[20]="";
                                 if (movimentoSplittato.length>10) RT[21]="Trans ID : "+movimentoSplittato[10];else RT[21]="";
                                 RT[22]="A";
@@ -3362,8 +3362,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     RT[9] = Mon.Tipo;
                                     RT[10] = Mon.Qta;
                                     RT[15] = "0.00";
-                                    RT[17] = "Da Calcolare";//verrà calcolato con il metodo lifo
-                                    RT[19] = "Da Calcolare";//verrà calcolato con il metodo lifo sarà (0 - prezzo di carico)
+                                    RT[17] = "";//verrà calcolato con il metodo lifo
+                                    RT[19] = "";//verrà calcolato con il metodo lifo sarà (0 - prezzo di carico)
                                 } 
                                 else 
                                 {
@@ -3570,9 +3570,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }                                                                                            
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
-                                RT[19]="Da calcolare";
+                                RT[19]="";
                                 RT[20]="";
                                 RT[22]="A";
                                 RiempiVuotiArray(RT);
@@ -4143,9 +4143,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }                                                                                            
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
-                                RT[19]="Da calcolare";
+                                RT[19]="";
                                 RT[20]="";
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
@@ -4617,9 +4617,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[14] = movimentoSplittato[8];
                                 RT[15]=valoreEuro;
                                 RT[16]="";
-                                RT[17]="Da calcolare";
+                                RT[17]="";
                                 RT[18]="";
-                                RT[19]="Da calcolare";
+                                RT[19]="";
                                 RT[20]="";
                                 RT[22]="A";
                                 RT[29] = String.valueOf(TimeStamp);
@@ -4892,7 +4892,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, FunzioniDate.ConvertiDatainLongMinuto(dataa), null, "");
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                 RT[16] = "";
-                                RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
+                                RT[17] = "";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
                                 RT[19] = "0.00";
                                 RT[20] = "";
@@ -4969,9 +4969,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                // RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
-                                RT[17] = "Da calcolare";//verrà calcolato con il metodo lifo
+                                RT[17] = "";//verrà calcolato con il metodo lifo
                                 RT[18] = "";
-                                RT[19] = "Da calcolare";
+                                RT[19] = "";
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
@@ -5090,9 +5090,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                 RT[16] = "";
-                                RT[17] = "Da calcolare";
+                                RT[17] = "";
                                 RT[18] = "";
-                                RT[19] = "Da calcolare";
+                                RT[19] = "";
                                 RT[20] = "";
                                 RT[21] = "";
                                 RT[22] = "A";
@@ -5252,14 +5252,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         RT[16] = "";
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
-                                                RT[17]="Da calcolare";
+                                                RT[17]="";
                                                 //se sono qua significa che c'è in piedi un deposito crypto
                                             }
-                                        else if (TipoMovAbbreviato.equalsIgnoreCase("TI")) RT[17] = "Da calcolare";else RT[17]=RT[15];
+                                        else if (TipoMovAbbreviato.equalsIgnoreCase("TI")) RT[17] = "";else RT[17]=RT[15];
                                         RT[18] = "";
                                         if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
                                             {
-                                                RT[19]="Da calcolare";
+                                                RT[19]="";
                                                 //se sono qua significa che c'è in piedi un deposito crypto
                                             }
                                         else RT[19] = "0.00";
@@ -5297,9 +5297,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                         //RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
-                                        RT[17] = "Da Calcolare";
+                                        RT[17] = "";
                                         RT[18] = "";
-                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "Da calcolare";
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TI"))RT[19] = "0.00";else RT[19] = "";
 
                                         }
                                     RT[20] = "";

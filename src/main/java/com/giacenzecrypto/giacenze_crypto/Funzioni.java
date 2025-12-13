@@ -75,6 +75,12 @@ import org.jsoup.Jsoup;
  */
 public class Funzioni {
     
+    
+    private static final Set<String> PREFISSI_VALIDI_TrovaReteDaIMovimento = Set.of(
+        "BC", "00BC", "01BC", "02BC", "03BC", "04BC", "ZZBC"
+);
+
+    
         public static int CancellaMovimentazioniXWallet(String Wallet,long DataIniziale,long DataFinale){
         
         //Se Wallet=null  allora la pulizia la faccio su tutti i wallet
@@ -1993,14 +1999,19 @@ return MappaLista;
             return ritorno;
         }
         
-        public static boolean noData(String Valore){
+       /* public static boolean noData(String Valore){
             boolean noData=false;
             //verifico se la moneta è già considerata come scam
             if (Valore==null||Valore.trim().equals("")){
                 noData=true;
             }
             return noData;
-        }
+        }*/
+        
+    public static boolean noData(String valore) {
+        return valore == null || valore.isBlank();
+    }
+
         
         public static String TrovaReteDaID(String ID) {
         if (MappaCryptoWallet.get(ID) != null) {
@@ -2034,15 +2045,16 @@ return MappaLista;
     }
         
         public static String TrovaReteDaIMovimento(String[] mov){
-        boolean controllaAddress=false;
-        String Rete=null;
+        //boolean controllaAddress=false;
+        //String Rete=null;
         String ID=mov[0];
         if (!mov[34].isBlank()) {
             //se è valorizzato a N ritorno null altrimenti ritorno il valore della rete NON PIU GESTITO COSI
            // return mov[34].equals("N") ? null : mov[34];
            //Se il boolean controllaAddress è true verifico anche gli address e se questi sono vuoti anche la rete la restituisco vuota
-           if(controllaAddress&&mov[28].isBlank()&&mov[26].isBlank())return "";
+           //if(controllaAddress&&mov[28].isBlank()&&mov[26].isBlank())return "";
            //Altrimenti la valorizzo così com'è.
+           //System.out.println(mov[34]);
            return mov[34];
         }
         // Se è blank, prosegue senza return
@@ -2052,12 +2064,14 @@ return MappaLista;
 
             String IDSplittato[]=ID.split("_");
             String IDDettSplittato[]=IDSplittato[1].split("\\.");
-            List<String> prefixValidi = Arrays.asList("BC", "00BC", "01BC", "02BC", "03BC", "04BC", "ZZBC");
+           // List<String> prefixValidi = Arrays.asList("BC", "00BC", "01BC", "02BC", "03BC", "04BC", "ZZBC");
             if ((IDDettSplittato.length==4 ||IDDettSplittato.length==5) && 
-                    prefixValidi.contains(IDDettSplittato[0].toUpperCase())){//00BC viene usato negli scambi differiti automatici
-                Rete=IDDettSplittato[1];
-                mov[34]=Rete;
-                return Rete;
+                //    PREFISSI_VALIDI_TrovaReteDaIMovimento.contains(IDDettSplittato[0].toUpperCase())){//00BC viene usato negli scambi differiti automatici
+                PREFISSI_VALIDI_TrovaReteDaIMovimento.contains(IDDettSplittato[0].toUpperCase())){//00BC viene usato negli scambi differiti automatici
+                //Rete=IDDettSplittato[1];
+                mov[34]=IDDettSplittato[1];
+                //System.out.println(Rete);
+                return mov[34];
             }
 
          
@@ -2065,17 +2079,74 @@ return MappaLista;
             if (IDSplittato[1].contains("(") && IDSplittato[1].contains(")")&& IDSplittato[1].split("\\(").length > 1) {
                // String Mov[] = MappaCryptoWallet.get(ID);
                 String ret=IDSplittato[1].split("\\(")[1].split("\\)")[0].trim();
-                if (MappaRetiSupportate.get(ret)!=null) {//se è una chain supportata allora la gestisco come tale
-                    Rete = ret;
-                    return Rete;
+                if (MappaRetiSupportate.containsKey(ret)) {//se è una chain supportata allora la gestisco come tale
+                   /* Rete = ret;
+                    System.out.println(Rete);*/
+                    return ret;
                 }
             }
         
        // if (Rete==null)mov[34]="N";//N Significa che non ha reti, per ora non lo metto, preferisco che venga ogni volta controllato se la rete è valida
-        return Rete;
+        return null;
+           // return "";
         }
        
-        
+    public static String TrovaReteDaIMovimentoNEW(String[] mov) {
+
+        // Cache: se già calcolata, ritorna subito
+        String reteCached = mov[34];
+        if (reteCached != null && !reteCached.isBlank()) {
+            return reteCached;
+        }
+
+        String id = mov[0];
+       /* if (id == null) {
+            return null;
+        }*/
+
+        // Split manuale (molto più veloce di split regex)
+        int underscoreIdx = id.indexOf('_');
+       /* if (underscoreIdx < 0 || underscoreIdx == id.length() - 1) {
+            return null;
+        }*/
+
+        //Leggo la parte dopo il primo underscore che è quella che mi interessa per
+        //trovare se è un dato derivante da blockchain quindi inizia per BC o simile
+        String secondaParte = id.substring(underscoreIdx + 1);
+
+        // ---- CASO 1: ID automatici BC ----
+        int dot1 = secondaParte.indexOf('.');
+        if (dot1 > 0) {
+
+            String prefisso = secondaParte.substring(0, dot1);
+            //Controllo se l'ID ha i prefissi corretti e in quel caso ritorno la rete
+            if (PREFISSI_VALIDI_TrovaReteDaIMovimento.contains(prefisso)) {
+
+                int dot2 = secondaParte.indexOf('.', dot1 + 1);
+                if (dot2 > dot1) {
+                    String rete = secondaParte.substring(dot1 + 1, dot2);
+                    //la rete la trovo tra il primo e il secondo punto se il prefisso è corretto
+                    //esempio di ID : 20251129003318_BC.SOL.5LPAkNQaz6pwpYFf5zfon9Lb7HYhEzwZJXpafH9U2Pjx.4NwvC7hq9wuB6N1wqjqwTZLDAp78XpT5dWgQpmVxZeH3X6k25c4iGZywgJJB3EXuLsXosREcrgsebzCQ7ynVk5T3_1_1_DC
+                    mov[34] = rete; // cache
+                    return rete;
+                }
+            }
+        }
+
+        // ---- CASO 2: movimenti manuali con (RETE) ----
+        int open = secondaParte.indexOf('(');
+        int close = secondaParte.indexOf(')', open + 1);
+
+        if (open >= 0 && close > open) {
+            String rete = secondaParte.substring(open + 1, close).trim();
+            if (MappaRetiSupportate.containsKey(rete)) {
+                return rete;
+            }
+        }
+
+        return null;
+    }
+
         
      
         

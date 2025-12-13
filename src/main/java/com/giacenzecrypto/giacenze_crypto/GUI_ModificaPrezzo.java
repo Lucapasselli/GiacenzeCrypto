@@ -624,10 +624,11 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             //Adesso cerco i prezzi nel vecchio database coingecko
            // System.out.println(M.MonetaAddress+"--"+M.Rete);
             if (Funzioni_WalletDeFi.isValidAddress(M.MonetaAddress, M.Rete)) {
-                System.out.println("Sono qui");
+                //System.out.println("Sono qui");
                 PrezzoUnitario = DatabaseH2.PrezzoAddressChain_Leggi(DataOra + "_" + M.MonetaAddress + "_" + M.Rete);
                 IP = new Prezzi.InfoPrezzo();
-                //System.out.println(PrezzoUnitario);
+                //Se per qualche motivo PrezzoUnitario non è un numero valido forzo PrezzoUnitario a null per evitare problemi nelle conversioni
+                if (!Funzioni.isNumeric(PrezzoUnitario, false))PrezzoUnitario=null;
                 if (PrezzoUnitario != null) {
                     if(DatabaseH2.PrezzoAddressChainPers_Leggi(DataOra + "_" + M.MonetaAddress + "_" + M.Rete)==null)IP.Fonte="coingecko (Old)";
                     IP.Fonte = "Personalizzato (Old)";
@@ -654,7 +655,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
             }
      }
    
-      private void listaPrezziVecchiDBPers(Moneta M,String PrezzoRif,long data,String NomeOriginale,DefaultTableModel ModTabPrezzi){
+ /*     private void listaPrezziVecchiDBPers(Moneta M,String PrezzoRif,long data,String NomeOriginale,DefaultTableModel ModTabPrezzi){
          String DataOra = FunzioniDate.ConvertiDatadaLongallOra(data);
             String PrezzoUnitario = DatabaseH2.XXXEUR_Leggi(DataOra + " " + M.Moneta);
             Prezzi.InfoPrezzo IP = new Prezzi.InfoPrezzo();
@@ -709,7 +710,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                     ModTabPrezzi.addRow(rigo);
                 }
             }
-     }
+     }*/
     
     public void GUI_SetID(String ID){
         this.ID=ID;

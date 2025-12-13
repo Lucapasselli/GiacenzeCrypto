@@ -6814,8 +6814,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                                 String tokenId = nt.optString("token_id");
                                 String addressNFT = nt.optString("token_address");
-                                String fromNFT = nt.optString("from");
-                                String toNFT = nt.optString("to");
+                                String fromNFT = nt.optString("from_address");
+                                String toNFT = nt.optString("to_address");
                                 String amountNFT = nt.optString("amount", "1");
 
                                 boolean outgoing = fromNFT.equalsIgnoreCase(walletAddress);

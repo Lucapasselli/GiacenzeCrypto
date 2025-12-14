@@ -6755,7 +6755,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 String from = tok.optString("from_address");
                                 String to = tok.optString("to_address");
                                 String valueFormatted = tok.optString("value_formatted", "0");
-
+                                try {
+                                    BigDecimal valorePuro = new BigDecimal(tok.optString("value", "0"));
+                                    int decimali = tok.optInt("token_decimals", 0);
+                                    if (valorePuro.signum() != 0 && decimali > 0) {
+                                        valueFormatted = valorePuro.movePointLeft(decimali).toPlainString();
+                                    }
+                                } catch (NumberFormatException e) {
+                                    //inquesto caso non faccio nulla e uso il valueFormatted perchè vuol dire che gli alri valori non sono disponibili
+                                }
                                 boolean outgoing = from.equalsIgnoreCase(walletAddress);
 
                                 String qta = outgoing ? "-" + valueFormatted : valueFormatted;

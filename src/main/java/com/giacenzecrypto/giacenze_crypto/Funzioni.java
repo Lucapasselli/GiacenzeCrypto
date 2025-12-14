@@ -505,7 +505,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                 switch (risposta) {
                     case 0 -> {
                         trans[15]=Prezz;
-                        trans[32]="Si";
+                        trans[32]="SI";
                         return true;
                     }
                     case 1 -> {
@@ -520,7 +520,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                 }
             } else {
                 trans[15]=Prezz;
-                trans[32]="Si";
+                trans[32]="SI";
                 return true;
             }
 

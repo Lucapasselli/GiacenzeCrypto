@@ -332,12 +332,18 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             String VSplit[]=Valore.split("\\|");        
             Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
             ModelloTabellaCrypto.addRow(Val);
-            Val=new String[]{"Info Prezzo : Orario Fonte ",FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
-            ModelloTabellaCrypto.addRow(Val);           
-            Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
-            ModelloTabellaCrypto.addRow(Val);
-            Val=new String[]{"Info Prezzo : Prezzo unitario ","€ "+VSplit[2]};
-            ModelloTabellaCrypto.addRow(Val);
+            if (Funzioni.isNumeric(VSplit[1], false)){
+                Val=new String[]{"Info Prezzo : Orario Fonte ",FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(VSplit[1]))};
+                ModelloTabellaCrypto.addRow(Val); 
+            }                    
+            if (VSplit[0]!=null&&!VSplit[0].isBlank()){
+                Val=new String[]{"Info Prezzo : Moneta di riferimento transazione",VSplit[0]};
+                ModelloTabellaCrypto.addRow(Val);
+            }
+            if (VSplit[2]!=null&&!VSplit[2].isBlank()){
+                Val=new String[]{"Info Prezzo : Prezzo unitario ","€ "+VSplit[2]};
+                ModelloTabellaCrypto.addRow(Val);
+            }
         }
         
         

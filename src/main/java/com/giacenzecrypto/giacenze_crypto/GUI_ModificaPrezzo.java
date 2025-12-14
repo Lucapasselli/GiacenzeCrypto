@@ -947,6 +947,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
         if(Funzioni.GUIModificaPrezzo(this,ID))
         {
             Principale.MappaCryptoWallet.get(ID)[40]="|||Personalizzato";
+           // Principale.MappaCryptoWallet.get(ID)[32]="SI";
             Principale.TabellaCryptodaAggiornare=true;
             this.dispose();
         }

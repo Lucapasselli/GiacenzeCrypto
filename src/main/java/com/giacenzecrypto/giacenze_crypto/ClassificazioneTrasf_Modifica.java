@@ -1523,7 +1523,10 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 if (v[0].split("_")[4].equalsIgnoreCase("PC")&&
                             v[8].equals(Moneta)&&
                             v[18].isBlank()&&
-                        DataOraMovimento>=DataOra){
+                            !v[10].equals("-0")&&
+                        DataOraMovimento>=DataOra
+                        ){
+                    System.out.println(v[0]);
                         //se trovo movimenti di prelievo non classificati con data inferiore al movimento di deposito
                         //avviso e interrompo il ciclo, devo essere sicuro che tutti i movimenti precedenti siano stati inseriti
                         MovimentoOppostoNonClassificato=true; //Questo boolean serve appunto per interrompere il ciclo

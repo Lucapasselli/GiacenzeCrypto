@@ -89,8 +89,11 @@ public class Prezzi {
         //se il movimento è già stato classificato ed ed ha prezzo ritorno subito true
         //in caso di no non ritorno false perchè prima devo vedere se coinvolge movimenti scam
         if (Movimento[32] != null && Movimento[32].equals("SI"))return true;
+       /* else
+            {System.out.println("ooorco "+Movimento[32]+" - "+Movimento[15]);}*/
         
         else if (Movimento[32] == null || Movimento[32].isBlank()) {//Questa cosa la faccio se il campo non è valorizzato o è valorizzato a NO
+           // {System.out.println("ooorco2 "+Movimento[15]);}
             if (!Movimento[15].equals("0.00")) {
                 Movimento[32] = "SI";
             } else if (DammiPrezzoDaTransazione(Movimento,2)==null) {               
@@ -99,6 +102,17 @@ public class Prezzi {
                 Movimento[32] = "SI";
             }
         }
+        //Questo secondo else serve per sistemare quei movimenti che hanno "Si" al posto di "SI"
+        else if (Movimento[32].equalsIgnoreCase("SI"))
+        {
+            Movimento[32] = "SI";
+            return true;
+        }
+        //Questa ultima parte server per sistemare eventuali errori nell'assegnazione del prezzo
+      /*  else if (Movimento[32].equals("NO")&&!Movimento[15].equals("0.00"))
+            {Movimento[32] = "SI";}
+        else if (Movimento[32].equals("NO"))
+            {System.out.println("ooorco "+Movimento[15]);}*/
         
         //Controllo l'esito dei movimenti sopra e setto prezzato di conseguenza
         prezzato=Movimento[32].equals("SI");

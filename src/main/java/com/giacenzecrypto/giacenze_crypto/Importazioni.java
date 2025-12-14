@@ -6624,8 +6624,14 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 String cursor = null;
                 boolean continueFetching = true;
                 //int ava = 0;
+                
+                //contatore e cicli massimi mi servono per evitare di terminare la quota delle api moralis
+                //quindi al massimo per ogni wallet scarico 1000 transazioni
+                int contatore=0;
+                int ciclimassimi=50;
 
                 while (continueFetching && !progressb.FineThread()) {
+                    contatore++;
                     String url = "https://deep-index.moralis.io/api/v2.2/wallets/" + walletAddress + "/history?chain=" + chain + "&limit=100&from_block=" + Block + "&order=asc";
                     if (cursor != null && !cursor.isEmpty() &&!cursor.equalsIgnoreCase("null")) {
                         url += "&cursor=" + cursor;
@@ -6680,6 +6686,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     JSONArray results = jsonResponse.getJSONArray("result");
                     cursor = jsonResponse.optString("cursor", "");  // aggiornamento cursor
+                    if (contatore>ciclimassimi)cursor=null;
+                    //cursor=null;
                     if (cursor==null||cursor.isEmpty()||cursor.equalsIgnoreCase("null")){
                         continueFetching=false;
                     }
@@ -6785,6 +6793,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         // ------------------------------------------------
                         if (tx.has("native_transfers")) {
                             JSONArray nat = tx.getJSONArray("native_transfers");
+                            String precedente="";
+                            boolean InternalPrecedente=false;
 
                             for (int j = 0; j < nat.length(); j++) {
                                 JSONObject nt = nat.getJSONObject(j);
@@ -6793,14 +6803,27 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 String to = nt.optString("to_address");
                                 String symbol = nt.optString("token_symbol", MonetaRete);
                                 String valueFormatted = nt.optString("value_formatted", "0");
+                               // String InternalTransaction = nt.optString("internal_transaction","");
+                                boolean InternalTransactionB = nt.optBoolean("internal_transaction",false);
+                                String attuale=from+to+symbol+valueFormatted;
                                 //String direction = nt.optString("direction", "");
 
                                 boolean outgoing = from.equalsIgnoreCase(walletAddress);
 
                                 String qta = outgoing ? "-" + valueFormatted : valueFormatted;
                                 String addr = outgoing ? to : from;
-                               
-                                trans.InserisciMonete(
+                                
+                                boolean attualeUgualePrecedente=attuale.equalsIgnoreCase(precedente);
+                                
+                                //Se entrambi i movimenti hanno internal transaction false li devo il movimento lo devo sicuramente scrivere
+                                boolean continuaComunque=!InternalPrecedente&&!InternalTransactionB;
+                                
+                               //se il movimento è diverso dal precedente o se è uguale ma i movimenti sono entrambi non interni allora scrivo
+                               //il movimento, se uno è unterno e l'altro no non devo scrivere nulla in qunto è già stato fatto nel movimento precedente
+                               if(!attualeUgualePrecedente||
+                                       (attualeUgualePrecedente&&continuaComunque))
+                               {
+                                    trans.InserisciMonete(
                                         symbol,
                                         symbol,
                                         symbol,
@@ -6808,6 +6831,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         qta,
                                         "Crypto"
                                 );
+                                }
+                               precedente=attuale;
+                               InternalPrecedente=InternalTransactionB;
                             }
                         }
 

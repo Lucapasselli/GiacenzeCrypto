@@ -6227,7 +6227,7 @@
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
-                                      <Component id="Opzioni_ApiKey_Moralis_Label1" min="-2" pref="1047" max="-2" attributes="0"/>
+                                      <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" pref="1047" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace pref="227" max="32767" attributes="0"/>
@@ -6268,7 +6268,7 @@
                                   <Component id="Opzioni_ApiKey_Moralis_Label" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_ApiKey_Moralis_Label1" min="-2" max="-2" attributes="0"/>
+                              <Component id="Opzioni_ApiKey_MoralisNB_Label" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="Opzioni_ApiKey_Cronos_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -6436,7 +6436,7 @@
                         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Opzioni_ApiKey_Cronos_LabelSitoMouseExited"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_Moralis_Label1">
+                    <Component class="javax.swing.JLabel" name="Opzioni_ApiKey_MoralisNB_Label">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 10.000, per scaricarne altri rifare la chiamata"/>
                       </Properties>

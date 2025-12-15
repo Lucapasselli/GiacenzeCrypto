@@ -161,7 +161,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.47.09";
+    public String Versione="1.0.47.10";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
@@ -693,7 +693,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_ApiKey_Cronos_TextField = new javax.swing.JTextField();
         Opzioni_ApiKey_Cronos_Label = new javax.swing.JLabel();
         Opzioni_ApiKey_Cronos_LabelSito = new javax.swing.JLabel();
-        Opzioni_ApiKey_Moralis_Label1 = new javax.swing.JLabel();
+        Opzioni_ApiKey_MoralisNB_Label = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel22 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
@@ -4725,7 +4725,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_ApiKey_Moralis_Label1.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 10.000, per scaricarne altri rifare la chiamata");
+        Opzioni_ApiKey_MoralisNB_Label.setText("NB : Per evitare sforamenti dei limiti giornalieri sulle api di Moralis ogni volta che si scaricano i movimenti da un wallet questi sono limitati a circa 10.000, per scaricarne altri rifare la chiamata");
 
         javax.swing.GroupLayout Opzioni_ApiKeyLayout = new javax.swing.GroupLayout(Opzioni_ApiKey);
         Opzioni_ApiKey.setLayout(Opzioni_ApiKeyLayout);
@@ -4780,7 +4780,7 @@ private static final long serialVersionUID = 3L;
                                         .addComponent(Opzioni_ApiKey_Cronos_LabelSito, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                     .addGroup(Opzioni_ApiKeyLayout.createSequentialGroup()
                         .addGap(47, 47, 47)
-                        .addComponent(Opzioni_ApiKey_Moralis_Label1, javax.swing.GroupLayout.PREFERRED_SIZE, 1047, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(Opzioni_ApiKey_MoralisNB_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 1047, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(227, Short.MAX_VALUE))
         );
         Opzioni_ApiKeyLayout.setVerticalGroup(
@@ -4812,7 +4812,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_ApiKey_Moralis_LabelSito)
                     .addComponent(Opzioni_ApiKey_Moralis_Label))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Opzioni_ApiKey_Moralis_Label1)
+                .addComponent(Opzioni_ApiKey_MoralisNB_Label)
                 .addGap(8, 8, 8)
                 .addGroup(Opzioni_ApiKeyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Opzioni_ApiKey_Cronos_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -15151,8 +15151,8 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel Opzioni_ApiKey_Helius_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Helius_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Helius_TextField;
+    private javax.swing.JLabel Opzioni_ApiKey_MoralisNB_Label;
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_Label;
-    private javax.swing.JLabel Opzioni_ApiKey_Moralis_Label1;
     private javax.swing.JLabel Opzioni_ApiKey_Moralis_LabelSito;
     private javax.swing.JTextField Opzioni_ApiKey_Moralis_TextField;
     private javax.swing.JButton Opzioni_Bottone_CancellaTransazioniCrypto;

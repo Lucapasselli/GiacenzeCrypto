@@ -101,7 +101,10 @@ public class LoggerGC {
     }
 
     public static void logInfo(String message, String funzione) {
-        logger.info("[" + funzione + "] " + message);
+        logger.log(Level.INFO, "[{0}] {1}", new Object[]{funzione, message});
+    }
+     public static void logInfo(String message) {
+        logger.info(message);
     }
 
     public static void logError(String message, Throwable t) {

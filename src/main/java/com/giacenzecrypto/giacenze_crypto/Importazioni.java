@@ -6611,8 +6611,18 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         progressb.SetLabel("Scaricamento da " + walletAddress + " ("+Rete+") in corso...");
         progressb.setIndeterminate(true);
         String apiKey = DatabaseH2.Opzioni_Leggi("ApiKey_Moralis");
-        String Block=String.valueOf(Long.parseLong(Blocco)+1);//Aggiungo 1 al blocco per evitare di richiedere lo stesso blocco una seconda volta
+        String Block=String.valueOf(Long.parseLong(Blocco)-1);//il blocco di partenza è già incrementato di 1 per cui tolgo 1 perchè voglio partire dall'ultimo che potrebbe essere incompleto
 
+        //Siccome potrebbe capitare che venga scaricato un movimento che ho già devo verificare il transaction hash e blocco e se li ho già non devo aggiungere il movimento
+        //Adesso scorro il database e recupero tutti gli hash + blocco del wallet in questione
+        Set<String> setBlockHash = new HashSet<>();
+        for (String Movimento[]:MappaCryptoWallet.values()){
+            setBlockHash.add(Movimento[23]+Movimento[24]);
+        }
+       /* JOptionPane.showConfirmDialog(ccc, Block,
+                    "Scaricati 5000 movimenti",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);*/
+        
+        
         int avaTot = 0;
         try {
                 String MonetaRete = Principale.Mappa_ChainExplorer.get(Rete)[2];
@@ -6681,12 +6691,20 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     e.printStackTrace();
                     }*/
                     
-                    System.out.println("Risposta: "+response);
+                    LoggerGC.logInfo("Risposta: "+response);
 
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     JSONArray results = jsonResponse.getJSONArray("result");
                     cursor = jsonResponse.optString("cursor", "");  // aggiornamento cursor
-                    if (contatore>ciclimassimi)cursor=null;
+                    if (contatore>ciclimassimi)
+                    {
+                        cursor=null;
+                        String text="Sono stati scaricati circa 10000 movimenti per il wallet "+walletAddress+" su chain "+chain+".\n\n"
+                                + "Lo scaricamento viene interrotto per evitare di terminare le chiamate api a Moralis senza terminare l'import.\n\n"
+                                + "Per continuare con l'import degli altri movimenti scaricare nuovamente i dati dal wallet.\n";
+                        JOptionPane.showConfirmDialog(ccc, text,
+                    "Scaricati 10000 movimenti",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+                    }
                     //cursor=null;
                     if (cursor==null||cursor.isEmpty()||cursor.equalsIgnoreCase("null")){
                         continueFetching=false;
@@ -6700,6 +6718,17 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         JSONObject tx = results.getJSONObject(i);
 
                         String hash = tx.getString("hash");
+                        String BloccoT = tx.optString("block_number", null);
+                        
+                        
+                        //Controllo se la combo blocco+hash è già presente, così lo fosse salto il movimento
+                        //non serve controllare il wallet tanto la probabilità di avere blocco+hash uguale è praticamente nulla
+                        String BloccoHash = BloccoT+hash;
+                        if (setBlockHash.contains(BloccoHash))
+                        {
+                            //Continuo con i movimento successivo
+                            continue;
+                        }
 
                         // Recupera o crea transazione
                         TransazioneDefi trans = MappaTransazioniDefi.get(walletAddress + "." + hash);

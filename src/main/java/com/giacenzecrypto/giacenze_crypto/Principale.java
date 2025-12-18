@@ -13761,7 +13761,7 @@ try {
         //1 - Aggiorno i combobox releativi ai token
         String VecchioValore;
         List<String> Lista_Cryptovalute = new ArrayList<>(setCryptovalute);
-        Collections.sort(Lista_Cryptovalute);
+        Collections.sort(Lista_Cryptovalute, String.CASE_INSENSITIVE_ORDER);
         Lista_Cryptovalute.remove("");
         Lista_Cryptovalute.remove("Tutti");
         Lista_Cryptovalute.add(0, "Tutti");

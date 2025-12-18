@@ -44,6 +44,7 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
@@ -62,6 +63,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -1122,6 +1124,7 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
+        TransazioniCrypto_Tabella_Dettagli.setCellSelectionEnabled(true);
         TransazioniCrypto_Tabella_Dettagli.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 TransazioniCrypto_Tabella_DettagliMouseReleased(evt);
@@ -5053,7 +5056,6 @@ private static final long serialVersionUID = 3L;
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-   
 
 
 
@@ -13969,6 +13971,7 @@ try {
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) this.TransazioniCrypto_Tabella_Dettagli.getModel();
             Tabelle.Funzioni_PulisciTabella(ModelloTabellaCrypto);
+            Tabelle.CopiaPulitadaTAG(TransazioniCrypto_Tabella_Dettagli);
             
             
             

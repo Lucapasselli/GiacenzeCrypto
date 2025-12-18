@@ -14,6 +14,8 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -31,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -39,6 +42,7 @@ import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -69,6 +73,8 @@ public class Tabelle {
     static String Rosso="red";
     static String Verde="green";
     static Color gialloChiaro = new Color(255, 250, 180);
+  //  static final Color bluRigaSelezionata = new Color(30, 60, 120);
+  //  static final Color bluCellaSelezionata = new Color(70, 120, 200);
 
     //Questo serve per la funzione get SommeColonne e per fare in modo che il risultato dato sia l'ultimo eseguito
     private static final Map<JTable, AtomicInteger> versioniSomma = new ConcurrentHashMap<>();
@@ -553,6 +559,7 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
   //  final Color bianco = Color.WHITE;                   // Colore bianco
 
     // Renderer generico per alternare i colori delle righe
+
     DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
         @Override
         public Component getTableCellRendererComponent(JTable table,
@@ -577,12 +584,36 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
         }
 
             // Imposta il colore di sfondo alternato
-            if (isSelected) {
+          /*  if (isSelected) {
                 c.setBackground(table.getSelectionBackground());
                // c.setForeground(table.getSelectionForeground());
             } else {
                 c.setBackground(bg);
-            }
+            }*/
+           // if (table.getCellSelectionEnabled()) {
+              /*  if (table.isRowSelected(row)) {
+                    // tutta la riga selezionata
+                    c.setBackground(table.getSelectionBackground());
+                }else {
+                    c.setBackground(bg);
+                }*/
+                if (table.isCellSelected(row, col)) {
+                    // la cella selezionata deve prevalere
+                    c.setBackground(table.getSelectionBackground());
+                }else if (table.isRowSelected(row)) {
+                    // tutta la riga selezionata
+                    c.setBackground(table.getSelectionBackground().brighter());
+                }else {
+                    c.setBackground(bg);
+                }
+         /*   } else {
+                // selezione classica per righe
+                if (isSelected) {
+                    c.setBackground(table.getSelectionBackground());
+                } else {
+                    c.setBackground(bg);
+                }
+            }*/
 
             return c;
         }
@@ -597,6 +628,61 @@ public static JTable ColoraTabellaSemplice(final JTable table) {
     return table;
 }
 
+    public static void CopiaPulitadaTAG(final JTable table) {
+        table.setTransferHandler(new TransferHandler() {
+
+            @Override
+            protected Transferable createTransferable(JComponent c) {
+                JTable table = (JTable) c;
+
+                int[] rows = table.getSelectedRows();
+                int[] cols = table.getSelectedColumns();
+
+                if (rows.length == 0 || cols.length == 0) {
+                    return null;
+                }
+
+                StringBuilder sb = new StringBuilder();
+
+                for (int r = 0; r < rows.length; r++) {
+                    for (int cIdx = 0; cIdx < cols.length; cIdx++) {
+
+                        Object value = table.getValueAt(rows[r], cols[cIdx]);
+                        String text = value == null ? "" : value.toString();
+
+                        if (text.contains("<html")) {
+                            text = stripHtml(text);
+                        }
+
+                        sb.append(text);
+
+                        if (cIdx < cols.length - 1) {
+                            sb.append('\t'); // separatore colonne
+                        }
+                    }
+                    if (r < rows.length - 1) {
+                        sb.append('\n'); // separatore righe
+                    }
+                }
+
+                return new StringSelection(sb.toString());
+            }
+
+            @Override
+            public int getSourceActions(JComponent c) {
+                return COPY;
+            }
+        });
+
+    }
+    
+    private static String stripHtml(String html) {
+    if (html == null) return "";
+
+    html = html.replaceAll("(?i)<br\\s*/?>", "\n");
+    html = html.replaceAll("<[^>]*>", "");
+    return html.trim();
+}
 
 
 public static void GUI_ModificaPrezzo_ColoraTabelle(

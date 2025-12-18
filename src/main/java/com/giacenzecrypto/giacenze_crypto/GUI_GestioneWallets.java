@@ -131,6 +131,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        TabellaWallets.setCellSelectionEnabled(true);
         ScrollPaneTabellaWallets.setViewportView(TabellaWallets);
         if (TabellaWallets.getColumnModel().getColumnCount() > 0) {
             TabellaWallets.getColumnModel().getColumn(0).setPreferredWidth(150);

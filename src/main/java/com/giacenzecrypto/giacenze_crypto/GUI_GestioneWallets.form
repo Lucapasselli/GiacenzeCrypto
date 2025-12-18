@@ -135,6 +135,7 @@
                 <Column editable="false" title="Ultimo Blocco" type="java.lang.Object"/>
               </Table>
             </Property>
+            <Property name="cellSelectionEnabled" type="boolean" value="true"/>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
               <TableColumnModel selectionModel="0">
                 <Column maxWidth="150" minWidth="-1" prefWidth="150" resizable="true">

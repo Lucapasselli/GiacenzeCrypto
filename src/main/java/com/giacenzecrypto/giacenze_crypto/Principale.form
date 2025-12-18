@@ -943,6 +943,7 @@
                             <Column editable="false" title="Valore" type="java.lang.String"/>
                           </Table>
                         </Property>
+                        <Property name="cellSelectionEnabled" type="boolean" value="true"/>
                         <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                           <TableColumnModel selectionModel="0">
                             <Column maxWidth="300" minWidth="200" prefWidth="200" resizable="true">

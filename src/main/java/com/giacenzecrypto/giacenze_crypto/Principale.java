@@ -8693,7 +8693,7 @@ SwingUtilities.invokeLater(() -> {
     
     private void Funzioni_RichiamaPopUpdaTabella(JTable tabella,java.awt.event.MouseEvent evt,int posizioneID){
 
-            int rigaSelezionata=tabella.getSelectedRow();
+       /*     int rigaSelezionata=tabella.getSelectedRow();
         if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)){
             tabella.requestFocusInWindow();
             rigaSelezionata=tabella.rowAtPoint(evt.getPoint());
@@ -8701,7 +8701,20 @@ SwingUtilities.invokeLater(() -> {
                 tabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
             }
             
+        }*/
+       if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)) {
+            tabella.requestFocusInWindow();
+            int row = tabella.rowAtPoint(evt.getPoint());
+            int col = tabella.columnAtPoint(evt.getPoint());
+
+            if (row != -1 && col != -1) {
+                tabella.setRowSelectionInterval(row, row);
+                tabella.setColumnSelectionInterval(col, col);
+                tabella.changeSelection(row, col, false, false);
+            }
+
         }
+        int rigaSelezionata = tabella.getSelectedRow();
          if (rigaSelezionata != -1) {            
             int rigaselezionata;
             if (tabella.getRowSorter()!=null)rigaselezionata = tabella.getRowSorter().convertRowIndexToModel(tabella.getSelectedRow());
@@ -8716,7 +8729,7 @@ SwingUtilities.invokeLater(() -> {
                 }
             }
             Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
-             TransazioniCrypto_CompilaTextPaneDatiMovimento();
+            // TransazioniCrypto_CompilaTextPaneDatiMovimento();
             
         }
     }
@@ -12122,7 +12135,8 @@ SwingUtilities.invokeLater(() -> {
     private void TransazioniCrypto_Tabella_DettagliMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        Funzioni_RichiamaPopUpdaTabella(TransazioniCrypto_Tabella_Dettagli,evt,-1);
         // Funzioni_RichiamaPopUpdaTabella(TransazioniCrypto_Tabella_Dettagli,evt,-1);
 
     }//GEN-LAST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
@@ -12294,7 +12308,9 @@ SwingUtilities.invokeLater(() -> {
         // Funzioni.simulaTastoSinistro();
         //System.out.println("Mouse Rilasciato su tabella principale");
         // int righeSelezionate[]=TransazioniCryptoTabella.getSelectedRows();
+        
         Funzioni_RichiamaPopUpdaTabella(TransazioniCryptoTabella,evt,0);
+        TransazioniCrypto_CompilaTextPaneDatiMovimento();
 
         //Funzione che apre il popupmenu se premuto il tasto destro
 

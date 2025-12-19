@@ -1071,7 +1071,7 @@ worker.execute();*/
             
             
             //Ora elaboro i dati in ritorno
-            System.out.println(Ritorno[0]);
+            //System.out.println(Ritorno[0]);
             if (Ritorno[0]!=null){
                 //Ho il prezzo di ritorno
                 if (Funzioni.isNumeric(Ritorno[0], false)){

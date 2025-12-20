@@ -25,6 +25,21 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.48
+Nuove Implementazioni : 
+ - Etherscan ha messo lo scaricamento di alcune chain a pagamamento (es.BSC,BASE,AVAX) e deprecato altre (es. Cronos), per ovviare al problema sono state implementate nuove API.
+	Per BASE, BSC, AVA  verranno utilizzate le API di Moralis (dalle prove che ho fatto sono leggermente meno precise di quelle etherscan nel senso che ogni tanto potrebbero perdere qualche transazione, circa 1 ogni 5000)
+	Per la cronoschain invece verranno utilizzate le api proprie simili a quelle di etherscan con l'unico neo che il wallet bisogna scaricarlo ogni volta per la sua interezza per cui porterà via un pò di tempo.
+ - Implementata nuova funzione per la gestione dei prezzi che comporta quanto segue : 
+	- I prezzi vengono ora scaricati da 6 exchange contemporaneamente con la precisione al minuto.
+	- Nei dettagli delle transazioni ci sarà scritta la fonte del prezzo e la sua precisione.
+	- Premendo per la modifica del prezzo ora verrà mostrata una maschera dove si potrà scegliere tra vari prezzi nonchè inserirne uno personalizzato.
+	- I prezzi presi da coingecko rimangono con precisione oraria perchè le api gratuite permettono solo quel tipo di richiesta.
+	- Lo scaricamento dei prezzi darà più lento ma molto più preciso. 
+	- Il primo scarico in assoluto potrebbe durare parecchi minuti perchè viene scaricato l'ambiente per JavaScript (Indispensabile per utilizzare la nuova libreria CCXT).
+ - Su alcune tabelle ora è possibile la selezione della cella per dei copia/incolla più mirati, i campi vengono inoltre ripuliti dei tag html.
+ - Migliorate le prestazioni sul caricamento della tabella principale.
+	
 ver. 1.0.47
 Correzione Bug : 
  - Eherscan ha deprecato le Api V1, il programma usava ancora quelle Api per verificare se la chiave era valida.

@@ -21,6 +21,9 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
@@ -39,12 +42,14 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
      private static final Map<Integer,String> mappa_ID=new TreeMap<>(); 
      private static int Riferimento=0;
      
-     private static String PopUp_IDTrans=null;
-     private static Component PopUp_Component=null;
-     private static JTable PopUp_Tabella=null;
+    /* private String PopUp_IDTrans=null;
+     private Component PopUp_Component=null;
+     private JTable PopUp_Tabella=null;*/
+     private String IDdt=null;//ID del contesto attuale
 
 
         public void TransazioniCrypto_CompilaTextPaneDatiMovimento(String IDTransazione) {
+            IDdt=IDTransazione;
             SerializzaIDMovimenti(IDTransazione);
             this.setTitle("Dettaglio Movimento");
             
@@ -383,17 +388,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         PopupMenu = new javax.swing.JPopupMenu();
         MenuItem_CopiaID = new javax.swing.JMenuItem();
         MenuItem_Copia = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JPopupMenu.Separator();
-        MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
-        MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
-        MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
-        MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
-        jSeparator8 = new javax.swing.JPopupMenu.Separator();
-        MenuItem_ClassificaMovimento = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
-        MenuItem_ModificaReward = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         ScrollTabella = new javax.swing.JScrollPane();
@@ -421,53 +418,6 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             }
         });
         PopupMenu.add(MenuItem_Copia);
-        PopupMenu.add(jSeparator4);
-
-        MenuItem_LiFoTransazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
-        MenuItem_LiFoTransazione.setText("Mostra LiFo Transazione");
-        MenuItem_LiFoTransazione.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_LiFoTransazioneActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_LiFoTransazione);
-
-        MenuItem_DettagliMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Dettagli.png"))); // NOI18N
-        MenuItem_DettagliMovimento.setText("Dettagli Movimento");
-        MenuItem_DettagliMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_DettagliMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_DettagliMovimento);
-
-        MenuItem_ModificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        MenuItem_ModificaMovimento.setText("Modifica Movimento");
-        MenuItem_ModificaMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaMovimento);
-
-        MenuItem_EliminaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
-        MenuItem_EliminaMovimento.setText("Elimina Movimento");
-        MenuItem_EliminaMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_EliminaMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_EliminaMovimento);
-        PopupMenu.add(jSeparator8);
-
-        MenuItem_ClassificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
-        MenuItem_ClassificaMovimento.setText("Classifica Movimento");
-        MenuItem_ClassificaMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ClassificaMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ClassificaMovimento);
         PopupMenu.add(jSeparator6);
 
         MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
@@ -492,15 +442,6 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             }
         });
         PopupMenu.add(MenuItem_ModificaNote);
-
-        MenuItem_ModificaReward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Reward.png"))); // NOI18N
-        MenuItem_ModificaReward.setText("Cambia Tipologia Reward");
-        MenuItem_ModificaReward.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaRewardActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaReward);
         PopupMenu.add(jSeparator7);
 
         MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
@@ -665,13 +606,13 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
     private void TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabellaMouseReleased
         // TODO add your handling code here:
-        Funzioni_RichiamaPopUpdaTabella(Tabella,evt,-1);
+        Funzioni_RichiamaPopUpdaTabella(Tabella,evt);
     }//GEN-LAST:event_TabellaMouseReleased
 
     private void MenuItem_CopiaIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaIDActionPerformed
         // TODO add your handling code here:
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        StringSelection stringSelection = new StringSelection(PopUp_IDTrans);
+        StringSelection stringSelection = new StringSelection(Principale.PopUp_IDTrans);
         clipboard.setContents(stringSelection, null);
     }//GEN-LAST:event_MenuItem_CopiaIDActionPerformed
 
@@ -680,73 +621,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         Funzioni.simulaCtrlC();
     }//GEN-LAST:event_MenuItem_CopiaActionPerformed
 
-    private void MenuItem_LiFoTransazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_LiFoTransazioneActionPerformed
-        // TODO add your handling code here:
-        if (PopUp_IDTrans!=null){
-            //Calcoli_PlusvalenzeNew.LifoXID lifoID=Calcoli_PlusvalenzeNew.getIDLiFo(PopUp_IDTrans);
-            GUI_LiFoTransazione t =new GUI_LiFoTransazione(PopUp_IDTrans);
-            t.setLocationRelativeTo(PopUp_Component);
-            t.setVisible(true);
-        }
-    }//GEN-LAST:event_MenuItem_LiFoTransazioneActionPerformed
 
-    private void MenuItem_DettagliMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DettagliMovimentoActionPerformed
-        // TODO add your handling code here:
-        if (PopUp_IDTrans!=null){
-            GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
-            t.AzzeraMap();
-            t.TransazioniCrypto_CompilaTextPaneDatiMovimento(PopUp_IDTrans);
-            t.setLocationRelativeTo(PopUp_Component);
-            t.setVisible(true);
-        }
-    }//GEN-LAST:event_MenuItem_DettagliMovimentoActionPerformed
-
-    private void MenuItem_ModificaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaMovimentoActionPerformed
-        // TODO add your handling code here:
-        if (PopUp_IDTrans!=null){
-            Funzione_ModificaMovimento(PopUp_IDTrans,PopUp_Component);
-        }
-    }//GEN-LAST:event_MenuItem_ModificaMovimentoActionPerformed
-
-    private void MenuItem_EliminaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EliminaMovimentoActionPerformed
-        // TODO add your handling code here:
-        if (PopUp_IDTrans != null) {
-
-            Funzione_EliminaMovimento(PopUp_IDTrans, PopUp_Component);
-
-            // if (PopUp_Tabella.getName()!=null&&PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
-        }
-    }//GEN-LAST:event_MenuItem_EliminaMovimentoActionPerformed
-
-     public void Funzione_EliminaMovimento(String ID,Component c){
-    int risposta=JOptionPane.showOptionDialog(c,"Sicuro di voler cancellare la transazione con ID "+ID+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-            if (risposta==0){
-                //controllo se quel movimento è associato ad altri e nel qual caso lo sbianco e sbianco i movimenti associati a lui
-                Funzioni.RimuoviMovimentazioneXID(ID);
-                TabellaCryptodaAggiornare=true;
-                SwingUtilities.invokeLater(() -> {
-                JOptionPane.showConfirmDialog(c, "Transazione con ID"+ID+" eliminata correttamente.\nPremere sul Bottone Salva per rendere permanente la cancellazione fatta.",
-                    "Eliminazione riuscita",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-                });
-            }
-    }
     
     
-    private void MenuItem_ClassificaMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ClassificaMovimentoActionPerformed
-        // TODO add your handling code here:
-       /* if (Principale.PopUp_IDTrans != null) {
-
-            ClassificazioneTrasf_Modifica mod = new ClassificazioneTrasf_Modifica(Principale.PopUp_IDTrans);
-            mod.setLocationRelativeTo(Principale.PopUp_Component);
-            mod.setVisible(true);
-
-            if (mod.getModificaEffettuata()) {
-                Principale.Funzioni_AggiornaTutto();
-                Principale.DepositiPrelievi_Caricatabella();
-            }
-        }*/
-    }//GEN-LAST:event_MenuItem_ClassificaMovimentoActionPerformed
-
     private void MenuItem_ModificaPrezzoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoMouseReleased
         // TODO add your handling code here:
     }//GEN-LAST:event_MenuItem_ModificaPrezzoMouseReleased
@@ -757,68 +634,46 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         Component c=this;
         Download progress=new Download();
         progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
-        progress.setLocationRelativeTo(PopUp_Component);
-
+        progress.setLocationRelativeTo(Principale.PopUp_Component);
+        String IDtrans=IDdt;
+        Point p = this.getLocation();
+        this.dispose();
         Thread thread;
         thread = new Thread() {
             public void run() {
-                GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(PopUp_IDTrans,progress);
+                
+                GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(Principale.PopUp_IDTrans);
                 t.setLocationRelativeTo(c);
                 t.setVisible(true);
-                //progress.ChiudiFinestra();
+                progress.ChiudiFinestra();
             }
         };
         thread.start();
         progress.setVisible(true);
-
+      /*  System.out.println(Principale.TabellaCryptodaAggiornare);
+        while (Principale.TabellaCryptodaAggiornare){
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(GUI_DettaglioTransazione.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }*/
+         SwingUtilities.invokeLater(() -> {
+            GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
+                t.AzzeraMap();
+                t.TransazioniCrypto_CompilaTextPaneDatiMovimento(IDtrans);
+                t.setLocation(p);
+                t.setVisible(true);
+        });
+        
     }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
 
     private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
         // TODO add your handling code here:
-        if (Funzioni.GUIModificaNote(PopUp_Component, PopUp_IDTrans))TabellaCryptodaAggiornare=true;
+        if (Funzioni.GUIModificaNote(Principale.PopUp_Component, Principale.PopUp_IDTrans))TabellaCryptodaAggiornare=true;
+        TransazioniCrypto_CompilaTextPaneDatiMovimento(IDdt);
 
     }//GEN-LAST:event_MenuItem_ModificaNoteActionPerformed
-
-    private void MenuItem_ModificaRewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaRewardActionPerformed
-        // TODO add your handling code here:
-  /*      String Testo = "<html>Decidere il tipo di provento a cui appartiene il movimento di deposito.<br><br>"
-        + "<b>Come classifichiamo il movimento?<br><br><b>"
-        + "</html>";
-        Object[] Bottoni = {"Annulla", "REWARD", "STAKING REWARD", "EARN", "CASHBACK", "AIRDROP"};
-        int scelta = JOptionPane.showOptionDialog(this, Testo,
-            "Classificazione del movimento",
-            JOptionPane.YES_NO_CANCEL_OPTION,
-            JOptionPane.PLAIN_MESSAGE,
-            null,
-            Bottoni,
-            null);
-        //Adesso genero il movimento a seconda della scelta
-        //0 o 1 significa che non bisogna fare nulla
-        if (scelta != 0 && scelta != -1) {
-
-            switch (scelta) {
-                case 1 -> {
-                    Principale.MappaCryptoWallet.get(Principale.PopUp_IDTrans)[5]= "REWARD";
-                }
-                case 2 -> {
-                    Principale.MappaCryptoWallet.get(Principale.PopUp_IDTrans)[5]= "STAKING REWARD";
-                }
-                case 3 -> {
-                    Principale.MappaCryptoWallet.get(Principale.PopUp_IDTrans)[5]= "EARN";
-                }
-                case 4 -> {
-                    Principale.MappaCryptoWallet.get(Principale.PopUp_IDTrans)[5]= "CASHBACK";
-                }
-                case 5 -> {
-                    Principale.MappaCryptoWallet.get(Principale.PopUp_IDTrans)[5]= "AIRDROP";
-                }
-                default -> {
-                }
-            }
-            Funzioni_AggiornaTutto();
-            if (Principale.PopUp_Tabella.getName()!=null&&Principale.PopUp_Tabella.getName().equalsIgnoreCase("DepositiPrelievi"))DepositiPrelievi_Caricatabella();
-        }*/
-    }//GEN-LAST:event_MenuItem_ModificaRewardActionPerformed
 
     private void MenuItem_EsportaTabellaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EsportaTabellaActionPerformed
 
@@ -831,8 +686,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
-                if (PopUp_Tabella != null) {
-                    Funzioni.Export_CreaExcelDaTabella(PopUp_Tabella);
+                if (Principale.PopUp_Tabella != null) {
+                    Funzioni.Export_CreaExcelDaTabella(Principale.PopUp_Tabella);
                 }
                 return null;
             }
@@ -850,9 +705,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
 
     
-    private void Funzioni_RichiamaPopUpdaTabella(JTable tabella, java.awt.event.MouseEvent evt, int posizioneID) {
+    private void Funzioni_RichiamaPopUpdaTabella(JTable tabella, java.awt.event.MouseEvent evt) {
+        
+        System.out.println("ID:"+IDdt);
 
-        int rigaSelezionata = tabella.getSelectedRow();
         if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)) {
             tabella.requestFocusInWindow();
             int row = tabella.rowAtPoint(evt.getPoint());
@@ -865,8 +721,9 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             }
 
         }
+        int rigaSelezionata = tabella.getSelectedRow();
         if (rigaSelezionata != -1) {
-            int rigaselezionata;
+         /*   int rigaselezionata;
             if (tabella.getRowSorter() != null) {
                 rigaselezionata = tabella.getRowSorter().convertRowIndexToModel(tabella.getSelectedRow());
             } else {
@@ -879,8 +736,8 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 if (Principale.MappaCryptoWallet.get(IDTransazione) == null) {
                     IDTransazione = null;
                 }
-            }
-            Funzioni.PopUpMenu(this, evt, PopupMenu, IDTransazione);
+            }*/
+            Funzioni.PopUpMenu(this, evt, PopupMenu, IDdt);
             // TransazioniCrypto_CompilaTextPaneDatiMovimento();
 
         }
@@ -945,11 +802,19 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 //Quando finisco la modifica apro di nuovo la maschera con il movimento
                 
                // CDC_Grafica.
-                GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
+               String IDTr=ID;
+               SwingUtilities.invokeLater(() -> {
+            GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
+                t.AzzeraMap();
+                t.TransazioniCrypto_CompilaTextPaneDatiMovimento(IDTr);
+                t.setLocation(p);
+                t.setVisible(true);
+        });
+               /* GUI_DettaglioTransazione t =new GUI_DettaglioTransazione();
                 t.AzzeraMap();
                 t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
                 t.setLocation(p);
-                t.setVisible(true);
+                t.setVisible(true);*/
                 
                 
                 
@@ -1002,24 +867,16 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_Modifica;
     private javax.swing.JButton Bottone_MovPrecedente;
     private javax.swing.JButton Bottone_MovSuccessivo;
-    private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
     private javax.swing.JMenuItem MenuItem_Copia;
     private javax.swing.JMenuItem MenuItem_CopiaID;
-    private javax.swing.JMenuItem MenuItem_DettagliMovimento;
-    private javax.swing.JMenuItem MenuItem_EliminaMovimento;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
-    private javax.swing.JMenuItem MenuItem_LiFoTransazione;
-    private javax.swing.JMenuItem MenuItem_ModificaMovimento;
     private javax.swing.JMenuItem MenuItem_ModificaNote;
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
-    private javax.swing.JMenuItem MenuItem_ModificaReward;
     private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JScrollPane ScrollTabella;
     private javax.swing.JTable Tabella;
     private javax.swing.JTextPane TextPane_Titolo;
-    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
-    private javax.swing.JPopupMenu.Separator jSeparator8;
     // End of variables declaration//GEN-END:variables
 }

@@ -6638,7 +6638,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 //contatore e cicli massimi mi servono per evitare di terminare la quota delle api moralis
                 //quindi al massimo per ogni wallet scarico 1000 transazioni
                 int contatore=0;
-                int ciclimassimi=50;
+                int ciclimassimi=1;
 
                 while (continueFetching && !progressb.FineThread()) {
                     contatore++;
@@ -6876,6 +6876,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 JSONObject nt = nft.getJSONObject(j);
 
                                 String tokenId = nt.optString("token_id");
+                                String tokenSymbol = nt.optString("token_symbol");
+                                if (tokenSymbol.isBlank())tokenSymbol=tokenId;
+                                if (tokenSymbol.isBlank())tokenSymbol="NFT";
                                 String addressNFT = nt.optString("token_address");
                                 String fromNFT = nt.optString("from_address");
                                 String toNFT = nt.optString("to_address");
@@ -6890,8 +6893,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 {
                                     //Se entroqua vuol dire che è un NFT vero e proprio e non un doppione mal interpretato di un token
                                     trans.InserisciMonete(
-                                            nt.optString("token_symbol", tokenId),
-                                            nt.optString("token_symbol", tokenId),
+                                            tokenSymbol,
+                                            tokenSymbol,
                                             addressNFT,
                                             addr,
                                             qta,

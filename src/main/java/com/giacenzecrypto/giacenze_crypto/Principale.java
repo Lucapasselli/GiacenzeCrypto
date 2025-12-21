@@ -44,7 +44,6 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
@@ -63,7 +62,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.imageio.ImageIO;
-import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -163,7 +161,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.47.10";
+    public String Versione="1.0.48";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     

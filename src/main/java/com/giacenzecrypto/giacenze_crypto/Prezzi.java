@@ -2681,8 +2681,8 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
              
              //long timestampAttuale = System.currentTimeMillis();
              //Voglio reperire sempre almeno 1h di dati per cui prendo 1h prima e 1h dopo
-             long Since=timestamp-3600000;//1h prima
-             long Until=timestamp+7200000;//2h dopo
+             long Since=timestamp-7200000;//2h prima
+             long Until=timestamp+21600000;//6h dopo
              long Adesso = System.currentTimeMillis();
              if (Until>Adesso)Until=Adesso;
              if (Since>Adesso)return;

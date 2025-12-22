@@ -1989,7 +1989,9 @@ return MappaLista;
             for (int i=0;i<ritorno.length;i++){
                 
                 if (i==19||i==15){
-                   // if(riga[i].isBlank())riga[i]="0";
+                    //Questo imposta la plusvalenza a zero qualora non esista
+                    if(i==19&&riga[i].isBlank())riga[i]="0";
+                 //  if (!Funzioni.isNumeric(riga[i], false))System.out.println("a-"+riga[i]+"-a");
                     ritorno[i]=new BigDecimal(riga[i]);
                 }else
                   {

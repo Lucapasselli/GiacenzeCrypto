@@ -107,8 +107,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static com.giacenzecrypto.giacenze_crypto.Principale.Funzioni_Date_ConvertiDatainLong;
 import static com.giacenzecrypto.giacenze_crypto.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
 import com.giacenzecrypto.giacenze_crypto.TransazioneDefi.ValoriToken;
@@ -1694,6 +1692,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
     
     
         public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti,boolean SalvataggioPermanente) {
+            
         File f = new File(Statiche.getFile_CryptoWallet());
         File f2 = new File(Statiche.getWorkingDirectory()+"/movimenti.crypto.backup");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");

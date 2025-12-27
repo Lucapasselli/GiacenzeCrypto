@@ -288,6 +288,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
 
         DefaultTableModel ModelloTabellaWallets = (DefaultTableModel) TabellaWallets.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaWallets);
+        Tabelle.ColoraTabellaSemplice(TabellaWallets);
        // Map<String, String> MappaWallets=DatabaseH2.Pers_Wallets_LeggiTabella();
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella

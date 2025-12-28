@@ -2877,8 +2877,8 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Text_IC" min="-2" pref="149" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="RW_Label_SegnalaRicalcolo" min="-2" pref="741" max="-2" attributes="0"/>
-                                      <EmptySpace pref="36" max="32767" attributes="0"/>
+                                      <Component id="RW_Label_SegnalaRicalcolo" min="-2" pref="729" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="jLabel4" min="-2" pref="37" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="RW_Anno_ComboBox" min="-2" pref="76" max="-2" attributes="0"/>
@@ -2893,7 +2893,7 @@
                               <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="RW_Label_SegnalaErrori" min="-2" pref="750" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace pref="251" max="32767" attributes="0"/>
                               <Component id="RW_CheckBox_VediSoloErrori" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -2953,7 +2953,7 @@
                                   <Component id="jLabel6" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane9" pref="220" max="32767" attributes="0"/>
+                              <Component id="jScrollPane9" pref="228" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -3462,11 +3462,12 @@
                     <Component class="javax.swing.JLabel" name="RW_Label_SegnalaRicalcolo">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="15" style="1"/>
+                          <Font name="Segoe UI" size="14" style="1"/>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="Tabelle.rosso" type="code"/>
                         </Property>
+                        <Property name="text" type="java.lang.String" value="Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere &quot;Calcola&quot; per aggiornare."/>
                       </Properties>
                     </Component>
                   </SubComponents>
@@ -3487,14 +3488,14 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane11" max="32767" attributes="0"/>
-                                  <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jTabbedPane1" alignment="0" pref="1284" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="RT_Bottone_Documentazione" max="32767" attributes="0"/>
                                           <Component id="RT_Bottone_Stampa" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="RT_Label_Avviso" min="-2" pref="683" max="-2" attributes="0"/>
+                                      <Component id="RT_Label_Avviso" min="-2" pref="795" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="RT_Bottone_CorreggiErrori" max="32767" attributes="0"/>
@@ -3922,12 +3923,12 @@
                     <Component class="javax.swing.JLabel" name="RT_Label_Avviso">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="12" style="1"/>
+                          <Font name="Segoe UI" size="14" style="1"/>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="Tabelle.rosso" type="code"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere &quot;Calcola&quot; per aggiornare la tabella."/>
+                        <Property name="text" type="java.lang.String" value="Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere &quot;Calcola&quot; per aggiornare."/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JButton" name="RT_Bottone_Documentazione">

@@ -316,6 +316,7 @@ private static final long serialVersionUID = 3L;
         this.CDC_FiatWallet_Bottone_Errore.setVisible(false);
         TransazioniCrypto_Label_MovimentiNonSalvati.setVisible(false);
         this.RT_Label_Avviso.setVisible(false);
+        this.RW_Label_SegnalaRicalcolo.setVisible(false);
         this.GiacenzeaData_Label_Aggiornare.setVisible(false);
         //Optioni_Export_Wallets_Combobox=GiacenzeaData_Wallet_ComboBox;
     
@@ -2727,8 +2728,9 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        RW_Label_SegnalaRicalcolo.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        RW_Label_SegnalaRicalcolo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         RW_Label_SegnalaRicalcolo.setForeground(Tabelle.rosso);
+        RW_Label_SegnalaRicalcolo.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
 
         javax.swing.GroupLayout RWLayout = new javax.swing.GroupLayout(RW);
         RW.setLayout(RWLayout);
@@ -2754,8 +2756,8 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Text_IC, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 741, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+                        .addComponent(RW_Label_SegnalaRicalcolo, javax.swing.GroupLayout.PREFERRED_SIZE, 729, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RW_Anno_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2767,7 +2769,7 @@ private static final long serialVersionUID = 3L;
                 .addComponent(jLabel5)
                 .addGap(18, 18, 18)
                 .addComponent(RW_Label_SegnalaErrori, javax.swing.GroupLayout.PREFERRED_SIZE, 750, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
                 .addComponent(RW_CheckBox_VediSoloErrori))
             .addGroup(RWLayout.createSequentialGroup()
                 .addContainerGap()
@@ -2816,7 +2818,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RW_Bottone_ModificaVIniziale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -3004,9 +3006,9 @@ private static final long serialVersionUID = 3L;
 
         jTabbedPane1.addTab("Dettagli Anno", jPanel1);
 
-        RT_Label_Avviso.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        RT_Label_Avviso.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         RT_Label_Avviso.setForeground(Tabelle.rosso);
-        RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare la tabella.");
+        RT_Label_Avviso.setText("Attenzione! Ci sono state delle modifiche alle impostazioni/movimenti, premere \"Calcola\" per aggiornare.");
 
         RT_Bottone_Documentazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
         RT_Bottone_Documentazione.setText("Vedi Documentazione sulle Plusvalenze");
@@ -3040,13 +3042,13 @@ private static final long serialVersionUID = 3L;
                 .addContainerGap()
                 .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane11)
-                    .addComponent(jTabbedPane1)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1284, Short.MAX_VALUE)
                     .addGroup(RTLayout.createSequentialGroup()
                         .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(RT_Bottone_Documentazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(RT_Bottone_Stampa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 683, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(RT_Label_Avviso, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addGroup(RTLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(RT_Bottone_CorreggiErrori, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -7198,7 +7200,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
            
         //Emetto messaggio di ricalcolo sulla tabella RT se già compilata
-        if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
+        AccendiLabelRicalcolo();
+        //RW_RicalcolaRWseEsiste();//Questo non aggiorna nulla ma avvisa di aggiornare, è l'equivalente delle riga sopra ma per l'RW
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         TransazioniCrypto_DaSalvare = true;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
@@ -7209,7 +7212,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         System.out.println("Tempo calcolo plusvalenza : "+tempoOperazione+" millisec.");
         this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa(TransazioniCrypto_CheckBox_EscludiTI.isSelected(),TransazioniCrypto_CheckBox_VediSenzaPrezzo.isSelected());
-        RW_RicalcolaRWseEsiste();
+        
         
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //DepositiPrelievi_Caricatabella();
@@ -7347,7 +7350,6 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
     private void DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
         DepositiPrelievi_AssegnazioneAutomatica();
-        RW_RicalcolaRWseEsiste();
     }//GEN-LAST:event_DepositiPrelievi_Bottone_AssegnazioneAutomaticaActionPerformed
 
     
@@ -8901,7 +8903,7 @@ SwingUtilities.invokeLater(() -> {
             //3 - Aggiorno le plusvalenze
             //4 - Ricarico la tabella crypto
             if (!DatabaseH2.Pers_GruppoWallet_Leggi(Wallet,true).equals(Gruppo)){
-               // System.out.println(Wallet);
+                //System.out.println(Wallet);
                 String Valori[]=DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
                 boolean PagaBollo=false;
                 if (Valori[2].equals("S"))PagaBollo=true;
@@ -8910,8 +8912,8 @@ SwingUtilities.invokeLater(() -> {
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 //1 - Scrivo il nuovo gruppo nel dabase
                 DatabaseH2.Pers_GruppoWallet_Scrivi(Wallet, Gruppo);
-                //2 - Ricalcolo i dati dell'RW se presenti
-                RW_RicalcolaRWseEsiste();
+                //2 - Ricalcolo i dati dell'RW e RT se presenti
+                AccendiLabelRicalcolo();
                 //3 - Aggiorno le plusvalenze
                 Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
                 //4 - Ricarico la tabella crypt
@@ -8921,14 +8923,15 @@ SwingUtilities.invokeLater(() -> {
         }
     }//GEN-LAST:event_Opzioni_GruppoWallet_TabellaFocusGained
 
-    private void RW_RicalcolaRWseEsiste() {
+  /*  private void RW_RicalcolaRWseEsiste() {
         //Questa funzione serve per ricalcolare l'RW qualora vi siano state delle modifiche
         //Va a verificare se l'RW è stato generato e in quel caso lo ricalcola altrimenti non fa nulla
         if (Mappa_RW_ListeXGruppoWallet != null && !Mappa_RW_ListeXGruppoWallet.isEmpty()) {
-            this.RW_Label_SegnalaErrori.setText("ATTENZIONE : ci sono state delle modifiche, ricalcolare i valori attraverso il pulsante 'Calcola'");
+            this.RW_Label_SegnalaRicalcolo.setVisible(true);
+           // this.RW_Label_SegnalaRicalcolo.setText("ATTENZIONE : ci sono state delle modifiche, aggiornare i valori attraverso il pulsante 'CALCOLA'");
             //RW_CalcolaRW();
         }
-    }
+    }*/
     
     private void Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_CancellaTransazioniCryptoXwalletActionPerformed
         // TODO add your handling code here:
@@ -9266,7 +9269,7 @@ SwingUtilities.invokeLater(() -> {
     private void RW_CalcolaRW() {
         // TODO add your handling code here:
         //Come prima cosa faccio un pò di pulizia
-        System.out.println("RW_CalcoloRW");
+        System.out.println("RW_CalcoloRW");        
         //ricalcolo le plusvalenze prima di iniziare qualora sia attivo il calcolo manuale delle plusvalenze
         Funzioni_AggiornaPluvalenzeSeManuale();     
         DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
@@ -9422,13 +9425,12 @@ SwingUtilities.invokeLater(() -> {
                     ModelloTabella.addRow(RWx);
                 }
                 RW_Text_IC.setText(ICtot);
-
                 progress.ChiudiFinestra();
             }
         };
         thread.start();
         progress.setVisible(true);
-
+        this.RW_Label_SegnalaRicalcolo.setVisible(false);
         RW_Tabella.requestFocus();
 
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -10012,7 +10014,9 @@ SwingUtilities.invokeLater(() -> {
                     DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], m, PagaBollo);
                     Opzioni_GruppoWallet_CaricaGruppiWallet();
                     Funzione_AggiornaComboBox();
-                    RW_RicalcolaRWseEsiste();                    
+                    //Aggiorno gli eventuali label per avvisare che è necessario il ricalcolo
+                    AccendiLabelRicalcolo(); 
+                    
                     rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
                     Opzioni_GruppoWallet_Tabella.setRowSelectionInterval(rigaselezionata, rigaselezionata);
                 } else {
@@ -10023,6 +10027,12 @@ SwingUtilities.invokeLater(() -> {
        } 
     }//GEN-LAST:event_Opzioni_GruppoWallet_Bottone_RinominaActionPerformed
 
+    private void AccendiLabelRicalcolo(){
+        //Aggiorno gli eventuali label sull'RW e RT per avvisare che è necessario il ricalcolo
+        if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
+        if(RW_Tabella.getRowCount()>0)RW_Label_SegnalaRicalcolo.setVisible(true); 
+    }
+    
     private void Opzioni_GruppoWallet_TabellaPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_Opzioni_GruppoWallet_TabellaPropertyChange
         // TODO add your handling code here:
        
@@ -10040,9 +10050,7 @@ SwingUtilities.invokeLater(() -> {
                 boolean PagaBollo = !(boolean) Opzioni_GruppoWallet_Tabella.getModel().getValueAt(rigaselezionata, 3);               
                 //Adesso devo scrivere nel database i dati corretti
                 DatabaseH2.Pers_GruppoAlias_Scrivi(Valori[0], Valori[1], PagaBollo); 
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                RW_RicalcolaRWseEsiste();
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                AccendiLabelRicalcolo();
                 //Aggiorno la tabella
                 Opzioni_GruppoWallet_CaricaGruppiWallet();
                 rigaselezionata = Opzioni_GruppoWallet_Tabella.getRowSorter().convertRowIndexToModel(rigaselezionata);
@@ -12312,7 +12320,7 @@ SwingUtilities.invokeLater(() -> {
             LoggerGC.ScriviErrore(ex);
         }
         //Metto gli avvisi sulle funzioni che probabilmente sono da ricalcolare
-        if(RT_Tabella_Principale.getRowCount()>0)RT_Label_Avviso.setVisible(true);
+        AccendiLabelRicalcolo();
         if(GiacenzeaData_Tabella.getRowCount()>0)GiacenzeaData_Label_Aggiornare.setVisible(true);
         this.setCursor(Cursor.getDefaultCursor());
     }//GEN-LAST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed

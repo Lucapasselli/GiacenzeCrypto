@@ -409,6 +409,7 @@ public static Path getNodeExePath() {
             //1 - RECUPERO TUTTI I MOVIMENTI TRANNE I TRADES
             progress.setTitle("Scaricamento dei dati di "+exchangeId+" tramite API");
             String estrazioni[] = new String[]{"depositi", "prelievi", "Binance_MovimentiFiat","Binance_Conversioni","Binance_ConversioniSmall", "Binance_AssetDividend","Binance_EarnFlessibili","Binance_EarnLocked"};
+            //String estrazioni[] = new String[]{"Binance_StakingSOL"};
             int chiamate=estrazioni.length+1;
             int j=0;
             for (String script : estrazioni) {

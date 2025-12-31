@@ -1175,9 +1175,22 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                 while ((riga = bure.readLine()) != null) {
                     //System.out.println(riga);
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
-                    String splittata[] = riga.split(","); 
+                    String splittata[] = riga.split(",",-1); 
+                    // System.out.println(splittata.length);
                     if (splittata.length==13){
                         String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[12]);
+                        if (!data.equalsIgnoreCase("")/*&&Mappa_EliminaDoppioni.get(riga)==null*/) {
+                            //Mappa_EliminaDoppioni.put(riga, "");
+                            lista.add(riga);
+                            if (primaData==0){
+                                primaData=FunzioniDate.ConvertiDatainLongSecondo(data);
+                            }
+                            UltimaData=FunzioniDate.ConvertiDatainLongSecondo(data);
+                       } 
+                        }
+                    else if (splittata.length==16){
+                        String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[10]);
+                        System.out.println(data);
                         if (!data.equalsIgnoreCase("")/*&&Mappa_EliminaDoppioni.get(riga)==null*/) {
                             //Mappa_EliminaDoppioni.put(riga, "");
                             lista.add(riga);
@@ -1216,9 +1229,14 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
         long DataUltimaRiferimento=0;
         for (Object rigas : lista.toArray() ) {
             riga=rigas.toString();
-            String splittata[] = riga.split(",");            
+            String splittata[] = riga.split(",",-1); 
+            //System.out.println(splittata.length);
+            String data;
             //controllo se la data è uguiale a quella del movimento precedente, così fosse agiungo 1 secondo al movimento
-            String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[12]);
+            if (splittata.length==13){
+                data = FunzioniDate.Formatta_Data_CoinTracking(splittata[12]);
+            }else data = FunzioniDate.Formatta_Data_CoinTracking(splittata[10]);
+            
             long DataAttuale=FunzioniDate.ConvertiDatainLongSecondo(data);
             if (DataAttuale==DataUltimaRiferimento){
                 DataAttuale=DataUltima+1000;
@@ -1231,14 +1249,26 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             
             //adesso ricreo la riga che andrà sulla mappa
             riga="";
-            for(int i=0;i<13;i++){
-                if(i==12){
-                    riga=riga+data;
+            if (splittata.length==13){
+                for(int i=0;i<13;i++){
+                    if(i==12){
+                        riga=riga+data;
                     
+                    }
+                    else{
+                    riga=riga+splittata[i]+",";
+                            }
                 }
-                else{
-                riga=riga+splittata[i]+",";
-                        }
+            }else{
+            for(int i=0;i<16;i++){
+                    if(i==10){
+                        riga=riga+data;
+                    
+                    }
+                    else{
+                    riga=riga+splittata[i]+",";
+                            }
+                }
             }
             //metto la data nel keyset in modo da mettere in ordine cronologico qualora ancora non lo fossero, i movimenti
             //System.out.println(riga);
@@ -1267,7 +1297,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
             riga=Mappa_MovimentiTemporanea.get(str);
            // System.out.println(riga);
             String splittata[] = riga.split(",");
-            String data=splittata[12];
+            String data;
+            if (splittata.length==13){
+                data=splittata[12];
+            }else{
+                data=splittata[10];
+            }
             //System.out.println(data+" "+ultimaData);
 
             if (FunzioniDate.ConvertiDatainLongSecondo(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
@@ -1291,7 +1326,12 @@ public static boolean Importa_Crypto_CoinTracking(String fileCoinTracking,boolea
                     listaMovimentidaConsolidare = new ArrayList<>();
                     listaMovimentidaConsolidare.add(riga);
                 }
-                ultimaData = splittata[12];
+
+                if (splittata.length==13){
+                    ultimaData=splittata[12];
+                }else{
+                    ultimaData=splittata[10];
+                }
                 
             }
             avanzamento++;
@@ -4856,12 +4896,33 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             String RT[]=new String[ColonneTabella];
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
+                            String ME,MU,QtaU,QtaE,PrzU,PrzE,MComm,QtaComm,Exch,data;
+                            String Tipologia=movimentoSplittato[0].trim();
+                            if (movimentoSplittato.length==13){
+                                QtaE=movimentoSplittato[1].trim();
+                                ME=movimentoSplittato[2].trim();
+                                QtaU=movimentoSplittato[5].trim();
+                                MU=movimentoSplittato[6].trim();
+                                Exch=movimentoSplittato[10].trim();
+                                PrzE=movimentoSplittato[4].trim();
+                                PrzU=movimentoSplittato[8].trim();
+                                data=movimentoSplittato[12].trim();
+                            }else {
+                                //Quindi il movimento è lungo 16
+                                QtaE=movimentoSplittato[1].trim();
+                                ME=movimentoSplittato[2].trim();
+                                QtaU=movimentoSplittato[3].trim();
+                                MU=movimentoSplittato[4].trim();
+                                Exch=movimentoSplittato[7].trim();
+                                data=movimentoSplittato[10].trim();
+                                PrzE="0";
+                                PrzU="0";
+                            }
                            // System.out.println(movimentoSplittato[9]);
-                            String data=movimentoSplittato[12];
                             String dataa=data.substring(0, data.length()-3).trim();
-                            if (movimentoSplittato[0].trim().equalsIgnoreCase("Trade")||movimentoSplittato[0].trim().equalsIgnoreCase("Operazione"))
+                            if (Tipologia.equalsIgnoreCase("Trade")||Tipologia.equalsIgnoreCase("Operazione"))
                             {
-                                if (!movimentoSplittato[6].trim().equalsIgnoreCase("EUR")&&!movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))
+                                if (!MU.trim().equalsIgnoreCase("EUR")&&!ME.trim().equalsIgnoreCase("EUR"))
                                     {
                                         // in Questo caso si tratta di uno scambio Crypto-Crypto
                                 //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
@@ -4869,19 +4930,19 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
-                                RT[4] = movimentoSplittato[10];
+                                RT[4] = Exch;
                                 RT[5] = "SCAMBIO CRYPTO";
-                                RT[6] = movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
-                                RT[7] = movimentoSplittato[0];
-                                RT[8] = movimentoSplittato[6];
+                                RT[6] = MU+" -> "+ME;                                
+                                RT[7] = Tipologia;
+                                RT[8] = MU;
                                 RT[9] = "Crypto";
-                                RT[10] = "-"+movimentoSplittato[5];
-                                RT[11] = movimentoSplittato[2];
+                                RT[10] = "-"+QtaU;
+                                RT[11] = ME;
                                 RT[12] = "Crypto";
-                                RT[13] = movimentoSplittato[1];
+                                RT[13] = QtaE;
                                 String prezzoTrans;
-                                if (new BigDecimal(movimentoSplittato[4]).compareTo(new BigDecimal("0"))==0) prezzoTrans=movimentoSplittato[8];
-                                else prezzoTrans=movimentoSplittato[4];
+                                if (new BigDecimal(PrzE).compareTo(new BigDecimal("0"))==0) prezzoTrans=PrzU;
+                                else prezzoTrans=PrzE;
                                 RT[14] = "EUR "+prezzoTrans;
                                 //questo è il primo movimento fatto, mancano gli altri
                                 Moneta M1=new Moneta();
@@ -4901,25 +4962,25 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                                 
-                            }else if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))
+                            }else if (MU.trim().equalsIgnoreCase("EUR"))
                                     {
                                         //in questo caso abbiamo un Acquisto Crypto
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_AC";
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
-                                RT[4] = movimentoSplittato[10];
+                                RT[4] = Exch;
                                 RT[5] = "ACQUISTO CRYPTO";
-                                RT[6] = movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
-                                RT[7] = movimentoSplittato[0];
-                                RT[8] = movimentoSplittato[6];
+                                RT[6] = MU+" -> "+ME;                                
+                                RT[7] = Tipologia;
+                                RT[8] = MU;
                                 RT[9] = "FIAT";
-                                RT[10] = "-"+movimentoSplittato[5];
-                                RT[11] = movimentoSplittato[2];
+                                RT[10] = "-"+QtaU;
+                                RT[11] = ME;
                                 RT[12] = "Crypto";
-                                RT[13] = movimentoSplittato[1];
-                                String prezzoTrans=new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
-                                RT[14] = "EUR "+movimentoSplittato[5];
+                                RT[13] = QtaE;
+                                String prezzoTrans=new BigDecimal(QtaU).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[14] = "EUR "+QtaU;
                                 Moneta M1=new Moneta();
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
@@ -4940,25 +5001,25 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         
                                     }
                                 
-                            else if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR"))
+                            else if (ME.trim().equalsIgnoreCase("EUR"))
                                     {
                                         //in questo caso abbiamo una Vendita Crypto
                                 RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_VC";
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
-                                RT[4] = movimentoSplittato[10];
+                                RT[4] = Exch;
                                 RT[5] = "VENDITA CRYPTO";
-                                RT[6] = movimentoSplittato[6]+" -> "+movimentoSplittato[2];                                
-                                RT[7] = movimentoSplittato[0];
-                                RT[8] = movimentoSplittato[6];
+                                RT[6] = MU+" -> "+ME;                                
+                                RT[7] = Tipologia;
+                                RT[8] = MU;
                                 RT[9] = "Crypto";
-                                RT[10] = "-"+movimentoSplittato[5];
-                                RT[11] = movimentoSplittato[2];
+                                RT[10] = "-"+QtaU;
+                                RT[11] = ME;
                                 RT[12] = "FIAT";
-                                RT[13] = movimentoSplittato[1];
-                                RT[14] = "EUR "+movimentoSplittato[1];
-                                String prezzoTrans=new BigDecimal(movimentoSplittato[1]).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[13] = QtaE;
+                                RT[14] = "EUR "+QtaE;
+                                String prezzoTrans=new BigDecimal(QtaE).setScale(2, RoundingMode.HALF_UP).toString();
                                 Moneta M1=new Moneta();
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
@@ -4978,10 +5039,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 lista.add(RT);
                                     }
                             }
-                           else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Income")
-                                   ||movimentoSplittato[0].trim().equalsIgnoreCase("Altri redditi")||
-                                   movimentoSplittato[0].trim().equalsIgnoreCase("Reddito da interessi")||
-                                   movimentoSplittato[0].trim().equalsIgnoreCase("Ricompensa / Bonus"))
+                           else if (Tipologia.equalsIgnoreCase("Other Income")
+                                   ||Tipologia.equalsIgnoreCase("Altri redditi")||
+                                   Tipologia.equalsIgnoreCase("Reddito da interessi")||
+                                   Tipologia.equalsIgnoreCase("Ricompensa / Bonus"))
                             {
                                 //Rewards di vario tipo
                                 
@@ -4989,18 +5050,18 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
-                                RT[4] = movimentoSplittato[10];
+                                RT[4] = Exch;
                                 RT[5] = "ALTRE-REWARD";
-                                RT[6] = "-> "+movimentoSplittato[2];                                
-                                RT[7] = movimentoSplittato[0];
+                                RT[6] = "-> "+ME;                                
+                                RT[7] = Tipologia;
                                 RT[8] = "";
                                 RT[9] = "";
                                 RT[10] = "";
-                                RT[11] = movimentoSplittato[2];
+                                RT[11] = ME;
                                 RT[12] = "Crypto";
-                                RT[13] = movimentoSplittato[1];
-                                RT[14] = "EUR "+movimentoSplittato[4];
-                                String prezzoTrans= movimentoSplittato[4];
+                                RT[13] = QtaE;
+                                RT[14] = "EUR "+PrzE;
+                                String prezzoTrans= PrzE;
                               //  Moneta M1=new Moneta();
                              //   M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
@@ -5019,7 +5080,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
-                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Staking"))
+                            else if (Tipologia.equalsIgnoreCase("Staking"))
                             {
                                 //Rewards di vario tipo
                                 
@@ -5027,18 +5088,18 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
-                                RT[4] = movimentoSplittato[10];
+                                RT[4] = Exch;
                                 RT[5] = "STAKING";
-                                RT[6] = "-> "+movimentoSplittato[2];                                
-                                RT[7] = movimentoSplittato[0];
+                                RT[6] = "-> "+ME;                                
+                                RT[7] = Tipologia;
                                 RT[8] = "";
                                 RT[9] = "";
                                 RT[10] = "";
-                                RT[11] = movimentoSplittato[2];
+                                RT[11] = ME;
                                 RT[12] = "Crypto";
-                                RT[13] = movimentoSplittato[1];
-                                RT[14] = "EUR "+movimentoSplittato[4];
-                                String prezzoTrans= movimentoSplittato[4];
+                                RT[13] = QtaE;
+                                RT[14] = "EUR "+PrzE;
+                                String prezzoTrans= PrzE;
                                 //Moneta M1=new Moneta();
                                 //M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 Moneta M2=new Moneta();
@@ -5057,8 +5118,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                             }
-                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Other Fee") 
-                                    || movimentoSplittato[0].trim().equalsIgnoreCase("Altra commissione"))
+                            else if (Tipologia.equalsIgnoreCase("Other Fee") 
+                                    || Tipologia.equalsIgnoreCase("Altra commissione"))
                             {
                                 //Commissioni
                                 
@@ -5066,20 +5127,20 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
-                                RT[4] = movimentoSplittato[10];
+                                RT[4] = Exch;
                                 RT[5]="COMMISSIONI";
-                                RT[6]="Commissione in "+movimentoSplittato[6];//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
-                                RT[7] = movimentoSplittato[0];                                
-                                RT[8] = movimentoSplittato[6];
+                                RT[6]="Commissione in "+MU;//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[7] = Tipologia;                                
+                                RT[8] = MU;
                                 String TipoMoneta="Crypto";
-                                if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR"))TipoMoneta="FIAT";
+                                if (MU.trim().equalsIgnoreCase("EUR"))TipoMoneta="FIAT";
                                 RT[9] = TipoMoneta;
-                                RT[10] = "-"+movimentoSplittato[5];
+                                RT[10] = "-"+QtaU;
                                 RT[11] = "";
                                 RT[12] = "";
                                 RT[13] = "";
-                                RT[14] = "EUR "+movimentoSplittato[8];
-                                String prezzoTrans= movimentoSplittato[8];
+                                RT[14] = "EUR "+PrzU;
+                                String prezzoTrans= PrzU;
                                 Moneta M1=new Moneta();
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 //Moneta M2=new Moneta();
@@ -5099,7 +5160,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 lista.add(RT);
                                                               
                             }
-                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Spesa"))
+                            else if (Tipologia.equalsIgnoreCase("Spesa"))
                             {
                                 //Commissioni
                                 
@@ -5107,18 +5168,18 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[1] = dataa;
                                 RT[2] = k + 1 + " di " + numMovimenti;
                                 RT[3] = Exchange;
-                                RT[4] = movimentoSplittato[10];
+                                RT[4] = Exch;
                                 RT[5]="PRELIEVO FIAT";
-                                RT[6]=movimentoSplittato[6]+" ->";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
-                                RT[7] = movimentoSplittato[0];                                
-                                RT[8] = movimentoSplittato[6];
+                                RT[6]=MU+" ->";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[7] = Tipologia;                                
+                                RT[8] = MU;
                                 RT[9] = "FIAT";
-                                RT[10] = "-"+movimentoSplittato[5];
+                                RT[10] = "-"+QtaU;
                                 RT[11] = "";
                                 RT[12] = "";
                                 RT[13] = "";
-                                RT[14] = "EUR "+movimentoSplittato[5];
-                                String prezzoTrans= new BigDecimal(movimentoSplittato[5]).setScale(2, RoundingMode.HALF_UP).toString();
+                                RT[14] = "EUR "+QtaU;
+                                String prezzoTrans= new BigDecimal(QtaU).setScale(2, RoundingMode.HALF_UP).toString();
                                 Moneta M1=new Moneta();
                                 M1.InserisciValori(RT[8],RT[10],null,RT[9]);
                                 //Moneta M2=new Moneta();
@@ -5138,7 +5199,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 lista.add(RT);
                                                               
                             }
-                            else if (movimentoSplittato[0].trim().equalsIgnoreCase("Prelievo")||movimentoSplittato[0].trim().equalsIgnoreCase("Deposito"))
+                            else if (Tipologia.equalsIgnoreCase("Prelievo")||Tipologia.equalsIgnoreCase("Deposito"))
                             {
                                 //Trasferimenti Crypto, ora bisognerà eliminare quelli doppi (prelievo e deposito stessa cifra e stesso wallet) 
                                 //e discernere i trasferimenti tra wallet da quelli interni all'exchange
@@ -5160,22 +5221,42 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 for (int w = 0; w < numMovimenti; w++) {
                                     String mov=listaMovimentidaConsolidare.get(w);
                                     String movSplit[]=mov.split(",");
+                                    String ME2,MU2,QtaU2,QtaE2,PrzU2,PrzE2,MComm2,QtaComm2,Exch2;
+                                    String Tipologia2=movSplit[0].trim();
+                                    if (movimentoSplittato.length==13){
+                                        QtaE2=movSplit[1].trim();
+                                        ME2=movSplit[2].trim();
+                                        QtaU2=movSplit[5].trim();
+                                        MU2=movSplit[6].trim();
+                                        Exch2=movSplit[10].trim();
+                                        PrzE2=movSplit[4].trim();
+                                        PrzU2=movSplit[8].trim();
+                                    }else {
+                                        //Quindi il movimento è lungo 16
+                                        QtaE2=movSplit[1].trim();
+                                        ME2=movSplit[2].trim();
+                                        QtaU2=movSplit[3].trim();
+                                        MU2=movSplit[4].trim();
+                                        Exch2=movSplit[7].trim();
+                                        PrzE2="0";
+                                        PrzU2="0";
+                                    }
                                  //   System.out.println(movSplit[0]+" "+numMovimenti);
                                     //controllo se trovo un movimento di deposito e una controparte di prelievo
-                                    if ((movimentoSplittato[0].trim().equalsIgnoreCase("Deposito")&&movSplit[0].trim().equalsIgnoreCase("Prelievo"))||
-                                            (movimentoSplittato[0].trim().equalsIgnoreCase("Prelievo")&&movSplit[0].trim().equalsIgnoreCase("Deposito")))
+                                    if ((Tipologia.equalsIgnoreCase("Deposito")&&Tipologia2.equalsIgnoreCase("Prelievo"))||
+                                            (Tipologia.equalsIgnoreCase("Prelievo")&&Tipologia2.equalsIgnoreCase("Deposito")))
                                     {
                                         //adesso controllo se i valori e valute di deposito e prelievo sono identici
                                         //System.out.println("Trovato Deposito e prelievo");
-                                        //System.out.println(movimentoSplittato[1]+" "+movSplit[5]);
-                                       if (movimentoSplittato[1].trim().equalsIgnoreCase(movSplit[5].trim())&&
-                                               movimentoSplittato[5].trim().equalsIgnoreCase(movSplit[1].trim())&&
-                                               movimentoSplittato[2].trim().equalsIgnoreCase(movSplit[6].trim())&&
-                                               movimentoSplittato[6].trim().equalsIgnoreCase(movSplit[2].trim()))
+                                        //System.out.println(QtaE+" "+movSplit[5]);
+                                       if (QtaE.trim().equalsIgnoreCase(QtaU2)&&
+                                               QtaU.trim().equalsIgnoreCase(QtaE2.trim())&&
+                                               ME.trim().equalsIgnoreCase(MU2.trim())&&
+                                               MU.trim().equalsIgnoreCase(ME2.trim()))
                                            {
                                              //  System.out.println("Stesso Wallet");
                                                //adesso controllo se sono relativi allo stesso wallet, in quel caso non scrivo nulla in caso contrario lo tratto come trasferimento interno
-                                               if (movimentoSplittato[10].trim().equalsIgnoreCase(movSplit[10].trim()))                                                   
+                                               if (Exch.equalsIgnoreCase(Exch2.trim()))                                                   
                                                 {
                                                     //Se è uguale anche il wallet i movimenti si annullano e non scrivo nulla
                                                     //System.out.println("Stesso Wallet");
@@ -5195,8 +5276,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 //significa che è un traferimento Crypto o traferimento FIAT
                                 //a questo punto verifico che tipo di movimento è e imposto le variabili di conseguenza
                                 if (trovatacorrispondenza==false && annullato==false && 
-                                        (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")||movimentoSplittato[2].trim().equalsIgnoreCase("EUR")||
-                                        movimentoSplittato[6].trim().equalsIgnoreCase("USD")||movimentoSplittato[2].trim().equalsIgnoreCase("USD")))
+                                        (MU.trim().equalsIgnoreCase("EUR")||ME.trim().equalsIgnoreCase("EUR")||
+                                        MU.trim().equalsIgnoreCase("USD")||ME.trim().equalsIgnoreCase("USD")))
                                 {
                                         TipoMov="TRASFERIMENTO FIAT";
                                         TipoMovAbbreviato="TF";
@@ -5204,21 +5285,21 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 if (annullato==false)   
                                     {
                                     RT=new String[ColonneTabella];
-                                    RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_"+TipoMovAbbreviato;
                                     RT[1] = dataa;
                                     RT[2] = k + 1 + " di " + numMovimenti;
                                     RT[3] = Exchange;
-                                    RT[4] = movimentoSplittato[10];
-                                    RT[5] = TipoMov;
+                                    RT[4] = Exch;
+
                                     //parte sotto da sistemare in base se è un prelievo o un deposito
 
-                                    String TipoMovimento=movimentoSplittato[0].trim();
+                                    String TipoMovimento=Tipologia;
 
                                                                                                  
                                     
                                     if (TipoMovimento.equalsIgnoreCase("Deposito"))
                                         {
-                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                        //if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TC"))
                                             {
                                         RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_DC";
                                         RT[5] = "DEPOSITO CRYPTO";
@@ -5228,16 +5309,20 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                               RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_DF";
                                               RT[5] = "DEPOSITO FIAT";  
                                             }
-                                        RT[6] ="-> "+movimentoSplittato[2];
+                                        else{//Quinfi TI
+                                            RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_TI";
+                                            RT[5] = "TRASFERIMENTO INTERNO";  
+                                        }
+                                        RT[6] ="-> "+ME;
                                         RT[7] = TipoMovimento;
                                         RT[8] = "";
                                         RT[9] = "";
                                         RT[10] = "";
-                                        RT[11] = movimentoSplittato[2];
-                                        if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR")) RT[12] = "FIAT";else RT[12] = "Crypto";
-                                        RT[13] = movimentoSplittato[1];
+                                        RT[11] = ME;
+                                        if (ME.trim().equalsIgnoreCase("EUR")) RT[12] = "FIAT";else RT[12] = "Crypto";
+                                        RT[13] = QtaE;
                                         String valoreEur;
-                                        if (movimentoSplittato[2].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[1];else valoreEur =movimentoSplittato[4];
+                                        if (ME.trim().equalsIgnoreCase("EUR")) valoreEur = QtaE;else valoreEur =PrzE;
                                         RT[14] = "EUR "+valoreEur;
                                         String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                       //  Moneta M1=new Moneta();
@@ -5249,23 +5334,27 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[15] = Prezzi.DammiPrezzoTransazione(null,M2,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
                                        // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
                                         RT[16] = "";
-                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                        //if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TC"))
                                             {
                                                 RT[17]="";
-                                                //se sono qua significa che c'è in piedi un deposito crypto
-                                            }
-                                        else if (TipoMovAbbreviato.equalsIgnoreCase("TI")) RT[17] = "";else RT[17]=RT[15];
-                                        RT[18] = "";
-                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
-                                            {
                                                 RT[19]="";
                                                 //se sono qua significa che c'è in piedi un deposito crypto
                                             }
-                                        else RT[19] = "0.00";
+                                        else if (TipoMovAbbreviato.equalsIgnoreCase("TI")) 
+                                        {
+                                            RT[17] = "";
+                                            RT[19] = "0.00";
+                                        }else //Quindi TF
+                                        {
+                                            RT[17]=RT[15];
+                                            RT[19] = "0.00";
                                         }
+                                        RT[18] = "";
+                                    }
                                     if (TipoMovimento.equalsIgnoreCase("Prelievo"))
                                         {
-                                        if (!TipoMovAbbreviato.equalsIgnoreCase("TI")&&!TipoMovAbbreviato.equalsIgnoreCase("TF"))
+                                        if (TipoMovAbbreviato.equalsIgnoreCase("TC"))
                                             {
                                         RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_PC";
                                         RT[5] = "PRELIEVO CRYPTO";
@@ -5275,16 +5364,20 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                               RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_PF";
                                               RT[5] = "PRELIEVO FIAT";  
                                             }
-                                        RT[6] = movimentoSplittato[6]+" ->";
+                                        else{//Quindi TI
+                                            RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_TI";
+                                            RT[5] = "TRASFERIMENTO INTERNO";  
+                                        }
+                                        RT[6] = MU+" ->";
                                         RT[7] = TipoMovimento;
-                                        RT[8] = movimentoSplittato[6];
-                                        if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) RT[9] = "FIAT";else RT[9] = "Crypto";
-                                        RT[10] = "-"+movimentoSplittato[5];
+                                        RT[8] = MU;
+                                        if (MU.trim().equalsIgnoreCase("EUR")) RT[9] = "FIAT";else RT[9] = "Crypto";
+                                        RT[10] = "-"+QtaU;
                                         RT[11] = "";
                                         RT[12] = "";
                                         RT[13] = "";
                                         String valoreEur;
-                                        if (movimentoSplittato[6].trim().equalsIgnoreCase("EUR")) valoreEur = movimentoSplittato[5];else valoreEur =movimentoSplittato[8];
+                                        if (MU.trim().equalsIgnoreCase("EUR")) valoreEur = QtaU;else valoreEur =PrzU;
                                         RT[14] = "EUR "+valoreEur;
                                         String prezzoTrans=new BigDecimal(valoreEur).setScale(2, RoundingMode.HALF_UP).toString();
                                         Moneta M1=new Moneta();
@@ -5307,8 +5400,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     RiempiVuotiArray(RT);
                                     lista.add(RT);
                                   }   
-                                }else if (movimentoSplittato[0].trim().equalsIgnoreCase("Reddito (non imponibile)")||
-                                    movimentoSplittato[0].trim().equalsIgnoreCase("Spese (non imponibili)"))
+                                }else if (Tipologia.equalsIgnoreCase("Reddito (non imponibile)")||
+                                    Tipologia.equalsIgnoreCase("Spese (non imponibili)"))
                             {
                                 System.out.println("Movimento di entrata o uscita da earn scartato dai movimenti");
                             }

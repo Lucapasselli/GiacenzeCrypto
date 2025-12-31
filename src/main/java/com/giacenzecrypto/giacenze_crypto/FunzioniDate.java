@@ -230,15 +230,18 @@ public class FunzioniDate {
             
         public static String Formatta_Data_CoinTracking(String Data) {
 
-        if (Data.split(":").length>2) return Data;
+        if (Data.split(":").length>2&&!Data.contains(".")) return Data;
             String DataFormattata="";
             try {
             SimpleDateFormat originale = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-            
-            Date d = originale.parse(Data+":00");
+            Date d;
+            if (Data.split(":").length<3){//Quindi se gli mancano i secondi
+                d = originale.parse(Data+":00");
+            }else d=originale.parse(Data);
             originale.applyPattern("yyyy-MM-dd HH:mm:ss");
             DataFormattata = originale.format(d);
         } catch (ParseException ex) {
+           // LoggerGC.ScriviErrore(ex);
           //  Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             return DataFormattata;
         }

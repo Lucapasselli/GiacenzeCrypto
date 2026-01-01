@@ -52,6 +52,7 @@ public class JTableConTooltipIcone extends JTable {
                     {
                         ValRimanenze=ValTrans.divide(QtaU, 10, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaMancanteLiFo)).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                     }
+                    //if (QtaMancanteLiFo==null)
                 }
                 int iconWidth = icon.getIconWidth();
                 int iconHeight = icon.getIconHeight();
@@ -80,7 +81,8 @@ public class JTableConTooltipIcone extends JTable {
     &nbsp;• Oppure classifica il movimento come Scam dalla funzione <i><b>'Classificazione Depositi/Prelievi'</b></i>
 </html>
 """;
-                        case 19 ->  String.format("""
+                        case 19 ->      
+                            String.format("""
 <html>
     <b>MOVIMENTO IN INGRESSO MANCANTE</b><br><br>
     Mancano acquisti per <b>%s %s</b> corrispondenti ad un valore di <b>€ %s</b><br><br>                                            
@@ -88,6 +90,8 @@ public class JTableConTooltipIcone extends JTable {
     &nbsp;• Utilizzare l'apposita funzione <i><b>'Verifica Saldi Negativi'</b></i> presente nella tab <i><b>'Analisi Crypto'</b></i>.<br>
 </html>
 """,QtaMancanteLiFo,MonetaU,ValRimanenze);
+                            //mov[38]="";
+                                     
                         default -> "";
                     };
                 }

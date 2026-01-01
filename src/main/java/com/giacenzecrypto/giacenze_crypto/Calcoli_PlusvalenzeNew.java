@@ -209,6 +209,7 @@ public static String StackLIFO_TogliQta(Map<String, ArrayDeque<String[]>> Crypto
     LifoXID lifoID=MappaIDTrans_LifoxID.computeIfAbsent(IDTransazione, k -> new LifoXID());
    // lifoID.StackEntrato.push(valori);
    String mov[]=MappaCryptoWallet.get(IDTransazione);
+   //mov[38]="";
    
     //Se la qta o la moneta sono vuoti non ritorno nulla, quei campi devono essere obbligatoriamente valorizzati 
     if (Moneta.isBlank() || Qta.isBlank()) return "";
@@ -315,6 +316,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         //System.out.println("Errore");
         if (!Funzioni.isSCAM(Moneta))
         {
+           // System.out.println("Lifomancante : "+mov[1]);
             mov[38]="A";
         }else{
             mov[38]="";
@@ -698,7 +700,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 }
                 //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
                 else if (IDTS[4].equalsIgnoreCase("TI")||v[18].contains("PTW")) {
-                                        
+                         
+                    //Se è segnalato che manca stack del LiFo lo tolgo perchè è un movimento interno.
+                    v[38]=v[38].replace("A", "");
                     Plusvalenza="0.00";
                     CalcoloPlusvalenza="N";
                      

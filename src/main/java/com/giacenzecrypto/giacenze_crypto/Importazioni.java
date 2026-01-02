@@ -4373,6 +4373,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 if (IP == null)
                                     Mon.Prezzo = "0.00";
                                 else {
+                                    if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
                                     Mon.Prezzo = IP.prezzoQta.toPlainString();
                                     //RT[40] = IP.Ritorna40();
                                 }
@@ -4809,6 +4810,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                                 if (IP == null)
                                                     PrezzoTransazione = new BigDecimal("0.00");
                                                 else {
+                                                    if (IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
                                                     PrezzoTransazione = IP.prezzoQta;
                                                     RT[40] = IP.Ritorna40();
                                                 }
@@ -4893,12 +4895,19 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
 
                         for (int k=0;k<numMovimenti;k++){
+                            
                             String RT[]=new String[ColonneTabella];
                             String movimento=listaMovimentidaConsolidare.get(k);
                             String movimentoSplittato[]=movimento.split(",");
-                            String ME,MU,QtaU,QtaE,PrzU,PrzE,MComm,QtaComm,Exch,data;
+                            boolean CTcommissioniNew=false;
+                            boolean CTtradizionale=true;//è a true se è il file con 13 colonne altrimenti è a false
+                            if (movimentoSplittato.length!=13){
+                                CTtradizionale=false;
+                            }
+                            String MComm = "",QtaComm="";
+                            String ME,MU,QtaU,QtaE,PrzU,PrzE,Exch,data;
                             String Tipologia=movimentoSplittato[0].trim();
-                            if (movimentoSplittato.length==13){
+                            if (CTtradizionale){
                                 QtaE=movimentoSplittato[1].trim();
                                 ME=movimentoSplittato[2].trim();
                                 QtaU=movimentoSplittato[5].trim();
@@ -4917,6 +4926,12 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 data=movimentoSplittato[10].trim();
                                 PrzE="0";
                                 PrzU="0";
+                                QtaComm=movimentoSplittato[5].trim();
+                                MComm=movimentoSplittato[6].trim();
+                                if (ME.equals(MComm)&&!ME.isBlank()){
+                                    QtaE=new BigDecimal(QtaE).add(new BigDecimal(QtaComm)).toPlainString();
+                                    CTcommissioniNew=true;
+                                }
                             }
                            // System.out.println(movimentoSplittato[9]);
                             String dataa=data.substring(0, data.length()-3).trim();
@@ -5038,6 +5053,47 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RiempiVuotiArray(RT);
                                 lista.add(RT);
                                     }
+                                if (CTcommissioniNew){
+                                    //Commissioni
+                                RT=new String[ColonneTabella];
+                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_C"+String.valueOf(k+1)+ "_1_CM";
+                                RT[1] = dataa;
+                                RT[2] = k + 1 + " di " + numMovimenti;
+                                RT[3] = Exchange;
+                                RT[4] = Exch;
+                                RT[5]="COMMISSIONI";
+                                RT[6]=MComm+" ->";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[7] = Tipologia;                                
+                                RT[8] = MComm;
+                                String TipoMoneta="Crypto";
+                                if (MComm.trim().equalsIgnoreCase("EUR"))TipoMoneta="FIAT";
+                                RT[9] = TipoMoneta;
+                                RT[10] = "-"+QtaComm;
+                                RT[11] = "";
+                                RT[12] = "";
+                                RT[13] = "";
+                                RT[14] = "EUR "+PrzU;
+                                String prezzoTrans= PrzU;
+                                Moneta M1=new Moneta();
+                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
+                                //Moneta M2=new Moneta();
+                                //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
+                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, FunzioniDate.ConvertiDatainLongMinuto(dataa), null, "");
+                                if (IP!=null)RT[40] = IP.Ritorna40();
+                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
+                               // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
+                                RT[16] = "";
+                                RT[17] = "";
+                                RT[18] = "";
+                                RT[19] = "";
+                                RT[20] = "";
+                                RT[21] = "";
+                                RT[22] = "A";
+                                RiempiVuotiArray(RT);
+                                lista.add(RT);
+                                    //Se l'importazione è quella dal file completo devo gestire anche le fee
+                                    
+                                }
                             }
                            else if (Tipologia.equalsIgnoreCase("Other Income")
                                    ||Tipologia.equalsIgnoreCase("Altri redditi")||
@@ -5129,7 +5185,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 RT[3] = Exchange;
                                 RT[4] = Exch;
                                 RT[5]="COMMISSIONI";
-                                RT[6]="Commissione in "+MU;//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
+                                RT[6]=MU+" ->";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
                                 RT[7] = Tipologia;                                
                                 RT[8] = MU;
                                 String TipoMoneta="Crypto";

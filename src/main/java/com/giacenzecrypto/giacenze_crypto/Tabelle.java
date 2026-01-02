@@ -1523,7 +1523,7 @@ private static void processNode(Node node, StringBuilder sb) {
 
      
      
-    public static void Tabelle_FiltroColonne2(JTable table,JTextField filtro,Tabelle_PopupSelezioneMultipla popup) {
+    public static void Tabelle_FiltroColonne_OLD(JTable table,JTextField filtro,Tabelle_PopupSelezioneMultipla popup) {
     
     //Inizializza tableFilters se non esiste
     tableFilters.putIfAbsent(table, new HashMap<>());
@@ -1714,11 +1714,9 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
      
     public static void Tabella_RimuoviFiltri(JTable table) {
         
-    //In teoria con queste 2 righe risolvo il tutto e non servono le righe sotto che ora commento
-    table.setRowSorter(null);
-    table.setRowSorter(new TableRowSorter<>(table.getModel()));
     
-/*    
+    
+    
     // Rimuovi tutti i filtri dalla mappa relativa a questa tabella
     Map<Integer, RowFilter<DefaultTableModel, Integer>> filters = tableFilters.get(table);
     if (filters != null) {
@@ -1740,7 +1738,15 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
     //table.setRowSorter(null);
     // Forza repaint dell'header per togliere icone o evidenziazioni
     table.getTableHeader().repaint();
-    */
+    
+
+//In teoria con queste 2 righe risolvo il tutto e non servono le righe sotto che ora commento
+//tableFilters.putIfAbsent(table, new HashMap<>());
+  //  Map<Integer, RowFilter<DefaultTableModel, Integer>> activeFilters = tableFilters.get(table);
+
+  /*  table.setRowSorter(null);
+    table.setRowSorter(new TableRowSorter<>(table.getModel()));*/
+ //   tableFilters.put(table, activeFilters);
 }
 
     public static void Funzioni_PulisciTabella(DefaultTableModel modello) {

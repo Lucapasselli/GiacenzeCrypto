@@ -1947,6 +1947,42 @@ return MappaLista;
 
    }  
     
+      public static boolean CashbackComeFIAT(String ID) {
+
+       String[] Mov=MappaCryptoWallet.get(ID);
+       String IDTS[]=ID.split("_");
+       String TipoTrasf=Mov[18].split("-")[0].trim();
+       String Anno=Mov[0].substring(0, 4);
+       int AnnoInt=Integer.parseInt(Anno);
+       
+       boolean CashbackComeFiat=false;
+       
+       //Perchè sia una reward devo verificare se è classificata come tale alla fonte (RW) 
+       //oppure se è stata classificata dopo quindi DAI
+       if (IDTS[4].equals("RW")||
+              TipoTrasf.equals("DAI") ){
+           
+           if (Mov[5].toUpperCase().contains("CASHBACK"))
+           {               
+               CashbackComeFiat = DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIAT").equalsIgnoreCase("SI");
+               if (CashbackComeFiat) {
+                   String AnnoDB = DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIATAnno");
+                   int AnnoDBInt = 2010;
+                   if (AnnoDB != null && !AnnoDB.isBlank()) {
+                       AnnoDBInt = Integer.parseInt(AnnoDB);
+                   }
+                   CashbackComeFiat=AnnoInt>=AnnoDBInt;
+               }
+           }           
+           
+           else return CashbackComeFiat;
+
+       }
+       //se non soddisfa nessuno dei casi sopra allora metto che è fiscalmente rilevante
+       return CashbackComeFiat;
+      
+
+   }  
     
     
         public static Moneta[] RitornaMoneteDaID(String ID){

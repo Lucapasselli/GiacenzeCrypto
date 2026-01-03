@@ -5290,14 +5290,14 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                              <Component id="jLabel31" min="-2" pref="371" max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_CashBackComeFIAT_Label" min="-2" pref="400" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="CDC_DataChooser_Iniziale1" min="-2" pref="154" max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_CashBackComeFIAT_ComboBox" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <EmptySpace min="18" pref="18" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane10" pref="1321" max="32767" attributes="0"/>
@@ -5307,7 +5307,7 @@
                                           <Component id="OpzioniRewards_JCB_PDD_Staking" min="-2" pref="600" max="-2" attributes="0"/>
                                           <Component id="OpzioniRewards_JCB_PDD_Airdrop" min="-2" pref="600" max="-2" attributes="0"/>
                                           <Component id="OpzioniRewards_JCB_PDD_Earn" min="-2" pref="600" max="-2" attributes="0"/>
-                                          <Component id="OpzioniRewards_JCB_PDD_CashBack1" alignment="0" min="-2" pref="1007" max="-2" attributes="0"/>
+                                          <Component id="OpzioniRewards_CashBackComeFIAT" alignment="0" min="-2" pref="1007" max="-2" attributes="0"/>
                                           <Component id="OpzioniRewards_JCB_PDD_Reward" min="-2" pref="600" max="-2" attributes="0"/>
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="jSeparator11" min="-2" pref="72" max="-2" attributes="0"/>
@@ -5347,11 +5347,11 @@
                                   <Component id="jSeparator12" min="-2" pref="10" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="OpzioniRewards_JCB_PDD_CashBack1" min="-2" pref="45" max="-2" attributes="0"/>
+                              <Component id="OpzioniRewards_CashBackComeFIAT" min="-2" pref="45" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="CDC_DataChooser_Iniziale1" max="32767" attributes="0"/>
-                                  <Component id="jLabel31" max="32767" attributes="0"/>
+                                  <Component id="OpzioniRewards_CashBackComeFIAT_Label" pref="31" max="32767" attributes="0"/>
+                                  <Component id="OpzioniRewards_CashBackComeFIAT_ComboBox" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jSeparator13" min="-2" pref="10" max="-2" attributes="0"/>
@@ -5422,13 +5422,12 @@
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Component class="javax.swing.JCheckBox" name="OpzioniRewards_JCB_PDD_CashBack1">
+                    <Component class="javax.swing.JCheckBox" name="OpzioniRewards_CashBackComeFIAT">
                       <Properties>
-                        <Property name="selected" type="boolean" value="true"/>
                         <Property name="text" type="java.lang.String" value="&lt;html&gt;Considera il &lt;b&gt;CashBack&lt;/b&gt; alla stregua di quello in Euro &lt;br&gt;&#xa;(Non verr&#xe0; calcolata alcuna plusvalenza al ricevimento e il suo costo di carico sar&#xe0; uguale al prezzo al momento del ricevimento)&lt;/html&gt;"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_JCB_PDD_CashBack1ActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_CashBackComeFIATActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel28">
@@ -5440,33 +5439,45 @@
                     </Component>
                     <Component class="javax.swing.JSeparator" name="jSeparator12">
                     </Component>
-                    <Component class="com.toedter.calendar.JDateChooser" name="CDC_DataChooser_Iniziale1">
+                    <Component class="javax.swing.JLabel" name="OpzioniRewards_CashBackComeFIAT_Label">
                       <Properties>
-                        <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-                          <FontInfo relative="true">
-                            <Font bold="true" component="CDC_DataChooser_Iniziale1" property="font" relativeSize="true" size="0"/>
-                          </FontInfo>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[100, 31]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[100, 31]"/>
-                        </Property>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="CDC_DataChooser_Iniziale1FocusLost"/>
-                        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="CDC_DataChooser_Iniziale1PropertyChange"/>
-                        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="CDC_DataChooser_Iniziale1KeyPressed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel31">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Indicare la data da cui considerare il cashback come indicato sopra"/>
+                        <Property name="text" type="java.lang.String" value="Scegli anno da cui partire con l&apos;impostazione sul cashback di cui sopra"/>
+                        <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JSeparator" name="jSeparator13">
+                    </Component>
+                    <Component class="javax.swing.JComboBox" name="OpzioniRewards_CashBackComeFIAT_ComboBox">
+                      <Properties>
+                        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                          <StringArray count="17">
+                            <StringItem index="0" value="2010"/>
+                            <StringItem index="1" value="2011"/>
+                            <StringItem index="2" value="2012"/>
+                            <StringItem index="3" value="2013"/>
+                            <StringItem index="4" value="2014"/>
+                            <StringItem index="5" value="2015"/>
+                            <StringItem index="6" value="2016"/>
+                            <StringItem index="7" value="2017"/>
+                            <StringItem index="8" value="2018"/>
+                            <StringItem index="9" value="2019"/>
+                            <StringItem index="10" value="2020"/>
+                            <StringItem index="11" value="2021"/>
+                            <StringItem index="12" value="2022"/>
+                            <StringItem index="13" value="2023"/>
+                            <StringItem index="14" value="2024"/>
+                            <StringItem index="15" value="2025"/>
+                            <StringItem index="16" value="2026"/>
+                          </StringArray>
+                        </Property>
+                        <Property name="enabled" type="boolean" value="false"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed"/>
+                      </Events>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                      </AuxValues>
                     </Component>
                   </SubComponents>
                 </Container>

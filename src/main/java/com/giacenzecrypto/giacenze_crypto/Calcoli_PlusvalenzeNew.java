@@ -371,6 +371,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
         MappaIDTrans_LifoxID.clear();
 
+        
        //Con questa opzione decido che fare in caso di movimenti non classificati, se conteggiarli o meno
        boolean ConsideraMovimentiNC=true;
        if(DatabaseH2.Pers_Opzioni_Leggi("PL_CosiderareMovimentiNC").equalsIgnoreCase("NO"))ConsideraMovimentiNC=false;
@@ -533,12 +534,20 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 
                 //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
                 if (IDTS[4].equalsIgnoreCase("RW") || v[18].contains("DAI")) {
+                    //Se è un cashback ed è attiva l'assimilazione ai cashback fiat allora lo gestisco come tale, altrimenti passo alle if successive
+                    if (Funzioni.CashbackComeFIAT(IDTransazione)){
+                        NuovoPrezzoCarico = Valore;
+                        StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
+                        Plusvalenza = "0.00";
+                        CalcoloPlusvalenza="N";
+                        VecchioPrezzoCarico = "";
+                    }            
                    // Funzioni.RewardRilevante(IDTransazione);
                     //Se data superiore a 2023 e la reward è fiscalmente rilvente oppure se
                     //la data è inferiore al 2023, la reward è rilevante e non è attiva l'opzione per cui tutte le reward pre2023 sono da mettere a costo carico a zero
                     //allore considero la reward rilevante
                     //altrimenti non rilevante
-                    if ((DataSuperiore2023&&Funzioni.RewardRilevante(IDTransazione)) || 
+                    else if ((DataSuperiore2023&&Funzioni.RewardRilevante(IDTransazione)) || 
                             (!DataSuperiore2023&&!Pre2023EarnCostoZero&&Funzioni.RewardRilevante(IDTransazione))
                             ) 
                     {
@@ -663,6 +672,21 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 
                 //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
                 if(IDTS[4].equalsIgnoreCase("RW")){
+                    if (Funzioni.CashbackComeFIAT(IDTransazione)){
+                        //Rimborso casback in presenza di cashback considerato come fiat
+                        //Se arrivo qua devo rimettere il prezzo della transazione con il valore corretto
+                        //Questo perchè in questo momento il valore per questa tipologia è zero
+                        String pr=Prezzi.DammiPrezzoDaTransazione(v, 2);
+                        if (pr!=null){
+                            v[15]=pr;
+                            Valore=v[15];
+                        }
+                    }else{
+                        //Rimborso casback con cashback caricato a costo zero o come reward
+                        //Se invece quell'opzione non è attiva rimetto il valore a zero
+                        v[15]="0.00";
+                        Valore="0.00";
+                    }
                     //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
                     VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
                 

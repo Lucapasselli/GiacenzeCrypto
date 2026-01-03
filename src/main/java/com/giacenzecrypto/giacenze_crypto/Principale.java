@@ -628,13 +628,13 @@ private static final long serialVersionUID = 3L;
         OpzioniRewards_JCB_PDD_Reward = new javax.swing.JCheckBox();
         jScrollPane10 = new javax.swing.JScrollPane();
         jTextPane2 = new javax.swing.JTextPane();
-        OpzioniRewards_JCB_PDD_CashBack1 = new javax.swing.JCheckBox();
+        OpzioniRewards_CashBackComeFIAT = new javax.swing.JCheckBox();
         jLabel28 = new javax.swing.JLabel();
         jSeparator11 = new javax.swing.JSeparator();
         jSeparator12 = new javax.swing.JSeparator();
-        CDC_DataChooser_Iniziale1 = new com.toedter.calendar.JDateChooser();
-        jLabel31 = new javax.swing.JLabel();
+        OpzioniRewards_CashBackComeFIAT_Label = new javax.swing.JLabel();
         jSeparator13 = new javax.swing.JSeparator();
+        OpzioniRewards_CashBackComeFIAT_ComboBox = new javax.swing.JComboBox<>();
         Opzioni_Calcolo_Pannello = new javax.swing.JPanel();
         Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
@@ -3999,49 +3999,37 @@ private static final long serialVersionUID = 3L;
         jTextPane2.setText("<html> \n<FONT SIZE=\"6\">Selezionare quali delle seguenti tipologie di reward sono identificabili come <b>\"Reddito di Capitale\"</b><br><br><br>\n\n<FONT SIZE=\"4\">La legge dice che <i><b>“i proventi derivanti dalla detenzione di cripto-attività percepiti nel periodo di imposta sono assoggettati a tassazione senza alcuna deduzione”</b>.</i><br><br>\nQuesto significa che questo tipo di provento, quindi quello derivante dalla detenzione di Cripto Attività,  va tassato alla fonte ovvero succede questo :<br><br>\nSupponiamo che ricevo 0,001 Eth del valore di 2 Euro al momento della ricezione derivante dallo stacking degli stessi, in questo caso quei 2 euro andranno a far cumulo per intero sulle plusvalenze dell'anno e saranno anche il nuovo costo di carico per quei 0,001 Eth appena ricevuti.<br><br>\n\nQualora invece il provento non derivi da detenzione di cripto attività, es. referral o altro il costo di carico del provento è pari a zero e verrà tassato in toto solo nel momento della vendita/scambio fiscalmente rilevante.<br>\n</html>\n");
         jScrollPane10.setViewportView(jTextPane2);
 
-        OpzioniRewards_JCB_PDD_CashBack1.setSelected(true);
-        OpzioniRewards_JCB_PDD_CashBack1.setText("<html>Considera il <b>CashBack</b> alla stregua di quello in Euro <br>\n(Non verrà calcolata alcuna plusvalenza al ricevimento e il suo costo di carico sarà uguale al prezzo al momento del ricevimento)</html>");
-        OpzioniRewards_JCB_PDD_CashBack1.addActionListener(new java.awt.event.ActionListener() {
+        OpzioniRewards_CashBackComeFIAT.setText("<html>Considera il <b>CashBack</b> alla stregua di quello in Euro <br>\n(Non verrà calcolata alcuna plusvalenza al ricevimento e il suo costo di carico sarà uguale al prezzo al momento del ricevimento)</html>");
+        OpzioniRewards_CashBackComeFIAT.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                OpzioniRewards_JCB_PDD_CashBack1ActionPerformed(evt);
+                OpzioniRewards_CashBackComeFIATActionPerformed(evt);
             }
         });
 
         jLabel28.setText("CashBack crypto come FIAT");
 
-        CDC_DataChooser_Iniziale1.setDateFormatString("yyyy-MM-dd");
-        CDC_DataChooser_Iniziale1.setFont(CDC_DataChooser_Iniziale1.getFont().deriveFont(CDC_DataChooser_Iniziale1.getFont().getStyle() | java.awt.Font.BOLD));
-        CDC_DataChooser_Iniziale1.setMinimumSize(new java.awt.Dimension(100, 31));
-        CDC_DataChooser_Iniziale1.setPreferredSize(new java.awt.Dimension(100, 31));
-        CDC_DataChooser_Iniziale1.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                CDC_DataChooser_Iniziale1FocusLost(evt);
-            }
-        });
-        CDC_DataChooser_Iniziale1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                CDC_DataChooser_Iniziale1PropertyChange(evt);
-            }
-        });
-        CDC_DataChooser_Iniziale1.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                CDC_DataChooser_Iniziale1KeyPressed(evt);
-            }
-        });
+        OpzioniRewards_CashBackComeFIAT_Label.setText("Scegli anno da cui partire con l'impostazione sul cashback di cui sopra");
+        OpzioniRewards_CashBackComeFIAT_Label.setEnabled(false);
 
-        jLabel31.setText("Indicare la data da cui considerare il cashback come indicato sopra");
+        OpzioniRewards_CashBackComeFIAT_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026" }));
+        OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(false);
+        OpzioniRewards_CashBackComeFIAT_ComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout Opzioni_Rewards_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Rewards_Pannello);
         Opzioni_Rewards_Pannello.setLayout(Opzioni_Rewards_PannelloLayout);
         Opzioni_Rewards_PannelloLayout.setHorizontalGroup(
             Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+            .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                 .addGap(37, 37, 37)
-                .addComponent(jLabel31, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(OpzioniRewards_CashBackComeFIAT_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(CDC_DataChooser_Iniziale1, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(OpzioniRewards_CashBackComeFIAT_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+            .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                 .addGap(18, 18, 18)
                 .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1321, Short.MAX_VALUE)
@@ -4051,7 +4039,7 @@ private static final long serialVersionUID = 3L;
                             .addComponent(OpzioniRewards_JCB_PDD_Staking, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(OpzioniRewards_JCB_PDD_Airdrop, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(OpzioniRewards_JCB_PDD_Earn, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(OpzioniRewards_JCB_PDD_CashBack1, javax.swing.GroupLayout.PREFERRED_SIZE, 1007, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(OpzioniRewards_CashBackComeFIAT, javax.swing.GroupLayout.PREFERRED_SIZE, 1007, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(OpzioniRewards_JCB_PDD_Reward, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                                 .addComponent(jSeparator11, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -4084,11 +4072,11 @@ private static final long serialVersionUID = 3L;
                     .addComponent(jSeparator11, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jSeparator12, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(OpzioniRewards_JCB_PDD_CashBack1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(OpzioniRewards_CashBackComeFIAT, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(CDC_DataChooser_Iniziale1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel31, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(OpzioniRewards_CashBackComeFIAT_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(OpzioniRewards_CashBackComeFIAT_ComboBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator13, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(267, Short.MAX_VALUE))
@@ -5566,6 +5554,14 @@ JPanel loadingBar = new JPanel() {
         if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("PDD_CashBack","SI");
         else if(ProventoDetenzione.equalsIgnoreCase("NO")){
             OpzioniRewards_JCB_PDD_CashBack.setSelected(false);
+        }
+        
+        ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("CashBackComeFIAT"); 
+        if (ProventoDetenzione==null)DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT","NO");
+        else if(ProventoDetenzione.equalsIgnoreCase("SI")){
+            OpzioniRewards_CashBackComeFIAT.setSelected(true);
+            OpzioniRewards_CashBackComeFIAT_Label.setEnabled(true);
+            OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(true);
         }
         
         ProventoDetenzione=DatabaseH2.Pers_Opzioni_Leggi("PDD_Staking"); 
@@ -12575,21 +12571,37 @@ SwingUtilities.invokeLater(() -> {
         
     }//GEN-LAST:event_TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed
 
-    private void OpzioniRewards_JCB_PDD_CashBack1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_JCB_PDD_CashBack1ActionPerformed
+    private void OpzioniRewards_CashBackComeFIATActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_CashBackComeFIATActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_OpzioniRewards_JCB_PDD_CashBack1ActionPerformed
+        if (OpzioniRewards_CashBackComeFIAT.isSelected())
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT","SI");
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno",OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem().toString());
+            OpzioniRewards_CashBackComeFIAT_Label.setEnabled(true);
+            OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(true);
+        }
+        else
+        {
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT","NO");
+            OpzioniRewards_CashBackComeFIAT_Label.setEnabled(false);
+            OpzioniRewards_CashBackComeFIAT_ComboBox.setEnabled(false);
+        }
+        
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_OpzioniRewards_CashBackComeFIATActionPerformed
 
-    private void CDC_DataChooser_Iniziale1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_CDC_DataChooser_Iniziale1FocusLost
+    private void OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_CDC_DataChooser_Iniziale1FocusLost
-
-    private void CDC_DataChooser_Iniziale1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_Iniziale1PropertyChange
-        // TODO add your handling code here:
-    }//GEN-LAST:event_CDC_DataChooser_Iniziale1PropertyChange
-
-    private void CDC_DataChooser_Iniziale1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_DataChooser_Iniziale1KeyPressed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_CDC_DataChooser_Iniziale1KeyPressed
+        if(evt.getModifiers()!=0&&OpzioniRewards_CashBackComeFIAT_ComboBox.hasFocus()){
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            //Scrivo nel database l'anno da cui partire con questo nuovo calcolo
+            DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIATAnno",OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem().toString());
+            Funzioni_AggiornaTutto();
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }//GEN-LAST:event_OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
@@ -12779,6 +12791,14 @@ SwingUtilities.invokeLater(() -> {
                             </font></html>""";
                     stampa.AggiungiHtml(testo);       
                     */
+                    //Adesso creo un booleano che mi dica se per quest'anno posso considerare il cashback alla stregua di quello fiat
+                    //Quindi deve essere selezionato il campo apposito e la data specificata deve essere uguale o inferiore all'anno di competenza
+                    boolean CashbackComeFiatselezionato=OpzioniRewards_CashBackComeFIAT.isSelected();
+                    String DataCashbackComeFiat=OpzioniRewards_CashBackComeFIAT_ComboBox.getSelectedItem().toString();
+                    int intDataCashbackComeFiat=Integer.parseInt(DataCashbackComeFiat);                   
+                    boolean datacashabackComeFiatOK=Anno>=intDataCashbackComeFiat;
+                    //Questo sotto è il booleano finale
+                    boolean CashbackComeFiat=CashbackComeFiatselezionato&datacashabackComeFiatOK;
                     
                     stampa.NuovaPagina();
                     stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO T/RT\n\n", Font.BOLD, 12);
@@ -12799,7 +12819,8 @@ SwingUtilities.invokeLater(() -> {
                                 testo = testo + """
                                     \u2022 Le tipologie di Reward scelte come fiscalmente rilevanti sono :<br>                                  
                                     """;
-                                if (OpzioniRewards_JCB_PDD_CashBack.isSelected()) {
+                                
+                                if (OpzioniRewards_JCB_PDD_CashBack.isSelected()&&!CashbackComeFiat) {
                                 testo = testo + """
                                     → → - Cashback<br>                                  
                                     """;
@@ -12827,7 +12848,7 @@ SwingUtilities.invokeLater(() -> {
                             testo = testo + """
                                     \u2022 Le tipologie di Reward non fiscalmente rilevanti (caricate con costo di carico Zero) sono :<br>                                  
                                     """;
-                                if (!OpzioniRewards_JCB_PDD_CashBack.isSelected()) {
+                                if (!OpzioniRewards_JCB_PDD_CashBack.isSelected()&&!CashbackComeFiat) {
                                 testo = testo + """
                                     → → - Cashback<br>                                  
                                     """;
@@ -12852,7 +12873,14 @@ SwingUtilities.invokeLater(() -> {
                                     → → - Altre Rewards<br>                                  
                                     """;
                                 }
-                            
+                                
+                            if (CashbackComeFiat) {
+                                testo = testo + """
+                                                <br>
+                                    \u2022 Il Cashback viene trattato alla stregua di quello Fiat <br>
+                                    (non genera eventi rilevanti e viene caricato con costo pari al prezzo al momento del ricevimento)<br>                                  
+                                    """;
+                                }
                 stampa.AggiungiHtml(testo);
             
             stampa.ScriviPDF();
@@ -14936,7 +14964,7 @@ try {
     // ripristinaFiltri(TransazioniCryptoTabella);
 
      
-        //Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
+        Tabelle.Tabelle_FiltroColonne(TransazioniCryptoTabella,TransazioniCryptoFiltro_Text,popup);
       // TransazioniCryptoTabella.getTableHeader().repaint();
         
       //  TransazioniCryptoTabella.setIgnoreRepaint(false);
@@ -15314,7 +15342,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTextField CDC_CardWallet_Text_UltimaData;
     private com.toedter.calendar.JDateChooser CDC_DataChooser_Finale;
     private com.toedter.calendar.JDateChooser CDC_DataChooser_Iniziale;
-    private com.toedter.calendar.JDateChooser CDC_DataChooser_Iniziale1;
     private javax.swing.JButton CDC_FiatWallet_Bottone_CaricaCSV;
     private javax.swing.JButton CDC_FiatWallet_Bottone_Errore;
     private javax.swing.JButton CDC_FiatWallet_Bottone_StampaRapporto;
@@ -15407,9 +15434,11 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JMenuItem MenuItem_ModificaReward;
     private javax.swing.JPanel Opzioni;
+    private javax.swing.JCheckBox OpzioniRewards_CashBackComeFIAT;
+    private javax.swing.JComboBox<String> OpzioniRewards_CashBackComeFIAT_ComboBox;
+    private javax.swing.JLabel OpzioniRewards_CashBackComeFIAT_Label;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;
-    private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack1;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Earn;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Reward;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Staking;
@@ -15587,7 +15616,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
-    private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

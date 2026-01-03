@@ -628,6 +628,13 @@ private static final long serialVersionUID = 3L;
         OpzioniRewards_JCB_PDD_Reward = new javax.swing.JCheckBox();
         jScrollPane10 = new javax.swing.JScrollPane();
         jTextPane2 = new javax.swing.JTextPane();
+        OpzioniRewards_JCB_PDD_CashBack1 = new javax.swing.JCheckBox();
+        jLabel28 = new javax.swing.JLabel();
+        jSeparator11 = new javax.swing.JSeparator();
+        jSeparator12 = new javax.swing.JSeparator();
+        CDC_DataChooser_Iniziale1 = new com.toedter.calendar.JDateChooser();
+        jLabel31 = new javax.swing.JLabel();
+        jSeparator13 = new javax.swing.JSeparator();
         Opzioni_Calcolo_Pannello = new javax.swing.JPanel();
         Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
@@ -1287,86 +1294,84 @@ private static final long serialVersionUID = 3L;
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                         .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(TransazioniCrypto_RigheTabella_Label)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(TransazioniCrypto_TabbedPane))
+                                .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(TransazioniCrypto_Bottone_MovimentoElimina, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(TransazioniCrypto_RigheTabella_Label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(TransazioniCrypto_TabbedPane))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
                                                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                            .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                                                            .addComponent(TransazioniCrypto_Text_CostiCarico))
-                                                        .addGap(51, 51, 51)
-                                                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                            .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                            .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                                    .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
-                                                .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(Bottone_Errori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTI))
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(TransazioniCrypto_Label_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                                                    .addComponent(TransazioniCrypto_Text_CostiCarico))
+                                                .addGap(51, 51, 51)
+                                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                    .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                            .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                                        .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(Bottone_Errori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, TransazioniCryptoLayout.createSequentialGroup()
+                                .addComponent(TransazioniCrypto_CheckBox_VediSenzaPrezzo)
                                 .addGap(18, 18, 18)
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(TransazioniCrypto_Label_FiltroToken)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(TransazioniCrypto_Label_Filtro)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                        .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(TransazioniCrypto_CheckBox_VediLiFoMancante, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 85, Short.MAX_VALUE)
-                                .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
-                                    .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(TransazioniCrypto_CheckBox_EscludiTI))
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(TransazioniCrypto_Label_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel27)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jSeparator9))
+                                .addComponent(TransazioniCrypto_ComboBox_FiltroWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(TransazioniCrypto_Label_FiltroToken)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(TransazioniCrypto_ComboBox_FiltroToken, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(TransazioniCrypto_Label_Filtro)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(TransazioniCrypto_Bottone_ExchangeAPI, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 197, Short.MAX_VALUE)
-                                .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())))
+                                .addComponent(TransazioniCryptoFiltro_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                                .addComponent(TransazioniCrypto_CheckBox_EscludiTokenScam, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(TransazioniCrypto_CheckBox_VediLiFoMancante, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(TransazioniCrypto_Bottone_AzzeraFiltri)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
+                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                            .addComponent(TransazioniCrypto_RicalcolaPlusvalenze_Bottone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addComponent(jSeparator10, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel27)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator9))
+                    .addGroup(TransazioniCryptoLayout.createSequentialGroup()
+                        .addComponent(TransazioniCrypto_Bottone_Importa, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(TransazioniCrypto_Bottone_InserisciWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(TransazioniCrypto_Bottone_ExchangeAPI, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
+                        .addComponent(TransazioniCrypto_Label_MovimentiNonSalvati, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(TransazioniCrypto_Bottone_Salva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(TransazioniCrypto_Bottone_Annulla, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(9, 9, 9))
         );
         TransazioniCryptoLayout.setVerticalGroup(
             TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3994,21 +3999,67 @@ private static final long serialVersionUID = 3L;
         jTextPane2.setText("<html> \n<FONT SIZE=\"6\">Selezionare quali delle seguenti tipologie di reward sono identificabili come <b>\"Reddito di Capitale\"</b><br><br><br>\n\n<FONT SIZE=\"4\">La legge dice che <i><b>“i proventi derivanti dalla detenzione di cripto-attività percepiti nel periodo di imposta sono assoggettati a tassazione senza alcuna deduzione”</b>.</i><br><br>\nQuesto significa che questo tipo di provento, quindi quello derivante dalla detenzione di Cripto Attività,  va tassato alla fonte ovvero succede questo :<br><br>\nSupponiamo che ricevo 0,001 Eth del valore di 2 Euro al momento della ricezione derivante dallo stacking degli stessi, in questo caso quei 2 euro andranno a far cumulo per intero sulle plusvalenze dell'anno e saranno anche il nuovo costo di carico per quei 0,001 Eth appena ricevuti.<br><br>\n\nQualora invece il provento non derivi da detenzione di cripto attività, es. referral o altro il costo di carico del provento è pari a zero e verrà tassato in toto solo nel momento della vendita/scambio fiscalmente rilevante.<br>\n</html>\n");
         jScrollPane10.setViewportView(jTextPane2);
 
+        OpzioniRewards_JCB_PDD_CashBack1.setSelected(true);
+        OpzioniRewards_JCB_PDD_CashBack1.setText("<html>Considera il <b>CashBack</b> alla stregua di quello in Euro <br>\n(Non verrà calcolata alcuna plusvalenza al ricevimento e il suo costo di carico sarà uguale al prezzo al momento del ricevimento)</html>");
+        OpzioniRewards_JCB_PDD_CashBack1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpzioniRewards_JCB_PDD_CashBack1ActionPerformed(evt);
+            }
+        });
+
+        jLabel28.setText("CashBack crypto come FIAT");
+
+        CDC_DataChooser_Iniziale1.setDateFormatString("yyyy-MM-dd");
+        CDC_DataChooser_Iniziale1.setFont(CDC_DataChooser_Iniziale1.getFont().deriveFont(CDC_DataChooser_Iniziale1.getFont().getStyle() | java.awt.Font.BOLD));
+        CDC_DataChooser_Iniziale1.setMinimumSize(new java.awt.Dimension(100, 31));
+        CDC_DataChooser_Iniziale1.setPreferredSize(new java.awt.Dimension(100, 31));
+        CDC_DataChooser_Iniziale1.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                CDC_DataChooser_Iniziale1FocusLost(evt);
+            }
+        });
+        CDC_DataChooser_Iniziale1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                CDC_DataChooser_Iniziale1PropertyChange(evt);
+            }
+        });
+        CDC_DataChooser_Iniziale1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                CDC_DataChooser_Iniziale1KeyPressed(evt);
+            }
+        });
+
+        jLabel31.setText("Indicare la data da cui considerare il cashback come indicato sopra");
+
         javax.swing.GroupLayout Opzioni_Rewards_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Rewards_Pannello);
         Opzioni_Rewards_Pannello.setLayout(Opzioni_Rewards_PannelloLayout);
         Opzioni_Rewards_PannelloLayout.setHorizontalGroup(
-            Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+            Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+                .addGap(37, 37, 37)
+                .addComponent(jLabel31, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(CDC_DataChooser_Iniziale1, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                 .addGap(18, 18, 18)
                 .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1320, Short.MAX_VALUE)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1321, Short.MAX_VALUE)
                     .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
                         .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(OpzioniRewards_JCB_PDD_CashBack, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(OpzioniRewards_JCB_PDD_Staking, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(OpzioniRewards_JCB_PDD_Airdrop, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(OpzioniRewards_JCB_PDD_Earn, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(OpzioniRewards_JCB_PDD_Reward, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(OpzioniRewards_JCB_PDD_CashBack1, javax.swing.GroupLayout.PREFERRED_SIZE, 1007, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(OpzioniRewards_JCB_PDD_Reward, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(Opzioni_Rewards_PannelloLayout.createSequentialGroup()
+                                .addComponent(jSeparator11, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator12, javax.swing.GroupLayout.PREFERRED_SIZE, 746, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jSeparator13, javax.swing.GroupLayout.PREFERRED_SIZE, 991, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -4027,7 +4078,20 @@ private static final long serialVersionUID = 3L;
                 .addComponent(OpzioniRewards_JCB_PDD_Earn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(OpzioniRewards_JCB_PDD_Reward)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(65, 65, 65)
+                .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel28)
+                    .addComponent(jSeparator11, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jSeparator12, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(OpzioniRewards_JCB_PDD_CashBack1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(Opzioni_Rewards_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(CDC_DataChooser_Iniziale1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel31, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator13, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(267, Short.MAX_VALUE))
         );
 
         Opzioni_TabbedPane.addTab("Opzioni Rewards", Opzioni_Rewards_Pannello);
@@ -12511,6 +12575,22 @@ SwingUtilities.invokeLater(() -> {
         
     }//GEN-LAST:event_TransazioniCrypto_RicalcolaPlusvalenze_BottoneActionPerformed
 
+    private void OpzioniRewards_JCB_PDD_CashBack1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpzioniRewards_JCB_PDD_CashBack1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_OpzioniRewards_JCB_PDD_CashBack1ActionPerformed
+
+    private void CDC_DataChooser_Iniziale1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_CDC_DataChooser_Iniziale1FocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CDC_DataChooser_Iniziale1FocusLost
+
+    private void CDC_DataChooser_Iniziale1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_CDC_DataChooser_Iniziale1PropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CDC_DataChooser_Iniziale1PropertyChange
+
+    private void CDC_DataChooser_Iniziale1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_CDC_DataChooser_Iniziale1KeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CDC_DataChooser_Iniziale1KeyPressed
+
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -15234,6 +15314,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTextField CDC_CardWallet_Text_UltimaData;
     private com.toedter.calendar.JDateChooser CDC_DataChooser_Finale;
     private com.toedter.calendar.JDateChooser CDC_DataChooser_Iniziale;
+    private com.toedter.calendar.JDateChooser CDC_DataChooser_Iniziale1;
     private javax.swing.JButton CDC_FiatWallet_Bottone_CaricaCSV;
     private javax.swing.JButton CDC_FiatWallet_Bottone_Errore;
     private javax.swing.JButton CDC_FiatWallet_Bottone_StampaRapporto;
@@ -15328,6 +15409,7 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JPanel Opzioni;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Airdrop;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack;
+    private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_CashBack1;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Earn;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Reward;
     private javax.swing.JCheckBox OpzioniRewards_JCB_PDD_Staking;
@@ -15501,9 +15583,11 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
+    private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -15529,6 +15613,9 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
+    private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JSeparator jSeparator12;
+    private javax.swing.JSeparator jSeparator13;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;

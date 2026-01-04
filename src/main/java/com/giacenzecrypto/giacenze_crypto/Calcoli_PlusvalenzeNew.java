@@ -671,31 +671,28 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 //valorizzo la tipologia corretta                         
                 
                 //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
-                if(IDTS[4].equalsIgnoreCase("RW")){
-                    if (Funzioni.CashbackComeFIAT(IDTransazione)){
+                if (IDTS[4].equalsIgnoreCase("RW")) {
+                    if (Funzioni.CashbackComeFIAT(IDTransazione)) {
                         //Rimborso casback in presenza di cashback considerato come fiat
-                        //Se arrivo qua devo rimettere il prezzo della transazione con il valore corretto
-                        //Questo perchè in questo momento il valore per questa tipologia è zero
-                        String pr=Prezzi.DammiPrezzoDaTransazione(v, 2);
-                        if (pr!=null){
-                            v[15]=pr;
-                            Valore=v[15];
-                        }
-                    }else{
-                        //Rimborso casback con cashback caricato a costo zero o come reward
-                        //Se invece quell'opzione non è attiva rimetto il valore a zero
-                        v[15]="0.00";
-                        Valore="0.00";
+                        //non calcolo plusvalenza, in sostanza lo tratto come tratto le donazioni
+                        //ritorno il cashback e stop
+                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+
+                        NuovoPrezzoCarico = "";
+
+                        Plusvalenza = "0.00";
+                        CalcoloPlusvalenza = "N";
+                    } else {
+                        //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
+                        VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+
+                        //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
+                        NuovoPrezzoCarico = "";
+
+                        //Calcolo la plusvalenza
+                        Plusvalenza = new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
+                        CalcoloPlusvalenza = "S";
                     }
-                    //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
-                    VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
-                
-                    //la moneta ricevuta non ha prezzo di carico, la valorizzo a campo vuoto
-                    NuovoPrezzoCarico="";
-                
-                    //Calcolo la plusvalenza
-                    Plusvalenza=new BigDecimal(Valore).subtract(new BigDecimal(VecchioPrezzoCarico)).toPlainString();
-                    CalcoloPlusvalenza="S";
                 }
                 //Tipologia = 8;//Prelievo Criptoattività x servizi, acquisto beni etc... //per ora uguale alla tipologia 4
                 else if (IDTS[4].equalsIgnoreCase("CM") || v[18].contains("PCO")) {

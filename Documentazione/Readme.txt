@@ -25,11 +25,14 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
-ver. 1.0.48
+ver. 1.0.49
 Nuove Implementazioni : 
- - 
+ - Sotto "Opzioni" -> "Opzioni di Calcolo" aggiunto possibilità di disabilitare il calcolo automatico delle plusvalenze, questo velocizza le operazioni sui dati in presenza di molti movimenti.
+ - Sotto "Opzioni" -> "Opzioni Rewards" aggiunto la possibilità di considerare i cashback crypto alla stregua di quelli FIAT e tra l'altro si potrà scegliere da che anno cominciare a considerarli in questo modo. (Il costo di carico sarà quello relativo al momento del ricevimento e non verrà generata nessuna plusvalenza)
+   Prima di questa modifica i cashback potevano essere solo caricati a costo zero o caricati alla stregua di una reward da staking.
 Correzione Bug : 
  - Corretto Bug che rallentava il caricamento della tabella in presenza di filtri attivi
+ - Corretto Bug che impediva l'importazione di alcuni file da Tatax
 
 ver. 1.0.48
 Nuove Implementazioni : 

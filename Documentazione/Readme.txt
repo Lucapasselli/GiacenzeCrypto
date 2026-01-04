@@ -27,6 +27,12 @@ Changelog
 
 ver. 1.0.48
 Nuove Implementazioni : 
+ - 
+Correzione Bug : 
+ - Corretto Bug che rallentava il caricamento della tabella in presenza di filtri attivi
+
+ver. 1.0.48
+Nuove Implementazioni : 
  - Etherscan ha messo lo scaricamento di alcune chain a pagamamento (es.BSC,BASE,AVAX) e deprecato altre (es. Cronos), per ovviare al problema sono state implementate nuove API.
 	Per BASE, BSC, AVA  verranno utilizzate le API di Moralis (dalle prove che ho fatto sono leggermente meno precise di quelle etherscan nel senso che ogni tanto potrebbero perdere qualche transazione, circa 1 ogni 5000)
 	Per la cronoschain invece verranno utilizzate le api proprie simili a quelle di etherscan con l'unico neo che il wallet bisogna scaricarlo ogni volta per la sua interezza per cui porterà via un pò di tempo.

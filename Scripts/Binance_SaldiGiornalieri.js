@@ -17,7 +17,7 @@ const CONFIG = {
     maxRetries: 5,
     baseBackoffMs: 5000,
     maxBackoffMs: 60000,
-    snapshotWindowDays: 15   // +/- giorni attorno alla data target
+    snapshotWindowDays: 5   // +/- giorni attorno alla data target
 };
 
 /* ================= LOG ================= */
@@ -107,6 +107,9 @@ async function fetchSnapshotAtDate(exchange, targetDateStr) {
     logInfo(`Target date UTC: ${new Date(targetTs).toISOString()}`);
     logInfo(`Fetching snapshots range...`);
 
+
+    logInfo('STEP 1 - prima chiamata API');
+    
     const response = await safeApiCall(
         exchange,
         'accountSnapshot',
@@ -116,28 +119,40 @@ async function fetchSnapshotAtDate(exchange, targetDateStr) {
             endTime
         }
     );
+logInfo('STEP 2 - dopo chiamata API');
+  //  logDebug('RAW RESPONSE:');
+    logInfo(JSON.stringify(response, null, 2));
+logInfo('STEP 3 - fine funzione fetchSnapshotAtDate');
 
-    const snapshots = response?.snapshotVos || [];
 
-    if (snapshots.length === 0) {
-        throw new Error('Nessuno snapshot disponibile nel range richiesto');
-    }
+    const snapshots = (response?.snapshotVos || [])
+    .map(s => ({
+        ...s,
+        updateTimeNum: Number(s.updateTime)
+    }))
+    .filter(s => Number.isFinite(s.updateTimeNum));
+
+if (snapshots.length === 0) {
+    throw new Error('Nessuno snapshot con updateTime valido nel range richiesto');
+}
+
 
     // Trova snapshot più vicino alla data target
-    let best = null;
-    let minDiff = Number.MAX_SAFE_INTEGER;
+let best = null;
+let minDiff = Number.MAX_SAFE_INTEGER;
 
-    for (const snap of snapshots) {
-        const diff = Math.abs(snap.updateTime - targetTs);
-        if (diff < minDiff) {
-            minDiff = diff;
-            best = snap;
-        }
+for (const snap of snapshots) {
+    const diff = Math.abs(snap.updateTimeNum - targetTs);
+    if (diff < minDiff) {
+        minDiff = diff;
+        best = snap;
     }
+}
 
-    logInfo(
-        `Snapshot selezionato: ${new Date(best.updateTime).toISOString()}`
-    );
+logInfo(
+    `Snapshot selezionato: ${new Date(best.updateTimeNum).toISOString()}`
+);
+
 
     return best;
 }
@@ -173,10 +188,11 @@ async function main() {
         const snapshot = await fetchSnapshotAtDate(exchange, dateStr);
 
         console.log(JSON.stringify({
-            snapshotDateRequested: dateStr,
-            snapshotDateReturned: new Date(snapshot.updateTime).toISOString(),
-            balances: snapshot.data.balances
-        }, null, 2));
+    snapshotDateRequested: dateStr,
+    snapshotDateReturned: new Date(snapshot.updateTimeNum).toISOString(),
+    balances: snapshot.data.balances
+}, null, 2));
+
 
     } catch (err) {
         logError(`Errore critico: ${err.message}`);

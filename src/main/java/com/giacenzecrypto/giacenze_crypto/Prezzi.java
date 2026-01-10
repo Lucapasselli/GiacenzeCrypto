@@ -2673,6 +2673,165 @@ public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Com
 }
 
 
+public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String APISecret,String Giorno) {
+
+        
+         try {
+            
+             TimeUnit.SECONDS.sleep(1);
+             
+             Path nodePath = CcxtInterop.getNodeExePath();
+             Path scriptPath = Paths.get(Statiche.getPathRisorse()
+                     + "Scripts/"
+                             + "Binance_SaldiGiornalieri"
+                             + ".js");
+             
+             CcxtInterop.ensureNodeInstalled();
+             CcxtInterop.installCcxt();
+             if (!Files.exists(nodePath)) {
+                 System.err.println("Errore: node non trovato a " + nodePath.toAbsolutePath());
+                 return;
+             }
+             if (!Files.exists(scriptPath)) {
+                 System.err.println("Errore: script JS non trovato a " + scriptPath.toAbsolutePath());
+                 return;
+             }
+             
+             System.out.println("Scarico Giacenze da "+Exchange+" in data "+Giorno);
+             // Parametri CLI da passare allo script
+             List<String> command = new ArrayList<>();
+             command.add(nodePath.toString());
+             command.add(scriptPath.toAbsolutePath().toString());
+             command.add(Exchange);
+             command.add(APIKey);
+             command.add(APISecret);
+             command.add(Giorno);
+             
+             
+             ProcessBuilder pb = new ProcessBuilder(command);
+             
+             pb.directory(scriptPath.getParent().toFile());
+             Path nodeModulesPath = CcxtInterop.NODE_DIR.resolve("node_modules").toAbsolutePath();
+             Map<String, String> env = pb.environment();
+             // Aggiungi node_modules a NODE_PATH (se esiste già, concatena)
+             String existingNodePath = env.get("NODE_PATH");
+             String newNodePath = nodeModulesPath.toString();
+             if (existingNodePath != null && !existingNodePath.isEmpty()) {
+                 newNodePath += File.pathSeparator + existingNodePath;
+             }
+             env.put("NODE_PATH", newNodePath);
+             pb.redirectErrorStream(true); // unisce stdout + stderr
+             
+             try {
+                 pb.redirectErrorStream(false);
+                 Process process = pb.start();
+                 
+                 // Legge l'output dello script (JSON stampato da console.log)
+                 StringBuilder output = new StringBuilder();
+                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                         BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                     String line;
+                     while ((line = reader.readLine()) != null) {
+                         output.append(line).append("\n");
+                     }
+                     while ((line = errReader.readLine()) != null) System.out.println("[NODE] " + line);
+                 }
+                 
+                 // Attende che il processo finisca
+                 int exitCode = process.waitFor();
+                 //System.out.println("Exit code: " + exitCode);
+                 if (exitCode != 0) {
+                     System.err.println("Script Node fallito. Exit code: " + exitCode);
+                     System.err.println(output);
+                     return;
+                 }
+                 
+                 // Parse JSON con Gson in modo sicuro (manteniamo precisione per i long)
+                 // Gson gson = new Gson();
+                 System.out.println("---"+output.toString()+"---");
+                 JsonElement rootEl = JsonParser.parseString(output.toString());
+                 if (!rootEl.isJsonArray()) {
+                     System.err.println("Output non è un array JSON valido.");
+                     return;
+                 }
+               /*  JsonArray rootArr = rootEl.getAsJsonArray();
+                 
+                 String mergeSql = "MERGE INTO PrezziNew (timestamp, exchange, symbol, prezzo,rete,address) KEY (timestamp, exchange, symbol,rete,address) VALUES (?, ?, ?, ?, ?, ?)";
+                 try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(mergeSql)) {
+                     
+                     for (JsonElement el : rootArr) {
+                         if (!el.isJsonObject()) continue;
+                         JsonObject obj = el.getAsJsonObject();
+                         
+                         if (!obj.has("timestamp")) continue;
+                         long ts = obj.get("timestamp").getAsLong();
+                         
+                         JsonObject pricesObj = obj.has("prices") && obj.get("prices").isJsonObject()
+                                 ? obj.getAsJsonObject("prices")
+                                 : null;
+                         if (pricesObj == null) continue;
+                         
+                         for (Map.Entry<String, JsonElement> entry : pricesObj.entrySet()) {
+                             String exchang = entry.getKey();
+                             JsonElement valEl = entry.getValue();
+                             if (valEl == null || valEl.isJsonNull()) continue;
+                             
+                             double value;
+                             try {
+                                 value = valEl.getAsDouble();
+                             } catch (Exception ex) {
+                                 // valore non numerico: skip
+                                 continue;
+                             }
+                             
+                             ps.setLong(1, ts);
+                             ps.setString(2, exchang);
+                             ps.setString(3, Symbol);
+                             ps.setDouble(4, value);
+                             ps.setString(5, "");//Rete
+                             ps.setString(6, "");//Address
+                             ps.addBatch();
+                         }
+                     }
+                     ps.executeBatch();
+                 } catch (SQLException ex) {
+                     //Logger.getLogger(Prezzi.class.getName()).log(Level.SEVERE, null, ex);
+                     LoggerGC.ScriviErrore(ex);
+                 }*/
+                 
+                 //Se arrivo qua lo script è andato a buon fine quindi aggiungo il range richiesto alla lista di quelli già utilizzati pr la moneta
+                 //in modo da non richiederlo più volte nell'arco della sessione nel caso in cui non trovi il prezzo
+                // managerRichieste.addRange(Symbol, Since, Until);
+                 
+                 // Query di test: mostra i primi 50 record
+                 /*    System.out.println("=== Sample from H2 (timestamp | exchange | symbol | prezzo) ===");
+                 try (Statement st = DatabaseH2.connectionPrezzi.createStatement();
+                 ResultSet rs = st.executeQuery(
+                 "SELECT timestamp, exchange, symbol, prezzo FROM PrezziNew ORDER BY timestamp LIMIT 50")) {
+                 
+                 while (rs.next()) {
+                 long ts = rs.getLong("timestamp");
+                 String ex = rs.getString("exchange");
+                 String sym = rs.getString("symbol");
+                 double v = rs.getDouble("prezzo");
+                 System.out.printf("%d | %s | %s = %.6f%n", ts, ex, sym, v);
+                 }
+                 }*/
+                 //}
+                 
+             } catch (IOException | InterruptedException e) {
+                 LoggerGC.ScriviErrore(e);
+             }
+             
+             
+         } catch (IOException | InterruptedException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+
+
+}
+
+
 public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
 
         

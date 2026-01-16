@@ -2675,6 +2675,15 @@ public static long GUI_ModificaPrezzoConAttesaTest(Moneta M,String[] Ritorno,Com
 
 public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String APISecret,String Giorno) {
 
+    
+    /*
+    ESEMPIO DI UTILIZZO
+    for (String splittata[] : DatabaseH2.Pers_ExchangeApi_LeggiTabella().values()) {
+            Prezzi.RecuperaGiacenzeDaCCXT("binance", splittata[2], splittata[3], "2026-01-11");
+            break;
+        }
+    
+    */
         
          try {
             

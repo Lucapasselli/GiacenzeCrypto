@@ -185,7 +185,8 @@ public class FunzioniDate {
             // Elenco di formati possibili
             String[] FormatiPossibili = {
             "yyyy-MM-dd HH:mm:ss",  // Formato con ora a una cifra
-            "yyyy-MM-dd H:mm:ss"  // Formato con ora a due cifre
+            "yyyy-MM-dd H:mm:ss" , // Formato con ora a due cifre
+            "yyyy-MM-dd H:mm:ss.SSS"  // Formato con i millisecondi
             };
             LocalDateTime localDateTime = null;
 

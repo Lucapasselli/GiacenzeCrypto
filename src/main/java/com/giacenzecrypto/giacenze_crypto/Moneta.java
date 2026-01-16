@@ -13,6 +13,7 @@ public class Moneta {
   public String Moneta;
   public String Qta;
   public String MonetaAddress;
+  public Prezzi.InfoPrezzo InfoPrezzo;
 //  public String MonetaNomeCompleto;
  // public String IndirizzoNoWallet;
   public String CostoCarico;

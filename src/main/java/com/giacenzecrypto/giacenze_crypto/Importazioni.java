@@ -1548,10 +1548,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         Mappa_Conversione_Causali.put("DEBIT", "SCAMBIO CRYPTO-CRYPTO");          
         Mappa_Conversione_Causali.put("EXCHANGE_FEE", "COMMISSIONI");          
         Mappa_Conversione_Causali.put("BLOCKCHAIN_FEE", "COMMISSIONI");         
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
-        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");          
+        Mappa_Conversione_Causali.put("FEE", "COMMISSIONI");                   
         Mappa_Conversione_Causali.put("DEPOSIT", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
         Mappa_Conversione_Causali.put("WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
         Mappa_Conversione_Causali.put("CREDIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
@@ -1570,6 +1567,52 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
                     String splittata[] = riga.split(",",-1);                     
                     if (splittata.length==11&&Funzioni.isNumeric(splittata[4], false)){
+                        // Definisci il formato della data
+                       // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        String utcDateStr = splittata[2];
+                        String Data=FunzioniDate.Formatta_Data_UTC(utcDateStr);
+                        if (Data==null) {
+                            //In questo caso verrà segnalato lo scarto a fine importazione
+                            Data="2021-01-01 00:00:00";
+                            splittata[3]="FORMATO DATA ERRATO : "+riga2;
+                        }
+
+                            String Movimento[]=new String[20];
+                            Movimento[0]=Data;//Data
+                            Movimento[1]=Exchange;//Wallet Principale
+                            Movimento[2]="Principale";//Wallet Secondario                            
+                            Movimento[3]=splittata[3];//Tipologia di Movimento
+                            Movimento[4]=splittata[3];//Causale Originale
+                            Movimento[5]=splittata[0];//Moneta
+                            //Dalla moneta tolgo la tipologia di tatax, voglio vedere solo il nome
+                            if (Movimento[5].contains(".STAKING@"))Movimento[5]=Movimento[5].split(".STAKING@")[0];
+                            if (Movimento[5].contains(".LENDING@"))Movimento[5]=Movimento[5].split(".LENDING@")[0];
+                            Movimento[6]=splittata[4];//Qta
+                            Movimento[7]=splittata[1];//Address Moneta
+                            if (Funzioni.isNumeric(splittata[5], false)&&!splittata[5].equals("0")) {
+                                Movimento[8]=new BigDecimal(splittata[5]).toPlainString().replace("-", "");//Valore Originale Euro
+                            }
+                            else Movimento[8]="";
+                        
+                            Movimento[9]="";//ID Originale
+                            Movimento[10]="";//Rete 
+                            
+                            //Metto il tutto in una mappa in modo che venga anche già ordinato in base alla data
+                            if (Mappa_MovimentiTemporanea.get(Data+" "+riga)==null){
+                                Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
+                                }
+                            else{
+                                //se arrivo qua vuol dire che ho trovato un movimento doppio
+                                //per cui non devo far altro che sommare le quantità e i prezzi
+                                String Mov[]=Mappa_MovimentiTemporanea.get(Data+" "+riga);
+                                Movimento[6]=new BigDecimal(Mov[6]).add(new BigDecimal(Movimento[6])).toPlainString();
+                                if (!Movimento[8].isBlank()) Movimento[8]=new BigDecimal(Mov[8]).add(new BigDecimal(Movimento[8])).toPlainString();
+                                Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
+                            }
+                            //lista.add(riga);
+                        }
+                    if (splittata.length==7&&Funzioni.isNumeric(splittata[4], false)){
+                        //QUESTO SERVE PER IL NUOVO FORMATO DI TATAX
                         // Definisci il formato della data
                        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         String utcDateStr = splittata[2];
@@ -1653,7 +1696,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 } else //altrimenti consolido il movimento precedente
                 {
                      //System.out.println(listaMovimentidaConsolidare.size());
-                    List<String[]> listaConsolidata = ConsolidaMovimentiSingolaRiga(listaMovimentidaConsolidare,Mappa_Conversione_Causali);
+                    List<String[]> listaConsolidata = ConsolidaMovimentiSingolaRiga(listaMovimentidaConsolidare,Mappa_Conversione_Causali,"");
                     int nElementi = listaConsolidata.size();
                     for (int i = 0; i < nElementi; i++) {
                         String consolidata[] = listaConsolidata.get(i);
@@ -1671,7 +1714,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              progressb.SetAvanzamento(avanzamento);
         }
             
-            List<String[]> listaConsolidata = ConsolidaMovimentiSingolaRiga(listaMovimentidaConsolidare,Mappa_Conversione_Causali);
+            List<String[]> listaConsolidata = ConsolidaMovimentiSingolaRiga(listaMovimentidaConsolidare,Mappa_Conversione_Causali,"");
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
                 String consolidata[] = listaConsolidata.get(i);             
@@ -1717,6 +1760,191 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
        
         
     }
+    
+    
+      public static boolean Importa_CryptoComExchange_Test(String cdcExchange,boolean SovrascriEsistenti,Component c,boolean PrezzoZero,Download progressb ) {
+       
+    
+  
+        AzzeraContatori();        
+        String fileDaImportare = cdcExchange;
+        String Exchange="Crypto.com Exchange";
+        
+         Map<String, String> Mappa_Conversione_Causali = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        //Faccio una lista di causali per la conversione dei dati del csv
+        //Mappa_Conversione_Causali.put("CASHBACK", "CASHBACK");  
+       // Mappa_Conversione_Causali.put("STAKING", "STAKING REWARDS");
+        //Mappa_Conversione_Causali.put("EARN", "EARN");              
+        //Mappa_Conversione_Causali.put("AIRDROP", "AIRDROP");            
+        Mappa_Conversione_Causali.put("TRADING", "SCAMBIO CRYPTO-CRYPTO");        
+        //Mappa_Conversione_Causali.put("DEBIT", "SCAMBIO CRYPTO-CRYPTO");          
+        Mappa_Conversione_Causali.put("TRADE_FEE", "COMMISSIONI");          
+        //Mappa_Conversione_Causali.put("BLOCKCHAIN_FEE", "COMMISSIONI");         
+        Mappa_Conversione_Causali.put("CRYPTO_DUSTING", "DUST-CONVERSION");                   
+        Mappa_Conversione_Causali.put("OFFCHAIN_WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
+        Mappa_Conversione_Causali.put("OFFCHAIN_DEPOSIT", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
+        //Mappa_Conversione_Causali.put("CREDIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
+        //Mappa_Conversione_Causali.put("DEBIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
+
+        //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
+        //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
+        //ad esempio questo succede per i dust conversion etc....
+        
+         String riga;
+        // 1- come prima cosa metto in una mappa il file, in questo modo viene anche ordinato
+        Map<String, String[]> Mappa_MovimentiTemporanea = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
+                while ((riga = bure.readLine()) != null) {
+                    String riga2=riga;
+                    riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
+                    String splittata[] = riga.split(",",-1);                     
+                    if (splittata.length==14&&Funzioni.isNumeric(splittata[7], false)){//splittata7 è la qta
+                        // Definisci il formato della data
+                       // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        String utcDateStr = splittata[1];
+                        String Data=FunzioniDate.Formatta_Data_UTC(utcDateStr);
+                        if (Data==null) {
+                            //In questo caso verrà segnalato lo scarto a fine importazione
+                            Data="2021-01-01 00:00:00";
+                            splittata[3]="FORMATO DATA ERRATO : "+riga2;
+                        }
+
+                            String Movimento[]=new String[20];
+                            Movimento[0]=Data;//Data
+                            Movimento[1]=Exchange;//Wallet Principale
+                            Movimento[2]="Principale";//Wallet Secondario                            
+                            Movimento[3]=splittata[3];//Tipologia di Movimento
+                            Movimento[4]=splittata[3];//Causale Originale
+                            Movimento[5]=splittata[4];//Moneta
+                            if (Movimento[5].equalsIgnoreCase("USD_Stable_Coin"))Movimento[5]="USDC";
+                            Movimento[6]=splittata[7];//Qta
+                            Movimento[7]="";//Address Moneta
+                            Movimento[8]="";//Vallre Originale Euro                        
+                            Movimento[9]="";//ID Originale
+                            Movimento[10]="";//Rete 
+                            
+                            //Metto il tutto in una mappa in modo che venga anche già ordinato in base alla data
+                            if (Mappa_MovimentiTemporanea.get(Data+" "+riga)==null){
+                                Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
+                                }
+                            else{
+                                //se arrivo qua vuol dire che ho trovato un movimento doppio
+                                //per cui non devo far altro che sommare le quantità e i prezzi
+                                String Mov[]=Mappa_MovimentiTemporanea.get(Data+" "+riga);
+                                Movimento[6]=new BigDecimal(Mov[6]).add(new BigDecimal(Movimento[6])).toPlainString();
+                                if (!Movimento[8].isBlank()) Movimento[8]=new BigDecimal(Mov[8]).add(new BigDecimal(Movimento[8])).toPlainString();
+                                Mappa_MovimentiTemporanea.put(Data+" "+riga, Movimento);
+                            }
+                            //lista.add(riga);
+                        }
+
+                }
+            //    bure.close();
+            //    fire.close();
+              } catch (FileNotFoundException ex) {  
+            LoggerGC.ScriviErrore(ex);
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        
+    
+       // System.out.println(Mappa_MovimentiTemporanea.size());
+        
+        
+        Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        
+      //  String riga;
+        String ultimaData = "";
+        //Iterator<String> iteratore=Mappa_MovimentiTemporanea.keySet().iterator();
+        List<String[]> listaMovimentidaConsolidare = new ArrayList<>();
+      progressb.SetMassimo(Mappa_MovimentiTemporanea.size());
+        int avanzamento=0;
+        for (String splittata[] : Mappa_MovimentiTemporanea.values()) {
+            if (progressb.FineThread()){
+            //se è stato interrotta la finestra di progresso interrompo il ciclo
+                return false;
+                }
+
+            String data=splittata[0];
+
+            if (FunzioniDate.ConvertiDatainLongSecondo(data) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
+            {
+               // System.out.println(riga);
+                //se trovo movimento con stessa data e ora lo aggiungo alla lista che compone il movimento e vado avanti
+                if (data.equalsIgnoreCase(ultimaData)) {
+                    listaMovimentidaConsolidare.add(splittata);
+                } else //altrimenti consolido il movimento precedente
+                {
+                     //System.out.println(listaMovimentidaConsolidare.size());
+                    List<String[]> listaConsolidata = ConsolidaMovimentiSingolaRiga(listaMovimentidaConsolidare,Mappa_Conversione_Causali,"cryptocom");
+                    int nElementi = listaConsolidata.size();
+                    for (int i = 0; i < nElementi; i++) {
+                        String consolidata[] = listaConsolidata.get(i);
+                        Mappa_Movimenti.put(consolidata[0], consolidata);
+                    }
+                    
+                    //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
+                    listaMovimentidaConsolidare = new ArrayList<>();
+                    listaMovimentidaConsolidare.add(splittata);
+                }
+                ultimaData = splittata[0];
+                
+            }
+            avanzamento++;
+             progressb.SetAvanzamento(avanzamento);
+        }
+            
+            List<String[]> listaConsolidata = ConsolidaMovimentiSingolaRiga(listaMovimentidaConsolidare,Mappa_Conversione_Causali,"cryptocom");
+            int nElementi = listaConsolidata.size();
+            for (int i = 0; i < nElementi; i++) {
+                String consolidata[] = listaConsolidata.get(i);             
+                Mappa_Movimenti.put(consolidata[0], consolidata);
+               // 
+            }
+
+
+
+
+        
+       int numeromov=0; 
+       int numeroscartati=0;
+       int numeroaggiunti=0;
+       for (String v : Mappa_Movimenti.keySet()) {
+           numeromov++;
+           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
+           {
+               //questa funzione prima di inserire i movimenti nuovi pulisce quelli vecchi e le associazioni
+               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
+              // MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
+               numeroaggiunti++;
+           }else {
+            //   System.out.println("Movimento Duplicato " + v);
+               numeroscartati++;
+           }
+       }
+     //  System.out.println("TotaleMovimenti="+numeromov);
+     //  System.out.println("TotaleScartati="+numeroscartati);
+        Transazioni=numeromov;
+        TransazioniAggiunte=numeroaggiunti;
+        TrasazioniScartate=numeroscartati;
+        if (TransazioniAggiunte>0) 
+            Principale.TabellaCryptodaAggiornare=true;
+            
+        
+        return true;
+       
+                   
+                 
+            
+        
+       
+        
+    }
+    
+    
+    
     
         public static String[] RiempiVuotiArray(String[] array){
             for (int i=0;i<array.length;i++) {
@@ -4299,7 +4527,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
     }   
     
          
-        public static List<String[]> ConsolidaMovimentiSingolaRiga(List<String[]> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali){
+        public static List<String[]> ConsolidaMovimentiSingolaRiga(List<String[]> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,String FontePrezzi){
          
          //int mov è un indice che viene aggiunto all'ID per permettere a più transazioni con lo stesso id di coesistere
          //es. ho sue scambi identici alla stessa ora su 2 movimenti consolidati diversi, in questo caso idichero a un movimento Mov=1 e all'altro Mov=2
@@ -4369,7 +4597,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                            //Questa parte del prezzo va rivista se i prezzi li prendo dal csv
                             if (movimentoSplittato[8].isBlank()){
                                 //Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"");
-                                IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null, "");
+                                IP = Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null, FontePrezzi);
                                 if (IP == null)
                                     Mon.Prezzo = "0.00";
                                 else {
@@ -4542,6 +4770,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 
                               //  System.out.println(Mon.Moneta);
                                 // serve solo per il calcolo della percentuale di cro da attivare
+                                if (IP!=null)Mon.InfoPrezzo=IP;
                                     Scambio.InserisciMoneteCEX(Mon,WalletSecondario,CausaleOriginale,IDOriginale);
                                    // System.out.println(CausaleOriginale+" - "+dataa+ " - "+Mon.Moneta+" _ "+Mon.Qta);
                                    
@@ -4723,6 +4952,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[24] = tokenE.IDTransazione;
                                             RT[26] = "";
                                             RT[28] = tokenE.MonetaAddress;
+                                            if (tokenE.InfoPrezzo!=null)RT[40] = tokenE.InfoPrezzo.Ritorna40();
                                             Importazioni.RiempiVuotiArray(RT);
                                             Prezzi.isMovimentoPrezzato(RT);
                                             if (!(RT[13].equals("0")))
@@ -4759,6 +4989,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[24] = tokenU.IDTransazione;
                                             RT[26] = tokenU.MonetaAddress;
                                             RT[28] = "";
+                                            if (tokenU.InfoPrezzo!=null)RT[40] = tokenU.InfoPrezzo.Ritorna40();
                                             Importazioni.RiempiVuotiArray(RT);
                                             Prezzi.isMovimentoPrezzato(RT);
                                             if (!(RT[10].equals("0")))
@@ -4801,7 +5032,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             String RT[] = new String[ColonneTabella];
                                             BigDecimal PrezzoTransazione;
                                             PrezzoTransazione=new BigDecimal(PrezzoEntrata);
-                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) PrezzoTransazione=new BigDecimal(PrezzoUscita);
+                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))!=0) 
+                                            {
+                                                if (tokenE.InfoPrezzo!=null)RT[40] = tokenE.InfoPrezzo.Ritorna40();
+                                            }
+                                            if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) 
+                                            {
+                                                PrezzoTransazione=new BigDecimal(PrezzoUscita);
+                                                if (tokenU.InfoPrezzo!=null)RT[40] = tokenU.InfoPrezzo.Ritorna40();
+                                            }
                                             //Se non trovo prezzi già memorizzati li cerco e inserisco i dati di prezzo nella casella 40
                                             if (PrezzoTransazione.compareTo(new BigDecimal(0))==0) 
                                             {

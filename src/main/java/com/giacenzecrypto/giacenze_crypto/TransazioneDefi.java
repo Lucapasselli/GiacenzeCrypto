@@ -140,7 +140,8 @@ public class TransazioneDefi {
             monete.MonetaAddress=Moneta.MonetaAddress;
             monete.WalletSecondario=Wallet;//poi sarà da vedere se esistono casi di monete identiche presi da wallet dioversi, in quel caso bisognerà differenziarli
             monete.CausaleOriginale=CausaleOriginale;
-            monete.IDTransazione=IDT;
+            monete.IDTransazione=IDT;  
+            monete.InfoPrezzo=Moneta.InfoPrezzo;
             MappaToken.put(Moneta.Moneta,monete);
             }
         else 
@@ -1017,6 +1018,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
   public String Peso;
   public String Tipo; //NFT, FIAT o CRYPTO
   public String IDTransazione;
+  public Prezzi.InfoPrezzo InfoPrezzo;
   
   public String RitornaNomeToken(){
       String nome;

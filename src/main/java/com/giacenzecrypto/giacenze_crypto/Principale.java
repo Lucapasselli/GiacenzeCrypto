@@ -12618,12 +12618,10 @@ SwingUtilities.invokeLater(() -> {
         // TODO add your handling code here:
         
        //Questa sotto è la mappa dei wallet nella tabella
-        for (String splittata[]:DatabaseH2.Pers_ExchangeApi_LeggiTabella().values())
-        {
-                Prezzi.RecuperaGiacenzeDaCCXT("binance",splittata[2],splittata[3],"2026-01-11");
-                break;
-          
-            }
+        for (String splittata[] : DatabaseH2.Pers_ExchangeApi_LeggiTabella().values()) {
+            Prezzi.RecuperaGiacenzeDaCCXT("binance", splittata[2], splittata[3], "2026-01-11");
+            break;
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){

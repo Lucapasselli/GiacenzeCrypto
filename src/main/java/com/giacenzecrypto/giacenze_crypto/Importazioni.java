@@ -1809,6 +1809,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         String Data=FunzioniDate.Formatta_Data_UTC(utcDateStr);
 
                         //se utcDateStr non è una data (lunghezza minore di 19 e splittata[13] è un numero) vuol dire che sono in presenza dell'estratto mensile 
+                        //e non del file delle transazioni quindi cambio le impostazioni per avere a che fare con il nuovo file
                         if (utcDateStr.length()<19&&Funzioni.isNumeric(splittata[13], false))
                         {     
                             Data=FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(splittata[13])/1000000);

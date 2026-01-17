@@ -1762,7 +1762,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
     }
     
     
-      public static boolean Importa_CryptoComExchange_Test(String cdcExchange,boolean SovrascriEsistenti,Component c,boolean PrezzoZero,Download progressb ) {
+      public static boolean Importa_CryptoComExchange(String cdcExchange,boolean SovrascriEsistenti,Component c,boolean PrezzoZero,Download progressb ) {
        
     
   
@@ -1783,7 +1783,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         //Mappa_Conversione_Causali.put("BLOCKCHAIN_FEE", "COMMISSIONI");         
         Mappa_Conversione_Causali.put("CRYPTO_DUSTING", "DUST-CONVERSION");                   
         Mappa_Conversione_Causali.put("OFFCHAIN_WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
+        Mappa_Conversione_Causali.put("ONCHAIN_WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
         Mappa_Conversione_Causali.put("OFFCHAIN_DEPOSIT", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
+        Mappa_Conversione_Causali.put("ONCHAIN_DEPOSIT", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno
         //Mappa_Conversione_Causali.put("CREDIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
         //Mappa_Conversione_Causali.put("DEBIT_FIX", "TRASFERIMENTO-CRYPTO");//Correzione Giacenza
 
@@ -1802,8 +1804,17 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     if (splittata.length==14&&Funzioni.isNumeric(splittata[7], false)){//splittata7 è la qta
                         // Definisci il formato della data
                        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                        String utcDateStr = splittata[1];
+                        String utcDateStr = splittata[1];//File delle transazioni
+                        String Monet=splittata[4];
                         String Data=FunzioniDate.Formatta_Data_UTC(utcDateStr);
+
+                        //se utcDateStr non è una data (lunghezza minore di 19 e splittata[13] è un numero) vuol dire che sono in presenza dell'estratto mensile 
+                        if (utcDateStr.length()<19&&Funzioni.isNumeric(splittata[13], false))
+                        {     
+                            Data=FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(splittata[13])/1000000);
+                            Monet=splittata[1];
+                        }
+                        
                         if (Data==null) {
                             //In questo caso verrà segnalato lo scarto a fine importazione
                             Data="2021-01-01 00:00:00";
@@ -1816,7 +1827,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             Movimento[2]="Principale";//Wallet Secondario                            
                             Movimento[3]=splittata[3];//Tipologia di Movimento
                             Movimento[4]=splittata[3];//Causale Originale
-                            Movimento[5]=splittata[4];//Moneta
+                            Movimento[5]=Monet;//Moneta
                             if (Movimento[5].equalsIgnoreCase("USD_Stable_Coin"))Movimento[5]="USDC";
                             Movimento[6]=splittata[7];//Qta
                             Movimento[7]="";//Address Moneta
@@ -1838,7 +1849,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             }
                             //lista.add(riga);
                         }
-
                 }
             //    bure.close();
             //    fire.close();

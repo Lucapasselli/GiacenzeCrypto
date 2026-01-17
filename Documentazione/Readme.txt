@@ -25,6 +25,12 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.50
+Nuove Implementazioni :
+ - Implementato l'importazione diretta dai CSV di Crypto.com Exchange
+Correzione Bug :
+ - Adeguato importazione Tatax al suo nuovo standard di file
+ 
 ver. 1.0.49
 Nuove Implementazioni : 
  - Sotto "Opzioni" -> "Opzioni di Calcolo" aggiunto possibilità di disabilitare il calcolo automatico delle plusvalenze, questo velocizza le operazioni sui dati in presenza di molti movimenti.

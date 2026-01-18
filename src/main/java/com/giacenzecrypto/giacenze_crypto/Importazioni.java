@@ -1775,6 +1775,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         //Faccio una lista di causali per la conversione dei dati del csv
         //Mappa_Conversione_Causali.put("CASHBACK", "CASHBACK");  
        // Mappa_Conversione_Causali.put("STAKING", "STAKING REWARDS");
+        Mappa_Conversione_Causali.put("STAKING_REWARDS", "STAKING REWARDS");
         //Mappa_Conversione_Causali.put("EARN", "EARN");              
         //Mappa_Conversione_Causali.put("AIRDROP", "AIRDROP");            
         Mappa_Conversione_Causali.put("TRADING", "SCAMBIO CRYPTO-CRYPTO");        
@@ -1806,6 +1807,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         String utcDateStr = splittata[1];//File delle transazioni
                         String Monet=splittata[4];
+                        
+                        
                         String Data=FunzioniDate.Formatta_Data_UTC(utcDateStr);
 
                         //se utcDateStr non è una data (lunghezza minore di 19 e splittata[13] è un numero) vuol dire che sono in presenza dell'estratto mensile 
@@ -1821,6 +1824,17 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             Data="2021-01-01 00:00:00";
                             splittata[3]="FORMATO DATA ERRATO : "+riga2;
                         }
+                        //Adesso normalizzo il nome moneta infatti potrebbe essere che crypto.com rinomini es. "AVAX" in "AVAX (staked)"
+                        Monet=Monet.replaceAll("\\s*\\([^)]*\\)$", "");
+                        /*
+                        \\s* → rimuove eventuali spazi prima della parentesi (anche nessuno)
+                        \\( → parentesi aperta
+                        [^)]* → qualunque testo dentro
+                        \\) → parentesi chiusa
+                        $ → solo se è alla fine della stringa
+                        */
+                        //Le monete possono anche essere rinominate da AVAX ad AVAX.staked quindi devo sistemare anche quella casistica
+                        Monet=Monet.split("\\.")[0];
 
                             String Movimento[]=new String[20];
                             Movimento[0]=Data;//Data

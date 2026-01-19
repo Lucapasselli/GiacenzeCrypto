@@ -161,7 +161,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.49.01";
+    public String Versione="1.0.49.02";
     
     public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
@@ -437,7 +437,6 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_RicalcolaPlusvalenze_Label = new javax.swing.JLabel();
         TransazioniCrypto_RicalcolaPlusvalenze_Bottone = new javax.swing.JButton();
         TransazioniCrypto_RigheTabella_Label = new javax.swing.JLabel();
-        jButton3 = new javax.swing.JButton();
         Analisi_Crypto = new javax.swing.JPanel();
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
@@ -1284,13 +1283,6 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_RigheTabella_Label.setText("Righe Tabella : ");
 
-        jButton3.setText("jButton3");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout TransazioniCryptoLayout = new javax.swing.GroupLayout(TransazioniCrypto);
         TransazioniCrypto.setLayout(TransazioniCryptoLayout);
         TransazioniCryptoLayout.setHorizontalGroup(
@@ -1310,8 +1302,6 @@ private static final long serialVersionUID = 3L;
                                 .addGap(18, 18, 18)
                                 .addComponent(TransazioniCrypto_RigheTabella_Label)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButton3)
-                                .addGap(18, 18, 18)
                                 .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(TransazioniCrypto_TabbedPane))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1427,8 +1417,7 @@ private static final long serialVersionUID = 3L;
                         .addComponent(TransazioniCrypto_Bottone_MovimentoModifica, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(TransazioniCrypto_Bottone_MovimentoNuovo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(TransazioniCrypto_Bottone_DettaglioDefi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(TransazioniCrypto_RigheTabella_Label)
-                        .addComponent(jButton3)))
+                        .addComponent(TransazioniCrypto_RigheTabella_Label)))
                 .addGap(7, 7, 7)
                 .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(TransazioniCryptoLayout.createSequentialGroup()
@@ -12614,32 +12603,6 @@ SwingUtilities.invokeLater(() -> {
         }
     }//GEN-LAST:event_OpzioniRewards_CashBackComeFIAT_ComboBoxActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-        
-       //Questa sotto è la mappa dei wallet nella tabella
-        for (String splittata[] : DatabaseH2.Pers_ExchangeApi_LeggiTabella().values()) {
-            try {
-                // Prezzi.RecuperaGiacenzeDaCCXT("binance", splittata[2], splittata[3], "2026-01-11");
-                System.out.println(splittata[0]);
-                System.out.println(splittata[2]);
-                System.out.println(splittata[3]);
-                String json = Exchanges.CryptoComExchangeBalanceHistory(
-                        splittata[2],
-                        splittata[3],
-                        "D1",      // giornaliero
-                        null,      // fino ad ora
-                        30         // massimo consentito
-                );
-                System.out.println(json);
-                
-                break;
-            } catch (Exception ex) {
-                LoggerGC.ScriviErrore(ex);
-            }
-        }
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
         if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
@@ -15629,7 +15592,6 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

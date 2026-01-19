@@ -148,7 +148,12 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Label_Exchange.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Exchange.setText("Exchange :");
 
-        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance", "Crypto.com Exchange" }));
+        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance" }));
+        ComboBox_Exchange.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ComboBox_ExchangeActionPerformed(evt);
+            }
+        });
 
         Bottone_InserisciChiave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
         Bottone_InserisciChiave.setText("Inserisci Chiave");
@@ -658,6 +663,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         
         Binance_CaricaTabella();
     }//GEN-LAST:event_Binance_BottoneRimuoviActionPerformed
+
+    private void ComboBox_ExchangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ComboBox_ExchangeActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ComboBox_ExchangeActionPerformed
 
      private void Binance_CaricaTabella(){
          DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) Binance_Tabella.getModel();

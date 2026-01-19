@@ -1762,7 +1762,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
     }
     
     
-      public static boolean Importa_CryptoComExchange(String cdcExchange,boolean SovrascriEsistenti,Component c,boolean PrezzoZero,Download progressb ) {
+      public static boolean Importa_Crypto_CryptoComExchange(String cdcExchange,boolean SovrascriEsistenti,Component c,boolean PrezzoZero,Download progressb ) {
        
     
   
@@ -1775,6 +1775,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         //Faccio una lista di causali per la conversione dei dati del csv
         //Mappa_Conversione_Causali.put("CASHBACK", "CASHBACK");  
        // Mappa_Conversione_Causali.put("STAKING", "STAKING REWARDS");
+       //FIAT_OPENPAYD_DEPOSIT
+        Mappa_Conversione_Causali.put("STAKING", "NON CONSIDERARE");
+        Mappa_Conversione_Causali.put("FIAT_OPENPAYD_DEPOSIT", "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("STAKING_REWARDS", "STAKING REWARDS");
         //Mappa_Conversione_Causali.put("EARN", "EARN");              
         //Mappa_Conversione_Causali.put("AIRDROP", "AIRDROP");            
@@ -1782,7 +1785,9 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         //Mappa_Conversione_Causali.put("DEBIT", "SCAMBIO CRYPTO-CRYPTO");          
         Mappa_Conversione_Causali.put("TRADE_FEE", "COMMISSIONI");          
         //Mappa_Conversione_Causali.put("BLOCKCHAIN_FEE", "COMMISSIONI");         
-        Mappa_Conversione_Causali.put("CRYPTO_DUSTING", "DUST-CONVERSION");                   
+        Mappa_Conversione_Causali.put("CRYPTO_DUSTING", "DUST-CONVERSION"); 
+        
+        Mappa_Conversione_Causali.put("ADMIN_ADJUSTMENT", "TRASFERIMENTO-CRYPTO");
         Mappa_Conversione_Causali.put("OFFCHAIN_WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
         Mappa_Conversione_Causali.put("ONCHAIN_WITHDRAWAL", "TRASFERIMENTO-CRYPTO");//Deposito di Crypto o FIAT provenienti da wallet esterno
         Mappa_Conversione_Causali.put("OFFCHAIN_DEPOSIT", "TRASFERIMENTO-CRYPTO");//Prelievo di Crypto o FIAT su wallet esterno

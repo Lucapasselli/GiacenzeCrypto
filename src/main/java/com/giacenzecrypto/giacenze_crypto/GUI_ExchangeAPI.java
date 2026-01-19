@@ -148,7 +148,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         Label_Exchange.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         Label_Exchange.setText("Exchange :");
 
-        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance" }));
+        ComboBox_Exchange.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--- nessuna selezione ---", "Binance", "Crypto.com Exchange" }));
 
         Bottone_InserisciChiave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
         Bottone_InserisciChiave.setText("Inserisci Chiave");
@@ -400,7 +400,10 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         if (Exchange.trim().equalsIgnoreCase("Binance")){
             return Binance_testApiKeys(Key,Secret);
         }
-        
+        else if (Exchange.trim().equalsIgnoreCase("Crypto.com Exchange")){
+            //Per ora non faccio nessun controllo
+            return true;
+        }
         return valido;
     
     }

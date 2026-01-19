@@ -12619,8 +12619,24 @@ SwingUtilities.invokeLater(() -> {
         
        //Questa sotto è la mappa dei wallet nella tabella
         for (String splittata[] : DatabaseH2.Pers_ExchangeApi_LeggiTabella().values()) {
-            Prezzi.RecuperaGiacenzeDaCCXT("binance", splittata[2], splittata[3], "2026-01-11");
-            break;
+            try {
+                // Prezzi.RecuperaGiacenzeDaCCXT("binance", splittata[2], splittata[3], "2026-01-11");
+                System.out.println(splittata[0]);
+                System.out.println(splittata[2]);
+                System.out.println(splittata[3]);
+                String json = Exchanges.CryptoComExchangeBalanceHistory(
+                        splittata[2],
+                        splittata[3],
+                        "D1",      // giornaliero
+                        null,      // fino ad ora
+                        30         // massimo consentito
+                );
+                System.out.println(json);
+                
+                break;
+            } catch (Exception ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
         }
     }//GEN-LAST:event_jButton3ActionPerformed
 

@@ -301,7 +301,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                                 PrezzoZero = true;
 
                             }
-                            Importazioni.Importa_CryptoComExchange(FileDaImportare, SovrascriEsistenti, c, PrezzoZero, progressb);
+                            Importazioni.Importa_Crypto_CryptoComExchange(FileDaImportare, SovrascriEsistenti, c, PrezzoZero, progressb);
                             Importazioni_Resoconto res = new Importazioni_Resoconto();
                             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                             res.setLocationRelativeTo(c);

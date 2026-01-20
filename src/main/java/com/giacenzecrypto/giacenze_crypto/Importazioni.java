@@ -931,6 +931,8 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("crypto_wallet_swap_debited", "DUST-CONVERSION");//Conversione di monete  
         Mappa_Conversione_Causali.put("interest_swap_credited", "DUST-CONVERSION");//Conversione di monete 
         Mappa_Conversione_Causali.put("interest_swap_debited", "DUST-CONVERSION");//Conversione di monete 
+        Mappa_Conversione_Causali.put("finance.dpos.staking_conversion.terminate", "DUST-CONVERSION");//Conversione di staking
+        Mappa_Conversione_Causali.put("finance.dpos.staking_conversion.credit", "DUST-CONVERSION");//Conversione di staking
 //        Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION");//Conversione di monete (
 //        Mappa_Conversione_Causali.put("lockup_swap_debited", "DUST-CONVERSION");//Conversione di monete 
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", fileDaImportare);//Bonus Swap MCO/CRO

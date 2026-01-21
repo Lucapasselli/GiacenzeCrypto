@@ -1897,6 +1897,7 @@ public class Prezzi {
                             if (IP!=null)
                             {
                                 IP.OggettoMoneta=mon[k];
+                                if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
                                 return IP;
                             }
                     }
@@ -1916,6 +1917,7 @@ public class Prezzi {
                         if (IP!=null)
                         {
                             IP.OggettoMoneta=mon[k];
+                            if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
                             return IP;
                         }
             }

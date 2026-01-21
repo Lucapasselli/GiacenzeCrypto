@@ -637,6 +637,11 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("Mission Reward Distribution",                "REWARD");//
         Mappa_Conversione_Causali.put("Swap Farming Rewards",                       "REWARD");//
         Mappa_Conversione_Causali.put("Commission History",                         "ALTRE-REWARD");//
+        Mappa_Conversione_Causali.put("Launchpool Airdrop - System Distribution",                         "AIRDROP");//
+        Mappa_Conversione_Causali.put("HODLer Airdrops Distribution",                         "REWARD");//
+        
+        Mappa_Conversione_Causali.put("Tax Payment",                         "VENDITA CRYPTO");//
+
 
         Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING REWARDS");//
         Mappa_Conversione_Causali.put("Simple Earn Flexible Subscription",          "TRASFERIMENTO-CRYPTO-INTERNO");//
@@ -3642,7 +3647,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     movimentoConvertito.trim().equalsIgnoreCase("STAKING REWARDS")||
                                     movimentoConvertito.trim().equalsIgnoreCase("EARN")||
                                     movimentoConvertito.trim().equalsIgnoreCase("REWARD")||
-                                    movimentoConvertito.trim().equalsIgnoreCase("ALTRE-REWARD"))
+                                    movimentoConvertito.trim().equalsIgnoreCase("ALTRE-REWARD")||
+                                    movimentoConvertito.trim().equalsIgnoreCase("AIRDROP"))
                             {
 
                                 RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_RW";

@@ -1854,7 +1854,7 @@ public class Prezzi {
                     IP.Qta=PrezzoTransazione;
                     IP.Fonte="";
                     IP.prezzoUnitario=new BigDecimal("1");
-                    IP.prezzoQta=PrezzoTransazione;
+                    IP.prezzoQta=PrezzoTransazione.abs();
                     IP.timestamp=Data;   
                     IP.OggettoMoneta=mon[k];
                     return IP;
@@ -1898,7 +1898,7 @@ public class Prezzi {
                             if (IP!=null)
                             {
                                 IP.OggettoMoneta=mon[k];
-                                if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
+                                if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
                                 return IP;
                             }
                     }
@@ -1918,7 +1918,7 @@ public class Prezzi {
                         if (IP!=null)
                         {
                             IP.OggettoMoneta=mon[k];
-                            if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario);
+                            if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
                             return IP;
                         }
             }

@@ -127,7 +127,7 @@ public class Funzioni {
             String PartiCoinvolte[]=(ID+","+Annessi[20]).split(",");
             if (Annessi[20]!=null && !Annessi[20].equalsIgnoreCase("")){
                 //L'ID può infatti cambiare in fase di ripristino dei movimenti
-                ID=ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID);
+                ID=GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID);
             }
             Principale.MappaCryptoWallet.remove(ID);
             } 
@@ -260,25 +260,30 @@ public class Funzioni {
         }
     }  
     
-    public static boolean isDepositoPrelievoClassificabile(String ID,String v[]){
+    public static boolean isDepositoPrelievoClassificabile(String ID,String v[],boolean VediFIAT){
         //posso passare alla funzione sia l'ID della transazione sia la transazione per intero o entrambe
         //I depositi classificabili sono quelli di tipo DC e PC che non sono movimenti artificiali
         //il movimento inoltre non deve contemplare token scam
         if (ID==null)ID=v[0];
         String TipoMovimento=ID.split("_")[4].trim();
         if(v==null) v=Principale.MappaCryptoWallet.get(ID);
-          //AU sono equiparati a dei trasferimenti interni, da verifixcare accuratamente perchè così rischio di fare casino nelle esportazioni
-          if ((TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("PC"))&&v[22]!=null&&!v[22].equalsIgnoreCase("AU"))
-          {
-            //Adesso controllo se il token è scam e in quel caso non lo faccio vedere che creo solo confusione
-              if (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11])
-                      ||
-                  TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8]))
-              {
-                  return true;
-              }
-          }
-        return false;
+        
+        //In questa parte considero il movimento ok se è per crypto e se è di fiat ma solo se il booleano è a true
+        //Set<String> movimentiCrypto = Set.of("DC", "PC");
+        Set<String> movimentiFiat = Set.of("DF", "PF");
+        boolean tipoMovimentoOK
+                = TipoMovimento != null//il movimento non deve essere null
+                &&
+                (
+                (TipoMovimento.equalsIgnoreCase("DC")&&!Funzioni.isSCAM(v[11]))//può essere DC e non scam
+                || (TipoMovimento.equalsIgnoreCase("PC")&&!Funzioni.isSCAM(v[8]))//può essere PC e non scam
+                || (VediFIAT && movimentiFiat.contains(TipoMovimento.toUpperCase()))//può essere fiat se espressamente richiesto
+                )&& 
+                v[22]!=null&&!v[22].equalsIgnoreCase("AU")//non deve essere un movimento automaticamente generato
+                
+                ;
+        return tipoMovimentoOK;
+
     }         
               
               
@@ -316,7 +321,7 @@ public class Funzioni {
                 PopUp_abilitaMenuDaTesto(pop,"Modifica Note");
                 PopUp_abilitaMenuDaTesto(pop,"Mostra LiFo Transazione");
                 
-                if (isDepositoPrelievoClassificabile(ID, null)){
+                if (isDepositoPrelievoClassificabile(ID, null,false)){
                    PopUp_abilitaMenuDaTesto(pop,"Classifica Movimento"); 
                 }else PopUp_disabilitaMenuDatesto(pop,"Classifica Movimento");
                 

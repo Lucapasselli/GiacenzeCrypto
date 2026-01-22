@@ -25,7 +25,7 @@ import javax.swing.SwingUtilities;
  *
  * @author luca.passelli
  */
-public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
+public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     private static final long serialVersionUID = 1L;
 
     /*
@@ -101,7 +101,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
     static Set<String> IDsTrans=new HashSet<>();
     boolean ModificaEffettuata=false;
     @SuppressWarnings("unchecked")
-    public ClassificazioneTrasf_Modifica(String ID) {
+    public GUI_ClassificazioneMovimento(String ID) {
         ModificaEffettuata=false;
         IDTrans=ID;
         setModalityType(ModalityType.APPLICATION_MODAL);
@@ -170,7 +170,7 @@ public class ClassificazioneTrasf_Modifica extends javax.swing.JDialog {
         
     }
     
-    public ClassificazioneTrasf_Modifica(Set<String> IDs) {
+    public GUI_ClassificazioneMovimento(Set<String> IDs) {
         ModificaEffettuata=false;
         IDsTrans=IDs;
         IDTrans=IDs.toArray()[0].toString();
@@ -1766,6 +1766,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             
         MovimentoPrelievo[5]="TRASFERIMENTO PER SCAMBIO";
         MovimentoDeposito[5]="TRASFERIMENTO PER SCAMBIO";
+        
+        
 
          
         //System.out.println(IDPrelievo);
@@ -1776,12 +1778,18 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         String MS[]=new String[Importazioni.ColonneTabella];
         String MT2[]=new String[Importazioni.ColonneTabella];
         String IDSpezzato[]=IDPrelievo.split("_");
+        boolean PrelievoFIAT=IDSpezzato[4].equalsIgnoreCase("PF");
         MovimentoPrelievo[0]=IDSpezzato[0]+"_00"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_"+IDSpezzato[4];
         IDTrasferimento1=IDSpezzato[0]+"_01"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_DC";
+        if (PrelievoFIAT)IDTrasferimento1=IDTrasferimento1.substring(0, IDTrasferimento1.length() - 1) + "F";
         String IDSpezzatoDeposito[]=IDDeposito.split("_");
+        boolean DepositoFIAT=IDSpezzatoDeposito[4].equalsIgnoreCase("DF");
         IDScambio=IDSpezzatoDeposito[0]+"_02"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_SC";
         IDTrasferimento2=IDSpezzatoDeposito[0]+"_03"+IDSpezzato[1]+"_"+IDSpezzato[2]+"_"+IDSpezzato[3]+"_PC";
+        if (DepositoFIAT)IDTrasferimento2=IDTrasferimento2.substring(0, IDTrasferimento2.length() - 1) + "F";
         MovimentoDeposito[0]=IDSpezzatoDeposito[0]+"_04"+IDSpezzatoDeposito[1]+"_"+IDSpezzatoDeposito[2]+"_"+IDSpezzatoDeposito[3]+"_"+IDSpezzatoDeposito[4];
+        if (DepositoFIAT)IDScambio=IDScambio.substring(0, IDScambio.length() - 2) + "VC";
+        if (PrelievoFIAT)IDScambio=IDScambio.substring(0, IDScambio.length() - 2) + "AC";
         MT1[0]=IDTrasferimento1;
         MS[0]=IDScambio;
         MT2[0]=IDTrasferimento2;
@@ -1802,6 +1810,14 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         MT2[4]="Piattaforma di scambio";//da mettere defi se il movimento è in defi
         MT1[5]="TRASFERIMENTO PER SCAMBIO";
         MS[5]="SCAMBIO CRYPTO";
+        if (DepositoFIAT)
+        {
+            MS[5]="VENDITA CRYPTO";
+        }
+        if (PrelievoFIAT)
+        {
+            MS[5]="ACQUISTO CRYPTO";
+        }
         MT2[5]="TRASFERIMENTO PER SCAMBIO";
         String MonetaUscita=MovimentoPrelievo[8];
         if (!MovimentoPrelievo[25].isBlank())MonetaUscita=MovimentoPrelievo[25];
@@ -1848,8 +1864,12 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             String Prezzo;
             String Rete=Funzioni.TrovaReteDaID(MovimentoPrelievo[0]);
             Prezzo=Prezzi.DammiPrezzoTransazione(M1, null, DatalongDeposito, "0", true, 3, Rete,"");
-            //Se la differenza è inferiore ai 5 minuti allora posso prendere sia il prezzo del token uscito che di quello entrato
-            if (DiffDate<300000){
+            //Se la differenza è inferiore ai 30 minuti allora posso prendere sia il prezzo del token uscito che di quello entrato
+            if (DiffDate<1800000){
+                Moneta M2 = new Moneta();
+                M2.InserisciValori(MovimentoDeposito[11], MovimentoDeposito[13], MovimentoDeposito[28], MovimentoDeposito[12]);
+                Prezzo=Prezzi.DammiPrezzoTransazione(M1, M2, DatalongDeposito, "0", true, 3, Rete,"");
+                System.out.println(Prezzo);
                 // Se il prezzo è uguale a zero allora prendo il prezzo di deposito se esiste                
                 if(Prezzo.equals("0.00")){
                     Prezzo=MovimentoDeposito[15];
@@ -2108,6 +2128,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         String TipoMovimentoAttuale = attuale[0].split("_")[4].trim();
         String WalletAttuale=attuale[3]+attuale[4];
         String TipoMovimentoRichiesto;
+        Set<String> SetMovimentiRichiesti;
         String MonetaAttuale;
         BigDecimal QtaAttuale;
         long Giorni=Long.parseLong(ComboBox_EscursioneMassimaGiorni.getSelectedItem().toString())*86400000;
@@ -2215,13 +2236,15 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             if (TipoMovimentoAttuale.equalsIgnoreCase("PC")) {
                 MonetaAttuale = attuale[8].trim();
               //  QtaAttuale = new BigDecimal(attuale[10]).stripTrailingZeros();
-                TipoMovimentoRichiesto = "DC";
+                //TipoMovimentoRichiesto = "DC";
+                SetMovimentiRichiesti = Set.of("DC", "DF");
                     DataMinima=DataOraAttuale-Giorni;
                     DataMassima=DataOraAttuale+ 86400000;
             } else {
                 MonetaAttuale = attuale[11].trim();
               //  QtaAttuale = new BigDecimal(attuale[13]).stripTrailingZeros();
-                TipoMovimentoRichiesto = "PC";
+                //TipoMovimentoRichiesto = "PC";
+                SetMovimentiRichiesti = Set.of("PC", "PF");
                 DataMinima=DataOraAttuale- 86400000;
                 DataMassima=DataOraAttuale+Giorni;
             }
@@ -2233,19 +2256,19 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             for (String[] v : MappaCryptoWallet.values()) {
                // System.out.println("Differito");
                 String TipoMovimento = v[0].split("_")[4].trim();
-                if (v[22]!=null&&!v[22].equalsIgnoreCase("AU")&&TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
+                if (v[22]!=null&&!v[22].equalsIgnoreCase("AU")&&SetMovimentiRichiesti.contains(TipoMovimento.toUpperCase())) {
                     
                     BigDecimal QtanoABS = null;
                     String Moneta = null;
                     long DataOra = 0;
                     
-                    if (TipoMovimento.equalsIgnoreCase("DC"))
+                    if (TipoMovimento.equalsIgnoreCase("DC")||TipoMovimento.equalsIgnoreCase("DF"))
                     {
                         QtanoABS = new BigDecimal(v[13]);
                         Moneta = v[11].trim();
                         DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1])-Giorni;
 
-                    } else if (TipoMovimento.equalsIgnoreCase("PC"))
+                    } else if (TipoMovimento.equalsIgnoreCase("PC")||TipoMovimento.equalsIgnoreCase("PF"))
                     {
                         QtanoABS = new BigDecimal(v[10]);
                         DataOra = FunzioniDate.ConvertiDatainLongMinuto(v[1])+Giorni;
@@ -2291,20 +2314,21 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ClassificazioneTrasf_Modifica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ClassificazioneTrasf_Modifica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ClassificazioneTrasf_Modifica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ClassificazioneTrasf_Modifica.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI_ClassificazioneMovimento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ClassificazioneTrasf_Modifica(IDTrans).setVisible(true);
+                new GUI_ClassificazioneMovimento(IDTrans).setVisible(true);
             }
         });
     }

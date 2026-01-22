@@ -755,7 +755,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
                 //No=1
                 switch (risposta) {
                     case 0 -> {
-                        ID=ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID); 
+                        ID=GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(PartiCoinvolte,ID); 
 
                         //String id=mappa_ID.get(Riferimento);
                 Point p = this.getLocation();

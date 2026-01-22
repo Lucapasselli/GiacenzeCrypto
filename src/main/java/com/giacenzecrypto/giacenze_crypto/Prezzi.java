@@ -1349,6 +1349,7 @@ public class Prezzi {
         try {
 
             Crypto = Crypto.toUpperCase().replaceAll("\\*", "").trim();
+            if (Crypto.equalsIgnoreCase("LAYER"))return;
             
             //Siccome timestamp nelle api di cryptocompare corrisponde alla data dell'ultimo dato che voglio ricevere
             //e ricevo 30 gg di dati aggiungo sempre 20gg al timestamp in modo da avere i dati 10gg prima e 20 dopo la richiesta fatta.

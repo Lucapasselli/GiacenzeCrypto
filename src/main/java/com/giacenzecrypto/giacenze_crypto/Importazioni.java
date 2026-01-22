@@ -108,7 +108,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import static com.giacenzecrypto.giacenze_crypto.Principale.Funzioni_Date_ConvertiDatainLong;
-import static com.giacenzecrypto.giacenze_crypto.ClassificazioneTrasf_Modifica.RiportaTransazioniASituazioneIniziale;
+import static com.giacenzecrypto.giacenze_crypto.GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale;
 import com.giacenzecrypto.giacenze_crypto.TransazioneDefi.ValoriToken;
 import java.awt.Component;
 import java.io.File;
@@ -601,7 +601,7 @@ System.out.println(response.body().string());
     
     */
     
-        public static boolean Importa_Crypto_Binance(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
+        public static boolean Binance_Importa_Crypto(String fileBinance,boolean SovrascriEsistenti,Component c,Download progressb) {
         //Da sistemare problema su prezzi della giornata odierna/precendere che vanno in loop
         //Da sistemare problema con conversione dust su secondi diversi che da problemi
         //Da sistemare problema con il nuovo stakin che non viene conteggiato (FATTO MA NON SO IL RITIRO DALLO STAKING con che causale sarà segnalato) bisognerà fare delle prove
@@ -640,7 +640,7 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("Launchpool Airdrop - System Distribution",                         "AIRDROP");//
         Mappa_Conversione_Causali.put("HODLer Airdrops Distribution",                         "REWARD");//
         
-        Mappa_Conversione_Causali.put("Tax Payment",                         "VENDITA CRYPTO");//
+        
 
 
         Mappa_Conversione_Causali.put("ETH 2.0 Staking Rewards",                    "STAKING REWARDS");//
@@ -684,6 +684,11 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("ETH 2.0 Staking",                            "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("ETH 2.0 Staking Withdrawals",                "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("Stablecoins Auto-Conversion",                "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("SOL Staking Redemption - Deduction",         "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("SOL Staking Redemption - Distribute",        "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("WBETH2.0 - Staking",                         "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("SOL Staking - Purchase",                     "SCAMBIO CRYPTO-CRYPTO");//
+        
         
         Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");
         Mappa_Conversione_Causali.put("Fee",                                        "COMMISSIONI");
@@ -700,6 +705,7 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("Buy Crypto With Fiat",                       "ACQUISTO CRYPTO");//Inserito il 11/12/2024
         Mappa_Conversione_Causali.put("Convert Fiat to Stablecoin Paysafe",         "ACQUISTO CRYPTO");//Inserito il 21/07/2024
         Mappa_Conversione_Causali.put("Tax Liquidation",                            "VENDITA CRYPTO");//Inserito il 08/01/2025
+        Mappa_Conversione_Causali.put("Tax Payment",                                "VENDITA CRYPTO");//Inserito il 22/01/2026
         
         Mappa_Conversione_Causali.put("Referral Commission",                        "REWARD");//Inserito il 21/07/2024
         Mappa_Conversione_Causali.put("Crypto Box",                                 "REWARD"); // Red carpet Binance rewards, Inserito il 21/07/2024
@@ -772,7 +778,7 @@ System.out.println(response.body().string());
                     else //altrimenti consolido il movimento precedente
                     {
                      //   System.out.println(riga);
-                        List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
+                        List<String[]> listaConsolidata = Binance_ConsolidaMovimenti(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
                         int nElementi = listaConsolidata.size();
                         for (int i = 0; i < nElementi; i++) {
                             String consolidata[] = listaConsolidata.get(i);
@@ -788,7 +794,7 @@ System.out.println(response.body().string());
                 }
 
             }
-            List<String[]> listaConsolidata = ConsolidaMovimenti_Binance(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
+            List<String[]> listaConsolidata = Binance_ConsolidaMovimenti(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
           //  List<String> listaAutoinvestimenti=new ArrayList()<>;
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
@@ -3561,7 +3567,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     PrezzoPrelievo.subtract(PrezzoDeposito).abs().compareTo(Diecipercento)==-1){
                                 //Se la differenza tra il prezzo di prelievo e deposito è inferiore al 10% allora proseguo
                                 //e associo i movimenti e poi termino il ciclo
-                                    ClassificazioneTrasf_Modifica.CreaMovimentiScambioCryptoDifferito(riga[0], rigaConfronto[0]);
+                                    GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(riga[0], rigaConfronto[0]);
                                     
                                                                
                             }
@@ -3574,7 +3580,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         }
      
         
-          public static List<String[]> ConsolidaMovimenti_Binance(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest){
+          public static List<String[]> Binance_ConsolidaMovimenti(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
@@ -3994,7 +4000,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[2] = i + " di " + totMov;
                                             RT[3] = "Binance";
                                             RT[4] = "Principale";
-                                            RT[5] = "Deposito";
+                                            RT[5] = "DEPOSITO";
+                                            if (tokenE.Tipo.equals("FIAT"))
+                                            {
+                                                //In questo caso cambio anche l tipologia nell'ID
+                                                RT[0] = RT[0].substring(0, RT[0].length() - 1) + "F";
+                                                RT[5]=RT[5]+" FIAT";
+                                            }
+                                            else if (tokenE.Tipo.equals("NFT"))RT[5]=RT[5]+" NFT";
+                                            else RT[5]=RT[5]+" CRYPTO";
                                             RT[6] = " -> " + tokenE.RitornaNomeToken();
                                             RT[7] = tokenE.CausaleOriginale;
                                             RT[11] = tokenE.Moneta;
@@ -4035,7 +4049,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             RT[2] = i + " di " + totMov;
                                             RT[3] = "Binance";
                                             RT[4] = "Principale";
-                                            RT[5] = "Prelievo";
+                                            RT[5] = "PRELIEVO";
+                                            if (tokenU.Tipo.equals("FIAT"))
+                                            {
+                                                //In questo caso cambio anche l tipologia nell'ID
+                                                RT[0] = RT[0].substring(0, RT[0].length() - 1) + "F";
+                                                RT[5]=RT[5]+" FIAT";
+                                            }
+                                            else if (tokenU.Tipo.equals("NFT"))RT[5]=RT[5]+" NFT";
+                                            else RT[5]=RT[5]+" CRYPTO";
                                             RT[6] = tokenU.RitornaNomeToken()+" ->";
                                             RT[7] = tokenU.CausaleOriginale;
                                             RT[8] = tokenU.Moneta;

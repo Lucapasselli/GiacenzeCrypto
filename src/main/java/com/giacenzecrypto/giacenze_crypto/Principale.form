@@ -1256,21 +1256,21 @@
                                               <Component id="DepositiPrelievi_Bottone_AssegnazioneManuale" min="-2" pref="185" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="jLabel21" min="-2" pref="167" max="-2" attributes="0"/>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="DepositiPrelievi_Label_FiltroWallet" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="DepositiPrelievi_ComboBox_FiltroWallet" min="-2" pref="346" max="-2" attributes="0"/>
-                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="DepositiPrelievi_Label_FiltroToken" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="DepositiPrelievi_ComboBox_FiltroToken" min="-2" pref="142" max="-2" attributes="0"/>
-                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
-                                                  </Group>
-                                              </Group>
-                                              <EmptySpace min="0" pref="345" max="32767" attributes="0"/>
+                                              <Component id="jLabel21" min="-2" pref="167" max="-2" attributes="0"/>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="DepositiPrelievi_Label_FiltroWallet" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_ComboBox_FiltroWallet" min="-2" pref="346" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_Label_FiltroToken" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_ComboBox_FiltroToken" min="-2" pref="142" max="-2" attributes="0"/>
+                                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" min="-2" pref="245" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="70" max="-2" attributes="0"/>
+                                              <Component id="DepositiPrelievi_CheckBox_mostraFIAT" pref="276" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -1288,9 +1288,10 @@
                                   <Component id="DepositiPrelievi_Label_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="DepositiPrelievi_ComboBox_FiltroToken" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="DepositiPrelievi_CheckBox_movimentiClassificati" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="DepositiPrelievi_CheckBox_mostraFIAT" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="530" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="546" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="102" alignment="1" attributes="0">
@@ -1332,7 +1333,7 @@
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                       <SubComponents>
-                        <Component class="javax.swing.JTable" name="DepositiPrelievi_Tabella">
+                        <Component class="javax.swing.JTable" name="DepositiPrelievi_CheckBox_movimentiClassificati1">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="10" rowCount="0">
@@ -1408,11 +1409,11 @@
                             </Property>
                           </Properties>
                           <Events>
-                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_TabellaMouseReleased"/>
-                            <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="DepositiPrelievi_TabellaKeyReleased"/>
+                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_CheckBox_movimentiClassificati1MouseReleased"/>
+                            <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="DepositiPrelievi_CheckBox_movimentiClassificati1KeyReleased"/>
                           </Events>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));"/>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="DepositiPrelievi_CheckBox_movimentiClassificati1.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getTotalColumnWidth(), 64));"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>
@@ -1890,6 +1891,14 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Movimenti Correlati :"/>
                       </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="DepositiPrelievi_CheckBox_mostraFIAT">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Mostra depositi/prelievi FIAT"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_CheckBox_mostraFIATMouseReleased"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

@@ -1624,7 +1624,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             }
                             //lista.add(riga);
                         }
-                    if (splittata.length==7&&Funzioni.isNumeric(splittata[4], false)){
+                    if ((splittata.length==7||splittata.length==9)&&Funzioni.isNumeric(splittata[4], false)){
                         //QUESTO SERVE PER IL NUOVO FORMATO DI TATAX
                         // Definisci il formato della data
                        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

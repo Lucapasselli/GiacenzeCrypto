@@ -30,6 +30,7 @@ Nuove Implementazioni :
  - Implementato l'importazione diretta dai CSV di Crypto.com Exchange
 Correzione Bug :
  - Adeguato importazione Tatax al suo nuovo standard di file
+ - Corretto errore bloccante su talune importazioni dal file csv di Binance
  
 ver. 1.0.49
 Nuove Implementazioni : 

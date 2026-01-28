@@ -688,6 +688,7 @@ System.out.println(response.body().string());
         Mappa_Conversione_Causali.put("SOL Staking Redemption - Distribute",        "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("WBETH2.0 - Staking",                         "SCAMBIO CRYPTO-CRYPTO");//
         Mappa_Conversione_Causali.put("SOL Staking - Purchase",                     "SCAMBIO CRYPTO-CRYPTO");//
+        Mappa_Conversione_Causali.put("WBETH2.0 - Redemption Unfreeze and Transfer","SCAMBIO CRYPTO-CRYPTO");//
         
         
         Mappa_Conversione_Causali.put("Transaction Fee",                            "COMMISSIONI");

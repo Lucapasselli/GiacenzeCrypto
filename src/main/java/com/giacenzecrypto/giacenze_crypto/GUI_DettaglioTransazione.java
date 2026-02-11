@@ -344,7 +344,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         
                 Valore=Transazione[40];
         if (!Valore.isBlank()){
-            String VSplit[]=Valore.split("\\|");        
+            String VSplit[]=Valore.split("\\|",-1);        
             Val=new String[]{"Info Prezzo : Fonte ",VSplit[3]};
             ModelloTabellaCrypto.addRow(Val);
             if (Funzioni.isNumeric(VSplit[1], false)){

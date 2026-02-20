@@ -158,30 +158,32 @@
                           <Component id="P_LabelMoneta" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="ValoreTransazione_TextField" max="32767" attributes="0"/>
-                          <Component id="P_TextFonte" alignment="0" max="32767" attributes="0"/>
-                          <Component id="P_TextMoneta" alignment="0" pref="150" max="32767" attributes="0"/>
-                      </Group>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="P_LabelPU" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="P_LabelTimeFonte" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="P_TextFonte" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="P_TextMoneta" alignment="0" pref="150" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="P_LabelTimeFonte" min="-2" max="-2" attributes="0"/>
+                                  <Component id="P_LabelPU" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="P_TextPU" max="32767" attributes="0"/>
-                                  <Component id="P_TextTimeFonte" pref="150" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="P_TextPU" min="-2" pref="150" max="-2" attributes="0"/>
+                                  <Component id="P_TextTimeFonte" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Bottone_ModificaPrezzo" min="-2" pref="260" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="Bottone_ModificaPrezzo" min="-2" pref="548" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="ValoreTransazione_TextField" min="-2" pref="426" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Bottone_PrezzoAutomatico" min="-2" pref="260" max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="Note_Label" min="-2" max="-2" attributes="0"/>
@@ -268,25 +270,33 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="ValoreTransazione_Label" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ValoreTransazione_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Bottone_ModificaPrezzo" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="P_LabelFonte" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="P_LabelPU" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="P_TextFonte" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="P_TextPU" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="P_LabelMoneta" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="P_LabelTimeFonte" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="P_TextMoneta" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="P_TextTimeFonte" alignment="3" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="ValoreTransazione_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ValoreTransazione_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="P_LabelFonte" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="P_LabelPU" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="P_TextFonte" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="P_TextPU" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="P_LabelMoneta" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="P_LabelTimeFonte" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="P_TextMoneta" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="P_TextTimeFonte" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="Bottone_PrezzoAutomatico" min="-2" pref="44" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_ModificaPrezzo" min="-2" pref="44" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
@@ -303,7 +313,7 @@
                   <Component id="Bottone_Ok" alignment="3" min="-2" pref="47" max="-2" attributes="0"/>
                   <Component id="Bottone_Annulla" alignment="3" min="-2" pref="47" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="0" pref="9" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -604,7 +614,7 @@
     <Component class="javax.swing.JButton" name="Bottone_ModificaPrezzo">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/Images/24_Prezzo.png"/>
+          <Image iconType="3" name="/Images/24_Modifica.png"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Modifica Prezzo"/>
       </Properties>
@@ -862,6 +872,23 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_PrezzoAutomatico">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Prezzo.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Prezzo Automatico"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[146, 35]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[146, 35]"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_PrezzoAutomaticoActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

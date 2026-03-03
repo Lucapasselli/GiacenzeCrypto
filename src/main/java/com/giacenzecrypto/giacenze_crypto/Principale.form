@@ -1333,7 +1333,7 @@
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                       <SubComponents>
-                        <Component class="javax.swing.JTable" name="DepositiPrelievi_CheckBox_movimentiClassificati1">
+                        <Component class="javax.swing.JTable" name="DepositiPrelievi_Tabella">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                               <Table columnCount="10" rowCount="0">
@@ -1409,11 +1409,11 @@
                             </Property>
                           </Properties>
                           <Events>
-                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_CheckBox_movimentiClassificati1MouseReleased"/>
-                            <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="DepositiPrelievi_CheckBox_movimentiClassificati1KeyReleased"/>
+                            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="DepositiPrelievi_TabellaMouseReleased"/>
+                            <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="DepositiPrelievi_TabellaKeyReleased"/>
                           </Events>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="DepositiPrelievi_CheckBox_movimentiClassificati1.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getTotalColumnWidth(), 64));"/>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>

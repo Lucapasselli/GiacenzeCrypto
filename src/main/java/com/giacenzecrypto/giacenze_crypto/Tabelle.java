@@ -1758,6 +1758,16 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         }*/
         modello.setRowCount(0);
     }
+    
+            public static void Funzioni_PulisciTabellaLento(DefaultTableModel modello) {
+        int z = modello.getRowCount();
+        // System.out.println(modelProblemi.getRowCount());
+        while (z != 0) {
+            modello.removeRow(0);
+            z = modello.getRowCount();
+        }
+       // modello.setRowCount(0);
+    }
      
     public static class OptionEntry {
     public final String value;
@@ -1768,6 +1778,10 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
         this.selected = false;
     }
 }
+    
+
+     
+
 
     
     public static class MultiSelectPopUp_CombinedIcon implements Icon {

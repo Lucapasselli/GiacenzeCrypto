@@ -441,7 +441,7 @@ private static final long serialVersionUID = 3L;
         AnalisiCrypto = new javax.swing.JTabbedPane();
         DepositiPrelievi = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        DepositiPrelievi_CheckBox_movimentiClassificati1 = new javax.swing.JTable();
+        DepositiPrelievi_Tabella = new javax.swing.JTable();
         DepositiPrelievi_Bottone_AssegnazioneAutomatica = new javax.swing.JButton();
         DepositiPrelievi_Bottone_AssegnazioneManuale = new javax.swing.JButton();
         DepositiPrelievi_CheckBox_movimentiClassificati = new javax.swing.JCheckBox();
@@ -1457,7 +1457,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        DepositiPrelievi_CheckBox_movimentiClassificati1.setModel(new javax.swing.table.DefaultTableModel(
+        DepositiPrelievi_Tabella.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -1473,44 +1473,44 @@ private static final long serialVersionUID = 3L;
                 return canEdit [columnIndex];
             }
         });
-        DepositiPrelievi_CheckBox_movimentiClassificati1.setName("DepositiPrelievi"); // NOI18N
-        DepositiPrelievi_CheckBox_movimentiClassificati1.addMouseListener(new java.awt.event.MouseAdapter() {
+        DepositiPrelievi_Tabella.setName("DepositiPrelievi"); // NOI18N
+        DepositiPrelievi_Tabella.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
-                DepositiPrelievi_CheckBox_movimentiClassificati1MouseReleased(evt);
+                DepositiPrelievi_TabellaMouseReleased(evt);
             }
         });
-        DepositiPrelievi_CheckBox_movimentiClassificati1.addKeyListener(new java.awt.event.KeyAdapter() {
+        DepositiPrelievi_Tabella.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                DepositiPrelievi_CheckBox_movimentiClassificati1KeyReleased(evt);
+                DepositiPrelievi_TabellaKeyReleased(evt);
             }
         });
-        jScrollPane2.setViewportView(DepositiPrelievi_CheckBox_movimentiClassificati1);
-        if (DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumnCount() > 0) {
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(0).setMinWidth(1);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(0).setPreferredWidth(1);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(0).setMaxWidth(1);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(1).setMinWidth(120);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(1).setPreferredWidth(120);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(1).setMaxWidth(120);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(2).setMinWidth(100);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(2).setMaxWidth(400);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(3).setMinWidth(100);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(3).setMaxWidth(200);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(4).setMinWidth(60);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(4).setPreferredWidth(60);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(4).setMaxWidth(240);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(5).setMinWidth(100);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(5).setPreferredWidth(100);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(5).setMaxWidth(150);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(6).setMinWidth(100);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(7).setMinWidth(70);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(7).setMaxWidth(70);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(8).setMinWidth(100);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(8).setMaxWidth(200);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(9).setMinWidth(50);
-            DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getColumn(9).setMaxWidth(400);
+        jScrollPane2.setViewportView(DepositiPrelievi_Tabella);
+        if (DepositiPrelievi_Tabella.getColumnModel().getColumnCount() > 0) {
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setMinWidth(1);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setPreferredWidth(1);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setMaxWidth(1);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMinWidth(120);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setPreferredWidth(120);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMaxWidth(120);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMaxWidth(400);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(3).setMaxWidth(200);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMinWidth(60);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setPreferredWidth(60);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(4).setMaxWidth(240);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setPreferredWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(5).setMaxWidth(150);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(6).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(7).setMinWidth(70);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(7).setMaxWidth(70);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMinWidth(100);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(8).setMaxWidth(200);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMinWidth(50);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(9).setMaxWidth(400);
         }
-        DepositiPrelievi_CheckBox_movimentiClassificati1.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_CheckBox_movimentiClassificati1.getColumnModel().getTotalColumnWidth(), 64));
+        DepositiPrelievi_Tabella.getTableHeader().setPreferredSize(new Dimension(DepositiPrelievi_Tabella.getColumnModel().getTotalColumnWidth(), 64));
 
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Auto.png"))); // NOI18N
         DepositiPrelievi_Bottone_AssegnazioneAutomatica.setText("Assegnazione Automatica");
@@ -5775,36 +5775,6 @@ JPanel loadingBar = new JPanel() {
    
    }
             
-   /* public static void getBitcoinPrice(String symbol, long timestamp) throws IOException {
-        try {
-            String apiUrl = "https://api.binance.com/api/v3/klines?symbol=" + symbol + "&interval=1m&startTime=" + timestamp + "&endTime=" + timestamp;
-            
-            URL url = new URI(apiUrl).toURL();
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
-            
-            // Parsing del JSON di risposta per ottenere il prezzo
-            String json = response.toString();
-            String[] data = json.substring(1, json.length() - 1).split(",");
-            //double price = Double.parseDouble(data[4]);
-          //  System.out.println (apiUrl);
-           // System.out.println (response.toString());
-           // System.out.println (data[4]); //questo è il valore sulla coppia con usdt
-            
-            // return price;
-        } catch (URISyntaxException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-    }*/
     
     public void CDC_FiatWallet_Funzione_ImportaWallet(String fiatwallet) {
         // TODO add your handling code here:
@@ -6838,19 +6808,6 @@ JPanel loadingBar = new JPanel() {
     }//GEN-LAST:event_CDC_CardWallet_Bottone_StampaRapportoActionPerformed
 
     
-    private Map<String, String[]> GiacenzeaData_Funzione_RitornaIDMovimentiToken(String Moneta, String Address, String Rete) {
-        //Questa funzione ritorna un array con tutti gli ID che coinvolgono la moneta in questione
-        Map<String, String[]> IDconMoneta = new TreeMap<>();
-        for (String[] movimento : MappaCryptoWallet.values()) {
-            String ReteMovimento = Funzioni.TrovaReteDaIMovimento(movimento);
-            if ((movimento[8].equals(Moneta) && movimento[26].equals(Address) && ReteMovimento.equals(Rete))
-                    || (movimento[11].equals(Moneta) && movimento[28].equals(Address) && ReteMovimento.equals(Rete))) {
-                IDconMoneta.put(movimento[0], movimento);
-            }
-        }
-        return IDconMoneta;
-    }
-    
     
     private void SaldiNegativi_CompilaTabellaMovimenti(){
             //Gestisco i bottoni
@@ -7220,20 +7177,15 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_AssegnazioneManualeActionPerformed
         // TODO add your handling code here:
 
-        if (DepositiPrelievi_CheckBox_movimentiClassificati1.getSelectedRow()>=0){
+        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
         //int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
         
-        int righeselezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_CheckBox_movimentiClassificati1);
+        int righeselezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
         Set<String> setIDs = new HashSet<>();
         for (int riga:righeselezionate){
-            setIDs.add(DepositiPrelievi_CheckBox_movimentiClassificati1.getModel().getValueAt(riga, 0).toString());
+            setIDs.add(DepositiPrelievi_Tabella.getModel().getValueAt(riga, 0).toString());
         }
         
-         
-        
-       // String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
-
-        //ClassificazioneTrasf_Modifica mod=new ClassificazioneTrasf_Modifica(IDTransazione);
         GUI_ClassificazioneMovimento mod=new GUI_ClassificazioneMovimento(setIDs);
         mod.setLocationRelativeTo(this);
         mod.setVisible(true);
@@ -7242,26 +7194,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             Funzioni_AggiornaTutto();
           //  DepositiPrelievi_Caricatabella();
         }
-             
-      //  DepositiPrelievi_Caricatabella();
-        
-        
-        
-      /*            String tipo;
-                    String aggiornata2[]=MappaCryptoWallet.get(id2);
-                    if(id2.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    aggiornata2[18]=tipo;
-                    aggiornata2[5]="TRASFERIMENTO TRA WALLET";
-                    aggiornata2[19]="0";
-                    aggiornata2[20]=id;
-                    String aggiornata[]=MappaCryptoWallet.get(id);
-                    if(id.split("_")[4].equalsIgnoreCase("DC")) tipo="DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";else tipo="PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
-                    aggiornata[18]=tipo;
-                    aggiornata[5]="TRASFERIMENTO TRA WALLET";
-                    aggiornata[19]="0";
-                    aggiornata[20]=id2;
-                    MappaCryptoWallet.put(id, aggiornata);
-                    MappaCryptoWallet.put(id2, aggiornata2);*/
+            
         
         
         }
@@ -7302,12 +7235,12 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             Importazioni.ConvertiScambiLPinDepositiPrelievi();
         }
         DepositiPrelieviDaCategorizzare = new ArrayList<>();
-        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_CheckBox_movimentiClassificati1.getModel();
+        DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabella);
-        Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_CheckBox_movimentiClassificati1);
-        Tabelle.Tabelle_FiltroColonne(DepositiPrelievi_CheckBox_movimentiClassificati1,null,popup);
+        Tabelle.ColoraRigheTabellaCrypto(DepositiPrelievi_Tabella);
+        Tabelle.Tabelle_FiltroColonne(DepositiPrelievi_Tabella,null,popup);
         String WalletVoluto = DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
         String GruppoWalletVoluto = "";
         if (WalletVoluto.contains(":")) {
@@ -7439,7 +7372,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
        // Importazioni.ConvertiScambiLPinDepositiPrelievi();
         int numeromodifiche=0;
-        DefaultTableModel ModelloTabella1DepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_CheckBox_movimentiClassificati1.getModel();
+        DefaultTableModel ModelloTabella1DepositiPrelievi = (DefaultTableModel) this.DepositiPrelievi_Tabella.getModel();
         //SituazioneImport_Tabella1.
         int numeroRighe=ModelloTabella1DepositiPrelievi.getRowCount();
         //int numeroRighe=Principale.DepositiPrelieviDaCategorizzare.size();
@@ -8179,12 +8112,9 @@ SwingUtilities.invokeLater(() -> {
         // TODO add your handling code here:
          if(evt.getStateChange() == ItemEvent.SELECTED && GiacenzeaData_Wallet_ComboBox.isShowing()) {
              
-          // System.out.println("poroppopero");
-            GiacenzeaData_Funzione_AggiornaComboBoxWallet2();
-           
-           
+            GiacenzeaData_Funzione_AggiornaComboBoxWallet2();          
            }
-          // GiacenzeaData_Wallet_ComboBox.getSelectedItem()
+
     }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
 
     private void GiacenzeaData_Bottone_MovimentiDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_MovimentiDefiActionPerformed
@@ -8265,8 +8195,6 @@ SwingUtilities.invokeLater(() -> {
         int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(TabMovimenti);
         if (rigaselezionata >= 0) {
             int scelta;
-            //int rigaselezionataTabPrincipale = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
-            //String TipoMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionataTabPrincipale, 3).toString();
             String Moneta = TabMovimenti.getModel().getValueAt(rigaselezionata, 2).toString();
             String IDTrans = TabMovimenti.getModel().getValueAt(rigaselezionata, 8).toString();
             //Adesso recupero tipo moneta e address dalla transazione
@@ -8289,20 +8217,12 @@ SwingUtilities.invokeLater(() -> {
             
             String GiacenzaAttualeS = TabMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
             String GiacNegativaPrecedente = TabMovimenti.getModel().getValueAt(rigaselezionata, 9).toString();
-       /*     String AddressMoneta = null;
-            if (GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 3) != null) {
-                AddressMoneta = GiacenzeaData_TabellaDettaglioMovimenti.getModel().getValueAt(rigaselezionata, 3).toString();
-            }*/
+
             long DataRiferimento;
             BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
             BigDecimal GiacenzaVoluta = new BigDecimal(0);
             BigDecimal QtaNuovoMovimento;
-            
-            
-            /*   int risposta=JOptionPane.showOptionDialog(c,"Sicuro di voler cancellare la transazione con ID "+ID+" ?", "Cancellazione Transazioni Crypto", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
-            if (risposta==0){
-                
-            }*/
+
             
             
             if (Wallet==null || !Wallet.equalsIgnoreCase("tutti")){
@@ -8337,16 +8257,16 @@ SwingUtilities.invokeLater(() -> {
 
             }
                     
-                    
-                    
-                    
-                    
-                    
                     QtaNuovoMovimento = GiacenzaVoluta.subtract(GiacenzaAttuale);
                     String SQta = QtaNuovoMovimento.toPlainString();
                     BigDecimal ValoreMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 6).toString());
                     BigDecimal QtaMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 5).toString());
-                    BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
+                    if (QtaMovOrigine.compareTo(BigDecimal.ZERO)==0)
+                    {
+                        LoggerGC.ScriviErrore("QtaMovOrigine=0, esco dalla funzione");
+                        return;
+                    }
+                        BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
                     if (SQta.contains("-")) {
                         //Gestisco i movimenti di scarico (Prelievi)
                         String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
@@ -8381,8 +8301,6 @@ SwingUtilities.invokeLater(() -> {
                                 DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                               // String NuovoOrario=Funzioni.DataIDaggiungiUnSecondo(RTOri[0].split("_")[0]);
-                                //long NuovoOrario = Long.parseLong(RTOri[0].split("_")[0]) + 1;
                                 String RT2[] = new String[ColonneTabella];
                                 RT2[0] = "";//questo può variare in caso di movimento di commissione per cui lo metto nel capitolo successivo
                                 RT2[1] = RTOri[1];
@@ -8507,7 +8425,7 @@ SwingUtilities.invokeLater(() -> {
                             String Nota = JOptionPane.showInputDialog(this,
                                     "<html>Inserire un eventuale nota sul movimento :</html>", "Rettifica di Giacenza");
                             if (Nota != null) {
-
+                                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 //adesso compilo la parte comune del movimento
                                 String RTOri[] = MappaCryptoWallet.get(IDTrans);
                                 String IDOriSplittato[] = RTOri[0].split("_");
@@ -8601,19 +8519,6 @@ SwingUtilities.invokeLater(() -> {
                         //Ora sistemo i valori sulla tabella principale
                         //Devo ricalcolare la tabella principale
                         //Ricaricare i dettagli e riposizionare il tutto
-                   /*     // GiacenzeaData_Tabella.getModel().setValueAt(GiacenzaVoluta, rigaselezionataTabPrincipale, 4);
-                        int rigadettagli=TabMovimenti.getSelectedRow();
-                        Map <String,Object[]> tab=GiacenzeaData_CompilaTabellaToken(false);
-                        double giacFinale=Double.parseDouble(tab.get(Moneta)[4].toString()); 
-                        GiacenzeaData_Tabella.getModel().setValueAt(giacFinale, rigaselezionataTabPrincipale, 4);
-                        double PrezzoFinale;
-                        if (tab.get(Moneta)[5]==null)PrezzoFinale=0;
-                        else PrezzoFinale=Double.parseDouble(tab.get(Moneta)[5].toString());
-                        GiacenzeaData_Tabella.getModel().setValueAt(PrezzoFinale, rigaselezionataTabPrincipale, 5);
-                         //System.out.println(giacFinale+PrezzoFinale);
-                        GiacenzeaData_Tabella.setRowSelectionInterval(rigaselezionataTabPrincipale, rigaselezionataTabPrincipale);
-                        GiacenzeaData_CompilaTabellaMovimenti();                       
-                        GiacenzeaData_TabellaDettaglioMovimenti.setRowSelectionInterval(rigadettagli, rigadettagli);*/
                         //E ricarico la tabella secondaria
 
                         // GiacenzeaData_CompilaTabellaToken();
@@ -8769,9 +8674,9 @@ SwingUtilities.invokeLater(() -> {
 
     private void DepositiPrelievi_Bottone_DettaglioDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DettaglioDefiActionPerformed
         // TODO add your handling code here:
-        if (DepositiPrelievi_CheckBox_movimentiClassificati1.getSelectedRow()>=0){
-        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_CheckBox_movimentiClassificati1);        
-        String ID = DepositiPrelievi_CheckBox_movimentiClassificati1.getModel().getValueAt(rigaselezionata, 0).toString();
+        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
+        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
+        String ID = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
         if (!Funzioni_WalletDeFi.ApriExplorer(ID)){
             JOptionPane.showConfirmDialog(this, "Non è possibile aprire l'explorer per questa transazione.",
                             "Attenzione!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
@@ -9223,134 +9128,7 @@ SwingUtilities.invokeLater(() -> {
        
     }//GEN-LAST:event_RW_Bottone_CalcolaActionPerformed
 
-    
-    
-    
-    private void RW_CalcolaRWOld() {
-        // TODO add your handling code here:
-        //Come prima cosa faccio un pò di pulizia
-        System.out.println("RW_CalcoloRW");
-        DefaultTableModel ModelloTabella = (DefaultTableModel) this.RW_Tabella.getModel();
-        Tabelle.Funzioni_PulisciTabella(ModelloTabella);
-        Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella);
-        DefaultTableModel ModelloTabella2 = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
-        Tabelle.Funzioni_PulisciTabella(ModelloTabella2);
-        DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
-        Tabelle.Funzioni_PulisciTabella(ModelloTabella3);
-        RW_Bottone_CorreggiErrore.setEnabled(false);
-        RW_Bottone_IdentificaScam.setEnabled(false);
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        //Array Lista RW così composta
-        // 0 - Anno
-        // 1 - Gruppo Wallet
-        // 2 - Moneta
-        // 3 - Qta
-        // 4 - Data Inizio
-        // 5 - Prezzo Inizio
-        // 6 - Data Fine
-        // 7 - Prezzo Fine
-        // 8 - Giorni di detenzione
-        // 9 - Causale
-        Download progress = new Download();
-        progress.setLocationRelativeTo(this);
-        Thread thread;
-        thread = new Thread() {
-            public void run() {
 
-                //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
-                //in futuro dovrò mettere anche un limite per data e un limite per wallet
-                progress.Titolo("Calcolo RW in corso.... Attendere");
-                progress.SetLabel("Calcolo RW in corso.... Attendere");
-                progress.NascondiBarra();
-                progress.NascondiInterrompi();
-                Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString());// Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
-                //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
-                Map<String, String[]> MappaWallerQuadro = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
-
-                for (String key : Principale.Mappa_RW_ListeXGruppoWallet.keySet()) {
-                    // System.out.println(key);
-                    String Errore = "";
-                    String RW1[];
-                    RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);//Questo serve solo per compilare anche i quadri sui wallet senza movimentazioni ne giacenze 
-                    //RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, key);
-                    for (String[] lista : Mappa_RW_ListeXGruppoWallet.get(key)) {
-                        //System.out.println(lista[1]);
-                        //System.out.println(key);
-                        if (lista[4].equals("0000-00-00 00:00")) {
-                            Errore = "ERRORI";
-                        }
-                        if (lista[15].toLowerCase().contains("error")) {
-                            Errore = "ERRORI";
-                        }
-                        //  ValFinalexggTOT = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(ValFinalexggTOT);
-
-                        //Questa funzione crea una nuova voce nel caso sia un nuovo quadro o recupera i valori qualora sia un quadro vecchio 
-                        RW1 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[6]);
-                        //Se il wallet iniziale è diverso da quello finale (che è quello in esame) e inizialeWsuIniziale=true (variabile da tabella)
-                        //il valore iniziale lo devo sommare al wallet iniziale e non a quello in esame
-                        //lista[1]-> Gruppo Wallet Iniziale ----- lista[6]-> Gruppo Wallet Finale
-                        if ((!lista[1].equals(lista[6])) && RW_Opzioni_Radio_Trasferimenti_InizioSuWalletOrigine.isSelected() && !lista[1].isBlank())//Se il 
-                        //Se lista[1] ovvero il wallet di origine potrebbe essere blanc nel caso di giacenza negative
-                        //in quel caso non posso trovare da dove arriva
-                        {
-                            String RW2[];
-                            //if (lista[1].isBlank())System.out.println("--"+lista[1]);
-                            RW2 = RW_Funzione_RitornaRWQuadro(MappaWallerQuadro, lista[1]);
-                            RW2[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW2[1])).toPlainString();//RW1[1] è il valore iniziale
-
-                        } else {
-                            RW1[1] = new BigDecimal(lista[5]).add(new BigDecimal(RW1[1])).toPlainString();//RW1[1] è il valore iniziale
-                            //Qua dovrò gestire l'rw dell'altro wallet
-                        }
-                        
-                        RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();
-                        RW1[4] = Errore;
-                        //RW[6]=gg*prezzo+i precedenti gg* prezzo -> Serve per poi trovare i gg ponderati
-                        RW1[6] = new BigDecimal(lista[10]).multiply(new BigDecimal(lista[11])).add(new BigDecimal(RW1[6])).toPlainString();
-                        //se il valore finale è diverso da zero allora proseguo con il calcolo dei gg ponderati
-                        if (new BigDecimal(RW1[2]).compareTo(new BigDecimal(0)) != 0) {
-                            RW1[3] = new BigDecimal(RW1[6]).divide(new BigDecimal(RW1[2]), 2, RoundingMode.HALF_UP).toPlainString();
-                        } else if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
-                            RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
-                        }
-                        //IC
-                        RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
-
-                    }
-
-                }
-                String ICtot = "0";
-                for (String[] RWx : MappaWallerQuadro.values()) {
-                    //Rinomino i Wallet seguendo l'Alias
-                    //System.out.println(RWx[0]);
-                    String Gruppo = "Wallet " + RWx[0].split(" ")[0].trim();
-                    String Valori[] = DatabaseH2.Pers_GruppoAlias_Leggi(Gruppo);
-                    //System.out.println(Gruppo+" - "+Valori[1]+" - "+Valori[2]);
-                    RWx[0] = RWx[0].split(" ")[0].trim() + " ( " + Valori[1] + " )";
-                    String PagaBollo = "NO";
-                    if (Valori[2].equalsIgnoreCase("S")) {
-                        RWx[5] = "0.00";
-                        PagaBollo = "SI";
-                    } else {
-                        ICtot = new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
-                    }
-                    RWx[7] = PagaBollo;
-                    ModelloTabella.addRow(RWx);
-                }
-                RW_Text_IC.setText(ICtot);
-
-                progress.ChiudiFinestra();
-            }
-        };
-        thread.start();
-        progress.setVisible(true);
-
-        RW_Tabella.requestFocus();
-
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
-        //Adesso Calcolo la media ponderata e genero gli RW dalla lista appena creata
-    }
     
     private void Funzioni_AggiornaPluvalenzeSeManuale(){
         if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()){
@@ -10016,10 +9794,10 @@ SwingUtilities.invokeLater(() -> {
 
     private void DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_CreaMovOppostoActionPerformed
         // TODO add your handling code here:
-        if (DepositiPrelievi_CheckBox_movimentiClassificati1.getSelectedRow() >= 0) {
+        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
             GUI_ModificaMovimento a = new GUI_ModificaMovimento();
-        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_CheckBox_movimentiClassificati1);        
-        String IDTransazione = DepositiPrelievi_CheckBox_movimentiClassificati1.getModel().getValueAt(rigaselezionata, 0).toString();
+        int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
+        String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
             a.CompilaMovimentoOppostoID(IDTransazione);
             a.setLocationRelativeTo(this);
             a.setVisible(true);
@@ -11268,7 +11046,7 @@ SwingUtilities.invokeLater(() -> {
 
     private void DepositiPrelievi_Bottone_ScamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_ScamActionPerformed
         // TODO add your handling code here:
-        int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_CheckBox_movimentiClassificati1);
+        int righeSelezionate[] = Tabelle.Funzioni_getRigheSelezionate(DepositiPrelievi_Tabella);
         if (righeSelezionate.length >= 0) {
             /*String ID[]=new String[righeSelezionate.length];
             //Primo ciclo recupero tutti gli id dalla tabella
@@ -11279,7 +11057,7 @@ SwingUtilities.invokeLater(() -> {
             Set<String> setUnivoco = new LinkedHashSet<>(); 
             for (int i = 0; i < righeSelezionate.length; i++) {
                 
-                String ID = DepositiPrelievi_CheckBox_movimentiClassificati1.getModel().getValueAt(righeSelezionate[i], 0).toString();
+                String ID = DepositiPrelievi_Tabella.getModel().getValueAt(righeSelezionate[i], 0).toString();
                 //System.out.println(ID);
                 
                 //adesso controllo che sia un movimento non classificato e solo in quel caso vado avanti
@@ -11626,9 +11404,9 @@ SwingUtilities.invokeLater(() -> {
 
     private void DepositiPrelievi_Bottone_DuplicaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DepositiPrelievi_Bottone_DuplicaActionPerformed
         // TODO add your handling code here:
-        if (DepositiPrelievi_CheckBox_movimentiClassificati1.getSelectedRow() >= 0) {
-            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_CheckBox_movimentiClassificati1);        
-            String IDTransazione = DepositiPrelievi_CheckBox_movimentiClassificati1.getModel().getValueAt(rigaselezionata, 0).toString();
+        if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
+            int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);        
+            String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
            if(Funzioni.DuplicaMovimento(IDTransazione)){
                JOptionPane.showConfirmDialog(this, "<html>Movimento Duplicato<br>"
                                         + "</html>",
@@ -11637,7 +11415,7 @@ SwingUtilities.invokeLater(() -> {
             Funzioni_AggiornaTutto();
            // DepositiPrelievi_Caricatabella();
             //Mi riposiziono sulla riga
-            Tabelle.Funzioni_PosizionaTabellasuRiga(DepositiPrelievi_CheckBox_movimentiClassificati1, rigaselezionata,false);
+            Tabelle.Funzioni_PosizionaTabellasuRiga(DepositiPrelievi_Tabella, rigaselezionata,false);
            }
            else{
            JOptionPane.showConfirmDialog(this, "<html>Questo movimento non può essere duplicato<br>"
@@ -11653,13 +11431,13 @@ SwingUtilities.invokeLater(() -> {
         Funzioni.simulaCtrlC();
     }//GEN-LAST:event_MenuItem_CopiaActionPerformed
 
-    private void DepositiPrelievi_CheckBox_movimentiClassificati1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificati1MouseReleased
+    private void DepositiPrelievi_TabellaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaMouseReleased
         // TODO add your handling code here:
    //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_CheckBox_movimentiClassificati1,evt,0);
+        Funzioni_RichiamaPopUpdaTabella(DepositiPrelievi_Tabella,evt,0);
         DepositiPrelievi_CompilaTabellaCorrelati();
         //Funzioni.PopUpMenu(this, evt, PopupMenu,null);
-    }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificati1MouseReleased
+    }//GEN-LAST:event_DepositiPrelievi_TabellaMouseReleased
 
     private void SituazioneImport_Tabella1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_SituazioneImport_Tabella1MouseReleased
         // TODO add your handling code here:
@@ -11981,10 +11759,10 @@ SwingUtilities.invokeLater(() -> {
         clipboard.setContents(stringSelection, null);
     }//GEN-LAST:event_MenuItem_CopiaIDActionPerformed
 
-    private void DepositiPrelievi_CheckBox_movimentiClassificati1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_CheckBox_movimentiClassificati1KeyReleased
+    private void DepositiPrelievi_TabellaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaKeyReleased
         // TODO add your handling code here:
         DepositiPrelievi_CompilaTabellaCorrelati();
-    }//GEN-LAST:event_DepositiPrelievi_CheckBox_movimentiClassificati1KeyReleased
+    }//GEN-LAST:event_DepositiPrelievi_TabellaKeyReleased
 
     private void DepositiPrelievi_TabellaCorrelatiMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_DepositiPrelievi_TabellaCorrelatiMouseReleased
         // TODO add your handling code here:
@@ -12628,7 +12406,7 @@ SwingUtilities.invokeLater(() -> {
     }//GEN-LAST:event_DepositiPrelievi_CheckBox_mostraFIATMouseReleased
 
     private void DepositiPrelievi_CompilaTabellaCorrelati(){
-        if (DepositiPrelievi_CheckBox_movimentiClassificati1.getSelectedRow()>=0){
+        if (DepositiPrelievi_Tabella.getSelectedRow()>=0){
             //Cancello Contenuto Tabella Dettagli
            // String ID=DepositiPrelievi_Tabella.get
             DefaultTableModel ModelloTabella = (DefaultTableModel) DepositiPrelievi_TabellaCorrelati.getModel();
@@ -12636,9 +12414,9 @@ SwingUtilities.invokeLater(() -> {
             int Verde[]=new int[]{11,13};
             int Rosso[]=new int[]{8,10};
             Tabelle.ColoraTabellaSempliceVerdeRosso(DepositiPrelievi_TabellaCorrelati,Verde,Rosso);
-            int viewRow = DepositiPrelievi_CheckBox_movimentiClassificati1.getSelectedRow();
-            int modelRow = DepositiPrelievi_CheckBox_movimentiClassificati1.convertRowIndexToModel(viewRow);
-            String ID = DepositiPrelievi_CheckBox_movimentiClassificati1.getModel().getValueAt(modelRow, 0).toString();
+            int viewRow = DepositiPrelievi_Tabella.getSelectedRow();
+            int modelRow = DepositiPrelievi_Tabella.convertRowIndexToModel(viewRow);
+            String ID = DepositiPrelievi_Tabella.getModel().getValueAt(modelRow, 0).toString();
             //Prima di proseguire con il resto abilito o diabilito i pulsanti a seconda del tipo di movimento
             //I movimenti fiat infatti non devo poterli classificare ad esempio
              if (Funzioni.isDepositoPrelievoClassificabile(ID, null,false)){
@@ -13539,207 +13317,7 @@ try {
 
         }
     
-      private void Opzioni_Export_Tatax_OLD(){
 
-
-        //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
-try {
-            // TODO add your handling code here:
-
-            //il modo più rapido per esportare la tabella è prendere tutta la mappa ed esportare solo quello che c'è tra le date e che ha
-            //nel suo contenuto il filtro in basso
-                    JFileChooser fc = new JFileChooser();
-
-        //In response to a button click:
-        //fc.showSaveDialog(Opzioni);
-       // System.out.println(CDC_FiatWallet_Pannello);
-        int returnVal = fc.showSaveDialog(null);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {           
-            FileWriter w = new FileWriter(fc.getSelectedFile()+".csv");
-            FileWriter wDEFI = new FileWriter(fc.getSelectedFile()+"_DEFI.csv");
-            //File export = new File("temp.csv");
-            //FileWriter w = new FileWriter(export);
-            BufferedWriter b = new BufferedWriter(w);
-            BufferedWriter bDEFI = new BufferedWriter(wDEFI);
-            b.write("\"Symbol\",\"TokenAddress\",\"TimeStamp\",\"MovementType\",\"Quantity\",\"Countervalue\",\"SymbolCountervalue\",\"UserCountervalue\",\"UserSymbolCountervalue\",\"SourceCountervalue\",\"SourceSymbolCountervalue\"\n");
-            bDEFI.write("\"Symbol\",\"TokenAddress\",\"TimeStamp\",\"MovementType\",\"Quantity\",\"Countervalue\",\"SymbolCountervalue\",\"UserCountervalue\",\"UserSymbolCountervalue\",\"SourceCountervalue\",\"SourceSymbolCountervalue\"\n");            
-            String Wallet = Opzioni_Export_Wallets_Combobox.getSelectedItem().toString().trim();
-                for (String[] movimento : MappaCryptoWallet.values()) {
-                    //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
-                    //altrimenti non vado avanti
-                    String Rete = Funzioni.TrovaReteDaIMovimento(movimento);
-                    String IDTS[] = movimento[0].split("_");
-                    String secondi=IDTS[0].substring(12, 14);
-                    String DataMovimento = movimento[1]+":"+secondi;
-                    String TokenU=movimento[8];
-                    String TokenE=movimento[11];
-                    String Prezzo="";
-                    String Simbolo="";
-                    boolean haprezzo=Prezzi.isMovimentoPrezzato(movimento);
-                    boolean EstraiPrezzi=this.Opzioni_Export_EsportaPrezzi_CheckBox.isSelected();
-                    if (haprezzo&&EstraiPrezzi)
-                    {
-                        Prezzo=movimento[15];
-                        Simbolo="EUR";
-                        }
-                    //Ora tolgo le parentesi dai nomi dei token
-                    TokenE=TokenE.split("\\(")[0].trim();
-                    TokenU=TokenU.split("\\(")[0].trim();
-                        // adesso verifico il wallet
-                        String gruppoWallet="";
-                        if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].trim();
-                        if (Wallet.equalsIgnoreCase("tutti") //Se wallet è tutti faccio l'analisi
-                                ||Wallet.equalsIgnoreCase(movimento[3].trim())//Se wallet è uguale a quello della riga analizzata e sottowallet è tutti proseguo con l'analisi
-                                ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
-                                ) 
-                        {
-                            
-                            if (IDTS[4].equals("VC")
-                                    || IDTS[4].equals("SC")
-                                    || IDTS[4].equals("AC")) {
-                                String Stringa="";
-                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
-                                        DataMovimento+"\",\""+
-                                        "DEBIT\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
-                                
-                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
-                                    {
-                                    bDEFI.append(Stringa);   
-                                    }
-                                else b.append(Stringa);
-                                
-                                
-                                Stringa="";
-                                Stringa =Stringa+"\""+TokenE+"\",\""+movimento[28]+"\",\""+
-                                DataMovimento+"\",\""+
-                                        "CREDIT\",\""+movimento[13]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
-                                //Prima di scrivere il movimento verifico se è un movimento della defi lo salvo nel file a parte
-                                //altrimenti lo metto nel file principale
-                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
-                                    {
-                                    bDEFI.append(Stringa);   
-                                    }
-                                else b.append(Stringa);
-                            }
-                            else if (IDTS[4].equals("CM")) {
-                                String TipoCommissione="EXCHANGE_FEE";
-                                if (Rete!=null)TipoCommissione="BLOCKCHAIN_FEE";
-                                String Stringa="";
-                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
-                                        DataMovimento+"\",\""+
-                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
-                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
-                                    {
-                                    bDEFI.append(Stringa);   
-                                    }
-                                else b.append(Stringa); 
-                            }
-                            else if (IDTS[4].equals("RW")&&!movimento[13].isBlank()) {
-                                String Tipo="EARN";
-                                if (movimento[5].equalsIgnoreCase("CASHBACK"))Tipo="CASHBACK";
-                                else if (movimento[5].equalsIgnoreCase("STAKING REWARDS"))Tipo="STAKING";
-                                if (movimento[5].equalsIgnoreCase("AIRDROP"))Tipo="AIRDROP";
-                                if (movimento[5].equalsIgnoreCase("EARN"))Tipo="EARN";
-                                String Stringa="";
-                                Stringa =Stringa+"\""+TokenE+"\",\""+movimento[28]+"\",\""+
-                                        DataMovimento+"\",\""+
-                                        Tipo+"\",\""+movimento[13]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
-                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
-                                    {
-                                    bDEFI.append(Stringa);   
-                                    }
-                                else b.append(Stringa); 
-                            }
-                            else if (IDTS[4].equals("DC") || IDTS[4].equals("DF")) {
-                                //Siccome i token scam hanno solamente depositi metto qua la verifica se il token è scam e se lo è non lo esporto
-                                if (!Funzioni.isSCAM(TokenE)) {
-                                    String Stringa = "";
-                                    if (movimento[18].contains("DAI")) {
-                                        String Tipo = "EARN";
-                                        if (movimento[5].equalsIgnoreCase("CASHBACK")) {
-                                            Tipo = "CASHBACK";
-                                        } else if (movimento[5].equalsIgnoreCase("STAKING REWARDS")) {
-                                            Tipo = "STAKING";
-                                        }
-                                        if (movimento[5].equalsIgnoreCase("AIRDROP")) {
-                                            Tipo = "AIRDROP";
-                                        }
-                                        if (movimento[5].equalsIgnoreCase("EARN")) {
-                                            Tipo = "EARN";
-                                        }
-                                        Stringa = Stringa + "\"" + TokenE + "\",\"" + movimento[28] + "\",\""
-                                                + DataMovimento + "\",\""
-                                                + Tipo + "\",\"" + movimento[13] +"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
-                                    } else {
-                                        String Tipo = "DEPOSIT";
-
-                                        Stringa = Stringa + "\"" + TokenE + "\",\"" + movimento[28] + "\",\""
-                                                + DataMovimento + "\",\""
-                                                + Tipo + "\",\"" + movimento[13] +"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n";
-                                    }
-                                    if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi") || movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio")) {
-                                        bDEFI.append(Stringa);
-                                    } else {
-                                        b.append(Stringa);
-                                    }
-                                }
-                            }
-                            else if (IDTS[4].equals("PC")||IDTS[4].equals("PF")||(IDTS[4].equals("RW")&&movimento[13].isBlank())) {
-                                
-                                if(movimento[5].equalsIgnoreCase("COMMISSIONI")){
-                                String TipoCommissione="EXCHANGE_FEE";
-                                if (Rete!=null)TipoCommissione="BLOCKCHAIN_FEE";
-                                String Stringa="";
-                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
-                                        DataMovimento+"\",\""+
-                                        TipoCommissione+"\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
-                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
-                                    {
-                                    bDEFI.append(Stringa);   
-                                    }
-                                else b.append(Stringa); 
-                                }else{
-                                String Tipo="WITHDRAWAL";
-                                String Stringa="";
-                                Stringa =Stringa+"\""+TokenU+"\",\""+movimento[26]+"\",\""+
-                                        DataMovimento+"\",\""+
-                                        Tipo+"\",\""+movimento[10]+"\",\"\",\"\","+Prezzo+","+Simbolo+",\"\",\"\"\n"; 
-                                if (movimento[4].trim().equalsIgnoreCase("Piattaforma/defi")||movimento[4].trim().equalsIgnoreCase("Piattaforma di scambio"))
-                                    {
-                                    //System.out.println(movimento[4]);
-                                    bDEFI.append(Stringa);   
-                                    }
-                                else b.append(Stringa); 
-                                }
-                            }
-                            else if (IDTS[4].equals("TI")) {
-                                //TI non fà nulla
-                            }
-                            else {
-                                System.out.println("Movimento "+movimento[0]+" sconosciuto e non esportato");
-                            }
-
-                        }
-                    
-                }
-            bDEFI.close();
-            wDEFI.close();
-            b.close();
-            w.close();
-            //File a=fc.getSelectedFile();
-            JOptionPane.showConfirmDialog(null, "<html><b>Elaborazione Terminata</b><br>"
-                    + "File Salvato in "+fc.getSelectedFile().getAbsolutePath(),
-                            "Fine Esportazione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
-          //  Desktop desktop = Desktop.getDesktop();  
-         //   desktop.open(export);
-} 
-        } catch (IOException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
-        
-
-        }
-      
       
     private Map<String, Object[]> GiacenzeaData_CompilaTabellaToken(boolean CompiloTabella) {
 
@@ -13944,6 +13522,7 @@ try {
                         } catch (InterruptedException ex) {
                             LoggerGC.ScriviErrore(ex);
                         }
+                        
                     }
                     if (i <= progress.Massimo) {
                         progress.SetAvanzamento(i);
@@ -13990,11 +13569,11 @@ try {
                         riga[5] = Double.valueOf((String) riga[5]);
 
                         if (CompiloTabella) {
-                            Object[] r = riga;
-                            SwingUtilities.invokeLater(() -> {
-                                GiacenzeaData_ModelloTabella.addRow(r);
-                            });
-                            //GiacenzeaData_ModelloTabella.addRow(riga);
+                           // Object[] r = riga;
+                           // SwingUtilities.invokeLater(() -> {
+                               // GiacenzeaData_ModelloTabella.addRow(r);
+                          //  });
+                            GiacenzeaData_ModelloTabella.addRow(riga);
                         }
                         TotEuro = TotEuro.add(new BigDecimal((Double) riga[5]));
                         GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());
@@ -15425,11 +15004,11 @@ public static void ripristinaFiltri(JTable table) {
     private javax.swing.JButton DepositiPrelievi_Bottone_Scam;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_mostraFIAT;
     private javax.swing.JCheckBox DepositiPrelievi_CheckBox_movimentiClassificati;
-    private javax.swing.JTable DepositiPrelievi_CheckBox_movimentiClassificati1;
     private javax.swing.JComboBox<String> DepositiPrelievi_ComboBox_FiltroToken;
     private javax.swing.JComboBox<String> DepositiPrelievi_ComboBox_FiltroWallet;
     private javax.swing.JLabel DepositiPrelievi_Label_FiltroToken;
     private javax.swing.JLabel DepositiPrelievi_Label_FiltroWallet;
+    private javax.swing.JTable DepositiPrelievi_Tabella;
     private javax.swing.JTable DepositiPrelievi_TabellaCorrelati;
     private javax.swing.JButton Donazioni_Bottone1;
     private javax.swing.JButton Donazioni_Bottone2;

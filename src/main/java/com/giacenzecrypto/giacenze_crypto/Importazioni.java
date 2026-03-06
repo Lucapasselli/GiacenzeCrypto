@@ -3946,6 +3946,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                             String RT[] = new String[ColonneTabella];
                                             BigDecimal PrezzoTransazione=new BigDecimal("0.00");
                                             Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(M1, M2, Datalong, null,"binance");
+                                           // System.out.println(M1.Moneta+"-"+M2.Moneta+" - "+M1.Qta+" - "+M2.Qta+" - "+IP.prezzoQta);
                                             if (IP!=null){
                                                 PrezzoTransazione = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP);
                                                 RT[40]=IP.Ritorna40();

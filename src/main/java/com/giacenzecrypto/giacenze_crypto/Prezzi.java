@@ -2225,7 +2225,7 @@ symbol=symbol.toUpperCase();
     long tsMin = timestampRiferimento - MAX_DIFF_MS;
     long tsMax = timestampRiferimento + MAX_DIFF_MS;
 
-    
+   // System.out.println(symbol+" - "+Qta);
     
     
 

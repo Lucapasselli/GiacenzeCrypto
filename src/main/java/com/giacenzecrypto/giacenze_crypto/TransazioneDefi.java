@@ -54,9 +54,17 @@ public class TransazioneDefi {
        return MappaTokenEntrata.size();
    }
    public Map<String,ValoriToken> RitornaMappaTokenEntrata(){
+      /* //Prima di tornare la mappa dei token devo mettere tutti i prezzi in positivo
+       for (ValoriToken monete : MappaTokenEntrata.values()){
+           monete.Prezzo=monete.Prezzo.replace("-", "");
+       }*/
        return MappaTokenEntrata;
    }
    public Map<String,ValoriToken> RitornaMappaTokenUscita(){
+     /*  //Prima di tornare la mappa dei token devo mettere tutti i prezzi in positivo
+        for (ValoriToken monete : MappaTokenUscita.values()){
+           monete.Prezzo=monete.Prezzo.replace("-", "");
+       }*/
        return MappaTokenUscita;
    }
     
@@ -85,27 +93,10 @@ public class TransazioneDefi {
             monete.MonetaName=MonetaName;
             monete.Qta=Qta;
             MappaToken.put(MonetaAddress,monete);
-            //System.out.println(dataAlMinuto+" - "+MonetaAddress);
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,Qta,MonetaAddress,Tipologia);
             monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,30,Rete,"");
-            //System.out.println("Import - "+Moneta+" - "+MonetaAddress+" - "+monete.Prezzo);
-            //Se trovo l'indirizzo nella mappa significa che non è gestito da coingecko
-            
-           
 
-           
-           //Adesso verifico se il nome della coin è nelle coppie prioritarie ma non è gestita da coingecko la identifico come scam
-           // long DataRiferimento=OperazioniSuDate.ConvertiDatainLong(DataOra.split(" ")[0])/1000;
-          /*  if (DatabaseH2.AddressSenzaPrezzo_Leggi(MonetaAddress+"_"+Rete)!=null&&
-                (DataRiferimento<Long.parseLong(DatabaseH2.AddressSenzaPrezzo_Leggi(MonetaAddress+"_"+Rete)))) {          
-                for (String Coppia : CoppiePrioritarie) {
-                    //Se non è gestito da coingecko ma è il nome di una coin importante significa che probabilmente è scam e quindi
-                    //dopo il nome della moneta ci metto 2 asterischi
-                    if ((monete.Moneta+"USDT").equalsIgnoreCase(Coppia)||monete.Moneta.equalsIgnoreCase("USDT"))
-                        monete.Moneta=monete.Moneta+" **";
-                }                
-            }*/
 
             }
         else 
@@ -135,7 +126,8 @@ public class TransazioneDefi {
             monete=new ValoriToken();
             monete.Tipo=Moneta.Tipo;
             monete.Moneta=Moneta.Moneta;
-            monete.Qta=Moneta.Qta;            
+            monete.Qta=Moneta.Qta; 
+           // if (Moneta.Qta.contains("-")&&!Moneta.Prezzo.contains("-"))Moneta.Prezzo="-"+Moneta.Prezzo;
             monete.Prezzo=Moneta.Prezzo;
             monete.MonetaAddress=Moneta.MonetaAddress;
             monete.WalletSecondario=Wallet;//poi sarà da vedere se esistono casi di monete identiche presi da wallet dioversi, in quel caso bisognerà differenziarli
@@ -148,9 +140,19 @@ public class TransazioneDefi {
             {
             //altrimenti faccio la somma
             monete=MappaToken.get(Moneta.Moneta);
+            //Questo serve per sapere se il prezzo vecchio devo prenderlo negativo o meno
+            boolean VecchioSegno=monete.Qta.contains("-")&&!monete.Prezzo.contains("-");
+          //  System.out.print("QTA: + "+Moneta.Qta+" + "+monete.Qta);
             monete.Qta=new BigDecimal(Moneta.Qta).add(new BigDecimal(monete.Qta)).stripTrailingZeros().toPlainString();
-            if (Moneta.Qta.contains("-")&&!Moneta.Prezzo.contains("-"))Moneta.Prezzo="-"+Moneta.Prezzo;
-            monete.Prezzo=new BigDecimal(Moneta.Prezzo).add(new BigDecimal(monete.Prezzo)).stripTrailingZeros().toPlainString();
+           // System.out.println(" = "+monete.Qta);
+           //Se la qta è negativa anche il prezzo deve essere preso in negativo
+            if (Moneta.Qta.contains("-")&&!Moneta.Prezzo.contains("-"))Moneta.Prezzo="-"+Moneta.Prezzo;          
+           // System.out.print("PREZZO:"+Moneta.Prezzo+" + "+monete.Prezzo);
+           if (VecchioSegno)monete.Prezzo="-"+monete.Prezzo;//Se la qta è negativa nella somma anche il prezzo deve essere preso in negativo
+            monete.Prezzo=new BigDecimal(Moneta.Prezzo).add(new BigDecimal(monete.Prezzo)).stripTrailingZeros().abs().toPlainString();            
+          //  System.out.println(" = "+monete.Prezzo);
+
+            
             }
     }
         

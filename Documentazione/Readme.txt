@@ -27,6 +27,13 @@ Changelog
 
 ver. 1.0.50
 Nuove Implementazioni :
+ - Nell'inserimento manuale inserito nuovo pulsante per l'assenganzione automatica del prezzo senza selezione da parte dell'utente.
+ - Aggiornato importazione da crypto.com exchange per adeguarsi al nuovo formato del 2026.
+Correzione Bug :
+ - Sistemato bug sull'assegnazione del prezzo nel caso di molti movimenti nello stesso secondo sulla stessa moneta.
+
+ver. 1.0.50
+Nuove Implementazioni :
  - Implementato l'importazione diretta dai CSV di Crypto.com Exchange
 Correzione Bug :
  - Adeguato importazione Tatax al suo nuovo standard di file

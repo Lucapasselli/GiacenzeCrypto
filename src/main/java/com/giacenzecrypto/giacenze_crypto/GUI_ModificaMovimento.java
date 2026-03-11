@@ -160,6 +160,7 @@ private static final long serialVersionUID = 9L;
         P_TextPU = new javax.swing.JTextField();
         P_TextTimeFonte = new javax.swing.JTextField();
         Bottone_PrezzoAutomatico = new javax.swing.JButton();
+        Bottone_PrezzoManuale = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -273,7 +274,7 @@ private static final long serialVersionUID = 9L;
         });
 
         Bottone_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Bottone_ModificaPrezzo.setText("Modifica Prezzo");
+        Bottone_ModificaPrezzo.setText("Scelta Prezzo");
         Bottone_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_ModificaPrezzoActionPerformed(evt);
@@ -374,6 +375,14 @@ private static final long serialVersionUID = 9L;
         Bottone_PrezzoAutomatico.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_PrezzoAutomaticoActionPerformed(evt);
+            }
+        });
+
+        Bottone_PrezzoManuale.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        Bottone_PrezzoManuale.setText("Prezzo Manuale");
+        Bottone_PrezzoManuale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_PrezzoManualeActionPerformed(evt);
             }
         });
 
@@ -491,17 +500,17 @@ private static final long serialVersionUID = 9L;
                                 .addGap(22, 22, 22)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(P_LabelTimeFonte)
-                                    .addComponent(P_LabelPU))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(P_TextPU, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(P_TextTimeFonte, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 426, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Bottone_PrezzoAutomatico, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(P_LabelPU)))
+                            .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(Bottone_PrezzoManuale, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(P_TextPU, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                            .addComponent(P_TextTimeFonte, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_PrezzoAutomatico, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(Note_Label)
@@ -577,7 +586,8 @@ private static final long serialVersionUID = 9L;
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ValoreTransazione_Label)
-                            .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ValoreTransazione_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Bottone_PrezzoManuale))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(P_LabelFonte)
@@ -1255,6 +1265,35 @@ worker.execute();*/
         
     }//GEN-LAST:event_Bottone_PrezzoAutomaticoActionPerformed
 
+    private void Bottone_PrezzoManualeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_PrezzoManualeActionPerformed
+        // TODO add your handling code here:
+         //Creo gli oggetti moneta
+            Moneta MU = new Moneta();
+            Moneta ME = new Moneta();
+            MU.Moneta = this.MonetaU;
+            MU.MonetaAddress = this.MonetaUAddress;
+            MU.Qta = this.MonetaUQta;
+            MU.Tipo = this.MonetaUTipo;
+            ME.Moneta = this.MonetaE;
+            ME.MonetaAddress = this.MonetaEAddress;
+            ME.Qta = this.MonetaEQta;
+            ME.Tipo = this.MonetaETipo;
+            String PrezzoT=ValoreTransazione_TextField.getText();
+            if (PrezzoT.isBlank())PrezzoT="0";
+            String Rete=null;
+            if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
+            
+        String ritPrz = Funzioni.GUIModificaPrezzo(this, MU, ME, PrezzoT, DataLong, Rete);
+           
+            if (ritPrz != null) {
+                ValoreTransazione_TextField.setText(ritPrz);
+                P_TextFonte.setText("Personalizzato");
+                P_TextMoneta.setText("");
+                P_TextPU.setText("");
+                P_TextTimeFonte.setText("");
+            }
+    }//GEN-LAST:event_Bottone_PrezzoManualeActionPerformed
+
     private void CompilaComboBoxWallet(){
         this.Wallet_ComboBox.removeAllItems();
         this.Wallet_ComboBox.addItem("");
@@ -1767,6 +1806,7 @@ worker.execute();*/
     private javax.swing.JButton Bottone_ModificaPrezzo;
     private javax.swing.JButton Bottone_Ok;
     private javax.swing.JButton Bottone_PrezzoAutomatico;
+    private javax.swing.JButton Bottone_PrezzoManuale;
     private com.toedter.calendar.JDateChooser Data_Datachooser;
     private javax.swing.JLabel Data_Label;
     private javax.swing.JLabel Freccia1_Label;

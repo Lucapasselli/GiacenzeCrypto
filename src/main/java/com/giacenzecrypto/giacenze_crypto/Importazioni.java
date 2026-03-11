@@ -1820,7 +1820,13 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 while ((riga = bure.readLine()) != null) {
                     String riga2=riga;
                     riga=riga.replaceAll("\"", "");//toglie le barre, dovrebbero esistere solo nelle date
-                    String splittata[] = riga.split(",",-1);                     
+                    String splittata[] = riga.split(",",-1); 
+                    
+                    //Se il csv ha 16 campi vuol dire che è il nuovo formato, a noi però i primi 2 campi non servono quindi li escludo
+                    if (splittata.length==16){
+                        splittata = Arrays.copyOfRange(splittata, 2, 16);
+                    }
+                    
                     if (splittata.length==14&&Funzioni.isNumeric(splittata[7], false)){//splittata7 è la qta
                         // Definisci il formato della data
                        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

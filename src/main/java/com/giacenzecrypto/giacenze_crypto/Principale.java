@@ -8212,9 +8212,7 @@ SwingUtilities.invokeLater(() -> {
                 TipoMoneta=mov[12];
                 AddressMoneta=mov[28];
             }
-            
-            
-            
+                        
             String GiacenzaAttualeS = TabMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
             String GiacNegativaPrecedente = TabMovimenti.getModel().getValueAt(rigaselezionata, 9).toString();
 
@@ -8222,11 +8220,11 @@ SwingUtilities.invokeLater(() -> {
             BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
             BigDecimal GiacenzaVoluta = new BigDecimal(0);
             BigDecimal QtaNuovoMovimento;
-
-            
             
             if (Wallet==null || !Wallet.equalsIgnoreCase("tutti")){
             if (TipoMoneta.equalsIgnoreCase("Crypto")){
+            
+            //========== MESSAGGIO INIZIALE, CHIEDO DI INSERIRE LA NUOVA GIACENZA =========
             
             String m = JOptionPane.showInputDialog(this, "<html>Il saldo alla data selezionata è : <b>" + GiacenzaAttuale.toPlainString() + "</b> <br>"
                     + "Indicare nel riquadro sottostante la giacenza che il token <b>" + Moneta + "</b> dovrà avere al termine dell'operazione: </html>", GiacenzaVoluta);
@@ -8235,6 +8233,9 @@ SwingUtilities.invokeLater(() -> {
                 m = m.replace(",", ".").trim();//sostituisco le virgole con i punti per la separazione corretta dei decimali
                 if (Principale.Funzioni_isNumeric(m, false)) {
                     GiacenzaVoluta = new BigDecimal(m);
+                    
+            //========= SE SONO PRESENTI GIACENZE NEGATIVE PRECEDENTI AVVISO E CHIEDO SE SI VUOLE CONTINUARE =========
+            
                     if (GiacNegativaPrecedente.equals("S")){
                 //Se arrivo qua vuol dire che sto cercando di modificare la giacenza di un token che ha saldi negativi precedenti
                 //In questo caso emetto un messaggio di alert che avvisa che sarebbe meglio correggere queste giacenze in ordine.
@@ -8267,6 +8268,9 @@ SwingUtilities.invokeLater(() -> {
                         return;
                     }
                         BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
+                        
+            // ========== SE DEVO INSERIRE UN MOVIMENTO NEGATIVO CHIEDO COME CLASSIFICARLO ==========
+            
                     if (SQta.contains("-")) {
                         //Gestisco i movimenti di scarico (Prelievi)
                         String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
@@ -8290,6 +8294,8 @@ SwingUtilities.invokeLater(() -> {
                         //Adesso genero il movimento a seconda della scelta
                         //0 o 1 significa che non bisogna fare nulla
                         if (scelta != 0 && scelta != -1) {
+                            
+            // ========== INSERISCO IL MOVIMENTO DI USCITA PER SISTEMARE LA GIACENZA SCONDO LE INDICAZIONI ==========
 
                             //ora chiedo di inserire una nota
                             String Nota = JOptionPane.showInputDialog(this,
@@ -8298,94 +8304,46 @@ SwingUtilities.invokeLater(() -> {
                                 this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                 //adesso compilo la parte comune del movimento
                                 String RTOri[] = MappaCryptoWallet.get(IDTrans);
-                                DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi aggiungo 1 secondo al tempo del movimento originale per trovare quello da mettere
-                                String RT2[] = new String[ColonneTabella];
-                                RT2[0] = "";//questo può variare in caso di movimento di commissione per cui lo metto nel capitolo successivo
-                                RT2[1] = RTOri[1];
-                                RT2[2] = "1 di 1";
-                                RT2[3] = RTOri[3];
-                                RT2[4] = RTOri[4];
-                                RT2[6] = Moneta + " ->";
-                                RT2[8] = Moneta;
-                                RT2[9] = TipoMoneta;//da prendere dalla tabella prima
-                                RT2[10] = SQta;
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = Moneta;
                                 M1.MonetaAddress = AddressMoneta;
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
-                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, M1.Rete, "");
-                                if (IP!=null)RT2[40] = IP.Ritorna40();
-                                if (Prezzo.compareTo(new BigDecimal(0))==0){
-                                    Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
-                                }
-                                RT2[15] = Prezzo.toPlainString();
-                                RT2[21] = Nota;
-                                RT2[22] = "M";
-                                RT2[26] = AddressMoneta;
-                                RT2[29] = RTOri[29];
-                                RiempiVuotiArray(RT2);
+
 
                                 String IDOriSplittato[] = RTOri[0].split("_");
-                                switch (scelta) {
-                                    case 1 -> {
-                                        //Non Classifico Movimento 
-                                        //Ciclo per creare un movimento con il primo ID libero
+                                String NuovoID=null;
+                                //Ciclo per creare un movimento con il primo ID libero e aggiungo ZZ in modo che il movimento sia successivo a quello di riferimento
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                NuovoID = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                            if(MappaCryptoWallet.get(RT2[0])==null){
+                                                NuovoID = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                            if(MappaCryptoWallet.get(NuovoID)==null){
                                                break;
                                             }
                                         }
-                                        RT2[5] = "PRELIEVO "+TipoMoneta.toUpperCase();
-                                        RT2[18] = "";
+                                        
+                                String RT2[]=Principale_NOGUI.creaMovimento(M1, null,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,null,null);
+                                switch (scelta) {
+                                    case 1 -> {
+                                        //Non Classifico Movimento   (Non devo fare nulla)                                      
                                     }
                                     case 2 -> {
                                         //CashOut
-                                        for(int ki=1;ki<30;ki++){
-                                            if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
-                                            else
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                            if(MappaCryptoWallet.get(RT2[0])==null){                                              
-                                               break;
-                                            }
-                                        }
                                         RT2[5] = "CASHOUT O SIMILARE";
                                         RT2[18] = "PCO - CASHOUT O SIMILARE";
                                     }
                                     case 3 -> {
                                         //Commissione                                        
-                                        for(int ki=1;ki<30;ki++){
-                                            if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_CM";
-                                            else
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_CM";
-                                            if(MappaCryptoWallet.get(RT2[0])==null){
-                                               break;
-                                            }
-                                        }
                                         RT2[5] = "COMMISSIONE";
                                         RT2[18] = "";
                                     }
                                     case 4 -> {
                                         //Rettifica Giacenza                                       
-                                        for(int ki=1;ki<30;ki++){
-                                            if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
-                                            else
-                                                RT2[0] = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                            if(MappaCryptoWallet.get(RT2[0])==null){
-                                               break;
-                                            }
-                                        }
                                         RT2[5] = "RETTIFICA GIACENZA";
                                         RT2[18] = "PWN - RETTIFICA GIACENZA";
                                     }
@@ -8398,6 +8356,9 @@ SwingUtilities.invokeLater(() -> {
                             }
                         }
                     } else {
+                        
+                // ========== SE DEVO INSERIRE UN MOVIMENTO POSITIVO CHIEDO COME CLASSIFICARLO ==========
+                        
                         //Gestisco i movimenti di Carico (Depositi)
                         //Gestisco i movimenti di scarico (Prelievi)
                         String Testo = "<html>Per raggiungere la giacenza desiderata devo generare un movimento<br>"
@@ -8421,6 +8382,8 @@ SwingUtilities.invokeLater(() -> {
                         //0 o 1 significa che non bisogna fare nulla
                         if (scelta != 0 && scelta != -1) {
 
+                    // ========== INSERISCO IL MOVIMENTO SECONDO INDICAZIONI ==========
+                            
                             //ora chiedo di inserire una nota
                             String Nota = JOptionPane.showInputDialog(this,
                                     "<html>Inserire un eventuale nota sul movimento :</html>", "Rettifica di Giacenza");
@@ -8433,48 +8396,27 @@ SwingUtilities.invokeLater(() -> {
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
                                 //quindi tolgo 1 secondo al tempo del movimento originale per trovare quello da mettere
                                 //String NuovoOrario=Funzioni.DataIDtogliUnSecondo(RTOri[0].split("_")[0]);
-                                String RT1[]= new String[ColonneTabella];
+                                String NewID=null;
                                 for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                RT1[0] = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                                NewID = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
                                             else
-                                                RT1[0] = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + "_1_"+ki+"_DC";
-                                            if(MappaCryptoWallet.get(RT1[0])==null){
+                                                NewID = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + "_1_"+ki+"_DC";
+                                            if(MappaCryptoWallet.get(NewID)==null){
                                                break;
                                             }
                                         }
-                                RT1[1] = RTOri[1];
-                                RT1[2] = "1 di 1";
-                                RT1[3] = RTOri[3];
-                                RT1[4] = RTOri[4];
-                                RT1[6] = " ->" + Moneta;
-                                RT1[11] = Moneta;
-                                RT1[12] = TipoMoneta;
-                                RT1[13] = SQta;
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = Moneta;
                                 M1.MonetaAddress = AddressMoneta;
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                BigDecimal Prezzo=new BigDecimal(Prezzi.DammiPrezzoTransazione(M1, null, DataRiferimento, null, true, 2, M1.Rete,""));
-                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, M1.Rete, "");
-                                if (IP!=null)RT1[40] = IP.Ritorna40();
-                                if (Prezzo.compareTo(new BigDecimal(0))==0){
-                                    Prezzo=ValoreUnitarioToken.multiply(new BigDecimal(SQta)).setScale(2,RoundingMode.HALF_UP).abs();
-                                }
-                                RT1[15] = Prezzo.toPlainString();
-                                RT1[21] = Nota;
-                                RT1[22] = "M";
-                                RT1[28] = AddressMoneta;
-                                RT1[29] = RTOri[29];
-                                RiempiVuotiArray(RT1);
+                                String RT1[]=Principale_NOGUI.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NewID,Nota,"M",null,null,null);
 
                                 switch (scelta) {
                                     case 1 -> {
                                         //Non Classifico Movimento                                
-                                        RT1[5] = "DEPOSITO "+TipoMoneta.toUpperCase();
-                                        RT1[18] = "";
                                     }
                                     case 2 -> {
                                         //Rendita da Capitale
@@ -8548,6 +8490,8 @@ SwingUtilities.invokeLater(() -> {
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
+    
+    
     private void GiacenzeaData_Bottone_RettificaQtaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQtaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQtaActionPerformed

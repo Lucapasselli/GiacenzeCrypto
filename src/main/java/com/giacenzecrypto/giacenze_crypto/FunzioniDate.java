@@ -159,7 +159,23 @@ public class FunzioniDate {
         return m1;
     } 
         
-        
+    public static long ConvertiDataIDinLong(String Data1) {
+           long m1=0;
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("yyyyMMddHHmmss");
+            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+            Date d = f.parse(Data1);
+            m1 = d.getTime();
+            
+            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
+        } catch (ParseException ex) {
+           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
+            //System.out.println(Data1+" non è una data");
+            LoggerGC.ScriviErrore(Data1+" non è una data valida");
+           // return 0;
+        }
+        return m1;
+    }     
         
         
         public static long ConvertiISO8601toMillis(String isoDate) {

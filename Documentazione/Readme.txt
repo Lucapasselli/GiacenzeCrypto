@@ -25,9 +25,9 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
-ver. 1.0.50
+ver. 1.0.51
 Nuove Implementazioni :
- - Nell'inserimento manuale inserito nuovo pulsante per l'assenganzione automatica del prezzo senza selezione da parte dell'utente.
+ - Nell'inserimento manuale inserito nuovo pulsante per l'assenganzione automatica del prezzo e uno per l'inserimento manuale veloce.
  - Aggiornato importazione da crypto.com exchange per adeguarsi al nuovo formato del 2026.
 Correzione Bug :
  - Sistemato bug sull'assegnazione del prezzo nel caso di molti movimenti nello stesso secondo sulla stessa moneta.

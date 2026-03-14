@@ -55,10 +55,10 @@
     </repository>
   </repositories>
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>21</maven.compiler.target>
     <exec.mainClass>com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto</exec.mainClass>
     <maven.compiler.source>21</maven.compiler.source>
     <graalvm.version>24.2.2</graalvm.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>

@@ -3124,6 +3124,8 @@ public static class InfoPrezzo {
     public String Ritorna40(){
         return this.Moneta+"|"+this.timestamp+"|"+this.prezzoUnitario+"|"+this.Fonte;
     }
+    
+    
     }        
     
 

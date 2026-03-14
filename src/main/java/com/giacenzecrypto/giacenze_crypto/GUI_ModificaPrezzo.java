@@ -941,7 +941,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
 </html>
 """.formatted(Prezzo,
                       Fonte.isBlank() ? "" : "<p>(Prezzo ottenuto da: <b>" + Fonte + "</b>)</p>",
-                      PrezzoPrecedente);
+                      PrezzoPrecedente).replaceAll("\\R", "");
             int risposta=JOptionPane.showOptionDialog(this,domanda, "Cambio Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
             if (risposta==0){
                     if (ID!=null){

@@ -12,8 +12,6 @@ import com.lowagie.text.Font;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JDateChooserCellEditor;
 import com.toedter.calendar.JTextFieldDateEditor;
-import static com.giacenzecrypto.giacenze_crypto.Importazioni.ColonneTabella;
-import static com.giacenzecrypto.giacenze_crypto.Importazioni.RiempiVuotiArray;
 import static com.giacenzecrypto.giacenze_crypto.Tabelle.tableFilters;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -8327,29 +8325,33 @@ SwingUtilities.invokeLater(() -> {
                                             }
                                         }
                                         
-                                String RT2[]=Principale_NOGUI.creaMovimento(M1, null,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,null,null);
+                                String TipoDaPassare=null;
                                 switch (scelta) {
                                     case 1 -> {
                                         //Non Classifico Movimento   (Non devo fare nulla)                                      
                                     }
                                     case 2 -> {
                                         //CashOut
-                                        RT2[5] = "CASHOUT O SIMILARE";
-                                        RT2[18] = "PCO - CASHOUT O SIMILARE";
+                                        TipoDaPassare="CASHOUT O SIMILARE";
+                                      //  RT2[5] = "CASHOUT O SIMILARE";
+                                      //  RT2[18] = "PCO - CASHOUT O SIMILARE";
                                     }
                                     case 3 -> {
-                                        //Commissione                                        
-                                        RT2[5] = "COMMISSIONE";
-                                        RT2[18] = "";
+                                        //Commissione 
+                                        TipoDaPassare="COMMISSIONE";
+                                      //  RT2[5] = "COMMISSIONE";
+                                      //  RT2[18] = "";
                                     }
                                     case 4 -> {
-                                        //Rettifica Giacenza                                       
-                                        RT2[5] = "RETTIFICA GIACENZA";
-                                        RT2[18] = "PWN - RETTIFICA GIACENZA";
+                                        //Rettifica Giacenza 
+                                        TipoDaPassare="RETTIFICA GIACENZA";
+                                       // RT2[5] = "RETTIFICA GIACENZA";
+                                       // RT2[18] = "PWN - RETTIFICA GIACENZA";
                                     }
                                     default -> {
                                     }
                                 }
+                                String RT2[]=Principale_NOGUI.creaMovimento(M1, null,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare);
                                 //Adesso scrivo il movimento
                                 MappaCryptoWallet.put(RT2[0], RT2);
 
@@ -8412,7 +8414,8 @@ SwingUtilities.invokeLater(() -> {
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
-                                String RT1[]=Principale_NOGUI.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NewID,Nota,"M",null,null,null);
+                                
+                                String TipoDaPassare=null;
 
                                 switch (scelta) {
                                     case 1 -> {
@@ -8420,18 +8423,21 @@ SwingUtilities.invokeLater(() -> {
                                     }
                                     case 2 -> {
                                         //Rendita da Capitale
-                                        RT1[5] = "EARN";
-                                        RT1[18] = "DAI - Provento da Detenzione";
+                                        TipoDaPassare="EARN";
+                                       // RT1[5] = "EARN";
+                                      //  RT1[18] = "DAI - Provento da Detenzione";
                                     }
                                     case 3 -> {
                                         //Costo di carico 0
-                                        RT1[5] = "DEPOSITO A COSTO 0";
-                                        RT1[18] = "DCZ - DEPOSITO A COSTO 0";
+                                        TipoDaPassare="DEPOSITO A COSTO 0";
+                                       // RT1[5] = "DEPOSITO A COSTO 0";
+                                       // RT1[18] = "DCZ - DEPOSITO A COSTO 0";
                                     }
                                     default -> {
                                     }
                                 }
                                 //Adesso scrivo il movimento
+                                String RT1[]=Principale_NOGUI.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NewID,Nota,"M",null,TipoDaPassare);
                                 MappaCryptoWallet.put(RT1[0], RT1);
 
                             }

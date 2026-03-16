@@ -1022,6 +1022,18 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
   public String IDTransazione;
   public Prezzi.InfoPrezzo InfoPrezzo;
   
+  
+  public Moneta ConvertiInMoneta(){
+      Moneta Mon=new Moneta();
+      Mon.Moneta=Moneta;
+      Mon.MonetaAddress=MonetaAddress;
+      Mon.Qta=Qta;
+      Mon.InfoPrezzo=InfoPrezzo;
+      Mon.Prezzo=Prezzo;
+      Mon.Tipo=Tipo;
+      return Mon;
+  }
+  
   public String RitornaNomeToken(){
       String nome;
      // System.out.println("aa-"+Moneta+"-aa");

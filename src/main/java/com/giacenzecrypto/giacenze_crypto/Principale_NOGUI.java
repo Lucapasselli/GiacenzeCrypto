@@ -6,6 +6,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import static com.giacenzecrypto.giacenze_crypto.Importazioni.ColonneTabella;
 import static com.giacenzecrypto.giacenze_crypto.Importazioni.RiempiVuotiArray;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Collections;
@@ -132,30 +133,39 @@ private static Map<String, String[]> creaMappaTipologie() {
         String RT2[] = new String[ColonneTabella];
 
         for (Moneta MON : Mon) {
-            if (MON != null) {
+            //La moneta deve :
+            //1 - Esistere
+            //2 - La sua qta deve essere un numero
+            //3 - La sua qta deve essere diversa da 0
+            if (MON != null &&
+                Funzioni.isNumeric(MON.Qta, false)&&
+                new BigDecimal(MON.Qta).abs().compareTo(BigDecimal.ZERO)!=0) {
                 if (MON.Qta.contains("-")) {
                     if (!MOut.isBlank()){
                         LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in uscita : "+MOut+" e "+MON.Moneta);
                         return null;
                     }
-                    MOut = normalizzaMoneta(MON.Moneta);
-                    TOut = MON.Tipo;
-                    QOut = MON.Qta;
-                    Rete = MON.Rete;
-                    AddressOut = MON.MonetaAddress;
+                        MOut = normalizzaMoneta(MON.Moneta);
+                        TOut = MON.Tipo;
+                        QOut = MON.Qta;
+                        Rete = MON.Rete;
+                        AddressOut = MON.MonetaAddress;
                 } else {
-                    if (!MOut.isBlank()){
-                        LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in ingresso : "+MOut+" e "+MON.Moneta);
+                    if (!MIn.isBlank()){
+                        LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in ingresso : "+MIn+" e "+MON.Moneta);
                         return null;
                     }
-                    MIn = normalizzaMoneta(MON.Moneta);
-                    TIn = MON.Tipo;
-                    QIn = MON.Qta;
-                    Rete = MON.Rete;
-                    AddressIn = MON.MonetaAddress;
+                        MIn = normalizzaMoneta(MON.Moneta);
+                        TIn = MON.Tipo;
+                        QIn = MON.Qta;
+                        Rete = MON.Rete;
+                        AddressIn = MON.MonetaAddress;
                 }
+            
             }
         }
+        //Se nessuna moneta è valida termino la richiesta e ritorno null.
+        if (MOut.isBlank()&&MIn.isBlank())return null;
 
         //========== GESTISCO IL CARATTERE CHE IDENTIFICA SE IL MOVIMENTO E' DERIVANTE DA CSV/DEFI O MANUALE ===========
         if (CarattereMovAutomatico==null && 
@@ -171,24 +181,54 @@ private static Map<String, String[]> creaMappaTipologie() {
         }
 
         //========== GESTISCO IL PREZZO DELLA TRANSAZIONE ===========
-        if (Prezzo == null || !Funzioni.isNumeric(Prezzo, false)) {
+        Moneta MPR = DammiMonetaPrioritaria(Mon[0], Mon[1]);
+        //Se passo il prezzo della transazione uso quello
+        
+        if (Prezzo != null && Funzioni.isNumeric(Prezzo, false)) {
+            if (PrezzoPrezzato(Prezzo))RT2[32] = "SI";
+            else RT2[32] = "NO";
+            Prezzo = new BigDecimal(Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
+            if (FontePrezzo == null) {
+                FontePrezzo = "Personalizzato";
+            }
+            RT2[40] = "|||" + FontePrezzo;
+            
+            //System.out.println("Prezzi presi dal csv");
+        } //Se non passo il prezzo ma lo trovo nelle monete l'infoprezzo
+        
+        else if (MPR!=null&&MPR.InfoPrezzo != null && MPR.InfoPrezzo.Qta != null && MPR.InfoPrezzo.prezzoUnitario != null) {
+            Prezzi.InfoPrezzo IP = MPR.InfoPrezzo;
+            if (IP != null && IP.Qta != null && IP.prezzoUnitario != null) {
+                //E' importante sempre fare il calcolo del prezzo e non prendere quello salvato in prezzoqta perchè potrebbe non essere giusto
+                //se arriva da molteplici scambi ad esempio nella classe TransazioneDefi
+                Prezzo = IP.Qta.multiply(IP.prezzoUnitario).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
+                RT2[40] = IP.Ritorna40();
+                RT2[32] = "SI";
+               // System.out.println("Prezzi presi dall'info prezzo singolo token");
+            }
+        } //se la moneta non ha infoprezzo ma ha prezzo prendo quello
+        else if (MPR!=null&&MPR.Prezzo != null && Funzioni.isNumeric(MPR.Prezzo, false)) {
+            if (PrezzoPrezzato(MPR.Prezzo))RT2[32] = "SI";
+            else RT2[32] = "NO";
+            Prezzo = new BigDecimal(MPR.Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
+            if (FontePrezzo == null) {
+                FontePrezzo = "Personalizzato";
+            }
+            RT2[40] = "|||" + FontePrezzo;
+            
+            //System.out.println("Prezzi presi dal prezzo singolo token");
+        } //se non lo trovo neanche la allora lo calcolo
+        else {
             Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon[0], Mon[1], Timestamp, Rete, Wallet);
             if (IP != null) {
                 Prezzo = IP.prezzoQta.setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                 RT2[40] = IP.Ritorna40();
                 RT2[32] = "SI";
-            }
-            else{
-                Prezzo="0.00";
+            } else {
+                Prezzo = "0.00";
                 RT2[32] = "NO";
             }
-        } else {
-            Prezzo=Prezzo.replace("-","");//Questo impedisce che il prezzo sia negativo
-            if (FontePrezzo == null) {
-                FontePrezzo = "Personalizzato";
-            }
-            RT2[40] = "|||" + FontePrezzo;
-            RT2[32] = "SI";
+           // System.out.println("Prezzi calcolati");
         }
 
         //========== GESTISCO IL TIPO DELLA TRANSAZIONE ===========  
@@ -268,5 +308,83 @@ static String normalizzaMoneta(String nome) {
                .replaceAll("\\s+", " ")  // Opzionale: normalizza spazi multipli
                ;
 }    
+
+//Controlla se il prezzo inserito è prezzato o meno, in sostanza se il prezzo non è un numero mette false
+//se il prezzo è un numero pari a 0 ma non è espressamente 0.00 metto false
+//altrimenti metto true
+static boolean PrezzoPrezzato(String Prezzo) {
+    if (!Funzioni.isNumeric(Prezzo, false))return false;
+    else if (new BigDecimal(Prezzo).compareTo(BigDecimal.ZERO)==0 && !Prezzo.equals("0.00")){
+        return false;
+    }
+    return true;
+}    
+
+    static Moneta DammiMonetaPrioritaria(Moneta Moneta1a, Moneta Moneta2a) {
+
+
+ /*Questa funzione si divide in 4 punti fondamentali:
+        1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
+        2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
+        3 - Verifico se una delle 2 monete non faccia parte di uno specifico gruppo delle monete più capitalizzate presenti su binance, in quel caso prendo quello come
+        prezzo della transazione in quanto il prezzo risulta sicuramente più preciso di quello di una shitcoin o comunque di una moneta con bassa liquidità
+        4 - Prendo il prezzo della prima moneta disponibile essendo che l'affidabilità del prezzo è la stessa per entrambe le monete dello scambio      
+         */
+
+        Moneta mon[] = new Moneta[]{Moneta1a, Moneta2a};
+
+        //PARTE 1 - ANALISI PRELIMINARE DATI
+
+    
+        //PARTE 2 - STABILISCO LA PRIORITA' DI ASSEGNAZIONE PREZZI SUI TOKEN
+        //(In caso in cui la transazioni presenti 2 token scelgo quale token determinerà iol prezzo della transazione con queasta priorità:)
+        //A - FIAT
+        //B - STABLECOIN
+        //C - Selezione di Crypto ad alta capitalizzazione (quindi con meno oscillazioni)
+        
+        //A - VERIFICO SE FIAT EURO (in quel caso prendo quel prezzo per la transazione che è il più accurato)
+        for (int k = 0; k < 2; k++) {
+            if (mon[k] != null && mon[k].Tipo.trim().equalsIgnoreCase("FIAT") && mon[k].Moneta.equalsIgnoreCase("EUR")) {
+                    return mon[k];
+            }
+        }
+        
+        //VERIFICO SE USD e prendo il prezzo da li
+            for (int k=0;k<2;k++){
+            if (mon[k] != null && mon[k].Moneta.equalsIgnoreCase("USD") && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")&&mon[k].MonetaAddress == null) {
+                //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
+                //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam              
+                return mon[k];
+            } 
+            }
+
+         //se non sono FIAT controllo se una delle coppie è USDT in quel caso prendo il prezzo di quello 
+        
+            //B e C - VERIFICO SE COPPIE PRIORITARIE
+            //ora scorro le coin principali per vedere se trovo corrispondenze e in quel caso ritorno il prezzo
+            //I simboli vengono interrogati per ordine di importanza ovvero nell'ordine in cui sono stati inseriti nella variabile
+        
+        for (String SimboloPrioritario : Prezzi.SimboliPrioritari) {
+            for (int k = 0; k < 2; k++) {
+                if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
+                    //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
+                    return mon[k];
+                }
+            }
+        }
+        
+
+
+        //Se arrivo qua vuol dire che non ho trovato nessuna moneta prioritaria quindi prendo la prima di cui trovo il prezzo
+        for (int k = 0; k < 2; k++) {
+            if (mon[k] != null){
+                if (mon[k].Prezzo!=null&&Funzioni.isNumeric(mon[k].Prezzo, false)) return mon[k];
+                if (mon[k].InfoPrezzo!=null&&mon[k].InfoPrezzo.Qta!=null&&mon[k].InfoPrezzo.prezzoUnitario!=null) return mon[k];
+            }
+        }
+        return null;
+
+    }
+
     
 }

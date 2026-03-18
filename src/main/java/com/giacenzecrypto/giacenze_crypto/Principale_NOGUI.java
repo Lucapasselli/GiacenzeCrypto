@@ -101,13 +101,15 @@ private static Map<String, String[]> creaMappaTipologie() {
             String Nota,
             String CarattereMovAutomatico, //Valorizzare ad A o a M
             String IDTransHash,
-            String TipoTr
+            String TipoTr,
+            String IdentificazioneID    //E' il secondo campo dell'ID se null viene valorizzato con il nome del wallet altrimenti con quello passato in questo campo
     ) {
         //========== SISTEMO I NOMI IN MODO CHE SIANO SAFE ===========
         Wallet=normalizzaNome(Wallet);
         Wallet2=normalizzaNome(Wallet2);
         Nota=normalizzaNome(Nota);
         IDTransHash=normalizzaNome(IDTransHash);
+        IdentificazioneID=normalizzaNome(IdentificazioneID);
         
         //========== GESTISCO LE DATE ===========
         if (IDMovimento != null) {
@@ -251,7 +253,8 @@ private static Map<String, String[]> creaMappaTipologie() {
         
         //========== GESTISCO L'ID ELLA TRANSAZIONE =========== 
         
-        RT2[0] = DataID + "_" + Wallet + "_" + numMovimento + "_" + numMovimento2 + "_" + Tipologie[0];
+        if(IdentificazioneID.isBlank())IdentificazioneID=Wallet;//Non serve il test del null perchè il campo è già normalizzato
+        RT2[0] = DataID + "_" + IdentificazioneID + "_" + numMovimento + "_" + numMovimento2 + "_" + Tipologie[0];
         if (IDMovimento != null) {
             //Nel caso in cui prendo l'id passato recupero però sempre il codice tipologia reale
             String IDMovimentoS[]=IDMovimento.split("_");

@@ -4,6 +4,9 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 
 /**
  *
@@ -25,19 +28,44 @@ public class Moneta {
   
   
   
-public void InserisciValori(String Nome,String Quantita,String Address,String Tipologia){
-    Moneta=Nome;
-    Qta=Quantita;
-    MonetaAddress=Address;
-    Tipo=Tipologia;
-}
+    public void InserisciValori(String Nome, String Quantita, String Address, String Tipologia) {
+        SetNome(Nome);
+        Qta = Quantita;
+        SetAddress(Address);
+        Tipo = Tipologia;
+    }
+
+    public void InserisciMonetaNoTipo(String Nome, String Quantita, String Address) {
+        //Individua solo USD e EUR come FIAT
+        Moneta = Nome;
+        Qta = Quantita;
+        MonetaAddress = Address;
+
+        if (Nome.equalsIgnoreCase("EUR") || Nome.equalsIgnoreCase("USD")) {
+            Tipo = "FIAT";
+
+        } else {
+            Tipo = "Crypto";
+        }
+
+    }
 
 public String GetNome(){
     return Moneta;
 }
+
+public void SetNome(String Nome){
+    Moneta=Nome;
+}
+
 public String GetQta(){
     return Qta;
 }
+
+public void SetAddress(String Address){
+    MonetaAddress=Address;
+}
+
 public String GetAddress(){
     return MonetaAddress;
 }

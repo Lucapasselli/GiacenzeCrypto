@@ -8351,7 +8351,7 @@ SwingUtilities.invokeLater(() -> {
                                     default -> {
                                     }
                                 }
-                                String RT2[]=Principale_NOGUI.creaMovimento(M1, null,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare);
+                                String RT2[]=Principale_NOGUI.creaMovimento(M1, null,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare,null);
                                 //Adesso scrivo il movimento
                                 MappaCryptoWallet.put(RT2[0], RT2);
 
@@ -8437,7 +8437,7 @@ SwingUtilities.invokeLater(() -> {
                                     }
                                 }
                                 //Adesso scrivo il movimento
-                                String RT1[]=Principale_NOGUI.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NewID,Nota,"M",null,TipoDaPassare);
+                                String RT1[]=Principale_NOGUI.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NewID,Nota,"M",null,TipoDaPassare,null);
                                 MappaCryptoWallet.put(RT1[0], RT1);
 
                             }

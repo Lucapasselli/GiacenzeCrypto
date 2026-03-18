@@ -52,6 +52,7 @@ public class Principale_NOGUI {
     -COMMISSIONI -> CM -> COMMISSIONI
 
     */
+    
 
     //Questa mappa contiene gli abbinamenti che servono per assegnare correttamente tipo e nome della transazioni
 static final Map<String, String[]> TipologieMovimento = Collections.unmodifiableMap(creaMappaTipologie());
@@ -66,7 +67,7 @@ private static Map<String, String[]> creaMappaTipologie() {
     
     m.put("AIRDROP",        new String[]{"RW", "AIRDROP",""});
     m.put("ALTRE-REWARD",   new String[]{"RW", "REWARD",""});
-    m.put("AIRDREWARDROP",  new String[]{"RW", "REWARD",""});
+    m.put("REWARD",  new String[]{"RW", "REWARD",""});
     m.put("CASHBACK",       new String[]{"RW", "CASHBACK",""});
     m.put("EARN",           new String[]{"RW", "EARN",""});
     m.put("STAKING REWARD",   new String[]{"RW", "STAKING REWARD",""});

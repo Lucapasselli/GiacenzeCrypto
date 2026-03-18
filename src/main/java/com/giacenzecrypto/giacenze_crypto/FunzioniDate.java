@@ -121,6 +121,7 @@ public class FunzioniDate {
         } catch (ParseException ex) {
            // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             //System.out.println(Data1+" non è una data");
+            LoggerGC.ScriviErrore(Data1+" non è una data valida");
         }
         return m1;
     } 
@@ -137,6 +138,7 @@ public class FunzioniDate {
         } catch (ParseException ex) {
            // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
             //System.out.println(Data1+" non è una data");
+            LoggerGC.ScriviErrore(Data1+" non è una data valida");
         }
         return m1;
     } 
@@ -189,6 +191,7 @@ public class FunzioniDate {
         return instant.toEpochMilli();
 
     } catch (Exception e) {
+      //  LoggerGC.ScriviErrore(isoDate+" non è una data valida");
         e.printStackTrace();
         return 0L;
     }

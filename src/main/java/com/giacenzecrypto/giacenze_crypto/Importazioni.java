@@ -3217,10 +3217,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
          String movimentoConvertito = Mappa_Conversione_Causali.get(TipoMovimento);
 
          String idBinance = movimentoSplittato[0].replace("_", "");
-         long DataLong = FunzioniDate.ConvertiDataBinanceTaxReportinLong(movimentoSplittato[1]);
-         String data = FunzioniDate.ConvertiDatadaLongAlSecondo(DataLong);
-         String dataa = data.trim().substring(0, data.length() - 3);
-         
+         long DataLong = FunzioniDate.ConvertiDataBinanceTaxReportinLong(movimentoSplittato[1]);        
 
          if (movimentoConvertito == null) {
              movimentiSconosciuti = movimentiSconosciuti + movimento + "\n";
@@ -3250,296 +3247,243 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              
              //Inserisco dei dati specifici di questo format, da capire in futuro se integrarli nel resto qualora vi siano
              if (RT != null) {
+                 RT[7] = TipoMovimento;
                  RT[14] = "€ "+movimentoSplittato[12];
                  RT[36] = movimentoSplittato[9];
                  RT[37] = movimentoSplittato[13];
                  lista.add(RT);
              }
 
+         } else if (movimentoConvertito.trim().equalsIgnoreCase("DEPOSITO FIAT")) {
+             BigDecimal TotRicevuto = new BigDecimal(movimentoSplittato[10]);
+             BigDecimal ValoreTot = new BigDecimal(movimentoSplittato[12]);
+
+             //imposto il valore della transazione come da file con la differenza che se sono euro
+             //il valore è il quantitativo in euro
+             //se non sono euro prendo invece il controvalore che mi da binance
+             String valoreEuro;
+             //Se la moneta delle fee è uguale a quella ricevuta sommo i valori
+             if (movimentoSplittato[11].equals(movimentoSplittato[15])) {
+                 //Se la moneta delle fee è uguale a quella ricevuta allora devo sommare le fee alla moneta ricevuta per trovare il totale
+                 TotRicevuto = TotRicevuto.add(new BigDecimal(movimentoSplittato[14]));
+                 ValoreTot = ValoreTot.add(new BigDecimal(movimentoSplittato[16]));
+             }
+             if (movimentoSplittato[11].equalsIgnoreCase("EUR")) {
+                 valoreEuro = TotRicevuto.setScale(2, RoundingMode.HALF_UP).abs().toString();
+             } else {
+                 valoreEuro = ValoreTot.setScale(2, RoundingMode.HALF_UP).abs().toString();
+             }
+
+             if (!movimentoSplittato[11].equalsIgnoreCase("EUR")) {
+                 valoreEuro = new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             }
+
+             String MIn = movimentoSplittato[11];
+             String MInQta = TotRicevuto.toPlainString();
+
+             Moneta M1 = new Moneta();
+             M1.InserisciValori(MIn, MInQta, "", "FIAT");
+
+             RT = Principale_NOGUI.creaMovimento(M1, null,
+                     "Binance", "Principale",
+                     DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
+                     idBinance, movimentoConvertito, "Binance." + idBinance);
+
+             if (RT != null) {
+                 RT[7] = TipoMovimento;
+                 RT[14] = "€ " + movimentoSplittato[12];
+                 lista.add(RT);
+             }
+         } else if (movimentoConvertito.trim().equalsIgnoreCase("PRELIEVO FIAT")) {
+             BigDecimal TotRicevuto = new BigDecimal(movimentoSplittato[6]);
+             BigDecimal ValoreTot = new BigDecimal(movimentoSplittato[8]);
+             //imposto il valore della transazione come da file con la differenza che se sono euro
+             //il valore è il quantitativo in euro
+             //se non sono euro prendo invece il controvalore che mi da binance
+             String valoreEuro;
+             //Se la moneta delle fee è uguale a quella ricevuta sommo i valori
+             if (movimentoSplittato[7].equals(movimentoSplittato[15])) {
+                 //Se la moneta delle fee è uguale a quella ricevuta allora devo sommare le fee alla moneta ricevuta per trovare il totale
+                 //  TotRicevuto=TotRicevuto.add(new BigDecimal(movimentoSplittato[14])); 
+                 //  ValoreTot=ValoreTot.add(new BigDecimal(movimentoSplittato[16]));
+             }
+             if (movimentoSplittato[7].equalsIgnoreCase("EUR")) {
+                 valoreEuro = TotRicevuto.setScale(2, RoundingMode.HALF_UP).abs().toString();
+             } else {
+                 valoreEuro = ValoreTot.setScale(2, RoundingMode.HALF_UP).abs().toString();
+             }
+             if (!movimentoSplittato[7].equalsIgnoreCase("EUR")) {
+                 //QUESTO E' UN DOPPIONE DI QUELLO SOPRA BISOGNA CAPIRE SE LE FEE SONO GIA' SCALATE O MENO
+                 valoreEuro = new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             }
+
+             String MOut = movimentoSplittato[7];
+             String MOutQta = TotRicevuto.abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
+
+             Moneta M1 = new Moneta();
+             M1.InserisciValori(MOut, MOutQta, "", "FIAT");
+
+             RT = Principale_NOGUI.creaMovimento(M1, null,
+                     "Binance", "Principale",
+                     DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
+                     idBinance, movimentoConvertito, "Binance." + idBinance);
+
+             if (RT != null) {
+                 RT[7] = TipoMovimento;
+                 RT[14] = "€ " + movimentoSplittato[8];
+                 lista.add(RT);
+             }
+
+         } else if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO")) {
+
+             String valoreEuro = new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             String MOut = movimentoSplittato[7];
+             String MOutQta = new BigDecimal(movimentoSplittato[6]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
+             String MIn = movimentoSplittato[11];
+             String MInQta = movimentoSplittato[10];
+
+             Moneta M1 = new Moneta();
+             M1.InserisciValori(MOut, MOutQta, "", "Crypto");
+             Moneta M2 = new Moneta();
+             M2.InserisciValori(MIn, MInQta, "", "Crypto");
+
+             RT = Principale_NOGUI.creaMovimento(M1, M2,
+                     "Binance", "Principale",
+                     DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
+                     idBinance, movimentoConvertito, "Binance." + idBinance);
+
+             if (RT != null) {
+                 RT[7] = TipoMovimento;
+                 RT[14] = "€ " + movimentoSplittato[12];
+                 RT[36] = movimentoSplittato[9];
+                 RT[37] = movimentoSplittato[13];
+                 lista.add(RT);
+             }
+
+         } else if (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")) {
+
+             String valoreEuro;
+             if (movimentoSplittato[11].equals("EUR")) {
+                 valoreEuro = new BigDecimal(RT[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             } else {
+                 valoreEuro = new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             }
+             String MOut = movimentoSplittato[7];
+             String MOutQta = new BigDecimal(movimentoSplittato[6]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
+             String MIn = movimentoSplittato[11];
+             String MInQta = movimentoSplittato[10];
+             Moneta M1 = new Moneta();
+             M1.InserisciValori(MOut, MOutQta, "", "FIAT");
+             Moneta M2 = new Moneta();
+             M2.InserisciValori(MIn, MInQta, "", "Crypto");
+
+             RT = Principale_NOGUI.creaMovimento(M1, M2,
+                     "Binance", "Principale",
+                     DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
+                     idBinance, movimentoConvertito, "Binance." + idBinance);
+             
+             if (RT!=null){
+                RT[7] = TipoMovimento;
+                RT[14] = "€ " + movimentoSplittato[12];
+                RT[36] = movimentoSplittato[9];
+                RT[37] = movimentoSplittato[13];
+                lista.add(RT);
+             }
+
          }
-                            else if (movimentoConvertito.trim().equalsIgnoreCase("DEPOSITO FIAT"))
-                            {
-                                //RT[0] = data.replaceAll(" |-|:", "") +"_Binance."+idBinance+ "_1_1_DF";
-                               // RT[1] = dataa;
-                                //RT[2] = 1 + " di " + 1;
-                                //RT[3] = "Binance";
-                                //RT[4] = "Principale";
-                                BigDecimal TotRicevuto=new BigDecimal(movimentoSplittato[10]);
-                                BigDecimal ValoreTot=new BigDecimal(movimentoSplittato[12]);
-                                
-                                //imposto il valore della transazione come da file con la differenza che se sono euro
-                                //il valore è il quantitativo in euro
-                                //se non sono euro prendo invece il controvalore che mi da binance
-                                String valoreEuro;                               
-                                //Se la moneta delle fee è uguale a quella ricevuta sommo i valori
-                                if(movimentoSplittato[11].equals(movimentoSplittato[15])){
-                                    //Se la moneta delle fee è uguale a quella ricevuta allora devo sommare le fee alla moneta ricevuta per trovare il totale
-                                    TotRicevuto=TotRicevuto.add(new BigDecimal(movimentoSplittato[14])); 
-                                    ValoreTot=ValoreTot.add(new BigDecimal(movimentoSplittato[16]));
-                                }
-                                if (movimentoSplittato[11].equalsIgnoreCase("EUR")){
-                                    valoreEuro=TotRicevuto.setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                    } 
-                                else {
-                                    valoreEuro=ValoreTot.setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                }
-                                //RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
-                                //RT[6] = "-> "+movimentoSplittato[11];                                
-                                //RT[7] = TipoMovimento;
-                                
-                                if (!movimentoSplittato[11].equalsIgnoreCase("EUR")){
-                                    valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                }
-                                //String valoreEuro=new BigDecimal(TotRicevuto).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                String MIn = movimentoSplittato[11];
-                                String MInQta = TotRicevuto.toPlainString();
+         else if (movimentoConvertito.trim().equalsIgnoreCase("VENDITA CRYPTO")) {
 
-                                Moneta M1 = new Moneta();
-                                M1.InserisciValori(MIn, MInQta, "", "FIAT");
+             String valoreEuro;
+             if (movimentoSplittato[11].equals("EUR")) {
+                 valoreEuro = new BigDecimal(movimentoSplittato[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             } else {
+                 valoreEuro = new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             }
+             String MOut = movimentoSplittato[7];
+             String MOutQta = new BigDecimal(movimentoSplittato[6]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
+             String MIn = movimentoSplittato[11];
+             String MInQta = movimentoSplittato[10];
+             Moneta M1 = new Moneta();
+             M1.InserisciValori(MOut, MOutQta, "", "Crypto");
+             Moneta M2 = new Moneta();
+             M2.InserisciValori(MIn, MInQta, "", "FIAT");
 
-                                RT = Principale_NOGUI.creaMovimento(M1, null,
-                                        "Binance", "Principale",
-                                        DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
-                                        idBinance, movimentoConvertito, "Binance." + idBinance);
-                                
-                                //RT[11] = movimentoSplittato[11];
-                                //RT[12] = "FIAT";
-                                //RT[13] = TotRicevuto.toPlainString();
-                                RT[14] = "€ "+movimentoSplittato[12];
-                                RT[15] = valoreEuro;
-                                //RT[17] = valoreEuro;
-                                //RT[22] = "A";
-                                //RT[32] = "SI";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
-                                
-                                
-                            }
-                             else if (movimentoConvertito.trim().equalsIgnoreCase("PRELIEVO FIAT"))
-                            {
-                                RT[0] = data.replaceAll(" |-|:", "") +"_Binance."+idBinance+ "_1_1_PF";
-                                RT[1] = dataa;
-                                RT[2] = 1 + " di " + 1;
-                                RT[3] = "Binance";
-                                RT[4] = "Principale";
-                                BigDecimal TotRicevuto=new BigDecimal(movimentoSplittato[6]);
-                                BigDecimal ValoreTot=new BigDecimal(movimentoSplittato[8]);
-                                
-                                //imposto il valore della transazione come da file con la differenza che se sono euro
-                                //il valore è il quantitativo in euro
-                                //se non sono euro prendo invece il controvalore che mi da binance
-                                String valoreEuro;                               
-                                //Se la moneta delle fee è uguale a quella ricevuta sommo i valori
-                                if(movimentoSplittato[7].equals(movimentoSplittato[15])){
-                                    //Se la moneta delle fee è uguale a quella ricevuta allora devo sommare le fee alla moneta ricevuta per trovare il totale
-                                  //  TotRicevuto=TotRicevuto.add(new BigDecimal(movimentoSplittato[14])); 
-                                  //  ValoreTot=ValoreTot.add(new BigDecimal(movimentoSplittato[16]));
-                                }
-                                if (movimentoSplittato[7].equalsIgnoreCase("EUR")){
-                                    valoreEuro=TotRicevuto.setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                    } 
-                                else {
-                                    valoreEuro=ValoreTot.setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                }
-                                RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
-                                RT[6] = movimentoSplittato[7]+" ->";                                
-                                RT[7] = TipoMovimento;
-                                if (!movimentoSplittato[7].equalsIgnoreCase("EUR")){
-                                    //QUESTO E' UN DOPPIONE DI QUELLO SOPRA BISOGNA CAPIRE SE LE FEE SONO GIA' SCALATE O MENO
-                                    valoreEuro=new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                }
-                                //String valoreEuro=new BigDecimal(TotRicevuto).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                RT[8] = movimentoSplittato[7];
-                                RT[9] = "FIAT";
-                                RT[10] = TotRicevuto.abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
-                                RT[14] = "€ "+movimentoSplittato[8];
-                                RT[15] = valoreEuro;
-                                RT[17] = valoreEuro;
-                                RT[22] = "A";
-                                RT[32] = "SI";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
-                                
-                                
-                            }
-                            else if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO"))
-                            {                               
-                                //Scambio Crypto Crypto
-                                RT[0] = data.replaceAll(" |-|:", "") +"_Binance."+idBinance+ "_1_1_SC";
-                                RT[1] = dataa;
-                                RT[2] = 1 + " di " + 1;
-                                RT[3] = "Binance";
-                                RT[4] = "Principale";
-                                RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
-                                RT[6] = movimentoSplittato[7]+" -> "+movimentoSplittato[11];                                
-                                RT[7] = TipoMovimento;
-                                String valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                RT[8] = movimentoSplittato[7];
-                                RT[9] = "Crypto";
-                                RT[10] = movimentoSplittato[6];
-                                if (!RT[10].contains("-"))RT[10]="-"+RT[10];
-                                RT[11] = movimentoSplittato[11];
-                                RT[12] = "Crypto";
-                                RT[13] = movimentoSplittato[10];
-                                RT[14] = "€ "+movimentoSplittato[12];
-                                RT[15] = valoreEuro;
-                                RT[17] = valoreEuro;
-                                RT[19] = valoreEuro;
-                                RT[22] = "A";
-                                RT[32] = "SI";
-                                RT[36] = movimentoSplittato[9];
-                                RT[37] = movimentoSplittato[13];
-                                
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);    
+             RT = Principale_NOGUI.creaMovimento(M1, M2,
+                     "Binance", "Principale",
+                     DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
+                     idBinance, movimentoConvertito, "Binance." + idBinance);
+             if (RT != null) {
+                 RT[7] = TipoMovimento;
+                 RT[14] = "€ " + movimentoSplittato[12];
+                 RT[36] = movimentoSplittato[9];
+                 RT[37] = movimentoSplittato[13];
+                 lista.add(RT);
+             }
 
-                            }
-                            else if (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO"))
-                            {                               
-                                //Scambio Crypto Crypto
-                                RT[0] = data.replaceAll(" |-|:", "") +"_Binance."+idBinance+ "_1_1_AC";
-                                RT[1] = dataa;
-                                RT[2] = 1 + " di " + 1;
-                                RT[3] = "Binance";
-                                RT[4] = "Principale";
-                                RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
-                                RT[6] = movimentoSplittato[7]+" -> "+movimentoSplittato[11];                                
-                                RT[7] = TipoMovimento;                               
-                                RT[8] = movimentoSplittato[7];
-                                RT[9] = "FIAT";
-                                RT[10] = movimentoSplittato[6];
-                                if (!RT[10].contains("-"))RT[10]="-"+RT[10];
-                                RT[11] = movimentoSplittato[11];
-                                RT[12] = "Crypto";
-                                RT[13] = movimentoSplittato[10];
-                                RT[14] = "€ "+movimentoSplittato[12];
-                                String valoreEuro;
-                                if (movimentoSplittato[11].equals("EUR"))
-                                    valoreEuro=new BigDecimal(RT[10]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                else
-                                    valoreEuro=new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                RT[15] = valoreEuro;
-                                RT[17] = valoreEuro;
-                                RT[19] = valoreEuro;
-                                RT[22] = "A";
-                                RT[32] = "SI";
-                                RT[36] = movimentoSplittato[9];
-                                RT[37] = movimentoSplittato[13];
-                                
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);    
+         } else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")) {
+             String PrezzoOriginale;
+             String valoreEuro;
+             if (TipoMovimento.contains("SEND.")) {
+                 PrezzoOriginale = "€ " + movimentoSplittato[8];
+                 valoreEuro = new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             } else {
+                 PrezzoOriginale = "€ " + movimentoSplittato[12];
+                 valoreEuro = new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+             }
 
-                            }
-                            else if (movimentoConvertito.trim().equalsIgnoreCase("VENDITA CRYPTO"))
-                            {                               
-                                //Scambio Crypto Crypto
-                                RT[0] = data.replaceAll(" |-|:", "") +"_Binance."+idBinance+ "_1_1_VC";
-                                RT[1] = dataa;
-                                RT[2] = 1 + " di " + 1;
-                                RT[3] = "Binance";
-                                RT[4] = "Principale";
-                                RT[5] = Mappa_Conversione_Causali.get(TipoMovimento);
-                                RT[6] = movimentoSplittato[7]+" -> "+movimentoSplittato[11];                                
-                                RT[7] = TipoMovimento;                               
-                                RT[8] = movimentoSplittato[7];
-                                RT[9] = "Crypto";
-                                RT[10] = movimentoSplittato[6];
-                                if (!RT[10].contains("-"))RT[10]="-"+RT[10];
-                                RT[11] = movimentoSplittato[11];
-                                RT[12] = "FIAT";
-                                RT[13] = movimentoSplittato[10];
-                                RT[14] = "€ "+movimentoSplittato[12];
-                                String valoreEuro;
-                                if (movimentoSplittato[11].equals("EUR"))
-                                    valoreEuro=new BigDecimal(RT[13]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                else
-                                    valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                RT[15] = valoreEuro;
-                                RT[17] = valoreEuro;
-                                RT[19] = valoreEuro;
-                                RT[22] = "A";
-                                RT[32] = "SI";
-                                RT[36] = movimentoSplittato[9];
-                                RT[37] = movimentoSplittato[13];
-                                
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);    
+             String MOut = movimentoSplittato[7];
+             String MOutQta = new BigDecimal(movimentoSplittato[6]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
+             String MIn = movimentoSplittato[11];
+             String MInQta = movimentoSplittato[10];
+             Moneta M1 = new Moneta();
+             M1.InserisciValori(MOut, MOutQta, "", "Crypto");
+             if (M1.Moneta.isBlank()) {
+                 M1 = null;
+             }
+             Moneta M2 = new Moneta();
+             M2.InserisciValori(MIn, MInQta, "", "Crypto");
+             if (M2.Moneta.isBlank()) {
+                 M2 = null;
+             }
 
-                            }
-                               else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO"))
-                            {
-                                RT[1] = dataa;
-                                RT[2] = 1 + " di " + 1;
-                                RT[3] = "Binance";
-                                RT[4] = "Principale";                                                          
-                                RT[7]=TipoMovimento;
-                                String valoreEuro;
-                                if (TipoMovimento.contains("SEND.")) {
-                                    RT[0] = data.replaceAll(" |-|:", "") + "_Binance." + idBinance + "_1_1_PC";
-                                    RT[5] = "PRELIEVO CRYPTO";
-                                    RT[6] = movimentoSplittato[7] + " ->";
-                                    RT[8] = movimentoSplittato[7];
-                                    RT[9] = "Crypto";
-                                    RT[10] = movimentoSplittato[6];
-                                    if (!RT[10].contains("-"))RT[10]="-"+RT[10];
-                                    RT[14] = "€ " + movimentoSplittato[8];
-                                    valoreEuro=new BigDecimal(movimentoSplittato[8]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                } else {
-                                    RT[0] = data.replaceAll(" |-|:", "") + "_Binance." + idBinance + "_1_1_DC";
-                                    RT[5] = "DEPOSITO CRYPTO";
-                                    RT[6] = "-> " + movimentoSplittato[11];
-                                    RT[11] = movimentoSplittato[11];
-                                    RT[12] = "Crypto";
-                                    RT[13] = movimentoSplittato[10];
-                                    RT[14] = "€ " + movimentoSplittato[12];
-                                    valoreEuro=new BigDecimal(movimentoSplittato[12]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                                }                                                                                          
-                                RT[15]=valoreEuro;
-                                RT[22]="A";
-                                RT[32] = "SI";
-                                RT[36] = movimentoSplittato[9];
-                                RT[37] = movimentoSplittato[13];
-                                RiempiVuotiArray(RT);
-                                lista.add(RT); 
-                                
-                                                                
-;
-                                
-                            }
+             RT = Principale_NOGUI.creaMovimento(M1, M2,
+                     "Binance", "Principale",
+                     DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
+                     idBinance, movimentoConvertito, "Binance." + idBinance);
+             if (RT != null) {
+                 RT[7] = TipoMovimento;
+                 RT[14] = PrezzoOriginale;
+                 RT[36] = movimentoSplittato[9];
+                 RT[37] = movimentoSplittato[13];
+                 lista.add(RT);
+             }
+         }
 
-                           //Per ultimo aggiungo i movimenti di fee se questo non sono zero
-                           if (!movimentoSplittato[15].isBlank()){
-                               RT = new String[ColonneTabella];
-                               RT[0] = data.replaceAll(" |-|:", "") + "_Binance." + idBinance + "_1_2_CM";                              
-                               RT[1] = dataa;
-                               RT[2] = 1 + " di " + 1;
-                               RT[3] = "Binance";
-                               RT[4] = "Principale";
-                               RT[5] = "COMMISSIONI";
-                               RT[6] = movimentoSplittato[15] + " ->";
-                               RT[7] = TipoMovimento;
-                               RT[8] = movimentoSplittato[15];
-                               String valoreEuro = new BigDecimal(movimentoSplittato[16]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-                               Set<String> valute = Set.of("EUR", "USD", "TRY");
-                                if (valute.contains(movimentoSplittato[15])) {
-                                    
-                                    RT[9] = "FIAT";
-                               }
-                               else{
-                                   RT[9] = "Crypto";                              
-                               }
-                               RT[10] = movimentoSplittato[14];
-                               if (!RT[10].contains("-"))RT[10]="-"+RT[10];
-                               RT[14] = "€ " + movimentoSplittato[16];
-                               RT[15] = valoreEuro;
-                               RT[22] = "A";
-                               RT[32] = "SI";
-                               RiempiVuotiArray(RT);
-                               lista.add(RT);
+        //Per ultimo aggiungo i movimenti di fee se questo non sono zero
+        if (!movimentoSplittato[15].isBlank()) {
+            String valoreEuro = new BigDecimal(movimentoSplittato[16]).setScale(2, RoundingMode.HALF_UP).abs().toString();
+            Set<String> valute = Set.of("EUR", "USD", "TRY");
+            String TipologiaCom;
+            if (valute.contains(movimentoSplittato[15])) {
+                TipologiaCom = "FIAT";
+            } else {
+                TipologiaCom = "Crypto";
+            }
+            String MOut = movimentoSplittato[15];
+            String MOutQta = new BigDecimal(movimentoSplittato[14]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
+            Moneta M1 = new Moneta();
+            M1.InserisciValori(MOut, MOutQta, "", TipologiaCom);
+            RT = Principale_NOGUI.creaMovimento(M1, null,
+                    "Binance", "Principale",
+                    DataLong, valoreEuro, "CSV", 1, 2, null, null, "A",
+                    idBinance, "COMMISSIONI", "Binance." + idBinance);
+            if (RT != null) {
+                RT[7] = TipoMovimento;
+                RT[14] = "€ " + movimentoSplittato[16];
+                lista.add(RT);
+            }
+        }
 
-                           }
-                           
-                        
         return lista;
     }   
   
@@ -3671,139 +3615,62 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     movimentoConvertito.trim().equalsIgnoreCase("AIRDROP"))
                             {
 
-                                RT[0] = data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_RW";
-                                RT[1] = dataa;
-                                RT[2] = k + 1 + " di " + numMovimenti;
-                                RT[3] = "Binance";
-                                //RT[4] = WalletSecondario;
-                                RT[4] = "Principale";
-                                RT[5] = movimentoConvertito;
-                                RT[6] = "-> "+Mon.Moneta;                                
-                                RT[7] = CausaleOriginale;
-                                if (Mon.Qta.contains("-")) {
-                                    RT[5] = "RIMBORSO " + movimentoConvertito;
-                                    RT[6] = Mon.Moneta+" ->"; 
-                                    RT[8] = Mon.Moneta;
-                                    RT[9] = Mon.Tipo;
-                                    RT[10] = Mon.Qta;
-                                    RT[15] = "0.00";
-                                    RT[17] = "";//verrà calcolato con il metodo lifo
-                                    RT[19] = "";//verrà calcolato con il metodo lifo sarà (0 - prezzo di carico)
-                                } 
-                                else 
-                                {
+                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                        "Binance", "Principale",
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, movimentoConvertito, null);
 
-                                    RT[11] = Mon.Moneta;
-                                    RT[12] = Mon.Tipo;
-                                    RT[13] = Mon.Qta;
-                                    RT[14] = "";
-
-                                    RT[15] = valoreEuro;
-                                    BigDecimal QTA = new BigDecimal(movimentoSplittato[5]);
-                                    String plus;
-                                    if (QTA.toString().contains("-")) {
-                                        plus = "-" + valoreEuro;
-                                    } else {
-                                        plus = valoreEuro;
-                                    }
-                                    RT[17] = valoreEuro;
-                                    RT[19] = new BigDecimal(plus).setScale(2, RoundingMode.HALF_UP).toString();
+                                if (RT != null) {
+                                    RT[7]=CausaleOriginale;
+                                    lista.add(RT);
                                 }
 
-                                RT[22] = "A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
-                                
                             }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("DEPOSITO FIAT")||
                                    (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&Mon.Tipo.equals("FIAT")&&!Mon.Qta.contains("-"))
                                    )
                             {
-                                                                //trasferimento FIAT                              
-                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_DF";
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3]="Binance";
-                               // RT[4]=WalletSecondario;
-                                RT[4] = "Principale";
-                                RT[5]="DEPOSITO FIAT";
-                                RT[6]="-> "+Mon.Moneta;
-                                RT[7]=CausaleOriginale;
-                                RT[11]=Mon.Moneta;
-                                RT[12]=Mon.Tipo;
-                                RT[13]=Mon.Qta;
-                                RT[15]=valoreEuro;
-                                RT[17]=valoreEuro;
-                                RT[18]="";
-                                RT[19]="0.00";
-                                RT[22]="A";                              
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
+                                 RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                        "Binance", "Principale",
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, movimentoConvertito, null);
+
+                                if (RT != null) {
+                                    RT[7]=CausaleOriginale;
+                                    lista.add(RT);
+                                }
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("PRELIEVO FIAT"))
                             {
-                                //trasferimento FIAT
-                                String Codice;
-                                String Descrizione;
-                                if (Mon.Qta.contains("-")) {
-                                    Codice=RitornaTipologiaTransazione(Mon.Tipo,null,0);
-                                    Descrizione=RitornaTipologiaTransazione(Mon.Tipo,null,1);
-                                   } 
-                                else {
-                                    Codice=RitornaTipologiaTransazione(null,Mon.Tipo,0);
-                                    Descrizione=RitornaTipologiaTransazione(null,Mon.Tipo,1);
+                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                        "Binance", "Principale",
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, movimentoConvertito, null);
+
+                                //Cambio la descrizione in taluni casi particolari
+                                if (RT != null) {
+                                    if (Mon.Qta.contains("-")) {
+                                        if (CausaleOriginale.trim().equalsIgnoreCase("Binance Card Spending"))RT[5]="SPESA CON CARTA";
+                                    }
+                                    else{
+                                        RT[5]="RIMBORSO SU CARTA";
+                                    }
+                                    RT[7]=CausaleOriginale;
+                                    lista.add(RT);
                                 }
-                                    
-                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_"+Codice;
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3]="Binance";
-                                //RT[4]=WalletSecondario;
-                                RT[4] = "Principale";                                
-                                RT[5]=Descrizione;
-                                RT[7]=CausaleOriginale; 
-                                if (Mon.Qta.contains("-")) {
-                                if (CausaleOriginale.trim().equalsIgnoreCase("Binance Card Spending"))RT[5]="SPESA CON CARTA";
-                                else RT[5]="PRELIEVO FIAT";
-                                RT[6]=Mon.Moneta+"-> ";
-                                RT[8]=Mon.Moneta;
-                                RT[9]=Mon.Tipo;
-                                RT[10]=Mon.Qta;
-                                }
-                                else{
-                                RT[5]="RIMBORSO SU CARTA";
-                                RT[6]="-> "+Mon.Moneta;
-                                RT[11]=Mon.Moneta;
-                                RT[12]=Mon.Tipo;
-                                RT[13]=Mon.Qta;    
-                                }
-                                RT[15]=valoreEuro;
-                                RT[19]="0.00";
-                                RT[22]="A";                              
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("VENDITA CRYPTO"))
                             {
                                 //Vendita Crypto, ad esempio per pagamento tasse
-                                String Codice;
-                                String Descrizione;  
-                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_VC";
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3]="Binance";
-                                RT[4] = "Principale";                                
-                                RT[5]="VENDITA CRYPTO";
-                                RT[7]=CausaleOriginale; 
-                                RT[6]=Mon.Moneta+"-> ";
-                                RT[8]=Mon.Moneta;
-                                RT[9]=Mon.Tipo;
-                                RT[10]=Mon.Qta;                          
-                                RT[15]=valoreEuro;
-                                RT[19]="0.00";
-                                RT[22]="A";                              
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
+                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                        "Binance", "Principale",
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, movimentoConvertito, null);
+
+                                if (RT != null) {
+                                    RT[7]=CausaleOriginale;
+                                    lista.add(RT);
+                                }
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("COMMISSIONI"))
                             {
@@ -4146,7 +4013,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
          long Datalong=0;
          String data="";
          String WalletPrincipale="";
-         String IDOriginale="";
+         String IDOriginale;
          TransazioneDefi Scambio=new TransazioneDefi();         
                         for (int k=0;k<numMovimenti;k++){
                             String RT[]=new String[ColonneTabella];

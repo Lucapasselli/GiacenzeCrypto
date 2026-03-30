@@ -35,6 +35,20 @@ public class Moneta {
         Tipo = Tipologia;
     }
 
+    public String getFontePrezzo(){
+        if (this.InfoPrezzo!=null){
+            return InfoPrezzo.Fonte;
+        }
+        return null;
+    }
+    
+    public void setFontePrezzo(String fonte){
+        if (InfoPrezzo==null){
+            InfoPrezzo=new Prezzi.InfoPrezzo();
+            InfoPrezzo.Fonte=fonte;
+        }
+    }
+    
     public void InserisciMonetaNoTipo(String Nome, String Quantita, String Address) {
         //Individua solo USD e EUR come FIAT
         Moneta = Nome;
@@ -71,6 +85,13 @@ public String GetAddress(){
 }
 public String GetTipologia(){
     return Tipo;
+}
+
+public void AssegnaTipoAuto(){
+    if (Moneta.equals("EUR")||Moneta.equals("USD")){
+        Tipo="FIAT";
+    }
+    else Tipo="Crypto";
 }
 
     public Moneta ClonaMoneta() {

@@ -247,7 +247,11 @@ private static Map<String, String[]> creaMappaTipologie() {
         else{
             //Nel caso in cui recupero correttamente il movimento se è un movimento RW di uscita devo inserire rimborso davanti alla descrizione
             if (Tipologie[0].equals("RW")&&MIn.isBlank()){
+                //Questa istruzione serve per modificare una copia dell'array estratto e non quello originale
+                Tipologie = java.util.Arrays.copyOf(Tipologie, Tipologie.length);
                 Tipologie[1]="RIMBORSO "+Tipologie[1];
+                //In caso di Rimborso devo anche azzerare il prezzo
+                Prezzo="0.00";
             }
         }
         

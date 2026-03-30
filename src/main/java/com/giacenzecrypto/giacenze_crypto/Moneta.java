@@ -76,6 +76,22 @@ public String GetQta(){
     return Qta;
 }
 
+public void SetQta(String Quant){
+    if (Funzioni.isNumeric(Quant, false)){
+        Qta=Quant;
+    }
+}
+
+public void SetPrezzo(String Prz){
+    if (Funzioni.isNumeric(Prz, false)){
+        if (InfoPrezzo==null){
+            InfoPrezzo=new Prezzi.InfoPrezzo();
+            InfoPrezzo.prezzoQta=new BigDecimal(Prz);
+        }
+        Prezzo=Prz;
+    }
+}
+
 public void SetAddress(String Address){
     MonetaAddress=Address;
 }

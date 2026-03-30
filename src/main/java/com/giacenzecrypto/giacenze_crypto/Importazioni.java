@@ -1956,7 +1956,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
     }
         
     
-    private static List<String[]> RitornaScambi(TransazioneDefi Scambio,String data) {
+    private static List<String[]> RitornaScambi(TransazioneDefi Scambio,String data,String WalletPrincipale,String WalletID) {
         List<String[]> lista=new ArrayList<>();
         if (!Scambio.isEmpty()) {
             //System.out.println("scambioooooooo");
@@ -1965,7 +1965,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             Map<String, ValoriToken> MappaTokenUscita = Scambio.RitornaMappaTokenUscita();
             Map<String, ValoriToken> MappaTokenEntrata = Scambio.RitornaMappaTokenEntrata();
             //Se il tipo scambio è disverso da scambio vuol dire che c'è un errore e lo segnalo
-            String WalletPrincipale = "Crypto.com App";
 
             if (TipoScambio.equalsIgnoreCase("Deposito")) {
                 int i = 1;
@@ -1982,7 +1981,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             WalletPrincipale, tokenE.WalletSecondario,
                             TimeStamp,
                             MDeposito.Prezzo, FontePrezzo,
-                            totMov, i, null, null, "A", tokenE.IDTransazione, null, null);
+                            totMov, i, null, null, "A", tokenE.IDTransazione, null, WalletID);
 
                     if (RT != null) {
                         lista.add(RT);
@@ -1999,7 +1998,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     long TimeStamp = FunzioniDate.ConvertiDatainLongSecondo(data);
                     String RT[];
                     String FontePrz = MPrelievo.getFontePrezzo();
-                    RT = Principale_NOGUI.creaMovimento(MPrelievo, null, WalletPrincipale, tokenU.WalletSecondario, TimeStamp, MPrelievo.Prezzo, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione, null, null);
+                    RT = Principale_NOGUI.creaMovimento(MPrelievo, null, WalletPrincipale, tokenU.WalletSecondario, 
+                            TimeStamp, MPrelievo.Prezzo, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione, null, WalletID);
                     if (RT != null) {
                         RT[7] = tokenU.CausaleOriginale;
                         lista.add(RT);
@@ -2040,7 +2040,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                         RT = Principale_NOGUI.creaMovimento(M1, M2,
                                 WalletPrincipale, tokenE.WalletSecondario,
-                                TimeStamp, null, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione + "_" + tokenE.IDTransazione, null, null);
+                                TimeStamp, null, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione + "_" + tokenE.IDTransazione, 
+                                null, WalletID);
                         if (RT != null) {
                             RT[7] = tokenU.CausaleOriginale + " - " + tokenE.CausaleOriginale;
                             lista.add(RT);
@@ -2478,7 +2479,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             // Li inserisco alla fine perchè non so quando teminino
                         //  if (k == numMovimenti - 1) {
                         
-                        List<String[]> lista2=RitornaScambi(Scambio,data);
+                        List<String[]> lista2=RitornaScambi(Scambio,data,"Crypto.com App","CDCAPP");
                         lista.addAll(lista2);
                         
               /*          if (!Scambio.isEmpty()){
@@ -2988,6 +2989,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
         return lista;
     }   
   
+     
+        //Questa funzione analizza i movimenti di scambio differito e li associa (utilizzando la stessa funzione che viene utilizzata nello scambio differito manuale)
         public static void ConsolidaMovimentiDifferiti(List<String[]> listaMovimentidaConsolidare,boolean SovrascrivoEsistenti){
             Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             int nElementi = listaMovimentidaConsolidare.size();
@@ -3060,8 +3063,8 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
          
          List<String[]> lista=new ArrayList<>();
          int numMovimenti=listaMovimentidaConsolidare.size();
-         String dataa="";
-         long Datalong=0;
+        // String dataa="";
+         long Datalong;
          String data="";
          TransazioneDefi Scambio=new TransazioneDefi();         
                         for (int k=0;k<numMovimenti;k++){
@@ -3079,15 +3082,16 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             Datalong=FunzioniDate.ConvertiDatainLongSecondo(data);
                            
                             Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"binance");
+                            Mon.InfoPrezzo=IP;
                                         if (IP==null)
-                                            Mon.Prezzo = "0.00";
+                                            Mon.SetPrezzo("0.00");
                                         else 
                                         {
-                                            Mon.Prezzo = IP.prezzoQta.toPlainString();
+                                            Mon.SetPrezzo(IP.prezzoQta.toPlainString());
                                             RT[40]=IP.Ritorna40();
                                         }
                             //Mon.Prezzo = Prezzi.DammiPrezzoTransazione(Mon, null, Datalong, null, true, 10, null,"binance");
-                            String valoreEuro = new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                           // String valoreEuro;// = new BigDecimal(Mon.Prezzo).setScale(2, RoundingMode.HALF_UP).toPlainString();
                            // String WalletSecondario=movimentoSplittato[2];
                            // WalletSecondario="Principale";
                             String CausaleOriginale=movimentoSplittato[3];
@@ -3098,7 +3102,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 movimentoConvertito=null;
                                 movimento="FORMATO DATA ERRATO : "+movimento;
                             }
-                            else dataa=data.trim().substring(0, data.length()-3);
+                            //else dataa=data.trim().substring(0, data.length()-3);
                            
                            if (movimentoConvertito==null)
                                 {
@@ -3173,36 +3177,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("COMMISSIONI"))
                             {
-                                //Scambio Crypto Crypto
                                 //il C dopo binance mi serve per far si che le commissioni le metta per ultime
-                                RT[0]=data.replaceAll(" |-|:", "") +"_Binance_C"+String.valueOf(k+1)+ "_1_CM";
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3]="Binance";
-                                //RT[4]=WalletSecondario;
-                                RT[4] = "Principale";
-                                if (Mon.Qta.contains("-")){
-                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_C"+String.valueOf(k+1)+ "_1_CM";
-                                    RT[5]="COMMISSIONI";                                
-                                    RT[6]=Mon.Moneta+" -> ";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                                
+                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                        "Binance", "Principale",
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, movimentoConvertito, "Binance_C");
+                                if (RT != null) {
                                     RT[7]=CausaleOriginale;
-                                    RT[8]=Mon.Moneta;
-                                    RT[9]=Mon.Tipo;
-                                    RT[10]=Mon.Qta;   
-                                }else
-                                {
-                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_C"+String.valueOf(k+1)+ "_1_RW";
-                                    RT[5]="CASHBACK";//IL RIMBORSO DELLE COMMISSIONI LO TRATTO COME UN CASHBACK
-                                    RT[6]=" -> "+Mon.Moneta;//da sistemare con ulteriore dettaglio specificando le monete trattate                                                                
-                                    RT[7]=CausaleOriginale;
-                                    RT[11]=Mon.Moneta;
-                                    RT[12]=Mon.Tipo;
-                                    RT[13]=Mon.Qta; 
-                                }
-                                RT[15]=valoreEuro;
-                                RT[22]="A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);     
+                                    lista.add(RT);  
+                                }                                
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("DUST-CONVERSION")||
                                     movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO CRYPTO-CRYPTO")||
@@ -3229,45 +3212,15 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")||
                                        movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
                             {
-                                RT = new String[ColonneTabella];
-                                RT[1]=dataa;
-                                RT[2]=1+" di "+1;
-                                RT[3]="Binance";
-                                //RT[4]=movimentoSplittato[2];
-                                RT[4] = "Principale";
-                                RT[7]=movimentoSplittato[3];
-                                if (Mon.Qta.contains("-")) {
-                                    RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_PC";
-                                    RT[5]="PRELIEVO CRYPTO";
-                                    RT[6]=Mon.Moneta+" ->";
-                                    RT[8]=Mon.Moneta;
-                                    RT[9]=Mon.Tipo;
-                                    RT[10]=Mon.Qta;
-
-                                } else {
-                                    if (Mon.Tipo.equalsIgnoreCase("FIAT")){
-                                        RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_DF";
-                                        RT[5]="DEPOSITO FIAT";
-                                        }
-                                    else 
-                                        {
-                                        RT[0]=data.replaceAll(" |-|:", "") +"_Binance_"+String.valueOf(k+1)+ "_1_DC";
-                                        RT[5]="DEPOSITO CRYPTO";
-                                        }
-                                    RT[6]="-> "+Mon.Moneta;
-                                    RT[11]=Mon.Moneta;
-                                    RT[12]=Mon.Tipo;
-                                    RT[13]=Mon.Qta;                              
-                                }                                                                                            
-                                RT[15]=valoreEuro;
-                                RT[16]="";
-                                RT[17]="";
-                                RT[18]="";
-                                RT[19]="";
-                                RT[20]="";
-                                RT[22]="A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
+                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                        "Binance", "Principale",
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, movimentoConvertito, null);
+                                if (RT != null) {
+                                    RT[7]=CausaleOriginale;
+                                    lista.add(RT);  
+                                }           
+                                
                                 if (movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
                                 {
                                     //Gli scambi differiti li analizzarò poi alla fine di tutto
@@ -3296,7 +3249,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         
                             // A fine ciclo verifico se ho degli scambi da inserire e li inserisco
                             // Li inserisco alla fine perchè non so quando teminino                        
-                            List<String[]> lista2=RitornaScambi(Scambio,data);
+                            List<String[]> lista2=RitornaScambi(Scambio,data,"Binance",null);
                             lista.addAll(lista2);
                                    /* if(Scambio.lenght()>0){
                                     String TipoScambio=Scambio.IdentificaTipoTransazioneCEX();
@@ -4121,7 +4074,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
         // A fine ciclo verifico se ho degli scambi da inserire e li inserisco
         // Li inserisco alla fine perchè non so quando teminino
-        List<String[]> lista2=RitornaScambi(Scambio,data);
+        List<String[]> lista2=RitornaScambi(Scambio,data,WalletPrincipale,null);
         lista.addAll(lista2);
         return lista;
     }
@@ -4165,193 +4118,91 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             if (movimentoSplittato.length!=13){
                                 CTtradizionale=false;
                             }
-                            String MComm = "",QtaComm="";
+
                             String ME,MU,QtaU,QtaE,PrzU,PrzE,Exch,data;
+                            Moneta MonU =new Moneta();
+                            Moneta MonE = new Moneta();
+                            Moneta MonC = new Moneta();//MonetaCommissioni
                             String Tipologia=movimentoSplittato[0].trim();
                             if (CTtradizionale){
                                 QtaE=movimentoSplittato[1].trim();
+                                MonE.SetQta(movimentoSplittato[1].trim());                               
                                 ME=movimentoSplittato[2].trim();
+                                MonE.SetNome(movimentoSplittato[2].trim()); 
+                                
                                 QtaU=movimentoSplittato[5].trim();
+                                MonU.SetQta("-"+movimentoSplittato[5].trim()); 
+                                
                                 MU=movimentoSplittato[6].trim();
-                                Exch=movimentoSplittato[10].trim();
+                                MonU.SetNome(movimentoSplittato[6].trim());                               
                                 PrzE=movimentoSplittato[4].trim();
+                                MonE.SetPrezzo(movimentoSplittato[4].trim());                               
                                 PrzU=movimentoSplittato[8].trim();
+                                MonU.SetPrezzo(movimentoSplittato[8].trim());  
+                                MonE.AssegnaTipoAuto();
+                                MonU.AssegnaTipoAuto();
+                                Exch=movimentoSplittato[10].trim();                               
                                 data=movimentoSplittato[12].trim();
                             }else {
                                 //Quindi il movimento è lungo 16
                                 QtaE=movimentoSplittato[1].trim();
+                                MonE.SetQta(movimentoSplittato[1].trim());
                                 ME=movimentoSplittato[2].trim();
+                                MonE.SetNome(movimentoSplittato[2].trim());
                                 QtaU=movimentoSplittato[3].trim();
+                                MonU.SetQta("-"+movimentoSplittato[3].trim());
                                 MU=movimentoSplittato[4].trim();
+                                MonU.SetNome(movimentoSplittato[4].trim());
                                 Exch=movimentoSplittato[7].trim();
                                 data=movimentoSplittato[10].trim();
                                 PrzE="0";
                                 PrzU="0";
-                                QtaComm=movimentoSplittato[5].trim();
-                                MComm=movimentoSplittato[6].trim();
-                                if (ME.equals(MComm)&&!ME.isBlank()){
-                                    QtaE=new BigDecimal(QtaE).add(new BigDecimal(QtaComm)).toPlainString();
+                                
+
+                                MonC.SetQta("-"+movimentoSplittato[5].trim());
+                                MonC.SetNome(movimentoSplittato[6].trim());
+                                
+                                MonE.AssegnaTipoAuto();
+                                MonU.AssegnaTipoAuto();
+                                MonC.AssegnaTipoAuto();
+                                
+                                if (ME.equals(MonC.GetNome())&&!ME.isBlank()){
+                                    //Sommo le commissioni alla QtaEntrata se sono della stessa moneta
+                                    QtaE=new BigDecimal(QtaE).add(new BigDecimal(MonC.GetQta())).toPlainString();
+                                    MonE.SetQta(QtaE);
                                     CTcommissioniNew=true;
                                 }
                             }
                            // System.out.println(movimentoSplittato[9]);
+                            Long Datalong=FunzioniDate.ConvertiDatainLongSecondo(data);
                             String dataa=data.substring(0, data.length()-3).trim();
                             if (Tipologia.equalsIgnoreCase("Trade")||Tipologia.equalsIgnoreCase("Operazione"))
                             {
-                                if (!MU.trim().equalsIgnoreCase("EUR")&&!ME.trim().equalsIgnoreCase("EUR"))
-                                    {
-                                        // in Questo caso si tratta di uno scambio Crypto-Crypto
-                                //System.out.println(movimentoSplittato[0].replaceAll(" |-|:", ""));
-                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_SC";
-                                RT[1] = dataa;
-                                RT[2] = k + 1 + " di " + numMovimenti;
-                                RT[3] = Exchange;
-                                RT[4] = Exch;
-                                RT[5] = "SCAMBIO CRYPTO";
-                                RT[6] = MU+" -> "+ME;                                
-                                RT[7] = Tipologia;
-                                RT[8] = MU;
-                                RT[9] = "Crypto";
-                                RT[10] = "-"+QtaU;
-                                RT[11] = ME;
-                                RT[12] = "Crypto";
-                                RT[13] = QtaE;
-                                String prezzoTrans;
-                                if (new BigDecimal(PrzE).compareTo(new BigDecimal("0"))==0) prezzoTrans=PrzU;
-                                else prezzoTrans=PrzE;
-                                RT[14] = "EUR "+prezzoTrans;
-                                //questo è il primo movimento fatto, mancano gli altri
-                                Moneta M1=new Moneta();
-                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-                                Moneta M2=new Moneta();
-                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, FunzioniDate.ConvertiDatainLongMinuto(dataa), null, "");
-                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
-                                RT[16] = "";
-                                RT[17] = "";//verrà calcolato con il metodo lifo
-                                RT[18] = "";
-                                RT[19] = "0.00";
-                                RT[20] = "";
-                                RT[21] = "";
-                                RT[22] = "A";
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
                                 
-                            }else if (MU.trim().equalsIgnoreCase("EUR"))
-                                    {
-                                        //in questo caso abbiamo un Acquisto Crypto
-                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_AC";
-                                RT[1] = dataa;
-                                RT[2] = k + 1 + " di " + numMovimenti;
-                                RT[3] = Exchange;
-                                RT[4] = Exch;
-                                RT[5] = "ACQUISTO CRYPTO";
-                                RT[6] = MU+" -> "+ME;                                
-                                RT[7] = Tipologia;
-                                RT[8] = MU;
-                                RT[9] = "FIAT";
-                                RT[10] = "-"+QtaU;
-                                RT[11] = ME;
-                                RT[12] = "Crypto";
-                                RT[13] = QtaE;
-                                String prezzoTrans=new BigDecimal(QtaU).setScale(2, RoundingMode.HALF_UP).toString();
-                                RT[14] = "EUR "+QtaU;
-                                Moneta M1=new Moneta();
-                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-                                Moneta M2=new Moneta();
-                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, FunzioniDate.ConvertiDatainLongMinuto(dataa), null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
-                              //  RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
-                                RT[16] = "";
-                                RT[17] = RT[15];
-                                RT[18] = "";
-                                RT[19] = "0.00";
-                                RT[20] = "";
-                                RT[21] = "";
-                                RT[22] = "A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
-                                        
-                                    }
                                 
-                            else if (ME.trim().equalsIgnoreCase("EUR"))
-                                    {
-                                        //in questo caso abbiamo una Vendita Crypto
-                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_"+String.valueOf(k+1)+ "_1_VC";
-                                RT[1] = dataa;
-                                RT[2] = k + 1 + " di " + numMovimenti;
-                                RT[3] = Exchange;
-                                RT[4] = Exch;
-                                RT[5] = "VENDITA CRYPTO";
-                                RT[6] = MU+" -> "+ME;                                
-                                RT[7] = Tipologia;
-                                RT[8] = MU;
-                                RT[9] = "Crypto";
-                                RT[10] = "-"+QtaU;
-                                RT[11] = ME;
-                                RT[12] = "FIAT";
-                                RT[13] = QtaE;
-                                RT[14] = "EUR "+QtaE;
-                                String prezzoTrans=new BigDecimal(QtaE).setScale(2, RoundingMode.HALF_UP).toString();
-                                Moneta M1=new Moneta();
-                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-                                Moneta M2=new Moneta();
-                                M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, M2, FunzioniDate.ConvertiDatainLongMinuto(dataa), null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,M2,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
-                               // RT[15] =  Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
-                                RT[16] = "";
-                                RT[17] = "";//verrà calcolato con il metodo lifo
-                                RT[18] = "";
-                                RT[19] = "";
-                                RT[20] = "";
-                                RT[21] = "";
-                                RT[22] = "A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
-                                    }
+                                //==== PARTE DEL TRADE =====
+                                RT = Principale_NOGUI.creaMovimento(MonU, MonE,
+                                        Exchange, Exch,
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, "SCAMBIO CRYPTO", null);
+
+                                if (RT != null) {
+                                    RT[7]=Tipologia;
+                                    lista.add(RT);
+                                }                  
+                                
+                                //==== PARTE DELLE COMMISSIONI ====
                                 if (CTcommissioniNew){
                                     //Commissioni
-                                RT=new String[ColonneTabella];
-                                RT[0] = data.replaceAll(" |-|:", "") +"_"+Exchange.replaceAll(" ", "")+"_C"+String.valueOf(k+1)+ "_1_CM";
-                                RT[1] = dataa;
-                                RT[2] = k + 1 + " di " + numMovimenti;
-                                RT[3] = Exchange;
-                                RT[4] = Exch;
-                                RT[5]="COMMISSIONI";
-                                RT[6]=MComm+" ->";//da sistemare con ulteriore dettaglio specificando le monete trattate                                                               
-                                RT[7] = Tipologia;                                
-                                RT[8] = MComm;
-                                String TipoMoneta="Crypto";
-                                if (MComm.trim().equalsIgnoreCase("EUR"))TipoMoneta="FIAT";
-                                RT[9] = TipoMoneta;
-                                RT[10] = "-"+QtaComm;
-                                RT[11] = "";
-                                RT[12] = "";
-                                RT[13] = "";
-                                RT[14] = "EUR "+PrzU;
-                                String prezzoTrans= PrzU;
-                                Moneta M1=new Moneta();
-                                M1.InserisciValori(RT[8],RT[10],null,RT[9]);
-                                //Moneta M2=new Moneta();
-                                //M2.InserisciValori(RT[11],RT[13],null,RT[12]);
-                                Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, FunzioniDate.ConvertiDatainLongMinuto(dataa), null, "");
-                                if (IP!=null)RT[40] = IP.Ritorna40();
-                                RT[15] = Prezzi.DammiPrezzoTransazione(M1,null,FunzioniDate.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,"");
-                               // RT[15] = Calcoli.DammiPrezzoTransazione(RT[8],RT[11],RT[10],RT[13],Calcoli.ConvertiDatainLongMinuto(dataa), prezzoTrans,PrezzoZero,2,null,null,null);
-                                RT[16] = "";
-                                RT[17] = "";
-                                RT[18] = "";
-                                RT[19] = "";
-                                RT[20] = "";
-                                RT[21] = "";
-                                RT[22] = "A";
-                                RiempiVuotiArray(RT);
-                                lista.add(RT);
+                                RT = Principale_NOGUI.creaMovimento(MonC, null,
+                                        Exchange, Exch,
+                                        Datalong, null, null, k + 1, 1, null, null, "A",
+                                        null, "COMMISSIONI", Exchange+"C");
+
+                                if (RT != null) {
+                                    RT[7]=Tipologia;
+                                    lista.add(RT);
+                                }
                                     //Se l'importazione è quella dal file completo devo gestire anche le fee
                                     
                                 }
@@ -4538,7 +4389,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 for (int w = 0; w < numMovimenti; w++) {
                                     String mov=listaMovimentidaConsolidare.get(w);
                                     String movSplit[]=mov.split(",");
-                                    String ME2,MU2,QtaU2,QtaE2,PrzU2,PrzE2,MComm2,QtaComm2,Exch2;
+                                    String ME2,MU2,QtaU2,QtaE2,PrzU2,PrzE2,Exch2;
                                     String Tipologia2=movSplit[0].trim();
                                     if (movimentoSplittato.length==13){
                                         QtaE2=movSplit[1].trim();

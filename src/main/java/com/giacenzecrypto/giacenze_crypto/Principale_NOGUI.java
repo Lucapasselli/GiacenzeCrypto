@@ -168,8 +168,11 @@ private static Map<String, String[]> creaMappaTipologie() {
             }
         }
         //Se nessuna moneta è valida termino la richiesta e ritorno null.
-        if (MOut.isBlank()&&MIn.isBlank())return null;
-
+        if (MOut.isBlank()&&MIn.isBlank())
+        {
+            LoggerGC.ScriviErrore("Nessuna moneta è valida termino la richiesta");
+            return null;
+        }
         //========== GESTISCO IL CARATTERE CHE IDENTIFICA SE IL MOVIMENTO E' DERIVANTE DA CSV/DEFI O MANUALE ===========
         if (CarattereMovAutomatico==null && 
                 (!Arrays.asList("M", "A", "AU").contains(CarattereMovAutomatico))
@@ -252,6 +255,13 @@ private static Map<String, String[]> creaMappaTipologie() {
                 Tipologie[1]="RIMBORSO "+Tipologie[1];
                 //In caso di Rimborso devo anche azzerare il prezzo
                 Prezzo="0.00";
+            }
+            //Nel caso in cui recupero correttamente il movimento se è un movimento CM (Commissione) di ingresso devo inserirlo come cashback
+            else if (Tipologie[0].equals("CM")&&MOut.isBlank()){
+                //Questa istruzione serve per modificare una copia dell'array estratto e non quello originale
+                Tipologie = java.util.Arrays.copyOf(Tipologie, Tipologie.length);
+                Tipologie[1]="CASHBACK";
+                Tipologie[0]="RW";
             }
         }
         

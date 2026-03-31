@@ -1166,8 +1166,8 @@ public static boolean CoinTracking_Importa(String fileCoinTracking,boolean Sovra
             }else data = FunzioniDate.Formatta_Data_CoinTracking(splittata[10]);
             long DataAttuale=FunzioniDate.ConvertiDatainLongSecondo(data);
             data=FunzioniDate.ConvertiDatadaLongAlSecondo(DataAttuale);
-        /*    
-            long DataAttuale=FunzioniDate.ConvertiDatainLongSecondo(data);
+            
+         /*   long DataAttuale=FunzioniDate.ConvertiDatainLongSecondo(data);
             if (DataAttuale==DataUltimaRiferimento){
                 DataAttuale=DataUltima+1000;
             }
@@ -1272,10 +1272,13 @@ public static boolean CoinTracking_Importa(String fileCoinTracking,boolean Sovra
             int nElementi = listaConsolidata.size();
             for (int i = 0; i < nElementi; i++) {
                 String consolidata[] = listaConsolidata.get(i); 
+                Mappa_Movimenti.put(consolidata[0], consolidata);
+                //Questa funzione inserisce l'id in maniera univoca sulla mappa ma non serve
+              /*  consolidata[0]=Principale_NOGUI.getIDUnivoco(Mappa_Movimenti, consolidata[0]);
+                if (consolidata[0]!=null){
+                    Mappa_Movimenti.put(consolidata[0], consolidata);
+                }*/
                 
-                //Questa funzione inserisce l'id in maniera univoca sulla mappa
-                Principale_NOGUI.InserisciIDUnivoco(Mappa_Movimenti, consolidata[0], consolidata);
-                //Mappa_Movimenti.put(consolidata[0], consolidata);
             }
 
 
@@ -1983,7 +1986,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
                     String FontePrezzo = MDeposito.getFontePrezzo();
 
-                    RT = Principale_NOGUI.creaMovimento(MDeposito, null,
+                    RT = MovimentiCrypto.creaMovimento(MDeposito, null,
                             WalletPrincipale, tokenE.WalletSecondario,
                             TimeStamp,
                             MDeposito.Prezzo, FontePrezzo,
@@ -2004,7 +2007,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     long TimeStamp = FunzioniDate.ConvertiDatainLongSecondo(data);
                     String RT[];
                     String FontePrz = MPrelievo.getFontePrezzo();
-                    RT = Principale_NOGUI.creaMovimento(MPrelievo, null, WalletPrincipale, tokenU.WalletSecondario, 
+                    RT = MovimentiCrypto.creaMovimento(MPrelievo, null, WalletPrincipale, tokenU.WalletSecondario, 
                             TimeStamp, MPrelievo.Prezzo, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione, null, WalletID);
                     if (RT != null) {
                         RT[7] = tokenU.CausaleOriginale;
@@ -2044,7 +2047,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             FontePrz = M1.getFontePrezzo();
                         }
 
-                        RT = Principale_NOGUI.creaMovimento(M1, M2,
+                        RT = MovimentiCrypto.creaMovimento(M1, M2,
                                 WalletPrincipale, tokenE.WalletSecondario,
                                 TimeStamp, null, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione + "_" + tokenE.IDTransazione, 
                                 null, WalletID);
@@ -2159,7 +2162,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     movimentoConvertito.trim().equalsIgnoreCase("ALTRE-REWARD"))
                             {
                                 
-                                 RT = Principale_NOGUI.creaMovimento(M1, null,
+                                 RT = MovimentiCrypto.creaMovimento(M1, null,
                                         "Crypto.com App", "Crypto Wallet",
                                         Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, "CDCAPP");
@@ -2194,7 +2197,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                //Particolarità se acquisti relativi Crypto Basket
                                 if (movimentoSplittato[9].contains("crypto_basket")) {
 
-                                    RT = Principale_NOGUI.creaMovimento(M1, M2,
+                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Basket",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP.B");
@@ -2213,7 +2216,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         String WalletDestinazione = "Crypto Wallet";
                                         Moneta MT=M1.ClonaMoneta();
                                         MT.Qta="-"+MT.Qta.replace("-", "");
-                                        RT = Principale_NOGUI.creaMovimento(MT, null,
+                                        RT = MovimentiCrypto.creaMovimento(MT, null,
                                             "Crypto.com App", WalletPartenza,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, "TRASFERIMENTO INTERNO", ExchangeID);
@@ -2222,7 +2225,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                         lista.add(RT);
                                         
                                         MT.Qta=MT.Qta.replace("-", "");
-                                        RT = Principale_NOGUI.creaMovimento(MT, null,
+                                        RT = MovimentiCrypto.creaMovimento(MT, null,
                                             "Crypto.com App", WalletDestinazione,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, "TRASFERIMENTO INTERNO", ExchangeID);
@@ -2235,7 +2238,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 } else {// NON CRYPTO BASKET
                                     
                                     //=== AGGIUNGO MOVIMENTO DI ARRIVO DELLE FIAT ===
-                                    RT = Principale_NOGUI.creaMovimento(MFiat, null,
+                                    RT = MovimentiCrypto.creaMovimento(MFiat, null,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
@@ -2244,7 +2247,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     lista.add(RT);
                                     
                                     //=== MOVIMENTO DI SCAMBIO ====
-                                    RT = Principale_NOGUI.creaMovimento(M1, M2,
+                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
@@ -2260,7 +2263,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 
                                 //Vendite x Crypto Basket
                                 if (movimentoSplittato[9].contains("crypto_basket")) {
-                                    RT = Principale_NOGUI.creaMovimento(M1, M2,
+                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Basket",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP.A");
@@ -2270,7 +2273,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 } //Vendita Crypto x Servizio                                
                                 else if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment")
                                         || movimentoSplittato[9].equalsIgnoreCase("card_top_up")) {
-                                    RT = Principale_NOGUI.creaMovimento(M1, M2,
+                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
@@ -2280,7 +2283,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 }
                                 else
                                 {//Vendita Crypto x Euro
-                                    RT = Principale_NOGUI.creaMovimento(M1, M2,
+                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
@@ -2291,7 +2294,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 
                                 //trasferimento FIAT
                                 M2.Qta="-"+M2.Qta.replace("-", "");
-                                RT = Principale_NOGUI.creaMovimento(null, M2,
+                                RT = MovimentiCrypto.creaMovimento(null, M2,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
@@ -2312,7 +2315,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     wallet="Crypto Basket";
                                     
                                 }
-                                RT = Principale_NOGUI.creaMovimento(M1, M2,
+                                RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", wallet,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
@@ -2434,7 +2437,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 
                                 //MOVIMENTO DI USCITA
                                 M1.Qta="-"+M1.Qta.replace("-", "");
-                                RT = Principale_NOGUI.creaMovimento(M1, null,
+                                RT = MovimentiCrypto.creaMovimento(M1, null,
                                             "Crypto.com App", WalletPartenza,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, ExchangeID);
@@ -2444,7 +2447,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                 
                                 //MOVIMENTO DI ENTRATA
                                 M1.Qta=M1.Qta.replace("-", "");
-                                RT = Principale_NOGUI.creaMovimento(M1, null,
+                                RT = MovimentiCrypto.creaMovimento(M1, null,
                                             "Crypto.com App", WalletDestinazione,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, ExchangeID);
@@ -2457,7 +2460,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             //=== TRASFERIMENTO CRYPTO ===
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO"))
                             {
-                                RT = Principale_NOGUI.creaMovimento(M1, null,
+                                RT = MovimentiCrypto.creaMovimento(M1, null,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
@@ -2748,7 +2751,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              Moneta M1 = new Moneta();
              M1.InserisciValori(MIn, MInQta, "", TipoCrypto);
              
-             RT = Principale_NOGUI.creaMovimento(M1, null,
+             RT = MovimentiCrypto.creaMovimento(M1, null,
                      "Binance", "Principale",
                      DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
                      idBinance, movimentoConvertito, "Binance." + idBinance);
@@ -2792,7 +2795,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              Moneta M1 = new Moneta();
              M1.InserisciValori(MIn, MInQta, "", "FIAT");
 
-             RT = Principale_NOGUI.creaMovimento(M1, null,
+             RT = MovimentiCrypto.creaMovimento(M1, null,
                      "Binance", "Principale",
                      DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
                      idBinance, movimentoConvertito, "Binance." + idBinance);
@@ -2831,7 +2834,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              Moneta M1 = new Moneta();
              M1.InserisciValori(MOut, MOutQta, "", "FIAT");
 
-             RT = Principale_NOGUI.creaMovimento(M1, null,
+             RT = MovimentiCrypto.creaMovimento(M1, null,
                      "Binance", "Principale",
                      DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
                      idBinance, movimentoConvertito, "Binance." + idBinance);
@@ -2855,7 +2858,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              Moneta M2 = new Moneta();
              M2.InserisciValori(MIn, MInQta, "", "Crypto");
 
-             RT = Principale_NOGUI.creaMovimento(M1, M2,
+             RT = MovimentiCrypto.creaMovimento(M1, M2,
                      "Binance", "Principale",
                      DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
                      idBinance, movimentoConvertito, "Binance." + idBinance);
@@ -2885,7 +2888,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              Moneta M2 = new Moneta();
              M2.InserisciValori(MIn, MInQta, "", "Crypto");
 
-             RT = Principale_NOGUI.creaMovimento(M1, M2,
+             RT = MovimentiCrypto.creaMovimento(M1, M2,
                      "Binance", "Principale",
                      DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
                      idBinance, movimentoConvertito, "Binance." + idBinance);
@@ -2916,7 +2919,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
              Moneta M2 = new Moneta();
              M2.InserisciValori(MIn, MInQta, "", "FIAT");
 
-             RT = Principale_NOGUI.creaMovimento(M1, M2,
+             RT = MovimentiCrypto.creaMovimento(M1, M2,
                      "Binance", "Principale",
                      DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
                      idBinance, movimentoConvertito, "Binance." + idBinance);
@@ -2954,7 +2957,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                  M2 = null;
              }
 
-             RT = Principale_NOGUI.creaMovimento(M1, M2,
+             RT = MovimentiCrypto.creaMovimento(M1, M2,
                      "Binance", "Principale",
                      DataLong, valoreEuro, "CSV", 1, 1, null, null, "A",
                      idBinance, movimentoConvertito, "Binance." + idBinance);
@@ -2981,7 +2984,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             String MOutQta = new BigDecimal(movimentoSplittato[14]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
             Moneta M1 = new Moneta();
             M1.InserisciValori(MOut, MOutQta, "", TipologiaCom);
-            RT = Principale_NOGUI.creaMovimento(M1, null,
+            RT = MovimentiCrypto.creaMovimento(M1, null,
                     "Binance", "Principale",
                     DataLong, valoreEuro, "CSV", 1, 2, null, null, "A",
                     idBinance, "COMMISSIONI", "Binance." + idBinance);
@@ -3124,7 +3127,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                     movimentoConvertito.trim().equalsIgnoreCase("AIRDROP"))
                             {
 
-                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                RT = MovimentiCrypto.creaMovimento(Mon, null,
                                         "Binance", "Principale",
                                         Datalong, null, null, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, null);
@@ -3139,7 +3142,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                    (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO")&&Mon.Tipo.equals("FIAT")&&!Mon.Qta.contains("-"))
                                    )
                             {
-                                 RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                 RT = MovimentiCrypto.creaMovimento(Mon, null,
                                         "Binance", "Principale",
                                         Datalong, null, null, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, null);
@@ -3151,7 +3154,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("PRELIEVO FIAT"))
                             {
-                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                RT = MovimentiCrypto.creaMovimento(Mon, null,
                                         "Binance", "Principale",
                                         Datalong, null, null, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, null);
@@ -3171,7 +3174,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             else if (movimentoConvertito.trim().equalsIgnoreCase("VENDITA CRYPTO"))
                             {
                                 //Vendita Crypto, ad esempio per pagamento tasse
-                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                RT = MovimentiCrypto.creaMovimento(Mon, null,
                                         "Binance", "Principale",
                                         Datalong, null, null, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, null);
@@ -3184,7 +3187,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                             else if (movimentoConvertito.trim().equalsIgnoreCase("COMMISSIONI"))
                             {
                                 //il C dopo binance mi serve per far si che le commissioni le metta per ultime
-                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                RT = MovimentiCrypto.creaMovimento(Mon, null,
                                         "Binance", "Principale",
                                         Datalong, null, null, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, "Binance_C");
@@ -3218,7 +3221,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")||
                                        movimentoConvertito.trim().equalsIgnoreCase("SCAMBIO DIFFERITO"))
                             {
-                                RT = Principale_NOGUI.creaMovimento(Mon, null,
+                                RT = MovimentiCrypto.creaMovimento(Mon, null,
                                         "Binance", "Principale",
                                         Datalong, null, null, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, null);
@@ -4037,7 +4040,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     || movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO")) {
 
                 //String IDdaDare = RT[0]=data.replaceAll(" |-|:", "") +"_"+WalletPrincipale+IDOriginale+"_"+String.valueOf(k+1)+ "_1_RW";
-                RT = Principale_NOGUI.creaMovimento(Mon, null, WalletPrincipale, WalletSecondario, TimeStamp, movimentoSplittato[8], FontePrz, k + 1, 1, null, null, "A", IDOriginale, movimentoConvertito,null);
+                RT = MovimentiCrypto.creaMovimento(Mon, null, WalletPrincipale, WalletSecondario, TimeStamp, movimentoSplittato[8], FontePrz, k + 1, 1, null, null, "A", IDOriginale, movimentoConvertito,null);
                 if (RT != null) {
                     lista.add(RT);
                 }
@@ -4053,7 +4056,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             } else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO")) {
 
                 //come prima cosa devo individuare il portafoglio nel quale vanno i token
-                RT = Principale_NOGUI.creaMovimento(Mon, null, WalletPrincipale, WalletSecondario, TimeStamp, movimentoSplittato[8], FontePrz, k + 1, 1, null, null, "A", IDOriginale, movimentoConvertito,null);
+                RT = MovimentiCrypto.creaMovimento(Mon, null, WalletPrincipale, WalletSecondario, TimeStamp, movimentoSplittato[8], FontePrz, k + 1, 1, null, null, "A", IDOriginale, movimentoConvertito,null);
                 if (RT != null) {
                     lista.add(RT);
                 }
@@ -4061,7 +4064,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 //oppure parte dall'origine
                 if (movimentoSplittato[15].equalsIgnoreCase("SI")) {
                     Mon.Qta = Mon.Qta.contains("-") ? Mon.Qta.replace("-", "") : "-" + Mon.Qta;
-                    RT = Principale_NOGUI.creaMovimento(Mon, null, WalletPrincipale, movimentoSplittato[16], TimeStamp, movimentoSplittato[8], FontePrz, k + 1, 1, null, null, "A", IDOriginale, movimentoConvertito,null);
+                    RT = MovimentiCrypto.creaMovimento(Mon, null, WalletPrincipale, movimentoSplittato[16], TimeStamp, movimentoSplittato[8], FontePrz, k + 1, 1, null, null, "A", IDOriginale, movimentoConvertito,null);
                     if (RT != null) {
                         lista.add(RT);
                     }
@@ -4139,8 +4142,10 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 MonU.SetNome(MU);
                 //PrzE = movimentoSplittato[4].trim();
                 MonE.SetPrezzo(movimentoSplittato[4].trim());
+                MonE.setFontePrezzo("Cointraking");
                 //PrzU = movimentoSplittato[8].trim();
                 MonU.SetPrezzo(movimentoSplittato[8].trim());
+                MonU.setFontePrezzo("Cointraking");
                 
                 MonE.AssegnaTipoAuto();
                 MonU.AssegnaTipoAuto();
@@ -4158,8 +4163,6 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 MonU.SetNome(MU);
                 Exch = movimentoSplittato[7].trim();
                 data = movimentoSplittato[10].trim();
-                //PrzE = "0";
-                //PrzU = "0";
 
                 MonC.SetQta("-" + movimentoSplittato[5].trim());
                 MonC.SetNome(movimentoSplittato[6].trim());
@@ -4181,7 +4184,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             if (Tipologia.equalsIgnoreCase("Trade") || Tipologia.equalsIgnoreCase("Operazione")) {
 
                 //==== PARTE DEL TRADE =====
-                RT = Principale_NOGUI.creaMovimento(MonU, MonE,
+                RT = MovimentiCrypto.creaMovimento(MonU, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
                         null, "SCAMBIO CRYPTO", null);
@@ -4194,7 +4197,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 //==== PARTE DELLE COMMISSIONI ====
                 if (CTcommissioniNew) {
                     //Commissioni
-                    RT = Principale_NOGUI.creaMovimento(MonC, null,
+                    RT = MovimentiCrypto.creaMovimento(MonC, null,
                             Exchange, Exch,
                             Datalong, null, null, k + 1, 1, null, null, "A",
                             null, "COMMISSIONI", Exchange + "C");
@@ -4211,7 +4214,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                     || Tipologia.equalsIgnoreCase("Reddito da interessi")
                     || Tipologia.equalsIgnoreCase("Ricompensa / Bonus")) {
                 //Rewards di vario tipo
-                RT = Principale_NOGUI.creaMovimento(MonU, MonE,
+                RT = MovimentiCrypto.creaMovimento(MonU, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
                         null, "ALTRE-REWARD", Exchange);
@@ -4223,7 +4226,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             } else if (Tipologia.equalsIgnoreCase("Staking")) {
                 //Rewards di vario tipo
                 //Rewards di vario tipo
-                RT = Principale_NOGUI.creaMovimento(null, MonE,
+                RT = MovimentiCrypto.creaMovimento(null, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
                         null, "STAKING REWARD", Exchange);
@@ -4236,7 +4239,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
             } else if (Tipologia.equalsIgnoreCase("Other Fee")
                     || Tipologia.equalsIgnoreCase("Altra commissione")) {
                 //Commissioni
-                RT = Principale_NOGUI.creaMovimento(MonU, null,
+                RT = MovimentiCrypto.creaMovimento(MonU, null,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
                         null, "COMMISSIONI", Exchange + "C");
@@ -4248,7 +4251,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
 
             } else if (Tipologia.equalsIgnoreCase("Spesa")) {
                 //Commissioni
-                RT = Principale_NOGUI.creaMovimento(MonU, MonE,
+                RT = MovimentiCrypto.creaMovimento(MonU, MonE,
                         Exchange, Exch,
                         Datalong, null, null, k + 1, 1, null, null, "A",
                         null, "SPESA", Exchange + "C");
@@ -4261,6 +4264,21 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                 //Trasferimenti Crypto, ora bisognerà eliminare quelli doppi (prelievo e deposito stessa cifra e stesso wallet) 
                 //e discernere i trasferimenti tra wallet da quelli interni all'exchange
 
+                RT = MovimentiCrypto.creaMovimento(MonU, MonE,
+                            Exchange, Exch,
+                            Datalong, null, null, k + 1, 1, null, null, "A",
+                            null, "TRASFERIMENTO CRYPTO", Exchange);
+
+                    if (RT != null) {
+                        RT[7] = Tipologia;
+                        lista.add(RT);
+                    }
+
+               //LA PARTE SOTTO E' QUELLA ORIGINALE DA RIVEDERE MA HA UNA SUA LOGICA PER INDIVIDUARE I TRASFERIMENTI INTERNI
+                    /* 
+                
+                
+                
                 // serve solo per il calcolo della percentuale di cro da attivare
                 //  for (int k=0;k<numMovimenti;k++){
                 //     String RT[]=new String[23];
@@ -4328,7 +4346,7 @@ public static boolean Importa_Crypto_BinanceTaxReport(String fileBinanceTaxRepor
                         lista.add(RT);
                     }
 
-                }
+                }*/
             } else if (Tipologia.equalsIgnoreCase("Reddito (non imponibile)")
                     || Tipologia.equalsIgnoreCase("Spese (non imponibili)")) {
                 System.out.println("Movimento di entrata o uscita da earn scartato dai movimenti");

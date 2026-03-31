@@ -17,7 +17,7 @@ import java.util.TreeMap;
  *
  * @author lucap
  */
-public class Principale_NOGUI {
+public class MovimentiCrypto {
     
     /*
     
@@ -194,7 +194,7 @@ private static Map<String, String[]> creaMappaTipologie() {
             if (PrezzoPrezzato(Prezzo))RT2[32] = "SI";
             else RT2[32] = "NO";
             Prezzo = new BigDecimal(Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
-            if (FontePrezzo == null) {
+            if (FontePrezzo == null) {                
                 FontePrezzo = "Personalizzato";
             }
             RT2[40] = "|||" + FontePrezzo;
@@ -218,7 +218,14 @@ private static Map<String, String[]> creaMappaTipologie() {
             else RT2[32] = "NO";
             Prezzo = new BigDecimal(MPR.Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
             if (FontePrezzo == null) {
-                FontePrezzo = "Personalizzato";
+                if (MPR.InfoPrezzo!=null&&MPR.InfoPrezzo.Fonte!=null&&!MPR.InfoPrezzo.Fonte.isBlank())
+                {
+                    FontePrezzo=MPR.InfoPrezzo.Fonte;
+                }
+                else 
+                {
+                    FontePrezzo = "Personalizzato";
+                }
             }
             RT2[40] = "|||" + FontePrezzo;
             
@@ -405,18 +412,17 @@ static boolean PrezzoPrezzato(String Prezzo) {
     }
 
     
-    //La Funzione inserisce nella mappa il primo valore univoco che trova
-    //Se va in errore per qualche motivo restituisce null altrimenti restituisce la chiave
-     public static String InserisciIDUnivoco(Map<String, String[]> map, String id,String valore[]) {
+    //La Funzione trova un id univoco sul movimento
+    //Se va in errore per qualche motivo restituisce null altrimenti restituisce l'ID
+     public static String getIDUnivoco(Map<String, String[]> map, String id) {
         String currentId = id;
 
         while (true) {
-            if (map.putIfAbsent(currentId, valore) == null) {
-                return currentId;
+            if (map.get(currentId)==null){
+                return currentId; 
             }
             currentId = incrementaQuartoCampoID(currentId);
             if (currentId==null)return null;
-            valore[0]=currentId;
         }
     }
 

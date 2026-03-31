@@ -46,7 +46,7 @@ public class Moneta {
         if (InfoPrezzo==null){
             InfoPrezzo=new Prezzi.InfoPrezzo();
             InfoPrezzo.Fonte=fonte;
-        }
+        }else InfoPrezzo.Fonte=fonte;
     }
     
     public void InserisciMonetaNoTipo(String Nome, String Quantita, String Address) {
@@ -86,9 +86,12 @@ public void SetPrezzo(String Prz){
     if (Funzioni.isNumeric(Prz, false)){
         if (InfoPrezzo==null){
             InfoPrezzo=new Prezzi.InfoPrezzo();
+            InfoPrezzo.prezzoQta=new BigDecimal(Prz).abs();
+        }else 
+        {
             InfoPrezzo.prezzoQta=new BigDecimal(Prz);
         }
-        Prezzo=Prz;
+        Prezzo=InfoPrezzo.prezzoQta.toPlainString();
     }
 }
 

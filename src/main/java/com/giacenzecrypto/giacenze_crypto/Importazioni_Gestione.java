@@ -394,7 +394,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                                 PrezzoZero = true;
 
                             }
-                            Importazioni.Importa_Crypto_CoinTracking(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
+                            Importazioni.CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
 
                             Importazioni_Resoconto res = new Importazioni_Resoconto();
                             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -555,7 +555,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
-                        Importazioni.Binance_Importa_Crypto(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        Importazioni.Binance_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);

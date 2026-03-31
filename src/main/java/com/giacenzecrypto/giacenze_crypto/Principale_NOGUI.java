@@ -80,7 +80,7 @@ private static Map<String, String[]> creaMappaTipologie() {
    // m.put("ACQUISTO CRYPTO",           new String[]{"AC", "ACQUISTO CRYPTO",""});//Li faccio decidere al programma
    // m.put("VENDITA CRYPTO",           new String[]{"VC", "VENDITA CRYPTO",""});//Li faccio decidere al programma
     
-    m.put("TRASFERIMENTO INTERNO",           new String[]{"TI", "TASFERIMENTO INTERNO",""});
+    m.put("TRASFERIMENTO INTERNO",           new String[]{"TI", "TRASFERIMENTO INTERNO",""});
     m.put("TRASFERIMENTO-CRYPTO-INTERNO",           new String[]{"TI", "TRASFERIMENTO INTERNO",""});
     
     m.put("CASHOUT O SIMILARE",           new String[]{"PC", "CASHOUT O SIMILARE","PCO - CASHOUT O SIMILARE"});
@@ -404,5 +404,42 @@ static boolean PrezzoPrezzato(String Prezzo) {
 
     }
 
+    
+    //La Funzione inserisce nella mappa il primo valore univoco che trova
+    //Se va in errore per qualche motivo restituisce null altrimenti restituisce la chiave
+     public static String InserisciIDUnivoco(Map<String, String[]> map, String id,String valore[]) {
+        String currentId = id;
+
+        while (true) {
+            if (map.putIfAbsent(currentId, valore) == null) {
+                return currentId;
+            }
+            currentId = incrementaQuartoCampoID(currentId);
+            if (currentId==null)return null;
+            valore[0]=currentId;
+        }
+    }
+
+    private static String incrementaQuartoCampoID(String id) {
+        String[] parts = id.split("_");
+
+        if (parts.length < 5) {
+           // throw new IllegalArgumentException("Formato ID non valido: " + id);
+            LoggerGC.ScriviErrore("Formato ID non valido: " + id);
+            return null;
+        }
+        if (Funzioni.isNumeric(parts[3], false)){
+            LoggerGC.ScriviErrore("Quarto campo ID non valido: " + id);
+            return null;
+        }
+
+        int fourthField = Integer.parseInt(parts[3]);
+        parts[3] = String.valueOf(fourthField + 1);
+
+        return String.join("_", parts);
+    }
+    
+    
+    
     
 }

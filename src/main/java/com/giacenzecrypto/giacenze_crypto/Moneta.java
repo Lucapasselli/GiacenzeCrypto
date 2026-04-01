@@ -95,6 +95,11 @@ public void SetPrezzo(String Prz){
     }
 }
 
+public void SetInfoPrezzo(Prezzi.InfoPrezzo InfoPrz){
+    InfoPrezzo=InfoPrz;
+    if (InfoPrezzo.prezzoQta!=null)Prezzo=InfoPrezzo.prezzoQta.toPlainString();
+}
+
 public void SetAddress(String Address){
     MonetaAddress=Address;
 }
@@ -111,6 +116,17 @@ public void AssegnaTipoAuto(){
         Tipo="FIAT";
     }
     else Tipo="Crypto";
+}
+
+//Cambia il segno della qta della moneta
+//se il valore è negativo lo mette positivo e viceversa
+public void InvertiQta(){
+    if (Qta!=null&&!Qta.isBlank()){
+        if (Qta.contains("-"))
+            Qta = Qta.replace("-", "");
+        else
+            Qta = "-" + Qta.replace("-", "");
+    }
 }
 
     public Moneta ClonaMoneta() {

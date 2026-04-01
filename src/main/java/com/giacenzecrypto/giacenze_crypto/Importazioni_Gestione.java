@@ -263,7 +263,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                 //System.out.println(Directory);
                 boolean SovrascriEsistenti = this.CheckBox_Sovrascrivi.isSelected();
                 Importazioni.AzzeraContatori();
-                Importazioni.CDCAPP_Importa(FileDaImportare, SovrascriEsistenti);
+                Importazioni.Ex_CDCAPP_Importa(FileDaImportare, SovrascriEsistenti);
                 Importazioni_Resoconto res = new Importazioni_Resoconto();
                 res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                 res.setLocationRelativeTo(this);
@@ -301,7 +301,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                                 PrezzoZero = true;
 
                             }
-                            Importazioni.Importa_Crypto_CryptoComExchange(FileDaImportare, SovrascriEsistenti, c, PrezzoZero, progressb);
+                            Importazioni.Ex_CryptoComExchange_Importa(FileDaImportare, SovrascriEsistenti, c, PrezzoZero, progressb);
                             Importazioni_Resoconto res = new Importazioni_Resoconto();
                             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
                             res.setLocationRelativeTo(c);
@@ -394,7 +394,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                                 PrezzoZero = true;
 
                             }
-                            Importazioni.CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
+                            Importazioni.Ex_CoinTracking_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
 
                             Importazioni_Resoconto res = new Importazioni_Resoconto();
                             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -498,7 +498,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
 
                             }
 
-                            Importazioni.Importa_Crypto_Tatax(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
+                            Importazioni.Ex_Tatax_Importa(FileDaImportare, SovrascriEsistenti, NomeWallet, c, PrezzoZero, progressb);
 
                             Importazioni_Resoconto res = new Importazioni_Resoconto();
                             res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -555,7 +555,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
-                        Importazioni.Binance_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        Importazioni.Ex_Binance_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -600,7 +600,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
-                        Importazioni.Importa_Crypto_BinanceTaxReport(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        Importazioni.Ex_BinanceTaxReport_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
@@ -645,7 +645,7 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
                         DatabaseH2.Pers_Opzioni_Scrivi("Directory_ImportazioniGestione", fc.getSelectedFile().getParent());
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         Importazioni.AzzeraContatori();
-                        Importazioni.Importa_Crypto_OKX(FileDaImportare, SovrascriEsistenti, c, progressb);
+                        Importazioni.Ex_OKX_Importa(FileDaImportare, SovrascriEsistenti, c, progressb);
                         Importazioni_Resoconto res = new Importazioni_Resoconto();
                         c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);

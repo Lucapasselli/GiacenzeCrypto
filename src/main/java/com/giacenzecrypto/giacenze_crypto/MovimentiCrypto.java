@@ -194,7 +194,8 @@ private static Map<String, String[]> creaMappaTipologie() {
             if (PrezzoPrezzato(Prezzo))RT2[32] = "SI";
             else RT2[32] = "NO";
             Prezzo = new BigDecimal(Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
-            if (FontePrezzo == null) {                
+            if (FontePrezzo == null) {   
+               // System.out.println("Personalizzato1");
                 FontePrezzo = "Personalizzato";
             }
             RT2[40] = "|||" + FontePrezzo;
@@ -224,6 +225,7 @@ private static Map<String, String[]> creaMappaTipologie() {
                 }
                 else 
                 {
+                   // System.out.println("Personalizzato2");
                     FontePrezzo = "Personalizzato";
                 }
             }
@@ -277,10 +279,21 @@ private static Map<String, String[]> creaMappaTipologie() {
         //========== GESTISCO L'ID ELLA TRANSAZIONE =========== 
         
         if(IdentificazioneID.isBlank())IdentificazioneID=Wallet;//Non serve il test del null perchè il campo è già normalizzato
+        
+        //caso commissioni
         if (Tipologie[0].equals("CM")&&MIn.isBlank()){
                 //Questa istruzione serve per modificare una copia dell'array estratto e non quello originale
                 IdentificazioneID=IdentificazioneID+"C";
             }
+        
+        //Adesso controllo se è un movimento Interno se così fosse devo fare in modo che i prelievi siano sempre prima dei depositi
+        //Questo perchè sono 2 movimenti contemporanei tolgo da una parte e metto dall'altra.
+        //Per far questo sui depositi inserisco una A dopo il nome del Wallet. quindi dopo trunk 1
+        if (Tipologie[0].equals("TI")&&MOut.isBlank()){
+                //Questa istruzione serve per modificare una copia dell'array estratto e non quello originale
+                IdentificazioneID=IdentificazioneID+"A";
+            }
+        
         RT2[0] = DataID + "_" + IdentificazioneID + "_" + numMovimento + "_" + numMovimento2 + "_" + Tipologie[0];
         if (IDMovimento != null) {
             //Nel caso in cui prendo l'id passato recupero però sempre il codice tipologia reale
@@ -289,14 +302,6 @@ private static Map<String, String[]> creaMappaTipologie() {
                 RT2[0] = IDMovimentoS[0]+"_"+IDMovimentoS[1]+"_"+IDMovimentoS[2]+"_"+IDMovimentoS[3]+"_"+Tipologie[0];
             }
         }
-        //Adesso controllo se è un movimento Interno se così fosse devo fare in modo che i prelievi siano sempre prima dei depositi
-        //Questo perchè sono 2 movimenti contemporanei tolgo da una parte e metto dall'altra.
-        //Per far questo sui depositi inserisco una A dopo il nome del Wallet. quindi dopo trunk 1
-        if (Tipologie[0].equals("TI")&&!MIn.isBlank()){
-            String IDMovimentoS[]=RT2[0].split("_");
-            RT2[0] = IDMovimentoS[0]+"_"+IDMovimentoS[1]+"A_"+IDMovimentoS[2]+"_"+IDMovimentoS[3]+"_"+IDMovimentoS[4];
-        }
-        
 
         //========== CREO IL MOVIMENTO ===========
         RT2[1] = dataa;

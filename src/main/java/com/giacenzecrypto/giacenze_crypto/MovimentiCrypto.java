@@ -270,12 +270,17 @@ private static Map<String, String[]> creaMappaTipologie() {
                 Tipologie[1]="CASHBACK";
                 Tipologie[0]="RW";
             }
+
         }
         
         
         //========== GESTISCO L'ID ELLA TRANSAZIONE =========== 
         
         if(IdentificazioneID.isBlank())IdentificazioneID=Wallet;//Non serve il test del null perchè il campo è già normalizzato
+        if (Tipologie[0].equals("CM")&&MIn.isBlank()){
+                //Questa istruzione serve per modificare una copia dell'array estratto e non quello originale
+                IdentificazioneID=IdentificazioneID+"C";
+            }
         RT2[0] = DataID + "_" + IdentificazioneID + "_" + numMovimento + "_" + numMovimento2 + "_" + Tipologie[0];
         if (IDMovimento != null) {
             //Nel caso in cui prendo l'id passato recupero però sempre il codice tipologia reale

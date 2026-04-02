@@ -44,8 +44,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -588,7 +586,7 @@ public class Prezzi {
       }*/
      
         
-    public static String ConvertiUSDEUR(String Valore, String Data) {
+    public static String CambioUSDEUR(String Valore, String Data) {
         RecuperaTassiCambioEURUSD();
         //System.out.println(Valore+" - "+Data);
         
@@ -703,7 +701,7 @@ public class Prezzi {
     
     
     
-    public static InfoPrezzo ConvertiAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo,String Fonte) {
+    public static InfoPrezzo CambioAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo,String Fonte) {
 
         
         
@@ -727,7 +725,7 @@ public class Prezzi {
             IPrezzo.Moneta=Simbolo;
             return IPrezzo;
         }
-        
+               
         
         //Vedo se riesco a recuperare il prezzo dal vecchio database
         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
@@ -757,6 +755,13 @@ public class Prezzi {
                 return IPrezzo;
             }
         }
+        
+        //Se non trovo ancora il prezzo allora vedo se per caso è un token per cui è risaputo che manca il prezzo
+        if (PrezzoIrrecuperabileDaDB_Leggi("",Datalong,Rete,Address)) 
+            return null;
+        
+        //Se non c'è connessione internet mi fermo qua e ritorno null
+        if (!Funzioni.CeConnessioneInternet()) return null;
         
         //Se ancora non trovo i prezzi vado a richiedere a coingecko i dati
         if (IPrezzo == null) {
@@ -793,12 +798,19 @@ public class Prezzi {
                     //IPrezzo.exchange="coingecko";
                     return IPrezzo;
                 }
+                else 
+                {
+                    //Se il prezzo è ancora null allora lo insrisco tra i prezzi irrecuperabili
+                    //Inserisco la crypto nelle monete per cui non si può recuperare il prezzo
+                    //ma solo se c'è connessione internet
+                    if (Funzioni.CeConnessioneInternet()) PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
+                }
                 
                 //Se ancora non trovo il prezzo allora provo a cercare per simbolo
                 //Tanto parto dal presupposto che è un token che coingecko gestisce quindi non scam
                 //QUESTO MOMENTANEAMENTE LO DISABILITO, DA CAPIRE SE RIABILITARLO O MENO
-               // IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
-                if (IPrezzo!=null)return IPrezzo;
+               /* IPrezzo=CambioXXXEUR(Simbolo, Qta, Datalong,"","","");
+                if (IPrezzo!=null)return IPrezzo;*/
             }
         }
         
@@ -980,7 +992,7 @@ public class Prezzi {
         else{
             //Se gli address sono validi mando la richiesta su coingecko
             //Sarà poi la funzione stessa a richiamare questa non dovesse trovare il prezzo
-            return ConvertiAddressEUR(Qta,Datalong,Address,Rete,Crypto,Fonte);           
+            return CambioAddressEUR(Qta,Datalong,Address,Rete,Crypto,Fonte);           
         }
 
 
@@ -1003,6 +1015,8 @@ public class Prezzi {
             return risultato;
         }
         
+
+        
         //Vedo se ho i prezzi all'ora (ormai tenuti solo per valorizzare anche il pregresso allo stesso modo)
         if (includiVecchi){
         risultato=new InfoPrezzo();
@@ -1023,6 +1037,12 @@ public class Prezzi {
             return risultato;
         }
         
+        //Adesso verifico se è un token in cui è risaputo che non c'è prezzo in quel caso ritorno null
+        if (PrezzoIrrecuperabileDaDB_Leggi(Crypto,Datalong,Rete,Address)) 
+            return null;
+        //Se non c'è connessione internet mi fermo qua e ritorno null
+        if (!Funzioni.CeConnessioneInternet()) return null;
+        
         
           //Se non ho neanche i prezzi all'ora provo a scaricarli
           //System.out.println("mi mancano i prezzi di "+Crypto+" - "+Address+" - "+Rete+" - "+Exchange+" - "+Datalong+" - Qta: "+Qta);
@@ -1038,6 +1058,8 @@ public class Prezzi {
           risultato = DammiPrezzoDaDatabase(Crypto, Datalong, Fonte, Rete, Address,60,qta);
           if (risultato==null){
               System.out.println("Nessun prezzo trovato per "+Crypto+" in data "+FunzioniDate.ConvertiDatadaLongAlSecondo(Datalong));
+              //Inserisco la crypto nelle monete per cui non si può recuperare il prezzo
+              PrezzoIrrecuperabileDaDB_Scrivi(Crypto,Datalong,"","");
           }
           return risultato;
 
@@ -1249,7 +1271,7 @@ public class Prezzi {
         //se il risultato è ancora recupero il prezzo dai dollari reali
         if (risultato == null || risultato.equalsIgnoreCase("ND")||risultato.equalsIgnoreCase("null")) {
             //questo risultato è già ponderato in base al valore
-            risultato = ConvertiUSDEUR(Qta, DataGiorno);
+            risultato = CambioUSDEUR(Qta, DataGiorno);
         } //altrimenti calcolo il risultato in base alle qta
         else {
 
@@ -1305,7 +1327,7 @@ public class Prezzi {
                             String Data = FunzioniDate.ConvertiDatadaLong(Unixtime);
                             String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Unixtime);
                             String prezzoUSD = dettagliArray.get(3).getAsString();
-                            String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
+                            String PrezzoEuro = CambioUSDEUR(prezzoUSD, Data);
                             //System.out.println(DataOra);
                             //Controllo ora se non ha il prezzo e in quel caso lo scrivo
                             if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null||DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) 
@@ -1499,7 +1521,7 @@ public class Prezzi {
                             //System.out.println(prezzoUSD+" - "+Unixtime);
                             String Data = FunzioniDate.ConvertiDatadaLong(Unixtime);
                             String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Unixtime);
-                            String PrezzoEuro = ConvertiUSDEUR(prezzoUSD, Data);
+                            String PrezzoEuro = CambioUSDEUR(prezzoUSD, Data);
                             //Controllo ora se non ha il prezzo e in quel caso lo scrivo
                             if (DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto) == null || DatabaseH2.XXXEUR_Leggi(DataOra + " " + Crypto).equals("ND")) {
                                 DatabaseH2.OLD_XXXEUR_Scrivi(DataOra + " " + Crypto, PrezzoEuro, false);
@@ -1868,7 +1890,7 @@ public class Prezzi {
                 //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
                 //anche perchè potrebbe essere che sia un token che si chiama usdt ma è scam
                 String DataDollaro=FunzioniDate.ConvertiDatadaLong(Data);
-                String PT = ConvertiUSDEUR("1", DataDollaro);                
+                String PT = CambioUSDEUR("1", DataDollaro);                
                 if (PT != null) {
                     BigDecimal PrezzoUnitario = new BigDecimal(PT).abs().stripTrailingZeros();
                     IP=new InfoPrezzo();
@@ -2362,6 +2384,74 @@ symbol=symbol.toUpperCase();
     return null;
 }
 
+
+
+public static boolean PrezzoIrrecuperabileDaDB_Scrivi(
+        String symbol,
+        long timestampRiferimento,
+        String rete,
+        String address) {
+
+    if (symbol == null)symbol="";
+
+    symbol = symbol.toUpperCase();
+
+    String queryInsert = """
+        INSERT INTO PrezziKO (symbol, timestamp, rete, address)
+        VALUES (?, ?, ?, ?)
+    """;
+
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(queryInsert)) {
+        ps.setString(1, symbol);
+        ps.setLong(2, timestampRiferimento);
+        ps.setString(3, rete == null ? "" : rete);
+        ps.setString(4, address == null ? "" : address);
+
+        return ps.executeUpdate() > 0;
+    } catch (SQLException ex) {
+        LoggerGC.ScriviErrore(ex);
+        return false;
+    }
+}
+
+
+public static boolean PrezzoIrrecuperabileDaDB_Leggi(
+        String symbol,
+        long timestampRiferimento,
+        String rete,
+        String address) {
+    
+    if (symbol == null) symbol="";
+        symbol=symbol.toUpperCase();
+    
+    
+    // Se non trovato o exchange non specificato → cerca in tutti gli exchange
+    String queryAll = """
+        SELECT timestamp
+        FROM PrezziKO
+        WHERE (symbol = ? OR ? = '')
+          AND timestamp = ?
+          AND (rete = ? OR ? = '')
+          AND (address = ? OR ? = '')
+    """;
+    
+    try (PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(queryAll)) {
+        ps.setString(1, symbol == null ? "" : symbol);
+        ps.setString(2, symbol == null ? "" : symbol);
+        ps.setLong(3, timestampRiferimento);
+        ps.setString(4, rete == null ? "" : rete);
+        ps.setString(5, rete == null ? "" : rete);
+        ps.setString(6, address == null ? "" : address);
+        ps.setString(7, address == null ? "" : address);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        }
+    }   catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+            return false;
+        }
+}
 
 /**
  * Recupera dal database il prezzo più vicino a un determinato timestamp per un dato token.

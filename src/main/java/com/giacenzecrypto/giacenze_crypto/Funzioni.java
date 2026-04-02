@@ -148,6 +148,37 @@ public class Funzioni {
         }
     } 
        
+      
+
+    public static boolean CeConnessioneInternet() {
+        String[] urls = {
+            "https://www.google.com",
+            "https://cloudflare.com",
+            "https://www.microsoft.com"
+        };
+
+        for (String url : urls) {
+            try {
+                HttpURLConnection conn
+                        = (HttpURLConnection) new URL(url).openConnection();
+
+                conn.setRequestMethod("HEAD");
+                conn.setConnectTimeout(1200);
+                conn.setReadTimeout(1200);
+                conn.connect();
+
+                int code = conn.getResponseCode();
+                if (code >= 200 && code < 400) {
+                    return true;
+                }
+            } catch (IOException ignored) {
+            }
+        }
+
+        return false;
+    }
+        
+        
         
     public static String getGruppoWalletXPrezzi(String Wallet){
         return "TUTTI";
@@ -462,7 +493,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                                 //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
                                 if (Prezzo!=null){
                                     String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                                    String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
+                                    String Val1Dollaro=Prezzi.CambioUSDEUR("1", Giorno);
                                     Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
                                 }
                             }
@@ -497,7 +528,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                         if (!MonRiferimento.equals("EURO")){
                             //devo fare la conversione da dollari a euro
                             String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                            Prezz=Prezzi.ConvertiUSDEUR(Prezz, Giorno);                           
+                            Prezz=Prezzi.CambioUSDEUR(Prezz, Giorno);                           
                             //devo fare la conversione in dollari
                         }
                         Prezz=new BigDecimal(Prezz).setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -579,7 +610,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                                 //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
                                 if (Prezzo!=null){
                                     String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                                    String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
+                                    String Val1Dollaro=Prezzi.CambioUSDEUR("1", Giorno);
                                     Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
                                 }
                             }
@@ -628,7 +659,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                 if (!MonRiferimento.equals("EURO")) {
                     //devo fare la conversione da dollari a euro
                     String Giorno = FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                    Prezz = Prezzi.ConvertiUSDEUR(Prezz, Giorno);
+                    Prezz = Prezzi.CambioUSDEUR(Prezz, Giorno);
                     //devo fare la conversione in dollari
                 }
                 Prezz = new BigDecimal(Prezz).setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -725,7 +756,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                                 //Adesso trasformo il prezzo in dollari per presentarlo corretto nelle prossime schermate
                               //  if (Prezzo!=null){
                                     String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                                    String Val1Dollaro=Prezzi.ConvertiUSDEUR("1", Giorno);
+                                    String Val1Dollaro=Prezzi.CambioUSDEUR("1", Giorno);
                                     Prezzo=new BigDecimal(Prezzo).divide(new BigDecimal (Val1Dollaro), 2, RoundingMode.HALF_UP).toPlainString();
                               //  }
                             }
@@ -799,7 +830,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
                         if (!MonRiferimento.equals("EURO")){
                             //devo fare la conversione da dollari a euro
                             String Giorno=FunzioniDate.ConvertiDatadaLong(DataPrezzo);
-                            Prezz=Prezzi.ConvertiUSDEUR(Prezz, Giorno);
+                            Prezz=Prezzi.CambioUSDEUR(Prezz, Giorno);
                             //devo fare la conversione in dollari
                         }
                         //Se prezzo unitario poi devo moltiplicarlo per la quantità

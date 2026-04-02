@@ -2126,7 +2126,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                     valoreEuro = movimentoSplittato[3];                                   
                                     FontePrezzo= "CSV";
                                 } else if (movimentoSplittato[2].trim().equalsIgnoreCase("USD")) {
-                                    valoreEuro = Prezzi.ConvertiUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
+                                    valoreEuro = Prezzi.CambioUSDEUR(movimentoSplittato[3], data.split(" ")[0]);
                                     FontePrezzo = "CSV";
                                 }
 
@@ -2135,7 +2135,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                     valoreEuro = movimentoSplittato[7];
                                     FontePrezzo = "CSV";
                                 } else if (movimentoSplittato[6].trim().equalsIgnoreCase("USD")) {
-                                    valoreEuro = Prezzi.ConvertiUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
+                                    valoreEuro = Prezzi.CambioUSDEUR(movimentoSplittato[7], data.split(" ")[0]);
                                     FontePrezzo = "CSV";
                                 }
                             }

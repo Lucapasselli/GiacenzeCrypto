@@ -550,7 +550,7 @@ public static void OLD_evidenziaRigheCorrispondenti(JTable table1, JTable table2
                     ModTabPrezzi.addRow(rigo);
                 } 
                 else if (M.Moneta.equalsIgnoreCase("USD")) {
-                    String PT = Prezzi.ConvertiUSDEUR("1", DataDollaro);
+                    String PT = Prezzi.CambioUSDEUR("1", DataDollaro);
                     if (PT != null) {
                         BigDecimal PrezzoTransazione = new BigDecimal(PT).abs().stripTrailingZeros();
                         IPF = new Prezzi.InfoPrezzo();

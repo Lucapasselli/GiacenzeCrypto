@@ -60,6 +60,15 @@ public class DatabaseH2 {
                         "PRIMARY KEY (timestamp, exchange, symbol, rete, address)" +
                         ")");
             
+            //il fatto stesso di essere in questa lista fa si che il prezzo del prodotto si intenda non recuperabile
+            connectionPrezzi.createStatement().execute("CREATE TABLE IF NOT EXISTS PrezziKO (" +
+                        "timestamp BIGINT NOT NULL, " +
+                        "symbol VARCHAR(100) NOT NULL, " +
+                        "rete VARCHAR(100) NOT NULL, " +
+                        "address VARCHAR(255) NOT NULL, " +
+                        "PRIMARY KEY (timestamp, symbol, rete, address)" +
+                        ")");
+            
             connectionPersonale.createStatement().execute("CREATE TABLE IF NOT EXISTS PrezziNew (" +
                         "timestamp BIGINT NOT NULL, " +
                         "exchange VARCHAR(100) NOT NULL, " +

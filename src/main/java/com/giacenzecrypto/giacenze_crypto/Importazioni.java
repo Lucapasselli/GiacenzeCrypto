@@ -3726,7 +3726,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                 } else {
 
                     if (IP.prezzoQta == null) {
-                        IP.prezzoQta = IP.Qta.multiply(IP.prezzoUnitario).abs();
+                        IP.prezzoQta = Mon.GetQtaBD().multiply(IP.prezzoUnitario).abs();
 
                     }
                     Mon.Prezzo = IP.prezzoQta.toPlainString();

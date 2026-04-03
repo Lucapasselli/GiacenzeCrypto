@@ -305,12 +305,10 @@ public class TransazioneDefi {
                 if(ValoreTransazioneUscita.compareTo(ValoreTransazione)>0)
                     ValoreTransazione = ValoreTransazioneUscita;
             }
-        //            }
-        //adesso controllo se ho trovato il valore della transazione
-        //e lo segno nel booleano che mi servirà più avanti per l'analisi dei movimenti
-        if (ValoreTransazione.compareTo(new BigDecimal("0"))!=0) {           
-            trovatoValoreTransazione=true;
-        }else trovatoValoreTransazione=false;
+      //            }
+      //adesso controllo se ho trovato il valore della transazione
+      //e lo segno nel booleano che mi servirà più avanti per l'analisi dei movimenti
+      trovatoValoreTransazione = ValoreTransazione.compareTo(new BigDecimal("0"))!=0;
         //System.out.println("APPT "+MappaTokenUscita.size());
         //System.out.println("APPT "+MappaTokenEntrata.size());
         //Ora calcolo i pesi dei vari token

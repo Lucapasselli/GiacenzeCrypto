@@ -6,6 +6,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Set;
 
 
 /**
@@ -75,6 +76,10 @@ public void SetNome(String Nome){
 public String GetQta(){
     return Qta;
 }
+public BigDecimal GetQtaBD(){
+    if (Funzioni.isNumeric(Qta, false))return new BigDecimal(Qta);
+    return null;
+}
 
 public void SetQta(String Quant){
     if (Funzioni.isNumeric(Quant, false)){
@@ -112,10 +117,16 @@ public String GetTipologia(){
 }
 
 public void AssegnaTipoAuto(){
-    if (Moneta.equals("EUR")||Moneta.equals("USD")){
+    Set<String> valute = Set.of("EUR", "USD", "TRY");
+    if (valute.contains(Moneta)) {
+                Tipo = "FIAT";
+            } else {
+                Tipo = "Crypto";
+            }
+    /*if (Moneta.equals("EUR")||Moneta.equals("USD")){
         Tipo="FIAT";
     }
-    else Tipo="Crypto";
+    else Tipo="Crypto";*/
 }
 
 //Cambia il segno della qta della moneta

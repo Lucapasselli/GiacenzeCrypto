@@ -170,7 +170,8 @@ private static Map<String, String[]> creaMappaTipologie() {
         //Se nessuna moneta è valida termino la richiesta e ritorno null.
         if (MOut.isBlank()&&MIn.isBlank())
         {
-            LoggerGC.ScriviErrore("Nessuna moneta è valida termino la richiesta");
+            //LoggerGC.logInfo("Nessuna moneta è valida nella riga, probabilmente per qta=0");
+            System.out.println("Nessuna moneta è valida nella riga, probabilmente per qta=0, Timestamp del movimento: "+Timestamp);
             return null;
         }
         //========== GESTISCO IL CARATTERE CHE IDENTIFICA SE IL MOVIMENTO E' DERIVANTE DA CSV/DEFI O MANUALE ===========
@@ -186,16 +187,20 @@ private static Map<String, String[]> creaMappaTipologie() {
             IDTransHash = "";
         }
 
+        
+        
         //========== GESTISCO IL PREZZO DELLA TRANSAZIONE ===========
         Moneta MPR = DammiMonetaPrioritaria(Mon[0], Mon[1]);
         //Se passo il prezzo della transazione uso quello
         
-        if (Prezzo != null && Funzioni.isNumeric(Prezzo, false)) {
+        if (Prezzo != null && Funzioni.isNumeric(Prezzo, false) && !Prezzo.equals("0")) {
             if (PrezzoPrezzato(Prezzo))RT2[32] = "SI";
-            else RT2[32] = "NO";
+            else 
+            {
+                RT2[32] = "NO";               
+            }
             Prezzo = new BigDecimal(Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
             if (FontePrezzo == null) {   
-               // System.out.println("Personalizzato1");
                 FontePrezzo = "Personalizzato";
             }
             RT2[40] = "|||" + FontePrezzo;
@@ -205,16 +210,16 @@ private static Map<String, String[]> creaMappaTipologie() {
         
         else if (MPR!=null&&MPR.InfoPrezzo != null && MPR.InfoPrezzo.Qta != null && MPR.InfoPrezzo.prezzoUnitario != null) {
             Prezzi.InfoPrezzo IP = MPR.InfoPrezzo;
-            if (IP != null && IP.Qta != null && IP.prezzoUnitario != null) {
+            if (IP != null && IP.prezzoUnitario != null) {
                 //E' importante sempre fare il calcolo del prezzo e non prendere quello salvato in prezzoqta perchè potrebbe non essere giusto
                 //se arriva da molteplici scambi ad esempio nella classe TransazioneDefi
-                Prezzo = IP.Qta.multiply(IP.prezzoUnitario).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
+                Prezzo = MPR.GetQtaBD().multiply(IP.prezzoUnitario).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                 RT2[40] = IP.Ritorna40();
                 RT2[32] = "SI";
                // System.out.println("Prezzi presi dall'info prezzo singolo token");
             }
         } //se la moneta non ha infoprezzo ma ha prezzo prendo quello
-        else if (MPR!=null&&MPR.Prezzo != null && Funzioni.isNumeric(MPR.Prezzo, false)) {
+        else if (MPR!=null&&MPR.Prezzo != null && Funzioni.isNumeric(MPR.Prezzo, false) && !MPR.Prezzo.equals("0")) {
             if (PrezzoPrezzato(MPR.Prezzo))RT2[32] = "SI";
             else RT2[32] = "NO";
             Prezzo = new BigDecimal(MPR.Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
@@ -246,6 +251,12 @@ private static Map<String, String[]> creaMappaTipologie() {
            // System.out.println("Prezzi calcolati");
         }
 
+    /*     if (((Mon[0]!=null&&Mon[0].GetNome().equals("BURGER"))||(Mon[1]!=null&&Mon[1].GetNome().equals("BURGER")))&&Mon[0]!=null&&Mon[1]!=null)
+         {
+            System.out.println(Mon[0].GetNome()+"."+Mon[0].Prezzo+"."+Mon[0].InfoPrezzo.prezzoQta+" - "+Mon[1].GetNome()+"."+Mon[1].Prezzo+"."+Mon[1].InfoPrezzo.prezzoQta);
+         }*/
+        
+        
         //========== GESTISCO IL TIPO DELLA TRANSAZIONE ===========  
         if (TipoTr == null)TipoTr="";
         //Tipologie[] ->   0-codiceTipo(nell'id),  1-Descrizione Tipo(posizione5),  2-Sottotipo(posizione18)
@@ -431,6 +442,7 @@ static boolean PrezzoPrezzato(String Prezzo) {
             if (map.get(currentId)==null){
                 return currentId; 
             }
+            System.out.println("Movimento con Stesso ID : "+currentId+" Ne cerco uno nuovo");
             currentId = incrementaQuartoCampoID(currentId);
             if (currentId==null)return null;
         }
@@ -444,7 +456,7 @@ static boolean PrezzoPrezzato(String Prezzo) {
             LoggerGC.ScriviErrore("Formato ID non valido: " + id);
             return null;
         }
-        if (Funzioni.isNumeric(parts[3], false)){
+        if (!Funzioni.isNumeric(parts[3], false)){
             LoggerGC.ScriviErrore("Quarto campo ID non valido: " + id);
             return null;
         }

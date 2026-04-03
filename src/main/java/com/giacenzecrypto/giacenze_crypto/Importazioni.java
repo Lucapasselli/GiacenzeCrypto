@@ -670,7 +670,6 @@ public class Importazioni {
                 riga=righeFile.get(w);
                
                 String splittata[] = riga.split(",");
-              //   System.out.println(splittata[2]);
                 if (FunzioniDate.ConvertiDatainLongSecondo(splittata[1]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
                    // System.out.println("sono qua");
@@ -1321,6 +1320,27 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
        
         
     }
+
+
+//Questa funzione si occupa di scorrere la lista e di controllare se ci sono movimenti con lo stesso ID e nel qual caso cambiare l'ID per renderlo univoco
+public static List<String[]> CreaListaConIDUnivoco(List<String[]> listaConsolidata){
+ 
+            List<String[]> ListaUnivoca=new ArrayList<>();
+            Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            int nElementi = listaConsolidata.size();
+            for (int i = 0; i < nElementi; i++) {
+                String consolidata[] = listaConsolidata.get(i);
+                //Questa funzione inserisce l'id in maniera univoca sulla mappa ma non serve
+                consolidata[0]=MovimentiCrypto.getIDUnivoco(Mappa_Movimenti, consolidata[0]);
+                //System.out.println("--"+consolidata[0]);
+                Mappa_Movimenti.put(consolidata[0], consolidata);
+                if (consolidata[0]!=null){
+                    ListaUnivoca.add(consolidata);
+                }
+                
+            }
+            return ListaUnivoca;
+}
 
 
 public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,boolean SovrascriEsistenti,Component c,Download progressb ) {
@@ -1977,7 +1997,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
 
             if (TipoScambio.equalsIgnoreCase("Deposito")) {
                 int i = 1;
-                int totMov = MappaTokenEntrata.size();
+                //int totMov = MappaTokenEntrata.size();
                 for (ValoriToken tokenE : MappaTokenEntrata.values()) {
                     Moneta MDeposito = tokenE.ConvertiInMoneta();
                     Long TimeStamp = FunzioniDate.ConvertiDatainLongSecondo(data);
@@ -1990,7 +2010,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                             WalletPrincipale, tokenE.WalletSecondario,
                             TimeStamp,
                             MDeposito.Prezzo, FontePrezzo,
-                            totMov, i, null, null, "A", tokenE.IDTransazione, null, WalletID);
+                            i, 1, null, null, "A", tokenE.IDTransazione, null, WalletID);
 
                     if (RT != null) {
                         lista.add(RT);
@@ -2001,14 +2021,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
             } else if (TipoScambio.equalsIgnoreCase("Prelievo")) {
 
                 int i = 1;
-                int totMov = MappaTokenUscita.size();
+                //int totMov = MappaTokenUscita.size();
                 for (ValoriToken tokenU : MappaTokenUscita.values()) {
                     Moneta MPrelievo = tokenU.ConvertiInMoneta();
                     long TimeStamp = FunzioniDate.ConvertiDatainLongSecondo(data);
                     String RT[];
                     String FontePrz = MPrelievo.getFontePrezzo();
                     RT = MovimentiCrypto.creaMovimento(MPrelievo, null, WalletPrincipale, tokenU.WalletSecondario, 
-                            TimeStamp, MPrelievo.Prezzo, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione, null, WalletID);
+                            TimeStamp, MPrelievo.Prezzo, FontePrz, i, 1, null, null, "A", tokenU.IDTransazione, null, WalletID);
                     if (RT != null) {
                         RT[7] = tokenU.CausaleOriginale;
                         lista.add(RT);
@@ -2019,7 +2039,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
 
             } else if (TipoScambio.equalsIgnoreCase("Scambio")) {
                 int i = 1;
-                int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
+                //int totMov = MappaTokenEntrata.size() * MappaTokenUscita.size();
 
                 for (ValoriToken tokenE : MappaTokenEntrata.values()) {
                     for (ValoriToken tokenU : MappaTokenUscita.values()) {
@@ -2031,13 +2051,17 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                         Moneta M1 = new Moneta();
                         M1.InserisciValori(tokenU.Moneta, QuantitaUscita, tokenU.MonetaAddress, tokenU.Tipo);
                         M1.InfoPrezzo = tokenU.InfoPrezzo;
-                        M1.Prezzo = PrezzoUscita.stripTrailingZeros().toPlainString();
+                        //M1.Prezzo = PrezzoUscita.stripTrailingZeros().toPlainString();
+                        M1.SetPrezzo(PrezzoUscita.stripTrailingZeros().toPlainString());
 
                         Moneta M2 = new Moneta();
                         M2.InserisciValori(tokenE.Moneta, QuantitaEntrata, tokenE.MonetaAddress, tokenE.Tipo);
                         M2.InfoPrezzo = tokenE.InfoPrezzo;
-                        M2.Prezzo = PrezzoEntrata.stripTrailingZeros().toPlainString();
-
+                        //M2.Prezzo = PrezzoEntrata.stripTrailingZeros().toPlainString();
+                        M2.SetPrezzo(PrezzoEntrata.stripTrailingZeros().toPlainString());
+                      /*  if (M1.GetNome().equals("BURGER")||M2.GetNome().equals("BURGER"))
+                            System.out.println(M1.GetNome()+"."+M1.Prezzo+"."+M1.InfoPrezzo.prezzoQta+" - "+M2.GetNome()+"."+M2.Prezzo+"."+M2.InfoPrezzo.prezzoQta);
+*/
                         long TimeStamp = FunzioniDate.ConvertiDatainLongSecondo(data);
                         String RT[];
 
@@ -2048,14 +2072,16 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                         }
                         
                         //=== sono sequenze speciali che servono per personalizzare il walletID in certi casi===
-                        //Sostituisco $IDU$ con l'id della transazione in uscita
-                        WalletID=WalletID.replace("$IDU$", tokenU.IDTransazione);
-                        //Sostituisco $IDE$ con l'id della transazione in entrata
-                        WalletID=WalletID.replace("$IDE$", tokenE.IDTransazione);
+                        if (WalletID!=null){
+                            //Sostituisco $IDU$ con l'id della transazione in uscita
+                            WalletID=WalletID.replace("$IDU$", tokenU.IDTransazione);
+                            //Sostituisco $IDE$ con l'id della transazione in entrata
+                            WalletID=WalletID.replace("$IDE$", tokenE.IDTransazione);
+                        }
                         
                         RT = MovimentiCrypto.creaMovimento(M1, M2,
                                 WalletPrincipale, tokenE.WalletSecondario,
-                                TimeStamp, null, FontePrz, totMov, i, null, null, "A", tokenU.IDTransazione + "-" + tokenE.IDTransazione, 
+                                TimeStamp, null, FontePrz, i, 1, null, null, "A", tokenU.IDTransazione + "-" + tokenE.IDTransazione, 
                                 null, WalletID);
                         if (RT != null) {
                             RT[7] = tokenU.CausaleOriginale + " - " + tokenE.CausaleOriginale;
@@ -2072,6 +2098,9 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                 TrasazioniSconosciute++;
             }
         }
+        
+        //Se ci sono degli id duplicati questa funzione li rende univoci                
+        lista=CreaListaConIDUnivoco(lista);  
         return lista;
 
     }
@@ -2307,7 +2336,6 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                     RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT);
-                                lista.add(RT);
                                 }
                             }
                             
@@ -2702,8 +2730,8 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                         TrasazioniSconosciute++;
                                     }
                         }      */ 
-                        
-                        
+        //Se ci sono degli id duplicati questa funzione li rende univoci                
+        lista=CreaListaConIDUnivoco(lista);               
         return lista;
     }      
         
@@ -2952,16 +2980,16 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
              String MOutQta = new BigDecimal(movimentoSplittato[6]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
              String MIn = movimentoSplittato[11];
              String MInQta = movimentoSplittato[10];
+             
              Moneta M1 = new Moneta();
-             M1.InserisciValori(MOut, MOutQta, "", "Crypto");
-             if (M1.Moneta.isBlank()) {
-                 M1 = null;
-             }
+             M1.SetNome(MOut);
+             M1.SetQta(MOutQta);
+             M1.Tipo="Crypto";
+
              Moneta M2 = new Moneta();
-             M2.InserisciValori(MIn, MInQta, "", "Crypto");
-             if (M2.Moneta.isBlank()) {
-                 M2 = null;
-             }
+             M2.SetNome(MIn);
+             M2.SetQta(MInQta);
+             M2.Tipo="Crypto";
 
              RT = MovimentiCrypto.creaMovimento(M1, M2,
                      "Binance", "Principale",
@@ -2979,28 +3007,28 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
         //Per ultimo aggiungo i movimenti di fee se questo non sono zero
         if (!movimentoSplittato[15].isBlank()) {
             String valoreEuro = new BigDecimal(movimentoSplittato[16]).setScale(2, RoundingMode.HALF_UP).abs().toString();
-            Set<String> valute = Set.of("EUR", "USD", "TRY");
-            String TipologiaCom;
-            if (valute.contains(movimentoSplittato[15])) {
-                TipologiaCom = "FIAT";
-            } else {
-                TipologiaCom = "Crypto";
-            }
             String MOut = movimentoSplittato[15];
             String MOutQta = new BigDecimal(movimentoSplittato[14]).abs().multiply(BigDecimal.valueOf(-1)).toPlainString();
-            Moneta M1 = new Moneta();
-            M1.InserisciValori(MOut, MOutQta, "", TipologiaCom);
-            RT = MovimentiCrypto.creaMovimento(M1, null,
-                    "Binance", "Principale",
-                    DataLong, valoreEuro, "CSV", 1, 2, null, null, "A",
-                    idBinance, "COMMISSIONI", "Binance." + idBinance);
-            if (RT != null) {
-                RT[7] = TipoMovimento;
-                RT[14] = "€ " + movimentoSplittato[16];
-                lista.add(RT);
+            //Se la qta è 0 non faccio nulla
+            if (new BigDecimal(MOutQta).abs().compareTo(BigDecimal.ZERO)!=0) {
+                Moneta M1 = new Moneta();
+                M1.SetNome(MOut);
+                M1.SetQta(MOutQta);
+                M1.AssegnaTipoAuto();
+                RT = MovimentiCrypto.creaMovimento(M1, null,
+                        "Binance", "Principale",
+                        DataLong, valoreEuro, "CSV", 1, 2, null, null, "A",
+                        idBinance, "COMMISSIONI", "Binance." + idBinance);
+                if (RT != null) {
+                    RT[7] = TipoMovimento;
+                    RT[14] = "€ " + movimentoSplittato[16];
+                    lista.add(RT);
+                }
             }
         }
 
+        //Se ci sono degli id duplicati questa funzione li rende univoci                
+        lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }   
   
@@ -3420,6 +3448,8 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                     
                                     
                                     }*/
+        //Se ci sono degli id duplicati questa funzione li rende univoci                
+        lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }   
      
@@ -3615,6 +3645,9 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
         //  if (k == numMovimenti - 1) {
         List<String[]> lista2 = RitornaScambi(Scambio, data, WalletPrincipale, WalletPrincipale+"$IDE$");
         lista.addAll(lista2);
+        
+        //Se ci sono degli id duplicati questa funzione li rende univoci                
+        lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }  
     
@@ -3779,6 +3812,9 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
         // Li inserisco alla fine perchè non so quando teminino
         List<String[]> lista2=RitornaScambi(Scambio,data,WalletPrincipale,null);
         lista.addAll(lista2);
+        
+        //Se ci sono degli id duplicati questa funzione li rende univoci                
+        lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }
           
@@ -4050,6 +4086,8 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
 
         }
 
+        //Se ci sono degli id duplicati questa funzione li rende univoci                
+        lista=CreaListaConIDUnivoco(lista);  
         return lista;
     }
     

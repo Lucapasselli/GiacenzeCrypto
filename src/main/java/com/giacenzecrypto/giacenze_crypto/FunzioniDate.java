@@ -154,8 +154,10 @@ public class FunzioniDate {
             //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
         } catch (ParseException ex) {
            // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            //System.out.println(Data1+" non è una data");
-            LoggerGC.ScriviErrore(Data1+" non è una data valida");
+            //System.out.println(Data1+" non è una data");            
+            //Non devo tornare errore in questo caso perchè è una cosa voluta la possibilità che ci sia una data non valida
+            //in questo caso viene ritornato 0
+           // LoggerGC.ScriviErrore(Data1+" non è una data valida");
            // return 0;
         }
         return m1;

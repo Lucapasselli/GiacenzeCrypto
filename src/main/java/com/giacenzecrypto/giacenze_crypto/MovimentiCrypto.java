@@ -291,10 +291,15 @@ private static Map<String, String[]> creaMappaTipologie() {
         //Adesso controllo se è un movimento Interno se così fosse devo fare in modo che i prelievi siano sempre prima dei depositi
         //Questo perchè sono 2 movimenti contemporanei tolgo da una parte e metto dall'altra.
         //Per far questo sui depositi inserisco una A dopo il nome del Wallet. quindi dopo trunk 1
-        if (Tipologie[0].equals("TI")&&MOut.isBlank()){
+     /*   if (Tipologie[0].equals("TI")&&MOut.isBlank()){
                 //Questa istruzione serve per modificare una copia dell'array estratto e non quello originale
-                IdentificazioneID=IdentificazioneID+"A";
-            }
+               // IdentificazioneID=IdentificazioneID+"A";
+            }*/
+        
+        //===== parte sicuramente da fare in futuro =====
+        //Questo fa si che il numero sia formato da almeno 2 caratteri in modo che possa giorstrare la numerazione fino a 99 movimenti nello stesso secondo
+        //String nm1=String.format("%02d", numMovimento);
+        //String nm2=String.format("%02d", numMovimento2);
         
         RT2[0] = DataID + "_" + IdentificazioneID + "_" + numMovimento + "_" + numMovimento2 + "_" + Tipologie[0];
         if (IDMovimento != null) {
@@ -454,6 +459,7 @@ static boolean PrezzoPrezzato(String Prezzo) {
 
         int fourthField = Integer.parseInt(parts[3]);
         parts[3] = String.valueOf(fourthField + 1);
+        //parts[3] =String.format("%02d", fourthField + 1);
 
         return String.join("_", parts);
     }

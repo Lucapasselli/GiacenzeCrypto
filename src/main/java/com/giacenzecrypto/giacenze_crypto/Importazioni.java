@@ -3127,7 +3127,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                             Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(Mon, null, Datalong, null,"binance");
                             Mon.InfoPrezzo=IP;
                                         if (IP==null)
-                                            Mon.SetPrezzo("0.00");
+                                            Mon.SetPrezzo("0");
                                         else 
                                         {
                                             Mon.SetPrezzo(IP.prezzoQta.toPlainString());

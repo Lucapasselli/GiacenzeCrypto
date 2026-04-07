@@ -19,8 +19,10 @@ import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.html.simpleparser.StyleSheet;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Desktop;
 import java.io.File;
@@ -146,7 +148,27 @@ public class Stampe {
     
         
     
-    
+    //Da Rivedere con calma ma potrebbe semplificarmi di molto le cose
+    //Inoltre mi permetterebbe di avere dei documenti più dettagliati
+    public void InserisciPDF(String FontePDF) {
+        try {
+            PdfReader reader = new PdfReader(FontePDF);
+            Document document = new Document();
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("output.pdf"));
+
+            document.open();
+
+            PdfContentByte cb = writer.getDirectContent();
+            PdfImportedPage page = writer.getImportedPage(reader, 1);
+
+// Inserisce la pagina come contenuto
+            cb.addTemplate(page, 0, 0);
+
+            document.close();
+        } catch (IOException ex) {
+            System.getLogger(Stampe.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
     
     
     

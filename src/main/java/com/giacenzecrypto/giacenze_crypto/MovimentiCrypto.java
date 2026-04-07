@@ -193,35 +193,29 @@ private static Map<String, String[]> creaMappaTipologie() {
         Moneta MPR = DammiMonetaPrioritaria(Mon[0], Mon[1]);
         //Se passo il prezzo della transazione uso quello
         
-        if (Prezzo != null && Funzioni.isNumeric(Prezzo, false) && !Prezzo.equals("0")) {
-            if (PrezzoPrezzato(Prezzo))RT2[32] = "SI";
-            else 
-            {
-                RT2[32] = "NO";               
-            }
+        //=== 1 - Controllo se passo il prezzo della transazione ===
+        if (Prezzo != null && PrezzoPrezzato(Prezzo)) {
             Prezzo = new BigDecimal(Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
             if (FontePrezzo == null) {   
                 FontePrezzo = "Personalizzato";
             }
             RT2[40] = "|||" + FontePrezzo;
-            
-            //System.out.println("Prezzi presi dal csv");
+            RT2[32] = "SI";
         } //Se non passo il prezzo ma lo trovo nelle monete l'infoprezzo
         
+        //=== 2 - Controllo se la moneta ha un infoprezzo associato e in tal caso prendo il prezzo da quello ===        
         else if (MPR!=null&&MPR.InfoPrezzo != null && MPR.InfoPrezzo.Qta != null && MPR.InfoPrezzo.prezzoUnitario != null) {
             Prezzi.InfoPrezzo IP = MPR.InfoPrezzo;
-            if (IP != null && IP.prezzoUnitario != null) {
                 //E' importante sempre fare il calcolo del prezzo e non prendere quello salvato in prezzoqta perchè potrebbe non essere giusto
                 //se arriva da molteplici scambi ad esempio nella classe TransazioneDefi
                 Prezzo = MPR.GetQtaBD().multiply(IP.prezzoUnitario).setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
                 RT2[40] = IP.Ritorna40();
                 RT2[32] = "SI";
                // System.out.println("Prezzi presi dall'info prezzo singolo token");
-            }
         } //se la moneta non ha infoprezzo ma ha prezzo prendo quello
-        else if (MPR!=null&&MPR.Prezzo != null && Funzioni.isNumeric(MPR.Prezzo, false) && !MPR.Prezzo.equals("0")) {
-            if (PrezzoPrezzato(MPR.Prezzo))RT2[32] = "SI";
-            else RT2[32] = "NO";
+        
+        //=== 3 - Controllo se trovo il prezzo sulla moneta ===
+        else if (MPR!=null&&MPR.Prezzo != null && PrezzoPrezzato(MPR.Prezzo)) {
             Prezzo = new BigDecimal(MPR.Prezzo).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();//Questo impedisce che il prezzo sia negativo
             if (FontePrezzo == null) {
                 if (MPR.InfoPrezzo!=null&&MPR.InfoPrezzo.Fonte!=null&&!MPR.InfoPrezzo.Fonte.isBlank())
@@ -230,14 +224,17 @@ private static Map<String, String[]> creaMappaTipologie() {
                 }
                 else 
                 {
-                   // System.out.println("Personalizzato2");
                     FontePrezzo = "Personalizzato";
                 }
             }
+            RT2[32] = "SI";
             RT2[40] = "|||" + FontePrezzo;
+
             
             //System.out.println("Prezzi presi dal prezzo singolo token");
         } //se non lo trovo neanche la allora lo calcolo
+        
+        //=== 3 - Non trovo nessun prezzo, lo calcolo ===
         else {
             Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(Mon[0], Mon[1], Timestamp, Rete, Wallet);
             if (IP != null) {
@@ -248,13 +245,7 @@ private static Map<String, String[]> creaMappaTipologie() {
                 Prezzo = "0.00";
                 RT2[32] = "NO";
             }
-           // System.out.println("Prezzi calcolati");
         }
-
-    /*     if (((Mon[0]!=null&&Mon[0].GetNome().equals("BURGER"))||(Mon[1]!=null&&Mon[1].GetNome().equals("BURGER")))&&Mon[0]!=null&&Mon[1]!=null)
-         {
-            System.out.println(Mon[0].GetNome()+"."+Mon[0].Prezzo+"."+Mon[0].InfoPrezzo.prezzoQta+" - "+Mon[1].GetNome()+"."+Mon[1].Prezzo+"."+Mon[1].InfoPrezzo.prezzoQta);
-         }*/
         
         
         //========== GESTISCO IL TIPO DELLA TRANSAZIONE ===========  

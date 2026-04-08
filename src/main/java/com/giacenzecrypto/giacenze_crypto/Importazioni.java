@@ -633,11 +633,11 @@ public class Importazioni {
         //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
-        Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-       // Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
         String riga;
         String ultimaData = "";
         List<String> listaMovimentidaConsolidare = new ArrayList<>();
+        List<String[]> listaCompleta = new ArrayList<>();
         List<String> righeFile = new ArrayList<>();
             try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
 
@@ -646,8 +646,6 @@ public class Importazioni {
                     riga=riga.replace("\"", "");//rimuovo le virgolette dal file
                     righeFile.add(riga);
                 }
-              //  bure.close();
-              //  fire.close();
             } catch (FileNotFoundException ex) {
                 LoggerGC.ScriviErrore(ex);
             } catch (IOException ex) {
@@ -693,11 +691,7 @@ public class Importazioni {
                     {
                      //   System.out.println(riga);
                         List<String[]> listaConsolidata = Ex_Binance_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
-                        int nElementi = listaConsolidata.size();
-                        for (int i = 0; i < nElementi; i++) {
-                            String consolidata[] = listaConsolidata.get(i);
-                            Mappa_Movimenti.put(consolidata[0], consolidata);
-                        }
+                        listaCompleta.addAll(listaConsolidata);
 
                         //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
                         listaMovimentidaConsolidare = new ArrayList<>();
@@ -709,48 +703,19 @@ public class Importazioni {
 
             }
             List<String[]> listaConsolidata = Ex_Binance_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
-          //  List<String> listaAutoinvestimenti=new ArrayList()<>;
-            int nElementi = listaConsolidata.size();
-            for (int i = 0; i < nElementi; i++) {
-                String consolidata[] = listaConsolidata.get(i);
-                //System.out.println(consolidata[2].split(" di ")[0].trim());               
-                Mappa_Movimenti.put(consolidata[0], consolidata);
-               // 
-            }
-            
+            listaCompleta.addAll(listaConsolidata);
 
-         //   bure.close();
-          //  fire.close();
      
 
         
-       int numeromov=0; 
-       int numeroscartati=0;
-       int numeroaggiunti=0;
-       for (String v : Mappa_Movimenti.keySet()) {
-           numeromov++;
-           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
-           {
+       int InsScart[]=ScriviListaSuMappaCrypto(listaCompleta,SovrascriEsistenti);
+       TransazioniAggiunte=InsScart[0];
+        TrasazioniScartate=InsScart[1];
+        Transazioni=InsScart[0]+InsScart[1];
 
-             //  MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
-               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
-               numeroaggiunti++;
-           }else {
-            //   System.out.println("Movimento Duplicato " + v);
-               numeroscartati++;
-           }
-       }
        //questo lo faccio alla fine perchè vado ad agire direttamente sulla mappa già compilata
        //assengnado i movimenti aggiuntivi
        ConsolidaMovimentiDifferiti(listaScambiDifferiti,SovrascriEsistenti);
-    //   System.out.println(listaScambiDifferiti.get(0)[5]);
-    //   System.out.println(MappaCryptoWallet.get(listaScambiDifferiti.get(0)[0])[5]);
-     //  System.out.println("TotaleMovimenti="+numeromov);
-     //  System.out.println("TotaleScartati="+numeroscartati);
-//////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
-        Transazioni=numeromov;
-        TransazioniAggiunte=numeroaggiunti;
-        TrasazioniScartate=numeroscartati;
         if (TransazioniAggiunte>0)Principale.TabellaCryptodaAggiornare=true;
         
         
@@ -922,9 +887,6 @@ public class Importazioni {
         //se ci sono movimenti con la stessa ora devo mantenere l'ordine inverso del file.
         //ad esempio questo succede per i dust conversion etc....
         // Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        int numeromov = 0;
-        int numeroscartati;
-        int numeroaggiunti = 0;
         List<String[]> listaCompleta = new ArrayList<>();
         // Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         String riga;
@@ -986,29 +948,52 @@ public class Importazioni {
             LoggerGC.ScriviErrore(ex);
         }
 
-        int numI = listaCompleta.size();
-        if (!SovrascriEsistenti) {
-            listaCompleta = Importazioni.F_ritornaSoloElementiNuovi(listaCompleta);
-        }
-        numeroscartati = numI - listaCompleta.size();
-        for (String mov[] : listaCompleta) {
-            InserisciMovimentosuMappaCryptoWallet(mov[0], mov);
-            numeroaggiunti++;
-        }
-
-        //  System.out.println("TotaleMovimenti="+numeromov);
-        //  System.out.println("TotaleScartati="+numeroscartati);
-        //////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
-        Transazioni = numeromov;
-        TransazioniAggiunte = numeroaggiunti;
-        TrasazioniScartate = numeroscartati;
+        int InsScart[]=ScriviListaSuMappaCrypto(listaCompleta,SovrascriEsistenti);
+        TransazioniAggiunte=InsScart[0];
+        TrasazioniScartate=InsScart[1];
+        Transazioni=InsScart[0]+InsScart[1];
         if (TransazioniAggiunte > 0) {
             Principale.TabellaCryptodaAggiornare = true;
         }
 
     }
     
-    
+    //Questa funzione inserisce nella mappa crypto i valori di una lista di array di stringhe con i dati
+    //Tiene conto del fatto che sia biffata o meno la possibilità di sovrascrivere i movimenti
+    //Ritorna il numero di movimenti inseriti e di quelli scartati in un array di interi
+    //al posto Zero ci sono i movimenti aggiunti
+    //al posto 1 ci sono i movimenti 
+    public static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti){
+        //===== 1 - CONTROLLA LA LISTA PER VEDERE CHE NON CI SIANO ID DUPLICATI, NEL QUAL CASO LI RENDE UNIVOCI =====
+        lista=CreaListaConIDUnivoco(lista);  
+        
+        
+        int numI = lista.size();
+        int ritorno[]=new int[2];
+        ritorno[0]=0;//Movimenti Aggiunti
+        ritorno[1]=0;//Movimenti Scartati
+        
+        //===== 2 - SE NON INDICO DI SOVRASCRIVERE GLI ESISTENTI RECUPERO LA LISTA DEI SOLO MOVIMENTI NUOVI =====
+        if (!SovrascriEsistenti) {
+            lista = Importazioni.F_ritornaSoloElementiNuovi(lista);
+        }
+        ritorno[1] = numI - lista.size();
+        
+        //===== 3 - OGNI MOVIMENTO DELLA LISTA VIENE CONTROLLATO ED INSERITO NELLA MAPPACRYPTO
+        for (String mov[] : lista) {
+            //Se non devo sovrascrivere i movimenti e trovo lo stesso id per qualche motivo nella lista allora cambio l'ID e lo rendo univoco           
+            if (!SovrascriEsistenti) {
+                mov[0]=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, mov[0]);
+            }
+            if (mov[0]!=null){
+                InserisciMovimentosuMappaCryptoWallet(mov[0], mov);
+                ritorno[0]++;
+            }else{
+                ritorno[1]++;
+            }
+        }
+        return ritorno;
+    }
 
         
         
@@ -1058,6 +1043,7 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
         // 1- come prima cosa metto in una lista il file
         // e creo una mappa che mi permetterà di analizzare il file ed eliminare le righe doppie
         List<String> lista=new ArrayList<>();
+        List<String[]> listaCompleta = new ArrayList<>();
         //Map<String, String> Mappa_EliminaDoppioni = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
                 while ((riga = bure.readLine()) != null) {
@@ -1078,7 +1064,7 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
                         }
                     else if (splittata.length==16){
                         String data = FunzioniDate.Formatta_Data_CoinTracking(splittata[10]);
-                        System.out.println(data);
+                       // System.out.println(data);
                         if (!data.equalsIgnoreCase("")/*&&Mappa_EliminaDoppioni.get(riga)==null*/) {
                             //Mappa_EliminaDoppioni.put(riga, "");
                             lista.add(riga);
@@ -1129,15 +1115,7 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
             long DataAttuale=FunzioniDate.ConvertiDatainLongSecondo(data);
             data=FunzioniDate.ConvertiDatadaLongAlSecondo(DataAttuale);
             
-         /*   long DataAttuale=FunzioniDate.ConvertiDatainLongSecondo(data);
-            if (DataAttuale==DataUltimaRiferimento){
-                DataAttuale=DataUltima+1000;
-            }
-            else{
-                DataUltimaRiferimento=DataAttuale;
-            }
-            DataUltima=DataAttuale;
-            data=FunzioniDate.ConvertiDatadaLongAlSecondo(DataAttuale);*/
+
             
             //adesso ricreo la riga che andrà sulla mappa
             riga="";
@@ -1171,7 +1149,7 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
         
         
         
-        Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
         //devo prima formattare le date affinche risultino nel formato corretto
         
       //  String riga;
@@ -1208,11 +1186,8 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
                 {
                      //System.out.println(listaMovimentidaConsolidare.size());
                     List<String[]> listaConsolidata = Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare,Exchange,PrezzoZero);
-                    int nElementi = listaConsolidata.size();
-                    for (int i = 0; i < nElementi; i++) {
-                    String consolidata[] = listaConsolidata.get(i);
-                    Mappa_Movimenti.put(consolidata[0], consolidata);
-                    }
+                    listaCompleta.addAll(listaConsolidata);
+
                     
                     //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
                     listaMovimentidaConsolidare = new ArrayList<>();
@@ -1231,45 +1206,17 @@ public static boolean Ex_CoinTracking_Importa(String fileCoinTracking,boolean So
         }
             
             List<String[]> listaConsolidata = Ex_CoinTracking_ConsolidaMovimenti(listaMovimentidaConsolidare,Exchange,PrezzoZero);
-            int nElementi = listaConsolidata.size();
-            for (int i = 0; i < nElementi; i++) {
-                String consolidata[] = listaConsolidata.get(i); 
-                Mappa_Movimenti.put(consolidata[0], consolidata);
-                //Questa funzione inserisce l'id in maniera univoca sulla mappa ma non serve
-              /*  consolidata[0]=Principale_NOGUI.getIDUnivoco(Mappa_Movimenti, consolidata[0]);
-                if (consolidata[0]!=null){
-                    Mappa_Movimenti.put(consolidata[0], consolidata);
-                }*/
-                
-            }
+            listaCompleta.addAll(listaConsolidata);
 
 
 
 
         
-       int numeromov=0; 
-       int numeroscartati=0;
-       int numeroaggiunti=0;
-       for (String v : Mappa_Movimenti.keySet()) {
-           numeromov++;
-           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
-           {
-               //questa funzione prima di inserire i movimenti nuovi pulisce quelli vecchi e le associazioni
-               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
-              // MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
-               numeroaggiunti++;
-           }else {
-            //   System.out.println("Movimento Duplicato " + v);
-               numeroscartati++;
-           }
-       }
-     //  System.out.println("TotaleMovimenti="+numeromov);
-     //  System.out.println("TotaleScartati="+numeroscartati);
-//////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
-        Transazioni=numeromov;
-        TransazioniAggiunte=numeroaggiunti;
-        TrasazioniScartate=numeroscartati;
-     //   Prezzi.ScriviFileConversioneXXXEUR();
+       int InsScart[]=ScriviListaSuMappaCrypto(listaCompleta,SovrascriEsistenti);
+        TransazioniAggiunte=InsScart[0];
+        TrasazioniScartate=InsScart[1];
+        Transazioni=InsScart[0]+InsScart[1];
+    
         if (TransazioniAggiunte>0) 
             Principale.TabellaCryptodaAggiornare=true;
             
@@ -1357,12 +1304,12 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
    
  AzzeraContatori();        
         String fileDaImportare = fileBinanceTaxReport;
-        Map<String, String[]> Mappa_Movimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         //come prima cosa salvo il file in un array per conoscerne la lunghezza
         //mi servirà poi per gestire la barra di scorrimento
          String riga;
          List<String> file=new ArrayList<>();
+         List<String[]> listaCompleta = new ArrayList<>();
         try ( FileReader fire = new FileReader(fileDaImportare);  BufferedReader bure = new BufferedReader(fire);) {
                 while ((riga = bure.readLine()) != null) {
                     file.add(riga);
@@ -1388,11 +1335,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                             //Prima di consolidare mi accerto che il movimento sia gestito nella mappa, se non lo è lo aggiungo ai movimenti
                             //da segnalare come errore (questa cosa è da vedere se è meglio farla in fare da analisi del movimento oppure già ora
                             List<String[]> listaConsolidata = Ex_BinanceTaxReport_Consolida(riga, Mappa_Conversione_Causali);
-                            int nElementi = listaConsolidata.size();
-                            for (int k = 0; k < nElementi; k++) {
-                                String consolidata[] = listaConsolidata.get(k);
-                                Mappa_Movimenti.put(consolidata[0], consolidata);
-                            }
+                            listaCompleta.addAll(listaConsolidata);
                         }else if (i!=0)
                     {
                         movimentiSconosciuti=movimentiSconosciuti+"FORMATO DATA ERRATO : "+riga+"\n";
@@ -1404,36 +1347,12 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                         TrasazioniSconosciute++;
                     }
         }
-
-
-
-
-
-
         
-       int numeromov=0; 
-       int numeroscartati=0;
-       int numeroaggiunti=0;
-       for (String v : Mappa_Movimenti.keySet()) {
-           numeromov++;
-           if (MappaCryptoWallet.get(v)==null||SovrascriEsistenti)
-           {
-               //questa funzione prima di inserire i movimenti nuovi pulisce quelli vecchi e le associazioni
-               InserisciMovimentosuMappaCryptoWallet(v, Mappa_Movimenti.get(v));
-              // MappaCryptoWallet.put(v, Mappa_Movimenti.get(v));
-               numeroaggiunti++;
-           }else {
-            //   System.out.println("Movimento Duplicato " + v);
-               numeroscartati++;
-           }
-       }
-     //  System.out.println("TotaleMovimenti="+numeromov);
-     //  System.out.println("TotaleScartati="+numeroscartati);
-//////////////////////////////////////////////////////       Scrivi_Movimenti_Crypto(MappaCryptoWallet);
-        Transazioni=numeromov;
-        TransazioniAggiunte=numeroaggiunti;
-        TrasazioniScartate=numeroscartati;
-     //   Prezzi.ScriviFileConversioneXXXEUR();
+       
+       int InsScart[]=ScriviListaSuMappaCrypto(listaCompleta,SovrascriEsistenti);
+       TransazioniAggiunte=InsScart[0];
+        TrasazioniScartate=InsScart[1];
+        Transazioni=InsScart[0]+InsScart[1];
         if (TransazioniAggiunte>0) 
             Principale.TabellaCryptodaAggiornare=true;
             
@@ -3703,7 +3622,14 @@ private static String F_safe(String s) {
         return lista;
     }
           
-          
+    
+    public static String Funzioni_RitornaNumeroSenzaZeriFinali(String numero){
+        if (Funzioni.isNumeric(numero, false)){
+            return new BigDecimal(numero).stripTrailingZeros().toPlainString();
+        }
+        else return numero;
+    }
+    
     public static List<String[]> Ex_CoinTracking_ConsolidaMovimenti(List<String> listaMovimentidaConsolidare, String Exchange, boolean PrezzoZero) {
         //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
         //TI=Trasferimento Interno
@@ -3743,12 +3669,12 @@ private static String F_safe(String s) {
             Moneta MonC = new Moneta();//MonetaCommissioni
             String Tipologia = movimentoSplittato[0].trim();
             if (CTtradizionale) {
-                QtaE = movimentoSplittato[1].trim();
+                QtaE = Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[1]);
                 MonE.SetQta(QtaE);
                 ME = movimentoSplittato[2].trim();
                 MonE.SetNome(ME);
 
-                QtaU = movimentoSplittato[5].trim();
+                QtaU = Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[5]);
                 MonU.SetQta("-" + QtaU);
 
                 MU = movimentoSplittato[6].trim();
@@ -3766,18 +3692,19 @@ private static String F_safe(String s) {
                 data = movimentoSplittato[12].trim();
             } else {
                 //Quindi il movimento è lungo 16
-                QtaE = movimentoSplittato[1].trim();
+                QtaE = Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[1]);
                 MonE.SetQta(QtaE);
                 ME = movimentoSplittato[2].trim();
                 MonE.SetNome(ME);
-                QtaU = movimentoSplittato[3].trim();
+                QtaU = Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[3]);
                 MonU.SetQta("-" + QtaU);
                 MU = movimentoSplittato[4].trim();
                 MonU.SetNome(MU);
                 Exch = movimentoSplittato[7].trim();
                 data = movimentoSplittato[10].trim();
 
-                MonC.SetQta("-" + movimentoSplittato[5].trim());
+                String QtaC=Funzioni_RitornaNumeroSenzaZeriFinali(movimentoSplittato[5]);
+                MonC.SetQta("-" + QtaC);
                 MonC.SetNome(movimentoSplittato[6].trim());
 
                 MonE.AssegnaTipoAuto();
@@ -3786,7 +3713,7 @@ private static String F_safe(String s) {
 
                 if (ME.equals(MonC.GetNome()) && !ME.isBlank()) {
                     //Sommo le commissioni alla QtaEntrata se sono della stessa moneta
-                    QtaE = new BigDecimal(QtaE).add(new BigDecimal(MonC.GetQta())).toPlainString();
+                    QtaE = new BigDecimal(QtaE).add(new BigDecimal(MonC.GetQta()).abs()).stripTrailingZeros().toPlainString();
                     MonE.SetQta(QtaE);
                     CTcommissioniNew = true;
                 }

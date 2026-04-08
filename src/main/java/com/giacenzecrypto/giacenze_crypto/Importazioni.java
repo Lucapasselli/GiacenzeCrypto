@@ -118,6 +118,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
@@ -133,6 +134,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 
 /**
@@ -3913,7 +3917,7 @@ private static String F_safe(String s) {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
         } 
-        catch (Exception e) 
+        catch (InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) 
         {
             System.out.println("Error while decrypting: " + e.toString());
         }
@@ -3923,7 +3927,7 @@ private static String F_safe(String s) {
     
     public static SecretKeySpec setKey(String myKey) 
     {
-        MessageDigest sha = null;
+        MessageDigest sha;
         SecretKeySpec secretKey=null;
         try {
             byte[] key;
@@ -3934,10 +3938,7 @@ private static String F_safe(String s) {
             key = Arrays.copyOf(key, 16); 
             secretKey = new SecretKeySpec(key, "AES");
         } 
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } 
-        catch (UnsupportedEncodingException e) {
+        catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         return secretKey;

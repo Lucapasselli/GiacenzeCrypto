@@ -8314,12 +8314,15 @@ SwingUtilities.invokeLater(() -> {
 
                                 String IDOriSplittato[] = RTOri[0].split("_");
                                 String NuovoID=null;
-                                //Ciclo per creare un movimento con il primo ID libero e aggiungo ZZ in modo che il movimento sia successivo a quello di riferimento
+                                //Ciclo per creare un movimento con il primo ID libero e aggiungo ~ in modo che il movimento sia successivo a quello di riferimento
+                                //~ è l'ultimo carattere per codice ascii
                                         for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
                                                 NuovoID = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
+                                                //NuovoID = IDOriSplittato[0] + "_~" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
                                             else
                                                 NuovoID = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
+                                                //NuovoID = IDOriSplittato[0] + "_~" + IDOriSplittato[1] + "_1_"+ki+"_PC";
                                             if(MappaCryptoWallet.get(NuovoID)==null){
                                                break;
                                             }
@@ -8396,14 +8399,16 @@ SwingUtilities.invokeLater(() -> {
                                 String IDOriSplittato[] = RTOri[0].split("_");
                                 DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
                                 //il movimento in questo caso deve finire successivamente a quello selezionato
-                                //quindi tolgo 1 secondo al tempo del movimento originale per trovare quello da mettere
+                                //quindi aggiungo ! all'inizio del campo con il nome dell'exchange (! è il primo carattere per codice ascii)
                                 //String NuovoOrario=Funzioni.DataIDtogliUnSecondo(RTOri[0].split("_")[0]);
                                 String NewID=null;
                                 for(int ki=1;ki<30;ki++){
                                             if (!IDOriSplittato[1].contains(".Rettifica"))
                                                 NewID = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
+                                                //NewID = IDOriSplittato[0] + "_!" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
                                             else
                                                 NewID = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + "_1_"+ki+"_DC";
+                                                //NewID = IDOriSplittato[0] + "_!" + IDOriSplittato[1] + "_1_"+ki+"_DC";
                                             if(MappaCryptoWallet.get(NewID)==null){
                                                break;
                                             }

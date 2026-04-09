@@ -346,7 +346,7 @@ public static Path getNodeExePath() {
             //4 - IMPORTO TUTTO NEL DATABASE
             //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
             if(!Principale.InterrompiCiclo)
-                Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
+                Importazioni.ScriviListaSuMappaCrypto(lista,true);
             //Solo se non ho premutol il tasto annulla, in quel caso non faccio nulla
             else{
                 JOptionPane.showConfirmDialog(c, "Elaborazione interrotta dall'utente!",
@@ -503,7 +503,8 @@ public static Path getNodeExePath() {
             //4 - IMPORTO TUTTO NEL DATABASE
             //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
             //Se non è andato tutto a buon fine non porto a termine l'importazione
-            Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
+            //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
+            Importazioni.ScriviListaSuMappaCrypto(lista,true);
 
         }
     }

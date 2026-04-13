@@ -153,10 +153,10 @@ public class Stampe {
     public void InserisciPDF(String FontePDF) {
         try {
             PdfReader reader = new PdfReader(FontePDF);
-            Document document = new Document();
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("output.pdf"));
+           // Document document = new Document();
+            PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream("output.pdf"));
 
-            document.open();
+          //  doc.open();
 
             PdfContentByte cb = writer.getDirectContent();
             PdfImportedPage page = writer.getImportedPage(reader, 1);
@@ -164,7 +164,7 @@ public class Stampe {
 // Inserisce la pagina come contenuto
             cb.addTemplate(page, 0, 0);
 
-            document.close();
+           // doc.close();
         } catch (IOException ex) {
             System.getLogger(Stampe.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
@@ -301,6 +301,167 @@ public class Stampe {
           }
     }
         
+    
+    public void AggiungiQuadroRW2(String FilePdf,
+            String NumeroQuadro,
+            String ValoriIniziali[],
+            String ValoriFinali[],
+            String Giorni[],
+            String IC[],
+            String Wallet[],
+            String Note[],
+            int foglio,
+            String ICTot) {
+    try {
+        ICTot = Funzioni.formattaBigDecimal(new BigDecimal(ICTot), false);
+
+        // ── CARICAMENTO PDF DI SFONDO ──────────────────────────────────────
+        PdfReader pdfReader = new PdfReader(FilePdf);
+        PdfImportedPage paginaSfondo = writer.getImportedPage(pdfReader, 1);
+
+        float larghezzaPagina = doc.getPageSize().getWidth()
+                                - doc.rightMargin()
+                                - doc.leftMargin();
+        float altezzaPagina   = doc.getPageSize().getHeight()
+                                - doc.topMargin()
+                                - doc.bottomMargin();
+
+        // Calcola scala proporzionale in base alla larghezza
+        float scalaX = larghezzaPagina / paginaSfondo.getWidth();
+        float scalaY = altezzaPagina   / paginaSfondo.getHeight();
+        float scala  = Math.min(scalaX, scalaY); // mantieni proporzioni
+
+        // Disegna il PDF di sfondo direttamente sul canvas
+        PdfContentByte cb = writer.getDirectContentUnder(); // SOTTO il testo
+        cb.saveState();
+        cb.addTemplate(
+            paginaSfondo,
+            scala, 0, 0, scala,          // trasformazione (scaleX, 0, 0, scaleY)
+            doc.leftMargin(),             // X origine
+            doc.bottomMargin()            // Y origine
+        );
+        cb.restoreState();
+
+        // ── POSIZIONE VERTICALE DI RIFERIMENTO (come prima) ───────────────
+        // Poiché non aggiungiamo l'immagine tramite doc.add(),
+        // la posizione verticale va calcolata manualmente dalla cima
+        float psosizioneVeriticale = doc.getPageSize().getHeight()
+                                     - doc.topMargin()
+                                     - (paginaSfondo.getHeight() * scala);
+
+        // ── DA QUI IN POI: TUTTO IDENTICO ALLA VERSIONE ORIGINALE ─────────
+        Font font = new Font(Font.HELVETICA, 10, Font.BOLD);
+
+        // Foglio
+         setPara(writer.getDirectContent(), new Phrase(String.valueOf(foglio), font),
+                490 + doc.leftMargin(), psosizioneVeriticale + 608);
+         //507-582
+         //-17    .....   +26
+
+        // RW8 se foglio 1
+        if (foglio == 1) {
+            font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+            setPara(writer.getDirectContent(), new Phrase(ICTot, font),
+                    133 + doc.leftMargin(), psosizioneVeriticale + 38);
+            setPara(writer.getDirectContent(), new Phrase(ICTot, font),
+                    388 + doc.leftMargin(), psosizioneVeriticale + 38);
+        }
+
+        font = new Font(Font.HELVETICA, 10, Font.BOLD);
+        setPara(writer.getDirectContent(),
+                new Phrase("QUADRO RW PER CRIPTO-ATTIVITA'", font),
+                183 + doc.leftMargin(), psosizioneVeriticale + 681);
+
+        for (int i = 0; i < 5; i++) {
+            if (ValoriIniziali[i] != null) {
+                ValoriIniziali[i] = Funzioni.formattaBigDecimal(
+                        new BigDecimal(ValoriIniziali[i]), false);
+                ValoriFinali[i]   = Funzioni.formattaBigDecimal(
+                        new BigDecimal(ValoriFinali[i]), false);
+
+                if (i == 0) {
+                    font = new Font(Font.HELVETICA, 10, Font.BOLD);
+                    setPara(writer.getDirectContent(), new Phrase(Wallet[i], font),
+                            -15 + doc.leftMargin(), psosizioneVeriticale + 551);
+                    font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                    setPara(writer.getDirectContent(), new Phrase(Note[i], font),
+                            -15 + doc.leftMargin(), psosizioneVeriticale + 536);
+                    setPara(writer.getDirectContent(), new Phrase("1", font),
+                            125 + doc.leftMargin(), psosizioneVeriticale + 566);
+                    setPara(writer.getDirectContent(), new Phrase("21", font),
+                            203 + doc.leftMargin(), psosizioneVeriticale + 566);
+                    setPara(writer.getDirectContent(), new Phrase("100,00", font),
+                            268 + doc.leftMargin(), psosizioneVeriticale + 566);
+                    setPara(writer.getDirectContent(), new Phrase("1", font),
+                            313 + doc.leftMargin(), psosizioneVeriticale + 566);
+                    setPara(writer.getDirectContent(), new Phrase(ValoriIniziali[i], font),
+                            363 + doc.leftMargin(), psosizioneVeriticale + 566);
+                    setPara(writer.getDirectContent(), new Phrase(ValoriFinali[i], font),
+                            443 + doc.leftMargin(), psosizioneVeriticale + 566);
+                    setPara(writer.getDirectContent(), new Phrase(Giorni[i], font),
+                            191 + doc.leftMargin(), psosizioneVeriticale + 534);
+                    setPara(writer.getDirectContent(), new Phrase("vedi", font),
+                            407 + doc.leftMargin(), psosizioneVeriticale + 539);
+                    setPara(writer.getDirectContent(), new Phrase("note", font),
+                            407 + doc.leftMargin(), psosizioneVeriticale + 532);
+                    if (Giorni[i].isBlank() || Giorni[i].contains("(")) {
+                        setPara(writer.getDirectContent(), new Phrase("X", font),
+                                480 + doc.leftMargin(), psosizioneVeriticale + 531);
+                    } else {
+                        setPara(writer.getDirectContent(), new Phrase(IC[i], font),
+                                393 + doc.leftMargin(), psosizioneVeriticale + 471);
+                        setPara(writer.getDirectContent(), new Phrase(IC[i], font),
+                                458 + doc.leftMargin(), psosizioneVeriticale + 471);
+                    }
+                } else {
+                    font = new Font(Font.HELVETICA, 10, Font.BOLD);
+                    setPara(writer.getDirectContent(), new Phrase(Wallet[i], font),
+                            -15 + doc.leftMargin(), psosizioneVeriticale + 436 - (i - 1) * 84);
+                    font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+                    setPara(writer.getDirectContent(), new Phrase(Note[i], font),
+                            -15 + doc.leftMargin(), psosizioneVeriticale + 421 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase("1", font),
+                            125 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase("21", font),
+                            203 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase("100,00", font),
+                            268 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase("1", font),
+                            313 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase(ValoriIniziali[i], font),
+                            363 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase(ValoriFinali[i], font),
+                            443 + doc.leftMargin(), psosizioneVeriticale + 451 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase(Giorni[i], font),
+                            191 + doc.leftMargin(), psosizioneVeriticale + 430 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase("vedi", font),
+                            408 + doc.leftMargin(), psosizioneVeriticale + 435 - (i - 1) * 84);
+                    setPara(writer.getDirectContent(), new Phrase("note", font),
+                            408 + doc.leftMargin(), psosizioneVeriticale + 428 - (i - 1) * 84);
+                    if (Giorni[i].isBlank() || Giorni[i].contains("(")) {
+                        setPara(writer.getDirectContent(), new Phrase("X", font),
+                                480 + doc.leftMargin(), psosizioneVeriticale + 427 - (i - 1) * 84);
+                    } else {
+                        setPara(writer.getDirectContent(), new Phrase(IC[i], font),
+                                393 + doc.leftMargin(), psosizioneVeriticale + 386 - (i - 1) * 84);
+                        setPara(writer.getDirectContent(), new Phrase(IC[i], font),
+                                458 + doc.leftMargin(), psosizioneVeriticale + 386 - (i - 1) * 84);
+                    }
+                }
+            }
+        }
+
+        // Chiudi il reader per liberare risorse
+        pdfReader.close();
+
+    } catch (IOException ex) {
+        Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+    }
+}
+    
+    
+    
+    
          public void AggiungiRW8(String Immagine,String Valore) {
           try {
               
@@ -385,6 +546,86 @@ public class Stampe {
           }
     }
     
+    public void AggiungiT2(String FilePdf,String Vendite,String Costo,String Segnalazioni,String Anno) {
+          try {
+             
+              
+               // ── CARICAMENTO PDF DI SFONDO ──────────────────────────────────────
+        PdfReader pdfReader = new PdfReader(FilePdf);
+        PdfImportedPage paginaSfondo = writer.getImportedPage(pdfReader, 1);
+
+        float larghezzaPagina = doc.getPageSize().getWidth()
+                                - doc.rightMargin()
+                                - doc.leftMargin();
+        float altezzaPagina   = doc.getPageSize().getHeight()
+                                - doc.topMargin()
+                                - doc.bottomMargin();
+
+        // Calcola scala proporzionale in base alla larghezza
+        float scalaX = larghezzaPagina / paginaSfondo.getWidth();
+        float scalaY = altezzaPagina   / paginaSfondo.getHeight();
+        float scala  = Math.min(scalaX, scalaY); // mantieni proporzioni
+
+        // Disegna il PDF di sfondo direttamente sul canvas
+        PdfContentByte cb = writer.getDirectContentUnder(); // SOTTO il testo
+        cb.saveState();
+        cb.addTemplate(
+            paginaSfondo,
+            scala, 0, 0, scala,          // trasformazione (scaleX, 0, 0, scaleY)
+            doc.leftMargin(),             // X origine
+            doc.bottomMargin()            // Y origine
+        );
+        cb.restoreState();
+
+        // ── POSIZIONE VERTICALE DI RIFERIMENTO (come prima) ───────────────
+        // Poiché non aggiungiamo l'immagine tramite doc.add(),
+        // la posizione verticale va calcolata manualmente dalla cima
+        float psosizioneVeriticale = doc.getPageSize().getHeight()
+                                     - doc.topMargin()
+                                     - (paginaSfondo.getHeight() * scala);
+              
+              
+             Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             Vendite=new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             String Plusvalenze=new BigDecimal(Vendite).subtract(new BigDecimal(Costo)).toPlainString();
+             Costo=Funzioni.formattaBigDecimal(new BigDecimal(Costo),false);
+             Vendite=Funzioni.formattaBigDecimal(new BigDecimal(Vendite),false);
+             Plusvalenze=Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze),false);
+
+
+
+             Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             //Valore delle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 299+doc.leftMargin(), psosizioneVeriticale+630);
+             //Valore dei Costi relativi alle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 376+doc.leftMargin(), psosizioneVeriticale+630);
+             
+             font = new Font(Font.HELVETICA, 10, Font.BOLD);
+             String MessPlus="Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze;
+             setPara(writer.getDirectContent(), new Phrase(MessPlus,font), doc.leftMargin(), psosizioneVeriticale+120);
+             
+             font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+             PdfContentByte canvas = writer.getDirectContent();
+            float x = doc.leftMargin();
+            float y = psosizioneVeriticale + 100;
+            // Imposta un'area di testo (rettangolo) dove disegnare il contenuto
+            ColumnText ct = new ColumnText(canvas);
+            ct.setText(new Phrase(Segnalazioni, font));
+            ct.setSimpleColumn(
+                x,           // left
+                y - 50,      // bottom
+                x + 500,     // right
+                y            // top
+                );
+            ct.go();
+             
+             
+
+          } catch (BadElementException | IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    }
+    
     public void AggiungiRT(String Immagine,String Vendite,String Costo,String Segnalazioni,String Anno) {
           try {
               
@@ -441,7 +682,85 @@ public class Stampe {
           }
     }
     
-    
+        public void AggiungiRT2(String FilePdf,String Vendite,String Costo,String Segnalazioni,String Anno) {
+          try {
+
+        // ── CARICAMENTO PDF DI SFONDO ──────────────────────────────────────
+        PdfReader pdfReader = new PdfReader(FilePdf);
+        PdfImportedPage paginaSfondo = writer.getImportedPage(pdfReader, 1);
+
+        float larghezzaPagina = doc.getPageSize().getWidth()
+                                - doc.rightMargin()
+                                - doc.leftMargin();
+        float altezzaPagina   = doc.getPageSize().getHeight()
+                                - doc.topMargin()
+                                - doc.bottomMargin();
+
+        // Calcola scala proporzionale in base alla larghezza
+        float scalaX = larghezzaPagina / paginaSfondo.getWidth();
+        float scalaY = altezzaPagina   / paginaSfondo.getHeight();
+        float scala  = Math.min(scalaX, scalaY); // mantieni proporzioni
+
+        // Disegna il PDF di sfondo direttamente sul canvas
+        PdfContentByte cb = writer.getDirectContentUnder(); // SOTTO il testo
+        cb.saveState();
+        cb.addTemplate(
+            paginaSfondo,
+            scala, 0, 0, scala,          // trasformazione (scaleX, 0, 0, scaleY)
+            doc.leftMargin(),             // X origine
+            doc.bottomMargin()            // Y origine
+        );
+        cb.restoreState();
+
+        // ── POSIZIONE VERTICALE DI RIFERIMENTO (come prima) ───────────────
+        // Poiché non aggiungiamo l'immagine tramite doc.add(),
+        // la posizione verticale va calcolata manualmente dalla cima
+        float psosizioneVeriticale = doc.getPageSize().getHeight()
+                                     - doc.topMargin()
+                                     - (paginaSfondo.getHeight() * scala);
+              
+              
+              
+              
+             Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             Vendite=new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
+             String Plusvalenze=new BigDecimal(Vendite).subtract(new BigDecimal(Costo)).toPlainString();
+             Costo=Funzioni.formattaBigDecimal(new BigDecimal(Costo),false);
+             Vendite=Funzioni.formattaBigDecimal(new BigDecimal(Vendite),false);
+             Plusvalenze=Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze),false);
+
+             Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
+             //Valore delle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 326+doc.leftMargin(), psosizioneVeriticale+269);
+             //Valore dei Costi relativi alle Vendite
+             setPara(writer.getDirectContent(), new Phrase(Costo,font), 400+doc.leftMargin(), psosizioneVeriticale+269);
+             
+             font = new Font(Font.HELVETICA, 10, Font.BOLD);
+             String MessPlus="Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze;
+             setPara(writer.getDirectContent(), new Phrase(MessPlus,font), doc.leftMargin(), psosizioneVeriticale+100);
+             
+             font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+             PdfContentByte canvas = writer.getDirectContent();
+            float x = doc.leftMargin();
+            float y = psosizioneVeriticale + 100;
+            // Imposta un'area di testo (rettangolo) dove disegnare il contenuto
+            ColumnText ct = new ColumnText(canvas);
+            ct.setText(new Phrase(Segnalazioni, font));
+            ct.setSimpleColumn(
+                x,           // left
+                y - 50,      // bottom
+                x + 500,     // right
+                y            // top
+                );
+            ct.go();
+             
+             
+             
+
+          } catch (BadElementException | IOException ex) {
+              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    }
     
     
     

@@ -2485,8 +2485,7 @@ private static final long serialVersionUID = 3L;
 
         AnalisiCrypto.addTab("Giacenze a Data", GiacenzeaData);
 
-        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024" }));
-        RW_Anno_ComboBox.setSelectedIndex(7);
+        RW_Anno_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025" }));
         RW_Anno_ComboBox.setMinimumSize(new java.awt.Dimension(72, 31));
         RW_Anno_ComboBox.setPreferredSize(new java.awt.Dimension(72, 31));
         RW_Anno_ComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -10164,8 +10163,28 @@ SwingUtilities.invokeLater(() -> {
             
             
                     stampa.NuovaPagina();
-                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO W\n\n", Font.BOLD, 12);
+                    stampa.AggiungiTestoCentrato("NOTE RELATIVE AL RIGO W8 \n\n", Font.BOLD, 12);
                     String testo;
+                                        
+                                        testo = """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>ATTENZIONE :</b> <u>La parte relativa al rigo W8 va compilata a mano prendendo i valori dalle dichiarazioni precedenti.</u><br>
+                                                Il programma attualmente non ha una sezione dove inserire e memorizzare questi dati<br><br>
+                            Per la compilazione seguire le seguenti istruzioni : <br><br>
+                            
+                            <b>SEZIONE IV</b> - Versamenti e residui Imposta cripto-attività <br> <br>
+                            <b>Colonna 2</b> → \u2013 <u>Eccedenza dichiarazione precedente cripto-attività</u> \u2013
+                                riportare l’eventuale credito dell’imposta sul valore delle cripto-attività possedute all’estero che risulta dalla dichiarazione relativa ai redditi 2024, indicato nella colonna 7 del rigo 301 (o nella colonna 7 del rigo 351 per il coniuge dichiarante) del modello 730-3 2025 o nella colonna 5 del rigo RX27 del Mod. REDDITI PF 2025. <br><br>
+                            <b>Colonna 3</b> → \u2013 <u>Eccedenza compensata modello F24 cripto-attività</u> \u2013 
+                                indicare l’importo dell’eccedenza dell’imposta sulle cripto-attività eventualmente compensata utilizzando il modello F24. <br><br>
+                            <b>Colonna 4</b> → \u2013 <u>Acconti versati</u> \u2013 
+                                indicare l’ammontare complessivo degli importi versati con il modello F24 indicando i codici tributo 1728 (primo acconto) e 1729 (secondo acconto) e l’anno 2025. <br><br>
+                          
+                            </font></html>""";
+                    stampa.AggiungiHtml(testo); 
+                    
+                    stampa.NuovaPagina();
+                    stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO W\n\n", Font.BOLD, 12);
                     testo = """
                             <html><font size="2" face="Courier New,Courier, mono" >
                             <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
@@ -10195,13 +10214,17 @@ SwingUtilities.invokeLater(() -> {
                             attestazioni da cui risulti tale circostanza<br>
                             <b>Colonna 16</b> \u2013 <u>SOLO MONITORAGGIO</u> \u2013 Da selezionare in caso si faccia solo monitoraggio (es. quando l'intermediario paga il bollo)</font></html>""";
                     stampa.AggiungiHtml(testo);
+
+                    stampa.NuovaPagina();
+              
                     
                     
                     
                                 //Stampa Quadro RW
             String immagineRW=Statiche.getPathImmagini()+"QuadroRW_2023.jpg";
             if (anno==2024)immagineRW=Statiche.getPathImmagini()+"QuadroRW_2024.jpg";
-            stampa.NuovaPagina();
+            String pdfRW=Statiche.getPathImmagini()+"QuadroRW_2025.pdf";
+            
            // stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
            // stampa.AggiungiTesto("FOGLIO 1",Font.BOLD,10);
@@ -10249,7 +10272,12 @@ SwingUtilities.invokeLater(() -> {
                             if ((righeQuadroStampate) % 5 == 0 && righeQuadroStampate != 0) {
                                 //Se arrivo qua stampo il foglio con i dati
                                 //System.out.println(anno+" - "+immagine);
-                                stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                if (anno>=2025){
+                                    stampa.AggiungiQuadroRW2(pdfRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                }
+                                else{
+                                    stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                }
                                 //Poi pulisco le variabili per un nuovo foglio
                                 ValoriIniziali = new String[5];
                                 ValoriFinali = new String[5];
@@ -10288,14 +10316,47 @@ SwingUtilities.invokeLater(() -> {
                     
                     //Se non ho ancora stampato l'RW8 lo stampo ora
                     if (mancaStampa) {
-
-                        stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
-                                
+                        if (anno>=2025){
+                                    stampa.AggiungiQuadroRW2(pdfRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                }
+                                else{
+                                    stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                               }
+                               
                     }
                     
                     
                     //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW
+                    
                     stampa.NuovaPagina();
+                    stampa.AggiungiTestoCentrato("NOTE RELATIVE AL RIGO RW8 \n\n", Font.BOLD, 12);
+                                        
+                                        testo = """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>ATTENZIONE :</b> <u>La parte relativa al rigo RW8, ad esclusione del valore dell'imposta, va compilata a mano prendendo i valori dalle dichiarazioni precedenti.</u><br>
+                                                Il programma attualmente non ha una sezione dove inserire e memorizzare questi dati<br><br>
+                            Per la compilazione seguire le seguenti istruzioni : <br><br>
+                            
+                            <b>Colonna 1</b> → 
+                                 riportare il totale dell’imposta dovuta che risulta sommando gli importi determinati nella colonna 34 dei righi compilati nella presente sezione. (Già gestita dal programma) <br><br>                                    
+                            <b>Colonna 2</b> → \u2013 <u>Eccedenza dichiarazione precedente cripto-attività</u> \u2013
+                                riportare l’eventuale credito dell’imposta sul valore delle cripto-attività possedute all’estero che risulta dalla dichiarazione relativa ai redditi 2024, indicato nella colonna 7 del rigo 301 (o nella colonna 7 del rigo 351 per il coniuge dichiarante) del modello 730-3 2025 o nella colonna 5 del rigo RX27 del Mod. REDDITI PF 2025. <br><br>
+                            <b>Colonna 3</b> → \u2013 <u>Eccedenza compensata modello F24 cripto-attività</u> \u2013 
+                                indicare l’importo dell’eccedenza dell’imposta sulle cripto-attività eventualmente compensata utilizzando il modello F24. <br><br>
+                            <b>Colonna 4</b> → \u2013 <u>Acconti versati</u> \u2013 
+                                indicare l’ammontare complessivo degli importi versati con il modello F24 indicando i codici tributo 1728 (primo acconto) e 1729 (secondo acconto) e l’anno 2025. <br><br>
+                            <b>Colonna 5 e 6</b> \u2013
+                                Per determinare l’imposta sulle cripto-attività a debito o a credito effettuare la seguente operazione: col. 1 – col. 2 + col. 3 – col. 4.<br> 
+                                Se il risultato di tale operazione è positivo (debito) riportare l’importo così ottenuto nella <b>colonna 5</b> (Imposta a debito)<br>. 
+                                In tal caso l’imposta sul valore dell’imposta va versata con il modello F24, indicando il codice tributo 1727, con le stesse modalità e scadenze previste per l’Irpef ivi comprese quelle relative alle modalità di versamento dell’imposta in acconto e a saldo.<br> 
+                                L’imposta non va versata se l’importo di questa colonna non supera 12 euro.<br>
+                                Se il risultato di tale operazione è negativo (credito) riportare l’importo così ottenuto nella <b>colonna</b> 6 (Imposta a credito)<br>. 
+                            
+                            </font></html>""";
+                    stampa.AggiungiHtml(testo);                     
+                    
+                    stampa.NuovaPagina();
+                    
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RW\n\n", Font.BOLD, 12);
                  // String testo;
                     testo = """
@@ -10334,8 +10395,7 @@ SwingUtilities.invokeLater(() -> {
                             </font></html>""";
                     stampa.AggiungiHtml(testo);       
                     
-                    
-                    stampa.NuovaPagina();
+
                     stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO W/RW\n\n", Font.BOLD, 12);
 
                     if (RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()) {
@@ -11307,7 +11367,7 @@ SwingUtilities.invokeLater(() -> {
                         Bottoni,
                         null);
             }
-            RT_StampaRapporto(Anno,Vendite,Costi,err);
+                RT_StampaRapporto(Anno,Vendite,Costi,err);
             //System.out.println(Anno);
         }
     }//GEN-LAST:event_RT_Bottone_StampaActionPerformed
@@ -12478,11 +12538,15 @@ SwingUtilities.invokeLater(() -> {
                     //Stampa Quadro T
             stampa.NuovaPagina();
             String immagineT=Statiche.getPathImmagini()+"QuadroT_2024.jpg";
+            String PdfT2025=Statiche.getPathImmagini()+"QuadroT_2025.pdf";
+            String PdfRT2025=Statiche.getPathImmagini()+"QuadroRT_2025.pdf";
             //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
 
-
-                        stampa.AggiungiT(immagineT, Vendite, Costo, Errore,AnnoDiCompetenza);
-                        
+            if (Anno<2025){
+                stampa.AggiungiT(immagineT, Vendite, Costo, Errore,AnnoDiCompetenza);
+            }else{
+                stampa.AggiungiT2(PdfT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
+            }            
                         
             
             stampa.NuovaPagina();
@@ -12520,7 +12584,11 @@ SwingUtilities.invokeLater(() -> {
                     
                     stampa.NuovaPagina();
                     String immagineRT=Statiche.getPathImmagini()+"QuadroRT_2024.jpg";
-                    stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
+                    if (Anno<2025){
+                        stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
+                    }else{
+                        stampa.AggiungiRT2(PdfRT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
+                    }
                     
                     /*
                     //STAMPO LE NOTE DI COMPILAZIONE DEL QUADRO RW

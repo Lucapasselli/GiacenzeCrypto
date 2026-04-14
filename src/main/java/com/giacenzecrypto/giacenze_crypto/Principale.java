@@ -10273,7 +10273,7 @@ SwingUtilities.invokeLater(() -> {
                                 //Se arrivo qua stampo il foglio con i dati
                                 //System.out.println(anno+" - "+immagine);
                                 if (anno>=2025){
-                                    stampa.AggiungiQuadroRW2(pdfRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                    stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
                                 }
                                 else{
                                     stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
@@ -10317,7 +10317,7 @@ SwingUtilities.invokeLater(() -> {
                     //Se non ho ancora stampato l'RW8 lo stampo ora
                     if (mancaStampa) {
                         if (anno>=2025){
-                                    stampa.AggiungiQuadroRW2(pdfRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
+                                    stampa.AggiungiQuadroRW2025(pdfRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
                                 }
                                 else{
                                     stampa.AggiungiQuadroRW(immagineRW, String.valueOf(righeQuadroStampate), ValoriIniziali, ValoriFinali, Giorni,IC,Exchange,Messaggi, foglio,ICTotale);
@@ -12501,84 +12501,45 @@ SwingUtilities.invokeLater(() -> {
             
             
 
-                        
+                String immagineT=Statiche.getPathImmagini()+"QuadroT_2024.jpg";
+            String PdfT2025=Statiche.getPathImmagini()+"QuadroT_2025.pdf";
+            String PdfRT2025=Statiche.getPathImmagini()+"QuadroRT_2025.pdf";        
                         
                         
                     
                     stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO T\n\n", Font.BOLD, 12);
                     String testo;
-                    testo = """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-                            <b>T41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
-                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
-                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
-                            <b>T42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
-                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
-                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
-                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
-                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
-                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
-                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
-                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>T45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
-                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’imposta sostitutiva.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>""";
+                    if (Anno<2025){
+                        testo = Stampe.NoteCompilazioneTante2025();
+                    }
+                    else{
+                        testo = Stampe.NoteCompilazioneT2025();
+                        }   
                     stampa.AggiungiHtml(testo);
                     
                     
                     //Stampa Quadro T
             stampa.NuovaPagina();
-            String immagineT=Statiche.getPathImmagini()+"QuadroT_2024.jpg";
-            String PdfT2025=Statiche.getPathImmagini()+"QuadroT_2025.pdf";
-            String PdfRT2025=Statiche.getPathImmagini()+"QuadroRT_2025.pdf";
+            
             //if (Anno>2024)immagineT="Immagini/QuadroT_"+AnnoDiCompetenza+".jpg";
 
             if (Anno<2025){
                 stampa.AggiungiT(immagineT, Vendite, Costo, Errore,AnnoDiCompetenza);
             }else{
-                stampa.AggiungiT2(PdfT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
+                stampa.AggiungiT2025(PdfT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
             }            
                         
             
             stampa.NuovaPagina();
             stampa.AggiungiTestoCentrato("QUADRO RT PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
             stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RT\n\n", Font.BOLD, 12);
-                    testo = """
-                            <html><font size="2" face="Courier New,Courier, mono" >
-                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
-                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
-                            
-                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
-                            <b>RT41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
-                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
-                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
-                            <b>RT42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
-                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
-                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
-                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
-                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
-                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
-                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
-                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br> 
-                            La somma degli importi di cui ai righi RT43 e RT44, colonna 2, non può essere superiore all’importo di cui al rigo RT88. <br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
-                            <b>RT45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
-                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
-                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>""";
-                    stampa.AggiungiHtml(testo);            
+            if (Anno<2025){
+                        testo = Stampe.NoteCompilazioneRTante2025();
+                    }
+                    else{
+                        testo = Stampe.NoteCompilazioneRT2025();
+                        }  
+            stampa.AggiungiHtml(testo);            
                         
                     
                     
@@ -12587,7 +12548,7 @@ SwingUtilities.invokeLater(() -> {
                     if (Anno<2025){
                         stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     }else{
-                        stampa.AggiungiRT2(PdfRT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
+                        stampa.AggiungiRT2025(PdfRT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
                     }
                     
                     /*

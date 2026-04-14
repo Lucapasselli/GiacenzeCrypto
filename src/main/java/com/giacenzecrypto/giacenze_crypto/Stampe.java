@@ -170,7 +170,140 @@ public class Stampe {
         }
     }
     
+    public static String NoteCompilazioneTante2025(){
+    return """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
+                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
+                            
+                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
+                            
+                            <b>T41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
+                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
+                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
+                            <b>T42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
+                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
+                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
+                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
+                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
+                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
+                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
+                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
+                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’imposta sostitutiva.<br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>""";
     
+    }
+    
+    public static String NoteCompilazioneT2025() {
+        return """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
+                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
+                            
+                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
+                            
+                            <b>T41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
+                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
+                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
+                            <b>T42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
+                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
+                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
+                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
+                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
+                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
+                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
+                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>T45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
+                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’imposta sostitutiva.<br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+
+           
+           
+           
+           
+           """;
+
+    }
+    
+        public static String NoteCompilazioneRTante2025() {
+        return """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
+                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
+                            
+                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
+                            
+                            <b>RT41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
+                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
+                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
+                            <b>RT42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
+                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
+                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
+                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
+                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
+                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
+                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
+                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br> 
+                            La somma degli importi di cui ai righi RT43 e RT44, colonna 2, non può essere superiore all’importo di cui al rigo RT88. <br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
+                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>""";
+
+    }
+        
+            public static String NoteCompilazioneRT2025() {
+        return """
+                            <html><font size="2" face="Courier New,Courier, mono" >
+                            <b>NOTA :</b> I documenti ottenuti e le informazioni presenti hanno
+                            sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
+                            
+                            Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
+                            
+                            <b>RT41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
+                            Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
+                            o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
+                            <b>RT42</b> → \u2013 <u>Corrispettivo di acquisto</u> <br>
+                            Indicare l’importo derivante dalla cessione avvenuta qualora il contribuente si sia avvalso dell’opzione per la
+                            rideterminazione del valore di ciascuna cripto-attività posseduta alla data del 1° gennaio 2023 ai sensi dell’art. 1, commi da 133 a 135,
+                            della legge n. 197 del 2022 e in colonna 2 il relativo costo di acquisto. <br>
+                            (RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT43</b> → \u2013 <u>Eccedenza minusvalenze anni precedenti</u> <br>
+                            Vanno indicate le minusvalenze degli anni precedenti, indicate nel rigo RT94 del quadro RT del modello REDDITI 2024
+                            Persone fisiche, da portare in compensazione con le plusvalenze indicate nella presente sezione.<br> 
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT44 sez. 1</b> → \u2013 <u>Eccedenze minuvalenze certificate da intermediari</u> <br> 
+                            In colonna 2, devono essere indicate le eccedenze di minusvalenze certificate dagli intermediari anche se relative ad anni precedenti ma non oltre il quarto (indicate in colonna 1).<br> 
+                            La somma degli importi di cui ai righi RT43 e RT44, colonna 2, non può essere superiore all’importo di cui al rigo RT88. <br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+                            <b>RT45</b> \u2013 <u>Eccedenza d'imposta sostitutiva risultante dalla precedente dichiarazione non compensata</u> <br>
+                            Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
+                            (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+        <b>RT57</b> \u2013 <br>
+        Indicare anche la differenza tra l’importo indicato nelle colonne 3 dei righi RT41, e RT42, (di tutti i moduli compilati) ed i relativi importi di colonna 4 se positiva.<br>
+        Se il risultato è negativo riportare l’eccedenza nella colonna 1 e la colonna 2 non va compilata.<br> 
+        Le minusvalenze sono riportate in deduzione integralmente dall’ammontare delle plusvalenze dei periodi successivi, ma non oltre il quarto, e vanno indicate nel rigo RT105, colonna 5.<br> 
+        Tali minusvalenze non possono essere portate in diminuzione delle plusvalenze indicate nelle altre sezioni del presente quadro<br>
+        (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
+               
+               
+               
+               
+               """;
+
+    }
     
     public void AggiungiQuadroRW(String Immagine,
                 String NumeroQuadro,
@@ -302,7 +435,7 @@ public class Stampe {
     }
         
     
-    public void AggiungiQuadroRW2(String FilePdf,
+    public void AggiungiQuadroRW2025(String FilePdf,
             String NumeroQuadro,
             String ValoriIniziali[],
             String ValoriFinali[],
@@ -546,7 +679,7 @@ public class Stampe {
           }
     }
     
-    public void AggiungiT2(String FilePdf,String Vendite,String Costo,String Segnalazioni,String Anno) {
+    public void AggiungiT2025(String FilePdf,String Vendite,String Costo,String Segnalazioni,String Anno) {
           try {
              
               
@@ -682,84 +815,92 @@ public class Stampe {
           }
     }
     
-        public void AggiungiRT2(String FilePdf,String Vendite,String Costo,String Segnalazioni,String Anno) {
-          try {
+    public void AggiungiRT2025(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno) {
+        try {
 
-        // ── CARICAMENTO PDF DI SFONDO ──────────────────────────────────────
-        PdfReader pdfReader = new PdfReader(FilePdf);
-        PdfImportedPage paginaSfondo = writer.getImportedPage(pdfReader, 1);
+            // ── CARICAMENTO PDF DI SFONDO ──────────────────────────────────────
+            PdfReader pdfReader = new PdfReader(FilePdf);
+            PdfImportedPage paginaSfondo = writer.getImportedPage(pdfReader, 1);
 
-        float larghezzaPagina = doc.getPageSize().getWidth()
-                                - doc.rightMargin()
-                                - doc.leftMargin();
-        float altezzaPagina   = doc.getPageSize().getHeight()
-                                - doc.topMargin()
-                                - doc.bottomMargin();
+            float larghezzaPagina = doc.getPageSize().getWidth()
+                    - doc.rightMargin()
+                    - doc.leftMargin();
+            float altezzaPagina = doc.getPageSize().getHeight()
+                    - doc.topMargin()
+                    - doc.bottomMargin();
 
-        // Calcola scala proporzionale in base alla larghezza
-        float scalaX = larghezzaPagina / paginaSfondo.getWidth();
-        float scalaY = altezzaPagina   / paginaSfondo.getHeight();
-        float scala  = Math.min(scalaX, scalaY); // mantieni proporzioni
+            // Calcola scala proporzionale in base alla larghezza
+            float scalaX = larghezzaPagina / paginaSfondo.getWidth();
+            float scalaY = altezzaPagina / paginaSfondo.getHeight();
+            float scala = Math.min(scalaX, scalaY); // mantieni proporzioni
 
-        // Disegna il PDF di sfondo direttamente sul canvas
-        PdfContentByte cb = writer.getDirectContentUnder(); // SOTTO il testo
-        cb.saveState();
-        cb.addTemplate(
-            paginaSfondo,
-            scala, 0, 0, scala,          // trasformazione (scaleX, 0, 0, scaleY)
-            doc.leftMargin(),             // X origine
-            doc.bottomMargin()            // Y origine
-        );
-        cb.restoreState();
+            // Disegna il PDF di sfondo direttamente sul canvas
+            PdfContentByte cb = writer.getDirectContentUnder(); // SOTTO il testo
+            cb.saveState();
+            cb.addTemplate(
+                    paginaSfondo,
+                    scala, 0, 0, scala, // trasformazione (scaleX, 0, 0, scaleY)
+                    doc.leftMargin(), // X origine
+                    doc.bottomMargin() // Y origine
+            );
+            cb.restoreState();
 
-        // ── POSIZIONE VERTICALE DI RIFERIMENTO (come prima) ───────────────
-        // Poiché non aggiungiamo l'immagine tramite doc.add(),
-        // la posizione verticale va calcolata manualmente dalla cima
-        float psosizioneVeriticale = doc.getPageSize().getHeight()
-                                     - doc.topMargin()
-                                     - (paginaSfondo.getHeight() * scala);
-              
-              
-              
-              
-             Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
-             Vendite=new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
-             String Plusvalenze=new BigDecimal(Vendite).subtract(new BigDecimal(Costo)).toPlainString();
-             Costo=Funzioni.formattaBigDecimal(new BigDecimal(Costo),false);
-             Vendite=Funzioni.formattaBigDecimal(new BigDecimal(Vendite),false);
-             Plusvalenze=Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze),false);
+            // ── POSIZIONE VERTICALE DI RIFERIMENTO (come prima) ───────────────
+            // Poiché non aggiungiamo l'immagine tramite doc.add(),
+            // la posizione verticale va calcolata manualmente dalla cima
+            float psosizioneVeriticale = doc.getPageSize().getHeight()
+                    - doc.topMargin()
+                    - (paginaSfondo.getHeight() * scala);
 
-             Font font = new Font(Font.HELVETICA, 8, Font.NORMAL); 
-             //Valore delle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Vendite,font), 326+doc.leftMargin(), psosizioneVeriticale+269);
-             //Valore dei Costi relativi alle Vendite
-             setPara(writer.getDirectContent(), new Phrase(Costo,font), 400+doc.leftMargin(), psosizioneVeriticale+269);
-             
-             font = new Font(Font.HELVETICA, 10, Font.BOLD);
-             String MessPlus="Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze;
-             setPara(writer.getDirectContent(), new Phrase(MessPlus,font), doc.leftMargin(), psosizioneVeriticale+100);
-             
-             font = new Font(Font.HELVETICA, 8, Font.NORMAL);
-             PdfContentByte canvas = writer.getDirectContent();
+            Costo = new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            Vendite = new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP).toPlainString();
+            String Plusvalenze = new BigDecimal(Vendite).subtract(new BigDecimal(Costo)).toPlainString();
+            Costo = Funzioni.formattaBigDecimal(new BigDecimal(Costo), false);
+            Vendite = Funzioni.formattaBigDecimal(new BigDecimal(Vendite), false);
+            Plusvalenze = Funzioni.formattaBigDecimal(new BigDecimal(Plusvalenze), false);
+            
+            boolean plus=true;
+            if (Plusvalenze.contains("-"))plus=false;//in questo caso si parla di minus
+            String plmn=Plusvalenze.replace("-", "");
+
+            Font font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+            //Valore delle Vendite - RT41 colonna 1
+            setPara(writer.getDirectContent(), new Phrase(Vendite, font), 326 + doc.leftMargin(), psosizioneVeriticale + 269);
+            //Valore dei Costi relativi alle Vendite - RT41 colonna 2
+            setPara(writer.getDirectContent(), new Phrase(Costo, font), 400 + doc.leftMargin(), psosizioneVeriticale + 269);
+            
+            //Rigo RT57
+            if (plus){
+                //plusvalenza
+                setPara(writer.getDirectContent(), new Phrase(plmn, font), 440 + doc.leftMargin(), psosizioneVeriticale + 142);
+            }
+            else{
+                //minusvalenza
+                setPara(writer.getDirectContent(), new Phrase(plmn, font), 345 + doc.leftMargin(), psosizioneVeriticale + 142);
+            }
+
+            font = new Font(Font.HELVETICA, 10, Font.BOLD);
+            String MessPlus = "Plusvalenze Cripto-Attività anno " + Anno + " : € " + Plusvalenze;
+            setPara(writer.getDirectContent(), new Phrase(MessPlus, font), doc.leftMargin(), psosizioneVeriticale + 100);
+
+            font = new Font(Font.HELVETICA, 8, Font.NORMAL);
+            PdfContentByte canvas = writer.getDirectContent();
             float x = doc.leftMargin();
             float y = psosizioneVeriticale + 100;
             // Imposta un'area di testo (rettangolo) dove disegnare il contenuto
             ColumnText ct = new ColumnText(canvas);
             ct.setText(new Phrase(Segnalazioni, font));
             ct.setSimpleColumn(
-                x,           // left
-                y - 50,      // bottom
-                x + 500,     // right
-                y            // top
-                );
+                    x, // left
+                    y - 50, // bottom
+                    x + 500, // right
+                    y // top
+            );
             ct.go();
-             
-             
-             
 
-          } catch (BadElementException | IOException ex) {
-              Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
-          }
+        } catch (BadElementException | IOException ex) {
+            Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     

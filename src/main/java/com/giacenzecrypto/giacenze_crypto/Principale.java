@@ -10394,7 +10394,7 @@ SwingUtilities.invokeLater(() -> {
                             rigo RW8 del primo modulo indicando in esso il totale di tutti i righi compilati.<br>                            
                             </font></html>""";
                     stampa.AggiungiHtml(testo);       
-                    
+                    stampa.NuovaPagina();
 
                     stampa.AggiungiTestoCentrato("OPZIONI SCELTE PER IL CALCOLO DEL QUADRO W/RW\n\n", Font.BOLD, 12);
 
@@ -12503,7 +12503,8 @@ SwingUtilities.invokeLater(() -> {
 
                 String immagineT=Statiche.getPathImmagini()+"QuadroT_2024.jpg";
             String PdfT2025=Statiche.getPathImmagini()+"QuadroT_2025.pdf";
-            String PdfRT2025=Statiche.getPathImmagini()+"QuadroRT_2025.pdf";        
+            String PdfRT2025=Statiche.getPathImmagini()+"QuadroRT_2025.pdf";  
+            String PdfRT2025p2=Statiche.getPathImmagini()+"QuadroRT_2025_2.pdf"; 
                         
                         
                     
@@ -12549,6 +12550,8 @@ SwingUtilities.invokeLater(() -> {
                         stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     }else{
                         stampa.AggiungiRT2025(PdfRT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
+                        stampa.NuovaPagina();
+                        stampa.AggiungiRT2025p2(PdfRT2025p2, Vendite, Costo, Errore,AnnoDiCompetenza);
                     }
                     
                     /*

@@ -206,7 +206,8 @@ public class Stampe {
                             sempre valenza informativa e meramente indicativa ed esemplificativa, e non sono in alcun modo sostitutive di una consulenza fiscale.<br><br>
                             
                             Si consiglia di verificare la compilazione del proprio report tramite l\u2019ausilio di un professionista del settore.<br><br>
-                            
+                 
+                <b>SEZIONE V</b> - Plusvalenze derivanti dalla cessione di cripto-attività<br>
                             <b>T41</b> → \u2013 <u>Col.1 -> Totale Corrispettivi → - → Col.2 -> Corrispettivo Acquisto</u> <br>
                             Indicare il totale dei corrispettivi percepiti ovvero il valore normale (in caso di permuta) realizzati mediante rimborso
                             o cessione a titolo oneroso, permuta o detenzione di cripto-attività, comunque denominate ed in colonna 2 il relativo costo di acquisto.<br>
@@ -226,13 +227,13 @@ public class Stampe {
                             Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’imposta sostitutiva.<br>
                             (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
                
-               <b>SEZIONE VII - Minusvalenze non compensate nell’anno</b><br>
+               <b>SEZIONE VII</b> - Minusvalenze non compensate nell’anno<br>
                <b>T105</b> (Sezione V), le eventuali quote residue delle minusvalenze risultanti dalla sezione V delle dichiarazioni Modello Redditi
                PF o dalla sezione V delle dichiarazioni Modello 730 relative ai periodi d’imposta 2023 e 2024.<br> 
                Si specifica che, per il periodo d’imposta 2024, le eventuali quote residue delle minusvalenze risultanti dalla sezione V del modello 730 
                sono esposte nel rigo 150, colonna 5 del prospetto di liquidazione (Mod. 730-3) del Mod. 730/2025.<br><br>
                
-               <b>SEZIONE VIII - Riepilogo importi a credito</b><br>
+               <b>SEZIONE VIII</b> - Riepilogo importi a credito<br>
                <b>T112</b> → \u2013 Imposta a credito Sez. V <br>
                Indicare in <b>colonna 1</b> (Eccedenza precedente), l’ammontare delle eccedenze d’imposta sostitutiva risultanti dalla precedente
                dichiarazione e riportate nel rigo RX21, colonna 5, del Modello Redditi 2025.<br>
@@ -305,7 +306,8 @@ public class Stampe {
                             Indicare l’eccedenza d’imposta sostitutiva risultante dalla precedente dichiarazione fino a concorrenza dell’importo indicato nel rigo RT89.<br>
                             (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
                
-        <b>SEZIONE VI – Plusvalenze o minusvalenze Sezione I-A, II-A, III-A, IV-A e V-A</b><br>
+        <b>SEZIONE VI</b> – Plusvalenze o minusvalenze Sezione I-A, II-A, III-A, IV-A e V-A<br>
+               NB:Se utilizzate il software dell'agenzia delle entrate questa parte verrà compilata automaticamente prendendo i dati dalla sezione V<br>
         <b>RT57</b> \u2013
         Indicare anche la differenza tra l’importo indicato nelle colonne 3 dei righi RT41, e RT42, (di tutti i moduli compilati) ed i relativi importi di colonna 4 se positiva.<br>
         Se il risultato è negativo riportare l’eccedenza nella colonna 1 e la colonna 2 non va compilata.<br> 
@@ -313,6 +315,7 @@ public class Stampe {
         Tali minusvalenze non possono essere portate in diminuzione delle plusvalenze indicate nelle altre sezioni del presente quadro<br><br>
                
         <b>SEZIONE V-B</b><br>
+               NB:Se utilizzate il software dell'agenzia delle entrate questa parte verrà compilata automaticamente prendendo i dati dalla sezione V<br>
                <b>RT88</b> \u2013
                 va indicato il risultato della seguente operazione: RT57, col. 2 – RT43 – RT44, col. 2.<br>
                (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br>
@@ -323,14 +326,14 @@ public class Stampe {
                 indicare l’ammontare dell’imposta sostitutiva dovuta che è pari al seguente risultato: RT89 – RT45.<br>
                 (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
                
-        <b>SEZIONE VII – Minusvalenze non compensate nell’anno</b><br>
+        <b>SEZIONE VII</b> – Minusvalenze non compensate nell’anno<br>
               In questa sezione vanno riportate le minusvalenze residue che non si sono potute compensare nel presente quadro.<br> 
               <b>RT105</b> \u2013
               Inserire le eventuali quote residue delle minusvalenze risultanti dalla dichiarazione relativa al periodo d’imposta 2023 e nella colonna 5 
               le minusvalenze derivanti dalla sezione V di tutti i moduli compilati della presente dichiarazione.<br>
               (DA INSERIRE MANUALMENTE - RIGO NON GESTITO DAL PROGRAMMA)<br><br>
         
-               <b>SEZIONE VIII – Riepilogo importi a credito</b><br>
+               <b>SEZIONE VIII</b> – Riepilogo importi a credito<br>
                             In questa sezione vanno riportate le minusvalenze residue che non si sono potute compensare nel presente quadro.<br> 
                             <b>RT112</b> 
                             - In <b>colonna 1</b>, Indicare l’ammontare delle eccedenze d’imposta sostitutiva risultanti dalla precedente dichiarazione e riportate nel rigo RX21, colonna 5 del quadro RX del Modello Redditi 2025;<br>

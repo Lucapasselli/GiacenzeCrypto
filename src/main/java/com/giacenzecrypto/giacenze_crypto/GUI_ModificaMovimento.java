@@ -783,13 +783,14 @@ private static final long serialVersionUID = 9L;
               //provo a generare un nuovo ID aggiungendo 1 al penultimo campo
               String IDsplit[]=ID.split("_");
               if (Funzioni.isNumeric(IDsplit[IDsplit.length-2], false)){
+                  ID=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, ID);
                   //il nuovo valore sarà quello vecchio incrementato di 1
-                  IDsplit[IDsplit.length-2]=String.valueOf(Long.parseLong(IDsplit[IDsplit.length-2])+1);
+               /*   IDsplit[IDsplit.length-2]=String.valueOf(Long.parseLong(IDsplit[IDsplit.length-2])+1);
                   ID="";
                   for(String II:IDsplit){
                       ID=ID+II+"_";
                   }
-                  ID=ID.substring(0, ID.length()-1);
+                  ID=ID.substring(0, ID.length()-1);*/
                   ScritturaDati(ID);
               }
               //adesso devo far scegliere che fare
@@ -1740,12 +1741,12 @@ worker.execute();*/
                     "_";         
             }
         if (Wallet_ComboBox.getSelectedItem()!=null)
-            ID=ID+Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+".";
+            ID=ID+Wallet_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+"_001_001_";
         
-        if (WalletDettaglio_ComboBox.getSelectedItem()!=null)
-            ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+"_1_1_";
+     /*   if (WalletDettaglio_ComboBox.getSelectedItem()!=null)
+            ID=ID+WalletDettaglio_ComboBox.getSelectedItem().toString().replace(";", "").replace(" ", "").replace(".", "").replace(",", "").replace("_", "").trim()+"_001_001_";
         else
-            ID=ID+"Principale"+"_1_1_";//Se non esiste il Wallet dettaglio lo chiamo Principale
+            ID=ID+"Principale"+"_001_001_";//Se non esiste il Wallet dettaglio lo chiamo Principale*/
         //Adesso devo individuare la tipologia di movimento quindi possono essere le seguenti
          //TI=Trasferimento Interno
          //DC=Deposito Criptoattività

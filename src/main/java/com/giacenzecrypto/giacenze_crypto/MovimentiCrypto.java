@@ -298,10 +298,10 @@ private static Map<String, String[]> creaMappaTipologie() {
         
         //===== parte sicuramente da fare in futuro =====
         //Questo fa si che il numero sia formato da almeno 2 caratteri in modo che possa giorstrare la numerazione fino a 99 movimenti nello stesso secondo
-        //String nm1=String.format("%02d", numMovimento);
-        //String nm2=String.format("%02d", numMovimento2);
+        String nm1=String.format("%03d", numMovimento);
+        String nm2=String.format("%03d", numMovimento2);
         
-        RT2[0] = DataID + "_" + IdentificazioneID + "_" + numMovimento + "_" + numMovimento2 + "_" + Tipologie[0];
+        RT2[0] = DataID + "_" + IdentificazioneID + "_" + nm1 + "_" + nm2 + "_" + Tipologie[0];
         if (IDMovimento != null) {
             //Nel caso in cui prendo l'id passato recupero però sempre il codice tipologia reale
             String IDMovimentoS[]=IDMovimento.split("_");
@@ -456,15 +456,76 @@ static boolean PrezzoPrezzato(String Prezzo) {
             LoggerGC.ScriviErrore("Quarto campo ID non valido: " + id);
             return null;
         }
-
+        if(Integer.parseInt(parts[3])==999){
+            LoggerGC.ScriviErrore("Raggiunto limite campo 999");
+            return null;
+        }
+        
         int fourthField = Integer.parseInt(parts[3]);
-        parts[3] = String.valueOf(fourthField + 1);
-        //parts[3] =String.format("%02d", fourthField + 1);
+        //parts[3] = String.valueOf(fourthField + 1);
+        parts[3] =String.format("%03d", fourthField + 1);
 
         return String.join("_", parts);
     }
     
     
-    
+    public static String IncDecID(String id,int n_campo, boolean incrementa) {
+        
+        //Questa funzione usa i caratteri speciali per forzare un movimento subito dopo o subito prima un'altro
+        
+        //n_campo deve essere compreso tra 1 e 3 altrimenti viene tornato errore
+        //campo=0 -> Data
+        //campo=1 -> Exchange
+        //campo=2 -> primo campo numerico di ordinamento
+        //campo=3 -> secondo campo numerico di ordinamento
+        
+        //se incrementa è true l'ID viene incrementato altrimenti viene decrementato
+        String NuovoID;
+        
+        String carAggiunta;//carattere da aggiungere alla stringa per posizionere il movimento dopo o prima quello scelto
+        String invCarAggiunta;
+        if(incrementa)
+        {
+            carAggiunta="~";
+            invCarAggiunta="$";
+        }
+        else{ 
+            carAggiunta="$";
+            invCarAggiunta="~";
+        }
+        String[] parts = id.split("_");
+
+        if (parts.length < 5) {
+           // throw new IllegalArgumentException("Formato ID non valido: " + id);
+            LoggerGC.ScriviErrore("Formato ID non valido: " + id);
+            return null;
+        }
+        if (!Funzioni.isNumeric(parts[3], false)){
+            LoggerGC.ScriviErrore("Quarto campo ID non valido: " + id);
+            return null;
+        }
+        if (n_campo<1||n_campo>3){
+            LoggerGC.ScriviErrore("il numero campo indicato da incremnetare/decrementare non è valito : " + n_campo);
+            return null;
+        }
+        
+            parts[n_campo]=parts[n_campo]+carAggiunta;
+            NuovoID=String.join("_", parts);
+            //Adesso controllo che il nuovo ID non esista già nel qual caso aggiungo un carattere opposto a quello già inserito per essere sicuro che sia
+            //che l'ID sia immediatamente successivo a quello di riferimento
+            int i=0;
+            while (Principale.MappaCryptoWallet.get(NuovoID)!=null){
+                parts[n_campo]=parts[n_campo]+invCarAggiunta;
+                NuovoID=String.join("_", parts);
+                i++;
+                if (i>40)
+                {
+                    LoggerGC.ScriviErrore("l'ID sta venendo troppo lungo interrompo il ciclo");
+                    return null;//e i>40 ritorno null perchè verrebbe un id troppo lungo
+                }
+                
+            }
+        return NuovoID;
+    }   
     
 }

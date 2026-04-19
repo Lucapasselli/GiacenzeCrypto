@@ -8213,7 +8213,7 @@ SwingUtilities.invokeLater(() -> {
             String GiacenzaAttualeS = TabMovimenti.getModel().getValueAt(rigaselezionata, 7).toString();
             String GiacNegativaPrecedente = TabMovimenti.getModel().getValueAt(rigaselezionata, 9).toString();
 
-            long DataRiferimento;
+          //  long DataRiferimento;
             BigDecimal GiacenzaAttuale = new BigDecimal(GiacenzaAttualeS);
             BigDecimal GiacenzaVoluta = new BigDecimal(0);
             BigDecimal QtaNuovoMovimento;
@@ -8257,14 +8257,14 @@ SwingUtilities.invokeLater(() -> {
                     
                     QtaNuovoMovimento = GiacenzaVoluta.subtract(GiacenzaAttuale);
                     String SQta = QtaNuovoMovimento.toPlainString();
-                    BigDecimal ValoreMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 6).toString());
+                   // BigDecimal ValoreMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 6).toString());
                     BigDecimal QtaMovOrigine=new BigDecimal(TabMovimenti.getModel().getValueAt(rigaselezionata, 5).toString());
                     if (QtaMovOrigine.compareTo(BigDecimal.ZERO)==0)
                     {
                         LoggerGC.ScriviErrore("QtaMovOrigine=0, esco dalla funzione");
                         return;
                     }
-                        BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
+                     //   BigDecimal ValoreUnitarioToken=ValoreMovOrigine.divide(QtaMovOrigine,DecimaliCalcoli+10, RoundingMode.HALF_UP).abs();
                         
             // ========== SE DEVO INSERIRE UN MOVIMENTO NEGATIVO CHIEDO COME CLASSIFICARLO ==========
             
@@ -8309,23 +8309,17 @@ SwingUtilities.invokeLater(() -> {
                                 M1.Qta = SQta;
                                 M1.Tipo = TipoMoneta;
                                 M1.Rete = Funzioni.TrovaReteDaIMovimento(RTOri);
+                                
+                                if (!Nota.contains("Rettifica")){
+                                    Nota = "Rettifica<br>"+Nota;
+                                }
 
 
                                 String IDOriSplittato[] = RTOri[0].split("_");
-                                String NuovoID=null;
-                                //Ciclo per creare un movimento con il primo ID libero e aggiungo ~ in modo che il movimento sia successivo a quello di riferimento
-                                //~ è l'ultimo carattere per codice ascii
-                                        for(int ki=1;ki<30;ki++){
-                                            if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                NuovoID = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
-                                                //NuovoID = IDOriSplittato[0] + "_~" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_PC";
-                                            else
-                                                NuovoID = IDOriSplittato[0] + "_ZZ" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                                //NuovoID = IDOriSplittato[0] + "_~" + IDOriSplittato[1] + "_1_"+ki+"_PC";
-                                            if(MappaCryptoWallet.get(NuovoID)==null){
-                                               break;
-                                            }
-                                        }
+                                //Il movimento che voglio deve essere un movimento di prelievo quindi lo specifico
+                                IDOriSplittato[4]="PC";                           
+                                String NuovoID=String.join("_", IDOriSplittato);
+                                NuovoID=MovimentiCrypto.IncDecID(NuovoID, 1, true);
                                         
                                 String TipoDaPassare=null;
                                 switch (scelta) {
@@ -8396,22 +8390,15 @@ SwingUtilities.invokeLater(() -> {
                                 //adesso compilo la parte comune del movimento
                                 String RTOri[] = MappaCryptoWallet.get(IDTrans);
                                 String IDOriSplittato[] = RTOri[0].split("_");
-                                DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
-                                //il movimento in questo caso deve finire successivamente a quello selezionato
-                                //quindi aggiungo ! all'inizio del campo con il nome dell'exchange (! è il primo carattere per codice ascii)
-                                //String NuovoOrario=Funzioni.DataIDtogliUnSecondo(RTOri[0].split("_")[0]);
-                                String NewID=null;
-                                for(int ki=1;ki<30;ki++){
-                                            if (!IDOriSplittato[1].contains(".Rettifica"))
-                                                NewID = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
-                                                //NewID = IDOriSplittato[0] + "_!" + IDOriSplittato[1] + ".Rettifica_1_"+ki+"_DC";
-                                            else
-                                                NewID = IDOriSplittato[0] + "_00" + IDOriSplittato[1] + "_1_"+ki+"_DC";
-                                                //NewID = IDOriSplittato[0] + "_!" + IDOriSplittato[1] + "_1_"+ki+"_DC";
-                                            if(MappaCryptoWallet.get(NewID)==null){
-                                               break;
-                                            }
-                                        }
+                      //         DataRiferimento = FunzioniDate.ConvertiDatainLongMinuto(RTOri[1]);
+                                IDOriSplittato[4]="DC";                           
+                                String NuovoID=String.join("_", IDOriSplittato);
+                                NuovoID=MovimentiCrypto.IncDecID(NuovoID, 1, false);
+                                
+                                if (!Nota.contains("Rettifica")){
+                                    Nota = "Rettifica<br>"+Nota;
+                                }
+
                                 Moneta M1 = new Moneta();
                                 M1.Moneta = Moneta;
                                 M1.MonetaAddress = AddressMoneta;
@@ -8441,7 +8428,7 @@ SwingUtilities.invokeLater(() -> {
                                     }
                                 }
                                 //Adesso scrivo il movimento
-                                String RT1[]=MovimentiCrypto.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NewID,Nota,"M",null,TipoDaPassare,null);
+                                String RT1[]=MovimentiCrypto.creaMovimento(null, M1,RTOri[3], RTOri[4],0,null,null,1,1,NuovoID,Nota,"M",null,TipoDaPassare,null);
                                 MappaCryptoWallet.put(RT1[0], RT1);
 
                             }
@@ -8903,6 +8890,9 @@ SwingUtilities.invokeLater(() -> {
             {
                 Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
                 int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString(),timeStampIniziale,timeStampFinale);
+                //rilancio la funzione perchè mentre si cancellavano i dati potrebbe essere variato qualche id in particolare 
+                //quelli relativi agli scambi differiti, in questo modo sono sicuro di eliminarli completamente
+                movimentiCancellati=movimentiCancellati+Funzioni.CancellaMovimentazioniXWallet(Opzioni_Combobox_CancellaTransazioniCryptoXwallet.getSelectedItem().toString(),timeStampIniziale,timeStampFinale);
                 if (movimentiCancellati>0){
                     Opzioni_RicreaListaWalletDisponibili();
                     Funzioni_AggiornaTutto();
@@ -8928,6 +8918,8 @@ SwingUtilities.invokeLater(() -> {
         if (risposta == 0) {
          //   Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, "", 999);
                 int movimentiCancellati=Funzioni.CancellaMovimentazioniXWallet(null,timeStampIniziale,timeStampFinale);
+                //Rilancio la funzione per eliminare anche i movimenti di cui è stato cambiato l'id in fase di cancellazione globale
+                movimentiCancellati=movimentiCancellati+Funzioni.CancellaMovimentazioniXWallet(null,timeStampIniziale,timeStampFinale);
                 if (movimentiCancellati>0){
                     Opzioni_RicreaListaWalletDisponibili();
                     Funzioni_AggiornaTutto();

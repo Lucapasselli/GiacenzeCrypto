@@ -444,12 +444,21 @@ public class TransazioneDefi {
      /*System.out.println(dataAlMinuto);
       System.out.println(IdentificaTipoTransazione());
       System.out.println(TipoTransazione);*/
+     
+     //Recupero i dati della moneta relativa alle commissioni
+               Moneta MC=new Moneta();
+               MC.Moneta=MonetaCommissioni;
+               MC.Tipo="Crypto";
+               MC.Qta=QtaCommissioni;
+               MC.MonetaAddress=MonetaCommissioni;
+               MC.Rete=Rete;
+               
       if(!TransazioneOK){
            //Transazione non andata a buon fine
            //Considero solo le commisioni
            //System.out.println(QtaCommissioni);
            if (QtaCommissioni!=null &&!QtaCommissioni.equalsIgnoreCase("-0")){
-           RT=new String[Importazioni.ColonneTabella];
+          /* RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -488,7 +497,22 @@ public class TransazioneDefi {
               RT[29]=TimeStamp;
               RT[30]="";
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT); 
+               */
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(MC, null,
+                                        Wallet, "Wallet",
+                                        TS, null, null, 1, 1, null, null, "A",
+                                        HashTransazione, "COMMISSIONE", null);
+
+               if (RT != null) {
+                   RT[6]="Per Operazione Fallita";
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
            }
               //chiudo il cilco perchè questa è una transazione unica
               return righe;
@@ -496,7 +520,7 @@ public class TransazioneDefi {
       else if (TipoTransazione!=null&&IdentificaTipoTransazione().equalsIgnoreCase("commissioni"))
           {
               if (QtaCommissioni != null&&!QtaCommissioni.equalsIgnoreCase("-0")) {
-              RT=new String[Importazioni.ColonneTabella];
+            /*  RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -537,7 +561,22 @@ public class TransazioneDefi {
               RT[29]=TimeStamp;
               RT[30]="";
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT);*/
+            
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(MC, null,
+                                        Wallet, "Wallet",
+                                        TS, null, null, 1, 1, null, null, "A",
+                                        HashTransazione, "COMMISSIONE", null);
+
+               if (RT != null) {
+                   RT[6]="Per "+TipoTransazione;
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
               }
               //chiudo il ciclo perchè questa è una transazione unica
               return righe;
@@ -549,7 +588,7 @@ public class TransazioneDefi {
          //Se non c'è la causale probabilmente arriva da exchange
          // System.out.println("---" + QtaCommissioni + "---");
           if (QtaCommissioni != null&&!QtaCommissioni.equalsIgnoreCase("-0")) {
-              RT = new String[Importazioni.ColonneTabella];
+         /*     RT = new String[Importazioni.ColonneTabella];
               RT[0] = PrimaParteID + "_1_1_CM";
               RT[1] = dataAlMinuto;
               RT[2] = "1 di 1";
@@ -590,14 +629,31 @@ public class TransazioneDefi {
               RT[29] = TimeStamp;
               RT[30] = "";
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT);*/
+              
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(MC, null,
+                                        Wallet, "Wallet",
+                                        TS, null, null, 1, 1, null, null, "A",
+                                        HashTransazione, "COMMISSIONE", null);
+
+               if (RT != null) {
+                   RT[6]="Per Deposito";
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
           }
          
          
          int numeroDepositi=MappaToken.size();
          int i=1;
          for(ValoriToken token : MappaToken.values()){
-              RT=new String[Importazioni.ColonneTabella];
+              
+             
+       /*       RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_1_"+Importazioni.RitornaTipologiaTransazione(null, token.Tipo,0);
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroDepositi;
@@ -637,14 +693,34 @@ public class TransazioneDefi {
               RT[29]=TimeStamp;
               RT[30]=token.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT);*/
+              Moneta M2=new Moneta();
+              M2.InserisciValori(token.RitornaIDToken(),token.Qta,token.MonetaAddress,token.Tipo);       
+       
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(M2, null,
+                                        Wallet, "Wallet",
+                                        TS, null, null, 1, 1, null, null, "A",
+                                        HashTransazione, TipoTransazione, null);
+
+               if (RT != null) {
+                   RT[6]="-> "+token.RitornaNomeToken();
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[27]=token.MonetaName;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
+              
+              
               i++;
               }
              
       }else if(IdentificaTipoTransazione()!=null && IdentificaTipoTransazione().equalsIgnoreCase("prelievo")){
          //Prelievo (considero le commissioni) 
          if (QtaCommissioni != null&&!QtaCommissioni.equalsIgnoreCase("-0")) {     
-         RT=new String[Importazioni.ColonneTabella];
+       /*  RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -684,7 +760,22 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               RT[29]=TimeStamp;
               RT[30]="";
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT);*/
+              
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(MC, null,
+                                        Wallet, "Wallet",
+                                        TS, null, null, 1, 1, null, null, "A",
+                                        HashTransazione, "COMMISSIONE", null);
+
+               if (RT != null) {
+                   RT[6]="Per Prelievo";
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
                 }
          
             

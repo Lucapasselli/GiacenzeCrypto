@@ -101,7 +101,7 @@ private static Map<String, String[]> creaMappaTipologie() {
             String IDMovimento,
             String Nota,
             String CarattereMovAutomatico, //Valorizzare ad A o a M
-            String IDTransHash,
+            String IDTransHash, //hash transazione
             String TipoTr,
             String IdentificazioneID    //E' il secondo campo dell'ID se null viene valorizzato con il nome del wallet altrimenti con quello passato in questo campo
     ) {
@@ -327,8 +327,8 @@ private static Map<String, String[]> creaMappaTipologie() {
         RT2[21] = Nota;
         RT2[22] = CarattereMovAutomatico;
         RT2[24] = IDTransHash;
-        RT2[26] = AddressOut;
-        RT2[28] = AddressIn;
+        RT2[26] = AddressOut;//Address moneta Out
+        RT2[28] = AddressIn;//Address Moneta In
         RT2[29] = String.valueOf(Timestamp);
         RiempiVuotiArray(RT2);
         return RT2;

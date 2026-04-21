@@ -82,6 +82,7 @@ private static Map<String, String[]> creaMappaTipologie() {
     
     m.put("TRASFERIMENTO INTERNO",           new String[]{"TI", "TRASFERIMENTO INTERNO",""});
     m.put("TRASFERIMENTO-CRYPTO-INTERNO",           new String[]{"TI", "TRASFERIMENTO INTERNO",""});
+    m.put("TRANSAZIONE TECNICA INTERNA",           new String[]{"TI", "TRASFERIMENTO INTERNO",""});
     
     m.put("CASHOUT O SIMILARE",           new String[]{"PC", "CASHOUT O SIMILARE","PCO - CASHOUT O SIMILARE"});
     m.put("RETTIFICA GIACENZA",           new String[]{"PC", "RETTIFICA GIACENZA","PWN - RETTIFICA GIACENZA"});
@@ -98,7 +99,7 @@ private static Map<String, String[]> creaMappaTipologie() {
             long Timestamp,
             String Prezzo, String FontePrezzo,
             int numMovimento, int numMovimento2,
-            String IDMovimento,
+            String IDMovimento,//Fornisco un ID movimento in formato giacenze crypto da rispettare
             String Nota,
             String CarattereMovAutomatico, //Valorizzare ad A o a M
             String IDTransHash, //hash transazione
@@ -128,10 +129,12 @@ private static Map<String, String[]> creaMappaTipologie() {
         String TOut = "";
         String QOut = "";
         String AddressOut = "";
+        String NomeEstesoOut = "";
         String MIn = "";
         String TIn = "";
         String QIn = "";
         String AddressIn = "";
+        String NomeEstesoIn= "";
         String Rete = "";
         String RT2[] = new String[ColonneTabella];
 
@@ -153,6 +156,7 @@ private static Map<String, String[]> creaMappaTipologie() {
                         QOut = MON.Qta;
                         Rete = MON.Rete;
                         AddressOut = MON.MonetaAddress;
+                        NomeEstesoOut = normalizzaMoneta(MON.GetNomeEsteso());
                 } else {
                     if (!MIn.isBlank()){
                         LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in ingresso : "+MIn+" e "+MON.Moneta);
@@ -163,6 +167,7 @@ private static Map<String, String[]> creaMappaTipologie() {
                         QIn = MON.Qta;
                         Rete = MON.Rete;
                         AddressIn = MON.MonetaAddress;
+                        NomeEstesoIn = normalizzaMoneta(MON.GetNomeEsteso());
                 }
             
             }
@@ -315,7 +320,13 @@ private static Map<String, String[]> creaMappaTipologie() {
         RT2[3] = Wallet;
         RT2[4] = Wallet2;
         RT2[5] = Tipologie[1];
-        RT2[6] = (MOut + " -> " + MIn).trim();
+        
+        String Out=MOut;
+        if (!NomeEstesoOut.isBlank())Out=NomeEstesoOut;
+        String In = MIn;
+        if (!NomeEstesoIn.isBlank())In=NomeEstesoIn;
+        RT2[6] = (Out + " -> " + In).trim();
+        
         RT2[8] = MOut;
         RT2[9] = TOut;
         RT2[10] = QOut;
@@ -327,7 +338,9 @@ private static Map<String, String[]> creaMappaTipologie() {
         RT2[21] = Nota;
         RT2[22] = CarattereMovAutomatico;
         RT2[24] = IDTransHash;
+        RT2[25] = NomeEstesoOut;
         RT2[26] = AddressOut;//Address moneta Out
+        RT2[27] = NomeEstesoIn;
         RT2[28] = AddressIn;//Address Moneta In
         RT2[29] = String.valueOf(Timestamp);
         RiempiVuotiArray(RT2);

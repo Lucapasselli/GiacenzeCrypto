@@ -5,7 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Set;
 
 
@@ -15,6 +14,7 @@ import java.util.Set;
  */
 public class Moneta {
   public String Moneta;
+  public String NomeEsteso;
   public String Qta;
   public String MonetaAddress;
   public Prezzi.InfoPrezzo InfoPrezzo;
@@ -68,9 +68,26 @@ public class Moneta {
 public String GetNome(){
     return Moneta;
 }
+public String GetRete(){
+    return Rete;
+}
+
+public String GetNomeEsteso(){
+    //Nome completo per le monete in defi
+    return NomeEsteso;
+}
+
 
 public void SetNome(String Nome){
     Moneta=Nome;
+}
+public void SetRete(String ReteT){
+    Rete=ReteT;
+}
+
+public void SetNomeEsteso(String Nome){
+    //Nome completo per le monete in defi
+    NomeEsteso=Nome;
 }
 
 public String GetQta(){

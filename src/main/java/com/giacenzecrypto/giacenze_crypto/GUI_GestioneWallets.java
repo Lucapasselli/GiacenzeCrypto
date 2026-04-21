@@ -395,6 +395,11 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         for (String[] st : v.RitornaRigheTabella()) {
                             Principale.Funzione_AggiornaMappaWallets(st);//questo aggiorna la tabella wallet
                             //deve essere aggiornata perchè serve per sistemare poi le giacenze dei cronos
+                            
+                            //Questo serve a fare in modo che se per qualche motivo trovo qualche movimento con lo stesso id lo aggiorno affinchè diventi univoco
+                            //prima di inserire il tutto enlla mappa
+                            st[0]=MovimentiCrypto.getIDUnivoco(MappaCryptoWallet, st[0]);
+                            
                             Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
                          //   MappaCryptoWallet.put(st[0], st);
                             i++;

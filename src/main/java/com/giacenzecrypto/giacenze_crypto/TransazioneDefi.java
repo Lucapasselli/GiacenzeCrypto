@@ -702,7 +702,7 @@ public class TransazioneDefi {
               RT = MovimentiCrypto.creaMovimento(M2, null,
                                         Wallet, "Wallet",
                                         TS, null, null, 1, 1, null, null, "A",
-                                        HashTransazione, TipoTransazione, null);
+                                        HashTransazione, Importazioni.RitornaTipologiaTransazione(null, token.Tipo,1), null);
 
                if (RT != null) {
                    RT[6]="-> "+token.RitornaNomeToken();
@@ -787,7 +787,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                   //in questo caso lo devo trattare come uno scambio con la stessa moneta
                   //di fatto invio e ricevo lo stesso token con la stessa qta
               if(!token.IndirizzoNoWallet.equalsIgnoreCase(Wallet)){
-              RT=new String[Importazioni.ColonneTabella];
+             /* RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_1_"+Importazioni.RitornaTipologiaTransazione(token.Tipo, null,0);
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroPrelievi;
@@ -827,12 +827,34 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               RT[29]=TimeStamp;
               RT[30]=token.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT);*/
+              
+              Moneta M2=new Moneta();
+              M2.InserisciValori(token.RitornaIDToken(),token.Qta,token.MonetaAddress,token.Tipo);       
+       
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(M2, null,
+                                        Wallet, "Wallet",
+                                        TS, null, null, i, 1, null, null, "A",
+                                        HashTransazione, Importazioni.RitornaTipologiaTransazione(token.Tipo, null,1), null);
+
+               if (RT != null) {
+                   RT[6]="-> "+token.RitornaNomeToken();
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[25]=token.MonetaName;
+                   RT[30]=token.IndirizzoNoWallet;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
+              
+              
               }else{
                   //Altrimenti significa che per sbaglio ho messo il mio indirizzo come destinazione
                   //in questo caso lo devo trattare come uno scambio con la stessa moneta
                   //di fatto invio e ricevo lo stesso token con la stessa qta
-                 RT=new String[Importazioni.ColonneTabella];
+               /*  RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_"+i+"_1_SC";
               RT[1]=dataAlMinuto;
               RT[2]=i+" di "+numeroPrelievi;
@@ -872,7 +894,33 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               RT[29]=TimeStamp;
               RT[30]=token.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);     
+              righe.add(RT);    */
+              
+              Moneta M2=new Moneta();
+              M2.InserisciValori(token.RitornaIDToken(),token.Qta,token.MonetaAddress,token.Tipo); 
+              Moneta M1=new Moneta();
+              M1.InserisciValori(token.RitornaIDToken(),token.Qta.replace("-", ""),token.MonetaAddress,token.Tipo);
+       
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(M2, M1,
+                                        Wallet, "Wallet",
+                                        TS, null, null, i, 1, null, null, "A",
+                                        HashTransazione, "SCAMBIO CRYPTO", null);
+
+               if (RT != null) {
+                   RT[6]=token.RitornaNomeToken()+" -> "+token.RitornaNomeToken();
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[25]=token.MonetaName;
+                   RT[27]=token.MonetaName;
+                   RT[30]=token.IndirizzoNoWallet;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
+              
+              
+              
               }
               i++;
               }
@@ -880,7 +928,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
       }else if(IdentificaTipoTransazione()!=null && IdentificaTipoTransazione().equalsIgnoreCase("scambio")){
           //prima di tutto genero il movimento di commissione
           if (QtaCommissioni != null&&!QtaCommissioni.equalsIgnoreCase("-0")) { 
-              RT=new String[Importazioni.ColonneTabella];
+           /*   RT=new String[Importazioni.ColonneTabella];
               RT[0]=PrimaParteID+"_1_1_CM";
               RT[1]=dataAlMinuto;
               RT[2]="1 di 1";
@@ -920,7 +968,22 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               RT[29]=TimeStamp;
               RT[30]="";
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT);*/
+              
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(MC, null,
+                                        Wallet, "Wallet",
+                                        TS, null, null, 1, 1, null, null, "A",
+                                        HashTransazione, "COMMISSIONE", null);
+
+               if (RT != null) {
+                   RT[6]="Per Scambio";
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
           }
             AssegnaPesiaPartiTransazione();  
           // in seconda istanza a seconda del numero di token che compongono la transazione creo i vari scambi 
@@ -940,7 +1003,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
              // System.out.println(PesoTransazione + " - "+HashTransazione);
               String QuantitaEntrata=new BigDecimal(tokenE.Qta).multiply(new BigDecimal(tokenU.Peso)).stripTrailingZeros().toPlainString();
               String QuantitaUscita=new BigDecimal(tokenU.Qta).multiply(new BigDecimal(tokenE.Peso)).stripTrailingZeros().toPlainString();
-              Moneta M1=new Moneta();
+             /* Moneta M1=new Moneta();
               M1.InserisciValori(tokenU.Moneta,QuantitaUscita,tokenU.MonetaAddress,tokenU.Tipo);
               Moneta M2=new Moneta();
               M2.InserisciValori(tokenE.Moneta,QuantitaEntrata,tokenE.MonetaAddress,tokenE.Tipo);
@@ -980,7 +1043,33 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               RT[29]=TimeStamp;
               RT[30]=tokenU.IndirizzoNoWallet;
               Importazioni.RiempiVuotiArray(RT);
-              righe.add(RT);
+              righe.add(RT);*/
+              
+              Moneta M1=new Moneta();
+              M1.InserisciValori(tokenU.Moneta,QuantitaUscita,tokenU.MonetaAddress,tokenU.Tipo);
+              Moneta M2=new Moneta();
+              M2.InserisciValori(tokenE.Moneta,QuantitaEntrata,tokenE.MonetaAddress,tokenE.Tipo);
+              
+              long TS=Long.parseLong(TimeStamp);
+              
+              RT = MovimentiCrypto.creaMovimento(M2, M1,
+                                        Wallet, "Wallet",
+                                        TS, null, null, i, 1, null, null, "A",
+                                        HashTransazione, Importazioni.RitornaTipologiaTransazione(tokenU.Tipo, tokenE.Tipo,1), null);
+
+               if (RT != null) {
+                   RT[6]=tokenU.RitornaNomeToken()+" -> "+tokenE.RitornaNomeToken();
+                   RT[7] = TipoTransazione;
+                   RT[23]=Blocco;
+                   RT[25]=tokenU.MonetaName;
+                   RT[27]=tokenE.MonetaName;
+                   RT[30]=tokenU.IndirizzoNoWallet;
+                   RT[34] = Rete;
+                   righe.add(RT);
+               }
+              
+              
+              
               i++;
               }
           }

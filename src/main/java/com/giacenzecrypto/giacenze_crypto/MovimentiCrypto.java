@@ -343,6 +343,7 @@ private static Map<String, String[]> creaMappaTipologie() {
         RT2[27] = NomeEstesoIn;
         RT2[28] = AddressIn;//Address Moneta In
         RT2[29] = String.valueOf(Timestamp);
+        RT2[34] = Rete;
         RiempiVuotiArray(RT2);
         return RT2;
     }

@@ -302,7 +302,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                             Mappa_Wallet.put(v[3], v[1]+";"+v[23]);
                         }                   
                 }else Mappa_Wallet.put(v[3], v[1]+";"+v[23]);               
-            }           
+            }        
+         //   System.out.println("A-"+v[3]);
         }
         //Questa sotto è la mappa dei wallet nella tabella
         for (String riga:DatabaseH2.Pers_Wallets_LeggiTabella().values())
@@ -314,6 +315,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 rigaTabella[0]=DatabaseH2.Pers_GruppoAlias_Leggi(rigaTabella[0])[1];
                 rigaTabella[1]=splittata[0];
                 rigaTabella[2]=splittata[1];
+           //     System.out.println(w);
                 if (Mappa_Wallet.get(w)==null){
                     rigaTabella[3]="0";
                     rigaTabella[4]="0";
@@ -410,7 +412,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                             //Salto la cronoschain perchè quella viene gestita a parte
                             String WalletRete=st[3];
                             String Wallet=st[3].split("\\(")[0].trim();
-                            String ReteW=Funzioni.TrovaReteDaID(st[0]);
+                            String ReteW=st[34];
+                            //String ReteW=Funzioni.TrovaReteDaID(st[0]);
                             String Dati[]=new String[]{Wallet,ReteW};
                             if (!ReteW.equals("CRO"))Mappa_Wallet_Dati.put(WalletRete,Dati);
 
@@ -429,7 +432,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 if(r==0){
                     //System.out.println("Sistemo le giacenze");
                     for (String Dati[]:Mappa_Wallet_Dati.values()){
-                         //System.out.println(Dati[0]);
+                        // System.out.println(Dati[0]);
                         Importazioni.DeFi_GiacenzeL1_Sistema(Dati[0], Dati[1], c, progress);
                     }}
                    // Importazioni.DeFi_GiacenzeL1_Rimanze(Portafogli,"pippo");

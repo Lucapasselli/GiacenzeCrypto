@@ -96,6 +96,7 @@ public class TransazioneDefi {
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,Qta,MonetaAddress,Tipologia);
             monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,30,Rete,"");
+            //System.out.println("InseriscoPrezzo");
 
 
             }
@@ -107,6 +108,7 @@ public class TransazioneDefi {
             Moneta M1=new Moneta();
             M1.InserisciValori(Moneta,monete.Qta,MonetaAddress,Tipologia);
             monete.Prezzo=Prezzi.DammiPrezzoTransazione(M1,null,DataSecondo, "0",true,30,Rete,"");
+            //System.out.println("InseriscoPrezzo");
             }
     }
     
@@ -500,7 +502,7 @@ public class TransazioneDefi {
                */
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
@@ -508,7 +510,7 @@ public class TransazioneDefi {
                    RT[6]="Per Operazione Fallita";
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
-                   RT[34] = Rete;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
            }
@@ -562,7 +564,7 @@ public class TransazioneDefi {
               righe.add(RT);*/
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
@@ -570,6 +572,7 @@ public class TransazioneDefi {
                    RT[6]="Per "+TipoTransazione;
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
               }
@@ -627,7 +630,7 @@ public class TransazioneDefi {
               righe.add(RT);*/
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
@@ -635,6 +638,7 @@ public class TransazioneDefi {
                    RT[6]="Per Deposito";
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
           }
@@ -692,14 +696,15 @@ public class TransazioneDefi {
               M2.SetRete(Rete);
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
-                                        Wallet, "Wallet",
-                                        DataSecondo, null, null, 1, 1, null, null, "A",
+                                        Wallet+" ("+Rete+")", "Wallet",
+                                        DataSecondo, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
                if (RT != null) {
                   // RT[6]="-> "+token.RitornaNomeToken();
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
               
@@ -753,7 +758,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               righe.add(RT);*/
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
@@ -761,6 +766,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                    //RT[6]="Per Prelievo";
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
                 }
@@ -823,7 +829,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
@@ -832,6 +838,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
                    RT[30]=token.IndirizzoNoWallet;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
               
@@ -893,7 +900,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               M1.SetRete(Rete);
               
               RT = MovimentiCrypto.creaMovimento(M2, M1,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
@@ -902,6 +909,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
                    RT[30]=token.IndirizzoNoWallet;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
               
@@ -957,7 +965,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               righe.add(RT);*/
               
               RT = MovimentiCrypto.creaMovimento(MC, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, 1, 1, null, null, "A",
                                         HashTransazione, "COMMISSIONE", null);
 
@@ -965,6 +973,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                   // RT[6]="Per Scambio";
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
           }
@@ -1039,7 +1048,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               M2.SetRete(Rete);
               
               RT = MovimentiCrypto.creaMovimento(M2, M1,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, i, 1, null, null, "A",
                                         HashTransazione, null, null);
 
@@ -1048,6 +1057,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
                    RT[30]=tokenU.IndirizzoNoWallet;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
               
@@ -1120,7 +1130,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               M2.SetRete(Rete);
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, i, 1, null, null, "A",
                                         HashTransazione,"TRANSAZIONE TECNICA INTERNA", null);
 
@@ -1129,6 +1139,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                    RT[7] = TipoTransazione;
                    RT[23]=Blocco;
                    RT[30]=token.IndirizzoNoWallet;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
               
@@ -1186,7 +1197,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
               M2.SetRete(Rete);
               
               RT = MovimentiCrypto.creaMovimento(M2, null,
-                                        Wallet, "Wallet",
+                                        Wallet+" ("+Rete+")", "Wallet",
                                         DataSecondo, null, null, i, 1, null, null, "A",
                                         HashTransazione,"TRANSAZIONE TECNICA INTERNA", null);
 
@@ -1195,6 +1206,7 @@ Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(M1, null, DataSecondo, 
                    RT[7] = TipoTransazione;
                    RT[23]= Blocco;
                    RT[30]=token.IndirizzoNoWallet;
+                   Importazioni.RiempiVuotiArray(RT);
                    righe.add(RT);
                }
               

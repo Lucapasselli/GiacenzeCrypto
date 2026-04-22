@@ -4621,7 +4621,7 @@ private static String F_safe(String s) {
             TimeUnit.SECONDS.sleep(2);
 
         } catch (InterruptedException | URISyntaxException | IOException ex) {
-            // LoggerGC.ScriviErrore(ex);
+             LoggerGC.ScriviErrore(ex);
             return null;
         }
 

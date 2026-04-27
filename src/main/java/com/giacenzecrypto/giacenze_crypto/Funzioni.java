@@ -148,34 +148,50 @@ public class Funzioni {
         }
     } 
        
-      
+        
 
-    public static boolean CeConnessioneInternet() {
+        
+    static boolean ConnInternetAttiva=false;
+    static long TimesTampUltimoControlloInternet=0;   
+    static boolean CeConnessioneInternet() {
         String[] urls = {
             "https://www.google.com",
             "https://cloudflare.com",
             "https://www.microsoft.com"
         };
 
-        for (String url : urls) {
-            try {
-                HttpURLConnection conn
-                        = (HttpURLConnection) new URL(url).openConnection();
+        //questa parte impedisce di fare test della connessione internet se non sono passati almeno 30 secondi dall'ultimo controllo
+        long TO = System.currentTimeMillis();
+        if (TO - TimesTampUltimoControlloInternet > 60000) {
+            System.out.println("Testo connessione Internet...");
+            for (String url : urls) {
+                try {
+                    HttpURLConnection conn
+                            = (HttpURLConnection) new URL(url).openConnection();
 
-                conn.setRequestMethod("HEAD");
-                conn.setConnectTimeout(1200);
-                conn.setReadTimeout(1200);
-                conn.connect();
+                    conn.setRequestMethod("HEAD");
+                    conn.setConnectTimeout(2500);
+                    conn.setReadTimeout(2500);
+                    conn.connect();
 
-                int code = conn.getResponseCode();
-                if (code >= 200 && code < 400) {
-                    return true;
+                    int code = conn.getResponseCode();
+                    if (code >= 200 && code < 400) {
+                        TimesTampUltimoControlloInternet = System.currentTimeMillis();
+                        ConnInternetAttiva = true;
+                        System.out.println("Internet Disponibile");
+                      //LoggerGC.logInfo("Internet Disponibile");
+                        return true;
+                    }
+                } catch (IOException ignored) {
                 }
-            } catch (IOException ignored) {
             }
+            ConnInternetAttiva = false;
+            TimesTampUltimoControlloInternet = System.currentTimeMillis();
+            System.out.println("Internet NON Disponibile");
+            return false;
+        } else {
+            return ConnInternetAttiva;
         }
-
-        return false;
     }
         
         

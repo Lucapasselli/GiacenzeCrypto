@@ -7833,8 +7833,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 }
 
                 String Ritorno[] = new String[2];
-
                 long timestampDaCancellare = Prezzi.GUI_ModificaPrezzoConAttesa(MU, Ritorno, this, DataCalcoli, Prezzo);
+                System.out.println("ARRIVATO");
                 String Prezz = Ritorno[0];
                 Prezzi.InfoPrezzo InfoRitorno = new Prezzi.InfoPrezzo();
                 if (Ritorno[1] != null) {

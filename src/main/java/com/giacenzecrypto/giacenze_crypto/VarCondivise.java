@@ -19,6 +19,8 @@ public class VarCondivise {
     //=== VARIABILI RELATIVE AL FIAT E CARD WALLET DI CRYPTO.COM CONDIVISA
     static Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
+
+    
     
     
 

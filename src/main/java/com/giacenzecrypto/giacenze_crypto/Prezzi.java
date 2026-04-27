@@ -702,9 +702,7 @@ public class Prezzi {
     
     
     public static InfoPrezzo CambioAddressEUR(String Qta, long Datalong, String Address, String Rete, String Simbolo,String Fonte) {
-
-        
-        
+                    
         BigDecimal qta=new BigDecimal(Qta);
         //Se l'addess non contiene 0x significa che non posso recuperarlo da coingecko quindi lo recupero con il Simbolo
         //Se l'address non è valido allora recupero il prezzo dagli exchange
@@ -756,10 +754,13 @@ public class Prezzi {
             }
         }
         
-        //Se non trovo ancora il prezzo allora vedo se per caso è un token per cui è risaputo che manca il prezzo
-        if (PrezzoIrrecuperabileDaDB_Leggi("",Datalong,Rete,Address)) 
-            return null;
         
+        //Se non trovo ancora il prezzo allora vedo se per caso è un token per cui è risaputo che manca il prezzo
+        if (PrezzoIrrecuperabileDaDB_Leggi("",Datalong,Rete,Address))
+            
+        {            
+            return null;
+        }
         //Se non c'è connessione internet mi fermo qua e ritorno null
         if (!Funzioni.CeConnessioneInternet()) return null;
         
@@ -800,10 +801,11 @@ public class Prezzi {
                 }
                 else 
                 {
-                    //Se il prezzo è ancora null allora lo insrisco tra i prezzi irrecuperabili
+                    //Se il prezzo è ancora null allora lo inserisco tra i prezzi irrecuperabili
                     //Inserisco la crypto nelle monete per cui non si può recuperare il prezzo
                     //ma solo se c'è connessione internet
                     if (Funzioni.CeConnessioneInternet()) PrezzoIrrecuperabileDaDB_Scrivi("",Datalong,Rete,Address);
+                    
                 }
                 
                 //Se ancora non trovo il prezzo allora provo a cercare per simbolo
@@ -972,7 +974,12 @@ public class Prezzi {
     }*/
     
       public static InfoPrezzo CambioXXXEUR(String Crypto, String Qta, long Datalong,String Address,String Rete,String Fonte,boolean includiVecchi) {
-
+         
+            
+          long tempoOperazioneIni=System.currentTimeMillis();
+          long TO;
+          
+          
         //in questo metodo manca solo la parte che salva le richieste già effettuate sul token per evitare di farne tante analoghe
         InfoPrezzo risultato;   
         BigDecimal qta=new BigDecimal(Qta);
@@ -1010,13 +1017,14 @@ public class Prezzi {
         String DataOra = FunzioniDate.ConvertiDatadaLongallOra(Datalong);
         
         //Come prima cosa cerco nei nuovi personalizzati        
-        risultato=DammiPrezzoDaDatabasePersonale(Crypto,Datalong,Fonte,Rete,Address,60,qta);
+        risultato=DammiPrezzoDaDatabasePersonale(Crypto,Datalong,Fonte,Rete,Address,60,qta);        
         if (risultato!=null){
             return risultato;
         }
         
 
         
+          
         //Vedo se ho i prezzi all'ora (ormai tenuti solo per valorizzare anche il pregresso allo stesso modo)
         if (includiVecchi){
         risultato=new InfoPrezzo();
@@ -1036,6 +1044,8 @@ public class Prezzi {
         if (risultato!=null){
             return risultato;
         }
+        
+        
         
         //Adesso verifico se è un token in cui è risaputo che non c'è prezzo in quel caso ritorno null
         if (PrezzoIrrecuperabileDaDB_Leggi(Crypto,Datalong,Rete,Address)) 
@@ -1823,7 +1833,9 @@ public class Prezzi {
     public static InfoPrezzo DammiPrezzoInfoTransazione(Moneta Moneta1a, Moneta Moneta2a, long Data, String Rete,String fonte) {
 
         InfoPrezzo IP;
-
+        //
+         // tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+        //  System.out.println("Tempo CambioXXXEUR : "+tempoOperazione+"ms");
  /*Questa funzione si divide in 4 punti fondamentali:
         1 - Verifico che una delle 2 monete di scambio sia una Fiat e in quel caso prendo quello come prezzo della transazione anche perchè è il più affidabile
         2 - Verifico se una delle 2 monete è USDT in quel caso prendo quello come valore in quanto USDT è una moneta di cui mi salvo tutti i prezzi storici
@@ -1879,12 +1891,14 @@ public class Prezzi {
                     IP.prezzoQta=PrezzoTransazione.abs();
                     IP.timestamp=Data;   
                     IP.OggettoMoneta=mon[k];
+               /*     tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+          System.out.println("Tempo A : "+tempoOperazione+"ms");*/
                     return IP;
                 }
             }
         }
         
-        //VERIFICO SE USD e prendo il prezzo da li
+        //B VERIFICO SE USD e prendo il prezzo da li
             for (int k=0;k<2;k++){
             if (mon[k] != null && mon[k].Moneta.equalsIgnoreCase("USD") && !mon[k].Tipo.trim().equalsIgnoreCase("NFT")&&mon[k].MonetaAddress == null) {
                 //a seconda se ho l'address o meno recupero il suo prezzo in maniera diversa
@@ -1901,6 +1915,8 @@ public class Prezzi {
                     IP.prezzoQta=PrezzoUnitario.multiply(new BigDecimal(mon[k].Qta).abs());
                     IP.timestamp=Data;  
                     IP.OggettoMoneta=mon[k];
+                /*    tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+          System.out.println("Tempo B : "+tempoOperazione+"ms");*/
                     return IP;
                 }
             } 
@@ -1917,10 +1933,13 @@ public class Prezzi {
                 if (mon[k] != null && (mon[k].Moneta).toUpperCase().equals(SimboloPrioritario) && mon[k].Tipo.trim().equalsIgnoreCase("Crypto")) {
                     //come prima cosa provo a vedere se ho un prezzo personalizzato e uso quello
                             IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
+                           /* tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+          System.out.println("Tempo C : "+tempoOperazione+"ms");*/
                             if (IP!=null)
                             {
                                 IP.OggettoMoneta=mon[k];
                                 if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
+                                
                                 return IP;
                             }
                     }
@@ -1937,10 +1956,13 @@ public class Prezzi {
                 //Se non ho l'address cerco su binance altrimenti cerco su coingecko
 
                         IP=CambioXXXEUR(mon[k].Moneta, mon[k].Qta, Data, mon[k].MonetaAddress, Rete,fonte,true);
+                     /*   tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
+          System.out.println("Tempo D : "+tempoOperazione+"ms");*/
                         if (IP!=null)
                         {
                             IP.OggettoMoneta=mon[k];
                             if(IP.prezzoQta==null)IP.prezzoQta=IP.Qta.multiply(IP.prezzoUnitario).abs();
+                            
                             return IP;
                         }
             }
@@ -2711,6 +2733,7 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                         Prezzi.InfoPrezzo IPr;
                 IPr=Prezzi.DammiPrezzoInfoTransazione(M, null, dataL,M.Rete,"" );
                 
+                
                 if(IPr!=null)
                 {
                    if (IPr.prezzoQta==null) IPr.prezzoQta=new BigDecimal(M.Qta).multiply(IPr.prezzoUnitario).setScale(2,RoundingMode.HALF_UP).abs();
@@ -2732,7 +2755,7 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                         GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPr,dataL,M.Rete,Ritorno,progress);                   
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
-                        //progress.ChiudiFinestra();
+                        progress.ChiudiFinestra();
                     }
                 };
                 thread.start();

@@ -50,7 +50,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
     
     public boolean TabellaDaAggiornare=false;
     public GUI_GestioneWallets() {
-        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
 

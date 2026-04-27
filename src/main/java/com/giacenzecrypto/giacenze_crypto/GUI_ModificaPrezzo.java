@@ -40,7 +40,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
      */
     public GUI_ModificaPrezzo() {
         initComponents();
-        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         
     }
@@ -50,7 +50,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         MU=null;
         ME=null;
         ModalitaRitorno=false;
-        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());  
         
         CaricaTabellaPrezzoAttualedaID(ID); 
@@ -74,7 +74,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         MU=null;
         ME=null;
         ModalitaRitorno=false;
-        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());  
         
         CaricaTabellaPrezzoAttualedaID(ID); 
@@ -102,7 +102,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         
         initComponents();
         ModalitaRitorno=true;
-        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());  
         
         CaricaTabellaPrezzoAttualedaID(IPr); 

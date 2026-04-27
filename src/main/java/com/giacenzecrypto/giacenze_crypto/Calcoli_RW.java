@@ -8,7 +8,6 @@ package com.giacenzecrypto.giacenze_crypto;
 
 
 
-import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -200,11 +199,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                 BigDecimal qtaRimanenteStackBD=new BigDecimal(qtaRimanenteStack);
                 //adesso devo trovare anche la QtaRimanenteOrigine = QtaRimanente / QtaEstratta x QtaOrigine
                 //Il cambio di scala nei calcoli dopo la divisione serve a togliere eventuali errori di approssimazione dovuti alla moltiplicazione successiva
-                String qtaRimanenteOrigine=qtaRimanenteStackBD.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(QtaOrigine).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().abs().toPlainString();
+                String qtaRimanenteOrigine=qtaRimanenteStackBD.divide(qtaEstratta,VarStatiche.DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(QtaOrigine).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().abs().toPlainString();
                 //System.out.println(qtaRimanenteStackBD+" / "+qtaEstratta+" x "+QtaOrigine);
                 //System.out.println(dataOrigine+" - "+MonetaOrigine+" - "+qtaRimanenteOrigine);
                 //Il cambio di scala nei calcoli dopo la divisione serve a togliere eventuali errori di approssimazione dovuti alla moltiplicazione successiva
-                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).abs().toPlainString();
+                String valoreRimanenteOrigine=CostoOrigine.divide(QtaOrigine,VarStatiche.DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteOrigine)).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).abs().toPlainString();
                 // System.out.println("ValRimanenteOrigine " +valoreRimanenteOrigine);
             //    String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,30,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).abs().toPlainString();
                 
@@ -457,7 +456,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     //long inizio = OperazioniSuDate.ConvertiDatainLongMinuto(DataInizioAnno);
                     String chiaver=key+"_"+m.Moneta+"_"+inizio;
                    // System.out.println("Inizio:"+chiaver);
-                    m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, inizio, null, true, 15, m.Rete,"",Principale.RW_MappaInfoPrezzo,chiaver);
+                    m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, inizio, null, true, 15, m.Rete,"",VarCondivise.RW_MappaInfoPrezzo,chiaver);
                     //System.out.println(m.Moneta+" - "+m.Qta+" - "+inizio+" - "+m.Prezzo);
                     //System.out.println(m.Prezzo);
                     //System.out.println(key+" - "+m.Moneta + " - " + m.Qta + " - " + m.Prezzo);
@@ -572,7 +571,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
 
                 String Prz;
                 if (new BigDecimal(Valore).compareTo(new BigDecimal("0"))==0) Prz=Valore;
-                else Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), DecimaliCalcoli+10, RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).abs().toPlainString();
+                else Prz = new BigDecimal(Valore).divide(new BigDecimal(Monete.Qta), VarStatiche.DecimaliCalcoli+10, RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).abs().toPlainString();
                 //System.out.println(Monete.Moneta +" + "+Monete.Qta);
              /*   String GruppoInizio="";
                 if (CDC_Grafica.MappaCryptoWallet.get(el.IDOri) != null)
@@ -950,7 +949,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         Principale.Mappa_RW_ListeXGruppoWallet.clear();
         Principale.Mappa_RW_GiacenzeInizioPeriodo.clear();
         Principale.Mappa_RW_GiacenzeFinePeriodo.clear();
-        Principale.RW_MappaInfoPrezzo.clear();
+        VarCondivise.RW_MappaInfoPrezzo.clear();
         AnnoR=AnnoRif;
         GiorniAnno=Integer.toString(FunzioniDate.DifferenzaDate(AnnoR+"-01-01", AnnoR+"-12-31")+1);
         String AnnoSuccessivo=String.valueOf(Integer.parseInt(AnnoRif)+1);
@@ -1249,7 +1248,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                             else{
                                 //Altrimenti è quella calcolata
                                // System.out.println (qtaEstratta.toPlainString()+ " - "+qtaUscenteTotale.toPlainString()+" - "+qtaEntranteTotale);
-                                qtaEntrante=qtaEstratta.divide(qtaUscenteTotale,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(qtaEntranteTotale).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros();
+                                qtaEntrante=qtaEstratta.divide(qtaUscenteTotale,VarStatiche.DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(qtaEntranteTotale).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros();
                                 el.Qta=qtaEntrante.stripTrailingZeros().abs().toPlainString();
                                 qtaEntranteRimanente=qtaEntranteRimanente.subtract(qtaEntrante);
                             }
@@ -1643,7 +1642,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                            //if (m.Moneta.equals("NEXO"))System.out.println(m.Qta);
                            String chiaver=key+"_"+m.Moneta+"_"+fine;
                            // System.out.println("fine:"+chiaver);
-                            m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, fine, null, true, 15, m.Rete,"",Principale.RW_MappaInfoPrezzo,chiaver);
+                            m.Prezzo = Prezzi.DammiPrezzoTransazioneSalvaInfoPrezzo(m, null, fine, null, true, 15, m.Rete,"",VarCondivise.RW_MappaInfoPrezzo,chiaver);
                          //   if(m.Moneta.equalsIgnoreCase("USDT")) System.out.println(m.Moneta+" - "+m.Qta+" - "+fine+" - "+m.Prezzo+" - "+m.MonetaAddress+" - "+m.Rete);
                             
                            // System.out.println(m.Moneta+"-"+m.Prezzo);
@@ -1667,7 +1666,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                     ElementiStack el = StackRitorno.pop();
                                     Moneta m2=m.ClonaMoneta();
                                     //if (!m2.Moneta.equals(el.Moneta))System.out.println("AGGIORNARWFR - Errore moneta diversa");
-                                    m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).toPlainString();
+                                    m2.Prezzo=new BigDecimal(m2.Prezzo).divide(new BigDecimal(m2.Qta),VarStatiche.DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(el.Qta)).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).toPlainString();
                                     m2.Moneta=el.Moneta;
                                     m2.Qta=el.Qta;
                                     m2.GruppoRW=el.GruppoWallet;

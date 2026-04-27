@@ -25,7 +25,7 @@ public class LoggerGC {
 
             // Log rotativo: 5 MB max, 3 file di backup, append attivo
             fileHandler = new FileHandler(
-                    Statiche.getWorkingDirectory() + "GiacenzeCrypto.log",
+                    VarStatiche.getWorkingDirectory() + "GiacenzeCrypto.log",
                     5 * 1024 * 1024,
                     3,
                     true

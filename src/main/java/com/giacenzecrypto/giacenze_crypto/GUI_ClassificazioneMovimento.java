@@ -4,7 +4,6 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -1147,7 +1146,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     String MovimentoCommissione[]=new String[Importazioni.ColonneTabella];
                     String IDCommissione = IDPrelivoSpezzato[0] + "_" + IDPrelivoSpezzato[1] + "_" + numTransazione + "_1_CM";
                     String QtaCommissione = new BigDecimal(MovimentoPrelievo[10]).abs().subtract(new BigDecimal(MovimentoDeposito[13]).abs()).toPlainString();
-                    String ValoreCommissione = new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(), DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaCommissione)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    String ValoreCommissione = new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaCommissione)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
                     MovimentoCommissione[0] = IDCommissione;
                     MovimentoCommissione[1] = MovimentoPrelievo[1];
                     MovimentoCommissione[2] = "1 di 1";
@@ -1186,7 +1185,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     String IDReward=IDPrelivoSpezzato[0]+"_"+IDPrelivoSpezzato[1]+"_"+numTransazione+"_1_RW";
                     String QtaReward=new BigDecimal(MovimentoDeposito[13]).abs().subtract(new BigDecimal(MovimentoPrelievo[10]).abs()).toPlainString();
                     String MovimentoReward[] = new String[Importazioni.ColonneTabella];
-                    String ValoreReward=new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(),DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaReward)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+                    String ValoreReward=new BigDecimal(MovimentoPrelievo[15]).abs().divide(new BigDecimal(MovimentoPrelievo[10]).abs(), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(QtaReward)).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
                     MovimentoReward[0] = IDReward;
                     MovimentoReward[1] = MovimentoPrelievo[1];
                     MovimentoReward[2] = "1 di 1";
@@ -1727,7 +1726,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         MT2[11]=Movimento[11];
         MT2[12]=Movimento[12];
         MT2[13]=QtaResiduaVault.multiply(new BigDecimal(-1)).stripTrailingZeros().toPlainString();
-        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]),DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        MT2[15]=new BigDecimal(MT2[13]).divide(new BigDecimal(Movimento[13]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).multiply(new BigDecimal(Movimento[15])).setScale(2, RoundingMode.HALF_UP).toPlainString();
         MT2[18]="DAI - Reward";
         MT2[20]=ID+","+IDNuovoMov;
         MT2[22]="AU";

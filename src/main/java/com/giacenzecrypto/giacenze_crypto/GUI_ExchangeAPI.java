@@ -52,7 +52,7 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     
     public boolean TabellaDaAggiornare=false;
     public GUI_ExchangeAPI() {
-        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.setIconImage(icon.getImage());
         initComponents();
 

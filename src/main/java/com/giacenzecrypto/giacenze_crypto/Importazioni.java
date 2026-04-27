@@ -1750,18 +1750,18 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
     
         public static void Scrivi_Movimenti_Crypto(Map<String, String[]> Mappa_Movimenti,boolean SalvataggioPermanente) {
             
-        File f = new File(Statiche.getFile_CryptoWallet());
-        File f2 = new File(Statiche.getWorkingDirectory()+"/movimenti.crypto.backup");
+        File f = new File(VarStatiche.getFile_CryptoWallet());
+        File f2 = new File(VarStatiche.getWorkingDirectory()+"/movimenti.crypto.backup");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);
-        if (SalvataggioPermanente)f2 = new File(Statiche.getWorkingDirectory()+"/Backup/movimenti.crypto.backup."+DataOra);
+        if (SalvataggioPermanente)f2 = new File(VarStatiche.getWorkingDirectory()+"/Backup/movimenti.crypto.backup."+DataOra);
     if(f.exists()){
         if(f2.exists())f2.delete();
         f.renameTo(f2);
     }
          try { 
-            FileWriter w=new FileWriter(Statiche.getFile_CryptoWallet());
+            FileWriter w=new FileWriter(VarStatiche.getFile_CryptoWallet());
             BufferedWriter b=new BufferedWriter (w);
        for (String[] v : Mappa_Movimenti.values()) {
            String riga="";

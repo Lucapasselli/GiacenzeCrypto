@@ -87,45 +87,38 @@ public class Principale extends javax.swing.JFrame {
 private static final long serialVersionUID = 3L;
 
 
+    
+    
 
-    static int DecimaliCalcoli=30;
+
+    //=== VARIABILI LOCALI RELATIVE AL FIAT E CARD WALLET DI CRYPTO.COM
+    Map<Integer, List<String>> CDC_CardWallet_ListaSaldi;
+    Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);   
+    Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    Map<String, String> CDC_FiatWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    String CDC_DataFinale = "";
+    String CDC_DataIniziale = "";
+    String CDC_FiatWallet_DataSaldoIniziale = "";
+    String CDC_CardWallet_DataSaldoIniziale = "";
+    String CDC_CardWallet_SaldoIniziale = "0";
+    boolean CDC_FiatWallet_ConsideroValoreMassimoGiornaliero = false;
+    String CDC_FiatWallet_SaldoIniziale = "0";
+    boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero = false;
     
-    //Parametro che utilizzerò per calcolare le plusvalenze a richiesta nel caso in cui ci siano tantissimi movimenti
-    //Questo serve per velocizzare le operazioni visto che questi calcoli potrebbero portare via diversi secondi
-    static public boolean AggiornaPulsvalenzeAutomatico=true;
     
     
-    //In questa mappa verranno memorizzati le info sui prezzi relative alle crypto del quadro RW
-    //La chiave sarà Gruppo_Moneta_Timestamp
-    static Map<String, Prezzi.InfoPrezzo> RW_MappaInfoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
-    static Map<String, String> CDC_FiatWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static public Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> CDC_FiatWallet_MappaErrori = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static Map<String, String> CDC_CardWallet_Mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    static public Map<String, String> Mappa_EMoney = new TreeMap<>();//Mapa dei token considerati emoney, deve essere case sensitive perchè in alcuni casi dei token si differenziano solo dalle minuscole o maiuscole
-    static public Map<String, String> Mappa_RichiesteAPIGiaEffettuate = new TreeMap<>();
-    static public Map<String, List<String>> Mappa_Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    
+    static Map<String, String> Mappa_EMoney = new TreeMap<>();//Mapa dei token considerati emoney, deve essere case sensitive perchè in alcuni casi dei token si differenziano solo dalle minuscole o maiuscole
+    
+    static Map<String, String> Mappa_RichiesteAPIGiaEffettuate = new TreeMap<>();
+    static Map<String, List<String>> Mappa_Wallets_e_Dettagli = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static Map<String, String> Mappa_Wallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     
-    static public TreeMap<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
+    static TreeMap<String, String[]> MappaCryptoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//mappa principale che tiene tutte le movimentazioni crypto
     
-    static public Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
-    static public Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
-   // static public String CDC_FiatWallet_FileDB="crypto.com.fiatwallet.db";
-    //static String CDC_CardWallet_FileDB="crypto.com.cardwallet.db";
-    //static String CDC_FileDatiDB="crypto.com.dati.db";
-    //static String CryptoWallet_FileDB="movimenti.crypto.db";
-    //static public String CDC_FiatWallet_FileTipiMovimentiDBPers="crypto.com.fiatwallet.tipimovimentiPers.db";
-    static String CDC_DataIniziale="";
-    static String CDC_DataFinale="";
-    static String CDC_FiatWallet_SaldoIniziale="0";
-    static String CDC_CardWallet_SaldoIniziale="0";
-    static String CDC_FiatWallet_DataSaldoIniziale="";
-    static String CDC_CardWallet_DataSaldoIniziale="";
-    static boolean CDC_FiatWallet_ConsideroValoreMassimoGiornaliero=false;
-    static boolean CDC_CardWallet_ConsideroValoreMassimoGiornaliero=false;
-    static Map<Integer, List<String>> CDC_CardWallet_ListaSaldi;
+    static Map<String, String[]> Mappa_ChainExplorer = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa delle chain per la defi
+    static Map<String, String> Mappa_AddressRete_Nome = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Mappa che converte gli address di una rete in nome moneta per binance, serve per l'acquisizione dei prezzi in maniera più precisa
     static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeInizioPeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeFinePeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -133,6 +126,11 @@ private static final long serialVersionUID = 3L;
     static public Map<Integer, List<String>> CDC_FiatWallet_ListaSaldi;
     static public boolean TabellaCryptodaAggiornare=false;
     static public boolean TransazioniCrypto_DaSalvare=false;//implementata per uso futuro attualmente non ancora utilizzata
+    
+    
+    
+    
+    
     public boolean tabDepositiPrelieviCaricataprimavolta=false;
     public static Object JDialog_Ritorno;
     public boolean VersioneCambiata=false;
@@ -159,9 +157,7 @@ private static final long serialVersionUID = 3L;
     public static boolean InterrompiCiclo=false;
     
     
-    public String Versione="1.0.51.01";
     
-    public String Titolo="Giacenze Crypto "+Versione+" Beta";
     
     
     
@@ -177,38 +173,38 @@ private static final long serialVersionUID = 3L;
     
     public Principale() {
     //Salvo la versione nei log
-    System.out.println("Versione attuale : "+Versione);
+    System.out.println("Versione attuale : "+VarStatiche.Versione);
         
     try {    
         //imposto la velocità di comparsa dei tooltip a 100ms invece che 750
         ToolTipManager.sharedInstance().setInitialDelay(100);
         ToolTipManager.sharedInstance().setDismissDelay(10000); // 10 secondi
             AvviaSplashScreen();
-            this.setTitle(Titolo);
-            ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+            this.setTitle(VarStatiche.Titolo);
+            ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
             this.setIconImage(icon.getImage());
-            File fiatwallet=new File (Statiche.getFile_CDCFiatWallet());
+            File fiatwallet=new File (VarStatiche.getFile_CDCFiatWallet());
             if (!fiatwallet.exists()) fiatwallet.createNewFile();
 
-            File cardwallet=new File (Statiche.getFile_CDCCardWallet());
+            File cardwallet=new File (VarStatiche.getFile_CDCCardWallet());
             if (!cardwallet.exists()) cardwallet.createNewFile();
             
-            File filedati=new File (Statiche.getFile_CDCDatiDB());
+            File filedati=new File (VarStatiche.getFile_CDCDatiDB());
             if (!filedati.exists()) filedati.createNewFile();
                         
-            File cryptowallet=new File (Statiche.getFile_CryptoWallet());
+            File cryptowallet=new File (VarStatiche.getFile_CryptoWallet());
             if (!cryptowallet.exists()) cryptowallet.createNewFile();
             
-            File cartella=new File (Statiche.getCartella_Backup());
+            File cartella=new File (VarStatiche.getCartella_Backup());
             if (!cartella.exists()) cartella.mkdir();
             
-            cartella=new File (Statiche.getCartella_Temporanei());
+            cartella=new File (VarStatiche.getCartella_Temporanei());
             if (!cartella.exists()) cartella.mkdir();
             
             //Cancello i backup automatici più vecchi di 6 Mesi
-            Funzioni.Files_CancellaOltreTOTh(Statiche.getCartella_Backup(), 4320);
+            Funzioni.Files_CancellaOltreTOTh(VarStatiche.getCartella_Backup(), 4320);
             //Cancello i file temporanei, tipicamente esportazioni o stampe più vecchi di 24h
-            Funzioni.Files_CancellaOltreTOTh(Statiche.getCartella_Temporanei(), 24);
+            Funzioni.Files_CancellaOltreTOTh(VarStatiche.getCartella_Temporanei(), 24);
 
             VarCondivise.CompilaMappaRetiSupportate();//compila le rete supportate nella mappa MappaRetiSupportate
  
@@ -222,7 +218,7 @@ private static final long serialVersionUID = 3L;
         Funzioni_NuovaVersioneDisponibile();
         //TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Prezzi.CompilaMoneteStessoPrezzo();
-        Bottone_Titolo.setText(Titolo);
+        Bottone_Titolo.setText(VarStatiche.Titolo);
        // SwingUtilities.updateComponentTreeUI(this);
       /*  if (!DatabaseH2.CreaoCollegaDatabase()){
             JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
@@ -326,8 +322,8 @@ private static final long serialVersionUID = 3L;
         
         CDC_LeggiFileDatiDB();
         TransazioniCrypto_Funzioni_NascondiColonneTabellaCrypto();
-        CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet()); 
-        CDC_CardWallet_Funzione_ImportaWallet(Statiche.getFile_CDCCardWallet());
+        CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet()); 
+        CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
         DatabaseH2.Pers_Emoney_PopolaMappaEmoney();//Popolo la mappa delle emoneytoken prima di proseguire
         
         
@@ -5224,7 +5220,7 @@ private void SettaIcone(){
 
             {
                 try {
-                    img = ImageIO.read(new File(Statiche.getPathRisorse()+"logo.png"));
+                    img = ImageIO.read(new File(VarStatiche.getPathRisorse()+"logo.png"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -5608,7 +5604,7 @@ JPanel loadingBar = new JPanel() {
     private void CDC_LeggiFileDatiDB() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    String riga;
-        try (FileReader fire = new FileReader(Statiche.getFile_CDCDatiDB()); 
+        try (FileReader fire = new FileReader(VarStatiche.getFile_CDCDatiDB()); 
                 BufferedReader bure = new BufferedReader(fire);) 
         {
                 while((riga=bure.readLine())!=null)
@@ -5638,8 +5634,8 @@ JPanel loadingBar = new JPanel() {
             //getting the current year from the current_date
             int current_Year = current_date.getYear();
           //  System.out.println(Calendar);
-           CDC_DataIniziale=current_Year-1+"-01-01";
-           CDC_DataFinale=current_Year-1+"-12-31";
+                CDC_DataIniziale=current_Year-1+"-01-01";
+                CDC_DataFinale=current_Year-1+"-12-31";
         }
       
            }   catch (FileNotFoundException ex) {     
@@ -5751,11 +5747,11 @@ JPanel loadingBar = new JPanel() {
    private void CDC_ScriviFileDatiDB() { //CDC_FileDatiDB
    // CDC_FileDatiDB
    try { 
-       FileWriter w=new FileWriter(Statiche.getFile_CDCDatiDB());
+       FileWriter w=new FileWriter(VarStatiche.getFile_CDCDatiDB());
        BufferedWriter b=new BufferedWriter (w);
        b.write("DataIniziale="+CDC_DataIniziale+"\n");
        b.write("DataFinale="+CDC_DataFinale+"\n");
-       if (CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(""))CDC_FiatWallet_SaldoIniziale="0";
+       if ( CDC_FiatWallet_SaldoIniziale.equalsIgnoreCase(""))CDC_FiatWallet_SaldoIniziale="0";
        b.write("CDC_FiatWallet_SaldoIniziale="+CDC_FiatWallet_SaldoIniziale+"\n"); 
        b.write("CDC_FiatWallet_DataSaldoIniziale="+CDC_FiatWallet_DataSaldoIniziale+"\n");
        b.write("CDC_FiatWallet_ConsideraValoreMassimoGiornaliero="+CDC_FiatWallet_ConsideroValoreMassimoGiornaliero+"\n");
@@ -5818,29 +5814,29 @@ JPanel loadingBar = new JPanel() {
             LoggerGC.ScriviErrore(ex);
         }
 
-        CDC_FiatWallet_MappaTipiMovimenti.clear();
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.clear();
         //Ora importo i tipi movimento del FiatWallet
-        CDC_FiatWallet_MappaTipiMovimenti.put("crypto_viban", "crypto_viban;+;default;Vendita Crypto");
-        CDC_FiatWallet_MappaTipiMovimenti.put("viban_card_top_up", "viban_card_top_up;-;default;TopUp Carta");
-        CDC_FiatWallet_MappaTipiMovimenti.put("viban_deposit", "viban_deposit;+;default;Bonifico in Ingresso");
-        CDC_FiatWallet_MappaTipiMovimenti.put("viban_purchase", "viban_purchase;-;default;Acquisto Crypto");
-        CDC_FiatWallet_MappaTipiMovimenti.put("recurring_buy_order", "recurring_buy_order;-;default;Acquisto Crypto");
-        CDC_FiatWallet_MappaTipiMovimenti.put("viban_withdrawal", "viban_withdrawal;-;default;Bonifico su Conto Corrente");
-        CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.purchase_commit", "trading.limit_order.fiat_wallet.purchase_commit;-;default;Acquisto Crypto");
-        CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.sell_commit", "trading.limit_order.fiat_wallet.sell_commit;+;default;Vendita Crypto");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("crypto_viban", "crypto_viban;+;default;Vendita Crypto");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_card_top_up", "viban_card_top_up;-;default;TopUp Carta");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_deposit", "viban_deposit;+;default;Bonifico in Ingresso");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_purchase", "viban_purchase;-;default;Acquisto Crypto");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("recurring_buy_order", "recurring_buy_order;-;default;Acquisto Crypto");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("viban_withdrawal", "viban_withdrawal;-;default;Bonifico su Conto Corrente");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.purchase_commit", "trading.limit_order.fiat_wallet.purchase_commit;-;default;Acquisto Crypto");
+        VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put("trading.limit_order.fiat_wallet.sell_commit", "trading.limit_order.fiat_wallet.sell_commit;+;default;Vendita Crypto");
         try {
-            File movPers = new File(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
+            File movPers = new File(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
             if (!movPers.exists()) {
                 movPers.createNewFile();
             }
-            FileReader fires = new FileReader(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
+            FileReader fires = new FileReader(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
             BufferedReader bures = new BufferedReader(fires);
 
             while ((riga = bures.readLine()) != null) {
                 String splittata[] = riga.split(";");
                 if (splittata.length == 4)// se non è esattamente uguale a 4 significa che il file non è corretto
                 {
-                    CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
+                    VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.put(splittata[0], riga);
                 }
             }
             bures.close();
@@ -5890,7 +5886,7 @@ JPanel loadingBar = new JPanel() {
             LoggerGC.ScriviErrore(ex);
         }
         
-      CDC_CardWallet_ListaSaldi=CDC_CardWallet_Funzione_CalcolaListaSaldi();  
+        CDC_CardWallet_ListaSaldi=CDC_CardWallet_Funzione_CalcolaListaSaldi();  
  
         
    } 
@@ -5902,7 +5898,7 @@ JPanel loadingBar = new JPanel() {
 //       CDC_FiatWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
        //scrivo le date relative a tutto quello che ho in pancia come dati
        //In questa prima parte recupero i dati essenziali che mi servono poi per i calcoli
-       CDC_FiatWallet_Mappa.size();
+        CDC_FiatWallet_Mappa.size();
        int i=0;
        for (String value : CDC_FiatWallet_Mappa.values()) {
            if (i==0) {
@@ -5926,8 +5922,8 @@ JPanel loadingBar = new JPanel() {
                {
                    //se non corrisponde lascio il saldo iniziale a zero
                    //e aggiorno i dati sul file di configurazione
-                   CDC_FiatWallet_SaldoIniziale="0";
-                   CDC_FiatWallet_DataSaldoIniziale=value.split(",")[0].split(" ")[0];
+                    CDC_FiatWallet_SaldoIniziale="0";
+                    CDC_FiatWallet_DataSaldoIniziale=value.split(",")[0].split(" ")[0];
                    this.CDC_FiatWallet_Text_GiacenzaIniziale.setText("0");
                    CDC_ScriviFileDatiDB();
                    
@@ -5949,7 +5945,7 @@ JPanel loadingBar = new JPanel() {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_FiatWallet_SaldoIniziale,CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_FiatWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_FiatWallet_SaldoIniziale, CDC_FiatWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_FiatWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_FiatWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_FiatWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
@@ -5962,7 +5958,7 @@ JPanel loadingBar = new JPanel() {
 //       CDC_CardWallet_Text_PeriodoRiferimento.setText(CDC_DataIniziale+"     ->     "+CDC_DataFinale);
        //scrivo le date relative a tutto quello che ho in pancia come dati
        //In questa prima parte recupero i dati essenziali che mi servono poi per i calcoli
-       CDC_CardWallet_Mappa.size();
+        CDC_CardWallet_Mappa.size();
        int i=0;
        for (String value : CDC_CardWallet_Mappa.values()) {
            if (i==0) {
@@ -5986,8 +5982,8 @@ JPanel loadingBar = new JPanel() {
                {
                    //se non corrisponde lascio il saldo iniziale a zero
                    //e aggiorno i dati sul file di configurazione
-                   CDC_CardWallet_SaldoIniziale="0";
-                   CDC_CardWallet_DataSaldoIniziale=value.split(",")[0].split(" ")[0];
+                    CDC_CardWallet_SaldoIniziale="0";
+                    CDC_CardWallet_DataSaldoIniziale=value.split(",")[0].split(" ")[0];
                    this.CDC_CardWallet_Text_GiacenzaIniziale.setText("0");
                    CDC_ScriviFileDatiDB();
                    
@@ -6009,7 +6005,7 @@ JPanel loadingBar = new JPanel() {
 
            //String DataIniziale="2021-11-23";
            //BigDecimal SaldoIniziale= new BigDecimal(CDC_FiatWallet_SaldoIniziale);
-           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi,CDC_DataIniziale,CDC_DataFinale,CDC_CardWallet_SaldoIniziale,CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
+           String Saldi[]=Funzioni_Calcolo_SaldieMedie(CDC_CardWallet_ListaSaldi, CDC_DataIniziale, CDC_DataFinale, CDC_CardWallet_SaldoIniziale, CDC_CardWallet_ConsideroValoreMassimoGiornaliero);
            this.CDC_CardWallet_Text_GiacenzaMedia.setText("€ "+Saldi[2]);
            this.CDC_CardWallet_Text_SaldoIniziale.setText("€ "+Saldi[0]);
            this.CDC_CardWallet_Text_SaldoFinale.setText("€ "+Saldi[1]);
@@ -6059,7 +6055,7 @@ JPanel loadingBar = new JPanel() {
                 //CDC_FiatWallet_FileTipiMovimentiDB
             int Colonna=CDC_Funzione_trovaColonnaEuro(value);
             if (Colonna!=999){
-            for (String tempo : CDC_FiatWallet_MappaTipiMovimenti.values())
+            for (String tempo : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values())
             {
                 if (splittata[9].trim().equalsIgnoreCase(tempo.split(";")[0].trim()))
                         {
@@ -6245,7 +6241,7 @@ JPanel loadingBar = new JPanel() {
                 Object CDC_FiatWallet_RigaTabella2[]=new Object[5];
                 int Colonna=CDC_Funzione_trovaColonnaEuro(value);
                 if (Colonna!=999){
-                for (String tempo : CDC_FiatWallet_MappaTipiMovimenti.values()) {   
+                for (String tempo : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values()) {   
                    // String Colonna = tempo.split(";")[2];
                    // String Segno = tempo.split(";")[1];
                     String Descrizione = tempo.split(";")[3];
@@ -6503,7 +6499,7 @@ JPanel loadingBar = new JPanel() {
    
     private void CDC_FiatWallet_Funzione_Scrivi() {
          try { 
-       FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet());
+       FileWriter w=new FileWriter(VarStatiche.getFile_CDCFiatWallet());
        BufferedWriter b=new BufferedWriter (w);
 
        for (String value : CDC_FiatWallet_Mappa.values()) {
@@ -6519,7 +6515,7 @@ JPanel loadingBar = new JPanel() {
     
         private void CDC_CardWallet_Funzione_Scrivi() {
          try { 
-       FileWriter w=new FileWriter(Statiche.getFile_CDCCardWallet());
+       FileWriter w=new FileWriter(VarStatiche.getFile_CDCCardWallet());
        BufferedWriter b=new BufferedWriter (w);
 
        for (String value : CDC_CardWallet_Mappa.values()) {
@@ -6706,7 +6702,7 @@ JPanel loadingBar = new JPanel() {
                 mod.CompilaTabellaErrori(CDC_FiatWallet_MappaErrori);
                 mod.setLocationRelativeTo(this);
                 mod.setVisible(true);
-                CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet());
+                CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
                 CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_FiatWallet_Bottone_ErroreActionPerformed
 
@@ -7738,7 +7734,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     //Se è un numero inserisco il prezzo e lo salvo a sistema
                     // BigDecimal PrezzoUnitario;
                     if (InfoRitorno.prezzoUnitario == null) {
-                        InfoRitorno.prezzoUnitario = new BigDecimal(m).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+                        InfoRitorno.prezzoUnitario = new BigDecimal(m).divide(Qta, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP);
                         InfoRitorno.timestamp=DataRiferimento;
                     }
                     if (InfoRitorno.Fonte == null) {
@@ -7824,7 +7820,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 GruppoWallet = "Wallet " + GruppoWallet.split("\\(")[0].trim();
                 String chiaver = GruppoWallet + "_" + mon + "_" + DataCalcoli;
                 //System.out.println(chiaver);
-                Prezzi.InfoPrezzo Ipr = Principale.RW_MappaInfoPrezzo.get(chiaver);
+                Prezzi.InfoPrezzo Ipr = VarCondivise.RW_MappaInfoPrezzo.get(chiaver);
                 MU.Moneta = mon;
                 MU.Qta = Qta.toPlainString();
                 MU.Prezzo = Prezzo;
@@ -7884,7 +7880,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         Rete = Mone.Rete;
                         Address = Mone.MonetaAddress;
                         if (InfoRitorno.prezzoUnitario == null) {
-                            InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+                            InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP);
                             InfoRitorno.timestamp = DataCalcoli;
                         }
                         if (InfoRitorno.Fonte == null) {
@@ -8033,7 +8029,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                         Rete = Mone.Rete;
                         Address = Mone.MonetaAddress;
                         if (InfoRitorno.prezzoUnitario == null) {
-                        InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+                        InfoRitorno.prezzoUnitario = new BigDecimal(Prezz).divide(Qta, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP);
                         InfoRitorno.timestamp=FunzioniDate.ConvertiDatainLongSecondo(DataPrezzo);
                     }
                     if (InfoRitorno.Fonte == null) {
@@ -8937,9 +8933,9 @@ SwingUtilities.invokeLater(() -> {
         if (risposta==0){
             try
             {
-                FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
+                FileWriter w=new FileWriter(VarStatiche.getFile_CDCFiatWallet_FileTipiMovimentiPers());
                 BufferedWriter b=new BufferedWriter (w);
-                for (String value : Principale.CDC_FiatWallet_MappaTipiMovimenti.values())
+                for (String value : VarCondivise.CDC_FiatWallet_MappaTipiMovimenti.values())
                 {
                     if (!value.toUpperCase().contains(";Personalizzato;".toUpperCase()))
                     {
@@ -8952,7 +8948,7 @@ SwingUtilities.invokeLater(() -> {
             {
 
             }    }
-            CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet());
+            CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaPersonalizzazioniFiatWalletActionPerformed
 
@@ -8969,7 +8965,7 @@ SwingUtilities.invokeLater(() -> {
             try
             {
                 //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(Statiche.getFile_CDCFiatWallet()); 
+               FileReader fire = new FileReader(VarStatiche.getFile_CDCFiatWallet()); 
                BufferedReader bure = new BufferedReader(fire);
                         String rigas;
                         
@@ -8986,7 +8982,7 @@ SwingUtilities.invokeLater(() -> {
                         fire.close();
                 
                 //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(Statiche.getFile_CDCFiatWallet());
+                FileWriter w=new FileWriter(VarStatiche.getFile_CDCFiatWallet());
                 BufferedWriter b=new BufferedWriter (w);
                 Iterator<String> It=DaMantenere.iterator();
                 while(It.hasNext()){
@@ -8999,7 +8995,7 @@ SwingUtilities.invokeLater(() -> {
 
             }    }
             CDC_FiatWallet_Mappa.clear();
-            CDC_FiatWallet_Funzione_ImportaWallet(Statiche.getFile_CDCFiatWallet());
+            CDC_FiatWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCFiatWallet());
             CDC_FiatWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaFiatWalletActionPerformed
 
@@ -9017,7 +9013,7 @@ SwingUtilities.invokeLater(() -> {
             {
                 
                //Leggo il file e metto in un array tutto quello da mantenere
-               FileReader fire = new FileReader(Statiche.getFile_CDCCardWallet()); 
+               FileReader fire = new FileReader(VarStatiche.getFile_CDCCardWallet()); 
                BufferedReader bure = new BufferedReader(fire);
                         String rigas;
                         
@@ -9033,7 +9029,7 @@ SwingUtilities.invokeLater(() -> {
                         fire.close();
                 
                 //Tutto quello da mantenere lo riscrivo in un nuovo file
-                FileWriter w=new FileWriter(Statiche.getFile_CDCCardWallet());
+                FileWriter w=new FileWriter(VarStatiche.getFile_CDCCardWallet());
                 BufferedWriter b=new BufferedWriter (w);
                 Iterator<String> It=DaMantenere.iterator();
                 while(It.hasNext()){
@@ -9046,7 +9042,7 @@ SwingUtilities.invokeLater(() -> {
 
             }    }
             CDC_CardWallet_Mappa.clear();
-            CDC_CardWallet_Funzione_ImportaWallet(Statiche.getFile_CDCCardWallet());
+            CDC_CardWallet_Funzione_ImportaWallet(VarStatiche.getFile_CDCCardWallet());
             CDC_CardWallet_AggiornaDatisuGUI();
     }//GEN-LAST:event_CDC_Opzioni_Bottone_CancellaCardWalletActionPerformed
 
@@ -9192,7 +9188,7 @@ SwingUtilities.invokeLater(() -> {
                             RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
                         }
                         //IC
-                        RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                        RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
 
                     }
                     //Adesso se il wallet paga bollo mostro solo le giacenze di inizio e fine anno quindi sostituisco la lista per quel wallet
@@ -9219,7 +9215,7 @@ SwingUtilities.invokeLater(() -> {
                             RW1[2] = new BigDecimal(lista[10]).add(new BigDecimal(RW1[2])).toPlainString();//Val Finale
                             RW1[3] = new BigDecimal(lista[11]).setScale(2, RoundingMode.HALF_UP).toPlainString();
                             RW1[4] = Errore;
-                            RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                            RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
                             
                         }
                        // LoggerGC.logInfo("Anno : "+RW_Anno_ComboBox.getSelectedItem().toString()+" - Wallet : "+key+" - gg detenzione :"+RW1[3],"CDCGrafica.RW_CalcolaRW");
@@ -10094,10 +10090,10 @@ SwingUtilities.invokeLater(() -> {
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);
             String AnnoDiCompetenza=RW_Anno_ComboBox.getSelectedItem().toString();
-            Stampe stampa=new Stampe(Statiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");           
+            Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RW_"+AnnoDiCompetenza+"_"+DataOra+".pdf");           
             int anno=Integer.parseInt(AnnoDiCompetenza);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
-            String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
+            String piede="Stampa generata da "+VarStatiche.Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO W/RW Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
             stampa.AggiungiTestoCentrato("QUADRO W PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
@@ -10146,8 +10142,8 @@ SwingUtilities.invokeLater(() -> {
                             (RW_Opzioni_CheckBox_MostraGiacenzeSePagaBollo.isSelected()||
                             RW_Opzioni_RilevanteSoloValoriIniFin.isSelected()))GG="";
                     else if (PagaBollo.equalsIgnoreCase("SI"))GG="("+GG+")*";
-                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW(Statiche.getPathImmagini()+"QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
-                    else stampa.AggiungiQuadroW(Statiche.getPathImmagini()+"QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    if (righeQuadroStampate==1)stampa.AggiungiQuadroW(VarStatiche.getPathImmagini()+"QuadroW_2023_Titolo.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
+                    else stampa.AggiungiQuadroW(VarStatiche.getPathImmagini()+"QuadroW_2023.png",String.valueOf(righeQuadroStampate),ValIniziale,ValFinale,GG);
 
                 }
             }
@@ -10213,9 +10209,9 @@ SwingUtilities.invokeLater(() -> {
                     
                     
                                 //Stampa Quadro RW
-            String immagineRW=Statiche.getPathImmagini()+"QuadroRW_2023.jpg";
-            if (anno==2024)immagineRW=Statiche.getPathImmagini()+"QuadroRW_2024.jpg";
-            String pdfRW=Statiche.getPathImmagini()+"QuadroRW_2025.pdf";
+            String immagineRW=VarStatiche.getPathImmagini()+"QuadroRW_2023.jpg";
+            if (anno==2024)immagineRW=VarStatiche.getPathImmagini()+"QuadroRW_2024.jpg";
+            String pdfRW=VarStatiche.getPathImmagini()+"QuadroRW_2025.pdf";
             
            // stampa.AggiungiTestoCentrato("QUADRO RW PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza,Font.BOLD,12);
             //stampa.AggiungiTesto("\n",Font.NORMAL,10);
@@ -10879,7 +10875,7 @@ SwingUtilities.invokeLater(() -> {
         Thread thread;
         thread = new Thread() {
             public void run() {    
-                if(Funzioni.isAggiornamentoDisponibile(Versione)){
+                if(Funzioni.isAggiornamentoDisponibile(VarStatiche.Versione)){
                     TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(true);
                     System.out.println("Nuova versione disponibile");
                 }else{
@@ -12006,7 +12002,7 @@ SwingUtilities.invokeLater(() -> {
 
     private void TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AggiorbaVersioneActionPerformed
         // TODO add your handling code here:
-        String split[]=Versione.split("\\.");
+        String split[]=VarStatiche.Versione.split("\\.");
         String LinkNuovaVersione=split[0]+"."+split[1]+"."+String.valueOf(Integer.parseInt(split[2])+1);
         LinkNuovaVersione="https://sourceforge.net/projects/giacenze-crypto-com/files/Giacenze_Crypto_"+LinkNuovaVersione+"/";
         Funzioni.ApriWeb(LinkNuovaVersione);
@@ -12482,10 +12478,10 @@ SwingUtilities.invokeLater(() -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);  
-            Stampe stampa=new Stampe(Statiche.getCartella_Temporanei()+"RT_"+Anno+"_"+DataOra+".pdf");
+            Stampe stampa=new Stampe(VarStatiche.getCartella_Temporanei()+"RT_"+Anno+"_"+DataOra+".pdf");
             String AnnoDiCompetenza=String.valueOf(Anno);
             //String piede="Stampa generata da "+this.getTitle()+"  - https://sourceforge.net/projects/giacenze-crypto-com";
-            String piede="Stampa generata da "+Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;
+            String piede="Stampa generata da "+VarStatiche.Titolo+" - https://sourceforge.net/projects/giacenze-crypto-com                        REPORT x QUADRO T/RT Anno "+AnnoDiCompetenza;
             stampa.Piede(piede);
             stampa.ApriDocumento();
             stampa.AggiungiTestoCentrato("QUADRO T PER CRIPTO-ATTIVITA' ANNO "+AnnoDiCompetenza+"\n\n",Font.BOLD,12);
@@ -12493,10 +12489,10 @@ SwingUtilities.invokeLater(() -> {
             
             
 
-                String immagineT=Statiche.getPathImmagini()+"QuadroT_2024.jpg";
-            String PdfT2025=Statiche.getPathImmagini()+"QuadroT_2025.pdf";
-            String PdfRT2025=Statiche.getPathImmagini()+"QuadroRT_2025.pdf";  
-            String PdfRT2025p2=Statiche.getPathImmagini()+"QuadroRT_2025_2.pdf"; 
+                String immagineT=VarStatiche.getPathImmagini()+"QuadroT_2024.jpg";
+            String PdfT2025=VarStatiche.getPathImmagini()+"QuadroT_2025.pdf";
+            String PdfRT2025=VarStatiche.getPathImmagini()+"QuadroRT_2025.pdf";  
+            String PdfRT2025p2=VarStatiche.getPathImmagini()+"QuadroRT_2025_2.pdf"; 
                         
                         
                     
@@ -12537,7 +12533,7 @@ SwingUtilities.invokeLater(() -> {
                     
                     
                     stampa.NuovaPagina();
-                    String immagineRT=Statiche.getPathImmagini()+"QuadroRT_2024.jpg";
+                    String immagineRT=VarStatiche.getPathImmagini()+"QuadroRT_2024.jpg";
                     if (Anno<2025){
                         stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
                     }else{
@@ -14120,7 +14116,7 @@ try {
                 try {                    
 
 
-                    String fileDaImportare = Statiche.getFile_CryptoWallet();
+                    String fileDaImportare = VarStatiche.getFile_CryptoWallet();
                     MappaCryptoWallet.clear();
                     Mappa_Wallet.clear();
 

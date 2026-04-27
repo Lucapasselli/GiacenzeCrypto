@@ -4,7 +4,7 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
+
 import static com.giacenzecrypto.giacenze_crypto.Principale.Funzioni_isNumeric;
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
@@ -1039,7 +1039,7 @@ public class Calcoli_RT {
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,VarStatiche.DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,Data,IDIniziale};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
@@ -1255,7 +1255,7 @@ public class Calcoli_RT {
                 rigaTabella[4]=costoEstratta.setScale(2, RoundingMode.HALF_UP);
                 Moneta monCalcoli=PlusXMon.Mon.ClonaMoneta();
                 monCalcoli.Qta=qtaEstratta.stripTrailingZeros().toPlainString();
-                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete,"");
+                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, VarStatiche.DecimaliCalcoli, PlusXMon.Mon.Rete,"");
                 rigaTabella[5]=new BigDecimal(PrezzoEsatto).setScale(2, RoundingMode.HALF_UP).toPlainString();
                 BigDecimal PlusLatenteEsatta=new BigDecimal(PrezzoEsatto).subtract(costoEstratta);
                 rigaTabella[6]=new BigDecimal((String)rigaTabella[5]).subtract(costoEstratta).setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -1273,7 +1273,7 @@ public class Calcoli_RT {
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,VarStatiche.DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck,IDIniziale};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));
@@ -1288,7 +1288,7 @@ public class Calcoli_RT {
                 Moneta monCalcoli=PlusXMon.Mon.ClonaMoneta();
                 monCalcoli.Qta=qtaEstratta.stripTrailingZeros().toPlainString();
                 //System.out.println(DecimaliCalcoli);
-                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, DecimaliCalcoli, PlusXMon.Mon.Rete,"");
+                String PrezzoEsatto=Prezzi.DammiPrezzoTransazione(monCalcoli, null, d, null, true, VarStatiche.DecimaliCalcoli, PlusXMon.Mon.Rete,"");
                 rigaTabella[5]=new BigDecimal(PrezzoEsatto).setScale(2, RoundingMode.HALF_UP).toPlainString();
                 BigDecimal PlusLatenteEsatta=new BigDecimal(PrezzoEsatto).subtract(costoEstratta);
                 rigaTabella[6]=new BigDecimal((String)rigaTabella[5]).subtract(costoEstratta).setScale(2, RoundingMode.HALF_UP).toPlainString();

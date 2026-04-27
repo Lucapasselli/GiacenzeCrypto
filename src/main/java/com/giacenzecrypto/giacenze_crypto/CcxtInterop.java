@@ -34,7 +34,7 @@ import org.json.JSONObject;
 public class CcxtInterop {
     
     public static final String NODE_VERSION = "v24.7.0";
-    public static final Path NODE_DIR = Paths.get(Statiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();;
+    public static final Path NODE_DIR = Paths.get(VarStatiche.getWorkingDirectory()+"tools", "node").toAbsolutePath().normalize();;
     
 
     
@@ -68,7 +68,7 @@ public class CcxtInterop {
         }
         System.out.println("Node.js non presente.");
         System.out.println("⬇️ Scarico Node.js standalone...");
-        Path downloadPath = Paths.get(Statiche.getWorkingDirectory()+"tools", filename);
+        Path downloadPath = Paths.get(VarStatiche.getWorkingDirectory()+"tools", filename);
         Files.createDirectories(downloadPath.getParent());
 
         try (InputStream in = new URL(url).openStream()) {
@@ -117,7 +117,7 @@ public class CcxtInterop {
 
     System.out.println("Installo ccxt...");
     ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", "ccxt");
-    System.out.println(Statiche.getWorkingDirectory() + "tools/node");
+    System.out.println(VarStatiche.getWorkingDirectory() + "tools/node");
     builder.directory(NODE_DIR.toFile());
     //builder.directory(nodeModulesDir.toFile());
     //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
@@ -164,7 +164,7 @@ public class CcxtInterop {
 
     System.out.println("Installo "+Modulo+"...");
     ProcessBuilder builder = new ProcessBuilder(npmPath.toString(), "install", Modulo);
-    System.out.println(Statiche.getWorkingDirectory() + "tools/node");
+    System.out.println(VarStatiche.getWorkingDirectory() + "tools/node");
     builder.directory(NODE_DIR.toFile());
     //builder.directory(nodeModulesDir.toFile());
     //builder.directory(new File(Statiche.getWorkingDirectory() + "tools/node"));  // directory di lavoro
@@ -603,7 +603,7 @@ public static Path getNodeExePath() {
         
         
         Path nodePath = getNodeExePath();
-        Path scriptPath = Paths.get(Statiche.getPathRisorse()
+        Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
                 + "Scripts/"
                 + script
                 + ".js");
@@ -715,7 +715,7 @@ public static void recuperPrezzi_OLD(String Symbol,long timestamp) throws SQLExc
         String exchanges="binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
         
         Path nodePath = getNodeExePath();
-        Path scriptPath = Paths.get(Statiche.getPathRisorse()
+        Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
                 + "Scripts/"
                 + "Historical_Multi_Eur"
                 + ".js");

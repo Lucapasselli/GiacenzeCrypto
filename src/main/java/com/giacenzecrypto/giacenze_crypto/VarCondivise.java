@@ -4,11 +4,23 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 /**
  *
  * @author lucap
  */
 public class VarCondivise {
+
+    //In questa mappa verranno memorizzati le info sui prezzi relative alle crypto del quadro RW
+    //La chiave sarà Gruppo_Moneta_Timestamp
+    static Map<String, Prezzi.InfoPrezzo> RW_MappaInfoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    //=== VARIABILI RELATIVE AL FIAT E CARD WALLET DI CRYPTO.COM CONDIVISA
+    static Map<String, String> CDC_FiatWallet_MappaTipiMovimenti = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    
+    
+    
 
     public static void CompilaMappaChain() {
         //indirizzoExplorer,api,coin commissioni,nomeEndpointCoingecko

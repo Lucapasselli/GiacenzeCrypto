@@ -9,10 +9,22 @@ package com.giacenzecrypto.giacenze_crypto;
  *
  * @author luca
  */
-public class Statiche {
-    public static int DecimaliPlus=2;
+public class VarStatiche {
+    
+    //NOME DEL PROGRAMMA
+    static String Versione = "1.0.51.01";
+    static String Titolo = "Giacenze Crypto " + VarStatiche.Versione + " Beta";
+    
+    //=== IMPOSTAZIONI GLOBALI RELATIVE AI CALCOLI ===
+    static int DecimaliPlus=2;
+    static int DecimaliCalcoli = 30;
+    
+    //=== IMPOSTAZIONI GLOBALI RELATIVE ALLE PATH DEL PROGRAMMA
     private static String pathRisorse="";
-    private static String workingDirectory = System.getProperty("user.dir")+"/";
+    private static String workingDirectory = System.getProperty("user.dir")+"/";       
+    
+    
+    
 
     public static void setWorkingDirectory(String dir) {
         workingDirectory = dir;

@@ -28,7 +28,7 @@ public class Giacenze_Crypto {
         
          
        System.out.println("user.dir : "+System.getProperty("user.dir"));
-       Statiche.setPathRisorse(getJarPath()+"/");
+       VarStatiche.setPathRisorse(getJarPath()+"/");
 
         for (int i = 0; i < args.length; i++) {
             System.out.println(args[i]);
@@ -36,20 +36,20 @@ public class Giacenze_Crypto {
                 apriFinestraLog();
             }
             if (args[i].equals("--risorse") && i + 1 < args.length && args[i+1].charAt(args[i+1].length() - 1) == '/') {
-                Statiche.setPathRisorse(args[i + 1]);
+                VarStatiche.setPathRisorse(args[i + 1]);
             }
             if (args[i].equals("--NoJarPath")) {
-                Statiche.setPathRisorse("./");
+                VarStatiche.setPathRisorse("./");
             }
             if (args[i].equalsIgnoreCase("--workdir") && i + 1 < args.length && args[i + 1].charAt(args[i + 1].length() - 1) == '/') {
                 setWorkDir(args[i + 1]);               
             }
             if (args[i].equalsIgnoreCase("--workInRisorse")) {
-                setWorkDir(Statiche.getPathRisorse());               
+                setWorkDir(VarStatiche.getPathRisorse());               
             }
         }
-        System.out.println("Path Risorse : "+Statiche.getPathRisorse()); 
-        System.out.println("Working Directory : "+Statiche.getWorkingDirectory());      
+        System.out.println("Path Risorse : "+VarStatiche.getPathRisorse()); 
+        System.out.println("Working Directory : "+VarStatiche.getWorkingDirectory());      
         
         if (!DatabaseH2.CreaoCollegaDatabase()){
             JOptionPane.showConfirmDialog(null, "Attenzione, è già aperta un'altra sessione del programma, questa verrà terminata!!","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
@@ -151,7 +151,7 @@ private static void setWorkDir(String workingDir){
         }
 
         // Se tutto è ok, assegna
-        Statiche.setWorkingDirectory(workingDir);
+        VarStatiche.setWorkingDirectory(workingDir);
     }
 
     private static String getJarPath() {

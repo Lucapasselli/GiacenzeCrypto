@@ -4,7 +4,7 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
+
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -328,7 +328,7 @@ public class Calcoli_PlusvalenzeOLD {
                 String qtaRimanenteStack=qtaEstratta.subtract(qtaRimanente).toPlainString();
                 //System.out.println(qtaRimanenteStack);
                // System.out.println(qtaEstratta+" - "+qtaRimanente+"- "+qtaRimanenteStack);
-                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+                String valoreRimanenteSatck=costoEstratta.divide(qtaEstratta,VarStatiche.DecimaliCalcoli+10,RoundingMode.HALF_UP).multiply(new BigDecimal(qtaRimanenteStack)).setScale(VarStatiche.DecimaliCalcoli,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
                 String valori[]=new String[]{Moneta,qtaRimanenteStack,valoreRimanenteSatck};
                 stack.push(valori);
                 costoTransazione=costoTransazione.add(costoEstratta.subtract(new BigDecimal(valoreRimanenteSatck)));

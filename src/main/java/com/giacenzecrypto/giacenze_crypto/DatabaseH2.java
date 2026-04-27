@@ -27,9 +27,9 @@ import java.util.TreeMap;
  */
 public class DatabaseH2 {
 
-    static String jdbcUrl = Statiche.getDBPrincipale();
-    static String jdbcUrl2 = Statiche.getDBPersonale();
-    static String jdbcPrezzi = Statiche.getDBPrezzi();
+    static String jdbcUrl = VarStatiche.getDBPrincipale();
+    static String jdbcUrl2 = VarStatiche.getDBPersonale();
+    static String jdbcPrezzi = VarStatiche.getDBPrezzi();
     static String usernameH2 = "sa";
     static String passwordH2 = "";
     static Connection connection;

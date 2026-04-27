@@ -4,7 +4,6 @@
  */
 package com.giacenzecrypto.giacenze_crypto;
 
-import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -260,12 +259,12 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             BigDecimal qtaRimanenteStack = qtaEstratta.subtract(qtaRimanente);
 
             BigDecimal costoUnitario = costoEstratto
-                .divide(qtaEstratta, DecimaliCalcoli + 10, RoundingMode.HALF_UP);
+                .divide(qtaEstratta, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP);
 
             BigDecimal valoreRimanenteStack = costoUnitario
                 .multiply(qtaRimanenteStack)
                 //.setScale(2, RoundingMode.HALF_UP)
-                .setScale(DecimaliCalcoli, RoundingMode.HALF_UP)
+                .setScale(VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP)
                 .stripTrailingZeros();
 
             String[] valori = new String[] {
@@ -327,7 +326,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         mov[38]="";
     }
 
-    return costoTransazione.setScale(Statiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();
+    return costoTransazione.setScale(VarStatiche.DecimaliPlus, RoundingMode.HALF_UP).toPlainString();
    // return costoTransazione.setScale(4, RoundingMode.HALF_UP).toPlainString();
 }       
  

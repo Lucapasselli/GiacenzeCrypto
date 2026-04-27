@@ -5,7 +5,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 
-import static com.giacenzecrypto.giacenze_crypto.Principale.DecimaliCalcoli;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -31,7 +30,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     public GUI_LiFoTransazione(String IDtr) {
       //  ID=IDtr;              
         initComponents();
-        ImageIcon icon = new ImageIcon(Statiche.getPathRisorse()+"logo.png");
+        ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.Bottone_ME_FrecciaDestra.setIcon(Icone.FrecciaDestra);
         this.Bottone_MU_FrecciaDestra.setIcon(Icone.FrecciaDestra);
         this.Bottone_ME_FrecciaSinistra.setIcon(Icone.FrecciaSinistra);
@@ -167,7 +166,7 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
             riga[6]=formattaNumero(ultimoRecupero[2]);
             riga[7]=RealtivoAMovimento;
             if(!ultimoRecupero[1].isBlank()&&new BigDecimal(ultimoRecupero[1]).compareTo(BigDecimal.ZERO)!=0)
-                riga[8]=formattaNumero(new BigDecimal(ultimoRecupero[2]).divide(new BigDecimal(ultimoRecupero[1]), DecimaliCalcoli, RoundingMode.HALF_UP).abs().stripTrailingZeros().toPlainString());
+                riga[8]=formattaNumero(new BigDecimal(ultimoRecupero[2]).divide(new BigDecimal(ultimoRecupero[1]), VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP).abs().stripTrailingZeros().toPlainString());
             ModelloTabella.addRow(riga);
             i++;
         }

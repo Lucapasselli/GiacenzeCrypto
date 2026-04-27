@@ -198,10 +198,10 @@ public class Prezzi {
     
     public static void GeneraMappaCambioUSDEUR(){
          try {
-             File file=new File (Statiche.getFileUSDEUR());
+             File file=new File (VarStatiche.getFileUSDEUR());
              if (!file.exists()) file.createNewFile();
              String riga;
-             try (FileReader fire = new FileReader(Statiche.getFileUSDEUR());
+             try (FileReader fire = new FileReader(VarStatiche.getFileUSDEUR());
                      BufferedReader bure = new BufferedReader(fire);)
              {
                  while((riga=bure.readLine())!=null)
@@ -2074,7 +2074,7 @@ public class Prezzi {
             //al posto suo prenderò i dati da un file csv precedentemente preparato che vedrò come tenere aggiornato nel futuro
             
             String riga;
-        try (FileReader fire = new FileReader(Statiche.getPathRisorse()+"Gestiticoincap.csv"); 
+        try (FileReader fire = new FileReader(VarStatiche.getPathRisorse()+"Gestiticoincap.csv"); 
                 BufferedReader bure = new BufferedReader(fire);) 
             {
                 List<String[]> gestiti = new ArrayList<>();
@@ -2180,7 +2180,7 @@ public class Prezzi {
    // CDC_FileDatiDB
    try { 
       // System.out.println("ScriviFileConversioneUSDEUR : "+Statiche.getFileUSDEUR());
-       FileWriter w=new FileWriter(Statiche.getFileUSDEUR());
+       FileWriter w=new FileWriter(VarStatiche.getFileUSDEUR());
        BufferedWriter b=new BufferedWriter (w);
        
        Object DateCambi[]=MappaConversioneUSDEUR.keySet().toArray();
@@ -2783,7 +2783,7 @@ public static void RecuperaGiacenzeDaCCXT(String Exchange,String APIKey,String A
              TimeUnit.SECONDS.sleep(1);
              
              Path nodePath = CcxtInterop.getNodeExePath();
-             Path scriptPath = Paths.get(Statiche.getPathRisorse()
+             Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
                      + "Scripts/"
                              + "Binance_SaldiGiornalieri"
                              + ".js");
@@ -2960,7 +2960,7 @@ public static void RecuperaPrezziDaCCXT(String Symbol,long timestamp) {
              String exchanges="binance,cryptocom,bybit,okx,coinbase,bitstamp,kucoin";
              
              Path nodePath = CcxtInterop.getNodeExePath();
-             Path scriptPath = Paths.get(Statiche.getPathRisorse()
+             Path scriptPath = Paths.get(VarStatiche.getPathRisorse()
                      + "Scripts/"
                              + "Historical_Multi_Eur"
                              + ".js");

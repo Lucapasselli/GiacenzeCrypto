@@ -954,7 +954,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);
         
-            File f=new File (Statiche.getCartella_Temporanei()+"Tabella_"+DataOra+".xlsx");
+            File f=new File (VarStatiche.getCartella_Temporanei()+"Tabella_"+DataOra+".xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
             Worksheet ws=wb.newWorksheet("Riepilogo Tabella ");
@@ -1063,7 +1063,7 @@ public static String getParolaTra2Simboli(String parola, String simboloIniziale,
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime now = LocalDateTime.now();
             String DataOra=now.format(formatter);  
-            File f=new File (Statiche.getCartella_Temporanei()+"RW_"+Anno+"_"+DataOra+".xlsx");
+            File f=new File (VarStatiche.getCartella_Temporanei()+"RW_"+Anno+"_"+DataOra+".xlsx");
             FileOutputStream fos = new FileOutputStream(f);
             Workbook wb = new Workbook(fos,"excel1","1.0");
             Worksheet wsrm=wb.newWorksheet("Riepilogo Anno "+Anno);

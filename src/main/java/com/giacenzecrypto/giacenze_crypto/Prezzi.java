@@ -3165,6 +3165,9 @@ public static class InfoPrezzo {
         }
         
     }*/
+    public void SetFontePersonalizzata(){
+        Fonte="Personalizzato";
+    }
     
     public InfoPrezzo(String Info40) {
         if (!Info40.isBlank()){

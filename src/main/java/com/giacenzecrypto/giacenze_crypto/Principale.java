@@ -12428,6 +12428,8 @@ SwingUtilities.invokeLater(() -> {
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             long DataRiferimento;// = 0;
             if (GiacenzeaData_Data_DataChooser.getDate() != null) {
+                
+                
 
                 //Recupero il Wallet di riferimento
                 //Mi servirà poi per trovare il gruppo Wallet
@@ -12449,7 +12451,25 @@ SwingUtilities.invokeLater(() -> {
                 int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
 
                 String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+                String Qta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString();
                 String Rete = null;
+                
+                //Prima di andare ulteriormente avanti avviso sulle conseguenze
+                 String Testo = "<html><b>ATTENZIONE!!! :</b> Il Token <b>"+mon+"</b> attualmente non ha prezzo.<br><br>"
+                                + "Vuoi assegnare Zero come prezzo dei <b>"+Qta+" "+mon+"</b> ?<br><br>"
+                        + "</html>";
+                
+                 Object[] Bottoni = {"Si", "No"};
+                        int scelta = JOptionPane.showOptionDialog(this, Testo,
+                                "Verifica i movimenti",
+                                JOptionPane.YES_NO_CANCEL_OPTION,
+                                JOptionPane.PLAIN_MESSAGE,
+                                null,
+                                Bottoni,
+                                null);
+                    if (scelta!=0)return;
+                    
+                
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
                     Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
                 }
@@ -12461,7 +12481,7 @@ SwingUtilities.invokeLater(() -> {
                 }
 
                 //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
-                DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato (TUTTI)", mon, "0,00", Rete, Address, Gruppo, 0);
+                DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
 
                 //Una volta cambiato il prezzo aggiorno la tabella
                 int PosizioneScrol = GiacenzeaData_ScrollPane.getVerticalScrollBar().getValue();

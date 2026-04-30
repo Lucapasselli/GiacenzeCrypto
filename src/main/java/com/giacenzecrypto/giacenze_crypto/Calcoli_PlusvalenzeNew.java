@@ -405,6 +405,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             String MonetaE=v[11];
             String QtaE=v[13];
             String Valore=v[15];
+            String CostoCaricoDonazioni=v[17];
             String VecchioPrezzoCarico="0.00";
             String NuovoPrezzoCarico="0.00";
             String Plusvalenza="0.00";
@@ -633,6 +634,17 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 else if(v[18].contains("DAC")){
                     
                     NuovoPrezzoCarico=Valore;
+                    StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
+                    
+                    Plusvalenza="0.00";
+                    CalcoloPlusvalenza="N";
+                                         
+                    VecchioPrezzoCarico=""; 
+                }
+                //Tipologia = 3; (Donazioni)
+                else if(v[18].contains("DDO")){
+                    
+                    NuovoPrezzoCarico=CostoCaricoDonazioni;
                     StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
                     
                     Plusvalenza="0.00";

@@ -40,6 +40,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     //DAI -> Airdrop o similare (deposito)
     //DCZ -> Costo di carico 0 (deposito)
     //DAC -> Acquisto Crypto (deposito)  
+    //DDO -> Donazioni (deposito)  
    //////////// //DSC -> Scambio Crypto Differito (Scambio crypto non simultaneo ma differito nel tempo) (Non Utilizzato per ora)
 
     //DEFINIZIONI CAMPI COMBOBOX
@@ -135,10 +136,11 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         } else if (tipomov.equalsIgnoreCase("DCZ")) {
             ntipo = 2;
             TransferNO();
-        } else if (tipomov.equalsIgnoreCase("DAC")) {
+        } else if (tipomov.equalsIgnoreCase("DAC")||tipomov.equalsIgnoreCase("DDO")) {
             ntipo = 4;
             TransferNO();
-        } else {
+        }
+        else {
             TransferNO();
         }
 
@@ -235,10 +237,11 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             } else if (tipomov.equalsIgnoreCase("DCZ")) {
                 ntipo = 2;
                 TransferNO();
-            } else if (tipomov.equalsIgnoreCase("DAC")) {
+            } else if (tipomov.equalsIgnoreCase("DAC")||tipomov.equalsIgnoreCase("DDO")) {
                 ntipo = 4;
                 TransferNO();
-            } else {
+            }
+            else {
                 TransferNO();
             }
             
@@ -1035,7 +1038,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                             }
                             case 2 -> {
                                 descrizione = "DONAZIONE";
-                                dettaglio = "DAC - Donazione";
+                                dettaglio = "DDO - Donazione";
                                 testo="Indica il costo di carico della donazione ricevuta : ";
                             }
                             default -> {
@@ -1054,6 +1057,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                                 }
                                 String PrzVecchio = attuale[15];*/
                                 //attuale[15] = m;
+                                m=new BigDecimal(m).setScale(2, RoundingMode.HALF_UP).toPlainString();
                                 String NuovoPrezzo = m;
                                 ClassificaMovimenti(IDSetSingolo,descrizione,dettaglio,Note,NuovoPrezzo,false);
                                 ritorno=true;
@@ -1084,7 +1088,9 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     attuale[19] = "";
                     attuale[20] = "";
                     attuale[21] = Note;
-                    if (!NuovoPrezzo.isBlank()){
+                    //se il dettaglio è una donazione il prezzo lo metto come costo di carico ma non altero il prezzo della transazione
+                    if (dettaglio.contains("DDO")) attuale[17] = NuovoPrezzo;
+                    else if (!NuovoPrezzo.isBlank()){
                         attuale[35]=attuale[15];
                         attuale[15]=NuovoPrezzo;
                     }

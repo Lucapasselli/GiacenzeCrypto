@@ -1362,7 +1362,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
 
                         }
 
-                    }else if (v[18].contains("DAC")) {
+                    }else if (v[18].contains("DAC")||v[18].contains("DDO")) {
 
                         //Apro RW nel caso di un acquisto Crypto da piattaforma esterna
                         ElementiStack el = new ElementiStack();
@@ -1380,6 +1380,15 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                         el.Tipo=Monete[1].Tipo;
                         el.GruppoWallet=GruppoWallet;
                         el.Data =Data;
+                        
+                        //Nel caso di donazioni bisogna prendere il prezzo pieno della transazione e non quello scritto
+                        //che molto probabilmente sarà a zero ed è relativo al prezzo di carico
+                        //il prezzo completo dovrebbe essere sritto nel campo 35
+                      /*  if(v[18].toUpperCase().contains("DONAZION"))
+                        {
+                            if (!v[35].isBlank()) el.CostoOri=v[35];
+                            System.out.println(v[35]);
+                        }*/
                         //if (el.QtaOri.isBlank())System.out.println("DAC : "+el.Data);
                         StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                     } 

@@ -1937,7 +1937,7 @@ return MappaLista;
             rilevante=false;
             plusvalenza=false;
         }
-        else if (Mov[18].contains("DAC")) {
+        else if (Mov[18].contains("DAC")||Mov[18].contains("DDO")) {
             //Acquisto Crypto
             rilevante=true;
             plusvalenza=false;

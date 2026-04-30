@@ -12,7 +12,7 @@ package com.giacenzecrypto.giacenze_crypto;
 public class VarStatiche {
     
     //NOME DEL PROGRAMMA
-    static String Versione = "1.0.51.02";
+    static String Versione = "1.0.52";
     static String Titolo = "Giacenze Crypto " + VarStatiche.Versione + " Beta";
     
     //=== IMPOSTAZIONI GLOBALI RELATIVE AI CALCOLI ===

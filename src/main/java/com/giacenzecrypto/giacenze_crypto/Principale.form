@@ -2838,6 +2838,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="GiacenzeaData_CheckBox_NascondiScam">
                       <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
                         <Property name="text" type="java.lang.String" value="Nascondi Token Scam"/>
                       </Properties>
                       <Events>

@@ -2353,6 +2353,7 @@ private static final long serialVersionUID = 3L;
 
         GiacenzeaData_Wallet2_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
 
+        GiacenzeaData_CheckBox_NascondiScam.setSelected(true);
         GiacenzeaData_CheckBox_NascondiScam.setText("Nascondi Token Scam");
         GiacenzeaData_CheckBox_NascondiScam.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -7819,10 +7820,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Adesso verifico se è una data iniziale o finale che voglio modificare
                 //Se è fine anno devo invece aggiungere 60 secondi
 
-                long DataCalcoli = 0;
-                if (DataPrezzo.contains("00:00")) {
+                long DataCalcoli;
+               // if (DataPrezzo.contains("00:00")) {
                     DataCalcoli = FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo);
-                }
+               // }
                 if (DataPrezzo.contains("23:59")) {
                     DataCalcoli = FunzioniDate.ConvertiDatainLongMinuto(DataPrezzo) + 60000;
                 }
@@ -8094,6 +8095,10 @@ SwingUtilities.invokeLater(() -> {
     
     private void GiacenzeaData_Bottone_CalcolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
         // TODO add your handling code here:
+     /*   SwingUtilities.invokeLater(() -> {
+GiacenzeaData_CompilaTabellaToken(true);
+        GiacenzeaData_Label_Aggiornare.setVisible(false);
+        });*/
         GiacenzeaData_CompilaTabellaToken(true);
         GiacenzeaData_Label_Aggiornare.setVisible(false);
     }//GEN-LAST:event_GiacenzeaData_Bottone_CalcolaActionPerformed
@@ -12447,7 +12452,7 @@ SwingUtilities.invokeLater(() -> {
                 sdf.setTimeZone(java.util.TimeZone.getTimeZone(ZoneId.of("Europe/Rome")));
                 // String DataconOra = sdf.format(DataRiferimento);
 
-                int rigaXRipristino = GiacenzeaData_Tabella.getSelectedRow();
+              //  int rigaXRipristino = GiacenzeaData_Tabella.getSelectedRow();
                 int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
 
                 String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
@@ -12480,14 +12485,16 @@ SwingUtilities.invokeLater(() -> {
                     Address = null;
                 }
 
+              //  GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 5);
                 //Devo ovviamente cancellarlo per inserirne uno nuovo altrimenti questo prende il sopravvento
-                DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
+               DatabaseH2.InserisciPrezzoPresonalizzato(DataRiferimento, "Personalizzato", mon, "0.00", Rete, Address, Gruppo, DataRiferimento);
 
+                GiacenzeaData_Tabella.getModel().setValueAt("", rigaselezionata, 6);
                 //Una volta cambiato il prezzo aggiorno la tabella
-                int PosizioneScrol = GiacenzeaData_ScrollPane.getVerticalScrollBar().getValue();
+            /*    int PosizioneScrol = GiacenzeaData_ScrollPane.getVerticalScrollBar().getValue();
                 GiacenzeaData_CompilaTabellaToken(true);
                 Tabelle.Funzioni_PosizionaTabellasuRiga(GiacenzeaData_Tabella, rigaXRipristino, true);
-                GiacenzeaData_ScrollPane.getVerticalScrollBar().setValue(PosizioneScrol);
+                GiacenzeaData_ScrollPane.getVerticalScrollBar().setValue(PosizioneScrol);*/
             }
         }
     }//GEN-LAST:event_GiacenzeaData_Bottone_ConfermaPrezzoZeroActionPerformed
@@ -13632,7 +13639,12 @@ try {
                            // SwingUtilities.invokeLater(() -> {
                                // GiacenzeaData_ModelloTabella.addRow(r);
                           //  });
-                            GiacenzeaData_ModelloTabella.addRow(riga);
+                            final Object[] rigaFinale = riga;
+                            SwingUtilities.invokeLater(() -> {
+                                GiacenzeaData_ModelloTabella.addRow(rigaFinale);
+
+                            });
+                           // GiacenzeaData_ModelloTabella.addRow(riga);
                         }
                         TotEuro = TotEuro.add(new BigDecimal((Double) riga[5]));
                         GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());
@@ -14253,6 +14265,10 @@ try {
                                     splittata[4] = "Piattaforma/DeFi";
                                 }
                             }
+                            //se trovo donazioni classificate con DAC le converto in DDO (serve per il passaggio dalla versione 1.0.51 a 1.0.52)
+                            if (splittata[18].equals("DAC - Donazione"))splittata[18]="DDO - Donazione";
+                                
+                            
                             //questo serve solo per eliminare i null che erano finiti per sbaglio
                             //dopo un errore di programmazione
                          // System.out.println(new BigDecimal(splittata[0].hashCode()).abs());

@@ -25,6 +25,15 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.52
+Nuove Implementazioni :
+ - Aggiornato i moduli dei quadri T/RT W/RW per il 2026 e modificato le istruzioni presenti sul PDF
+ - Aggiunto pulsante sulla funzione "Giacenze a data" per confermare i valori a zero per i prodotti segnalati come "senza prezzo".
+ - Modificato sotto scocca tutte le importazioni affinchè siano più semplici le implementazioni in futuro.
+Correzione Bug :
+ - Corretto Bug per cui in alcuni casi non funzionava sulla sezione del quadro RW la modifica dei prezzi di inizio anno.
+ - Corretto Bug che in alcuni casi impediva il corretto caricamento della tabella in "Giacenze a data" qualora si utilizzassero ordinamenti random.
+
 ver. 1.0.51
 Nuove Implementazioni :
  - Nell'inserimento manuale inserito nuovo pulsante per l'assenganzione automatica del prezzo e uno per l'inserimento manuale veloce.

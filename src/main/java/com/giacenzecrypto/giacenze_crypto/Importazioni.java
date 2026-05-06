@@ -4581,7 +4581,7 @@ private static String F_safe(String s) {
             if (progressb!=null&&progressb.FineThread()) {
                 return null;
             }
-            if (numeroTransTemp<10000)finito=true;
+            if (numeroTransTemp<10000)finito=true;//Dovrei abbassare il imite da 10000 a 1000 perchè etherscan ha cambia le policy dal 01/06/2026
           }   
         } catch (InterruptedException | URISyntaxException | IOException ex) {
             LoggerGC.ScriviErrore(ex);

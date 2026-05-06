@@ -504,8 +504,14 @@ public static Path getNodeExePath() {
             //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
             //Se non è andato tutto a buon fine non porto a termine l'importazione
             //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
-            Importazioni.ScriviListaSuMappaCrypto(lista,true);
-
+            int risultato[]=Importazioni.ScriviListaSuMappaCrypto(lista,true);
+            if (risultato[0]!=0) 
+            {
+                Principale.TabellaCryptodaAggiornare=true;
+                JOptionPane.showConfirmDialog(null, 
+                    "Impot terminato, sono stati inseriti "+risultato[0]+" nuovi movimenti.",
+                    "Messaggio",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
+            }
         }
     }
     

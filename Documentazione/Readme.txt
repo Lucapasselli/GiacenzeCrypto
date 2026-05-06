@@ -25,6 +25,11 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.53
+Nuove Implementazioni :
+Correzione Bug :
+ - Corretto Bug che impediva di salvare le transazioni scaricate attraverso le API di Binance.
+
 ver. 1.0.52
 Nuove Implementazioni :
  - Aggiornato i moduli dei quadri T/RT W/RW per il 2026 e modificato le istruzioni presenti sul PDF

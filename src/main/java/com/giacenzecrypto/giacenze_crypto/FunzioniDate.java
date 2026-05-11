@@ -13,6 +13,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -144,23 +145,26 @@ public class FunzioniDate {
     } 
         
         public static long ConvertiDatainLongSecondo(String Data1) {
-           long m1=0;
-        try {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
-            Date d = f.parse(Data1);
-            m1 = d.getTime();
-            
-            //System.out.println((m1-m2)/1000/3600/24);// questa è la differenza in giorni
-        } catch (ParseException ex) {
-           // Logger.getLogger(CDC_Grafica.class.getName()).log(Level.SEVERE, null, ex);
-            //System.out.println(Data1+" non è una data");            
-            //Non devo tornare errore in questo caso perchè è una cosa voluta la possibilità che ci sia una data non valida
-            //in questo caso viene ritornato 0
-           // LoggerGC.ScriviErrore(Data1+" non è una data valida");
-           // return 0;
+               long m1 = 0;
+    try {
+        String dataDaParsare = Data1;
+
+        // Controlla se l'anno è a 2 cifre: il primo "-" si trova alla posizione 2
+        // es. "25-12-01 10:30:00" → diventa "2025-12-01 10:30:00"
+        if (Data1 != null && Data1.length() > 2 && Data1.charAt(2) == '-') {
+            dataDaParsare = "20" + Data1;
         }
-        return m1;
+
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+        f.setLenient(false);
+        Date d = f.parse(dataDaParsare);
+        m1 = d.getTime();
+
+    } catch (ParseException ex) {
+        // Data non valida, viene restituito 0 come da comportamento originale
+    }
+    return m1;
     } 
         
     public static long ConvertiDataIDinLong(String Data1) {

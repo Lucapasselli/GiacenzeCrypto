@@ -516,6 +516,8 @@ public class Importazioni {
         //le tipologie sono alla posizione 3
         Mappa_Conversione_Causali.put("Binance Card Cashback",                      "CASHBACK");              //Cashback
         Mappa_Conversione_Causali.put("Card Cashback",                              "CASHBACK");              //Cashback        
+        Mappa_Conversione_Causali.put("Commission Fee Shared With You",                              "CASHBACK");              //Cashback 
+        
         Mappa_Conversione_Causali.put("Simple Earn Flexible Interest",              "EARN");  
         Mappa_Conversione_Causali.put("Simple Earn Locked Rewards",                 "EARN");//
         Mappa_Conversione_Causali.put("Launchpool Earnings Withdrawal",             "EARN");//
@@ -2832,6 +2834,12 @@ private static String F_safe(String s) {
                             String movimentoSplittato[]=movimento.split(",");
                             data=movimentoSplittato[1];
                             data=FunzioniDate.Formatta_Data_UTC(data);
+                            
+                            //Le nuove esportazioni restituiscono direttamente le informazioni nel formato data corretto
+                            //quindi se la funzione precedente restituisce null prendo direttamente la data dal file senza elaborazione
+                            if (data==null)data=movimentoSplittato[1];
+                            
+                            
                             Moneta Mon=new Moneta();
                             Mon.Moneta=movimentoSplittato[4];
                             Mon.Qta=new BigDecimal(movimentoSplittato[5]).toPlainString();

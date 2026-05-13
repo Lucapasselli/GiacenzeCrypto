@@ -637,6 +637,8 @@ public class Importazioni {
             }
             progressb.SetMassimo(righeFile.size());
             progressb.SetAvanzamento(0);
+            int OffSetTimestamp=extractUtcOffsetBinance(fileDaImportare);
+            System.out.println("Offset timestamp rilevato dal file di binance : "+OffSetTimestamp);
       /*  int avanzamento=0;
         for (String str : Mappa_MovimentiTemporanea.keySet()) {
             if (progressb.FineThread()){
@@ -651,9 +653,10 @@ public class Importazioni {
                     //se è stato interrotta la finestra di progresso interrompo il ciclo
                     return false;
                 }
-                riga=righeFile.get(w);
-               
+                riga=righeFile.get(w);               
                 String splittata[] = riga.split(",");
+               // System.out.print(splittata[1]+" : ");
+               // System.out.println(FunzioniDate.ConvertiDatainLongSecondo(splittata[1]));
                 if (FunzioniDate.ConvertiDatainLongSecondo(splittata[1]) != 0)// se la riga riporta una data valida allora proseguo con l'importazione
                 {
                    // System.out.println("sono qua");
@@ -663,7 +666,7 @@ public class Importazioni {
                     int secondoInt=Integer.parseInt(secondo)-1;
                     secondo=String.valueOf(secondoInt);//secondo è secondo meno 1
                     if (secondo.length()==1)secondo="0"+secondo;
-                    String DataMeno1Secondo=splittata[1].split(":")[0]+":"+splittata[1].split(":")[1]+":"+secondo;
+                    String DataMeno1Secondo=splittata[1].split(":")[0]+":"+splittata[1].split(":")[1]+":"+secondo;                   
                     if (splittata[1].equalsIgnoreCase(ultimaData)) {
                         listaMovimentidaConsolidare.add(riga);
                     }else if(DataMeno1Secondo.equalsIgnoreCase(ultimaData)&&splittata[3].contains("Small Assets Exchange BNB")||
@@ -674,7 +677,7 @@ public class Importazioni {
                     else //altrimenti consolido il movimento precedente
                     {
                      //   System.out.println(riga);
-                        List<String[]> listaConsolidata = Ex_Binance_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
+                        List<String[]> listaConsolidata = Ex_Binance_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti,OffSetTimestamp);
                         listaCompleta.addAll(listaConsolidata);
 
                         //una volta fatto tutto svuoto la lista movimenti e la preparo per il prossimo
@@ -686,7 +689,7 @@ public class Importazioni {
                 }
 
             }
-            List<String[]> listaConsolidata = Ex_Binance_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti);
+            List<String[]> listaConsolidata = Ex_Binance_Consolida(listaMovimentidaConsolidare, Mappa_Conversione_Causali,listaScambiDifferiti,OffSetTimestamp);
             listaCompleta.addAll(listaConsolidata);
 
      
@@ -2464,9 +2467,8 @@ return filtrata;
         Matcher matcher = UTC_PATTERN.matcher(fileName);
 
         if (!matcher.find()) {
-            throw new IllegalArgumentException(
-                "Offset UTC non trovato nel nome del file: " + fileName
-            );
+            System.out.println ("Nessun OffSet rilevato, lo imposto a UTC+0");
+            return 0;
         }
 
         String offsetStr = matcher.group(1); // es. "", "+2", "-5", "0"
@@ -2928,7 +2930,7 @@ private static String F_safe(String s) {
         }
      
         
-          public static List<String[]> Ex_Binance_Consolida(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest){
+          public static List<String[]> Ex_Binance_Consolida(List<String> listaMovimentidaConsolidare,Map<String, String> Mappa_Conversione_Causali,List<String[]> listaAutoinvest,int offset){
          //PER ID TRANSAZIONE QUESTI SONO GLI ACRONIMI
          //TI=Trasferimento Interno
          //TC=Trasferimento Criptoattività          -> non dovrebbe essere utilizzato
@@ -2952,6 +2954,8 @@ private static String F_safe(String s) {
         // String dataa="";
          long Datalong;
          String data="";
+         
+         //System.out.println("Numero righi Binance : "+numMovimenti);
          TransazioneDefi Scambio=new TransazioneDefi();         
                         for (int k=0;k<numMovimenti;k++){
                             String RT[]=new String[ColonneTabella];
@@ -2962,14 +2966,15 @@ private static String F_safe(String s) {
                             
                             //Le nuove esportazioni restituiscono direttamente le informazioni nel formato data corretto
                             //quindi se la funzione precedente restituisce null prendo direttamente la data dal file senza elaborazione
+                            //l'offset verrà utilizzato solo per il nuovo tipo di import
                             if (data==null)
                             {
                                 data=movimentoSplittato[1];
-                                //Siccome l'import è in UTC+2 trovo il timestamp corretto
-                                Datalong=FunzioniDate.ConvertiDatainLongSecondoUTC2(data);
+                                //Siccome l'import è in UTC+X trovo il timestamp corretto
+                                Datalong=FunzioniDate.ConvertiDatainLongSecondoUTC2(data,offset);
                                 data=FunzioniDate.ConvertiDatadaLongAlSecondo(Datalong);
                             }
-                            
+                           // System.out.println(data);
                             
                             Moneta Mon=new Moneta();
                             Mon.Moneta=movimentoSplittato[4];

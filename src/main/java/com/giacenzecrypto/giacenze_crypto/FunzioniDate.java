@@ -167,7 +167,8 @@ public class FunzioniDate {
     return m1;
     } 
         
-    public static long ConvertiDatainLongSecondoUTC2(String Data1) {
+    //l'offset indica il fuso orario rispetto a UTC es. offset 1 indica che sto utilizzando UTC+1 come fuso    
+    public static long ConvertiDatainLongSecondoUTC2(String Data1,int offset) {
             // Rimuove il suffisso " UTC+2"
        DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -180,7 +181,7 @@ public class FunzioniDate {
         // Parsa la data e applica l'offset UTC+2
         LocalDateTime ldt = LocalDateTime.parse(dataDaParsare, FORMATTER);
 
-        return ldt.toEpochSecond(ZoneOffset.ofHours(2))*1000;
+        return ldt.toEpochSecond(ZoneOffset.ofHours(offset))*1000;
     } 
         
     public static long ConvertiDataIDinLong(String Data1) {

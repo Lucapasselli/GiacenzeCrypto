@@ -134,7 +134,7 @@ public String GetTipologia(){
 }
 
 public void AssegnaTipoAuto(){
-    Set<String> valute = Set.of("EUR", "USD", "TRY");
+    Set<String> valute = Set.of("EUR", "USD", "TRY","GBP");
     if (valute.contains(Moneta)) {
                 Tipo = "FIAT";
             } else {

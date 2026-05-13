@@ -148,7 +148,7 @@ private static Map<String, String[]> creaMappaTipologie() {
                 new BigDecimal(MON.Qta).abs().compareTo(BigDecimal.ZERO)!=0) {
                 if (MON.Qta.contains("-")) {
                     if (!MOut.isBlank()){
-                        LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in uscita : "+MOut+" e "+MON.Moneta);
+                        LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in uscita : "+MOut+" e "+MON.Moneta+ " data movimento : "+data);
                         return null;
                     }
                         MOut = normalizzaMoneta(MON.Moneta);
@@ -159,7 +159,7 @@ private static Map<String, String[]> creaMappaTipologie() {
                         NomeEstesoOut = normalizzaMoneta(MON.GetNomeEsteso());
                 } else {
                     if (!MIn.isBlank()){
-                        LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in ingresso : "+MIn+" e "+MON.Moneta);
+                        LoggerGC.ScriviErrore("Movimento incoerente, ci sono due monete in ingresso : "+MIn+" e "+MON.Moneta+ " data movimento : "+data);
                         return null;
                     }
                         MIn = normalizzaMoneta(MON.Moneta);

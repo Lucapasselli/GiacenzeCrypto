@@ -133,6 +133,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -756,13 +758,26 @@ public class Importazioni {
         //Faccio una lista di causali per la conversione dei dati del csv
         Mappa_Conversione_Causali.put("card_cashback_reverted", "CASHBACK");              //Cashback ripristinato
         Mappa_Conversione_Causali.put("referral_card_cashback", "CASHBACK");              //Cashback della Carta MCO
+        Mappa_Conversione_Causali.put("gift_card_reward", "CASHBACK");
+        
         Mappa_Conversione_Causali.put("crypto_earn_interest_paid", "EARN");               //Interessi maturati da una Crypto in Earn
         Mappa_Conversione_Causali.put("mobile_airtime_reward", "EARN");               //Reward di qualche tipo, la classifico come Earn
-
+        Mappa_Conversione_Causali.put("finance.defi_staking.non_compound_interest.crypto_wallet", "STAKING REWARD");
+        Mappa_Conversione_Causali.put("finance.dpos.non_compound_restaking_interest.crypto_wallet", "STAKING REWARD");
+        //Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "STAKING REWARD");
+        Mappa_Conversione_Causali.put("finance.defi_lending.compound_interest.crypto_wallet", "REWARD");
+        Mappa_Conversione_Causali.put("finance.defi_staking.unstaking.crypto_wallet", "STAKING REWARD");
+        
+        
+        
         Mappa_Conversione_Causali.put("crypto_exchange", "SCAMBIO CRYPTO-CRYPTO");        //Scambio di una Crypto per un'altra Crypto
         Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito 
         Mappa_Conversione_Causali.put("trading.limit_order.crypto_wallet.exchange", "SCAMBIO CRYPTO-CRYPTO");//Ordine Limite Eseguito
         Mappa_Conversione_Causali.put("finance.crypto_basket.purchase.crypto_wallet.credit", "SCAMBIO CRYPTO-CRYPTO");//Primo acquisto dal basket
+        Mappa_Conversione_Causali.put("finance.dpos.wrapping.crypto_wallet", "SCAMBIO CRYPTO-CRYPTO");
+        Mappa_Conversione_Causali.put("finance.dpos.unwrapping.crypto_wallet", "SCAMBIO CRYPTO-CRYPTO");
+        
+        
         //finance.crypto_basket.purchase.crypto_wallet.credit
 
         Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
@@ -772,7 +787,9 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("crypto_to_exchange_transfer", "TRASFERIMENTO-CRYPTO");//Trasferimento di una Crypto dall'App verso l'Exchange
         Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
         Mappa_Conversione_Causali.put("exchange_to_crypto_transfer", "TRASFERIMENTO-CRYPTO");    //Trasferimenti dall'Exchange verso l'App
-
+        Mappa_Conversione_Causali.put("admin_wallet_debited", "TRASFERIMENTO-CRYPTO");
+        
+        
         Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
         Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_commit", "ACQUISTO CRYPTO");//Acquisto crypto da fill order limit
         Mappa_Conversione_Causali.put("trading.crypto_purchase.google_pay", "ACQUISTO CRYPTO");//Acquisto crypto da google pay
@@ -802,8 +819,8 @@ public class Importazioni {
 //        Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION");//Conversione di monete (
 //        Mappa_Conversione_Causali.put("lockup_swap_debited", "DUST-CONVERSION");//Conversione di monete 
 //        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", fileDaImportare);//Bonus Swap MCO/CRO
-//        Mappa_Conversione_Causali.put("dynamic_coin_swap_credited", fileDaImportare);     //Scambio MCO in CRO (MCO in Earn). Acquisto dei CRO
-//        Mappa_Conversione_Causali.put("dynamic_coin_swap_debited", fileDaImportare);      //Scambio MCO in CRO (MCO in Earn). Vendita degli MCO
+        Mappa_Conversione_Causali.put("dynamic_coin_swap_credited", "IGNORA");     //Scambio MCO in CRO (MCO in Earn). Acquisto dei CRO
+        Mappa_Conversione_Causali.put("dynamic_coin_swap_debited", "IGNORA");      //Scambio MCO in CRO (MCO in Earn). Vendita degli MCO
 
         Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_unlock", "IGNORA"); //Ignoro il movimento in quanto sto bloccando Euro del Fiat Wallet
         Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_lock", "IGNORA"); //Ignoro il movimento in quanto sto bloccando fondi del Fiat Wallet
@@ -816,8 +833,13 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.crypto_basket.sale.crypto_wallet", "IGNORA"); //lo ignoro perchè il movimento viene generato in automatico dopo questo finance.crypto_basket.sale.crypto_wallet.credit
         Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet.credit", "IGNORA"); //già gestito con il debit
         Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet", "IGNORA");//da ignorare non da nessun dato utile
+        Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "IGNORA");//da ignorare movimento di messa in staking non utile
+        Mappa_Conversione_Causali.put("finance.defi_lending.staking.crypto_wallet", "IGNORA");
+        
 
         //finance.crypto_basket.purchase.crypto_wallet.received
+        Mappa_Conversione_Causali.put("lockup_swap_credited", "DUST-CONVERSION"); //13/05/2026
+        Mappa_Conversione_Causali.put("lockup_swap_debited", "DUST-CONVERSION");  //13/05/2026
         Mappa_Conversione_Causali.put("lockup_lock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
         Mappa_Conversione_Causali.put("lockup_unlock", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo unStake
         Mappa_Conversione_Causali.put("finance.lockup.dpos_lock.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");          //CRO Stake per la MCO Card. Nuovo Stake
@@ -1925,7 +1947,8 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
          //CM=Commissioni/Fees
          
          List<String[]> lista=new ArrayList<>();
-         TransazioneDefi Scambio=new TransazioneDefi();  
+         TransazioneDefi Scambio=new TransazioneDefi(); 
+         TransazioneDefi ScambioLock=new TransazioneDefi(); 
          int numMovimenti=listaMovimentidaConsolidare.size();
                         String data="";
                         for (int k=0;k<numMovimenti;k++){
@@ -2001,9 +2024,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                         "Crypto.com App", "Crypto Wallet",
                                         Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                         null, movimentoConvertito, "CDCAPP");
-                                RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")"; 
-                                RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                lista.add(RT);
+                                 if (RT!=null){
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")"; 
+                                        RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
+                                        lista.add(RT);
+                                 }else{
+                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     TrasazioniSconosciute++;
+                                 }
                                 
                             }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("ACQUISTO CRYPTO"))
@@ -2031,14 +2059,19 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                 
                                //Particolarità se acquisti relativi Crypto Basket
                                 if (movimentoSplittato[9].contains("crypto_basket")) {
-
+                                    
                                     RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Basket",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP.B");
-                                    RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                    RT[14] = PrezzoCSVOri;
-                                    lista.add(RT);
+                                    if (RT!=null){
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                        RT[14] = PrezzoCSVOri;
+                                        lista.add(RT);
+                                    }else{
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
                                     
                                     
                                     //SE E' UN MOVIMENTO DI ACQUISTO DI UN MOVIMENTO "sale" dal Wallet Basket devo creare anche un movimento interno
@@ -2064,9 +2097,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", WalletDestinazione,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, "TRASFERIMENTO INTERNO", ExchangeID);
-                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                        RT[14] = PrezzoCSVOri;
-                                        lista.add(RT);
+                                        if (RT!=null){
+                                            RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                            RT[14] = PrezzoCSVOri;
+                                            lista.add(RT);
+                                        }else{
+                                            movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                            TrasazioniSconosciute++;
+                                        }
                                         
                                     }
 
@@ -2077,18 +2115,28 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
-                                    RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                    RT[14] = PrezzoCSVOri;
-                                    lista.add(RT);
+                                    if (RT!=null){
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                        RT[14] = PrezzoCSVOri;
+                                        lista.add(RT);
+                                    }else{
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
                                     
                                     //=== MOVIMENTO DI SCAMBIO ====
                                     RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
-                                    RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                    RT[14] = PrezzoCSVOri;
-                                    lista.add(RT);
+                                    if (RT!=null){
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                        RT[14] = PrezzoCSVOri;
+                                        lista.add(RT);
+                                    }else{
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
                                 }
 
                                 
@@ -2102,19 +2150,33 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", "Crypto Basket",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP.A");
-                                    RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                    RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                    lista.add(RT);
+                                    if (RT!=null){
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                        RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
+                                        lista.add(RT);
+                                    }else{
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
                                 } //Vendita Crypto x Servizio                                
                                 else if (movimentoSplittato[9].equalsIgnoreCase("crypto_payment")
                                         || movimentoSplittato[9].equalsIgnoreCase("card_top_up")) {
-                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
+                                    RT = MovimentiCrypto.creaMovimento(M1, null,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
-                                    RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                    RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                    lista.add(RT);
+                                    if (RT!=null){
+                                        String[] parts = RT[0].split("_");
+                                        parts[4]="VC";
+                                        RT[0] = String.join("_", parts);
+                                        RT[5] = "VENDITA CRYPTO";
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                        RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
+                                        lista.add(RT);
+                                    }else{
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
                                 }
                                 else
                                 {//Vendita Crypto x Euro
@@ -2122,9 +2184,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
-                                    RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                    RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                    lista.add(RT); 
+                                    if (RT!=null){
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                        RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
+                                        lista.add(RT); 
+                                    }else{
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
                                 
                                 
                                 //trasferimento FIAT
@@ -2133,9 +2200,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
+                                if (RT!=null){
                                     RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT);
+                                    }else{
+                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     TrasazioniSconosciute++;
+                                 }
                                 }
                             }
                             
@@ -2153,9 +2225,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", wallet,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
+                                if (RT!=null){
                                     RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT); 
+                                    }else{
+                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     TrasazioniSconosciute++;
+                                 }
                             }
                             
                             // === DUST CONVERSION ===
@@ -2177,14 +2254,21 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                 M1.Prezzo=new BigDecimal(valoreEuro).abs().toPlainString();
 
                                 String WalletSecondario="Crypto Wallet";
+                                
+                                if (movimentoSplittato[9].toLowerCase().contains("lockup_swap_debited"))WalletSecondario="Fondi Bloccati";
                                 String CausaleOriginale=movimentoSplittato[9];
                                 String IDOriginale="";
                                 //E' MIn perchè in caso di dust viene valorizzato solo il primo campo che ho chiamato MIn
-                                Scambio.InserisciMoneteCEX(M1,WalletSecondario,CausaleOriginale,IDOriginale);
+                                if (movimentoSplittato[9].toLowerCase().contains("lockup_swap_credited")||
+                                        movimentoSplittato[9].toLowerCase().contains("lockup_swap_debited")){
+                                    WalletSecondario="Fondi Bloccati";
+                                    ScambioLock.InserisciMoneteCEX(M1,WalletSecondario,CausaleOriginale,IDOriginale);
+                                }
+                                else Scambio.InserisciMoneteCEX(M1,WalletSecondario,CausaleOriginale,IDOriginale);
                                 }
                             
                             // === TRASFERIMENTO INTERNO TRA WALLET ===
-                                else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
+                            else if (movimentoConvertito.trim().equalsIgnoreCase("TRASFERIMENTO-CRYPTO-INTERNO"))
                             {
                                 
                                
@@ -2275,9 +2359,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", WalletPartenza,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, ExchangeID);
+                                if (RT!=null){
                                     RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT); 
+                                    }else{
+                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     TrasazioniSconosciute++;
+                                 }
                                 
                                 //MOVIMENTO DI ENTRATA
                                 M1.Qta=M1.Qta.replace("-", "");
@@ -2285,9 +2374,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", WalletDestinazione,
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, ExchangeID);
+                                if (RT!=null){
                                     RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
-                                    lista.add(RT);    
+                                    lista.add(RT); 
+                                    }else{
+                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     TrasazioniSconosciute++;
+                                 }
                             }
                                 
                                 
@@ -2298,9 +2392,14 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
+                                if (RT!=null){
                                     RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT); 
+                                    }else{
+                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     TrasazioniSconosciute++;
+                                 }
                              
                             }
                             else if (movimentoConvertito.trim().equalsIgnoreCase("IGNORA"))
@@ -2324,6 +2423,8 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                         
                         List<String[]> lista2=RitornaScambi(Scambio,data,"Crypto.com App","CDCAPP");
                         lista.addAll(lista2);
+                        List<String[]> lista3=RitornaScambi(ScambioLock,data,"Crypto.com App","CDCAPP");
+                        lista.addAll(lista3);
                         
         //Se ci sono degli id duplicati questa funzione li rende univoci                
         lista=CreaListaConIDUnivoco(lista);               
@@ -2353,6 +2454,30 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
 TreeMap<String, String[]> filtrata = new TreeMap<>(mappa.subMap(chiaveIniziale, true, chiaveFinale, true));
 return filtrata;
 }*/
+     
+     
+     
+     //Funzione che serve per trovare l'offset UTC dal nome del file di Binance
+     //in questo modo anche se non si mette UTC+2 nel momento dell'export questo dovrebbe sistemare la cosa
+     public static int extractUtcOffsetBinance(String fileName) {
+         Pattern UTC_PATTERN =Pattern.compile("\\(UTC([+-]?\\d*)\\)");
+        Matcher matcher = UTC_PATTERN.matcher(fileName);
+
+        if (!matcher.find()) {
+            throw new IllegalArgumentException(
+                "Offset UTC non trovato nel nome del file: " + fileName
+            );
+        }
+
+        String offsetStr = matcher.group(1); // es. "", "+2", "-5", "0"
+
+        if (offsetStr.isEmpty() || offsetStr.equals("+") || offsetStr.equals("-")) {
+            return 0;
+        }
+
+        return Integer.parseInt(offsetStr);
+    }
+     
      
      
  /**
@@ -2837,7 +2962,13 @@ private static String F_safe(String s) {
                             
                             //Le nuove esportazioni restituiscono direttamente le informazioni nel formato data corretto
                             //quindi se la funzione precedente restituisce null prendo direttamente la data dal file senza elaborazione
-                            if (data==null)data=movimentoSplittato[1];
+                            if (data==null)
+                            {
+                                data=movimentoSplittato[1];
+                                //Siccome l'import è in UTC+2 trovo il timestamp corretto
+                                Datalong=FunzioniDate.ConvertiDatainLongSecondoUTC2(data);
+                                data=FunzioniDate.ConvertiDatadaLongAlSecondo(Datalong);
+                            }
                             
                             
                             Moneta Mon=new Moneta();

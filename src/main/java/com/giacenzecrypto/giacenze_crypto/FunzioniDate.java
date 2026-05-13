@@ -167,6 +167,22 @@ public class FunzioniDate {
     return m1;
     } 
         
+    public static long ConvertiDatainLongSecondoUTC2(String Data1) {
+            // Rimuove il suffisso " UTC+2"
+       DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+       String dataDaParsare = Data1;
+       
+       if (Data1 != null && Data1.length() > 2 && Data1.charAt(2) == '-') {
+            dataDaParsare = "20" + Data1;
+        }
+       //System.out.println(dataDaParsare);
+        // Parsa la data e applica l'offset UTC+2
+        LocalDateTime ldt = LocalDateTime.parse(dataDaParsare, FORMATTER);
+
+        return ldt.toEpochSecond(ZoneOffset.ofHours(2))*1000;
+    } 
+        
     public static long ConvertiDataIDinLong(String Data1) {
            long m1=0;
         try {

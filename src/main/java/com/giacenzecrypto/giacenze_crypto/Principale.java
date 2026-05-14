@@ -10212,10 +10212,10 @@ GiacenzeaData_CompilaTabellaToken(true);
                             <b>Colonna 14</b> \u2013 <u>CODICE</u> \u2013 Deve essere indicato un codice per indicare la compilazione di uno o
                             pi\u00f9 quadri reddituali conseguenti al cespite indicato oggetto di monitoraggio, ovvero se il bene \u00e8 infruttifero, 
                             in particolare, indicare:<br>
-                            → → - (Codice 1) x Compilazione Quadro RL &emsp;<br>
-                            → → - (Codice 2) x Compilazione Quadro RM &emsp;<br>
-                            → → - (Codice 3) x Compilazione Quadro RT &emsp;<br>
-                            → → - (Codice 4) x Compilazione contemporanea di due o tre Quadri tra RL, RM e RT<br>
+                            → → - (Codice 1) x Compilazione quadro D, rigo D4 codici 5 e 8 &emsp;<br>
+                            → → - (Codice 2) x Compilazione quadro M, rigo M31 &emsp;<br>
+                            → → - (Codice 3) x Compilazione quadro T &emsp;<br>
+                            → → - (Codice 4) x Compilazione contemporanea di due o tre ipotesi descritte con i codici precedenti<br>
                             → → - (Codice 5) Nel caso in cui i redditi relativi ai prodotti finanziari verranno percepiti in un successivo
                             periodo d\u2019imposta ovvero se i predetti prodotti finanziari sono infruttiferi. In questo caso
                             \u00e8 opportuno che gli interessati acquisiscano dagli intermediari esteri documenti o
@@ -10224,8 +10224,6 @@ GiacenzeaData_CompilaTabellaToken(true);
                     stampa.AggiungiHtml(testo);
 
                     stampa.NuovaPagina();
-              
-                    
                     
                     
                                 //Stampa Quadro RW

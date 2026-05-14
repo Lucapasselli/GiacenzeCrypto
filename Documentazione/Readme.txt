@@ -25,6 +25,13 @@ NB: Per aggiornare la versione del programma basta sovrascrivere la cartella ori
 
 Changelog
 
+ver. 1.0.54
+Nuove Implementazioni :
+- Implementato importazione anche per il formato dei nuovi file scaricabili da binance
+- Inserito nuove causali per le importazione da Crypto.com APP
+Correzione Bug :
+- Corretto una tipologia di importazione presente su Crypto.com App che veniva classificata come deposito crypto invece che come acquisto crypto obbligando ad una successiva classificazione manuale.
+
 ver. 1.0.53
 Nuove Implementazioni :
 Correzione Bug :

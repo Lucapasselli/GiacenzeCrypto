@@ -783,6 +783,8 @@ public class Importazioni {
         
         //finance.crypto_basket.purchase.crypto_wallet.credit
 
+
+        
         Mappa_Conversione_Causali.put("crypto_deposit", "TRASFERIMENTO-CRYPTO");          //Deposito di Crypto provenienti da wallet esterno
         Mappa_Conversione_Causali.put("invest_deposit", "TRASFERIMENTO-CRYPTO");          //Totalmente controintuitivo ma questo è un prelievo (Testato su Koinly e Cointraking, per Tatax invece è un deposito)
         Mappa_Conversione_Causali.put("invest_withdrawal", "TRASFERIMENTO-CRYPTO");       //Totalmente controintuitivo ma questo è un deposito (Testato su Koinly e Cointraking, per Tatax invece è un prelievo)
@@ -838,6 +840,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet", "IGNORA");//da ignorare non da nessun dato utile
         Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "IGNORA");//da ignorare movimento di messa in staking non utile
         Mappa_Conversione_Causali.put("finance.defi_lending.staking.crypto_wallet", "IGNORA");
+        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", "IGNORA");//movimento doppio derivante dagli scambi MCO CRO
         
 
         //finance.crypto_basket.purchase.crypto_wallet.received
@@ -857,6 +860,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("trading_limit_order_crypto_wallet_fund_lock", "TRASFERIMENTO-CRYPTO-INTERNO");//Blocca i fondi destinati ad un'ordine Limit 
         Mappa_Conversione_Causali.put("finance.crypto_basket.purchase.crypto_wallet.received", "TRASFERIMENTO-CRYPTO-INTERNO");  //Trasferimenti verso Crypto Basket
         Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet.debit", "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("lockup_swap_rebate", "TRASFERIMENTO-CRYPTO-INTERNO");
 
 //        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO

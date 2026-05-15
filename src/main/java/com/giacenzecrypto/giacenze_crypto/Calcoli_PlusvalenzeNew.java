@@ -798,11 +798,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     
             }
             else {
-                System.out.println("Classe:Plusvalenze - Funzione:CategorizzaTransazione - Nessuna Tipologia Individuata");
-                System.out.println(TipoMU+" - "+TipoME);
-            }
-            
-            
+                LoggerGC.ScriviErrore("CategorizzaTransazione x Plusvalenze - Nessuna Tipologia Individuata");
+                System.out.println("Tipologie Uscita ed entrata usate -> "+TipoMU+" - "+TipoME);
+            }           
 
                     v[16]=VecchioPrezzoCarico;
                     v[17]=NuovoPrezzoCarico;

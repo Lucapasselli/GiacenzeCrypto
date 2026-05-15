@@ -631,7 +631,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 }
                 
                 //Tipologia = 3; (Acquisto Crypto)
-                else if(v[18].contains("DAC")){
+                else if(v[18].contains("DAC")||IDTS[4].equals("AC")){
                     
                     NuovoPrezzoCarico=Valore;
                     StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);

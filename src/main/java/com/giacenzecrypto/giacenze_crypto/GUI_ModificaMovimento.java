@@ -1472,13 +1472,20 @@ worker.execute();*/
                             //Cancello il vecchio movimento
                             Funzioni.RimuoviMovimentazioneXID(MovimentoRiportato[0]);
                             String splitID[] = ID.split("_");
-                            if (splitID[4].equalsIgnoreCase("RW")) {
+                            if (splitID[4].equalsIgnoreCase("RW")
+                                    ||
+                                    splitID[4].equalsIgnoreCase("CM")
+                                    ||
+                                    splitID[4].equalsIgnoreCase("AC")
+                                    ||
+                                    splitID[4].equalsIgnoreCase("VC")
+                                    ) {
                                 TipoTransazione = MovimentoRiportato[5];
                             }
 
-                            if (splitID[4].equalsIgnoreCase("CM")) {
+                         /*   if (splitID[4].equalsIgnoreCase("CM")) {
                                 TipoTransazione = MovimentoRiportato[5];
-                            }
+                            }*/
                             
                             if (splitID[4].equalsIgnoreCase("TI")) {
                                 TipoTransazione = "TRASFERIMENTO INTERNO";

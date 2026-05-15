@@ -793,7 +793,8 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("crypto_transfer", "TRASFERIMENTO-CRYPTO");       //Trasferimento verso o da altro portafoglio crypto.com tramite app 
         Mappa_Conversione_Causali.put("exchange_to_crypto_transfer", "TRASFERIMENTO-CRYPTO");    //Trasferimenti dall'Exchange verso l'App
         Mappa_Conversione_Causali.put("admin_wallet_debited", "TRASFERIMENTO-CRYPTO");
-        
+        Mappa_Conversione_Causali.put("transfer.p2p_transfer.crypto_wallet.crypto_wallet.debit", "TRASFERIMENTO-CRYPTO");
+        Mappa_Conversione_Causali.put("transfer.p2p_transfer.crypto_wallet.crypto_wallet.credit", "TRASFERIMENTO-CRYPTO");
         
         Mappa_Conversione_Causali.put("crypto_purchase", "ACQUISTO CRYPTO");          //Acquisto di Crypto da Carta di Credito
         Mappa_Conversione_Causali.put("trading.limit_order.fiat_wallet.purchase_commit", "ACQUISTO CRYPTO");//Acquisto crypto da fill order limit
@@ -861,6 +862,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.crypto_basket.purchase.crypto_wallet.received", "TRASFERIMENTO-CRYPTO-INTERNO");  //Trasferimenti verso Crypto Basket
         Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet.debit", "TRASFERIMENTO-CRYPTO-INTERNO");
         Mappa_Conversione_Causali.put("lockup_swap_rebate", "TRASFERIMENTO-CRYPTO-INTERNO");
+        Mappa_Conversione_Causali.put("finance.lockup.dpos_lock_upgrade.crypto_wallet", "TRASFERIMENTO-CRYPTO-INTERNO");
 
 //        Mappa_Conversione_Causali.put("lockup_swap_credited", fileDaImportare);         //Scambio MCO in CRO (MCO in Stake per la Carta). Acquisto dei CRO
 //        Mappa_Conversione_Causali.put("lockup_swap_debited", fileDaImportare);          //Scambio MCO in CRO (MCO in Stake per la Carta). Vendita degli MCO
@@ -2118,6 +2120,9 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                 } else {// NON CRYPTO BASKET
                                     
                                     //=== AGGIUNGO MOVIMENTO DI ARRIVO DELLE FIAT ===
+                                    
+                                    //se è crypto purchase non devo aggiungere questo movimento
+                                    if (!movimentoSplittato[9].trim().equalsIgnoreCase("crypto_purchase")){
                                     RT = MovimentiCrypto.creaMovimento(MFiat, null,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
@@ -2130,6 +2135,7 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                         movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
                                         TrasazioniSconosciute++;
                                     }
+                                    }
                                     
                                     //=== MOVIMENTO DI SCAMBIO ====
                                     RT = MovimentiCrypto.creaMovimento(M1, M2,
@@ -2137,6 +2143,11 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
                                             null, movimentoConvertito, "CDCAPP");
                                     if (RT!=null){
+                                        //Forzo il fatto che sia un acquisto crypto
+                                        String[] parts = RT[0].split("_");
+                                        parts[4]="AC";
+                                        RT[0] = String.join("_", parts);
+                                        RT[5] = "ACQUISTO CRYPTO";
                                         RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                         RT[14] = PrezzoCSVOri;
                                         lista.add(RT);

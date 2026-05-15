@@ -2145,9 +2145,12 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                     if (RT!=null){
                                         //Forzo il fatto che sia un acquisto crypto
                                         String[] parts = RT[0].split("_");
-                                        parts[4]="AC";
-                                        RT[0] = String.join("_", parts);
-                                        RT[5] = "ACQUISTO CRYPTO";
+                                        //Se risulta come deposito crypto lo forzo come acquisto
+                                        if (parts[4].equals("DC")){
+                                            parts[4]="AC";
+                                            RT[0] = String.join("_", parts);
+                                            RT[5] = "ACQUISTO CRYPTO";
+                                        }
                                         RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
                                         RT[14] = PrezzoCSVOri;
                                         lista.add(RT);

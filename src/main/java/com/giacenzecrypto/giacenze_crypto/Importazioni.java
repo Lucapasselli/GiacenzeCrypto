@@ -841,7 +841,7 @@ public class Importazioni {
         Mappa_Conversione_Causali.put("finance.crypto_basket.withdraw.crypto_wallet", "IGNORA");//da ignorare non da nessun dato utile
         Mappa_Conversione_Causali.put("finance.defi_staking.staking.crypto_wallet", "IGNORA");//da ignorare movimento di messa in staking non utile
         Mappa_Conversione_Causali.put("finance.defi_lending.staking.crypto_wallet", "IGNORA");
-        Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", "IGNORA");//movimento doppio derivante dagli scambi MCO CRO
+      //  Mappa_Conversione_Causali.put("dynamic_coin_swap_bonus_exchange_deposit", "IGNORA");//in teoria è un movimento doppio ma per ora lo commento perchè non sono sicuro,infatti questo movimento sembra sia anche legato ad un movimento dell'exchange ovvero questo EARLY_SWAP_BONUS_DEPOSIT,
         
 
         //finance.crypto_basket.purchase.crypto_wallet.received
@@ -2119,10 +2119,36 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
 
                                 } else {// NON CRYPTO BASKET
                                     
-                                    //=== AGGIUNGO MOVIMENTO DI ARRIVO DELLE FIAT ===
                                     
-                                    //se è crypto purchase non devo aggiungere questo movimento
-                                    if (!movimentoSplittato[9].trim().equalsIgnoreCase("crypto_purchase")){
+                                    
+                                    boolean AggiungoFIAT=true;
+                                    
+                                    //=== MOVIMENTO DI SCAMBIO ====
+                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
+                                            "Crypto.com App", "Crypto Wallet",
+                                            Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
+                                            null, movimentoConvertito, "CDCAPP");
+                                    if (RT!=null){
+                                        //Forzo il fatto che sia un acquisto crypto
+                                        String[] parts = RT[0].split("_");
+                                        //Se risulta come deposito crypto lo forzo come acquisto
+                                        if (parts[4].equals("DC")){
+                                            AggiungoFIAT=false;
+                                            parts[4]="AC";
+                                            RT[0] = String.join("_", parts);
+                                            RT[5] = "ACQUISTO CRYPTO";
+                                        }
+                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
+                                        RT[14] = PrezzoCSVOri;
+                                        lista.add(RT);
+                                    }else{
+                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        TrasazioniSconosciute++;
+                                    }
+
+                                    //=== AGGIUNGO MOVIMENTO DI ARRIVO DELLE FIAT ===
+                                    //Aggiungo FIAT se nel movimento precedente ci sono FIAT altrimenti no
+                                    if (AggiungoFIAT){
                                     RT = MovimentiCrypto.creaMovimento(MFiat, null,
                                             "Crypto.com App", "Crypto Wallet",
                                             Datalong, valoreEuro, FontePrezzo, k + 1, 1, null, null, "A",
@@ -2135,28 +2161,6 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                                         movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
                                         TrasazioniSconosciute++;
                                     }
-                                    }
-                                    
-                                    //=== MOVIMENTO DI SCAMBIO ====
-                                    RT = MovimentiCrypto.creaMovimento(M1, M2,
-                                            "Crypto.com App", "Crypto Wallet",
-                                            Datalong, valoreEuro, FontePrezzo, k + 1, 2, null, null, "A",
-                                            null, movimentoConvertito, "CDCAPP");
-                                    if (RT!=null){
-                                        //Forzo il fatto che sia un acquisto crypto
-                                        String[] parts = RT[0].split("_");
-                                        //Se risulta come deposito crypto lo forzo come acquisto
-                                        if (parts[4].equals("DC")){
-                                            parts[4]="AC";
-                                            RT[0] = String.join("_", parts);
-                                            RT[5] = "ACQUISTO CRYPTO";
-                                        }
-                                        RT[7] = movimentoSplittato[9] + "(" + movimentoSplittato[1] + ")";
-                                        RT[14] = PrezzoCSVOri;
-                                        lista.add(RT);
-                                    }else{
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
-                                        TrasazioniSconosciute++;
                                     }
                                 }
 
